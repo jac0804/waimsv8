@@ -1,0 +1,2052 @@
+<?php
+
+namespace App\Http\Classes\sbcdb;
+
+use App\Http\Classes\coreFunctions;
+
+class enrollment {
+
+	private $coreFunctions;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+	}//end fn
+
+	public function tableupdateenrollment() {
+		$qry = "CREATE TABLE `en_schoolyear` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `issy` int(10) unsigned NOT NULL DEFAULT '0',
+      `code` varchar(45)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_schoolyear", $qry);
+
+		$qry = "CREATE TABLE `en_scheme` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `scheme` varchar(45)  NOT NULL DEFAULT '',
+      `orderscheme` int(10) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (scheme)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_scheme", $qry);
+
+		$qry = "CREATE TABLE `en_section` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `isterms` int(10) unsigned NOT NULL DEFAULT '0',
+      `coursecode` varchar(55)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (section)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_section", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_section", "courseid", " int(11) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_section", "isinactive", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_attendancetype` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `type` varchar(45) NOT NULL DEFAULT '',
+      `color` varchar(45) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (line)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_attendancetype", $qry);
+
+		$qry = "CREATE TABLE `en_levels` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `levels` varchar(45) NOT NULL DEFAULT '',
+      `orderlevels` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (levels)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_levels", $qry);
+
+		$qry = "CREATE TABLE `en_period` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `code` varchar(45)  NOT NULL DEFAULT '',
+      `name` varchar(450)  NOT NULL DEFAULT '',
+      `terms` varchar(45)  NOT NULL DEFAULT '',
+      `year` varchar(45)  NOT NULL DEFAULT '',
+      `estart` datetime DEFAULT NULL,
+      `eend` datetime DEFAULT NULL,
+      `eext` datetime DEFAULT NULL,
+      `sstart` datetime DEFAULT NULL,
+      `send` datetime DEFAULT NULL,
+      `sext` datetime DEFAULT NULL,
+      `astart` datetime DEFAULT NULL,
+      `aend` datetime DEFAULT NULL,
+      `aext` datetime DEFAULT NULL,
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `isactive` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_period", $qry);
+
+		$qry = "CREATE TABLE `en_term` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `term` varchar(45) NOT NULL DEFAULT '',
+      `orderterm` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (term)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_term", $qry);
+
+		$qry = "CREATE TABLE `en_dept` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `deptname` varchar(100) NOT NULL DEFAULT '',
+      `signatory` varchar(45) NOT NULL DEFAULT '',
+      `parentcode` varchar(45)  NOT NULL DEFAULT '',
+      `parentname` varchar(45) NOT NULL DEFAULT '',
+      `deancode` varchar(45)  NOT NULL DEFAULT '',
+      `deanname` varchar(45)  NOT NULL DEFAULT '',
+      `fund` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `orderdept` int(11) unsigned NOT NULL DEFAULT '0',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (deptcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_dept", $qry);
+
+		$qry = "CREATE TABLE `en_rooms` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `buildingcode` varchar(45)  NOT NULL DEFAULT '',
+      `buildingname` varchar(450)  NOT NULL DEFAULT '',
+      `roomcode` varchar(45)  NOT NULL DEFAULT '',
+      `roomname` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (buildingcode,roomcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_rooms", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_rooms", "bldgid", " int(11) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_course` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `tfaccount` varchar(45) NOT NULL DEFAULT '',
+      `isinactive` tinyint(4) NOT NULL DEFAULT '0',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deanname` varchar(450) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `isdegree` tinyint(4) NOT NULL DEFAULT '0',
+      `isundergraduate` tinyint(4) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_course", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_course", "tfaccount", "varchar(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_instructor` (
+      `line` int(11) unsigned unsigned NOT NULL AUTO_INCREMENT,
+      `teachercode` varchar(45) NOT NULL DEFAULT '',
+      `teachername` varchar(450) NOT NULL DEFAULT '',
+      `department` varchar(45) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `address` varchar(450) NOT NULL DEFAULT '',
+      `telno` varchar(45) NOT NULL DEFAULT '',
+      `callname` varchar(450) NOT NULL DEFAULT '',
+      `deancode` varchar(45) NOT NULL DEFAULT '',
+      `deanname` varchar(450) NOT NULL DEFAULT '',
+      `rank` varchar(45) NOT NULL DEFAULT '',
+      `levels` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (teachercode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_instructor", $qry);
+
+		$qry = "CREATE TABLE `en_modeofpayment` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `code` varchar(45) NOT NULL DEFAULT '',
+      `deductpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `modeofpayment` varchar(450) NOT NULL DEFAULT '',
+      `months` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc3` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc4` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc5` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc6` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc7` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc8` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc9` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc10` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `date1` datetime DEFAULT NULL,
+      `date2` datetime DEFAULT NULL,
+      `date3` datetime DEFAULT NULL,
+      `date4` datetime DEFAULT NULL,
+      `date5` datetime DEFAULT NULL,
+      `date6` datetime DEFAULT NULL,
+      `date7` datetime DEFAULT NULL,
+      `date8` datetime DEFAULT NULL,
+      `date9` datetime DEFAULT NULL,
+      `date10` datetime DEFAULT NULL,
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_modeofpayment", $qry);
+
+		$qry = "CREATE TABLE `en_credentials` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `credentials` varchar(150) NOT NULL DEFAULT '',
+      `amt` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (credentialcode,`acno`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_credentials", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_credentials", "acnoid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_credentials", "feesid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_credentials", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_credentials", "schemeid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_requirements` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `requirements` varchar(45)  NOT NULL DEFAULT '',
+      `studenttype` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_requirements", $qry);
+
+		$qry = "CREATE TABLE `en_fees` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feesdesc` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `vat` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_fees", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_fees", "acnoid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_fees", "scheme", "varchar(50) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_gradecomponent` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcname` varchar(450) NOT NULL DEFAULT '',
+      `gcpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`),
+      INDEX name (gccode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gradecomponent", $qry);
+
+		$qry = "CREATE TABLE `en_gradeequivalent` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `range1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `range2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `equivalent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gradeequivalent", $qry);
+
+		$qry = "CREATE TABLE `en_studentinfo` (
+      `clientid` int(10) unsigned NOT NULL DEFAULT '0',
+      `client` varchar(15) NOT NULL DEFAULT '',
+      `fname` varchar(45) NOT NULL DEFAULT '',
+      `lname` varchar(45) NOT NULL DEFAULT '',
+      `mname` varchar(45) NOT NULL DEFAULT '',
+      `studentid` varchar(45) NOT NULL DEFAULT '',
+      `course` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `major` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(450) NOT NULL DEFAULT '',
+      `isnew` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isold` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `iscrossenrollee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isforeign` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isadddrop` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `islateenrollee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `istransferee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `isdept` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `branch` varchar(45) NOT NULL DEFAULT '',
+      `gender` varchar(45) NOT NULL DEFAULT '',
+      `civilstatus` varchar(45) NOT NULL DEFAULT '',
+      `bplace` varchar(450) NOT NULL DEFAULT '',
+      `studenttype` varchar(45) NOT NULL DEFAULT '',
+      `city` varchar(450) NOT NULL DEFAULT '',
+      `relation` varchar(45) NOT NULL DEFAULT '',
+      `gaddr` varchar(250) NOT NULL DEFAULT '',
+      `batch` varchar(45) NOT NULL DEFAULT '',
+      `nationality` varchar(45) NOT NULL DEFAULT '',
+      `isregular` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isirregular` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isextramural` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `haddr` varchar(450) NOT NULL DEFAULT '',
+      `baddr` varchar(450) NOT NULL DEFAULT '',
+      `guardian` varchar(45) NOT NULL DEFAULT '',
+      `htel` varchar(45) NOT NULL DEFAULT '',
+      `btel` varchar(45) NOT NULL DEFAULT '',
+      `gtel` varchar(45) NOT NULL DEFAULT '',
+      `elementary` varchar(450) NOT NULL DEFAULT '',
+      `highschool` varchar(450) NOT NULL DEFAULT '',
+      `college` varchar(450) NOT NULL DEFAULT '',
+      `postschool` varchar(450) NOT NULL DEFAULT '',
+      `eyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `hyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `cyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `pyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `company` varchar(450) NOT NULL DEFAULT '',
+      PRIMARY KEY (`clientid`),
+      INDEX name (client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_studentinfo", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_studentinfo", "curriculumtrno", "int(11) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_studentinfo", "courseid", "INT(11) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_subject` (
+      `trno` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `isinactive` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `ismajor` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `prereq1` varchar(45) NOT NULL DEFAULT '',
+      `prereq2` varchar(45) NOT NULL DEFAULT '',
+      `prereq3` varchar(45) NOT NULL DEFAULT '',
+      `prereq4` varchar(45) NOT NULL DEFAULT '',
+      `tf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `loadx` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subject", $qry);
+
+		$qry = "CREATE TABLE `en_subjectcurriculum` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (subjectcode,curriculumcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subjectcurriculum", $qry);
+
+		$qry = "CREATE TABLE `en_subjectequivalent` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `subjectcode` varchar(80) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `load` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `subjectmain` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subjectequivalent", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_subjectequivalent", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_cchead` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `docno` varchar(45) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `effectfromdate` datetime DEFAULT NULL,
+      `effecttodate` datetime DEFAULT NULL,
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `doc` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,curriculumcode,coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_cchead", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "createby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "editby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "viewby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "editdate", "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "createdate", "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "viewdate", "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "lockdate", "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "dateid", "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "periodid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "syid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "courseid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "levelid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_cchead", "semid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_ccsubject` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `yearnum` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `pre1` varchar(45) NOT NULL DEFAULT '',
+      `pre2` varchar(45) NOT NULL DEFAULT '',
+      `pre3` varchar(45) NOT NULL DEFAULT '',
+      `pre4` varchar(45) NOT NULL DEFAULT '',
+      `pre5` varchar(45) NOT NULL DEFAULT '',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (curriculumcode,coursecode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_ccsubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "courseid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "semid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "pre1id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "pre2id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "pre3id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "pre4id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "pre5id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "coreqid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_ccsubject", "cline", "INT(11) NOT NULL DEFAULT '0', DROP PRIMARY KEY, ADD PRIMARY KEY USING BTREE(`trno`, `line`, `cline`)", 0);
+
+		$qry = "CREATE TABLE `en_ccyear`
+      (`trno` int(10) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `year` varchar(45) NOT NULL DEFAULT '',
+      `semid` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`, `line`),
+      INDEX name (`year`, `semid`))
+      ENGINE=MyISAM DEFAULT CHARSET=latin1;
+";
+		$this->coreFunctions->sbccreatetable("en_ccyear", $qry);
+
+		$qry = "CREATE TABLE `en_glyear`
+      (`trno` int(10) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `year` varchar(45) NOT NULL DEFAULT '',
+      `semid` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`, `line`),
+      INDEX name (`year`, `semid`))
+      ENGINE=MyISAM DEFAULT CHARSET=latin1;
+";
+		$this->coreFunctions->sbccreatetable("en_glyear", $qry);
+
+		$qry = "CREATE TABLE `en_sohead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2)  NOT NULL DEFAULT '',
+      `DocNo` varchar(20)  NOT NULL DEFAULT '',
+      `CLIENT` varchar(15)  NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime  DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50)  NOT NULL DEFAULT '',
+      `YourRef` varchar(25)  NOT NULL DEFAULT '',
+      `OurRef` varchar(25)  NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50)  NOT NULL DEFAULT '',
+      `ApprovedDate`  datetime DEFAULT NULL,
+      `PrintTime` datetime DEFAULT NULL,
+      `SettleTime` datetime DEFAULT NULL,
+      `coursecode` varchar(45)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45)  NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `others` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `type` varchar(45)  NOT NULL DEFAULT '',
+      `extramural` varchar(45)  NOT NULL DEFAULT '',
+      `majorcode` varchar(45)  NOT NULL DEFAULT '',
+      `majorname` varchar(450)  NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450)  NOT NULL DEFAULT '',
+      `credentials` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `period` varchar(45)  NOT NULL DEFAULT '',
+      `schedcode` varchar(45)  NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45)  NOT NULL DEFAULT '',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deptcode` varchar(45)  NOT NULL DEFAULT '',
+      `sex` varchar(45)  NOT NULL DEFAULT '',
+      `yr` varchar(45)  NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45)  NOT NULL DEFAULT '',
+      `contra` varchar(45)  NOT NULL DEFAULT '',
+      `interestamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallec` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`),
+      INDEX name (DocNo,client,wh)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sohead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "courseid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "semid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "periodid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "deptid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "syid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "levelid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "curriculumtrno", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "deptid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "syid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("glhead", "syid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "periodid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "courseid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "semid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "sectionid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "yr", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "levelid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "deptid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "sotrno", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "assessref", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_socredentials` (
+      `trno` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `line` int(11) NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `camt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,feescode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_socredentials", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_socredentials", "credentialid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_socredentials", "acnoid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_socredentials", "feesid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_socredentials", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_socredentials", "schemeid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glcredentials", "credentialid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glcredentials", "feesid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sodetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6)  NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6)  NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2)  NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sodetail", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "editby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "encodedby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "acnoid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "cur", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "forex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "refx", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "linex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "cur", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "forex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "refx", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "linex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "editby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "encodedby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "clearday", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "clearday", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "isewt", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "isvat", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "ewtcode", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "ewtrate", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gldetail", "pdcline", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "pdcline", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "isewt", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "isvat", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "ewtcode", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sodetail", "ewtrate", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sootherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `barcode` varchar(45) NOT NULL DEFAULT '',
+      `itemname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (barcode,feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sootherfees", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sootherfees", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sootherfees", "acnoid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->execqry("drop table if exists en_sosubjects");
+
+		$qry = "CREATE TABLE `en_sosubject` (
+      `TrNo` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `schedday` varchar(50) NOT NULL DEFAULT '',
+      `schedtime` varchar(50) NOT NULL DEFAULT '',
+      `rooms` varchar(40) NOT NULL DEFAULT '',
+      `instructorcode` varchar(40) NOT NULL DEFAULT '',
+      `units` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `schedref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      `instructorname` varchar(450) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `origtrno` int(11) unsigned NOT NULL DEFAULT '0',
+      `origline` int(11) unsigned NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,instructorcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sosubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "schedstarttime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sosubject", "schedendtime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_sosummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45)  NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45)  NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sosummary", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_sosummary", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sosummary", "schemeid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsummary", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsummary", "schemeid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sjcredentials` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (credentials)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjcredentials", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "credentialid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "acnoid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "feesid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "schemeid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "camt", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjcredentials", "scheme", "varchar(50) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_sjdetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjdetail", $qry);
+
+		$qry = "CREATE TABLE `en_sjhead` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `CLIENT` varchar(15) NOT NULL DEFAULT '',
+      `clientname` varchar(255) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `forex` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Contra` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(15) NOT NULL DEFAULT '',
+      `YourRef` varchar(50) NOT NULL DEFAULT '',
+      `OurRef` varchar(50) NOT NULL DEFAULT '',
+      `tax` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Prepared` varchar(50) NOT NULL DEFAULT '',
+      `Comm` varchar(10) NOT NULL DEFAULT '',
+      `DelBy` varchar(250) NOT NULL DEFAULT '',
+      `DateFrom` datetime DEFAULT NULL,
+      `Charge` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `price` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessp` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `netprice` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `dp` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `bal` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `terms1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `terms2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rfamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `dpamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `pf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rebate` decimal(18,0) NOT NULL DEFAULT '0',
+      `plus` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `interest` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `amt` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `approved` varchar(255) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `majorcode` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(450) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `tuitionfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `others` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `modularfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `credentials` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45) NOT NULL DEFAULT '',
+      `total_balance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `recdate` datetime DEFAULT NULL,
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `totallec` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `reqby` varchar(50) NOT NULL DEFAULT '',
+      `reqdept` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (client,docno,coursecode,curriculumcode,curriculumdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjhead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "periodid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "levelid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "adviserid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "deptid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "section", "varchar(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "sectionid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sjotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `db` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `cr` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjotherfees", $qry);
+
+		$qry = "CREATE TABLE `en_sjsubject` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINEX` int(11) unsigned NOT NULL DEFAULT '0',
+      `REFX` int(10) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `UOM` varchar(15) NOT NULL DEFAULT '',
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `DISC` varchar(40) NOT NULL DEFAULT '',
+      `Rem` varchar(250) NOT NULL DEFAULT '',
+      `ISAmt` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `AMT` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `ISQTY` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `ISS` decimal(19,10) NOT NULL DEFAULT '0.00',
+      `Ext` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Ref` varchar(20) NOT NULL DEFAULT '',
+      `Cost` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Void` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `EncodedDate` datetime DEFAULT NULL,
+      `isChange` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `roomstatusid` int(10) unsigned NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      `origtrno` int(11) unsigned NOT NULL DEFAULT '0',
+      `origline` int(11) unsigned NOT NULL DEFAULT '0',
+      `screfx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `sclinex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,refx,linex,origdocno,screfx,sclinex,origsubjectcode,origtrno,origline)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjsubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "assessref", "varchar(100) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "assessref", "varchar(100) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "units", "decimal(18,2) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "laboratory", "decimal(18,2) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "lecture", "decimal(18,2) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "hours", "decimal(18,2) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "schedday", "varchar(100)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "schedstarttime", "varchar(100)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "schedendtime", "varchar(100)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "schedref", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsubject", "origsubjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "origsubjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjotherfees", "feestype", "varchar(100)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjotherfees", "scheme", "varchar(100)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjotherfees", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjotherfees", "acnoid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjotherfees", "isamt", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sjsummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `linex` int(10) unsigned NOT NULL DEFAULT '0',
+      `refx` int(10) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjsummary", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjsummary", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjsummary", "schemeid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_adhead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `CLIENT` varchar(15) NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `YourRef` varchar(25) NOT NULL DEFAULT '',
+      `OurRef` varchar(25) NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50) NOT NULL DEFAULT '',
+      `ApprovedDate` datetime DEFAULT NULL,
+      `RSNo` bigint(20) NOT NULL DEFAULT '0',
+      `PrintTime` datetime DEFAULT NULL,
+      `SettleTime` datetime DEFAULT NULL,
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `others` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `type` varchar(45) NOT NULL DEFAULT '',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `majorcode` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(60) NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `credentials` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `sotrno` bigint(20) NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `schedcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `sex` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45) NOT NULL DEFAULT '',
+      `contra` varchar(45) NOT NULL DEFAULT '',
+      `droppercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalunitadd` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,client,coursecode,curriculumcode,majorcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adhead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "periodid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "levelid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "deptid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "lockdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "editdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_adsubject` (
+      `TrNo` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `schedday` varchar(50) NOT NULL DEFAULT '',
+      `schedtime` varchar(50) NOT NULL DEFAULT '',
+      `rooms` varchar(40) NOT NULL DEFAULT '',
+      `instructorcode` varchar(40) NOT NULL DEFAULT '',
+      `units` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `schedref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) NOT NULL DEFAULT '0',
+      `linex` int(11) NOT NULL DEFAULT '0',
+      `instructorname` varchar(450) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `origtrno` int(11) NOT NULL DEFAULT '0',
+      `origline` int(11) NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      `isadd` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isdrop` tinyint(5) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,rooms,instructorcode,origtrno,origline,origdocno,origsubjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adsubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "schedstarttime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsubject", "schedendtime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_addetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `ACNO` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_addetail", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "editby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "encodedby", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "acnoid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "cur", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "forex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "refx", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "linex", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "pdcline", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "isewt", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "isvat", "tinyint(4) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "ewtcode", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_addetail", "ewtrate", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_adotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adotherfees", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_adotherfees", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adotherfees", "acnoid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_adcredentials` (
+      `trno` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `line` int(11) NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `camt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,feescode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adcredentials", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_adcredentials", "credentialid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adcredentials", "acnoid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adcredentials", "feesid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adcredentials", "subjectid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adcredentials", "schemeid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_adsummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45)  NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45)  NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adsummary", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_adsummary", "feesid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adsummary", "schemeid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_schead` (
+      `TrNo` int(10) unsigned  NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode,curriculumdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_schead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_schead", "periodid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "adviserid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "periodid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "sectionid", " int(11) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "rem", "varchar(500) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_scsubject` (
+      `trno` int(10) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `instructorcode` varchar(45) NOT NULL DEFAULT '',
+      `instructorname` varchar(45) NOT NULL DEFAULT '',
+      `roomcode` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `schedstarttime` varchar(45) NOT NULL DEFAULT '',
+      `schedendtime` varchar(45) NOT NULL DEFAULT '',
+      `minslot` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `maxslot` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `asqa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `astempqa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `qa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,instructorcode,roomcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_scsubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "alter table en_scsubject modify column schedstarttime  datetime";
+		$this->coreFunctions->execqry($qry);
+		$qry = "alter table en_scsubject modify column schedendtime  datetime";
+		$this->coreFunctions->execqry($qry);
+		$qry = "alter table en_glsubject modify column schedstarttime  datetime";
+		$this->coreFunctions->execqry($qry);
+		$qry = "alter table en_glsubject modify column schedendtime  datetime";
+		$this->coreFunctions->execqry($qry);
+
+		$qry = "CREATE TABLE `en_gehead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `sheddocno` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `room` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `scheddocno` varchar(45) NOT NULL DEFAULT '',
+      `gstrno` bigint(20)  NOT NULL DEFAULT '0',
+      `gsdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode,scheddocno,curriculumdocno,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gehead", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "courseid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "adviserid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "syid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "periodid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "sectionid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "semid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "bldgid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "roomid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "subjectid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gehead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_gegrades` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(450) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `components` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `points` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `gstrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `gsdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (client,gccode,gstrno,gsdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gegrades", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_gegrades", "refx", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gegrades", "linex", " integer NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_glgrades` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(450) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `components` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `points` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `gstrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `gsdocno` varchar(45) NOT NULL DEFAULT ''
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glgrades", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_glgrades", "refx", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glgrades", "linex", " integer NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_gshead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `sheddocno` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `room` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `scheddocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gshead", $qry);
+
+		$qry = "CREATE TABLE `en_gscomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcname` varchar(450) NOT NULL DEFAULT '',
+      `gcpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gscomponent", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_gscomponent", "compid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_gssubcomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `compline` bigint(20)  NOT NULL DEFAULT '0',
+      `linex` int(11)  NOT NULL DEFAULT '0',
+      `component` varchar(45) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode,gcsubcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gssubcomponent", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_gssubcomponent", "compid", "int(10) unsigned NOT NULL DEFAULT '0', DROP PRIMARY KEY, ADD PRIMARY KEY USING BTREE(`trno`, `line`, `compid`)", 0);
+
+		$qry = "CREATE TABLE `en_sgshead` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `docno` varchar(45) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `doc` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(450) NOT NULL DEFAULT '',
+      `dateid` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,curriculumcode,coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sgshead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "levelid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "yrid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "clientid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_sgssubject` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `yearnum` varchar(45)  NOT NULL DEFAULT '0',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `pre1` varchar(45) NOT NULL DEFAULT '',
+      `pre2` varchar(45) NOT NULL DEFAULT '',
+      `pre3` varchar(45) NOT NULL DEFAULT '',
+      `pre4` varchar(45) NOT NULL DEFAULT '',
+      `pre5` varchar(45) NOT NULL DEFAULT '',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      `grade` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `equivalent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (curriculumcode,coursecode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sgssubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_sgssubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgssubject", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "select  count(trno) as value  from en_athead";
+		if ($this->coreFunctions->datareader($qry) == 0) {
+			$this->coreFunctions->execqry("drop table if exists en_athead");
+		}
+
+		$qry = "CREATE TABLE `en_athead` (
+      `trno` int(10) unsigned NOT NULL DEFAULT '0',
+      `doc` varchar(2) NOT NULL DEFAULT '',
+      `docno` varchar(20) NOT NULL DEFAULT '',
+      `dateid` datetime DEFAULT NULL,
+      `periodid` int(10) unsigned NOT NULL DEFAULT '0',
+      `syid` int(10) unsigned NOT NULL DEFAULT '0',
+      `createby` varchar(20) NOT NULL DEFAULT '',
+      `createdate` datetime DEFAULT NULL,
+      `editby` varchar(20) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      `viewby` varchar(20) NOT NULL DEFAULT '',
+      `viewdate` datetime DEFAULT NULL,
+      `lockuser` varchar(20) NOT NULL DEFAULT '',
+      `lockdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`),
+      INDEX name (trno,docno,periodid,syid)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_athead", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_athead", "periodid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_athead", "schedday", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "schedtime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "sectionid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "adviserid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "scheddocno", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "curriculumcode", "varchar(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_athead", "curriculumdocno", "varchar(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `en_atfees` (
+        `trno` bigint(20) NOT NULL DEFAULT '0',
+        `line` int(11) NOT NULL DEFAULT '0',
+        `subjectid` int(11) NOT NULL DEFAULT '0',
+        `feesid` int(11) NOT NULL DEFAULT '0',
+        `schemeid` int(11) NOT NULL DEFAULT '0',
+        `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `isnew` tinyint(4) NOT NULL DEFAULT '0',
+        `isold` tinyint(4) NOT NULL DEFAULT '0',
+        `isforeign` tinyint(4) NOT NULL DEFAULT '0',
+        `isadddrop` tinyint(4) NOT NULL DEFAULT '0',
+        `iscrossenrollee` tinyint(4) NOT NULL DEFAULT '0',
+        `islateenrollee` tinyint(4) NOT NULL DEFAULT '0',
+        `istransferee` tinyint(4) NOT NULL DEFAULT '0',
+        `periodid` int(11) NOT NULL DEFAULT '0',
+        `levelid` int(11) NOT NULL DEFAULT '0',
+        `departid` int(11) NOT NULL DEFAULT '0',
+        `courseid` int(11) NOT NULL DEFAULT '0',
+        `sectionid` int(11) NOT NULL DEFAULT '0',
+        `sex` varchar(45) NOT NULL DEFAULT '',
+        `rooms` varchar(45) NOT NULL DEFAULT '',
+        `yrid` int(11) NOT NULL DEFAULT '0',
+        `semid` int(11) NOT NULL DEFAULT '0',
+        `section` varchar(45) NOT NULL DEFAULT '',
+          PRIMARY KEY (`trno`,`line`),
+          INDEX name (trno,line,subjectid,feesid,schemeid,periodid,levelid,departid,courseid,sectionid,yrid,semid)
+          ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_atfees", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_atfees", "section", "varchar(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_atfees", "yr", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_glfees` (
+      `trno` bigint(20) NOT NULL DEFAULT '0',
+      `line` int(11) NOT NULL DEFAULT '0',
+      `subjectid` int(11) NOT NULL DEFAULT '0',
+      `feesid` int(11) NOT NULL DEFAULT '0',
+      `schemeid` int(11) NOT NULL DEFAULT '0',
+      `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `isnew` tinyint(4) NOT NULL DEFAULT '0',
+      `isold` tinyint(4) NOT NULL DEFAULT '0',
+      `isforeign` tinyint(4) NOT NULL DEFAULT '0',
+      `isadddrop` tinyint(4) NOT NULL DEFAULT '0',
+      `iscrossenrollee` tinyint(4) NOT NULL DEFAULT '0',
+      `islateenrollee` tinyint(4) NOT NULL DEFAULT '0',
+      `istransferee` tinyint(4) NOT NULL DEFAULT '0',
+      `periodid` int(11) NOT NULL DEFAULT '0',
+      `levelid` int(11) NOT NULL DEFAULT '0',
+      `departid` int(11) NOT NULL DEFAULT '0',
+      `courseid` int(11) NOT NULL DEFAULT '0',
+      `sectionid` int(11) NOT NULL DEFAULT '0',
+      `sex` varchar(45) NOT NULL DEFAULT '',
+      `rooms` varchar(45) NOT NULL DEFAULT '',
+      `yrid` int(11) NOT NULL DEFAULT '0',
+      `semid` int(11) NOT NULL DEFAULT '0',
+      `section` varchar(45) NOT NULL DEFAULT '',
+        PRIMARY KEY (`trno`,`line`),
+        INDEX name (trno,line,subjectid,feesid,schemeid,periodid,levelid,departid,courseid,sectionid,yrid,semid)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glfees", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_glfees", "section", "varchar(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glfees", "yr", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_atstudents` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0.00',
+      `line` int(10) unsigned NOT NULL DEFAULT '0.00',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(45) NOT NULL DEFAULT '',
+      `atdate` datetime DEFAULT NULL,
+      `status` varchar(500) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_atstudents", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_atstudents", "clientid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_glstudents` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0.00',
+      `line` int(10) unsigned NOT NULL DEFAULT '0.00',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(45) NOT NULL DEFAULT '',
+      `atdate` datetime DEFAULT NULL,
+      `status` varchar(500) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glstudents", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_glstudents", "clientid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		//GL TABLES
+		$qry = "CREATE TABLE `en_glhead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2)  NOT NULL DEFAULT '',
+      `DocNo` varchar(20)  NOT NULL DEFAULT '',
+      `CLIENTID` varchar(15)  NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50)  NOT NULL DEFAULT '',
+      `YourRef` varchar(25)  NOT NULL DEFAULT '',
+      `OurRef` varchar(25)  NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50)  NOT NULL DEFAULT '',
+      `ApprovedDate` datetime DEFAULT NULL,
+      `PrintTime` datetime DEFAULT NULL,
+      `SettleTime` datetime DEFAULT NULL,
+      `project` varchar(45)  NOT NULL DEFAULT '',
+      `subproject` varchar(45)  NOT NULL DEFAULT '',
+      `blklot` varchar(45)  NOT NULL DEFAULT '',
+      `coursecode` varchar(45)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45)  NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `others` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `type` varchar(45)  NOT NULL DEFAULT '',
+      `extramural` varchar(45)  NOT NULL DEFAULT '',
+      `majorcode` varchar(45)  NOT NULL DEFAULT '',
+      `majorname` varchar(450)  NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450)  NOT NULL DEFAULT '',
+      `credentials` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `period` varchar(45)  NOT NULL DEFAULT '',
+      `schedcode` varchar(45)  NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45)  NOT NULL DEFAULT '',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deptcode` varchar(45)  NOT NULL DEFAULT '',
+      `sex` varchar(45)  NOT NULL DEFAULT '',
+      `yr` varchar(45)  NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45)  NOT NULL DEFAULT '',
+      `contra` varchar(45)  NOT NULL DEFAULT '',
+      `interestamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallec` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`),
+      INDEX name (DocNo,clientid,wh)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glhead", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "periodid", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "syid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "adviserid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "levelid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "curriculumtrno", "int(11) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_glcredentials` (
+      `trno` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `line` int(11) NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `acnoid` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `camt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acnoid,feescode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glcredentials", $qry);
+
+		$qry = "CREATE TABLE `en_gldetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `acnoid` varchar(15) NOT NULL DEFAULT '',
+      `clientid` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) unsigned NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) unsigned NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acnoid,clientid)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gldetail", $qry);
+
+		$qry = "CREATE TABLE `en_glotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `barcode` varchar(45) NOT NULL DEFAULT '',
+      `itemname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (barcode,feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glotherfees", $qry);
+
+		$qry = "CREATE TABLE `en_glsubject` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINEX` int(11)  NOT NULL DEFAULT '0',
+      `REFX` int(10) unsigned  NOT NULL DEFAULT '0',
+      `Rem` varchar(250)  NOT NULL DEFAULT '',
+      `ISAmt` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `AMT` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `ISQTY` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `ISS` decimal(19,10)  NOT NULL DEFAULT '0.00',
+      `Ext` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `Ref` varchar(20)  NOT NULL DEFAULT '',
+      `Cost` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `Void` tinyint(4)  NOT NULL DEFAULT '0',
+      `Commission` decimal(19,6)  NOT NULL DEFAULT '0.00',
+      `Comm` varchar(50)  NOT NULL DEFAULT '',
+      `btn` varchar(10)  NOT NULL DEFAULT '',
+      `SR` varchar(50)  NOT NULL DEFAULT '',
+      `Serial` varchar(50)  NOT NULL DEFAULT '',
+      `EncodedDate` datetime,
+      `DRA` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `isChange` tinyint(4)  NOT NULL DEFAULT '0',
+      `SubCode` varchar(50)  NOT NULL DEFAULT '',
+      `Loc` varchar(45)  NOT NULL DEFAULT '',
+      `DRRefx` int(10) unsigned  NOT NULL DEFAULT '0',
+      `DRLinex` int(10) unsigned  NOT NULL DEFAULT '0',
+      `project` varchar(45)  NOT NULL DEFAULT '',
+      `subproject` varchar(45)  NOT NULL DEFAULT '',
+      `blklot` varchar(45)  NOT NULL DEFAULT '',
+      `roomstatusid` int(10) unsigned  NOT NULL DEFAULT '0',
+      `subjectcode` varchar(45)  NOT NULL DEFAULT '',
+      `subjectname` varchar(2000)  NOT NULL DEFAULT '',
+      `units` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `curriculumcode` varchar(45)  NOT NULL DEFAULT '',
+      `coursecode` varchar(45)  NOT NULL DEFAULT '',
+      `terms` varchar(45)  NOT NULL DEFAULT '',
+      `yearnum` varchar(45)  NOT NULL DEFAULT '',
+      `pre1` varchar(45)  NOT NULL DEFAULT '',
+      `pre2` varchar(45)  NOT NULL DEFAULT '',
+      `pre3` varchar(45)  NOT NULL DEFAULT '',
+      `pre4` varchar(45)  NOT NULL DEFAULT '',
+      `laboratory` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `lecture` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `pre5` varchar(45)  NOT NULL DEFAULT '',
+      `instructorcode` varchar(45)  NOT NULL DEFAULT '',
+      `instructorname` varchar(450)  NOT NULL DEFAULT '',
+      `roomcode` varchar(45)  NOT NULL DEFAULT '',
+      `schedday` varchar(45)  NOT NULL DEFAULT '',
+      `schedtime` varchar(45)  NOT NULL DEFAULT '',
+      `schedstarttime` varchar(45)  NOT NULL DEFAULT '',
+      `schedendtime` varchar(45)  NOT NULL DEFAULT '',
+      `minslot` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `maxslot` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `asqa` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `astempqa` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `qa` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `origdocno` varchar(45)  NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45)  NOT NULL DEFAULT '',
+      `origtrno` int(11)  NOT NULL DEFAULT '0',
+      `origline` int(11)  NOT NULL DEFAULT '0',
+      `rooms` varchar(45)  NOT NULL DEFAULT '',
+      `schedref` varchar(45)  NOT NULL DEFAULT '',
+      `coreq` varchar(45)  NOT NULL DEFAULT '',
+      `scheddocno` varchar(45)  NOT NULL DEFAULT '',
+      `screfx` bigint(20)  NOT NULL DEFAULT '0',
+      `sclinex` int(11)  NOT NULL DEFAULT '0',
+      `isadd` tinyint(4)  NOT NULL DEFAULT '0',
+      `isdrop` tinyint(4)  NOT NULL DEFAULT '0',
+      `adqa` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `grade` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `equivalent` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,instructorcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glsubject", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "subjectid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "instructorid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "roomid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "bldgid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "courseid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "semid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "pre1id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "pre2id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "pre3id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "pre4id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "pre5id", "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "coreqid", "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "cline", "INT(11) NOT NULL DEFAULT '0', DROP PRIMARY KEY, ADD PRIMARY KEY USING BTREE(`trno`, `line`, `cline`)", 1);
+
+		$qry = "CREATE TABLE `en_glsummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glsummary", $qry);
+
+		$qry = "CREATE TABLE `en_studentcredentials` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `credentialid` int(10)  NOT NULL DEFAULT '0',
+      `amt` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `clientid` int(10) unsigned NOT NULL DEFAULT '0',
+      `percentdisc` decimal(18,2)   NOT NULL DEFAULT '0.00',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (line)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_studentcredentials", $qry);
+
+		$qry = "alter table en_instructor modify column line  int(10) NOT NULL AUTO_INCREMENT'";
+		$this->coreFunctions->sbccreatetable("en_instructor", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "effectfromdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "effecttodate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "lockdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "editdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_schead", "editdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "adviserid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "courseid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "majorid", " integer  NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glcredentials", "subjectid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glcredentials", "credentialid", " integer  NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glotherfees", "feesid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glotherfees", "acnoid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glotherfees", "acnoname", " varchar(600)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sootherfees", "acno", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sootherfees", "acnoname", " varchar(600)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "subjectid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "courseid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "instructorid", " integer  NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "EncodedDate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "EncodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glsubject", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_scsubject", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "lockDate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_schead", "editdate", "datetime", 0);
+
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'advisername');
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'advisercode');
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'coursecode');
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'coursename');
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'majorcode');
+		$this->coreFunctions->sbcdropcolumn('en_glhead', 'majorname');
+
+		$this->coreFunctions->sbcdropcolumn('en_glcredentials', 'subjectcode');
+		$this->coreFunctions->sbcdropcolumn('en_glcredentials', 'subjectname');
+		$this->coreFunctions->sbcdropcolumn('en_glcredentials', 'credentialcode');
+
+		$this->coreFunctions->sbcdropcolumn('en_glotherfees', 'feescode');
+		$this->coreFunctions->sbcdropcolumn('en_glotherfees', 'barcode');
+		$this->coreFunctions->sbcdropcolumn('en_glotherfees', 'itemname');
+
+		$this->coreFunctions->sbcdropcolumn('en_sootherfees', 'barcode');
+		$this->coreFunctions->sbcdropcolumn('en_sootherfees', 'itemname');
+
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'subjectcode');
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'subjectname');
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'coursecode');
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'coursename');
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'intructorcode');
+		$this->coreFunctions->sbcdropcolumn('en_glsubject', 'intructorname');
+
+		$this->coreFunctions->sbcaddcolumn("en_instructor", "instructorid", " integer  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("client", "isinstructor", " tinyint(1)  NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("client", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sohead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_adhead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "createdate", " datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "createby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "editdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "editby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "viewdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sjhead", "viewby", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "encodeddate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "encodedBy", " varchar(80)  NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_sgshead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "courseid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "adviserid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "syid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "periodid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "sectionid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "semid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "bldgid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "roomid", " integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "subjectid", " integer NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_gshead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "scheddocno", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "subjectid", "integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "sectionid", "integer NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "schedday", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "schedtime", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "lockdate", "datetime", 0);
+		$this->coreFunctions->sbcaddcolumn("en_glhead", "lockuser", "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE en_bldg (
+      line int(11) unsigned NOT NULL AUTO_INCREMENT,
+      bldgcode varchar(45)  NOT NULL DEFAULT '',
+      bldgname varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (line),
+      INDEX name (bldgcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("en_bldg", $qry);
+
+		$qry = "CREATE TABLE `en_glcomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcname` varchar(450) NOT NULL DEFAULT '',
+      `gcpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("en_glcomponent", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_glcomponent", "compid", "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `en_glsubcomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `compline` bigint(20)  NOT NULL DEFAULT '0',
+      `linex` int(11)  NOT NULL DEFAULT '0',
+      `component` varchar(45) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode,gcsubcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("en_glsubcomponent", $qry);
+		$this->coreFunctions->sbcaddcolumn("en_glsubcomponent", "compid", "int(10) unsigned NOT NULL DEFAULT '0', DROP PRIMARY KEY, ADD PRIMARY KEY USING BTREE(`trno`, `line`, `compid`)", 0);
+	}
+}// end class

@@ -1,0 +1,27 @@
+select sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
+    concat(itemname,'\nBrand: ',ifnull(brand.brand_desc,'')) as itemname,item.uom,uom1.factor,round(item.amt,2) as amt,brand,ifnull(cls.cl_name,'') as class,body,
+    ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
+    round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color , item.partno,item.moq,item.mmoq,p.name as pname 
+    from item
+    left join item_class as cls on cls.cl_id=item.class
+    left join uom as uom1 on item.itemid = uom1.itemid and uom1.uom = item.uom
+    left join stockgrp_masterfile as grp on grp.stockgrp_id = item.groupid
+    left join model_masterfile as model on model.model_id = item.model
+    left join part_masterfile as part on part.part_id = item.part
+    left join frontend_ebrands as brand on brand.brandid = item.brand
+    left join itemcategory as icat on icat.line=item.category
+     left join projectmasterfile as p on p.line = item.projectid    where item.isinactive = 0   and (
+                                  item.itemname LIKE '%%' or
+                                  item.barcode LIKE '%%' or
+                                  brand.brand_desc LIKE '%%' or
+                                  model.model_name LIKE '%%' or
+                                  part.part_name LIKE '%%' or
+                                  icat.name LIKE '%%' or
+                                  grp.stockgrp_name LIKE '%%' or
+                                  cls.cl_name LIKE '%%' or
+                                  item.body LIKE '%%' or
+                                  item.sizeid LIKE '%%' or 
+                                  item.subcode LIKE '%%' or
+                                  item.partno LIKE '%%' or
+                                  item.color LIKE '%%' or
+                                  item.sizeid LIKE '%%')  order by item.itemname asc 

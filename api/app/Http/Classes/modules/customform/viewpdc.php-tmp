@@ -1,0 +1,110 @@
+<?php
+namespace App\Http\Classes\modules\customform;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class viewpdc {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'POSTDATED CHECKS';
+	public $gridname   = 'customformacctg';
+	private $companysetup;
+	private $coreFunctions;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $issearchshow = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['checkdate', 'docno', 'checkno', 'db', 'cr', 'rem']
+			]
+		];
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+		$obj[0][$this->gridname]['totalfield'] = ['db', 'cr'];
+
+		// 3 = db
+		$obj[0][$this->gridname]['columns'][3]['align'] = 'right';
+		// 4 = cr
+		$obj[0][$this->gridname]['columns'][4]['align'] = 'right';
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['dateid'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'dateid.readonly', false);
+
+		$fields = ['refresh'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'refresh.action', 'pdc');
+
+		$fields = ['db'];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = ['cr'];
+		$col4   = $this->fieldClass->create($fields);
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+	}
+
+	public function paramsdata($config) {
+		return $this->coreFunctions->opentable('select adddate(left(now(),10),-360) as dateid, 0.0 as db, 0.0 as cr');
+	}
+
+	public function data() {
+		return [];
+	}
+
+	public function loaddata($config) {
+		$clientid = $config['params']['clientid'];
+		$center   = $config['params']['center'];
+		$date     = $config['params']['dataparams']['dateid'];
+
+		$qry = "select trno, doc, docno, checkno, checkdate,
+        FORMAT(ifnull(db,0),2) as db,
+        FORMAT(ifnull(cr,0),2) as cr,ifnull(rem,'') as rem from (
+        select glhead.doc,coa.alias,glhead.trno, glhead.docno, gldetail.checkno,
+        left(gldetail.postdate,10) as checkdate, gldetail.db,
+        gldetail.cr,crledger.depodate,case when crledger.depodate = null then concat(`gldetail`.`rem`) else concat(`gldetail`.`rem`,'  ',`deposit`.`docno`) end as rem,
+        client.clientid from glhead
+        left join gldetail on gldetail.trno=glhead.trno
+        left join crledger on crledger.trno=gldetail.trno and crledger.line = gldetail.line
+        left join client on client.clientid = gldetail.clientid
+        left join coa on coa.acnoid=gldetail.acnoid
+        left join deposit on deposit.refx = crledger.trno and deposit.linex = crledger.line
+        where  glhead.doc='CR' and left(coa.alias,2)='cr' and client.clientid=$clientid and left(gldetail.postdate,10)>='$date'
+        union all
+        select lahead.doc,coa.alias,lahead.trno, lahead.docno, ladetail.checkno, ladetail.postdate, FORMAT(ifnull(ladetail.db,0),2) as db,
+        FORMAT(ifnull(ladetail.cr,0),2) as cr,null as depodate,ladetail.rem as rem,client.clientid
+        from lahead left join ladetail on ladetail.trno=lahead.trno left join client on client.client = ladetail.client
+        left join coa on coa.acno=ladetail.acno where lahead.doc='CR' and  client.clientid=$clientid and left(coa.alias,2)='cr' and ladetail.refx=0 and ladetail.linex=0
+        and left(ladetail.postdate,10)>='$date'
+        ) as customerpdc ";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
+	}
+
+}//end class

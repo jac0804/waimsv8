@@ -1,0 +1,551 @@
+<?php
+
+namespace App\Http\Classes\modules\actionlisting;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+
+class canvassapproval {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'CANVASS SHEET APPROVAL';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $table    = 'hcdstock';
+	public $tablelogs = 'transnum_log';
+	private $othersClass;
+	private $logger;
+	public $style = 'width:100%;';
+
+	private $fields      = ['terms', 'days'];
+	public $showclosebtn = false;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->logger        = new Logger;
+	}
+
+	public function getAttrib() {
+		$attrib = array(
+			'load' => 1447,
+			'save' => 1447,
+			'view' => 1447
+		);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$systemtype = $this->companysetup->getsystemtype($config['params']);
+
+		$fields = ['sortby', 'refresh'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set(
+			$col1,
+			'sortby.options',
+			array(
+				['label' => '', 'value' => ''],
+				['label' => 'Deadline', 'value' => 'deadline'],
+				['label' => 'Category', 'value' => 'category'],
+				['label' => 'Department', 'value' => 'department']
+			)
+		);
+
+		data_set($col1, "refresh.type", "actionbtn");
+		$fields = [];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields        = [];
+		$col3          = $this->fieldClass->create($fields);
+		$gridheadinput = ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
+
+		$action     = 0;
+		$otapproved = 1;
+		$ref        = 2;
+		$barcode    = 3;
+		$itemname   = 4;
+		$itemdesc   = 5;
+		$specs      = 6;
+		$deadline   = 7;
+
+		$tab = [
+			$this->gridname  => [
+				'gridcolumns'   => ['action', 'otapproved', 'ref', 'barcode', 'itemname', 'itemdesc', 'specs', 'deadline'],
+				'gridheadinput' => $gridheadinput,
+			]
+		];
+
+		$stockbuttons = ['approvedcanvass'];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// action
+		$obj[0][$this->gridname]['columns'][$action]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
+
+		$obj[0][$this->gridname]['columns'][$ref]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$ref]['type']      = "input";
+		$obj[0][$this->gridname]['columns'][$barcode]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$itemname]['label'] = "Item name";
+		$obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+
+		$obj[0][$this->gridname]['columns'][$itemname]['type'] = "input";
+
+		if ($systemtype == 'ATI') {
+			$obj[0][$this->gridname]['columns'][$itemdesc]['label'] = "Item name (Requestor)";
+			$obj[0][$this->gridname]['columns'][$itemdesc]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+
+			$obj[0][$this->gridname]['columns'][$itemdesc]['type'] = "input";
+			$obj[0][$this->gridname]['columns'][$specs]['type']    = "input";
+
+			$obj[0][$this->gridname]['columns'][$deadline]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+			$obj[0][$this->gridname]['columns'][$deadline]['type']     = "input";
+			$obj[0][$this->gridname]['columns'][$deadline]['readonly'] = true;
+
+			$obj[0][$this->gridname]['columns'][$barcode]['readonly'] = true;
+
+			// $obj[0][$this->gridname]['columns'][$barcode]['type'] = "coldel";
+			// $obj[0][$this->gridname]['columns'][$itemname]['type'] = "coldel";
+			$obj[0][$this->gridname]['columns'][$itemname]['label'] = "Item name (Stockcard)";
+
+			$obj[0][$this->gridname]['columns'][$otapproved]['label'] = "Select";
+			$obj[0][$this->gridname]['columns'][$otapproved]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
+
+		} else {
+			$obj[0][$this->gridname]['columns'][$otapproved]['type'] = "coldel";
+			$obj[0][$this->gridname]['columns'][$itemdesc]['type']   = "coldel";
+			$obj[0][$this->gridname]['columns'][$specs]['type']      = "coldel";
+		}
+
+		$obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$systemtype = $this->companysetup->getsystemtype($config['params']);
+
+		$tbuttons = [];
+		if ($systemtype == 'ATI') {
+			$tbuttons = ['saveallentry', 'downloadexcel', 'uploadexcel'];
+		}
+		$obj = $this->tabClass->createtabbutton($tbuttons);
+		if ($systemtype == 'ATI') {
+			$obj[0]['label']       = 'Select ALL';
+			$obj[0]['lookupclass'] = 'loaddata';
+		}
+		return $obj;
+	}
+
+	public function add($config) {
+		$data            = [];
+		$data['line']    = 0;
+		$data['terms']   = '';
+		$data['days']    = 0;
+		$data['bgcolor'] = 'bg-blue-2';
+		return $data;
+	}
+
+	public function saveallentry($config) {
+		// $data = $this->coreFunctions->opentable($this->selectqry($config, 'true'));
+
+		foreach ($config['params']['data'] as $key => $value) {
+			$config['params']['data'][$key]['otapproved'] = 'true';
+		}
+
+		$gridheaddata =
+		$this->gridheaddata($config);
+		//isset($config['params']['gridheaddata']) ? $config['params']['gridheaddata'] : [];
+		//
+
+		return ['status' => true, 'msg' => '', 'action' => 'load', 'data' => $config['params']['data'], 'gridheaddata' => $gridheaddata];
+	}
+
+	private function selectqry($config, $select = 'false') {
+		$systemtype = $this->companysetup->getsystemtype($config['params']);
+
+		$addedfields    = '';
+		$addedfieldsgrp = '';
+		$addedleftjoin  = '';
+		$addedorderby   = '';
+
+		switch ($systemtype) {
+			case "ATI":
+				$addedfields    = ", info.itemdesc, info.specs, stock.reqtrno, stock.reqline, date(info.deadline) as deadline, '".$select."' as otapproved, item.itemname ";
+				$addedfieldsgrp = ', info.itemdesc, info.specs, stock.reqtrno, stock.reqline, info.deadline, item.itemname';
+				$addedleftjoin  = ' left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline ';
+				$addedorderby   = ', info.itemdesc, info.specs, item.itemname';
+				break;
+			default:
+				$addedfields    = ', item.barcode,item.itemname ';
+				$addedfieldsgrp = ', item.barcode,item.itemname ';
+				$addedorderby   = ', item.barcode,item.itemname';
+				break;
+		}
+
+		$qry = "select stock.ref,'' as bgcolor ".$addedfields."
+    from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+    left join item on item.itemid=stock.itemid ".$addedleftjoin."
+    where stock.void=0 and stock.status=0 and stock.reqtrno<>0 group by stock.ref".$addedfieldsgrp." order by stock.ref".$addedorderby;
+		return $qry;
+	}
+
+	public function save($config) {
+		$data = [];
+		$row  = $config['params']['row'];
+		foreach ($this->fields as $key => $value) {
+			$data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+		}
+		if ($row['line'] == 0) {
+			$line = $this->coreFunctions->insertGetId($this->table, $data);
+			if ($line != 0) {
+				$returnrow = $this->loaddataperrecord($line, $config);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		} else {
+			if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+				$returnrow = $this->loaddataperrecord($row['line'], $config);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		}
+	}//end function
+
+	public function delete($config) {
+		$row = $config['params']['row'];
+		$qry = "delete from ".$this->table." where line=?";
+		$this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
+		return ['status' => true, 'msg' => 'Successfully deleted.'];
+	}
+
+	private function loaddataperrecord($line, $config) {
+		$select = $this->selectqry($config);
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where line=?";
+		$data   = $this->coreFunctions->opentable($qry, [$line]);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		$qry  = $this->selectqry($config);
+		$data = $this->coreFunctions->opentable($qry);
+
+		return $data;
+	}
+
+	public function gridheaddata($config) {
+		$sortby = isset($config['params']['gridheaddata']['sortby'])?$config['params']['gridheaddata']['sortby']:'';
+
+		// if (isset($config['params']['gridheaddata']['sortby']['label'])) {
+		//   $sortby = $config['params']['gridheaddata']['sortby']['label'];
+		// } else {
+		//   if (isset($config['params']['gridheaddata']['sortby'])) {
+		//     $sortby = $config['params']['gridheaddata']['sortby'];
+		//   }
+		// }
+
+		return $this->coreFunctions->opentable("select '".$sortby."' as sortby");
+	}
+
+	public function loadheaddata($config) {
+	}
+
+	public function tableentrystatus($config) {
+
+		$supplier = $this->coreFunctions->opentable("select head.client, head.clientname
+        from hcdhead as head left join hcdstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid
+        where stock.status=0 group by head.client, head.clientname order by head.clientname, head.client");
+
+		$data = [];
+		$col  = [
+			'REF'           => '',
+			'CODE'          => '',
+			'PRODUCT TYPE'  => '',
+			'QTY'           => '',
+			'UOM'           => '',
+			'ITEM'          => '',
+			'SPECIFICATION' => '',
+			'BRAND'         => '',
+			'DESCRIPTION'   => ''
+		];
+
+		$items = [];
+
+		foreach ($config['params']['data'] as $key => $value) {
+			if ($value['otapproved'] == 'true') {
+				$qry = "select ifnull(stock.ref,'') as ref,ifnull(info.itemdesc,'') as itemdesc,
+        stock.reqtrno, stock.reqline, round(ifnull(req.rrqty,0)) as reqqty, info.specs,info.unit,stock.uom,ifnull(b.brand_desc,'') as brand, ifnull(item.barcode,'') as barcode
+        from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+        left join item on item.itemid=stock.itemid left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+        left join hprstock as req on req.trno=info.trno and req.line=info.line left join frontend_ebrands as b on b.brandid=item.brand
+        where stock.status=0 and stock.ismanual=0 and req.trno=".$value['reqtrno']." and req.line=".$value['reqline']." group by stock.ref,info.itemdesc, stock.reqtrno, stock.reqline, req.rrqty,info.specs,info.unit,stock.uom,b.brand_desc,item.barcode
+        order by stock.ref,info.itemdesc";
+				$itemdata = $this->coreFunctions->opentable($qry);
+				array_push($items, $itemdata[0]);
+			}
+		}
+
+		// $items = $this->coreFunctions->opentable("select ifnull(stock.ref,'') as ref,ifnull(info.itemdesc,'') as itemdesc,
+		//     stock.reqtrno, stock.reqline, round(ifnull(req.rrqty,0)) as reqqty, round(stock.rrqty) as cvqty,info.specs,info.unit,stock.uom,ifnull(b.brand_desc,'') as brand,stock.ismanual
+		//     from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+		//     left join item on item.itemid=stock.itemid left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+		//     left join hprstock as req on req.trno=info.trno and req.line=info.line left join frontend_ebrands as b on b.brandid=item.brand
+		//     where stock.status=0 group by stock.ref,info.itemdesc, stock.reqtrno, stock.reqline, stock.rrqty, req.rrqty,info.specs,info.unit,stock.uom,b.brand_desc,stock.ismanual
+		//     order by stock.ref,info.itemdesc,stock.ismanual");
+
+		// move to foreach
+		// $items = $this->coreFunctions->opentable("select ifnull(stock.ref,'') as ref,ifnull(info.itemdesc,'') as itemdesc,
+		//     stock.reqtrno, stock.reqline, round(ifnull(req.rrqty,0)) as reqqty, info.specs,info.unit,stock.uom,ifnull(b.brand_desc,'') as brand, ifnull(item.barcode,'') as barcode
+		//     from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+		//     left join item on item.itemid=stock.itemid left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+		//     left join hprstock as req on req.trno=info.trno and req.line=info.line left join frontend_ebrands as b on b.brandid=item.brand
+		//     where stock.status=0 and stock.ismanual=0 group by stock.ref,info.itemdesc, stock.reqtrno, stock.reqline, req.rrqty,info.specs,info.unit,stock.uom,b.brand_desc,item.barcode
+		//     order by stock.ref,info.itemdesc");
+
+		foreach ($items as $key => $value) {
+			$qty = $value->reqqty;
+			$uom = $value->unit;
+			if ($qty == 0) {
+				$qty = $value->cvqty;
+				$uom = $value->uom;
+			}
+
+			$col = [
+				'REF'           => $value->ref,
+				'CODE'          => $value->barcode,
+				'QTY'           => $qty,
+				'UOM'           => $uom,
+				'SPECIFICATION' => $value->specs,
+				'BRAND'         => $value->brand,
+				'DESCRIPTION'   => $value->itemdesc
+			];
+
+			$suppliers = $this->coreFunctions->opentable("select ifnull(stock.ref,'') as ref,ifnull(info.itemdesc,'') as itemdesc,
+          stock.reqtrno, stock.reqline, round(ifnull(req.rrqty,0)) as reqqty, round(stock.rrqty) as cvqty,info.unit,stock.uom,head.docno,head.client,head.clientname,round(stock.rrcost,2) as cvcost,
+          concat(stock.trno,'~',stock.line) as cvref, stock.line as cdline, stock.rem, ifnull(item.barcode,'') as barcode, stock.isprefer
+          from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+          left join item on item.itemid=stock.itemid left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+          left join hprstock as req on req.trno=info.trno and req.line=info.line left join frontend_ebrands as b on b.brandid=item.brand
+          where stock.status=0 and stock.ref=? and stock.reqtrno=? and stock.reqline=? and stock.ismanual=0
+          group by stock.ref,info.itemdesc, stock.reqtrno, stock.reqline, stock.rrqty, req.rrqty,info.unit,stock.uom,head.client, head.docno, head.clientname,stock.rrcost,stock.trno,stock.line,
+          stock.rem, stock.ismanual, item.barcode, stock.isprefer
+          order by stock.ref,info.itemdesc, head.client", [$value->ref, $value->reqtrno, $value->reqline]);
+
+			foreach ($suppliers as $supp => $s) {
+				$col['SUPPLIER~'.$s->client] = $s->clientname;
+				$col['REF~'.$s->client]      = $s->cvref;
+				// $col['DOCNO~' . $s->client] = $s->docno; //. '~' . $s->clientname
+				$col['QTY~'.$s->client]       = $s->cvqty;
+				$col['AMT~'.$s->client]       = $s->cvcost;
+				$col['STATUS~'.$s->client]    = '';
+				$col['REM~'.$s->client]       = '';
+				$col['PREFERRED~'.$s->client] = $s->isprefer?'X':'';
+			}
+
+			array_push($data, $col);
+
+			$suppliers = $this->coreFunctions->opentable("select ifnull(stock.ref,'') as ref,ifnull(info.itemdesc,'') as itemdesc,
+          stock.reqtrno, stock.reqline, round(ifnull(req.rrqty,0)) as reqqty, round(stock.rrqty) as cvqty,info.unit,stock.uom,head.docno,head.client,head.clientname,round(stock.rrcost,2) as cvcost,
+          concat(stock.trno,'~',stock.line) as cvref, stock.line as cdline, stock.rem, ifnull(item.barcode,'') as barcode
+          from hcdhead as head left join hcdstock as stock on stock.trno=head.trno
+          left join item on item.itemid=stock.itemid left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+          left join hprstock as req on req.trno=info.trno and req.line=info.line left join frontend_ebrands as b on b.brandid=item.brand
+          where stock.status=0 and stock.ref=? and stock.reqtrno=? and stock.reqline=? and stock.ismanual=1
+          group by stock.ref,info.itemdesc, stock.reqtrno, stock.reqline, stock.rrqty, req.rrqty,info.unit,stock.uom,head.client, head.docno, head.clientname,stock.rrcost,stock.trno,stock.line, stock.rem,
+          stock.ismanual, item.barcode
+          order by stock.ref,info.itemdesc, head.client", [$value->ref, $value->reqtrno, $value->reqline]);
+
+			if (!empty($suppliers)) {
+				$col = [
+					'REF'           => $value->ref,
+					'QTY'           => $qty,
+					'UOM'           => $uom,
+					'SPECIFICATION' => $value->specs,
+					'BRAND'         => $value->brand,
+					'DESCRIPTION'   => $value->itemdesc
+				];
+
+				foreach ($suppliers as $supp => $s) {
+					$col['SUPPLIER~'.$s->client] = $s->clientname;
+					$col['REF~'.$s->client]      = $s->cvref;
+					// $col['DOCNO~' . $s->client] = $s->docno; //. '~' . $s->clientname
+					$col['QTY~'.$s->client]    = $s->cvqty;
+					$col['AMT~'.$s->client]    = $s->cvcost;
+					$col['STATUS~'.$s->client] = '';
+					$col['REM~'.$s->client]    = $s->rem;
+					$col['CODE']               = $s->barcode;
+				}
+				array_push($data, $col);
+			}
+		}
+
+		return ['status' => true, 'msg' => 'Downloading canvass data...', 'data' => $data, 'name' => 'Canvass'];
+	}
+
+	public function stockstatusposted($config) {
+		switch ($config['params']['action']) {
+			case 'uploadexceltemplate':
+				return $this->uploadcanvass($config);
+				break;
+		}
+	}
+
+	private function uploadcanvass($config) {
+		$status = true;
+		$msg    = '';
+
+		foreach ($config['params']['data'] as $key => $value) {
+
+			$checkmultiapproved = $this->checkmultiapproved($value);
+
+			if ($checkmultiapproved['status']) {
+				// $msg .= "Please approved one canvass sheet only for " . $value['DESCRIPTION'] . ". ";
+				$msg .= $checkmultiapproved['msg']." for ".$value['DESCRIPTION'].". ";
+			} else {
+				$arrcols = array_keys($value);
+				foreach ($arrcols as $arrcol) {
+					$arr = explode("~", $arrcol);
+					if (count($arr) > 1) {
+						if (strtolower($arr[0]) == 'ref') {
+							$supplier = $arr[1];
+							// $cdline = $arr[2];
+
+							$arr_ref = explode("~", $value["REF~".$supplier]);
+
+							if (count($arr_ref) > 1) {
+								$trno = $arr_ref[0];
+								$line = $arr_ref[1];
+
+								$status = 0;
+								$data   = [
+									'approveddate' => $this->othersClass->getCurrentTimeStamp(),
+									'approvedby'   => $config['params']['user'],
+									'editdate'     => $this->othersClass->getCurrentTimeStamp(),
+									'editby'       => $config['params']['user'],
+									'status'       => $status
+								];
+
+								switch ($value["STATUS~".$supplier]) {
+									case 'A':
+										$amt    = $value["AMT~".$supplier];
+										$qty    = $value["QTY~".$supplier];
+										$uom    = $value["UOM"];
+										$status = 1;
+
+										$amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+										$qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+										$itemid = $this->coreFunctions->getfieldvalue("hcdstock", "itemid", "trno=? and line=?", [$trno, $line]);
+										if ($itemid == '') {
+											$itemid = 0;
+										}
+
+										$qry    = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+										$item   = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
+										$factor = 1;
+										if (!empty($item)) {
+											if ($item[0]->factor !== 0 || $item[0]->factor !== '') {
+												$factor = $item[0]->factor;
+											}
+										}
+
+										$computedata    = $this->othersClass->computestock($amt, '', $qty, $factor);
+										$data['rrqty']  = $qty;
+										$data['qty']    = $computedata['qty'];
+										$data['rrcost'] = $amt;
+										$data['cost']   = $computedata['amt'];
+										$data['ext']    = $computedata['ext'];
+										break;
+									case 'R':
+										$status = 2;
+										break;
+								}
+
+								$data['status'] = $status;
+
+								$curstatus = $this->coreFunctions->getfieldvalue("hcdstock", "status", "trno=? and line=?", [$trno, $line]);
+								if (floatval($curstatus) == 0) {
+									// $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+									// $this->coreFunctions->execqry("update hcdstock set status=?, approveddate=?, approvedby=? where trno=? and line=?", "update", [$status, $current_timestamp, $config['params']['user'], $trno, $line]);
+									$this->coreFunctions->sbcupdate("hcdstock", $data, ['trno' => $trno, 'line' => $line]);
+									if ($status == 1) {
+										$this->logger->sbcwritelog($trno, $config, 'STOCK', 'APPROVED item '.$value['DESCRIPTION']);
+									} elseif ($status == 2) {
+										$this->logger->sbcwritelog($trno, $config, 'STOCK', 'REJECTED item '.$value['DESCRIPTION']);
+									}
+								} else {
+									if (floatval($curstatus) == 1) {
+										$msg .= "Canvass for item ".$value['DESCRIPTION']." was already approved. ";
+									} else {
+										$msg .= "Canvass for item ".$value['DESCRIPTION']." was already rejected. ";
+									}
+								}
+							} else {
+								$msg .= "Invalid canvass ref for ".$value['DESCRIPTION'].". ";
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if ($msg == '') {
+			$msg = 'Successfully uploaded';
+		} else {
+			$status = false;
+		}
+
+		return ['status' => $status, 'msg' => $msg];
+	}
+
+	private function checkmultiapproved($value) {
+		$approved = 0;
+		$arrcols  = array_keys($value);
+
+		$reqqty = $value['QTY'];
+		$qty    = 0;
+
+		$this->othersClass->logConsole('RQ qty: '.$reqqty);
+
+		foreach ($arrcols as $arrcol) {
+			$arr = explode("~", $arrcol);
+			if (count($arr) > 1) {
+
+				if (strtolower($arr[0]) == 'ref') {
+					$supplier = $arr[1];
+					// $cdline = $arr[2];
+
+					switch ($value["STATUS~".$supplier]) {
+						case 'A':
+							$approved += 1;
+							$qty += $value["QTY~".$supplier];
+							$this->othersClass->logConsole('CD qty: '.$value["QTY~".$supplier]);
+							break;
+					}
+				}
+			}
+		}
+
+		if ($approved > 1) {
+
+			if ($qty > $reqqty) {
+				// return true;
+				return ['status' => true, 'msg' => "Total approved quantity of ".$qty." is greater than request quantity of ".$reqqty];
+			}
+		}
+
+		return ['status' => false, 'msg' => ''];
+	}
+}//end class

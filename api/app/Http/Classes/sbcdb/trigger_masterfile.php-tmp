@@ -1,0 +1,768 @@
+<?php
+
+namespace App\Http\Classes\sbcdb;
+
+use App\Http\Classes\coreFunctions;
+
+class trigger_masterfile {
+
+	private $coreFunctions;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+	}//end fn
+
+	public function createtriggers_masterfile($config) {
+
+		$this->entrymodel_triggers($config);
+		$this->entrystockgroup_triggers($config);
+		$this->entrybrand_triggers($config);
+		$this->entrycategories_triggers($config);
+		$this->entryproject_triggers($config);
+		$this->entrycompatible_triggers($config);
+		$this->entrydeliverytype_triggers($config);
+		$this->entryitemcategory_triggers($config);
+		$this->entrywhrem_triggers($config);
+		$this->paygroup_triggers($config);
+		$this->empstatusmaster_triggers($config);
+		$this->statchangemaster_triggers($config);
+		$this->skillreqmaster_triggers($config);
+		$this->empreqmaster_triggers($config);
+		$this->preemptest_triggers($config);
+		$this->division_triggers($config);
+		$this->section_triggers($config);
+		$this->annualtax_triggers($config);
+		$this->philhealth_triggers($config);
+		$this->sss_triggers($config);
+		$this->pagibig_triggers($config);
+		$this->tax_triggers($config);
+		$this->holiday_triggers($config);
+		$this->payrollaccounts_triggers($config);
+		$this->leavesetup_triggers($config);
+		$this->rank_triggers($config);
+		$this->entryrole_triggers($config);
+
+		$this->applicant_triggers($config);
+		$this->app_contacts_triggers($config);
+		$this->app_dependents_triggers($config);
+		$this->app_education_triggers($config);
+		$this->app_employment_triggers($config);
+		$this->app_req_triggers($config);
+		$this->app_emptest_triggers($config);
+		// $this->employee_triggers($config);
+		$this->emp_education_triggers($config);
+		$this->emp_employment_triggers($config);
+		$this->emp_contract_triggers($config);
+		$this->emp_rolesetup_triggers($config);
+		$this->earningdeductionsetup_triggers($config);
+		$this->earningdeductionsetup_manual_payment_triggers($config);
+		$this->advancesetup_triggers($config);
+		$this->entryadvancepayment_manual_payment_triggers($config);
+		$this->leaveapplication_triggers($config);
+		$this->obapplication_triggers($config);
+		$this->loanapplicationportal_triggers($config);
+		$this->tmshifts_triggers($config);
+		$this->shiftdetail_triggers($config);
+
+		// CRM
+		$this->salesgroup_triggers($config);
+		$this->seminar_triggers($config);
+		$this->exhibit_triggers($config);
+		$this->checksetup_triggers($config);
+		$this->exchangerate_triggers($config);
+
+	}
+
+	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys) {
+		// delete triggers
+		$triggername = $doc.'_update';
+		$this->coreFunctions->sbcdroptriggers($triggername);
+
+		$str  = '';
+		$doc  = strtoupper($doc);
+		$user = $config['params']['user'];
+
+		if (is_array($data)) {
+			foreach ($data as $key   => $value) {
+				foreach ($value as $col => $value2) {
+
+					if (isset($value2[0]) && $value2[0] == true) {
+
+						$str .= "
+		            if OLD.$col<>NEW.$col then
+		            insert into $table_log(trno,doc,task,dateid,user)
+		            values (OLD.$keys,'$doc',concat('UPDATE : " .strtoupper($key)." at Line : ',OLD.$keys, ' - ',
+		            ifnull((select " .$value2[1]." from ".$value2[2]." WHERE ".$value2[3]." = OLD.$col),''), ' => ',
+		            ifnull((select " .$value2[1]." FROM ".$value2[2]." WHERE ".$value2[3]." = NEW.$col),'')),
+		            NOW(),'$user');
+		            end if;
+";
+					} else {
+
+						$str .= "
+		            if OLD.$col<>NEW.$col then
+		            insert into $table_log(trno,doc,task,dateid,user)
+		            values (OLD.$keys,'$doc',concat('UPDATE : " .strtoupper($key)." at Line : ',OLD.$keys, ' - ',
+		            OLD.$col,' => ',NEW.$col),NOW(),'$user');
+		            end if;
+";
+					}
+				}
+			}// end foreach
+		}// end if
+
+		$qry = "create TRIGGER $triggername AFTER UPDATE on $tablenameFOR EACH ROW
+		        BEGIN
+" .$str."
+		        END";
+
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}// end fn
+
+	// MASTERFILE LOGS
+	private function entrymodel_triggers($config) {
+		$fields = [
+			'Model Code' => ['model_code' => []],
+			'Model Name' => ['model_name' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrymodel', 'model_masterfile', 'masterfile_log', $fields, 'model_id');
+	}
+
+	private function entrystockgroup_triggers($config) {
+		$fields = [
+			'Group Code' => ['stockgrp_code' => []],
+			'Group Name' => ['stockgrp_name' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'stockgrp_masterfile', 'masterfile_log', $fields, 'stockgrp_id', '');
+	}
+
+	private function entrybrand_triggers($config) {
+		$fields = [
+			'Brand Name' => ['brand_desc' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrybrand', 'frontend_ebrands', 'masterfile_log', $fields, 'brandid');
+	}
+
+	private function entrycategories_triggers($config) {
+		$fields = [
+			'Category Name' => ['cat_name' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrycategories', 'category_masterfile', 'masterfile_log', $fields, 'cat_id');
+	}
+
+	private function entryproject_triggers($config) {
+		$fields = [
+			'Code'        => ['code'        => []],
+			'Name'        => ['name'        => []],
+			'Head Office' => ['isho' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entryproject', 'projectmasterfile', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entrycompatible_triggers($config) {
+		$fields = [
+			'brand'          => ['brand'          => []],
+			'model'          => ['model'          => []],
+			'classification' => ['classification' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrycompatible', 'cmodels', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entrycheckerlocation_triggers($config) {
+		$fields = [
+			'Name' => ['name' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrycheckerlocation', 'checkerloc', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entrydeliverytype_triggers($config) {
+		$fields = [
+			'Name' => ['name' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrydeliverytype', 'deliverytype', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entryitemcategory_triggers($config) {
+		$fields = [
+			'Name' => ['name' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entryitemcategory', 'itemcategory', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entrywhrem_triggers($config) {
+		$fields = [
+			'Remarks'               => ['rem'               => []],
+			'For Return/Adjustment' => ['forreturn' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrywhrem', 'whrem', 'masterfile_log', $fields, 'line');
+	}
+
+	private function paygroup_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['paygroup' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'paygroup', 'paygroup', 'masterfile_log', $fields, 'line');
+	}
+
+	private function empstatusmaster_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['empstatus' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'empstatusmaster', 'empstatentry', 'masterfile_log', $fields, 'line');
+	}
+
+	private function statchangemaster_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['stat' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'statchangemaster', 'statchange', 'masterfile_log', $fields, 'line');
+	}
+
+	private function skillreqmaster_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['skill' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'skillreqmaster', 'skillrequire', 'masterfile_log', $fields, 'line');
+	}
+
+	private function empreqmaster_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['req' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'empreqmaster', 'emprequire', 'masterfile_log', $fields, 'line');
+	}
+
+	private function preemptest_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['test' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'preemptest', 'preemp', 'masterfile_log', $fields, 'line');
+	}
+
+	private function division_triggers($config) {
+		$fields = [
+			'Code' => ['divcode' => []],
+			'Name' => ['divname' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'division', 'division', 'masterfile_log', $fields, 'divid');
+	}
+
+	private function rank_triggers($config) {
+		$fields = [
+			'Code' => ['code' => []],
+			'Name' => ['rank' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entryrank', 'rank', 'masterfile_log', $fields, 'line');
+	}
+
+	private function section_triggers($config) {
+		$fields = [
+			'Code' => ['sectcode' => []],
+			'Name' => ['sectname' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'section', 'section', 'masterfile_log', $fields, 'sectid');
+	}
+
+	private function annualtax_triggers($config) {
+		$fields = [
+			'bracket'    => ['bracket'    => []],
+			'Amt'        => ['amt'        => []],
+			'Percentage' => ['percentage' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'annualtax', 'annualtax', 'masterfile_log', $fields, 'line');
+	}
+
+	private function philhealth_triggers($config) {
+		$fields = [
+			'bracket' => ['bracket' => []],
+			'ee'      => ['phicee'      => []],
+			'er'      => ['phicer'      => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'philhealth', 'phictab', 'masterfile_log', $fields, 'line');
+	}
+
+	private function sss_triggers($config) {
+		$fields = [
+			'bracket' => ['bracket' => []],
+			'ee'      => ['sssee'      => []],
+			'er'      => ['ssser'      => []],
+			'ec'      => ['eccer'      => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'sss', 'ssstab', 'masterfile_log', $fields, 'line');
+	}
+
+	private function pagibig_triggers($config) {
+		$fields = [
+			'bracket'    => ['bracket'    => []],
+			'range1'     => ['range1'     => []],
+			'range2'     => ['range2'     => []],
+			'multiplier' => ['hdmfmulti' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'pagibig', 'hdmftab', 'masterfile_log', $fields, 'line');
+	}
+
+	private function tax_triggers($config) {
+		$fields = [
+			'paymode' => ['paymode' => []],
+			'tax01'   => ['tax01'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'tax', 'taxtab', 'masterfile_log', $fields, 'line');
+	}
+
+	private function holiday_triggers($config) {
+		$fields = [
+			'DATE'    => ['dateid'    => []],
+			'DESC'    => ['description'    => []],
+			'DAYTYPE' => ['daytype' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'holiday', 'holiday', 'masterfile_log', $fields, 'line');
+	}
+
+	private function payrollaccounts_triggers($config) {
+		$fields = [
+			'code'     => ['code'     => []],
+			'codename' => ['codename' => []],
+			'allias'   => ['alias'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'payrollaccounts', 'paccount', 'masterfile_log', $fields, 'line');
+	}
+
+	private function leavesetup_triggers($config) {
+		$fields = [
+			'docno'    => ['docno'    => []],
+			'employee' => ['empid' => [true, "concat(client, '-', clientname)", 'client', 'clientid']],
+			'entitled' => ['days' => []],
+			'balance'  => ['bal'  => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'leavesetup', 'leavesetup', 'masterfile_log', $fields, 'trno');
+	}
+
+	private function applicant_triggers($config) {
+		$fields = [
+			'empcode'          => ['empcode'          => []],
+			'fname'            => ['empfirst'            => []],
+			'mname'            => ['empmiddle'            => []],
+			'lname'            => ['emplast'            => []],
+			'status'           => ['jstatus'           => []],
+			'jobcode'          => ['jobcode'          => []],
+			'jobtitle'         => ['jobtitle'         => []],
+			'job_desc'         => ['jobdesc'         => []],
+			'applied_date'     => ['appdate'     => []],
+			'address'          => ['address'          => []],
+			'city'             => ['city'             => []],
+			'country'          => ['country'          => []],
+			'zipcode'          => ['zipcode'          => []],
+			'telno'            => ['telno'            => []],
+			'mobileno'         => ['mobileno'         => []],
+			'email'            => ['email'            => []],
+			'citizenship'      => ['citizenship'      => []],
+			'religion'         => ['religion'         => []],
+			'alias'            => ['alias'            => []],
+			'birthday'         => ['bday'         => []],
+			'jobcode'          => ['jobcode'          => []],
+			'maiden_name'      => ['maidname'      => []],
+			'remarks'          => ['remarks'          => []],
+			'type'             => ['type'             => []],
+			'application_mode' => ['mapp' => []],
+			'birthplace'       => ['bplace'       => []],
+			'child'            => ['child'            => []],
+			'status'           => ['status'           => []],
+			'gender'           => ['gender'           => []],
+			'ishired'          => ['ishired'          => []],
+			'idno'             => ['idno'             => []],
+			// 'contact1'=> ['empid' => [true, "contact1","acontacts","empid"]],
+		];
+
+		$this->settriggermasterfilelogs($config, 'applicantledger', 'app', 'masterfile_log', $fields, 'empid');
+	}
+
+	private function app_contacts_triggers($config) {
+		$fields = [
+			'empid'     => ['empid'     => []],
+			'contact1'  => ['contact1'  => []],
+			'relation1' => ['relation1' => []],
+			'addr1'     => ['addr1'     => []],
+			'homeno1'   => ['homeno1'   => []],
+			'mobileno1' => ['mobileno1' => []],
+			'officeno1' => ['officeno1' => []],
+			'ext1'      => ['ext1'      => []],
+			'notes1'    => ['notes1'    => []],
+			'contact2'  => ['contact2'  => []],
+			'relation2' => ['relation2' => []],
+			'addr2'     => ['addr2'     => []],
+			'homeno2'   => ['homeno2'   => []],
+			'mobileno2' => ['mobileno2' => []],
+			'officeno2' => ['officeno2' => []],
+			'ext2'      => ['ext2'      => []],
+			'notes2'    => ['notes2'    => []],
+		];
+		$this->settriggermasterfilelogs($config, 'applicantledger_acontacts', 'acontacts', 'masterfile_log', $fields, 'empid');
+	}
+
+	private function app_dependents_triggers($config) {
+		$fields = [
+			'line'      => ['line'      => []],
+			'name'      => ['name'      => []],
+			'relations' => ['relation' => []],
+			'bday'      => ['bday'      => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'app_dependents', 'adependents', 'masterfile_log', $fields, 'line');
+	}
+
+	private function app_education_triggers($config) {
+		$fields = [
+			'line'    => ['line'    => []],
+			'school'  => ['school'  => []],
+			'address' => ['address' => []],
+			'course'  => ['course'  => []],
+			'sy'      => ['sy'      => []],
+			'gpa'     => ['gpa'     => []],
+			'honor'   => ['honor'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'app_education', 'aeducation', 'masterfile_log', $fields, 'line');
+	}
+
+	private function app_employment_triggers($config) {
+		$fields = [
+			'line'     => ['line'     => []],
+			'company'  => ['company'  => []],
+			'address'  => ['address'  => []],
+			'jobtitle' => ['jobtitle' => []],
+			'salary'   => ['salary'   => []],
+			'period'   => ['period'   => []],
+			'reason'   => ['reason'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'app_employment', 'aemployment', 'masterfile_log', $fields, 'line');
+	}
+
+	private function app_req_triggers($config) {
+		$fields = [
+			'line'       => ['line'       => []],
+			'submitdate' => ['submitdate' => []],
+			'notes'      => ['notes'      => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'app_req', 'arequire', 'masterfile_log', $fields, 'line');
+	}
+
+	private function app_emptest_triggers($config) {
+		$fields = [
+			'line'   => ['line'   => []],
+			'result' => ['result' => []],
+			'notes'  => ['notes'  => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'app_emptest', 'apreemploy', 'masterfile_log', $fields, 'line');
+	}
+
+	// private function employee_triggers($config) {
+	// 	$fields = [
+	// 		'empid' => ['empid' => []],
+	// 		'empfirst' => ['empfirst' => []],
+	// 		'empmiddle' => ['empmiddle' => []],
+	// 		'emplast' => ['emplast' => []],
+	// 		'role' => ['roleid' => [true, "name", "rolesetup", "line"]],
+	// 		'dept' => ['deptid' => [true, "clientname", "client", "clientid"]],
+	// 		'section' => ['sectid' => [true, "sectname", "section", "sectid"]],
+	// 		'division' => ['divid' => [true, "divname", "division", "divid"]],
+	// 		'shiftcode' => ['shiftid' => [true, "shftcode", "tmshifts", "line"]],
+	// 		'jobtitle' => ['jobid' => [true, "jobtitle", "jobthead", "line"]],
+	// 	];
+
+	// 	$this->settriggermasterfilelogs($config,'employee', 'employee', 'client_log', $fields, 'empid');
+	// }
+
+	private function emp_education_triggers($config) {
+		$fields = [
+			'line'    => ['line'    => []],
+			'school'  => ['school'  => []],
+			'address' => ['address' => []],
+			'course'  => ['course'  => []],
+			'sy'      => ['sy'      => []],
+			'gpa'     => ['gpa'     => []],
+			'honor'   => ['honor'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_education', 'education', 'payroll_log', $fields, 'line');
+	}
+
+	private function emp_employment_triggers($config) {
+		$fields = [
+			'line'     => ['line'     => []],
+			'company'  => ['company'  => []],
+			'address'  => ['address'  => []],
+			'jobtitle' => ['jobtitle' => []],
+			'salary'   => ['salary'   => []],
+			'period'   => ['period'   => []],
+			'reason'   => ['reason'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_employment', 'employment', 'payroll_log', $fields, 'line');
+	}
+
+	private function emp_contract_triggers($config) {
+		$fields = [
+			'line'        => ['line'        => []],
+			'contract_no' => ['contractn' => []],
+			'description' => ['descr' => []],
+			'from'        => ['datefrom'        => []],
+			'to'          => ['dateto'          => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_contract', 'contracts', 'payroll_log', $fields, 'line');
+	}
+
+	private function emp_rolesetup_triggers($config) {
+		$fields = [
+			'line' => ['line' => []],
+			'role' => ['roleid' => [true, "name", "rolesetup", "line"]],
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_rolesetup', 'emprole', 'payroll_log', $fields, 'line');
+	}
+
+	private function earningdeductionsetup_triggers($config) {
+		$fields = [
+			'trno'         => ['trno'         => []],
+			'Employee'     => ['empid'     => [true, "clientname", "client", "clientid"]],
+			'account'      => ['acnoid'      => [true, "acnoname", "coa", "acnoid"]],
+			'amt'          => ['amt'          => []],
+			'amortization' => ['amortization' => []],
+			'balance'      => ['balance'      => []],
+			'effectivity'  => ['effdate'  => []],
+			'remarks'      => ['remarks'      => []],
+			'week1'        => ['w1'        => []],
+			'week2'        => ['w2'        => []],
+			'week3'        => ['w3'        => []],
+			'week4'        => ['w4'        => []],
+			'week5'        => ['w5'        => []],
+			'13th'         => ['w13'         => []],
+			'void'         => ['halt'         => []],
+			'priority'     => ['priority'     => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'earningdeductionsetup', 'standardsetup', 'payroll_log', $fields, 'trno');
+	}
+
+	private function earningdeductionsetup_manual_payment_triggers($config) {
+		$fields = [
+			'trno'                   => ['trno'                   => []],
+			'Manual Payment Docno'   => ['docno'   => []],
+			'Manual Payment date'    => ['dateid'    => []],
+			'Manual Payment payment' => ['cr' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'earningdeductionsetup_manualpayment', 'standardtrans', 'payroll_log', $fields, 'trno');
+	}
+
+	private function advancesetup_triggers($config) {
+		$fields = [
+			'trno'         => ['trno'         => []],
+			'Employee'     => ['empid'     => [true, "clientname", "client", "clientid"]],
+			'account'      => ['acnoid'      => [true, "acnoname", "coa", "acnoid"]],
+			'amt'          => ['amt'          => []],
+			'amortization' => ['amortization' => []],
+			'balance'      => ['balance'      => []],
+			'effectivity'  => ['effdate'  => []],
+			'remarks'      => ['remarks'      => []],
+			'week1'        => ['w1'        => []],
+			'week2'        => ['w2'        => []],
+			'week3'        => ['w3'        => []],
+			'week4'        => ['w4'        => []],
+			'week5'        => ['w5'        => []],
+			'13th'         => ['w13'         => []],
+			'void'         => ['halt'         => []],
+			'priority'     => ['priority'     => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'advancesetup', 'standardsetupadv', 'payroll_log', $fields, 'trno');
+	}
+
+	private function entryadvancepayment_manual_payment_triggers($config) {
+		$fields = [
+			'trno'                   => ['trno'                   => []],
+			'Manual Payment Docno'   => ['docno'   => []],
+			'Manual Payment date'    => ['dateid'    => []],
+			'Manual Payment payment' => ['cr' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'advancesetup_manualpayment', 'standardtransadv', 'payroll_log', $fields, 'trno');
+	}
+
+	private function leaveapplication_triggers($config) {
+		$fields = [
+			'trno'           => ['trno'           => []],
+			'details status' => ['status' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'leaveapplication', 'leavetrans', 'payroll_log', $fields, 'trno');
+	}
+
+	private function obapplication_triggers($config) {
+		$fields = [
+			'line'   => ['line'   => []],
+			'date'   => ['dateid'   => []],
+			'time'   => ['dateid'   => [true, "TIME(dateid) as itime", "obapplication", "line"]],
+			'type'   => ['type'   => []],
+			'status' => ['status' => []],
+			'notes'  => ['rem'  => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'obapplication', 'obapplication', 'payroll_log', $fields, 'line');
+	}
+
+	private function loanapplicationportal_triggers($config) {
+		$fields = [
+			'trno'         => ['trno'         => []],
+			'Employee'     => ['empid'     => [true, "clientname", "client", "clientid"]],
+			'amt'          => ['amt'          => []],
+			'amortization' => ['amortization' => []],
+			'balance'      => ['balance'      => []],
+			'effectivity'  => ['effdate'  => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'loanapplicationportal', 'loanapplication', 'payroll_log', $fields, 'trno');
+	}
+
+	private function tmshifts_triggers($config) {
+		$fields = [
+			'line'            => ['line'            => []],
+			'CODE'            => ['shftcode'            => []],
+			'SCHED IN'        => ['tschedin'        => []],
+			'SCHED OUT'       => ['tschedout'       => []],
+			'GRACE PERIOD'    => ['gtin'    => []],
+			'GRACE PERIOD OT' => ['gbrkin' => []],
+			'NDIFF FROM'      => ['ndifffrom'      => []],
+			'NDIFF TO'        => ['ndiffto'        => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'shiftsetup', 'tmshifts', 'payroll_log', $fields, 'line');
+	}
+
+	private function shiftdetail_triggers($config) {
+		$fields = [
+			'line'      => ['line'      => []],
+			'SCHED IN'  => ['schedin'  => []],
+			'SCHED OUT' => ['schedout' => []],
+			'BREAK IN'  => ['breakin'  => []],
+			'BREAK OUT' => ['breakout' => []],
+			'TOTAL HRS' => ['tothrs' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'shiftsetup', 'shiftdetail', 'payroll_log', $fields, 'shiftsid');
+	}
+
+	// CRM
+	private function salesgroup_triggers($config) {
+		$fields = [
+			'line'      => ['line'      => []],
+			'groupname' => ['groupname' => []],
+			'leader'    => ['leader'    => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'salesgroup', 'salesgroup', 'masterfile_log', $fields, 'line');
+	}
+
+	private function seminar_triggers($config) {
+		$fields = [
+			'line'        => ['line'        => []],
+			'title'       => ['title'       => []],
+			'description' => ['description' => []],
+			'date'        => ['dateid'        => []],
+			'product'     => ['product'     => []],
+			'location'    => ['location'    => []],
+			'presenter'   => ['presenter'   => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'seminar', 'seminar', 'masterfile_log', $fields, 'line');
+	}
+
+	private function exhibit_triggers($config) {
+		$fields = [
+			'line'        => ['line'        => []],
+			'title'       => ['title'       => []],
+			'description' => ['description' => []],
+			'startdate'   => ['startdate'   => []],
+			'enddate'     => ['enddate'     => []],
+			'product'     => ['product'     => []],
+			'location'    => ['location'    => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'exhibit', 'exhibit', 'masterfile_log', $fields, 'line');
+	}
+
+	private function checksetup_triggers($config) {
+		$fields = [
+			'line'    => ['line'    => []],
+			'account' => ['acnoid' => [true, "concat(acno, '-', acnoname)", "coa", "acnoid"]],
+			'start'   => ['start'   => []],
+			'end'     => ['end'     => []],
+			'current' => ['current' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entrychecksetup', 'checksetup', 'masterfile_log', $fields, 'line');
+	}
+
+	private function exchangerate_triggers($config) {
+		$fields = [
+			'line'    => ['line'    => []],
+			'curfrom' => ['curfrom' => []],
+			'curto'   => ['curto'   => []],
+			'rate'    => ['rate'    => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entryexchangerate', 'exchangerate', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entryrole_triggers($config) {
+		$fields = [
+			'line'       => ['line'       => []],
+			'Role Name'  => ['name'  => []],
+			'Division'   => ['divid'   => [true, "divname", "division", "divid"]],
+			'Department' => ['deptid' => [true, "clientname", "client", "clientid"]],
+			'Section'    => ['sectionid'    => [true, "sectname", "section", "sectid"]],
+			'Supervisor' => ['supervisorid' => [true, "clientname", "client", "clientid"]],
+		];
+
+		$this->settriggermasterfilelogs($config, 'entryrole', 'rolesetup', 'masterfile_log', $fields, 'line');
+	}
+
+	// -> ADD HERE
+
+}// end class

@@ -1,0 +1,158 @@
+<?php
+namespace App\Http\Classes\modules\customformlisting;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class audittrail {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'AUDIT TRAIL';
+	public $gridname   = 'customformacctg';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $issearchshow = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function getAttrib() {
+		$attrib = array('view' => 22,
+			'edit'                => 23,
+			'new'                 => 24,
+			'save'                => 25,
+			'change'              => 26,
+			'delete'              => 27,
+			'print'               => 28
+		);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['status', 'dateid', 'docno']]];
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['start'];
+		$col1   = $this->fieldClass->create($fields);
+
+		$fields = ['end'];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = ['reportusers'];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = ['moduledoc'];
+		$col4   = $this->fieldClass->create($fields);
+
+		$fields = ['refresh'];
+		$col5   = $this->fieldClass->create($fields);
+		data_set($col5, 'refresh.action', 'audittrail');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4, 'col5' => $col5);
+
+	}
+
+	public function paramsdata($config) {
+		return $this->coreFunctions->opentable("
+      select
+      adddate(left(now(),10),-360) as start,
+      left(now(),10) as end,
+      '' as userid,
+      '' as username,
+      '' as moduledoc
+    ");
+	}
+
+	public function data() {
+		return [];
+	}
+
+	public function loaddata($config) {
+		$center = $config['params']['center'];
+
+		$user = $config['params']['dataparams']['username'];
+		$doc  = $config['params']['dataparams']['moduledoc'];
+
+		$module                     = "";
+		$username                   = "";
+		if ($doc != "") {$module    = " and cntnum.doc ='$doc'";}
+		if ($user != "") {$username = " and tl.userid ='$user'";}
+		switch ($doc) {
+			case "ALL":
+				$qry = "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client
+        from table_log as tl left join cntnum on cntnum.trno = tl.trno
+        where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d')
+        and date_format('	$date2','%Y-%m-%d') $username
+        union all
+        select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client
+        from client_log as tl left join client on client.clientid = tl.trno
+        where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d')
+        and date_format('	$date2','%Y-%m-%d')  $username
+        union all
+        select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client
+        from item_log as tl left join item on item.itemid = tl.trno
+        where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d')
+        and date_format('	$date2','%Y-%m-%d')  $username
+        union all
+        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client
+        from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d')
+        and date_format('	$date2','%Y-%m-%d') $username
+        order by dateid	";
+				break;
+			case "PO":case "SO":case "JO":case "PC":case "KR":case "EX":case "JO":
+				$qry = "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid
+        from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno where date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $module $username order by dateid";
+				break;
+			case "SJ":case "CM":case "DM":case "RR":case "IS":case "CV":case "CR":case "AR":case "AP":case "TS":case "PV":case "AJ":case "DS":case "GJ":
+				$qry = "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid
+        from table_log as tl left join cntnum on cntnum.trno = tl.trno where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $module $username order by dateid";
+				break;
+			case "CL":
+				$qry = "select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client
+        from client_log as tl left join client on client.clientid = tl.trno where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d')  $username order by tl.dateid";
+				break;
+			case "SK":
+				$qry = "select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client
+        from item_log as tl left join item on item.itemid = tl.trno where  date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d')  $username order by tl.dateid";
+				break;
+			default:
+				$qry = "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid
+        from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno where date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $module $username
+        union all
+        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid
+        from table_log as tl left join cntnum on cntnum.trno = tl.trno where date_format(tl.dateid,'%Y-%m-%d') between date_format('	$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $module $username order by dateid";
+				break;
+		}
+
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
+	}
+
+}//end class

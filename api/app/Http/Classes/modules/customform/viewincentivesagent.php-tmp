@@ -1,0 +1,202 @@
+<?php
+
+namespace App\Http\Classes\modules\customform;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class viewincentivesagent {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'AGENT INCENTIVES';
+	public $gridname   = 'tableentry';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	public $style        = 'width:100%';
+	public $issearchshow = true;
+	public $showclosebtn = false;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function getAttrib() {
+		$attrib = array('load' => 2518, 'view' => 2518);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$docno     = 0;
+		$depodate  = 0;
+		$amt       = 0;
+		$agentname = 0;
+		$tab       = [
+			// $this->gridname => ['gridcolumns' => ['docno', 'depodate', 'amt', 'agentname', 'agentcom', 'agentcomamt']]
+			'tableentry' => ['action' => 'warehousingentry', 'lookupclass' => 'viewgridincentives', 'label' => 'LIST']
+		];
+		$stockbuttons = [];
+		$obj          = $this->tabClass->createtab($tab, $stockbuttons);
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = [['start', 'end'], 'agentname'];
+		$col1   = $this->fieldClass->create($fields);
+
+		$fields = ['radionincentivetype', 'refresh'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, "refresh.label", "GENERATE");
+		data_set($col2, "refresh.action", "load");
+
+		$fields = ['radionincentivestatus', 'print'];
+		$col3   = $this->fieldClass->create($fields);
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+	}
+
+	public function paramsdata($config) {
+		$start       = "curdate()";
+		$end         = "curdate()";
+		$agentid     = 0;
+		$agent       = '';
+		$agentname   = '';
+		$doc         = '';
+		$printoption = '';
+
+		if (isset($config['params']['dataparams'])) {
+			if ($config['params']['dataparams']['start'] == null) {
+				$start = "null";
+			} else {
+				$start = "date('".$config['params']['dataparams']['start']."')";
+			}
+
+			if ($config['params']['dataparams']['end'] == null) {
+				$end = "null";
+			} else {
+				$end = "date('".$config['params']['dataparams']['end']."')";
+			}
+
+			$agentid     = $config['params']['dataparams']['agentid'];
+			$agent       = $config['params']['dataparams']['agent'];
+			$agentname   = $config['params']['dataparams']['agentname'];
+			$doc         = $config['params']['dataparams']['incentivetype'];
+			$printoption = $config['params']['dataparams']['incentivestatus'];
+		}
+
+		$qry = "select ".$start." as `start`, ".$end." as `end`, '".$agent."' as agent, ".$agentid." as agentid, '".$agentname."' as agentname, '".$doc."' as incentivetype, '".$printoption."' as incentivestatus";
+		return $this->coreFunctions->opentable($qry);
+	}
+
+	public function data() {
+		return [];
+	}
+
+	public function loaddata($config) {
+		$start   = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+		$end     = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
+		$agentid = $config['params']['dataparams']['agentid'];
+		$doc     = $config['params']['dataparams']['incentivetype'];
+
+		$filteragent  = '';
+		$filteragent2 = '';
+		if ($agentid != 0) {
+			$filteragent  = " and i.agentid=".$agentid;
+			$filteragent2 = " and i.agentid2=".$agentid;
+		}
+
+		// $qry = "select i.ptrno, i.trno, i.line, date(i.depodate) as depodate, i.acnoid, i.clientid,
+		//       i.agentid, i.agentid2, round(i.amt,2) as amt, i.agentcom, ag.quota as agentquota, i.agentcomamt, i.agent2com, i.agent2quota, i.agent2comamt,
+		//       ar.docno, ag.clientname as agentname, ag2.clientname as manager, if(i.agrelease is null,'false','true') as added, '" . $end . "' as releasedate
+		//       from incentives as i left join arledger as ar on ar.trno=i.trno and ar.line=i.line
+		//       left join client as ag on ag.clientid=i.agentid
+		//       left join client as ag2 on ag2.clientid=i.agentid2
+		//       where i.agrelease is null and i.depodate between ? and ?" . $filter;
+
+		$qry = "select i.ptrno, i.trno, i.line, date(i.depodate) as depodate, i.acnoid, ar.docno, i.amt, i.clientid,
+      i.agentid, ag.clientname as agentname, ag.comm as agentcom, i.agentquota, i.agentcomamt, ag2.comm as agent2com, i.agent2quota, i.agent2comamt,
+      i.agentid2, ag2.clientname as manager, 'agent' as agtype, if(i.agrelease is null,'false','true') as added, '".$end."' as releasedate
+      from incentives as i left join arledger as ar on ar.trno=i.trno and ar.line=i.line
+      left join client as ag on ag.clientid=i.agentid
+      left join client as ag2 on ag2.clientid=ag.parent
+      where i.doc='".$doc."' and i.agrelease is null and date(i.depodate) between ? and ?".$filteragent."
+      union all
+      select i.ptrno, i.trno, i.line, date(i.depodate) as depodate, i.acnoid, ar.docno, i.amt, i.clientid,
+      i.agentid, ag.clientname as agentname, ag.comm as agentcom, i.agentquota, i.agentcomamt, ag2.comm as agent2com, i.agent2quota, i.agent2comamt,
+      i.agentid2, ag2.clientname as manager, 'manager' as agtype, if(i.ag2release is null,'false','true') as added, '".$end."' as releasedate
+      from incentives as i left join arledger as ar on ar.trno=i.trno and ar.line=i.line
+      left join client as ag on ag.clientid=i.agentid
+      left join client as ag2 on ag2.clientid=ag.parent
+      where i.doc='".$doc."' and i.ag2release is null and ag2.clientid is not null and i.agentid<>i.agentid2 and date(i.depodate) between ? and ?".$filteragent2;
+
+		$data = $this->coreFunctions->opentable($qry, [$start, $end, $start, $end]);
+
+		foreach ($data as $key => $value) {
+
+			$value->agentcomamt = $value->amt*($value->agentcom/100);
+
+			if ($value->agtype == 'agent') {
+				$update = [
+					'agentcomamt' => number_format($value->agentcomamt, 2),
+					'agentcom'    => $value->agentcom
+				];
+				$this->coreFunctions->sbcupdate("incentives", $update, ['trno' => $value->trno, 'line' => $value->line, 'ptrno' => $value->ptrno, 'agentid' => $value->agentid]);
+			} else {
+				$value->agentcom    = $value->agentcom/2;
+				$value->agentcomamt = $value->amt*($value->agentcom/100);
+				$value->agentname   = $value->manager;
+				$update             = [
+					'agent2comamt' => $value->agentcomamt,
+					'agent2com'    => $value->agent2com
+				];
+				$this->coreFunctions->sbcupdate("incentives", $update, ['trno' => $value->trno, 'line' => $value->line, 'ptrno' => $value->ptrno, 'agentid2' => $value->agentid2, 'agent2com' => $value->agentcom]);
+			}
+
+			$value->amt         = number_format($value->amt, 2);
+			$value->agentcomamt = number_format($value->agentcomamt, 2);
+		}
+
+		$txtdata = $this->paramsdata($config);
+
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'tableentrydata' => $data, 'txtdata' => $txtdata];
+	}
+
+	public function reportsetup($config) {
+		$style = 'width:500px;max-width:500px;';
+
+		return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => true];
+
+		$border   = "1px solid ";
+		$font     = "Century Gothic";
+		$fontsize = "11";
+
+		$str = '';
+		$str .= $this->reporter->beginreport();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('ITEM(S):', '50', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '2px');
+		$str .= $this->reporter->col('', '300', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '2px');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->endreport();
+
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'report' => $str, 'style' => $style, 'directprint' => true];
+	}
+}//end class

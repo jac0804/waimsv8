@@ -1,0 +1,216 @@
+<?php
+namespace App\Http\Classes\modules\tableentry;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class entrycomponent {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'COMPONENT';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $table = 'component';
+	private $othersClass;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	private $fields      = ['itemid', 'barcode', 'itemname', 'isqty', 'uom', 'qty', 'uomfactor'];
+	public $showclosebtn = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['action', 'barcode', 'itemname', 'isqty', 'uom']
+			]
+		];
+
+		$stockbuttons = ['save', 'delete'];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// action
+		$obj[0][$this->gridname]['columns'][0]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
+
+		// uom
+		$obj[0][$this->gridname]['columns'][4]['action'] = "lookupsetup";
+		// $obj[0][$this->gridname]['columns'][4]['params'] = ['barcode'];
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = ['additemcomponent'];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+
+		return $obj;
+	}
+
+	public function add($config) {
+		$id              = $config['params']['tableid'];
+		$data            = [];
+		$data['itemid']  = $id;
+		$data['line']    = 0;
+		$data['uom']     = '';
+		$data['barcode'] = '';
+		$data['bgcolor'] = 'bg-blue-2';
+		return $data;
+	}
+
+	private function selectqry() {
+		$qry = "line";
+		foreach ($this->fields as $key => $value) {
+			$qry = $qry.','.$value;
+		}
+		return $qry;
+	}
+
+	//A
+	public function lookupsetup($config) {
+		if ($config['params']['lookupclass2'] == 'additemcomponent') {
+			return $this->lookupitem($config);
+		} elseif ($config['params']['lookupclass2'] == 'uomstock') {
+			return $this->lookupuom($config);
+		}
+
+	}//end function
+
+	//B
+	public function lookupcallback($config) {
+		switch ($config['params']['lookupclass2']) {
+			case 'addtogrid':
+				$itemid            = $config['params']['tableid'];
+				$row               = $config['params']['row'];
+				$data              = [];
+				$data['line']      = 0;
+				$data['itemid']    = $itemid;
+				$data['barcode']   = $row['barcode'];
+				$data['itemname']  = $row['itemname'];
+				$data['uom']       = $row['uom'];
+				$data['isqty']     = 1;
+				$data['qty']       = 1;
+				$data['uomfactor'] = 1;
+				$data['bgcolor']   = 'bg-blue-2';
+				return ['status' => true, 'msg' => 'Item was successfully added.', 'data' => $data];
+				break;
+			case 'uomstock':
+
+				break;
+		}
+
+	}// end function
+
+	public function lookupitem($config) {
+		$lookupsetup = array('type' => 'singlesearch',
+			'actionsearch'             => 'searchitem',
+			'title'                    => 'List of Products',
+			'style'                    => 'width:900px;max-width:900px;');
+
+		$plotsetup = array('plottype' => 'callback',
+			'action'                     => 'addtogrid');
+
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$col = array('name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$col = array('name' => 'amt', 'label' => 'Amount', 'align' => 'right', 'field' => 'amt', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		return ['status' => true, 'msg' => 'ok', 'data' => [], 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}//end function
+
+	public function lookupuom($config) {
+		//default
+		$plotting    = array('uom' => 'uom', 'uomfactor' => 'factor');
+		$plottype    = 'plotgrid';
+		$title       = 'List of Unit of Measurement';
+		$lookupsetup = array('type' => 'single',
+			'title'                    => $title,
+			'style'                    => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array('plottype' => $plottype,
+			'action'                     => '',
+			'plotting'                   => $plotting
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'uom', 'label' => 'Unit of Measurement', 'align' => 'left', 'field' => 'uom', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$barcode = $config['params']['row']['barcode'];
+		$qry     = "select uom,factor from uom where itemid=?";
+		$itemid  = $this->coreFunctions->getfieldvalue('item', 'itemid', 'barcode=?', [$barcode]);
+		$data    = $this->coreFunctions->opentable($qry, [$itemid]);
+		$index   = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+
+	}// end function
+
+	public function save($config) {
+		$data = [];
+		$row  = $config['params']['row'];
+		foreach ($this->fields as $key => $value) {
+			$data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+		}
+		$data['qty'] = $data['isqty']*$data['uomfactor'];
+		if ($row['line'] == 0) {
+			$line = $this->coreFunctions->insertGetId($this->table, $data);
+			if ($line != 0) {
+				$returnrow = $this->loaddataperrecord($row['itemid'], $line);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		} else {
+			if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+				$returnrow = $this->loaddataperrecord($row['itemid'], $row['line']);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		}
+	}//end function
+
+	public function delete($config) {
+		$row = $config['params']['row'];
+		$qry = "delete from component where itemid=? and line=?";
+		$this->coreFunctions->execqry($qry, 'delete', [$row['itemid'], $row['line']]);
+		return ['status' => true, 'msg' => 'Successfully deleted.'];
+	}
+
+	private function loaddataperrecord($itemid, $line) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from component where itemid=? and line=?";
+		$data   = $this->coreFunctions->opentable($qry, [$itemid, $line]);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		$tableid = $config['params']['tableid'];
+		$center  = $config['params']['center'];
+		$select  = $this->selectqry();
+		$select  = $select.",'' as bgcolor ";
+		$qry     = "select ".$select." from component where itemid=? order by line";
+		$data    = $this->coreFunctions->opentable($qry, [$tableid]);
+		return $data;
+	}
+
+}//end class

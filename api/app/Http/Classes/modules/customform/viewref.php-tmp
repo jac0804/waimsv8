@@ -1,0 +1,319 @@
+<?php
+
+namespace App\Http\Classes\modules\customform;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class viewref {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'References';
+	public $gridname   = 'viewrefgrid';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $issearchshow = true;
+	public $showclosebtn = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$cols = [];
+
+		switch ($config['params']['doc']) {
+			case 'PL':
+				$cols             = ['ref', 'barcode', 'itemname', 'rrqty', 'uom'];
+				$this->modulename = 'Packing List Details';
+				break;
+
+			default:
+				$cols = ['docno', 'dateid', 'rem'];
+				break;
+		}
+
+		$tab = [$this->gridname => ['gridcolumns' => $cols]];
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+		switch ($config['params']['doc']) {
+			case 'PL':
+				break;
+
+			default:
+				$obj[0][$this->gridname]['columns'][2]['label'] = 'Particulars';
+				break;
+		}
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		return [];
+	}
+
+	public function paramsdata($config) {
+		return $this->coreFunctions->opentable('select adddate(left(now(),10),-360) as dateid, 0.0 as db, 0.0 as cr,0.0 as bal');
+	}
+
+	public function data($config) {
+		$trno = $config['params']['trno'];
+		$doc  = $config['params']['doc'];
+		$qry  = '';
+
+		switch ($doc) {
+			case 'RR':case 'JC':case 'SN':
+				$qry = 'select po.docno,po.dateid,CAST(concat("Total PO Amt: ",sum(s.ext)) as CHAR) as rem from hpohead as po left join hpostock as s on s.trno = po.trno left join glstock as g on g.refx = po.trno and g.linex = s.line where g.trno = '.$trno.' group by po.docno,po.dateid
+                union all
+                select po.docno,po.dateid,CAST(concat("Total PO Amt: ",sum(s.ext)) as CHAR) as rem from hjohead as po left join hjostock as s on s.trno = po.trno left join glstock as g on g.refx = po.trno and g.linex = s.line where g.trno = '	.$trno.' group by po.docno,po.dateid
+                union all
+                select apledger.docno,apledger.dateid,CAST(concat("Amount: ",apledger.db+apledger.cr,"  -  ","BALANCE: ",apledger.bal) as CHAR) as rem
+                from apledger where trno='	.$trno.'
+                union all
+                select arledger.docno,arledger.dateid,CAST(concat("Amount: ",arledger.db+arledger.cr,"  -  ","BALANCE: ",arledger.bal) as CHAR) as rem from arledger
+                where trno='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from lahead as head
+                left join ladetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from glhead as head
+                left join gldetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.isqty) as CHAR) as rem from lahead as head
+                left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.isqty) as CHAR) as rem from glhead as head
+                left join glstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx='	.$trno.'
+                union all
+                select num.docno,head.dateid,CAST(concat("Counter Receipt: ",num.docno , " (" ,num.center,")") as CHAR) as rem from transnum as num
+                left join krhead as head on head.trno = num.trno left join arledger as ledger on ledger.kr = num.trno
+                and num.doc = "KR" where ledger.trno = '	.$trno.'
+                union all
+                select num.docno,head.dateid,CAST(concat("Supplier Invoice: ",head.docno , " (" ,num.center,")") as CHAR) as rem
+                from cntnum as num left join glhead as head on head.trno = num.svnum where num.doc="RR" and num.trno = '	.$trno;
+				break;
+			case 'DM':
+			case 'CM':
+				$qry = 'select apledger.docno,apledger.dateid,CAST(concat("Amount: ",apledger.db+apledger.cr,"  -  ","BALANCE: ",apledger.bal) as CHAR) as rem
+                from apledger where trno='	.$trno.'
+                union all
+                select arledger.docno,arledger.dateid,CAST(concat("Amount: ",arledger.db+arledger.cr,"  -  ","BALANCE: ",arledger.bal) as CHAR) as rem from arledger
+                where trno='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from lahead as head
+                left join ladetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from glhead as head
+                left join gldetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.isqty) as CHAR) as rem from lahead as head
+                left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.isqty) as CHAR) as rem from glhead as head
+                left join glstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx='	.$trno.'
+                union all
+                select num.docno,head.dateid,CAST(concat("Counter Receipt: ",num.docno , " (" ,num.center,")") as CHAR) as rem from transnum as num
+                left join krhead as head on head.trno = num.trno left join arledger as ledger on ledger.kr = num.trno
+                and num.doc = "KR" where ledger.trno = '	.$trno;
+				break;
+			case 'SJ':case 'CS':
+				$qry = 'select apledger.docno,apledger.dateid,CAST(concat("Amount: ",apledger.db+apledger.cr,"  -  ","BALANCE: ",apledger.bal) as CHAR) as rem
+                from apledger where trno='	.$trno.'
+                union all
+                select arledger.docno,arledger.dateid,CAST(concat("Amount: ",arledger.db+arledger.cr,"  -  ","BALANCE: ",arledger.bal) as CHAR) as rem from arledger
+                where trno='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from lahead as head
+                left join ladetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Applied Amount: ",detail.db+detail.cr) as CHAR) as rem from glhead as head
+                left join gldetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.rrqty) as CHAR) as rem from lahead as head
+                left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx='	.$trno.'
+                union all
+                select head.docno,head.dateid,CAST(concat("Return Item: ",item.barcode,"-",item.itemname," Qty: ",stock.rrqty) as CHAR) as rem from glhead as head
+                left join glstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx='	.$trno.'
+                union all
+                select num.docno,head.dateid,CAST(concat("Counter Receipt: ",num.docno , " (" ,num.center,")") as CHAR) as rem from transnum as num
+                left join krhead as head on head.trno = num.trno left join arledger as ledger on ledger.kr = num.trno
+                and num.doc = "KR" where ledger.trno = '	.$trno;
+				break;
+			case 'PO':
+			case 'SO':
+			case 'SA':
+			case 'TR':
+			case 'CN':
+				$field = '';
+				switch ($doc) {
+				case 'PO':
+						$field = 'round(stock.rrqty,'.$this->companysetup->getdecimal('currency', $config['params']).')';
+						break;
+				default:
+						$field = 'round(stock.isqty,'.$this->companysetup->getdecimal('currency', $config['params']).')';
+						break;
+				}
+				$qry = "select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',".$field.") as CHAR) as rem from lahead as head left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc not in ('DM','CM','CV') and stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',"	.$field.") as CHAR) as rem from glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where head.doc not in ('DM','CM','CV') and stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',"	.$field.") as CHAR) as rem from plhead as head left join plstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',"	.$field.") as CHAR) as rem from hplhead as head left join hplstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx=".$trno;
+				break;
+			case 'JO':
+				$qry = "select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,".$this->companysetup->getdecimal('currency', $config['params']).")) as CHAR) as rem from jchead as head left join jcstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,"	.$this->companysetup->getdecimal('currency', $config['params']).")) as CHAR) as rem from hjchead as head left join hjcstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx=".$trno;
+				break;
+			case 'CD':
+				$qry = "select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,".$this->companysetup->getdecimal('currency', $config['params']).")) as rem from pohead as head left join postock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.cdrefx=".$trno."
+            union all
+            select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,"	.$this->companysetup->getdecimal('currency', $config['params']).")) as rem from hpohead as head left join hpostock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.cdrefx=".$trno;
+				break;
+			case 'PR':case 'RQ':
+				$qry = "select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,".$this->companysetup->getdecimal('currency', $config['params']).")) as rem from pohead as head left join postock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,"	.$this->companysetup->getdecimal('currency', $config['params']).")) as rem from hpohead as head left join hpostock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=".$trno;
+				break;
+			case 'JR':
+				$qry = "select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,".$this->companysetup->getdecimal('currency', $config['params']).")) as CHAR) as rem from johead as head left join jostock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=".$trno."
+            union all
+            select head.docno,head.dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty,"	.$this->companysetup->getdecimal('currency', $config['params']).")) as CHAR) as rem from hjohead as head left join hjostock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where stock.refx=".$trno;
+				break;
+
+			case 'CR':
+				$qry = "select head.docno,head.dateid,concat('DEPOSIT REFERENCE: ',head.docno) as rem from lahead as head
+            left join ladetail as detail on detail.trno = head.trno
+            where detail.refx = "	.$trno."
+            UNION ALL
+            select head.docno,head.dateid,concat('DEPOSIT REFERENCE: ',head.docno) as rem from glhead as head
+            left join gldetail as detail on detail.trno = head.trno
+            where detail.refx = "	.$trno."";
+				break;
+
+			case 'PV':
+			case 'AP':
+			case 'AR':
+				$qry = 'select apledger.docno,apledger.dateid,concat("Amount: ",apledger.db+apledger.cr,"  -  ","BALANCE: ",apledger.bal) as rem
+            from apledger where trno='	.$trno.'
+            union all
+            select arledger.docno,arledger.dateid,concat("Amount: ",arledger.db+arledger.cr,"  -  ","BALANCE: ",arledger.bal) as rem from arledger
+            where trno='	.$trno.'
+            union all
+            select head.docno,head.dateid,concat("Applied Amount: ",detail.db+detail.cr) as rem from lahead as head
+            left join ladetail as detail on detail.trno=head.trno where detail.refx='	.$trno.'
+            union all
+            select head.docno,head.dateid,concat("Applied Amount: ",detail.db+detail.cr) as rem from glhead as head
+            left join gldetail as detail on detail.trno=head.trno where detail.refx='	.$trno;
+				break;
+
+			case 'PL':
+				$qry = "select stock.line,stock.trno,stock.itemid,item.barcode,item.itemname,stock.refx,stock.linex,stock.uom,
+          round(stock.rrqty,"	.$this->companysetup->getdecimal('qty', $config['params']).") as rrqty,
+          round(stock.qty,"	.$this->companysetup->getdecimal('qty', $config['params']).") as qty, stock.ref
+          from hplstock as stock left join item on item.itemid=stock.itemid where stock.trno="	.$trno;
+				break;
+			case 'BR':
+				$qry = "select head.docno,head.dateid,head.rem,concat('Amount: ',format(sum(stock.ext),".$this->companysetup->getdecimal('currency', $config['params']).")) as rem from blhead as head left join blstock as stock on stock.trno = head.trno where head.brtrno=".$trno." group by head.docno,head.dateid,head.rem
+            union all
+            select head.docno,head.dateid,head.rem,concat('Amount: ',format(sum(stock.ext),"	.$this->companysetup->getdecimal('currency', $config['params']).")) as rem from hblhead as head left join hblstock as stock on stock.trno = head.trno where head.brtrno=".$trno." group by head.docno,head.dateid,head.rem
+            union all
+            select head.docno,head.dateid,head.rem,concat('Amount: ',format(sum(stock.db),"	.$this->companysetup->getdecimal('currency', $config['params']).")) as rem from lahead as head left join ladetail as stock on stock.trno = head.trno where head.brtrno=".$trno." group by head.docno,head.dateid,head.rem
+            union all
+            select head.docno,head.dateid,head.rem,concat('Amount: ',format(sum(stock.db),"	.$this->companysetup->getdecimal('currency', $config['params']).")) as rem from glhead as head left join gldetail as stock on stock.trno = head.trno where head.brtrno=".$trno." group by head.docno,head.dateid,head.rem";
+				break;
+			case 'BL':
+				$qry = "select head.docno,head.dateid,head.rem,concat('Amount: ',format(sum(stock.ext),".$this->companysetup->getdecimal('currency', $config['params']).")) as rem from hbrhead as head left join hbrstock as stock on stock.trno = head.trno where head.bltrno=".$trno." group by head.docno,head.dateid,head.rem";
+				break;
+			case 'OP':
+				$qry = "select qt.docno, date(qt.dateid) as dateid, qt.rem from qshead as qt left join hophead as op on op.qtrno=qt.trno where op.trno=".$trno."
+        union all
+        select qt.docno, date(qt.dateid) as dateid, qt.rem from hqshead as qt left join hophead as op on op.qtrno=qt.trno where op.trno="	.$trno;
+				break;
+			case 'QS':
+				$qry = "select so.docno, date(so.dateid) as dateid, qt.rem from sqhead as so left join hqshead as qt on qt.sotrno=so.trno where qt.trno=".$trno."
+        union all
+        select so.docno, date(so.dateid) as dateid, qt.rem from hsqhead as so left join hqshead as qt on qt.sotrno=so.trno where qt.trno="	.$trno;
+				break;
+
+		}
+
+		$data = $this->coreFunctions->opentable($qry);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		return [];
+		// $trno = $config['params']['trno'];
+		// $doc = $config['params']['doc'];
+		// $qry='';
+
+		// switch ($doc) {
+		//   case 'RR': case 'SJ': case 'DM': case 'CM':
+		//     $qry = 'select concat(apledger.docno," ~ ",apledger.db+apledger.cr,"  ~  ","BALANCE: ",apledger.bal) as docno
+		//             from apledger where trno='.$trno.'
+		//             union all
+		//             select concat(arledger.docno," ~ ",arledger.db+arledger.cr,"  ~  ","BALANCE: ",arledger.bal) from arledger
+		//             where trno='.$trno.'
+		//             union all
+		//             select concat(head.docno," - ",head.dateid," - ",detail.db+detail.cr) from lahead as head
+		//             left join ladetail as detail on detail.trno=head.trno where detail.refx='.$trno.'
+		//             union all
+		//             select concat(head.docno," - ",head.dateid," - ",detail.db+detail.cr) from glhead as head
+		//             left join gldetail as detail on detail.trno=head.trno where detail.refx='.$trno.'
+		//             union all
+		//             select concat("Stock reference:",head.docno) from lahead as head
+		//             left join lastock as stock on stock.trno=head.trno where stock.refx='.$trno.'
+		//             union all
+		//             select concat("Stock reference:",head.docno) from glhead as head
+		//             left join glstock as stock on stock.trno=head.trno where stock.refx='.$trno.'
+		//             union all
+		//             select concat("Counter Receipt: ",num.docno , " (" ,num.center,")") from transnum as num
+		//             left join arledger as ledger on ledger.kr = num.trno
+		//             and num.doc = "KR" where ledger.trno = "'.$trno.'"';
+		//     break;
+		//   case 'PO': case 'SO':
+		//     $qry ='select concat("Stock reference:",head.docno) as docno from lahead as head left join lastock as stock on stock.trno=head.trno where stock.refx='.$trno.'
+		//         union all
+		//         select concat("Stock reference:",head.docno) as docno from glhead as head left join glstock as stock on stock.trno=head.trno where stock.refx='.$trno;
+
+		//     break;
+
+		//   case 'CR':
+		//     $qry = "select concat('DEPOSIT REFERENCE: ',head.docno) as docno from lahead as head
+		//         left join ladetail as detail on detail.trno = head.trno
+		//         where detail.refx = ".$trno."
+		//         UNION ALL
+		//         select concat('DEPOSIT REFERENCE: ',head.docno) as docno from glhead as head
+		//         left join gldetail as detail on detail.trno = head.trno
+		//         where detail.refx = ".$trno."";
+		//     break;
+		// }
+
+		// $data = $this->coreFunctions->opentable($qry);
+		// return ['status'=>true,'msg'=>'Successfully loaded.','data'=>$data];
+	}
+}//end class

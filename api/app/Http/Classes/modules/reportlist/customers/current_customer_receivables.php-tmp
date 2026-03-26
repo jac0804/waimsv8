@@ -1,0 +1,699 @@
+<?php
+namespace App\Http\Classes\modules\reportlist\customers;
+
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class current_customer_receivables {
+	public $modulename = 'Current Customer Receivables';
+	private $companysetup;
+	private $coreFunctions;
+	private $fieldClass;
+	private $othersClass;
+	private $reporter;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $directprint = false;
+
+	public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
+
+	public function __construct() {
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function createHeadField($config) {
+		$companyid = $config['params']['companyid'];
+
+		switch ($companyid) {
+			case '1':
+				$fields = ['radioprint', 'dclientname', 'dcentername', 'dagentname'];
+				break;
+			default:
+				$fields = ['radioprint', 'dclientname', 'dcentername'];
+				break;
+		}
+		$col1 = $this->fieldClass->create($fields);
+		data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+		data_set($col1, 'dclientname.label', 'Customer');
+
+		$fields = ['radioprint', 'dclientname', 'dcentername'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+		data_set($col1, 'dclientname.label', 'Customer');
+
+		$fields = ['radioposttype', 'radioreporttype'];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = ['refresh'];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'refresh.action', 'history');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col' => $col3);
+	}
+
+	public function paramsdata($config) {
+		// NAME NG INPUT YUNG NAKA ALIAS
+		return $this->coreFunctions->opentable("select
+    'default' as print,
+    '' as center,
+    '' as client,
+    '0' as posttype,
+    '0' as reporttype,
+    '' as dclientname,
+    '' as dcentername,
+    '' as dagentname,
+    '' as agent,
+    '' as agentname
+    ");
+	}
+
+	// put here the plotting string if direct printing
+	public function getloaddata($config) {
+		return [];
+	}
+
+	public function reportdata($config) {
+		$str = $this->reportplotting($config);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+	}
+
+	public function reportplotting($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$reporttype = $config['params']['dataparams']['reporttype'];
+
+		switch ($reporttype) {
+			case '0':// SUMMARIZED
+				$result = $this->reportDefaultLayout_LAYOUT_SUMMARIZED($config);// POSTED
+				break;
+			case '1':// DETAILED
+				$result = $this->reportDefaultLayout_LAYOUT_DETAILED($config);// POSTED
+				break;
+		}
+
+		// return $this->reportDefault($config);
+		return $result;
+	}
+
+	public function reportDefault($config) {
+		// QUERY
+		$posttype  = $config['params']['dataparams']['posttype'];
+		$companyid = $config['params']['companyid'];
+
+		switch ($posttype) {
+			case '0':// POSTED
+				switch ($companyid) {
+				case '1':// vitaline
+						$query = $this->VITALINE_QUERY_POSTED($config);// POSTED
+						break;
+				default:
+						$query = $this->reportDefault_QUERY_POSTED($config);// POSTED
+						break;
+				}
+				break;
+			case '1':// UNPOSTED
+				switch ($companyid) {
+				case '1':// vitaline
+						$query = $this->VITALINE_QUERY_UNPOSTED($config);// POSTED
+						break;
+				default:
+						$query = $this->reportDefault_QUERY_UNPOSTED($config);// POSTED
+						break;
+				}
+				break;
+		}
+		// return $query;
+		return $this->coreFunctions->opentable($query);
+	}
+
+	public function reportDefault_QUERY_POSTED($config) {
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+
+		$filter = "";
+		if ($client != "") {
+			$filter = " and client.client='$client'";
+		}
+
+		if ($filtercenter != "") {
+			$filter .= " and cntnum.center='$filtercenter'";
+		}
+
+		switch ($reporttype) {
+			case '1':// DETAILED
+				$query = "select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+      (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref
+      from (arledger as detail
+      left join client on client.clientid=detail.clientid)
+      left join cntnum on cntnum.trno=detail.trno
+      left join glhead as head on head.trno=detail.trno
+      where cntnum.doc IN ('GJ','AR','SJ','CR') and detail.bal<>0  	$filter
+      order by client.clientname, detail.dateid, detail.docno,head.yourref	";
+				break;
+			case '0':// SUMMARIZED
+				$query = "select clientname, name, sum(balance) as balance
+      from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+      (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref
+      from (arledger as detail left join client on client.clientid=detail.clientid)
+      left join cntnum on cntnum.trno=detail.trno
+      left join glhead as head on head.trno=detail.trno
+      where detail.bal<>0  	$filter) as x
+      group by clientname, name order by clientname	";
+				break;
+		}//end switch
+
+		return $query;
+	}
+
+	public function reportDefault_QUERY_UNPOSTED($config) {
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+
+		$filter = "";
+		if ($client != "") {
+			$filter = " and client.client='$client'";
+		}
+
+		if ($filtercenter != "") {
+			$filter .= " and cntnum.center='$filtercenter'";
+		}
+
+		switch ($reporttype) {
+			case '1':// DETAILED
+				$query = "select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      detail.db as balance,head.yourref
+      from (((lahead as head left join ladetail as detail on detail.trno=head.trno)
+      left join client on client.client=head.client)
+      left join coa on coa.acnoid=detail.acnoid)
+      left join cntnum on cntnum.trno=head.trno
+      where cntnum.doc IN ('GJ','AR','SJ','CR') and left(coa.alias,2)='AR' 	$filter
+      order by clientname, dateid, docno	";
+				break;
+
+			case '0':// SUMMARIZED
+				$query = "select clientname, name, sum(balance) as balance
+      from (
+      select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      detail.db as balance,head.yourref
+      from (((lahead as head left join ladetail as detail on detail.trno=head.trno)
+      left join client on client.client=head.client)
+      left join coa on coa.acnoid=detail.acnoid)
+      left join cntnum on cntnum.trno=head.trno
+      where head.doc in ('SJ','AR') and left(coa.alias,2)='AR' 	$filter) as x
+      group by clientname, name
+      order by clientname, name	";
+				break;
+		}//end swicth
+
+		return $query;
+	}
+
+	public function VITALINE_QUERY_POSTED($config) {
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+		$agent        = $config['params']['dataparams']['agent'];
+		$agentid      = $config['params']['dataparams']['agentid'];
+
+		$filter = "";
+		if ($client != "") {
+			$filter = " and client.client='$client'";
+		}
+
+		if ($filtercenter != "") {
+			$filter .= " and cntnum.center='$filtercenter'";
+		}
+
+		if ($agent != "") {
+			$filter .= " and ag.clientid='$agentid'";
+		}
+
+		switch ($reporttype) {
+			case '1':// DETAILED
+				$query = "select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+      (
+        case
+          when coa.alias = 'AR3' then (detail.bal * -1)
+          else detail.bal
+        end
+      ) as balance,
+      head.yourref
+      from (arledger as detail
+      left join client on client.clientid=detail.clientid)
+      left join cntnum on cntnum.trno=detail.trno
+      left join glhead as head on head.trno=detail.trno
+      left join client as ag on ag.clientid = head.agentid
+      left join coa as coa on coa.acnoid = detail.acnoid
+      where cntnum.doc IN ('GJ','AR','SJ','CR') and detail.bal<>0  	$filter
+      order by client.clientname, detail.dateid, detail.docno,head.yourref	";
+				break;
+			case '0':// SUMMARIZED
+				$query = "select clientname, name, sum(balance) as balance
+      from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+      (
+        case
+          when coa.alias = 'AR3' then (detail.bal * -1)
+          else detail.bal
+        end
+      ) as balance,
+      head.yourref
+      from (arledger as detail
+      left join client on client.clientid=detail.clientid)
+      left join cntnum on cntnum.trno=detail.trno
+      left join glhead as head on head.trno=detail.trno
+      left join client as ag on ag.clientid = head.agentid
+      left join coa as coa on coa.acnoid = detail.acnoid
+      where cntnum.doc IN ('GJ','AR','SJ','CR') and detail.bal<>0  	$filter) as x
+      group by clientname, name order by clientname	";
+				break;
+		}//end switch
+
+		return $query;
+	}
+
+	public function VITALINE_QUERY_UNPOSTED($config) {
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+		$agent        = $config['params']['dataparams']['agent'];
+		$agentid      = $config['params']['dataparams']['agentid'];
+
+		$filter = "";
+		if ($client != "") {
+			$filter = " and client.client='$client'";
+		}
+
+		if ($filtercenter != "") {
+			$filter .= " and cntnum.center='$filtercenter'";
+		}
+
+		if ($agent != "") {
+			$filter .= " and ag.client='$agent'";
+		}
+
+		switch ($reporttype) {
+			case '1':// DETAILED
+				$query = "select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      detail.db as balance,head.yourref
+      from (((lahead as head
+      left join ladetail as detail on detail.trno=head.trno)
+      left join client on client.client=head.client)
+      left join coa on coa.acnoid=detail.acnoid)
+      left join cntnum on cntnum.trno=head.trno
+      left join client as ag on ag.client = head.agent
+      where cntnum.doc IN ('GJ','AR','SJ','CR') and left(coa.alias,2)='AR' 	$filter
+      order by clientname, dateid, docno	";
+				break;
+
+			case '0':// SUMMARIZED
+				$query = "select clientname, name, sum(balance) as balance
+      from (
+      select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
+      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      detail.db as balance,head.yourref
+      from (((lahead as head
+      left join ladetail as detail on detail.trno=head.trno)
+      left join client on client.client=head.client)
+      left join coa on coa.acnoid=detail.acnoid)
+      left join cntnum on cntnum.trno=head.trno
+      left join client as ag on ag.client = head.agent
+      where head.doc in ('GJ','AR','SJ','CR') and left(coa.alias,2)='AR' 	$filter) as x
+      group by clientname, name
+      order by clientname, name	";
+				break;
+		}//end swicth
+
+		return $query;
+	}
+
+	private function displayHeader_DETAILED($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+
+		$str        = '';
+		$layoutsize = '1000';
+		$font       = "Century Gothic";
+		$fontsize   = "11";
+		$border     = "1px solid ";
+
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endtable();
+		$str .= '<br/><br/>';
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('DETAILED CURRENT CUSTOMER RECEIVABLES', null, null, false, $border, '', '', $font, '18', 'B', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->begintable($layoutsize);
+
+		$str .= $this->reporter->startrow(null, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+
+		if ($client == '') {
+			$str .= $this->reporter->col('Customer : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		} else {
+			$str .= $this->reporter->col('Customer : '.strtoupper($client), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		}
+
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('Center : '.$filtercenter, '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->pagenumber('Page');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->printline();
+
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('CUSTOMER NAME', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('DATE', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('DOCUMENT #', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('No. of days', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('BALANCE', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		return $str;
+	}
+
+	public function reportDefaultLayout_LAYOUT_DETAILED($config) {
+		$result = $this->reportDefault($config);
+
+		$count      = 38;
+		$page       = 40;
+		$layoutsize = '1000';
+		$font       = "Century Gothic";
+		$fontsize   = "11";
+		$border     = "1px solid ";
+
+		$str = '';
+		$str .= $this->reporter->beginreport($layoutsize);
+		$str .= $this->displayHeader_DETAILED($config);
+
+		$itemname      = "";
+		$date          = "";
+		$docno         = "";
+		$yourref       = "";
+		$totalext      = 0;
+		$totalqty      = 0;
+		$totaltons     = 0;
+		$subtotalqty   = 0;
+		$subtotalext   = 0;
+		$subtotalpv    = 0;
+		$subtotaltons  = 0;
+		$gsubtotalqty  = 0;
+		$gsubtotalext  = 0;
+		$gsubtotalpv   = 0;
+		$member        = "";
+		$grandtotalpv  = 0;
+		$grandtotalqty = 0;
+		$gsubtotaltons = 0;
+
+		$iitem = "";
+
+		foreach ($result as $key => $data) {
+			$display = $data->clientname;
+			$docno   = $data->docno;
+			$date    = $data->dateid;
+			$order   = $data->elapse;
+			$served  = $data->balance;
+
+			if ($itemname == "") {
+				$str .= $this->reporter->begintable($layoutsize);
+				$str .= $this->reporter->startrow();
+				$str .= $this->reporter->col($data->clientname, '110', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
+				$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+				$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+				$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+				$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+				$str .= $this->reporter->endrow();
+			}
+
+			if (strtoupper($itemname) == strtoupper($data->clientname)) {
+				$itemname = "";
+
+				if (strtoupper($docno) == strtoupper($data->clientname)) {
+					$docno = "";
+				} else {
+					if ($docno != '') {
+						$subtotalqty = 0;
+						$subtotalext = 0;
+					}
+					$itemname = strtoupper($data->clientname);
+				}
+			} else {
+				if ($docno != '') {
+				}
+
+				if ($itemname != '') {
+					$str .= $this->reporter->startrow();
+					$str .= $this->reporter->col('', '110', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+					$str .= $this->reporter->col('', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+					$str .= $this->reporter->col('', '110', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+					$str .= $this->reporter->col('SUB TOTAL :', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+					$str .= $this->reporter->col(number_format($gsubtotalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
+					$str .= $this->reporter->endrow();
+
+					$str .= $this->reporter->addline();
+					if ($this->reporter->linecounter == $page) {
+						$str .= $this->reporter->endtable();
+						$str .= $this->reporter->page_break();
+						$str .= $this->displayHeader_DETAILED($config);
+						$page = $page+$count;
+					}
+
+				}
+
+				if ($itemname != '') {
+					$str .= $this->reporter->startrow();
+					$str .= $this->reporter->col($data->clientname, '110', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
+					$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+					$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+					$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+					$str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+
+					$str .= $this->reporter->addline();
+					if ($this->reporter->linecounter == $page) {
+						$str .= $this->reporter->endtable();
+						$str .= $this->reporter->page_break();
+						$str .= $this->displayHeader_DETAILED($config);
+						$page = $page+$count;
+					}
+				}
+
+				$subtotalext  = 0;
+				$gsubtotalext = 0;
+				$docno        = $data->clientname;
+				if (strtoupper($docno) == strtoupper($data->clientname)) {
+					$docno = "";
+				} else {
+					$docno = strtoupper($data->clientname);
+				}
+			}
+
+			if ($iitem == $data->clientname) {
+				$iitem = "";
+			} else {
+				$iitem = $data->clientname;
+			}
+
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->addline();
+			$str .= $this->reporter->col('', '110', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
+			$str .= $this->reporter->col($date, '110', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
+			$str .= $this->reporter->col($data->docno, '110', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
+			$str .= $this->reporter->col(number_format($order, 0), '110', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
+			$str .= $this->reporter->col(number_format($served, 2), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '5px');
+			$str .= $this->reporter->endrow();
+
+			$subtotalext  = $subtotalext+$data->balance;
+			$gsubtotalext = $gsubtotalext+$data->balance;
+			$totalext     = $totalext+$data->balance;
+			$itemname     = strtoupper($data->clientname);
+			$docno        = $data->clientname;
+			$iitem        = $data->clientname;
+
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+				$str .= $this->displayHeader_DETAILED($config);
+				$page = $page+$count;
+			}
+
+		}
+
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('', '110', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('SUB TOTAL :', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col(number_format($gsubtotalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		$str .= '<br/>';
+
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('', '110', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('', '110', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('TOTAL :', '110', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col(number_format($totalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+	private function displayHeader_SUMMARIZED($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$filtercenter = $config['params']['dataparams']['center'];
+		$client       = $config['params']['dataparams']['client'];
+		$posttype     = $config['params']['dataparams']['posttype'];
+		$reporttype   = $config['params']['dataparams']['reporttype'];
+
+		$str        = '';
+		$layoutsize = '1000';
+		$font       = "Century Gothic";
+		$fontsize   = "11";
+		$border     = "1px solid ";
+
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endtable();
+		$str .= '<br/>';
+
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('CURRENT CUSTOMER RECEIVABLES - SUMMARY', null, null, false, $border, '', '', $font, '18', 'B', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable($layoutsize);
+
+		$str .= $this->reporter->startrow(null, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		if ($client == '') {
+			$str .= $this->reporter->col('Customer : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		} else {
+			$str .= $this->reporter->col('Customer : '.strtoupper($client), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		}
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+
+		if ($reporttype == '0') {
+			$reporttype = 'Posted';
+		} else {
+			$reporttype = 'Unposted';
+		}
+
+		$str .= $this->reporter->col('Transaction : '.strtoupper($reporttype), '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		$str .= $this->reporter->col('Center : '.$filtercenter, '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+		$str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+		;
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->printline();
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('CUSTOMER NAME', '110px', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col('BALANCE', '110px', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		return $str;
+	}
+
+	public function reportDefaultLayout_LAYOUT_SUMMARIZED($config) {
+		$result = $this->reportDefault($config);
+
+		$count      = 28;
+		$page       = 30;
+		$layoutsize = '1000';
+		$font       = "Century Gothic";
+		$fontsize   = "11";
+		$border     = "1px solid ";
+
+		$str = '';
+		$str .= $this->reporter->beginreport($layoutsize);
+		$str .= $this->displayHeader_SUMMARIZED($config);
+		$amt = null;
+		foreach ($result as $key => $data) {
+			$bal = number_format($data->balance, 2);
+			if ($bal == 0) {
+				$bal = '-';
+			}
+
+			$display = $data->clientname;
+			$served  = $data->balance;
+
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->addline();
+			$str .= $this->reporter->col($display, '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+			$str .= $this->reporter->col($bal, '110px', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+			$str .= $this->reporter->endrow();
+
+			$amt = $amt+$data->balance;
+
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+				$str .= $this->displayHeader_SUMMARIZED($config);
+				$page = $page+$count;
+			}
+		}
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('GRAND TOTAL : ', '110px', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->col(number_format($amt, 2), '110px', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+}//end class

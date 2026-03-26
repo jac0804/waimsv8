@@ -1,0 +1,3010 @@
+<?php
+
+namespace App\Http\Classes\modules\tableentry;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class entryprefix {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'Manage Prefixes';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $table = 'profile';
+	private $othersClass;
+	public $style = 'width:100%;';
+
+	private $fields      = ['pvalue'];
+	public $showclosebtn = false;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function getAttrib() {
+		$attrib = array('load' => 0);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['action', 'psection', 'pvalue']]];
+
+		$stockbuttons = ['save'];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// action
+		$obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
+
+		return $obj;
+	}
+
+	// NO FUNCTION FOR ADD BUTTON
+	public function createtabbutton($config) {
+		$tbuttons        = ['addrecord'];
+		$obj             = $this->tabClass->createtabbutton($tbuttons);
+		$obj[0]['label'] = "CHECK FIELDS";
+		return $obj;
+	}
+
+	public function add($config) {
+		$this->tableupdate();
+		return ['status' => true, 'msg' => 'TABLES UPDATE'];
+	}
+
+	private function selectqry() {
+
+		$sql = "line,doc,
+            case(psection)
+                when 'PO' then 'PURCHASE ORDER'
+                when 'RR' then 'RECEIVING REPORT'
+                when 'DM' then 'PURCHASE RETURN'
+                when 'CV' then 'CASH/CHECK VOUCHER'
+                when 'PV' then 'PAYABLE VOUCHER'
+                when 'AP' then 'AP SETUP'
+                when 'SO' then 'SALES ORDER'
+                when 'SJ' then 'SALES JOURNAL'
+                when 'CM' then 'SALES RETURN'
+                when 'CR' then 'CASH RECEIPT'
+                when 'AR' then 'AR SETUP'
+                when 'IS' then 'INVENTORY SETUP'
+                when 'AJ' then 'INVENTORY ADJUSTMENT'
+                when 'TS' then 'TRANSFER SLIP'
+                when 'PC' then 'PHYSICAL COUNT'
+                when 'GJ' then 'GENERAL JOURNAL'
+                when 'DS' then 'DEPOSIT SLIP'
+                when 'CA' then 'RECEIVING CONSIGNMENT'
+                when 'CL' then 'CUSTOMER'
+                when 'SL' then 'SUPPLIER'
+                when 'WH' then 'WAREHOUSE'
+                when 'AG' then 'AGENT'
+                when 'PR' then 'PURCHASE REQUISITION'
+                when 'PI' then 'PRODUTION INSTRUCTION'
+                when 'PD' then 'PRODUTION ORDER'
+                when 'PK' then 'PRODUCTION COMPLETION'
+                when 'KR' then 'COUNTER RECEIPT'
+                when 'QA' then 'QUOTATION'
+                when 'MI' then 'MASTERIAL ISSUANCE (A)'
+                when 'MX' then 'MATERIAL ISSUANCE (B)'
+                when 'JB' then 'JOB ORDER (MLCP)'
+                when 'RF' then 'ROUTE FORMATION (XANDA)'
+                when 'SI' then 'SALES INVOICE (ACCTG)'
+                when 'SP' then 'SUPPLIER PRICE CHANGE'
+                when 'TR' then 'TRANSFER REQUISITION'
+                when 'ST' then 'STOCK TRANSFER'
+                when 'SS' then 'STOCK ISSUANCE'
+                when 'SV' then 'SUPPLIER INVOICE'
+                when 'TW' then 'TAX WHELD MODULE'
+                when 'VR' then 'REIMBURSEMENT RELEASE (SBC)'
+                when 'VC' then 'VOUCHER CHECKING (SBC)'
+                else ''
+            end as psection,
+            pvalue";
+		return $sql;
+	}
+
+	public function save($config) {
+		$data = [];
+		$row  = $config['params']['row'];
+		foreach ($this->fields as $key => $value) {
+			$data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+		}
+		if ($row['line'] == 0) {
+			$line = $this->coreFunctions->insertGetId($this->table, $data);
+			if ($line != 0) {
+				$returnrow = $this->loaddataperrecord($line);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		} else {
+			if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+				$returnrow = $this->loaddataperrecord($row['line']);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		}
+	}//end function
+
+	private function loaddataperrecord($line) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where doc='SED' and line=?";
+		$data   = $this->coreFunctions->opentable($qry, [$line]);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where doc='SED' ";
+		$data   = $this->coreFunctions->opentable($qry);
+		return $data;
+	}
+
+	// ADD NEW COLUMN
+	private function tableupdate() {
+
+		$this->deletetriggers();
+
+		$this->tableupdatewaims();
+
+		//10.31.2020 fmm
+		$this->tableupdatehms();
+
+		$this->tableupdateenrollment();
+
+		//11.09.2020
+		$this->tableupdatecustomersupport();
+
+		$this->createtriggers();// -- ALWAYS AT THE BUTTOM PART
+	}
+
+	private function deletetriggers() {
+		$this->coreFunctions->sbcdroptriggers('costing_insert');
+		$this->coreFunctions->sbcdroptriggers('costing_update');
+		$this->coreFunctions->sbcdroptriggers('costing_delete');
+		$this->coreFunctions->sbcdroptriggers('apledger_update');
+		$this->coreFunctions->sbcdroptriggers('arledger_update');
+		$this->coreFunctions->sbcdroptriggers('center_update');
+		$this->coreFunctions->sbcdroptriggers('client_update');
+		$this->coreFunctions->sbcdroptriggers('frontend_highlights_update');
+		$this->coreFunctions->sbcdroptriggers('hjbstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('hpostock_update');
+		$this->coreFunctions->sbcdroptriggers('hprstock_update');
+		$this->coreFunctions->sbcdroptriggers('hprstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('hsostock_update');
+		$this->coreFunctions->sbcdroptriggers('ITEM_update');
+		$this->coreFunctions->sbcdroptriggers('itembal_update');
+		$this->coreFunctions->sbcdroptriggers('johead_update');
+		$this->coreFunctions->sbcdroptriggers('joservice_update');
+		$this->coreFunctions->sbcdroptriggers('krhead_update');
+		$this->coreFunctions->sbcdroptriggers('ladetail_update');
+		$this->coreFunctions->sbcdroptriggers('lahead_update');
+		$this->coreFunctions->sbcdroptriggers('lastock_update');
+		$this->coreFunctions->sbcdroptriggers('pchead_update');
+		$this->coreFunctions->sbcdroptriggers('pcstock_update');
+		$this->coreFunctions->sbcdroptriggers('pohead_update');
+		$this->coreFunctions->sbcdroptriggers('postock_update_before');
+		$this->coreFunctions->sbcdroptriggers('postock_update_after');
+		$this->coreFunctions->sbcdroptriggers('postock_delete');
+		$this->coreFunctions->sbcdroptriggers('rrstatus_update');
+		$this->coreFunctions->sbcdroptriggers('rrstatus_delete');
+		$this->coreFunctions->sbcdroptriggers('sohead_update');
+		$this->coreFunctions->sbcdroptriggers('sostock_update_before');
+		$this->coreFunctions->sbcdroptriggers('sostock_update_after');
+		$this->coreFunctions->sbcdroptriggers('sostock_delete');
+		$this->coreFunctions->sbcdroptriggers('term_update');
+		$this->coreFunctions->sbcdroptriggers('useraccess_update');
+		$this->coreFunctions->sbcdroptriggers('users_update');
+	}
+
+	private function createtriggers() {
+
+		//COSTING TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER costing_insert BEFORE INSERT on costing FOR EACH ROW
+                BEGIN
+                  declare iBal decimal(18,6);
+
+                  if NEW.REFX<>0 then
+                      update rrstatus set bal=bal - New.Served where Trno=NEW.REFX and line=NEW.LINEX;
+                  end if;
+                END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER costing_update BEFORE UPDATE on costing FOR EACH ROW
+                BEGIN
+                    declare iBal decimal(18,6);
+
+                    if NEW.REFX<>0 then
+                      select Bal into iBal from RRStatus where Trno=NEW.REFX and line=NEW.LINEX;
+                      if ((iBal+OLD.Served)-NEW.SERVEd)>=0 then
+                        update rrstatus set bal=((bal + Old.Served) - New.Served) where Trno=NEW.REFX and line=NEW.LINEX;
+                      else
+                        CALL No_Stock_costing;
+                      end if;
+                    end if;
+                END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER costing_delete BEFORE DELETE on costing FOR EACH ROW
+                BEGIN
+                 if OLD.SERVED<>0 then
+                   update rrstatus set bal=bal+OLD.Served where trno=OLD.refx and line=OLD.linex;
+                 end if;
+                END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		//APLEDGER TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER apledger_update BEFORE UPDATE on apledger FOR EACH ROW
+            BEGIN
+              if New.bal<0 then
+                CALL BAL_IS_GREATER_THAN_REQUIRED_BAL;
+              end if;
+            END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF APLEDGER TRIGGER ====================================================================================================================================
+
+		//ARLEDGER TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER arledger_update BEFORE UPDATE on arledger FOR EACH ROW
+            BEGIN
+              if New.bal<0 then
+                CALL BAL_IS_GREATER_THAN_REQUIRED_BAL;
+              end if;
+            END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ARLEDGER TRIGGER ====================================================================================================================================
+
+		//CENTER TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER center_update AFTER UPDATE on center FOR EACH ROW
+        BEGIN
+
+          if OLD.code<>NEW.code then
+           insert into center_log(trno,field,oldversion,userid,dateid) values(OLD.code,'CENTER',concat('Code -
+           ',OLD.code,'=>',NEW.code),New.editby,New.editdate);
+         end if;
+
+          if OLD.name<>NEW.name then
+           insert into center_log(trno,field,oldversion,userid,dateid) values(OLD.code,'CENTER',concat('Name -
+           ',OLD.name,'=>',NEW.name),New.editby,New.editdate);
+         end if;
+
+          if OLD.address<>NEW.address then
+           insert into center_log(trno,field,oldversion,userid,dateid) values(OLD.code,'CENTER',concat('Address -
+           ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+          if OLD.tel<>NEW.tel then
+           insert into center_log(trno,field,oldversion,userid,dateid) values(OLD.code,'CENTER',concat('Telephone# -
+           ',OLD.tel,'=>',NEW.tel),New.editby,New.editdate);
+         end if;
+
+          if OLD.warehouse<>NEW.warehouse then
+           insert into center_log(trno,field,oldversion,userid,dateid) values(OLD.code,'CENTER',concat('Warehouse -
+           ',OLD.warehouse,'=>',NEW.warehouse),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF CENTER TRIGGER ====================================================================================================================================
+
+		//CLIENT TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER client_update AFTER UPDATE on client FOR EACH ROW
+            BEGIN
+
+                if OLD.client<>NEW.client then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Code - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+                end if;
+
+                if OLD.clientname<>NEW.clientname then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('ClientName - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+                end if;
+
+                if OLD.addr<>NEW.addr then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Address - ',OLD.addr,'=>',NEW.addr),New.editby,New.editdate);
+                end if;
+
+                if OLD.email<>NEW.email then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Email - ',OLD.email,'=>',NEW.email),New.editby,New.editdate);
+                end if;
+
+                if OLD.tel<>NEW.tel then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Telephone# - ',OLD.tel,'=>',NEW.tel),New.editby,New.editdate);
+                end if;
+
+                if OLD.tel2<>NEW.tel2 then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Mobile - ',OLD.tel2,'=>',NEW.tel2),New.editby,New.editdate);
+                end if;
+
+                if OLD.fax<>NEW.fax then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Fax - ',OLD.fax,'=>',NEW.fax),New.editby,New.editdate);
+                end if;
+
+                if OLD.contact<>NEW.contact then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Contact - ',OLD.contact,'=>',NEW.contact),New.editby,New.editdate);
+                end if;
+
+                if OLD.agent<>NEW.agent then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Agent - ',OLD.agent,'=>',NEW.agent),New.editby,New.editdate);
+                end if;
+
+                if OLD.tin<>NEW.tin then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Tin - ',OLD.tin,'=>',NEW.tin),New.editby,New.editdate);
+                end if;
+
+                if OLD.groupid<>NEW.groupid then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('GroupId - ',OLD.groupid,'=>',NEW.groupid),New.editby,New.editdate);
+                end if;
+
+                if OLD.terms<>NEW.terms then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Terms - ',OLD.terms,'=>',NEW.terms),New.editby,New.editdate);
+                end if;
+
+                if OLD.crlimit<>NEW.crlimit then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('CreditLimit - ',OLD.crlimit,'=>',NEW.crlimit),New.editby,New.editdate);
+                end if;
+
+                if OLD.disc<>NEW.disc then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Discount - ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+                end if;
+
+                if OLD.class<>NEW.class then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Class - ',OLD.class,'=>',NEW.class),New.editby,New.editdate);
+                end if;
+
+                if OLD.type<>NEW.type then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Type - ',OLD.type,'=>',NEW.type),New.editby,New.editdate);
+                end if;
+
+                if OLD.rem<>NEW.rem then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Remarks - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+                end if;
+
+                if OLD.start<>NEW.start then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('StartDate - ',OLD.start,'=>',NEW.start),New.editby,New.editdate);
+                end if;
+
+                if OLD.status<>NEW.status then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Status - ',OLD.status,'=>',NEW.status),New.editby,New.editdate);
+                end if;
+
+                if OLD.province<>NEW.province then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Province - ',OLD.province,'=>',NEW.province),New.editby,New.editdate);
+                end if;
+
+                if OLD.region<>NEW.region then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Region - ',OLD.region,'=>',NEW.region),New.editby,New.editdate);
+                end if;
+
+                if OLD.area<>NEW.area then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('Area - ',OLD.area,'=>',NEW.area),New.editby,New.editdate);
+                end if;
+
+                if OLD.iscustomer<>NEW.iscustomer then
+                    insert into client_log(trno,field,oldversion,userid,dateid) values(OLD.clientid,'CLIENT',concat('IsCustomer - ',OLD.iscustomer,'=>',NEW.iscustomer),New.editby,New.editdate);
+                end if;
+
+            END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF CLIENT TRIGGER ====================================================================================================================================
+
+		//ARLEDGER TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER frontend_highlights_update BEFORE UPDATE on frontend_highlights FOR EACH ROW
+        BEGIN
+          if NEW.promostart <> '0000-00-00' AND NEW.promostart <> '0000-00-00' AND NEW.promoend <> '1900-01-01' AND NEW.promoend <> '1900-01-01' then
+                 if NEW.promostart <> OLD.promostart OR NEW.promoend <> OLD.promoend then
+                      insert into frontend_endedsale (itemid,datestart,dateend,highlight)
+                      select hitem.itemid,highlights.promostart,left(highlights.promoend,10),hitem.highid from frontend_highlightitems as hitem
+                      left join frontend_highlights as highlights on highlights.highid = hitem.highid
+                      where hitem.highid = OLD.highid;
+                 end if;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ARLEDGER TRIGGER ====================================================================================================================================
+
+		//HPOSTOCK TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER hpostock_update BEFORE UPDATE on hpostock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HPOSTOCK TRIGGER ====================================================================================================================================
+
+		//HPRSTOCK TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER hprstock_update_before BEFORE UPDATE on hprstock FOR EACH ROW
+        BEGIN
+
+        if OLD.tsqa<>NEW.tsqa then
+             if New.tsqa>New.qty then
+               CALL QTY_IS_GREATER_THAN_PO;
+             end if;
+          end if;
+
+        if OLD.qa<>NEW.qa then
+         if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HPRSTOCK TRIGGER ====================================================================================================================================
+
+		//HSOSTOCK TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER hsostock_update BEFORE UPDATE on hsostock FOR EACH ROW
+        BEGIN
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+
+         if New.MRSQA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HSOSTOCK TRIGGER ====================================================================================================================================
+
+		//ITEM TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER ITEM_update AFTER UPDATE on item FOR EACH ROW
+        BEGIN
+
+         if OLD.barcode<>NEW.barcode then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Code -
+           ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+         if OLD.itemname<>NEW.itemname then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('ItemName -
+           ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+         if OLD.groupid<>NEW.groupid then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('GroupId -
+            ',OLD.groupid,'=>',NEW.groupid),New.editby,New.editdate);
+         end if;
+
+         if OLD.part<>NEW.part then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Part -
+            ',OLD.part,'=>',NEW.part),New.editby,New.editdate);
+         end if;
+
+         if OLD.model<>NEW.model then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Model -
+            ',OLD.model,'=>',NEW.model),New.editby,New.editdate);
+         end if;
+
+          if OLD.brand<>NEW.brand then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Brand -
+            ',OLD.brand,'=>',NEW.brand),New.editby,New.editdate);
+         end if;
+
+          if OLD.class<>NEW.class then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Class -
+            ',OLD.class,'=>',NEW.brand),New.editby,New.editdate);
+         end if;
+
+          if OLD.body<>NEW.body then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Body -
+            ',OLD.body,'=>',NEW.body),New.editby,New.editdate);
+         end if;
+
+          if OLD.sizeid<>NEW.sizeid then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Size -
+            ',OLD.sizeid,'=>',NEW.sizeid),New.editby,New.editdate);
+         end if;
+
+          if OLD.category<>NEW.category then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Category -
+            ',OLD.category,'=>',NEW.category),New.editby,New.editdate);
+         end if;
+
+          if OLD.uom<>NEW.uom then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Unit of Mesurement -
+            ',OLD.uom,'=>',NEW.uom),New.editby,New.editdate);
+         end if;
+
+          if OLD.minimum<>NEW.minimum then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Minimum -
+            ',OLD.minimum,'=>',NEW.minimum),New.editby,New.editdate);
+         end if;
+
+          if OLD.maximum<>NEW.maximum then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Maximum -
+            ',OLD.maximum,'=>',NEW.maximum),New.editby,New.editdate);
+         end if;
+
+          if OLD.amt<>NEW.amt then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Retail -
+            ',OLD.amt,'=>',NEW.amt),New.editby,New.editdate);
+         end if;
+
+          if OLD.amt2<>NEW.amt2 then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Wholesale -
+            ',OLD.amt2,'=>',NEW.amt2),New.editby,New.editdate);
+         end if;
+
+          if OLD.famt<>NEW.famt then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Atp -
+            ',OLD.famt,'=>',NEW.famt),New.editby,New.editdate);
+         end if;
+
+          if OLD.amt4<>NEW.amt4 then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Price 1 -
+            ',OLD.amt4,'=>',NEW.amt4),New.editby,New.editdate);
+         end if;
+
+          if OLD.disc<>NEW.disc then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Discount -
+            ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+         end if;
+
+          if OLD.disc2<>NEW.disc2 then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Discount 2 -
+           ',OLD.disc2,'=>',NEW.disc2),New.editby,New.editdate);
+         end if;
+
+          if OLD.disc3<>NEW.disc3 then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Discount 3 -
+           ',OLD.disc3,'=>',NEW.disc3),New.editby,New.editdate);
+         end if;
+
+          if OLD.disc4<>NEW.disc4 then
+           insert into item_log(trno,field,oldversion,userid,dateid) values(OLD.itemid,'STOCKCARD',concat('Discount 4 -
+           ',OLD.disc4,'=>',NEW.disc4),New.editby,New.editdate);
+         end if;
+
+          if NEW.promostart <> '0000-00-00' AND NEW.promostart <> '0000-00-00' AND NEW.promoend <> '1900-01-01' AND NEW.promoend <> '1900-01-01' then
+             if NEW.promostart <> OLD.promostart OR NEW.promoend <> OLD.promoend then
+                insert into frontend_endedsale (itemid,datestart,dateend) values(OLD.itemid,OLD.promostart,left(now(),10));
+             end if;
+          end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ITEM TRIGGER ====================================================================================================================================
+
+		//ITEMBAL TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER itembal_update BEFORE UPDATE on itembal FOR EACH ROW
+        BEGIN
+          if NEW.BAL<0 then
+            CALL OUT_OF_STOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ITEMBAL TRIGGER ====================================================================================================================================
+
+		//JOHEAD TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER johead_update AFTER UPDATE on johead FOR EACH ROW
+        BEGIN
+
+        if OLD.docno<>NEW.docno then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DOCUMENT # - ',OLD.docno,'=>',NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CLIENT - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+        if OLD.clientname<>NEW.clientname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CLIENTNAME - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('ADDRESS - ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.itemname<>NEW.itemname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('ITEMNAME - ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+         if OLD.tel<>NEW.tel then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('TELEPHONE - ',OLD.tel,'=>',NEW.tel),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DATE - ',OLD.dateid,'=>',NEW.dateid),New.editby,New.editdate);
+         end if;
+
+         if OLD.due<>NEW.due then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DUE - ',OLD.due,'=>',NEW.due),New.editby,New.editdate);
+         end if;
+
+         if OLD.barcode<>NEW.barcode then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('BARCODE - ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+         if OLD.sku<>NEW.sku then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('SKU - ',OLD.sku,'=>',NEW.sku),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('REMARKS - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.voiddate<>NEW.voiddate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('VOIDDATE - ',OLD.voiddate,'=>',NEW.voiddate),New.editby,New.editdate);
+         end if;
+
+         if OLD.branch<>NEW.branch then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('BRANCH - ',OLD.branch,'=>',NEW.branch),New.editby,New.editdate);
+         end if;
+
+         if OLD.agent<>NEW.agent then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('AGENT - ',OLD.agent,'=>',NEW.agent),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('YOUR REF - ',OLD.yourref,'=>',NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('OUR REF - ',OLD.ourref,'=>',NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.approvedby<>NEW.approvedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('APPROVED BY - ',OLD.approvedby,'=>',NEW.approvedby),New.editby,New.editdate);
+         end if;
+
+         if OLD.approveddate<>NEW.approveddate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('APPROVED DATE - ',OLD.approveddate,'=>',NEW.approveddate),New.editby,New.editdate);
+         end if;
+
+         if OLD.printtime<>NEW.printtime then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('PRINT TIME - ',OLD.printtime,'=>',NEW.printtime),New.editby,New.editdate);
+         end if;
+
+         if OLD.lockuser<>NEW.lockuser then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('LOCKUSER - ',OLD.lockuser,'=>',NEW.lockuser),New.editby,New.editdate);
+         end if;
+
+         if OLD.lockdate<>NEW.lockdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('LOCKDATE - ',OLD.lockdate,'=>',NEW.lockdate),New.editby,New.editdate);
+         end if;
+
+         if OLD.openby<>NEW.openby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('OPEN BY - ',OLD.openby,'=>',NEW.openby),New.editby,New.editdate);
+         end if;
+
+         if OLD.users<>NEW.users then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('USERS - ',OLD.users,'=>',NEW.users),New.editby,New.editdate);
+         end if;
+
+        if OLD.createdate<>NEW.createdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CREATE DATE - ',OLD.createdate,'=>',NEW.createdate),New.editby,New.editdate);
+         end if;
+
+         if OLD.createby<>NEW.createby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CREATE BY - ',OLD.createby,'=>',NEW.createby),New.editby,New.editdate);
+         end if;
+
+          if OLD.editby<>NEW.editby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('EDIT BY - ',OLD.editby,'=>',NEW.editby),New.editby,New.editdate);
+         end if;
+
+         if OLD.editdate<>NEW.editdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('EDIT DATE - ',OLD.editdate,'=>',NEW.editdate),New.editby,New.editdate);
+         end if;
+
+         if OLD.viewby<>NEW.viewby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('VIEW BY - ',OLD.viewby,'=>',NEW.viewby),New.editby,New.editdate);
+         end if;
+
+         if OLD.viewdate<>NEW.viewdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('VIEW DATE - ',OLD.viewdate,'=>',NEW.viewdate),New.editby,New.editdate);
+         end if;
+
+         if OLD.invdate<>NEW.invdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('INV DATE - ',OLD.invdate,'=>',NEW.invdate),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF JOHEAD TRIGGER ====================================================================================================================================
+
+		//JOSERVICE TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER joservice_update AFTER UPDATE on joservice FOR EACH ROW
+        BEGIN
+
+         if OLD.sreceivedby<>NEW.sreceivedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SRECEIVED BY - ',OLD.sreceivedby,'=>',NEW.sreceivedby));
+         end if;
+
+         if OLD.sreceiveddate<>NEW.sreceiveddate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SRECEIVED DATE - ',OLD.sreceiveddate,'=>',NEW.sreceiveddate));
+         end if;
+
+         if OLD.problem<>NEW.problem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('PROBLEM - ',OLD.problem,'=>',NEW.problem));
+         end if;
+
+         if OLD.accessories<>NEW.accessories then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('ACCESSORIES - ',OLD.accessories,'=>',NEW.accessories));
+         end if;
+
+         if OLD.contact<>NEW.contact then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('CONTACT - ',OLD.contact,'=>',NEW.contact));
+         end if;
+
+         if OLD.fax<>NEW.fax then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('FAX - ',OLD.fax,'=>',NEW.fax));
+         end if;
+
+         if OLD.email<>NEW.email then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('EMAIL - ',OLD.email,'=>',NEW.email));
+         end if;
+
+         if OLD.hreceivedby<>NEW.hreceivedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('HRECEIVEDBY - ',OLD.hreceivedby,'=>',NEW.hreceivedby));
+         end if;
+
+         if OLD.hreceiveddate<>NEW.hreceiveddate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('HRECEIVED DATE - ',OLD.hreceiveddate,'=>',NEW.hreceiveddate));
+         end if;
+
+         if OLD.hremarks<>NEW.hremarks then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('HREMARKS - ',OLD.hremarks,'=>',NEW.hremarks));
+         end if;
+
+         if OLD.sureceivedby<>NEW.sureceivedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SURECEIVIED BY - ',OLD.sureceivedby,'=>',NEW.sureceivedby));
+         end if;
+
+         if OLD.sureceiveddate<>NEW.sureceiveddate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SURECEIVIED DATE - ',OLD.sureceiveddate,'=>',NEW.sureceiveddate));
+         end if;
+
+         if OLD.suremarks<>NEW.suremarks then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SUREMARKS - ',OLD.suremarks,'=>',NEW.suremarks));
+         end if;
+
+         if OLD.retdatesutoho<>NEW.retdatesutoho then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('RETDATESUTOHO - ',OLD.retdatesutoho,'=>',NEW.retdatesutoho));
+         end if;
+
+         if OLD.retremarks<>NEW.retremarks then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('RETREMARKS - ',OLD.retremarks,'=>',NEW.retremarks));
+         end if;
+
+         if OLD.recfromsutoho<>NEW.recfromsutoho then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('RECTFROMSUTOHO - ',OLD.recfromsutoho,'=>',NEW.recfromsutoho));
+         end if;
+
+         if OLD.fromhtosdate<>NEW.fromhtosdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('FROMHTOSDATE - ',OLD.fromhtosdate,'=>',NEW.fromhtosdate));
+         end if;
+
+         if OLD.recfromhtosby<>NEW.recfromhtosby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('RECFROMHTOSBY - ',OLD.recfromhtosby,'=>',NEW.recfromhtosby));
+         end if;
+
+         if OLD.fromstocdate<>NEW.fromstocdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('FROMSTOCDATE - ',OLD.fromstocdate,'=>',NEW.fromstocdate));
+         end if;
+
+         if OLD.sissuedby<>NEW.sissuedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SISSUEDBY - ',OLD.sissuedby,'=>',NEW.sissuedby));
+         end if;
+
+         if OLD.sissuedby<>NEW.sissuedby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SISSUEDBY - ',OLD.sissuedby,'=>',NEW.sissuedby));
+         end if;
+
+         if OLD.postdate<>NEW.postdate then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('POSTDATE - ',OLD.postdate,'=>',NEW.postdate));
+         end if;
+
+         if OLD.deltoho<>NEW.deltoho then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('DELTOHO - ',OLD.deltoho,'=>',NEW.deltoho));
+         end if;
+
+         if OLD.rettostore<>NEW.rettostore then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('RETTOSTORE - ',OLD.rettostore,'=>',NEW.rettostore));
+         end if;
+
+         if OLD.issuedtostoreby<>NEW.issuedtostoreby then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('ISSUEDTOSTOREBY - ',OLD.issuedtostoreby,'=>',NEW.issuedtostoreby));
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF JOSERVICE TRIGGER ====================================================================================================================================
+
+		//KRHEAD TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER krhead_update AFTER UPDATE on krhead FOR EACH ROW
+        BEGIN
+
+         if OLD.docno<>NEW.docno then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DOCUMENT # - ',OLD.docno,'=>',NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CODE - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.clientname<>NEW.clientname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('NAME - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('ADDRESS - ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.shipto<>NEW.shipto then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('SHIP TO - ',OLD.shipto,'=>',NEW.shipto),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('YOUR REF - ',OLD.yourref,'=>',NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('OUR REF - ',OLD.ourref,'=>',NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('REMARKS - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DATE - ',OLD.dateid,'=>',NEW.dateid),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF KRHEAD TRIGGER ====================================================================================================================================
+
+		//LADETAIl TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER ladetail_update AFTER UPDATE on ladetail FOR EACH ROW
+        BEGIN
+
+        if OLD.db<>NEW.db then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('DEBIT - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.db,'=>',NEW.db),New.editby,New.editdate);
+         end if;
+
+         if OLD.cr<>NEW.cr then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('CREDIT - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.cr,'=>',NEW.cr),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('Code - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.acno<>NEW.acno then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('ACCT# - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.acno,'=>',NEW.acno),New.editby,New.editdate);
+         end if;
+
+         if OLD.acnoname<>NEW.acnoname then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('ACCT NAME - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.acnoname,'=>',NEW.acnoname),New.editby,New.editdate);
+         end if;
+
+         if OLD.checkno<>NEW.checkno then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('CHECK# - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.checkno,'=>',NEW.checkno),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('REMARKS - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.ref<>NEW.ref then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'DETAIL',concat('REFERENCE - ',OLD.acnoname,'(',OLD.acno,')',' - ',OLD.ref,'=>',NEW.ref),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF LADETAIL TRIGGER ====================================================================================================================================
+
+		//LAHEAD TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER lahead_update AFTER UPDATE on lahead FOR EACH ROW
+        BEGIN
+
+         if OLD.docno<>NEW.docno then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('DOCUMENT # - ',OLD.docno,'=>',NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('CODE - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.clientname<>NEW.clientname then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('NAME - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.terms<>NEW.terms then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('TERMS - ',OLD.terms,'=>',NEW.terms),New.editby,New.editdate);
+         end if;
+
+         if OLD.contra<>NEW.contra then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('CONTRA ACCOUNT - ',OLD.contra,'=>',NEW.contra),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('ADDRESS - ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.shipto<>NEW.shipto then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SHIP TO - ',OLD.shipto,'=>',NEW.shipto),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('WAREHOUSE - ',OLD.wh,'=>',NEW.wh),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('YOUR REF - ',OLD.yourref,'=>',NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('OUR REF - ',OLD.ourref,'=>',NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('REMARKS - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.forex<>NEW.forex then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('FOREX - ',OLD.forex,'=>',NEW.forex),New.editby,New.editdate);
+         end if;
+
+         if OLD.tax<>NEW.tax then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('TAX - ',OLD.tax,'=>',NEW.tax),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('DATE - ',OLD.dateid,'=>',NEW.dateid),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF LAHEAD TRIGGER ====================================================================================================================================
+
+		//LASTOCK TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER lastock_update AFTER UPDATE on lastock FOR EACH ROW
+        BEGIN
+
+         if OLD.ext<>NEW.ext then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('TOTAL - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.ext,'=>',NEW.ext),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('WAREHOUSE - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.wh,'=>',NEW.wh),New.editby,New.editdate);
+         end if;
+
+          if OLD.barcode<>NEW.barcode then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('BARCODE - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+          if OLD.uom<>NEW.uom then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('UOM - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.uom,'=>',NEW.uom),New.editby,New.editdate);
+         end if;
+
+          if OLD.itemname<>NEW.itemname then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('ITEM NAME - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+          if OLD.rrcost<>NEW.rrcost then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('Amount - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrcost,'=>',NEW.rrcost),New.editby,New.editdate);
+         end if;
+
+          if OLD.isamt<>NEW.isamt then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('Amount - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.isamt,'=>',NEW.isamt),New.editby,New.editdate);
+         end if;
+
+          if OLD.disc<>NEW.disc then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('DISCOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+         end if;
+
+          if OLD.rrqty<>NEW.rrqty then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrqty,'=>',NEW.rrqty),New.editby,New.editdate);
+         end if;
+
+          if OLD.isqty<>NEW.isqty then
+           insert into table_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.isqty,'=>',NEW.isqty),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF LASTOCK TRIGGER ====================================================================================================================================
+
+		//PCHEAD TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER pchead_update AFTER UPDATE on pchead FOR EACH ROW
+        BEGIN
+
+         if OLD.docno<>NEW.docno then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DOCUMENT # - ',OLD.docno,'=>',NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CLIENT - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.clientname<>NEW.clientname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('CLIENT NAME - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.terms<>NEW.terms then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('TERMS - ',OLD.terms,'=>',NEW.terms),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('ADDRESS - ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('YOUR REF - ',OLD.yourref,'=>',NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('OURREF - ',OLD.ourref,'=>',NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('REMARKS - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.forex<>NEW.forex then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('FOREX - ',OLD.forex,'=>',NEW.forex),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into transnum_log(trno,field,oldversion,userid,dateid)
+        values(OLD.trno,'HEAD',concat('DATE - ',OLD.dateid,'=>',NEW.dateid),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF PCHEAD TRIGGER ====================================================================================================================================
+
+		//PCSTOCK TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER pcstock_update BEFORE UPDATE on pcstock FOR EACH ROW
+        BEGIN
+
+         if OLD.ext<>NEW.ext then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('TOTAL - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.ext,'=>',NEW.ext),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('WAREHOUSE - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.wh,'=>',NEW.wh),New.editby,New.editdate);
+         end if;
+
+         if OLD.barcode<>NEW.barcode then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('PRODUCT ID - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+         if OLD.itemname<>NEW.itemname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('ITEM NAME - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+         if OLD.uom<>NEW.uom then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('UOM - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.uom,'=>',NEW.uom),New.editby,New.editdate);
+         end if;
+
+         if OLD.disc<>NEW.disc then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('DISCOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+         end if;
+
+         if OLD.rrqty<>NEW.rrqty then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrqty,'=>',NEW.rrqty),New.editby,New.editdate);
+         end if;
+
+         if OLD.rrcost<>NEW.rrcost then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('AMOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrcost,'=>',NEW.rrcost),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF PCSTOCK TRIGGER ====================================================================================================================================
+
+		//POHEAD TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER pohead_update AFTER UPDATE on pohead FOR EACH ROW
+        BEGIN
+
+         if OLD.docno<>NEW.docno then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('DOCUMENT # - ',OLD.docno,'=>',NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('CLIENT - ',OLD.client,'=>',NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.clientname<>NEW.clientname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('CLIENT NAME - ',OLD.clientname,'=>',NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.terms<>NEW.terms then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('TERMS - ',OLD.terms,'=>',NEW.terms),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('ADDRESS - ',OLD.address,'=>',NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('YOUR REF - ',OLD.yourref,'=>',NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('OUR REF - ',OLD.ourref,'=>',NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.shipto<>NEW.shipto then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('SHIP TO - ',OLD.shipto,'=>',NEW.shipto),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('REMARKS - ',OLD.rem,'=>',NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.forex<>NEW.forex then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('FOREX - ',OLD.forex,'=>',NEW.forex),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'HEAD',concat('DATE - ',OLD.dateid,'=>',NEW.dateid),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF POHEAD TRIGGER ====================================================================================================================================
+
+		//hjbstock TRIGGER ==========================================================================================================================================
+		// $qry = "create TRIGGER hjbstock_update_before BEFORE UPDATE on hjbstock FOR EACH ROW
+		//     BEGIN
+		//      if New.QA>New.ISS then
+		//         CALL QTY_IS_GREATER_THAN_JO_QTY;
+		//       end if;
+		//     END";
+		// $this->coreFunctions->execqry($qry, 'trigger');
+		//END OF hjbstock TRIGGER ====================================================================================================================================
+
+		//postock TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER postock_update_before BEFORE UPDATE on postock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER postock_update_after AFTER UPDATE on postock FOR EACH ROW
+        BEGIN
+
+         if OLD.ext<>NEW.ext then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('TOTAL - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.ext,'=>',NEW.ext),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('WAREHOUSE - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.wh,'=>',NEW.wh),New.editby,New.editdate);
+         end if;
+
+         if OLD.barcode<>NEW.barcode then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('PRODUCT ID - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+         if OLD.itemname<>NEW.itemname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('PRODUCT NAME - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+         if OLD.disc<>NEW.disc then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('DISCOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+         end if;
+
+         if OLD.qty<>NEW.qty then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.qty,'=>',NEW.qty),New.editby,New.editdate);
+         end if;
+
+
+         if OLD.rrqty<>NEW.rrqty then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrqty,'=>',NEW.rrqty),New.editby,New.editdate);
+         end if;
+
+         if OLD.rrcost<>NEW.rrcost then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('AMOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.rrcost,'=>',NEW.rrcost),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER postock_delete BEFORE DELETE on postock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_POSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF postock TRIGGER ====================================================================================================================================
+
+		//rrstatus TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER rrstatus_update BEFORE UPDATE on rrstatus FOR EACH ROW
+        BEGIN
+           if New.Bal<0 then
+             CALL BELOW_QTY_RECEIVED;
+           elseif New.QA>New.QTY then
+             CALL DM_QTY_GREATER_THAN_RR_QTY;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER rrstatus_delete BEFORE DELETE on rrstatus FOR EACH ROW
+        BEGIN
+
+          if (old.qty<>old.bal) or old.qa<>0 then
+            Call ITEM_ALREADY_SERVED_RRSTATUS;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF rrstatus TRIGGER ====================================================================================================================================
+
+		//sohead TRIGGER ==========================================================================================================================================
+		$qry = 'create TRIGGER sohead_update AFTER UPDATE on sohead FOR EACH ROW
+        BEGIN
+
+         if OLD.docno<>NEW.docno then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("DOCUMENT # - ",OLD.docno,"=>",NEW.docno),New.editby,New.editdate);
+         end if;
+
+         if OLD.client<>NEW.client then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("CLIENT - ",OLD.client,"=>",NEW.client),New.editby,New.editdate);
+         end if;
+
+         if OLD.clientname<>NEW.clientname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("CLIENT NAME - ",OLD.clientname,"=>",NEW.clientname),New.editby,New.editdate);
+         end if;
+
+         if OLD.terms<>NEW.terms then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("TERMS - ",OLD.terms,"=>",NEW.terms),New.editby,New.editdate);
+         end if;
+
+         if OLD.address<>NEW.address then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("ADDRESS - ",OLD.address,"=>",NEW.address),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("WAREHOUSE - ",OLD.wh,"=>",NEW.wh),New.editby,New.editdate);
+         end if;
+
+         if OLD.yourref<>NEW.yourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("YOURREF - ",OLD.yourref,"=>",NEW.yourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.ourref<>NEW.ourref then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("OURREF - ",OLD.ourref,"=>",NEW.ourref),New.editby,New.editdate);
+         end if;
+
+         if OLD.agent<>NEW.agent then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("AGENT - ",OLD.agent,"=>",NEW.agent),New.editby,New.editdate);
+         end if;
+
+         if OLD.shipto<>NEW.shipto then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("SHIP TO - ",OLD.shipto,"=>",NEW.shipto),New.editby,New.editdate);
+         end if;
+
+         if OLD.rem<>NEW.rem then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("REMARKS - ",OLD.rem,"=>",NEW.rem),New.editby,New.editdate);
+         end if;
+
+         if OLD.forex<>NEW.forex then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("FOREX - ",OLD.forex,"=>",NEW.forex),New.editby,New.editdate);
+         end if;
+
+         if OLD.dateid<>NEW.dateid then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,"HEAD",concat("DATE - ",OLD.dateid,"=>",NEW.dateid),New.editby,New.editdate);
+         end if;
+
+        END';
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF sohead TRIGGER ====================================================================================================================================
+
+		//sostock TRIGGER ====================================================================================================================================
+		$qry = "create TRIGGER sostock_update_before BEFORE UPDATE on sostock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER sostock_update_after AFTER UPDATE on sostock FOR EACH ROW
+        BEGIN
+
+         if OLD.ext<>NEW.ext then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('TOTAL - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.ext,'=>',NEW.ext),New.editby,New.editdate);
+         end if;
+
+         if OLD.wh<>NEW.wh then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('WAREHOUSE - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.wh,'=>',NEW.wh),New.editby,New.editdate);
+         end if;
+
+         if OLD.barcode<>NEW.barcode then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('PRODUCT ID - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.barcode,'=>',NEW.barcode),New.editby,New.editdate);
+         end if;
+
+         if OLD.itemname<>NEW.itemname then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('PRODUCT NAME - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.itemname,'=>',NEW.itemname),New.editby,New.editdate);
+         end if;
+
+         if OLD.uom<>NEW.uom then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('UOM - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.uom,'=>',NEW.uom),New.editby,New.editdate);
+         end if;
+
+         if OLD.disc<>NEW.disc then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('DISCOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.disc,'=>',NEW.disc),New.editby,New.editdate);
+         end if;
+
+         if OLD.isqty<>NEW.isqty then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('QTY - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.isqty,'=>',NEW.isqty),New.editby,New.editdate);
+         end if;
+
+         if OLD.isamt<>NEW.isamt then
+           insert into transnum_log(trno,field,oldversion,userid,dateid) values(OLD.trno,'STOCK',concat('AMOUNT - ',OLD.itemname,'(',OLD.barcode,')',' - ',OLD.isamt,'=>',NEW.isamt),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER sostock_delete BEFORE DELETE on sostock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF sostock TRIGGER ====================================================================================================================================
+
+		//terms TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER term_update AFTER UPDATE on terms FOR EACH ROW
+        BEGIN
+
+          if OLD.terms<>NEW.terms then
+           insert into terms_log(trno,field,oldversion,userid,dateid) values(OLD.line,'TERMS',concat('Terms - ',OLD.terms,'=>',NEW.terms),New.editby,New.editdate);
+         end if;
+
+          if OLD.days<>NEW.days then
+           insert into terms_log(trno,field,oldversion,userid,dateid) values(OLD.line,'TERMS',concat('Days - ',OLD.days,'=>',NEW.days),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF terms TRIGGER ====================================================================================================================================
+
+		//useraccess TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER useraccess_update AFTER UPDATE on useraccess FOR EACH ROW
+        BEGIN
+
+         if OLD.username<>NEW.username then
+           insert into useraccess_log(trno,field,oldversion,userid,dateid) values(OLD.accessid,'USERACCESS',concat('UserName - ',OLD.username,'=>',NEW.username),New.editby,New.editdate);
+         end if;
+
+         if OLD.name<>NEW.name then
+           insert into useraccess_log(trno,field,oldversion,userid,dateid) values(OLD.accessid,'USERACCESS',concat('Name - ',OLD.name,'=>',NEW.name),New.editby,New.editdate);
+         end if;
+
+          if OLD.pwd<>NEW.pwd then
+           insert into useraccess_log(trno,field,oldversion,userid,dateid) values(OLD.accessid,'USERACCESS','Change Password',New.editby,New.editdate);
+         end if;
+
+          if OLD.pic<>NEW.pic then
+           insert into useraccess_log(trno,field,oldversion,userid,dateid) values(OLD.accessid,'USERACCESS',concat('Picture - ',OLD.pic,'=>',NEW.pic),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF useraccess TRIGGER ====================================================================================================================================
+
+		//users TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER users_update AFTER UPDATE on users FOR EACH ROW
+        BEGIN
+
+          if OLD.username<>NEW.username then
+           insert into userlog(trno,field,oldversion,userid,dateid) values(OLD.idno,'USERS',concat('UserLevels - ',OLD.username,'=>',NEW.username),New.editby,New.editdate);
+         end if;
+
+          if OLD.class<>NEW.class then
+           insert into userlog(trno,field,oldversion,userid,dateid) values(OLD.idno,'USERS',concat('Class - ',OLD.class,'=>',NEW.class),New.editby,New.editdate);
+         end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//  if OLD.attributes<>NEW.attributes then
+		//   insert into userlog(trno,field,oldversion,userid,dateid) values(OLD.idno,'USERS',concat('Attributes - ',OLD.attributes,'=>',NEW.attributes),New.editby,New.editdate);
+		// end if;
+		//END OF users TRIGGER ====================================================================================================================================
+	}
+
+	private function tableupdatewaims() {
+		$this->coreFunctions->sbcaddcolumn("client", "isdepartment", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("trstock", "reqqty", "DECIMAL (18,6) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("htrstock", "reqqty", "DECIMAL (18,6) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("htrstock", "prqty", "DECIMAL (18,6) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("htrstock", "prqa", "DECIMAL (18,6) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("htrhead", "approved", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("htrhead", "approvedate", "DATETIME DEFAULT NULL ", 0);
+		$this->coreFunctions->sbcaddcolumn("htrhead", "prby", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("htrhead", "prdate", "DATETIME DEFAULT NULL ", 0);
+
+		//10/27/2020 fpy
+		$this->coreFunctions->sbcaddcolumn("center", "tin", "VARCHAR(30) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("center", "zipcode", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("center", "ismain", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
+
+		//10.29.2020 fmm - used in stock transfer module
+		$this->coreFunctions->sbcaddcolumn("lahead", "dept", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("glhead", "dept", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("client", "wh", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+
+		//JAC 11102020
+		$this->coreFunctions->sbcaddcolumn("rrstatus", "forex", "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("rrstatus", "cur", "varchar(5) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumn("rrstatus", "receiveddate", "DATETIME DEFAULT NULL", 0);
+
+		$this->coreFunctions->sbcaddcolumn("glstock", "fcost", "decimal(18,6) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumn("lastock", "fcost", "decimal(18,6) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("item", "foramt", "decimal(18,6) NOT NULL DEFAULT '0'", 0);
+
+		// JIKS [11.11.2020] add forex masterfile and add column forexid
+		$qry = "CREATE TABLE `forex_masterfile` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `cur` varchar(3) NOT NULL DEFAULT '',
+      `curtopeso` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `dollartocur` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("forex_masterfile", $qry);
+
+		$this->coreFunctions->sbcaddcolumn("client", "forexid", "int(11) unsigned NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("lahead", "cur", "VARCHAR(3) NOT NULL DEFAULT ''", 1);
+		$this->coreFunctions->sbcaddcolumn("glhead", "cur", "VARCHAR(3) NOT NULL DEFAULT ''", 1);
+
+		$this->coreFunctions->sbcaddcolumn("useraccess", "picture", "VARCHAR(100) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumn("client", "isstudent", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
+	}
+
+	private function tableupdatehms() {
+		$qry = "CREATE TABLE `tblroomtype` (
+      `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `roomtype` char(30) NOT NULL DEFAULT '',
+      `rate1` decimal(10,2) unsigned NOT NULL DEFAULT '0.00',
+      `maxadult` int(11) unsigned NOT NULL DEFAULT '0',
+      `maxchild` int(11) unsigned NOT NULL DEFAULT '0',
+      `maxinfant` int(11) unsigned NOT NULL DEFAULT '0',
+      `beds` int(11) unsigned NOT NULL DEFAULT '0',
+      `additional` decimal(10,2) unsigned NOT NULL DEFAULT '0.00',
+      `issmoking` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `category` char(8) NOT NULL DEFAULT '',
+      `rate2` decimal(10,2) unsigned NOT NULL DEFAULT '0.00',
+      `createdate` datetime DEFAULT NULL,
+      `createby` varchar(45) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      `editby` varchar(45) NOT NULL DEFAULT '',
+      `bfast` int(11) unsigned NOT NULL DEFAULT '0',
+      `inactive` tinyint(2) NOT NULL DEFAULT '0',
+      `asset` varchar(45) NOT NULL DEFAULT '',
+      `revenue` varchar(45) NOT NULL DEFAULT '',
+      `rem` varchar(1000) NOT NULL DEFAULT '',
+      `typename` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`id`)
+    ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("tblroomtype", $qry);
+
+		$qry = "CREATE TABLE `hmsratesetup` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `code` varchar(45) NOT NULL DEFAULT '',
+      `description` varchar(45) NOT NULL,
+      `isinactive` tinyint(1) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1";
+		$this->coreFunctions->sbccreatetable("hmsratesetup", $qry);
+
+		$qry = "CREATE TABLE `hmscharges` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `description` varchar(100) NOT NULL DEFAULT '',
+      `asset` varchar(20) NOT NULL DEFAULT '',
+      `liabilities` varchar(20) NOT NULL DEFAULT '',
+      `revenue` varchar(20) NOT NULL DEFAULT '',
+      `expense` varchar(20) NOT NULL DEFAULT '',
+      `factor` int(10) unsigned NOT NULL DEFAULT '0',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `groupid` varchar(45) NOT NULL DEFAULT '',
+      `starttime` varchar(45) NOT NULL DEFAULT '',
+      `nohrs` decimal(18,2) unsigned NOT NULL DEFAULT '0.00',
+      `category` varchar(100) NOT NULL DEFAULT '',
+      `subcat` varchar(100) NOT NULL DEFAULT '',
+      `isadmin` tinyint(1) NOT NULL DEFAULT '0',
+      `isnegative` tinyint(1) NOT NULL DEFAULT '0',
+      `isinactive` tinyint(1) NOT NULL DEFAULT '0',
+      `islookup` tinyint(1) NOT NULL DEFAULT '0',
+      `barcode` varchar(20) NOT NULL DEFAULT '',
+      `center` varchar(45) NOT NULL DEFAULT '',
+      `isbanquet` tinyint(1) NOT NULL DEFAULT '0',
+      `isdisc` tinyint(1) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;";
+		$this->coreFunctions->sbccreatetable("hmscharges", $qry);
+
+		$qry = "CREATE TABLE `hmspackage` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `packname` varchar(100) NOT NULL DEFAULT '',
+      `packamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `roomtype` varchar(45) NOT NULL DEFAULT '',
+      `pax` int(11) NOT NULL DEFAULT '0',
+      `hrs` int(11) NOT NULL DEFAULT '0',
+      `days` int(11) NOT NULL DEFAULT '0',
+      `rem` varchar(500) NOT NULL DEFAULT '',
+      `category` varchar(100) NOT NULL DEFAULT '',
+      `subcategory` varchar(100) NOT NULL DEFAULT '',
+      `isinactive` tinyint(1) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		$this->coreFunctions->sbccreatetable("hmspackage", $qry);
+	}
+
+	private function tableupdateenrollment() {
+		$qry = "CREATE TABLE `en_schoolyear` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `issy` int(10) unsigned NOT NULL DEFAULT '0',
+      `code` varchar(45)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_schoolyear", $qry);
+
+		$qry = "CREATE TABLE `en_scheme` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `scheme` varchar(45)  NOT NULL DEFAULT '',
+      `orderscheme` int(10) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (scheme)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_scheme", $qry);
+
+		$qry = "CREATE TABLE `en_section` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `isterms` int(10) unsigned NOT NULL DEFAULT '0',
+      `coursecode` varchar(55)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (section)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_section", $qry);
+
+		$qry = "CREATE TABLE `en_levels` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `levels` varchar(45) NOT NULL DEFAULT '',
+      `orderlevels` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (levels)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_levels", $qry);
+
+		$qry = "CREATE TABLE `en_period` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `code` varchar(45)  NOT NULL DEFAULT '',
+      `name` varchar(450)  NOT NULL DEFAULT '',
+      `terms` varchar(45)  NOT NULL DEFAULT '',
+      `year` varchar(45)  NOT NULL DEFAULT '',
+      `estart` datetime DEFAULT NULL,
+      `eend` datetime DEFAULT NULL,
+      `eext` datetime DEFAULT NULL,
+      `sstart` datetime DEFAULT NULL,
+      `send` datetime DEFAULT NULL,
+      `sext` datetime DEFAULT NULL,
+      `astart` datetime DEFAULT NULL,
+      `aend` datetime DEFAULT NULL,
+      `aext` datetime DEFAULT NULL,
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `isactive` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_period", $qry);
+
+		$qry = "CREATE TABLE `en_term` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `term` varchar(45) NOT NULL DEFAULT '',
+      `orderterm` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (term)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_term", $qry);
+
+		$qry = "CREATE TABLE `en_dept` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `deptname` varchar(100) NOT NULL DEFAULT '',
+      `signatory` varchar(45) NOT NULL DEFAULT '',
+      `parentcode` varchar(45)  NOT NULL DEFAULT '',
+      `parentname` varchar(45) NOT NULL DEFAULT '',
+      `deancode` varchar(45)  NOT NULL DEFAULT '',
+      `deanname` varchar(45)  NOT NULL DEFAULT '',
+      `fund` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `orderdept` int(11) unsigned NOT NULL DEFAULT '0',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (deptcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_dept", $qry);
+
+		$qry = "CREATE TABLE `en_rooms` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `buildingcode` varchar(45)  NOT NULL DEFAULT '',
+      `buildingname` varchar(450)  NOT NULL DEFAULT '',
+      `roomcode` varchar(45)  NOT NULL DEFAULT '',
+      `roomname` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (buildingcode,roomcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_rooms", $qry);
+
+		$qry = "CREATE TABLE `en_course` (
+      `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `isinactive` tinyint(4) NOT NULL DEFAULT '0',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deanname` varchar(450) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `isdegree` tinyint(4) NOT NULL DEFAULT '0',
+      `isundergraduate` tinyint(4) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`line`),
+      INDEX name (coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_course", $qry);
+
+		$qry = "CREATE TABLE `en_instructor` (
+      `line` int(11) unsigned unsigned NOT NULL AUTO_INCREMENT,
+      `teachercode` varchar(45) NOT NULL DEFAULT '',
+      `teachername` varchar(450) NOT NULL DEFAULT '',
+      `department` varchar(45) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `address` varchar(450) NOT NULL DEFAULT '',
+      `telno` varchar(45) NOT NULL DEFAULT '',
+      `callname` varchar(450) NOT NULL DEFAULT '',
+      `deancode` varchar(45) NOT NULL DEFAULT '',
+      `deanname` varchar(450) NOT NULL DEFAULT '',
+      `rank` varchar(45) NOT NULL DEFAULT '',
+      `levels` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (teachercode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_instructor", $qry);
+
+		$qry = "CREATE TABLE `en_modeofpayment` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `code` varchar(45) NOT NULL DEFAULT '',
+      `deductpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `modeofpayment` varchar(450) NOT NULL DEFAULT '',
+      `months` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc3` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc4` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc5` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc6` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc7` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc8` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc9` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `perc10` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `date1` datetime DEFAULT NULL,
+      `date2` datetime DEFAULT NULL,
+      `date3` datetime DEFAULT NULL,
+      `date4` datetime DEFAULT NULL,
+      `date5` datetime DEFAULT NULL,
+      `date6` datetime DEFAULT NULL,
+      `date7` datetime DEFAULT NULL,
+      `date8` datetime DEFAULT NULL,
+      `date9` datetime DEFAULT NULL,
+      `date10` datetime DEFAULT NULL,
+      PRIMARY KEY (`line`),
+      INDEX name (code)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_modeofpayment", $qry);
+
+		$qry = "CREATE TABLE `en_credentials` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `credentials` varchar(150) NOT NULL DEFAULT '',
+      `amt` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (credentialcode,`acno`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_credentials", $qry);
+
+		$qry = "CREATE TABLE `en_requirements` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `requirements` varchar(45)  NOT NULL DEFAULT '',
+      `studenttype` varchar(450)  NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_requirements", $qry);
+
+		$qry = "CREATE TABLE `en_fees` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feesdesc` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `vat` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_fees", $qry);
+
+		$qry = "CREATE TABLE `en_gradecomponent` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcname` varchar(450) NOT NULL DEFAULT '',
+      `gcpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`),
+      INDEX name (gccode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gradecomponent", $qry);
+
+		$qry = "CREATE TABLE `en_gradeequivalent` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `range1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `range2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `equivalent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gradeequivalent", $qry);
+
+		$qry = "CREATE TABLE `en_studentinfo` (
+      `clientid` int(10) unsigned NOT NULL DEFAULT '0',
+      `client` varchar(15) NOT NULL DEFAULT '',
+      `fname` varchar(45) NOT NULL DEFAULT '',
+      `lname` varchar(45) NOT NULL DEFAULT '',
+      `mname` varchar(45) NOT NULL DEFAULT '',
+      `studentid` varchar(45) NOT NULL DEFAULT '',
+      `course` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `major` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(450) NOT NULL DEFAULT '',
+      `isnew` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isold` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `iscrossenrollee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isforeign` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isadddrop` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `islateenrollee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `istransferee` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `isdept` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `branch` varchar(45) NOT NULL DEFAULT '',
+      `gender` varchar(45) NOT NULL DEFAULT '',
+      `civilstatus` varchar(45) NOT NULL DEFAULT '',
+      `bplace` varchar(450) NOT NULL DEFAULT '',
+      `studenttype` varchar(45) NOT NULL DEFAULT '',
+      `city` varchar(450) NOT NULL DEFAULT '',
+      `relation` varchar(45) NOT NULL DEFAULT '',
+      `gaddr` varchar(250) NOT NULL DEFAULT '',
+      `batch` varchar(45) NOT NULL DEFAULT '',
+      `nationality` varchar(45) NOT NULL DEFAULT '',
+      `isregular` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isirregular` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isextramural` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `haddr` varchar(450) NOT NULL DEFAULT '',
+      `baddr` varchar(450) NOT NULL DEFAULT '',
+      `guardian` varchar(45) NOT NULL DEFAULT '',
+      `htel` varchar(45) NOT NULL DEFAULT '',
+      `btel` varchar(45) NOT NULL DEFAULT '',
+      `gtel` varchar(45) NOT NULL DEFAULT '',
+      `elementary` varchar(450) NOT NULL DEFAULT '',
+      `highschool` varchar(450) NOT NULL DEFAULT '',
+      `college` varchar(450) NOT NULL DEFAULT '',
+      `postschool` varchar(450) NOT NULL DEFAULT '',
+      `eyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `hyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `cyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `pyear` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `company` varchar(450) NOT NULL DEFAULT '',
+      PRIMARY KEY (`clientid`),
+      INDEX name (client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_studentinfo", $qry);
+
+		$qry = "CREATE TABLE `en_subject` (
+      `trno` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `isinactive` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `ismajor` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `prereq1` varchar(45) NOT NULL DEFAULT '',
+      `prereq2` varchar(45) NOT NULL DEFAULT '',
+      `prereq3` varchar(45) NOT NULL DEFAULT '',
+      `prereq4` varchar(45) NOT NULL DEFAULT '',
+      `tf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `loadx` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subject", $qry);
+
+		$qry = "CREATE TABLE `en_subjectcurriculum` (
+      `line` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (subjectcode,curriculumcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subjectcurriculum", $qry);
+
+		$qry = "CREATE TABLE `en_subjectequivalent` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `subjectcode` varchar(80) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `load` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `subjectmain` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      INDEX name (subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_subjectequivalent", $qry);
+
+		$qry = "CREATE TABLE `en_cchead` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `docno` varchar(45) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `effectfromdate` datetime DEFAULT NULL,
+      `effecttodate` datetime DEFAULT NULL,
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `doc` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,curriculumcode,coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_cchead", $qry);
+
+		$qry = "CREATE TABLE `en_ccsubject` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `yearnum` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `pre1` varchar(45) NOT NULL DEFAULT '',
+      `pre2` varchar(45) NOT NULL DEFAULT '',
+      `pre3` varchar(45) NOT NULL DEFAULT '',
+      `pre4` varchar(45) NOT NULL DEFAULT '',
+      `pre5` varchar(45) NOT NULL DEFAULT '',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (curriculumcode,coursecode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_ccsubject", $qry);
+
+		$qry = "CREATE TABLE `en_sohead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2)  NOT NULL DEFAULT '',
+      `DocNo` varchar(20)  NOT NULL DEFAULT '',
+      `CLIENT` varchar(15)  NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime  DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50)  NOT NULL DEFAULT '',
+      `YourRef` varchar(25)  NOT NULL DEFAULT '',
+      `OurRef` varchar(25)  NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50)  NOT NULL DEFAULT '',
+      `ApprovedDate`  datetime DEFAULT NULL,
+      `PrintTime` datetime DEFAULT NULL,
+      `SettleTime` datetime DEFAULT NULL,
+      `coursecode` varchar(45)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45)  NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `others` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `type` varchar(45)  NOT NULL DEFAULT '',
+      `extramural` varchar(45)  NOT NULL DEFAULT '',
+      `majorcode` varchar(45)  NOT NULL DEFAULT '',
+      `majorname` varchar(450)  NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450)  NOT NULL DEFAULT '',
+      `credentials` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `period` varchar(45)  NOT NULL DEFAULT '',
+      `schedcode` varchar(45)  NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45)  NOT NULL DEFAULT '',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deptcode` varchar(45)  NOT NULL DEFAULT '',
+      `sex` varchar(45)  NOT NULL DEFAULT '',
+      `yr` varchar(45)  NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45)  NOT NULL DEFAULT '',
+      `contra` varchar(45)  NOT NULL DEFAULT '',
+      `interestamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallec` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`),
+      INDEX name (DocNo,client,wh)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sohead", $qry);
+
+		$qry = "CREATE TABLE `en_socredentials` (
+      `trno` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `line` int(11) NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `camt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,feescode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_socredentials", $qry);
+
+		$qry = "CREATE TABLE `en_sodetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6)  NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6)  NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2)  NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sodetail", $qry);
+
+		$qry = "CREATE TABLE `en_sootherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `barcode` varchar(45) NOT NULL DEFAULT '',
+      `itemname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (barcode,feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sootherfees", $qry);
+
+		$qry = "CREATE TABLE `en_sosubjects` (
+      `TrNo` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `schedday` varchar(50) NOT NULL DEFAULT '',
+      `schedtime` varchar(50) NOT NULL DEFAULT '',
+      `rooms` varchar(40) NOT NULL DEFAULT '',
+      `instructorcode` varchar(40) NOT NULL DEFAULT '',
+      `units` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `schedref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      `instructorname` varchar(450) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `origtrno` int(11) unsigned NOT NULL DEFAULT '0',
+      `origline` int(11) unsigned NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,instructorcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sosubjects", $qry);
+
+		$qry = "CREATE TABLE `en_sosummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45)  NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45)  NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sosummary", $qry);
+
+		$qry = "CREATE TABLE `en_sjcredentials` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (credentials)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjcredentials", $qry);
+
+		$qry = "CREATE TABLE `en_sjdetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjdetail", $qry);
+
+		$qry = "CREATE TABLE `en_sjhead` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `CLIENT` varchar(15) NOT NULL DEFAULT '',
+      `clientname` varchar(255) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `forex` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Contra` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(15) NOT NULL DEFAULT '',
+      `YourRef` varchar(50) NOT NULL DEFAULT '',
+      `OurRef` varchar(50) NOT NULL DEFAULT '',
+      `tax` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Prepared` varchar(50) NOT NULL DEFAULT '',
+      `Comm` varchar(10) NOT NULL DEFAULT '',
+      `DelBy` varchar(250) NOT NULL DEFAULT '',
+      `DateFrom` datetime DEFAULT NULL,
+      `Charge` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `price` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessp` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `netprice` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `dp` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `bal` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `terms1` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `terms2` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rfamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `dpamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `pf` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rebate` decimal(18,0) NOT NULL DEFAULT '0',
+      `plus` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `interest` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lessa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `amt` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `approved` varchar(255) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `majorcode` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(450) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `tuitionfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `others` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `modularfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `credentials` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45) NOT NULL DEFAULT '',
+      `total_balance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `recdate` datetime DEFAULT NULL,
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `totallec` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `reqby` varchar(50) NOT NULL DEFAULT '',
+      `reqdept` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (client,docno,coursecode,curriculumcode,curriculumdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjhead", $qry);
+
+		$qry = "CREATE TABLE `en_sjotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `db` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `cr` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjotherfees", $qry);
+
+		$qry = "CREATE TABLE `en_sjsubject` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINEX` int(11) unsigned NOT NULL DEFAULT '0',
+      `REFX` int(10) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `UOM` varchar(15) NOT NULL DEFAULT '',
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `DISC` varchar(40) NOT NULL DEFAULT '',
+      `Rem` varchar(250) NOT NULL DEFAULT '',
+      `ISAmt` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `AMT` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `ISQTY` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `ISS` decimal(19,10) NOT NULL DEFAULT '0.00',
+      `Ext` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Ref` varchar(20) NOT NULL DEFAULT '',
+      `Cost` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `Void` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `EncodedDate` datetime DEFAULT NULL,
+      `isChange` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `roomstatusid` int(10) unsigned NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      `origtrno` int(11) unsigned NOT NULL DEFAULT '0',
+      `origline` int(11) unsigned NOT NULL DEFAULT '0',
+      `screfx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `sclinex` int(11) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,refx,linex,origdocno,screfx,sclinex,origsubjectcode,origtrno,origline)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjsubject", $qry);
+
+		$qry = "CREATE TABLE `en_sjsummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `linex` int(10) unsigned NOT NULL DEFAULT '0',
+      `refx` int(10) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sjsummary", $qry);
+
+		$qry = "CREATE TABLE `en_adhead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `CLIENT` varchar(15) NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `YourRef` varchar(25) NOT NULL DEFAULT '',
+      `OurRef` varchar(25) NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50) NOT NULL DEFAULT '',
+      `ApprovedDate` datetime DEFAULT NULL,
+      `RSNo` bigint(20) NOT NULL DEFAULT '0',
+      `PrintTime` datetime DEFAULT NULL,
+      `SettleTime` datetime DEFAULT NULL,
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `others` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `type` varchar(45) NOT NULL DEFAULT '',
+      `extramural` varchar(45) NOT NULL DEFAULT '',
+      `majorcode` varchar(45) NOT NULL DEFAULT '',
+      `majorname` varchar(60) NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `credentials` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `sotrno` bigint(20) NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `schedcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `deptcode` varchar(45) NOT NULL DEFAULT '',
+      `sex` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45) NOT NULL DEFAULT '',
+      `contra` varchar(45) NOT NULL DEFAULT '',
+      `droppercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalunitadd` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,client,coursecode,curriculumcode,majorcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adhead", $qry);
+
+		$qry = "CREATE TABLE `en_adsubject` (
+      `TrNo` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `schedday` varchar(50) NOT NULL DEFAULT '',
+      `schedtime` varchar(50) NOT NULL DEFAULT '',
+      `rooms` varchar(40) NOT NULL DEFAULT '',
+      `instructorcode` varchar(40) NOT NULL DEFAULT '',
+      `units` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `schedref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) NOT NULL DEFAULT '0',
+      `linex` int(11) NOT NULL DEFAULT '0',
+      `instructorname` varchar(450) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `origtrno` int(11) NOT NULL DEFAULT '0',
+      `origline` int(11) NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      `isadd` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `isdrop` tinyint(5) unsigned NOT NULL DEFAULT '0',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,rooms,instructorcode,origtrno,origline,origdocno,origsubjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adsubject", $qry);
+
+		$qry = "CREATE TABLE `en_addetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `ACNO` varchar(15) NOT NULL DEFAULT '',
+      `client` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno,client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_addetail", $qry);
+
+		$qry = "CREATE TABLE `en_adotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `acno` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_adotherfees", $qry);
+
+		$qry = "CREATE TABLE `en_schead` (
+      `TrNo` int(10) unsigned  NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode,curriculumdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_schead", $qry);
+
+		$qry = "CREATE TABLE `en_scsubject` (
+      `trno` int(10) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `instructorcode` varchar(45) NOT NULL DEFAULT '',
+      `instructorname` varchar(45) NOT NULL DEFAULT '',
+      `roomcode` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `schedstarttime` varchar(45) NOT NULL DEFAULT '',
+      `schedendtime` varchar(45) NOT NULL DEFAULT '',
+      `minslot` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `maxslot` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `asqa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `astempqa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `qa` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (subjectcode,instructorcode,roomcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_scsubject", $qry);
+
+		$qry = "CREATE TABLE `en_gehead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `sheddocno` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `room` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `scheddocno` varchar(45) NOT NULL DEFAULT '',
+      `gstrno` bigint(20)  NOT NULL DEFAULT '0',
+      `gsdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode,scheddocno,curriculumdocno,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gehead", $qry);
+
+		$qry = "CREATE TABLE `en_gegrades` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(450) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `components` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `points` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `gstrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `gsdocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (client,gccode,gstrno,gsdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gegrades", $qry);
+
+		$qry = "CREATE TABLE `en_gshead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `sheddocno` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `room` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `scheddocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,advisercode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gshead", $qry);
+
+		$qry = "CREATE TABLE `en_gscomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcname` varchar(450) NOT NULL DEFAULT '',
+      `gcpercent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gscomponent", $qry);
+
+		$qry = "CREATE TABLE `en_gssubcomponent` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `compline` bigint(20)  NOT NULL DEFAULT '0',
+      `linex` int(11)  NOT NULL DEFAULT '0',
+      `component` varchar(45) NOT NULL DEFAULT '',
+      `gccode` varchar(45) NOT NULL DEFAULT '',
+      `gcsubcode` varchar(45) NOT NULL DEFAULT '',
+      `topic` varchar(45) NOT NULL DEFAULT '',
+      `noofitems` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (gccode,gcsubcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gssubcomponent", $qry);
+
+		$qry = "CREATE TABLE `en_sgshead` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `docno` varchar(45) NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `curriculumname` varchar(450) NOT NULL DEFAULT '',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `level` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `doc` varchar(45) NOT NULL DEFAULT '',
+      `yr` varchar(45) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(450) NOT NULL DEFAULT '',
+      `dateid` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,curriculumcode,coursecode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sgshead", $qry);
+
+		$qry = "CREATE TABLE `en_sgssubject` (
+      `trno` bigint(20)  NOT NULL DEFAULT '0',
+      `line` int(11)  NOT NULL DEFAULT '0',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `yearnum` varchar(45)  NOT NULL DEFAULT '0',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `units` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `pre1` varchar(45) NOT NULL DEFAULT '',
+      `pre2` varchar(45) NOT NULL DEFAULT '',
+      `pre3` varchar(45) NOT NULL DEFAULT '',
+      `pre4` varchar(45) NOT NULL DEFAULT '',
+      `pre5` varchar(45) NOT NULL DEFAULT '',
+      `lecture` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `coreq` varchar(45) NOT NULL DEFAULT '',
+      `grade` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `equivalent` decimal(18,2) NOT NULL DEFAULT '0.00',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (curriculumcode,coursecode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_sgssubject", $qry);
+
+		$qry = "CREATE TABLE `en_athead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2) NOT NULL DEFAULT '',
+      `DocNo` varchar(20) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `coursecode` varchar(45) NOT NULL DEFAULT '',
+      `coursename` varchar(450) NOT NULL DEFAULT '',
+      `curriculumname` varchar(45) NOT NULL DEFAULT '',
+      `sy` varchar(45) NOT NULL DEFAULT '',
+      `section` varchar(45) NOT NULL DEFAULT '',
+      `terms` varchar(45) NOT NULL DEFAULT '',
+      `period` varchar(45) NOT NULL DEFAULT '',
+      `yr` decimal(18,0) NOT NULL DEFAULT '0.00',
+      `curriculumcode` varchar(45) NOT NULL DEFAULT '',
+      `advisercode` varchar(45) NOT NULL DEFAULT '',
+      `advisername` varchar(450) NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45) NOT NULL DEFAULT '',
+      `sheddocno` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(450) NOT NULL DEFAULT '',
+      `room` varchar(45) NOT NULL DEFAULT '',
+      `schedday` varchar(45) NOT NULL DEFAULT '',
+      `schedtime` varchar(45) NOT NULL DEFAULT '',
+      `scheddocno` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`),
+      INDEX name (docno,coursecode,curriculumcode,subjectcode,curriculumdocno)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_athead", $qry);
+
+		$qry = "CREATE TABLE `en_atstudents` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0.00',
+      `line` int(10) unsigned NOT NULL DEFAULT '0.00',
+      `client` varchar(45) NOT NULL DEFAULT '',
+      `clientname` varchar(45) NOT NULL DEFAULT '',
+      `atdate` datetime DEFAULT NULL,
+      `status` varchar(500) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (client)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_atstudents", $qry);
+
+		//GL TABLES
+		$qry = "CREATE TABLE `en_glhead` (
+      `TrNo` int(10) unsigned NOT NULL DEFAULT '0',
+      `DOC` varchar(2)  NOT NULL DEFAULT '',
+      `DocNo` varchar(20)  NOT NULL DEFAULT '',
+      `CLIENTID` varchar(15)  NOT NULL DEFAULT '',
+      `ClientName` varchar(150) NOT NULL DEFAULT '',
+      `ADDRESS` varchar(150) NOT NULL DEFAULT '',
+      `ShipTo` varchar(150) NOT NULL DEFAULT '',
+      `Tel` varchar(50) NOT NULL DEFAULT '',
+      `DateID` datetime DEFAULT NULL,
+      `DUE` datetime DEFAULT NULL,
+      `WH` varchar(15) NOT NULL DEFAULT '',
+      `TERMS` varchar(30) NOT NULL DEFAULT '',
+      `REM` varchar(500) NOT NULL DEFAULT '',
+      `Cur` varchar(2) NOT NULL DEFAULT '',
+      `Forex` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `VoidDate` datetime DEFAULT NULL,
+      `Branch` varchar(30) NOT NULL DEFAULT '',
+      `Agent` varchar(50)  NOT NULL DEFAULT '',
+      `YourRef` varchar(25)  NOT NULL DEFAULT '',
+      `OurRef` varchar(25)  NOT NULL DEFAULT '',
+      `ApprovedBy` varchar(50)  NOT NULL DEFAULT '',
+      `ApprovedDate` datetime NOT NULL DEFAULT '',
+      `RSNo` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `PrintTime` datetime NOT NULL DEFAULT '',
+      `SettleTime` datetime DEFAULT NULL,
+      `project` varchar(45)  NOT NULL DEFAULT '',
+      `subproject` varchar(45)  NOT NULL DEFAULT '',
+      `blklot` varchar(45)  NOT NULL DEFAULT '',
+      `coursecode` varchar(45)  NOT NULL DEFAULT '',
+      `coursename` varchar(450)  NOT NULL DEFAULT '',
+      `curriculumcode` varchar(45)  NOT NULL DEFAULT '',
+      `totalunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitionperunit` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `tuitorial` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `registration` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `misc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `sy` varchar(45)  NOT NULL DEFAULT '',
+      `others` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `type` varchar(45)  NOT NULL DEFAULT '',
+      `extramural` varchar(45)  NOT NULL DEFAULT '',
+      `majorcode` varchar(45)  NOT NULL DEFAULT '',
+      `majorname` varchar(450)  NOT NULL DEFAULT '',
+      `modularfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `inventory` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totalbalance` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `isenrolled` tinyint(4) unsigned NOT NULL DEFAULT '0',
+      `curriculumname` varchar(450)  NOT NULL DEFAULT '',
+      `credentials` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `additionaldisc` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `section` varchar(45)  NOT NULL DEFAULT '',
+      `sotrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `reservationfee` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `period` varchar(45)  NOT NULL DEFAULT '',
+      `schedcode` varchar(45)  NOT NULL DEFAULT '',
+      `curriculumdocno` varchar(45)  NOT NULL DEFAULT '',
+      `level` varchar(45)  NOT NULL DEFAULT '',
+      `deptcode` varchar(45)  NOT NULL DEFAULT '',
+      `sex` varchar(45)  NOT NULL DEFAULT '',
+      `yr` varchar(45)  NOT NULL DEFAULT '',
+      `modeofpayment` varchar(45)  NOT NULL DEFAULT '',
+      `contra` varchar(45)  NOT NULL DEFAULT '',
+      `interestamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totalamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `totallec` decimal(18,2)  NOT NULL DEFAULT '0.00',
+      `totallab` decimal(18,2)  NOT NULL DEFAULT '0.00',,
+      PRIMARY KEY (`trno`),
+      INDEX name (DocNo,clientid,wh)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glhead", $qry);
+
+		$qry = "CREATE TABLE `en_glcredentials` (
+      `trno` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `line` int(11) NOT NULL DEFAULT '0',
+      `credentials` varchar(45) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `particulars` varchar(450) NOT NULL DEFAULT '',
+      `percentdisc` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `acnoid` varchar(45) NOT NULL DEFAULT '',
+      `acnoname` varchar(45) NOT NULL DEFAULT '',
+      `feescode` varchar(45) NOT NULL DEFAULT '',
+      `scheme` varchar(45) NOT NULL DEFAULT '',
+      `subjectcode` varchar(45) NOT NULL DEFAULT '',
+      `subjectname` varchar(45) NOT NULL DEFAULT '',
+      `credentialcode` varchar(45) NOT NULL DEFAULT '',
+      `camt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `feestype` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acnoid,feescode,subjectcode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glcredentials", $qry);
+
+		$qry = "CREATE TABLE `en_gldetail` (
+      `trno` int(11) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `acnoid` varchar(15) NOT NULL DEFAULT '',
+      `clientid` varchar(20) NOT NULL DEFAULT '',
+      `acnoname` varchar(250) NOT NULL DEFAULT '',
+      `db` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `cr` decimal(20,6) NOT NULL DEFAULT '0.00',
+      `fdb` decimal(20,6) unsigned NOT NULL DEFAULT '0.00',
+      `fcr` decimal(20,6) unsigned NOT NULL DEFAULT '0.00',
+      `rem` varchar(255) NOT NULL DEFAULT '',
+      `Agent` varchar(50) NOT NULL DEFAULT '',
+      `CheckNo` varchar(50) NOT NULL DEFAULT '',
+      `CheckDate` datetime DEFAULT NULL,
+      `Postdate` datetime DEFAULT NULL,
+      `interest` decimal(19,2) NOT NULL DEFAULT '0.00',
+      `ref` varchar(20) NOT NULL DEFAULT '',
+      `project` varchar(45) NOT NULL DEFAULT '',
+      `subproject` varchar(45) NOT NULL DEFAULT '',
+      `blklot` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (acnoid,clientid)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_gldetail", $qry);
+
+		$qry = "CREATE TABLE `en_glotherfees` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(11) unsigned NOT NULL DEFAULT '0',
+      `barcode` varchar(45) NOT NULL DEFAULT '',
+      `itemname` varchar(450) NOT NULL DEFAULT '',
+      `isamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `rem` varchar(450) NOT NULL DEFAULT '',
+      `feescode` varchar(50) NOT NULL DEFAULT '',
+      `feestype` varchar(50) NOT NULL DEFAULT '',
+      `scheme` varchar(50) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (barcode,feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glotherfees", $qry);
+
+		$qry = "CREATE TABLE `en_glsubjects` (
+      `TrNo` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `LINE` int(11) unsigned NOT NULL DEFAULT '0',
+      `subjectcode` varchar(30) NOT NULL DEFAULT '',
+      `subjectname` varchar(500) NOT NULL DEFAULT '',
+      `schedday` varchar(50) NOT NULL DEFAULT '',
+      `schedtime` varchar(50) NOT NULL DEFAULT '',
+      `rooms` varchar(40) NOT NULL DEFAULT '',
+      `instructorcode` varchar(40) NOT NULL DEFAULT '',
+      `units` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `lecture` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `laboratory` decimal(19,6) NOT NULL DEFAULT '0.00',
+      `schedref` varchar(45) NOT NULL DEFAULT '',
+      `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `linex` int(11) unsigned NOT NULL DEFAULT '0',
+      `instructorname` varchar(450) NOT NULL DEFAULT '',
+      `hours` decimal(18,2) NOT NULL DEFAULT '0.00',
+      `origtrno` int(11) unsigned NOT NULL DEFAULT '0',
+      `origline` int(11) unsigned NOT NULL DEFAULT '0',
+      `origdocno` varchar(45) NOT NULL DEFAULT '',
+      `origsubjectcode` varchar(45) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (barcode,feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glsubjects", $qry);
+
+		$qry = "CREATE TABLE `en_glsummary` (
+      `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+      `line` int(10) unsigned NOT NULL DEFAULT '0',
+      `ref` varchar(45) varchar(30) NOT NULL DEFAULT '',
+      `feescode` varchar(45) varchar(30) NOT NULL DEFAULT '',
+      `feestype` varchar(45) varchar(30) NOT NULL DEFAULT '',
+      `scheme` varchar(45) varchar(30) NOT NULL DEFAULT '',
+      `amt` decimal(18,2) varchar(30) NOT NULL DEFAULT '',
+      PRIMARY KEY (`trno`,`line`),
+      INDEX name (feescode)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("en_glsummary", $qry);
+	}
+
+	private function tableupdatecustomersupport() {
+		$qry = "CREATE TABLE `csstickethead` (
+      `trno` bigint(20) NOT NULL DEFAULT '0',
+      `doc` char(2) NOT NULL DEFAULT '',
+      `docno` char(20) NOT NULL,
+      `client` varchar(15) NOT NULL DEFAULT '',
+      `dept` varchar(15) NOT NULL DEFAULT '',
+      `dateid` date DEFAULT NULL,
+      `rem` text DEFAULT NULL,
+      `yourref` varchar(25) NOT NULL DEFAULT '',
+      `ourref` varchar(25) NOT NULL DEFAULT '',
+      `sitrno` bigint(20) NOT NULL DEFAULT '0',
+      `lockuser` varchar(50) NOT NULL DEFAULT '',
+      `lockdate` datetime DEFAULT NULL,
+      `openby` varchar(50) NOT NULL DEFAULT '',
+      `users` varchar(50) NOT NULL DEFAULT '',
+      `createdate` datetime DEFAULT NULL,
+      `createby` varchar(50) NOT NULL DEFAULT '',
+      `editby` varchar(50) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      `viewby` varchar(50) NOT NULL DEFAULT '',
+      `viewdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+		$this->coreFunctions->sbccreatetable("csstickethead", $qry);
+
+		$qry = "CREATE TABLE `hcsstickethead` (
+      `trno` bigint(20) NOT NULL DEFAULT '0',
+      `doc` char(2) NOT NULL DEFAULT '',
+      `docno` char(20) NOT NULL,
+      `clientid` int(4) unsigned NOT NULL DEFAULT 0,
+      `deptid` int(4) unsigned NOT NULL DEFAULT 0,
+      `dateid` date DEFAULT NULL,
+      `rem` text DEFAULT NULL,
+      `yourref` varchar(25) NOT NULL DEFAULT '',
+      `ourref` varchar(25) NOT NULL DEFAULT '',
+      `sitrno` bigint(20) NOT NULL DEFAULT '0',
+      `lockuser` varchar(50) NOT NULL DEFAULT '',
+      `lockdate` datetime DEFAULT NULL,
+      `openby` varchar(50) NOT NULL DEFAULT '',
+      `users` varchar(50) NOT NULL DEFAULT '',
+      `createdate` datetime DEFAULT NULL,
+      `createby` varchar(50) NOT NULL DEFAULT '',
+      `editby` varchar(50) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      `viewby` varchar(50) NOT NULL DEFAULT '',
+      `viewdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+		$this->coreFunctions->sbccreatetable("hcsstickethead", $qry);
+
+		$qry = "CREATE TABLE `csscomment` (
+      `line` int(10)  unsigned NOT NULL AUTO_INCREMENT,
+      `trno` bigint(20) NOT NULL DEFAULT '0',
+      `createdate` datetime DEFAULT NULL,
+      `createby` varchar(50) NOT NULL DEFAULT '',
+      `comment` text NOT NULL,
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("csscomment", $qry);
+
+		$qry = "CREATE TABLE `hcsscomment` (
+      `line` int(10)  unsigned NOT NULL,
+      `trno` bigint(20) NOT NULL DEFAULT '0',
+      `createdate` datetime DEFAULT NULL,
+      `createby` varchar(50) NOT NULL DEFAULT '',
+      `comment` text NOT NULL,
+      PRIMARY KEY (`line`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+
+		$this->coreFunctions->sbccreatetable("hcsscomment", $qry);
+	}
+}//end class

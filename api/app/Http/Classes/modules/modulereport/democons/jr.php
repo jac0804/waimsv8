@@ -1,0 +1,499 @@
+<?php
+
+namespace App\Http\Classes\modules\modulereport\democons;
+
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use Session;
+
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Milon\Barcode\DNS1D;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\Logger;
+use App\Http\Classes\SBCPDF;
+use App\Http\Classes\builder\helpClass;
+use Illuminate\Support\Facades\URL;
+
+use PDF;
+use TCPDF_FONTS;
+use Illuminate\Support\Facades\Storage;
+
+class jr
+{
+
+  private $modulename = "Job Request";
+  private $fieldClass;
+  private $companysetup;
+  private $coreFunctions;
+  private $othersClass;
+  private $logger;
+  private $reporter;
+  
+  public function __construct()
+  {
+    $this->fieldClass = new txtfieldClass;
+    $this->companysetup = new companysetup;
+    $this->coreFunctions = new coreFunctions;
+    $this->othersClass = new othersClass;
+    $this->logger = new Logger;
+    $this->reporter = new SBCPDF;
+  }
+
+  public function createreportfilter($config)
+  {
+
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
+    ]);
+    data_set($col1, "prepared.label", "Requisition by");
+    data_set($col1, "received.label", "Checked by");
+
+    return array('col1' => $col1);
+  }
+
+  public function reportparamsdata($config)
+  {
+    $username = $this->coreFunctions->datareader("select name as value from useraccess where username =?", [$config['params']['user']]);
+    return $this->coreFunctions->opentable(
+      "select 
+      'PDFM' as print,
+      '$username' as prepared,
+      '' as approved,
+      '' as received
+      "
+    );
+  }
+
+  public function report_default_query($trno)
+  {
+    $query = "select date(head.dateid) as dateid, head.docno, client.client, 
+      client.clientname, head.address, 
+      head.terms,head.rem, item.barcode,
+      item.itemname, stock.rrqty as qty, stock.uom, stock.rrcost as netamt, stock.disc, 
+      stock.ext,m.model_name as model,item.sizeid,
+      prj.name as projectname, head.revision, stock.rqty,stock.rem as stockrem
+      from prhead as head 
+      left join prstock as stock on stock.trno=head.trno 
+      left join client on client.client=head.client
+      left join item on item.itemid = stock.itemid
+      left join model_masterfile as m on m.model_id = item.model
+      left join projectmasterfile as prj on prj.line = head.projectid
+      left join subproject as sprj on sprj.line = head.subproject
+      where head.doc='JR' and head.trno='$trno'
+      union all
+      select date(head.dateid) as dateid, head.docno, client.client, client.clientname, 
+      head.address, head.terms,head.rem, item.barcode,
+      item.itemname, stock.rrqty as qty, stock.uom, stock.rrcost as netamt, stock.disc, 
+      stock.ext,m.model_name as model,item.sizeid,
+      prj.name as projectname, head.revision, stock.rqty,stock.rem as stockrem
+      from hprhead as head 
+      left join hprstock as stock on stock.trno=head.trno 
+      left join client on client.client=head.client
+      left join item on item.itemid = stock.itemid
+      left join model_masterfile as m on m.model_id = item.model
+      left join projectmasterfile as prj on prj.line = head.projectid
+      left join subproject as sprj on sprj.line = head.subproject
+      where head.doc='JR' and head.trno='$trno'";
+
+    $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    return $result;
+  } //end fn
+
+  public function reportplotting($config, $data)
+  {
+    return $this->maxipro_layout_PDF($config, $data);
+  }
+
+  private function generateReportHeader($center, $username)
+  {
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $str = '';
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+
+    return $str;
+  } //end function generate report header
+
+  public function maxipro_layout($params, $data)
+  {
+    $mdc = URL::to('/images/reports/mdc.jpg');
+    $tuv = URL::to('/images/reports/tuv.jpg');
+
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
+
+    $center = $params['params']['center'];
+    $username = $params['params']['user'];
+
+    $str = '';
+    $count = 28;
+    $page = 28;
+    $font =  "Century Gothic";
+    $fontsize = "11";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->beginreport();
+    $str .= "<div style='position: relative;'>";
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->generateReportHeader($center, $username);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= "<div style='position:absolute; top: 60px;'>";
+    $str .= $this->reporter->col('<img src ="' . $mdc . '" alt="MDC" width="140px" height ="70px">', '10', null, false, '2px solid ', '', 'R', 'Century Gothic', '15', 'B', '', '1px');
+    // $str .= $this->reporter->col('<img src ="'.$tuv.'" alt="TUV" width="140px" height ="70px" style="margin-left: 510px;">','10',null,false,'2px solid ','','R','Century Gothic','15','B','','1px');
+    $str .= "</div>";
+
+    $str .= "</div>";
+
+    $str .= "<br>";
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("", '600', null, false, "2px solid ", 'T', 'C', $font, '14', 'B', 'red', '2px');
+    $str .= $this->reporter->col("", '250', null, false, "2px solid ", 'T', 'C', $font, '14', 'B', 'red', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("", '600', null, false, $border, '', 'C', $font, '14', 'B', 'red', '2px');
+    $str .= $this->reporter->col("HO Control No.: _________________", '250', null, false, $border, '', 'L', $font, '14', 'B', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= "<br>";
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+
+    if ($data[0]['revision'] != "") {
+      $data[0]['revision'] = ' - ' . $data[0]['revision'];
+    }
+
+    $str .= $this->reporter->col("PURCHASE REQUISITION NO. " . "<b style='color:red;'>" . $data[0]['docno'] . $data[0]['revision'] . "</b>", '250', null, false, $border, '', 'C', $font, '14', 'B', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("Name of Office/Project: " . "<b>" . $data[0]['projectname'] . "</b>", '600', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("Date: " . "<b>" . $data[0]['dateid'] . "</b>", '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("Location: " . "<b>" . $data[0]['projectname'] . "</b>", '600', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= "<br>";
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("ITEM NO.", '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col("DESCRIPTION", '250', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col("QTY", '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col("UNIT", '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col("UNIT PRICE", '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col("AMOUNT", '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '2px');
+
+    $totalext = 0;
+
+    for ($i = 0; $i < count($data); $i++) {
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($i + 1, '100', null, false, $border, 'L', 'C', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($data[$i]['itemname'], '250', null, false, $border, 'L', 'L', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col(number_format($data[$i]['qty'], 2), '100', null, false, $border, 'L', 'C', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($data[$i]['uom'], '100', null, false, $border, 'L', 'C', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col(number_format($data[$i]['netamt']), '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col("₱" . number_format($data[$i]['ext']), '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '5px');
+      $totalext = $totalext + $data[$i]['ext'];
+    }
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("", '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '250', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("==========", '100', null, false, $border, 'LR', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("", '100', null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '250', null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '100', null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("₱" . number_format($totalext, $decimal), '100', null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("<b>PURPOSE: </b>" . $data[0]['rem'], '400', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->col("", '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= '<br><br>';
+    $str .= '<br><br>';
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Requisition By : ', '100', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col("<div style='width: 250px; border-bottom: 1px solid; text-align: center;'>" . $params['params']['dataparams']['prepared'] . "</div> 
+      SITE ENGINEER", '100', null, false, $border, '', 'C', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col('', '600', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br>';
+    $str .= '<br>';
+    $str .= '<br>';
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Checked By : ', '100', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col("<div style='width: 250px; border-bottom: 1px solid; text-align: center;'>" . $params['params']['dataparams']['received'] . "</div> 
+      PROJECT IN CHARGE/PROJECT MANAGER", '100', null, false, $border, '', 'C', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('Approved By : ', '100', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col("<div style='width: 250px; border-bottom: 1px solid; text-align: center;'>" . $params['params']['dataparams']['approved'] . "</div> 
+      DEPARTMENT/PROJECT HEAD", '100', null, false, $border, '', 'C', $font, '12', 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function maxipro_layout_PDF($params, $data)
+  {
+   
+    $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
+    $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
+    $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
+    $requisitionby = $params['params']['dataparams']['prepared'];
+    $checkedby = $params['params']['dataparams']['received'];
+    $approvedby = $params['params']['dataparams']['approved'];
+
+    $center = $params['params']['center'];
+    $username = $params['params']['user'];
+    $count = $page = 25;
+    $totalext = 0;
+
+    $font = "";
+    $fontbold = "";
+    $border = "1px solid ";
+    $fontsize = "10";
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    }
+
+    PDF::SetTitle($this->modulename);
+    PDF::SetAuthor('Solutionbase Corp.');
+    PDF::SetCreator('Solutionbase Corp.');
+    PDF::SetSubject($this->modulename . ' Module Report');
+    PDF::setPageUnit('px');
+    PDF::AddPage('p', [800, 1000]);
+    PDF::SetMargins(40, 40);
+
+    PDF::MultiCell(0, 0, "\n");
+
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+    PDF::SetFont($fontbold, '', 14);
+    PDF::MultiCell(700, 40, strtoupper($headerdata[0]->name), '', 'C', 0, 0, '', '', true, 0, true, false);
+    PDF::MultiCell(0, 0, "\n");
+    PDF::SetFont($font, '', 12);
+    PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n", '', 'C');
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::SetLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255, 0, 0)));
+    PDF::MultiCell(700, 20, '', 'B', 'C', 0, 0, '', '', true, 0, true, false);
+    PDF::SetLineStyle(array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0)));
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetTextColor(0, 0, 0);
+    PDF::SetFont($font, '', $fontsize);
+
+    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '50', '20', 120, 65);
+
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(700, 20, 'HO Control No.: _________________', '', 'R', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(350, 20, 'JOB REQUEST NO. ', '', 'R', 0, 0, '', '', true, 0, true, false);
+    PDF::SetTextColor(255, 0, 0);
+
+    if ($data[0]['revision'] != "") {
+      $data[0]['revision'] = ' - ' . $data[0]['revision'];
+    }
+
+    PDF::MultiCell(350, 20, $data[0]['docno'] . $data[0]['revision'], '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetTextColor(0, 0, 0);
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+
+    $left = '10';
+    $top = '';
+    $right = '';
+    $bottom = '';
+
+    $height_header = PDF::GetStringHeight(400, $data[0]['rem']);
+
+    $prj_height = PDF::GetStringHeight(400, $data[0]['projectname']);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(120, 20, 'Name of Office/Project: ', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(400, 20, $data[0]['projectname'], '', 'L', 0, 0, '', '', true, 0, true, false);
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, 'Date: ', '', '', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(100, 20, date('M d, Y', strtotime($data[0]['dateid'])), '', 'L', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, $prj_height, "\n");
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, 'Location: ', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(650, 20, $data[0]['projectname'], '', 'L', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::setCellPadding($left, $top, $right, $bottom);
+    PDF::MultiCell(70, 0, 'ITEM NO.', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(200, 0, 'DESCRIPTION', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(120, 0, 'NOTES', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(70, 0, 'QTY', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(50, 0, 'UOM', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(90, 0, 'UNIT PRICE', 'LRTB', 'C', false, 0);
+    PDF::MultiCell(100, 0, 'AMOUNT', 'LRTB', 'C', false);
+
+    $counter = 0;
+    $amt = 0;
+    for ($i = 0; $i < count($data); $i++) {
+      $counter++;
+
+      $maxh = PDF::GetStringHeight(200, $data[$i]['itemname']);
+
+      if ($maxh <= 32.5) {
+        $maxh = 0;
+      }
+
+      $amt = $data[$i]['ext'];
+      PDF::SetFont($font, '', $fontsize);
+      // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
+      PDF::MultiCell(70, $maxh, $i + 1, 'L', 'C', false, 0);
+      PDF::MultiCell(200, $maxh, $data[$i]['itemname'], '', 'L', false, 0);
+      PDF::MultiCell(120, $maxh, $data[$i]['stockrem'], '', 'L', false, 0);
+      PDF::MultiCell(70, $maxh, number_format($data[$i]['rqty'], 2), '', 'R', false, 0);
+      PDF::MultiCell(50, $maxh, $data[$i]['uom'], '', 'C', false, 0);
+      PDF::MultiCell(90, $maxh, number_format($data[$i]['netamt'], $decimalprice), '', 'R', false, 0);
+      PDF::MultiCell(100, $maxh, 'Php ' . number_format($amt, $decimalprice), 'R', 'R', false, 0);
+      PDF::MultiCell(100, $maxh, '', '', 'L', false);
+      $totalext += $amt;
+
+      if (intVal($i) + 1 == $page) {
+        $page += $count;
+      }
+    }
+
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(700, 0, '==========', 'LR', 'R');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(600, 20, '', 'BL', 'R', false, 0);
+    PDF::MultiCell(100, 20, 'Php ' . number_format($totalext, $decimalprice), 'RB', 'R', false);
+
+    PDF::SetFont($fontbold, '', 2);
+    PDF::MultiCell(0, 0, "");
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(700, 20, 'PURPOSE:', '', 'L', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::MultiCell(50, 20, '', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(700, 20, $data[0]['rem'], '', 'L', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 20, '', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, $requisitionby, '', 'C');
+
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 0, 'Requisition By :	', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, 'SITE/OFFICE ENGINEER', 'T', 'C', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 0, '', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, $checkedby, '', 'C', 0, 0, '', '', true, 0, true, false);
+    PDF::MultiCell(100, 0, '', '', 'C', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 0, '', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, $approvedby, '', 'C', 0, 0, '', '', true, 0, true, false);
+
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 0, 'Checked By :', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, 'PROJECT IN CHARGE/PROJECT MANAGER', 'T', 'C', 0, 0, '', '', true, 0, true, false);
+
+    PDF::MultiCell(100, 0, '', '', 'C', 0, 0, '', '', true, 0, true, false);
+
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(100, 0, 'Checked By :', '', 'L', 0, 0, '', '', true, 0, true, false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(200, 0, 'DEPARTMENT/PROJECT HEAD', 'T', 'C', 0, 0, '', '', true, 0, true, false);
+
+    return PDF::Output($this->modulename . '.pdf', 'S');
+  }
+}

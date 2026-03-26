@@ -1,0 +1,13 @@
+select sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
+              itemname,item.uom,uom1.factor,round(item.amt,2) as amt,brand,ifnull(cls.cl_name,'') as class,body,
+              ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
+              round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color 
+              from item
+              left join item_class as cls on cls.cl_id=item.class
+              left join uom as uom1 on item.itemid = uom1.itemid and uom1.uom = item.uom
+              left join stockgrp_masterfile as grp on grp.stockgrp_id = item.groupid
+              left join model_masterfile as model on model.model_id = item.model
+              left join part_masterfile as part on part.part_id = item.part
+              left join frontend_ebrands as brand on brand.brandid = item.brand
+              left join itemcategory as icat on icat.line=item.category
+                 where item.isinactive = 0  and item.isfa=0    order by item.itemname asc 

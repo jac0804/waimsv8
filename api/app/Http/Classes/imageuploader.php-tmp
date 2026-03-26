@@ -1,0 +1,336 @@
+<?php
+namespace App\Http\Classes;
+
+/*
+*/
+
+use App\Http\Classes\builder\lookupClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\headClass;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\ImageManagerStatic as Image;
+
+class imageuploader {
+	private $othersClass;
+	private $coreFunctions;
+	private $headClass;
+	private $logger;
+	private $lookupClass;
+	private $companysetup;
+	private $config = [];
+	private $sqlquery;
+
+	public function __construct() {
+		$this->othersClass   = new othersClass;
+		$this->coreFunctions = new coreFunctions;
+		$this->headClass     = new headClass;
+		$this->logger        = new Logger;
+		$this->lookupClass   = new lookupClass;
+		$this->companysetup  = new companysetup;
+		$this->sqlquery      = new sqlquery;
+	}
+
+	public function sbc($params) {
+		$this->config['params'] = $params;
+		$this->config['return'] = ['status' => false, 'msg' => 'Failed: Not yet setup in imagestatus func'];
+		return $this;
+	}
+
+	public function imagestatus(Request $request) {
+		switch ($this->config['params']['table']) {
+			case 'client':
+			case 'item':
+				$this->imageupload($request);
+				break;
+			case 'cntnum_picture':
+			case 'transnum_picture':
+				$this->imageuploadmodule($request);
+				break;
+			case 'changepassword':
+				$this->changepassword();
+				break;
+			case 'unlockscreen':
+				$this->unlockscreen();
+				break;
+		}
+		return $this;
+	}
+
+	private function unlockscreen() {
+		$qry     = "select password as value from useraccess where md5(userid)='".$this->config['params']['userid']."'";
+		$oldpass = $this->coreFunctions->datareader($qry);
+		if ($oldpass == $this->config['params']['pass']) {
+			$this->config['return'] = ['status' => true, 'msg' => 'Unlock success'];
+		} else {
+			$this->config['return'] = ['status' => false, 'msg' => 'Unlock Failed'];
+		}
+		return $this;
+	}
+
+	private function changepassword() {
+		$qry     = "select password as value from useraccess where md5(userid)='".$this->config['params']['userid']."'";
+		$oldpass = $this->coreFunctions->datareader($qry);
+		if ($oldpass != '') {
+			if ($oldpass == $this->config['params']['oldpass']) {
+				if ($oldpass != md5($this->config['params']['pwd'])) {
+					$qry = "update useraccess set pwd='".$this->config['params']['pwd']."',password=md5('".$this->config['params']['pwd']."') where md5(userid)='".$this->config['params']['userid']."'";
+					$this->coreFunctions->execqry($qry);
+					$this->config['return'] = ['status' => true, 'msg' => 'Update Password success'];
+				} else {
+					$this->config['return'] = ['status' => false, 'msg' => 'New Password is the same from Old Password...'];
+				}
+			} else {
+				$this->config['return'] = ['status' => false, 'msg' => 'Invalid Old Password...'];
+			}
+		} else {
+			$this->config['return'] = ['status' => false, 'msg' => 'Invalid Old Password...'];
+		}
+		return $this;
+	}// end function
+
+	private function imageupload(Request $request) {
+		$required = ['file', 'field', 'action', 'lookupclass', 'tableid', 'doc', 'center', 'user', 'companyid', 'folder', 'table', 'fieldid'];
+		$creds    = $request->only($required);
+		$myfile   = $request->file('file');
+
+		$hasfile    = $request->hasFile('file');
+		$file_ext   = '';
+		$filename   = '';
+		$data       = [];
+		$mainfolder = '/images/';
+		if ($hasfile) {
+			$file_ext      = $myfile->extension();
+			$available_ext = ["jpg", "jpeg", "png"];
+			if (!in_array($file_ext, $available_ext)) {
+				$msg                    = "Only Required Extensions are (".$available_ext.") [ERR_S3_001]";
+				$this->config['return'] = ['status' => false, 'msg' => $msg];
+			}
+			if ($myfile->getSize() > 2097152) {
+				$msg                    = "Maximum file size is 2MB [ERR_S3_002]";
+				$this->config['return'] = ['status' => false, 'msg' => $msg];
+			}//end if
+			$img = Image::make($myfile);
+			$img->resize(120, 120, function ($constraint) {
+					$constraint->aspectRatio();
+				});
+			$img->stream();// <-- Key point
+
+			$suff = 0;
+			$pic  = $this->coreFunctions->opentable("select ".$creds['field']." as picture from ".$creds['table']." where ".$creds['fieldid']."=?", [$creds['tableid']]);
+			if ($pic[0]->picture != '') {
+				$filename = $pic[0]->picture;
+				$pic      = explode('/', $pic[0]->picture);
+				$pic      = end($pic);
+				$pic      = explode('.', $pic);
+				$pic      = $pic[0];
+				$pic      = explode('-', $pic);
+				$suff     = end($pic);
+			}
+			$filename = str_replace($mainfolder, '', $filename);
+			if (Storage::disk('public')->exists($filename)) {
+				Storage::disk('public')   ->delete($filename);
+			}
+
+			$filename        = $creds['folder'].'/'.$creds['tableid'].'-'.($suff+1).'.'.$file_ext;
+			$data['picture'] = $mainfolder.$filename;
+
+			if ($this->coreFunctions->sbcupdate($creds['table'], $data, [$creds['fieldid']=> $creds['tableid']]) == 0) {
+				$msg                    = 'Failed to update '.$creds['table'].'...';
+				$this->config['return'] = ['status' => false, 'msg' => $msg];
+			} else {
+				$directory              = Storage::disk('public')->put($filename, $img);
+				$this->config['return'] = ['status' => true, 'msg' => 'Successfully uploaded.', 'filename' => $mainfolder.$filename];
+			}
+		}
+		return $this;
+	}//end function
+
+	private function imageuploadmodule(Request $request) {
+		$required = ['file', 'field', 'action', 'lookupclass', 'tableid', 'doc', 'center', 'user', 'companyid', 'folder', 'table', 'fieldid', 'title'];
+		$creds    = $request->only($required);
+		$myfile   = $request->file('file');
+
+		$hasfile       = $request->hasFile('file');
+		$file_ext      = '';
+		$filename      = '';
+		$hashfilename2 = '';
+		$hashfilename  = '';
+		$data          = [];
+		$mainfolder    = '/images/modules/';
+		if ($hasfile) {
+			$file_ext      = $myfile->extension();
+			$hashfilename2 = $myfile->createFromBase($myfile);
+			$hashfilename  = $hashfilename2->getClientOriginalName();
+			$hashfilename  = str_replace('.'.$file_ext, '', $hashfilename);
+
+			$suff = 0;
+			$qry  = "select line as value from ".$creds['table']." where trno=? order by line desc limit 1";
+			$line = $this->coreFunctions->datareader($qry, [$creds['tableid']]);
+			if ($line == '') {
+				$line = 0;
+			}
+			$line = $line+1;
+
+			$filename            = $creds['folder'].'/'.$hashfilename.'_'.$creds['tableid'].'_'.$line.'.'.$file_ext;
+			$data['picture']     = $mainfolder.$filename;
+			$data['line']        = $line;
+			$data['trno']        = $creds['tableid'];
+			$data['title']       = $this->othersClass->sanitizekeyfield('title', $creds['title']);
+			$current_timestamp   = $this->othersClass->getCurrentTimeStamp();
+			$data['encodeddate'] = $current_timestamp;
+			$data['encodedby']   = $creds['user'];
+
+			switch ($file_ext) {
+				case 'jpg':
+				case 'jpeg':
+				case 'png':
+					if ($myfile->getSize() > 2097152) {
+						$msg                    = "Maximum file size is 2MB [ERR_S3_002]";
+						$this->config['return'] = ['status' => false, 'msg' => $msg];
+					}//end if
+					$img = Image::make($myfile);
+					$img->resize(120, 120, function ($constraint) {
+							$constraint->aspectRatio();
+						});
+					$img->stream();// <-- Key point
+					break;
+				default:
+					$img = $myfile;
+					break;
+			}
+
+			if ($this->coreFunctions->sbcinsert($creds['table'], $data) == 0) {
+				$msg                    = 'Failed to update '.$creds['table'].'...';
+				$this->config['return'] = ['status' => false, 'msg' => $msg];
+			} else {
+				switch ($file_ext) {
+					case 'jpg':
+					case 'jpeg':
+					case 'png':
+						Storage::disk('sbcpath')->put('/modules/'.$filename, $img);
+						break;
+					default:
+						$path = database_path().$mainfolder.$creds['folder'];
+						$img->move($path, $hashfilename.'_'.$creds['tableid'].'_'.$line.'.'.$file_ext);
+						break;
+				}
+				$this->config['return'] = ['status' => true, 'msg' => 'Successfully uploaded.'];
+			}
+		}
+		return $this;
+	}//end function
+
+	public function imagefilename() {
+		switch ($this->config['params']['type']) {
+			case md5('module'):
+				return $this->getfilenamemodule();
+				break;
+			case md5('message'):
+				return $this->getfilenamemessage();
+				break;
+		}
+	}
+
+	public function attachmentdownload(Request $request) {
+		switch ($this->config['params']['type']) {
+			case md5('module'):
+				return $this->imagedownload($request);
+				break;
+			case md5('message'):
+				return $this->messagedownload($request);
+				break;
+		}
+	}
+
+	public function imagedownload(Request $request) {
+		$table = '';
+		$id    = $this->config['params']['id2'];
+		$trno  = $this->config['params']['trno'];
+		$line  = $this->config['params']['line'];
+
+		switch ($id) {
+			case md5('cp'):
+				$table = 'cntnum_picture';
+				break;
+			case md5('tp'):
+				$table = 'transnum_picture';
+		}
+		$qry  = "select picture as value from ".$table." where md5(trno)=? and md5(line) =? limit 1";
+		$path = $this->coreFunctions->datareader($qry, [$trno, $line]);
+		return $this->getimagebypath($path);
+	}//end function
+
+	public function messagedownload(Request $request) {
+		$msgid = $this->config['params']['pathid'];
+		$qry   = "select attach as value from conversation_msg where md5(msg_id)=? limit 1";
+		$path  = $this->coreFunctions->datareader($qry, [$msgid]);
+		return $this->getimagebypath($path);
+	}
+
+	public function getfilenamemessage() {
+		$msgid = $this->config['params']['pathid'];
+		$qry   = "select attach as value from conversation_msg where md5(msg_id)=? limit 1";
+		$path  = $this->coreFunctions->datareader($qry, [$msgid]);
+		return $this->getfilename($path);
+	}
+
+	public function getfilenamemodule() {
+		$table = '';
+		$id    = $this->config['params']['id2'];
+		$trno  = $this->config['params']['trno'];
+		$line  = $this->config['params']['line'];
+
+		switch ($id) {
+			case md5('cp'):
+				$table = 'cntnum_picture';
+				break;
+			case md5('tp'):
+				$table = 'transnum_picture';
+		}
+		$qry  = "select picture as value from ".$table." where md5(trno)=? and md5(line) =? limit 1";
+		$path = $this->coreFunctions->datareader($qry, [$trno, $line]);
+		return $this->getfilename($path);
+	}
+
+	private function getfilename($path) {
+		if ($path == '') {
+			return ['status' => false, 'msg' => 'Failed to download'];
+		} else {
+			$pic      = explode('/', $path);
+			$pic      = end($pic);
+			$pic      = explode('.', $pic);
+			$ext      = $pic[1];
+			$id       = Str::random(9);
+			$filename = $pic[0].'.'.$ext;
+			return ['status' => true, 'msg' => 'Success', 'filename' => $filename];
+		}
+	}
+
+	public function getimagebypath($path) {
+		if ($path == '') {
+			return ['status' => false, 'msg' => 'Failed to download'];
+		} else {
+			$headers = array(
+				'Content-Type: '.mime_content_type(database_path().$path),
+			);
+			$pic = explode('/', $path);
+			$pic = end($pic);
+			$pic = explode('.', $pic);
+			$ext = $pic[1];
+			// $id = Str::random(9);
+			$filename = $pic[0].'.'.$ext;
+			return response()->download(database_path().$path, $filename, $headers, 'attachment');
+		}
+	}
+
+	public function execute() {
+		return response()->json($this->config['return'], 200);
+	}// end function
+
+}// end class

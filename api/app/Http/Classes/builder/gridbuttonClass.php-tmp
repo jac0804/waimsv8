@@ -1,0 +1,457 @@
+<?php
+
+namespace App\Http\Classes\builder;
+
+class gridbuttonClass {
+
+	private $gridbuttons     = [];
+	private $headgridbuttons = [];
+
+	public function getgridbuttons() {
+		return $this->gridbuttons;
+	}
+
+	public function getheadgridbuttons() {
+		return $this->headgridbuttons;
+	}
+
+	public function __construct() {
+
+		//head grid buttons
+		//viewacctg - lookupclass
+		//viewdistribution - ledgerclass
+		$this->headgridbuttons = [
+			'viewacctg'    => [
+				'label'       => 'View Accounting Entry', 'icon'       => 'table_chart',
+				'lookupclass' => 'viewacctg', 'action' => 'viewacctg', 'access' => 'acctg', 'visible' => false
+			],
+			'viewdistribution' => [
+				'label'           => 'View Accounting Entry', 'icon'           => 'table_chart',
+				'lookupclass'     => 'viewdistribution', 'action'     => 'customform', 'access'     => 'acctg', 'visible'     => false
+			],
+			'itemvoiding'  => [
+				'label'       => 'Void Items', 'icon'       => 'table_chart',
+				'lookupclass' => 'updateitemvoid', 'action' => 'customform', 'access' => 'edititem', 'visible' => false
+			],
+			'viewref'      => [
+				'label'       => 'Ref Documents', 'icon'       => 'table_chart',
+				'lookupclass' => 'viewref', 'action' => 'customform', 'access' => 'view', 'visible' => false
+			],
+			'tagreceived'  => [
+				'label'       => 'Received',
+				'icon'        => 'save',
+				'lookupclass' => 'tagreceived',
+				'action'      => 'tagreceived',
+				'access'      => 'view',
+				'visible'     => true
+			],
+			'viewdiagram'  => [
+				'label'       => 'Diagram', 'icon'       => 'table_chart',
+				'lookupclass' => 'viewref', 'action' => 'diagram', 'access' => 'view', 'visible' => false
+			],
+			'viewversion'  => [
+				'label'       => 'View Version', 'icon'       => 'table_chart',
+				'lookupclass' => 'entryviewrevision', 'action' => 'tableentry', 'access' => 'view', 'visible' => false
+			],
+			'viewflowchart' => [
+				'label'        => 'Flowchart', 'icon'        => 'table_chart',
+				'lookupclass'  => 'viewref', 'action'  => 'flowchart', 'access'  => 'view', 'visible'  => false
+			],
+			'adjust'       => [
+				'label'       => 'Adjust Inventory', 'icon'       => 'table_chart',
+				'lookupclass' => 'adjustpc', 'action' => 'adjustpc', 'access' => 'view', 'visible' => false
+			],
+			'generatepr'   => [
+				'label'       => 'Generate PR', 'icon'       => 'refresh',
+				'lookupclass' => 'entrygeneratepr', 'action' => 'tableentry', 'access' => 'view', 'visible' => false
+			],
+			'adddocumentcntnum' => [
+				'label'            => 'Documents', 'icon'            => 'batch_prediction', 'lookupclass'            => 'entrycntnumpicture', 'action'            => 'documententry',
+				'access'           => 'view', 'visible'           => false
+			],
+			'adddocumenttransnum' => [
+				'label'              => 'Documents', 'icon'              => 'batch_prediction', 'lookupclass'              => 'entrytransnumpicture', 'action'              => 'documententry',
+				'access'             => 'view', 'visible'             => false
+			],
+			'viewotherfees' => [
+				'label'        => 'View Otherfees', 'icon'        => 'table_chart',
+				'lookupclass'  => 'viewotherfees', 'action'  => 'enrollmententry', 'access'  => 'view', 'visible'  => false
+			],
+			'viewcredentials' => [
+				'label'          => 'View Credentials', 'icon'          => 'table_chart',
+				'lookupclass'    => 'viewcredentials', 'action'    => 'enrollmententry', 'access'    => 'view', 'visible'    => false
+			],
+			'viewsosummary' => [
+				'label'        => 'View Summary', 'icon'        => 'table_chart',
+				'lookupclass'  => 'entryassummary', 'action'  => 'enrollmententry', 'access'  => 'view', 'visible'  => false
+			],
+			'viewenacctg'  => [
+				'label'       => 'View Accounting Entry', 'icon'       => 'table_chart',
+				'lookupclass' => 'viewenacctg', 'action' => 'viewenacctg', 'access' => 'acctg', 'visible' => false
+			],
+			'generateenbilling' => [
+				'label'            => 'Generate Billing', 'icon'            => 'table_chart',
+				'lookupclass'      => 'generateenbilling', 'action'      => 'generateenbilling', 'access'      => 'view', 'visible'      => false
+			],
+			'viewcurriculum' => [
+				'label'         => 'View Curriculum', 'icon'         => 'table_chart',
+				'lookupclass'   => 'viewcurriculum', 'action'   => 'enrollmententry', 'access'   => 'view', 'visible'   => false
+			],
+			'viewbooks'    => [
+				'label'       => 'View Books', 'icon'       => 'table_chart',
+				'lookupclass' => 'viewbooks', 'action' => 'enrollmententry', 'access' => 'view', 'visible' => false
+			],
+			'regstudent'   => [
+				'label'       => 'Registered Student', 'icon'       => 'table_chart',
+				'lookupclass' => 'entryregstudents', 'action' => 'enrollmententry', 'access' => 'view', 'visible' => false
+			],
+			'regstudentbatch' => [
+				'label'          => 'Registered Batch', 'icon'          => 'table_chart',
+				'lookupclass'    => 'regstudentbatch', 'action'    => 'regstudentbatch', 'access'    => 'view', 'visible'    => false
+			],
+			'studlevelup'  => [
+				'label'       => 'Student Level Up', 'icon'       => 'table_chart',
+				'lookupclass' => 'entrystudlevelup', 'action' => 'enrollmententry', 'access' => 'view', 'visible' => false
+			],
+			'viewgeneratedstudents' => [
+				'label'                => 'View Student Grade', 'icon'                => 'table_chart',
+				'lookupclass'          => 'viewgeneratedstudents', 'action'          => 'enrollmententry', 'access'          => 'view', 'visible'          => false
+			],
+			'viewgradesubcomp' => [
+				'label'           => 'View Grade Sub Component', 'icon'           => 'table_chart',
+				'lookupclass'     => 'viewgradesubcomp', 'action'     => 'enrollmententry', 'access'     => 'view', 'visible'     => false
+			],
+			'viewgradeentry' => [
+				'label'         => 'View Grade Entry', 'icon'         => 'table_chart',
+				'lookupclass'   => 'viewgradeentry', 'action'   => 'enrollmententry', 'access'   => 'view', 'visible'   => false
+			],
+			'generatedepsched' => [
+				'label'           => 'Generate Depreciation Schedule', 'icon'           => 'table_chart',
+				'lookupclass'     => 'generatedepsched', 'action'     => 'generatedepsched', 'access'     => 'view', 'visible'     => false
+			],
+			'editboq'      => [
+				'label'       => 'Edit Items', 'icon'       => 'table_chart',
+				'lookupclass' => 'editboq', 'action' => 'tableentry', 'access' => 'edititem', 'visible' => false
+			],
+
+		];
+
+		// setup of stock buttons
+		$this->gridbuttons = [
+			'save'    => [
+				'name'   => 'save',
+				'icon'   => 'save',
+				'action' => 'saveperitem',
+				'class'  => 'btnstocksave',
+				'access' => 'edititem',
+				'color'  => 'blue'
+			],
+			'view'         => [
+				'name'        => 'view',
+				'icon'        => 'view_module',
+				'action'      => 'view',
+				'class'       => 'btnstockview',
+				'access'      => 'view',
+				'color'       => 'blue',
+				'lookupclass' => ''
+			],
+			'download' => [
+				'name'    => 'download',
+				'icon'    => 'cloud_download',
+				'action'  => 'download',
+				'class'   => 'btnstockdownload',
+				'access'  => 'edititem',
+				'color'   => 'blue'
+			],
+			'delete'  => [
+				'name'   => 'delete',
+				'icon'   => 'delete',
+				'class'  => 'btnstockdelete',
+				'action' => 'deleteitem',
+				'access' => 'deleteitem',
+				'color'  => 'red'
+			],
+			'stockinfo'    => [
+				'name'        => 'stockinfo',
+				'icon'        => 'speaker_notes',
+				'action'      => 'customform',
+				'class'       => 'stockinfo',
+				'lookupclass' => 'viewstockinfo',
+				'access'      => 'edititem',
+				'totalfield'  => [],
+				'color'       => 'green'
+			],
+			'showbalance' => [
+				'name'       => 'showbalance',
+				'icon'       => 'photo_library',
+				'action'     => 'showbalance',
+				'class'      => 'btnstockshowbalance',
+				'access'     => 'view',
+				'color'      => 'orange'
+			],
+			'ccsubject'    => [
+				'name'        => 'ccsubject',
+				'icon'        => 'visibility',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entryccsubject',
+				'class'       => 'btnentryccsubject',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'books'        => [
+				'name'        => 'ccsubject',
+				'icon'        => 'books',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entrybooks',
+				'class'       => 'btnentryccsubject',
+				'access'      => 'view',
+				'color'       => 'orange'
+			],
+			'duplicate' => [
+				'name'     => 'duplicate',
+				'icon'     => 'done',
+				'class'    => 'btnstockdelete',
+				'action'   => 'duplicate',
+				'access'   => 'view',
+				'color'    => 'purple'
+			],
+			'studpoints'   => [
+				'name'        => 'studpoints',
+				'icon'        => 'visibility',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entrystudpoints',
+				'class'       => 'btnentrystudpoints',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'gradesubcom'  => [
+				'name'        => 'gradesubcom',
+				'icon'        => 'visibility',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entrygradesubcom',
+				'class'       => 'btnentrygradesubcom',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'serialin'     => [
+				'name'        => 'serialin',
+				'icon'        => 'add',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entryserialin',
+				'class'       => 'btnstockserialno',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'serialout'    => [
+				'name'        => 'serialout',
+				'icon'        => 'remove',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entryserialout',
+				'class'       => 'btnstockserialno',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'dsave'   => [
+				'name'   => 'dsave',
+				'icon'   => 'save',
+				'action' => 'saveperdetail',
+				'access' => 'edititem',
+				'class'  => 'btnstockdsave',
+				'color'  => 'blue'
+			],
+			'ddelete' => [
+				'name'   => 'ddelete',
+				'icon'   => 'delete',
+				'action' => 'deletedetail',
+				'access' => 'deleteitem',
+				'class'  => 'btnstockddelete',
+				'color'  => 'red'
+			],
+			'view_unposted' => [
+				'name'         => 'View Unposted',
+				'icon'         => 'photo_library',
+				'action'       => 'lookupsetup',
+				'class'        => 'btnstockview_unposted',
+				'lookupclass'  => 'viewunposted',
+				'access'       => 'view',
+				'visible'      => true,
+				'color'        => 'teal'
+			],
+			'approvedcanvass' => [
+				'name'           => 'Approved',
+				'icon'           => 'photo_library',
+				'action'         => 'customform',
+				'class'          => 'btnstockapprovedcanvass',
+				'lookupclass'    => 'approvedcanvass',
+				'access'         => 'view',
+				'visible'        => true,
+				'color'          => 'primary'
+			],
+			//construction
+			'addstages'    => [
+				'name'        => 'tableentry',
+				'icon'        => 'add',
+				'action'      => 'construction',
+				'lookupclass' => 'entryprojectstages',
+				'class'       => 'btnentrystockstages',
+				'access'      => 'view',
+				'color'       => 'green',
+			],
+			'referencemodule' => [
+				'name'           => 'Reference',
+				'icon'           => 'cast_connected',
+				'action'         => 'tableentry',
+				'lookupclass'    => 'entryjumpmodule',
+				'class'          => 'btnstockserialno',
+				'access'         => 'view',
+				'color'          => 'green'
+			],
+			'jumpmodule'   => [
+				'name'        => 'View',
+				'icon'        => 'visibility',
+				'action'      => 'jumpmodule',
+				'lookupclass' => 'entryjumpmodule',
+				'class'       => 'btnstockserialno',
+				'access'      => 'view',
+				'color'       => 'green'
+			],
+			'showpackinglist' => [
+				'name'           => 'tableentry',
+				'icon'           => 'photo_library',
+				'action'         => 'warehousingentry',
+				'lookupclass'    => 'entrypackingstock',
+				'class'          => 'btnstockshowpackinglist',
+				'access'         => 'view',
+				'color'          => 'orange'
+			],
+			'showboxdetails' => [
+				'name'          => 'tableentry',
+				'label'         => 'Box Details',
+				'icon'          => 'photo_library',
+				'action'        => 'warehousingentry',
+				'lookupclass'   => 'entryboxdetails',
+				'class'         => 'btnstockshowboxdetails',
+				'access'        => 'view',
+				'color'         => 'orange'
+			],
+			'pickerdrop' => [
+				'name'      => 'pickerdrop',
+				'label'     => 'Drop to Deposit Location',
+				'icon'      => 'check',
+				'action'    => 'pickerdrop',
+				'access'    => 'view',
+				'class'     => 'btnpickerdrop',
+				'color'     => 'green'
+			],
+			'validate' => [//sample for action grid button doc listing
+				'name'    => 'validate',
+				'label'   => 'Scan Location',
+				'icon'    => 'check',
+				'action'  => 'scantext',
+				'action2' => 'validate',
+				'access'  => 'view',
+				'class'   => 'btnvalidate',
+				'color'   => 'green'
+			],
+			'showwhloc'    => [
+				'name'        => 'tableentry',
+				'icon'        => 'photo_library',
+				'action'      => 'tableentry',
+				'lookupclass' => 'entrylocation',
+				'class'       => 'btnstockshowwhloc',
+				'access'      => 'view',
+				'color'       => 'orange'
+			],
+			'showsubcat'   => [
+				'name'        => 'tableentry',
+				'label'       => 'Sub-Category',
+				'icon'        => 'format_align_left',
+				'action'      => 'warehousingentry',
+				'lookupclass' => 'entryitemsubcategory',
+				'class'       => 'btnshowsubcat',
+				'access'      => 'view',
+				'color'       => 'orange'
+			],
+			'showcheckerreplacement' => [
+				'name'                  => 'tableentry',
+				'label'                 => 'For Replacement Items',
+				'icon'                  => 'format_align_left',
+				'action'                => 'warehousingentry',
+				'lookupclass'           => 'entrywhcheckerreplacement',
+				'class'                 => 'btnshowcheckerreplacement',
+				'access'                => 'view',
+				'color'                 => 'orange'
+			],
+			'scanlocitem'  => [
+				'name'        => 'Scan SKU',
+				'icon'        => 'flash_on',
+				'action'      => 'scanlocitem',
+				'lookupclass' => 'scanlocitem',
+				'class'       => 'btnscanlocitem',
+				'access'      => 'view',
+				'color'       => 'orange'
+			],
+			'splitqty'     => [
+				'name'        => 'Split Quantity',
+				'icon'        => 'call_split',
+				'action'      => 'splitqty',
+				'lookupclass' => 'splitqty',
+				'class'       => 'btnsplitqty',
+				'access'      => 'view',
+				'color'       => 'blue'
+			],
+			'approvedtrans' => [
+				'name'         => 'Approved',
+				'icon'         => 'photo_library',
+				'action'       => 'optioncustomform',
+				'class'        => 'btnstockapprovedcanvass',
+				'lookupclass'  => 'approvedtrans',
+				'access'       => 'view',
+				'visible'      => true,
+				'color'        => 'primary'
+			],
+			'addcompatible' => [
+				'name'         => 'compatible',
+				'icon'         => 'add',
+				'action'       => 'optioncustomform',
+				'class'        => 'btnaddcompatible',
+				'lookupclass'  => 'addcompatible',
+				'access'       => 'view',
+				'visible'      => true,
+				'color'        => 'primary'
+			],
+			'diagram'      => [
+				'name'        => 'diagram',
+				'icon'        => 'photo_library',
+				'action'      => 'diagram',
+				'class'       => 'btndiagram',
+				'access'      => 'view',
+				'color'       => 'blue',
+				'lookupclass' => 'viewref'
+			],
+
+			'pickitemcompatible' => [
+				'name'              => 'multigrid',
+				'icon'              => 'add',
+				'action'            => 'tableentry',
+				'class'             => 'btnpickpickitemcompatible',
+				'lookupclass'       => 'pickitemcompatible',
+				'access'            => 'view',
+				'visible'           => true,
+				'color'             => 'primary'
+			],
+			'additemsubcat' => [
+				'name'         => 'multigrid',
+				'icon'         => 'add',
+				'action'       => 'warehousingentry',
+				'class'        => 'btnadditemsubcat',
+				'lookupclass'  => 'entryitemsubcat',
+				'access'       => 'view',
+				'visible'      => true,
+				'color'        => 'primary'
+			],
+
+		];
+	}//end function
+
+}// end class

@@ -1,0 +1,87 @@
+<?php
+namespace App\Http\Classes\modules\customform;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class viewdistribution {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'ACCOUNT DISTRIBUTION';
+	public $gridname   = 'customformacctg';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $issearchshow = false;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['acno', 'acnoname', 'client', 'postdate', 'db', 'cr', 'fdb', 'fcr']
+			]
+		];
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// totalfield
+		$obj[0][$this->gridname]['totalfield'] = ['db', 'cr'];
+
+		// 4 = db
+		$obj[0][$this->gridname]['columns'][4]['align'] = 'right';
+		// 5 = cr
+		$obj[0][$this->gridname]['columns'][5]['align'] = 'right';
+		// 6 = fdb
+		$obj[0][$this->gridname]['columns'][6]['align'] = 'right';
+		// 7 = fcr
+		$obj[0][$this->gridname]['columns'][7]['align'] = 'right';
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = [];
+		$col1   = $this->fieldClass->create($fields);
+
+		$fields = [];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = ['db'];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = ['cr'];
+		$col4   = $this->fieldClass->create($fields);
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+	}
+
+	public function paramsdata($config) {
+		return $this->coreFunctions->opentable('select 0.0 as db, 0.0 as cr');
+	}
+
+	public function data($config) {
+		$trno = $config['params']['trno'];
+		$qry  = "select client.client,coa.acno,coa.acnoname,left(gldetail.postdate,10) as postdate,FORMAT(ifnull(gldetail.db,0),2) as db,FORMAT(ifnull(gldetail.cr,0),2) as cr,FORMAT(ifnull(gldetail.fdb,0),2) as fdb,FORMAT(ifnull(gldetail.fcr,0),2) as fcr from gldetail left join coa on coa.acnoid=gldetail.acnoid left join client on client.clientid=gldetail.clientid where gldetail.trno=?";
+		return $this->coreFunctions->opentable($qry, [$trno]);
+	}
+
+}//end class

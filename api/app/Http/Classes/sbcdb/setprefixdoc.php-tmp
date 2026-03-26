@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Http\Classes\sbcdb;
+
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+
+class setprefixdoc {
+
+	private $coreFunctions;
+	private $companysetup;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+		$this->companysetup  = new companysetup;
+	}//end fn
+
+	public function setupdoc($params) {
+
+		$menu['masterfile'] = [
+			'CL' => ['prefix' => 'CL', 'title' => 'Customer'],
+			'SL' => ['prefix' => 'SL', 'title' => 'Supplier'],
+			'WH' => ['prefix' => 'WH', 'title' => 'Warehouse'],
+			'AG' => ['prefix' => 'AG', 'title' => 'Agent'],
+			'EM' => ['prefix' => 'EM', 'title' => 'Employee'],
+			'DE' => ['prefix' => 'DEP', 'title' => 'Department']
+		];
+
+		$menu['purchase'] = [
+			'PR' => ['prefix' => 'PR', 'title' => 'Purchase Requisition'],
+			'CD' => ['prefix' => 'CD', 'title' => 'Canvass Sheet'],
+			'PO' => ['prefix' => 'PO', 'title' => 'Purchase Order'],
+			'RR' => ['prefix' => 'RR', 'title' => 'Receiving Report'],
+			'DM' => ['prefix' => 'DM', 'title' => 'Purchase Return']
+		];
+
+		$menu['payable'] = [
+			'AP' => ['prefix' => 'AP', 'title' => 'AP Setup'],
+			'PV' => ['prefix' => 'PV', 'title' => 'AP Voucher'],
+			'CV' => ['prefix' => 'CV', 'title' => 'Cash/Check Voucher']
+		];
+
+		$menu['sales'] = [
+			'SO' => ['prefix' => 'SO', 'title' => 'Sales Order'],
+			'SJ' => ['prefix' => 'SJ', 'title' => 'Sales Journal'],
+			'CM' => ['prefix' => 'CM', 'title' => 'Sales Return']
+		];
+
+		$menu['receivable'] = [
+			'AR' => ['prefix' => 'AR', 'title' => 'AR Setup'],
+			'CR' => ['prefix' => 'CR', 'title' => 'Received Payment'],
+			'KR' => ['prefix' => 'KR', 'title' => 'Counter Receipt']
+		];
+
+		$menu['accounting'] = [
+			'GJ' => ['prefix' => 'GJ', 'title' => 'General Journal'],
+			'DS' => ['prefix' => 'DS', 'title' => 'Deposit Slip'],
+			'GD' => ['prefix' => 'GD', 'title' => 'Debit Memo'],
+			'GC' => ['prefix' => 'GC', 'title' => 'Credit Memo']
+		];
+
+		$menu['inventory'] = [
+			'PC' => ['prefix' => 'PC', 'title' => 'Physical Count'],
+			'AJ' => ['prefix' => 'AJ', 'title' => 'Inventory Adjustment'],
+			'TS' => ['prefix' => 'TS', 'title' => 'Transfer Slip'],
+			'IS' => ['prefix' => 'IS', 'title' => 'Inventory Setup']
+		];
+
+		$menu['issuance'] = [
+			'TR' => ['prefix' => 'TR', 'title' => 'Stock Request'],
+			'ST' => ['prefix' => 'ST', 'title' => 'Stock Transfer'],
+			'SS' => ['prefix' => 'SS', 'title' => 'Stock Issuance']
+		];
+
+		$menu['customersupport'] = ['CA' => ['prefix' => 'CA', 'title' => 'Create Ticket']];
+
+		$menu['schoolsystem'] = [
+			'EC' => ['prefix' => 'EC', 'title' => 'Curriculum'],
+			'ES' => ['prefix' => 'ES', 'title' => 'Schedule'],
+			'ET' => ['prefix' => 'ET', 'title' => 'Assessment Setup'],
+			'EA' => ['prefix' => 'EA', 'title' => 'Assessment'],
+			'ER' => ['prefix' => 'ER', 'title' => 'Registration'],
+			'IN' => ['prefix' => 'IN', 'title' => 'Instructor'],
+			'ED' => ['prefix' => 'ED', 'title' => 'Add/Drop'],
+			'EG' => ['prefix' => 'EG', 'title' => 'Student Grade Entry'],
+			'EF' => ['prefix' => 'EF', 'title' => 'Grade Setup'],
+			'EH' => ['prefix' => 'EH', 'title' => 'Grade Entry'],
+			'EM' => ['prefix' => 'EM', 'title' => 'Attendance Entry']
+		];
+
+		$menu['hris'] = [
+			'HA' => ['prefix' => 'HA', 'title' => 'REQUEST TRAINING AND DEVELOPMENT'],
+			'HC' => ['prefix' => 'HC', 'title' => 'CLEARANCE'],
+			'HD' => ['prefix' => 'HD', 'title' => 'NOTICE OF DISCIPLINARY ACTION'],
+			'HI' => ['prefix' => 'HI', 'title' => 'INCIDENT REPORT'],
+			'HO' => ['prefix' => 'HO', 'title' => 'TURN OVER OF ITEMS'],
+			'HR' => ['prefix' => 'HR', 'title' => 'RETURN OF ITEMS'],
+			'HT' => ['prefix' => 'HT', 'title' => 'TRAINING ENTRY'],
+			'HQ' => ['prefix' => 'HQ', 'title' => 'PERSONNEL REQUISITION'],
+			'HN' => ['prefix' => 'HN', 'title' => 'NOTICE TO EXPLAIN'],
+			'HJ' => ['prefix' => 'HJ', 'title' => 'JOB OFFER'],
+			'HS' => ['prefix' => 'HS', 'title' => 'EMPLOYEE STATUS CHANGE']
+		];
+
+		$menu['construction'] = [
+			'PM' => ['prefix' => 'PM', 'title' => 'PROJECT MANAGEMENT'],
+			'BQ' => ['prefix' => 'BQ', 'title' => 'BILL OF QUANTITY'],
+			'JO' => ['prefix' => 'JO', 'title' => 'JOB ORDER'],
+			'JC' => ['prefix' => 'JC', 'title' => 'JOB COMPLETION'],
+			'PB' => ['prefix' => 'PB', 'title' => 'PROGRESS BILLING'],
+			'RQ' => ['prefix' => 'RQ', 'title' => 'PURCHASE REQUISITION(CONST)']
+		];
+
+		$menu['warehousing'] = [
+			'PL' => ['prefix' => 'PL', 'title' => 'PACKING LIST'],
+			'RP' => ['prefix' => 'RP', 'title' => 'PACKING LIST RECEIVING'],
+			'FT' => ['prefix' => 'FT', 'title' => 'FORWARDER/TRUCK'],
+			'SA' => ['prefix' => 'SA', 'title' => 'SALES ORDER AGENT'],
+			'SB' => ['prefix' => 'SB', 'title' => 'SALES ORDER BRANCH'],
+			'SC' => ['prefix' => 'SC', 'title' => 'SALES ORDER ONLINE'],
+
+			'SD' => ['prefix' => 'SD', 'title' => 'SALES JOURNAL AGENT'],
+			'SE' => ['prefix' => 'SE', 'title' => 'SALES JOURNAL BRANCH'],
+			'SC' => ['prefix' => 'SC', 'title' => 'SALES JOURNAL ONLINE']
+		];
+
+		$modules = $this->companysetup->getmodule($params);
+		$prefix  = array_only($menu, $modules);
+		return $this->execute($prefix);
+	}// end function
+
+	private function execute($arr) {
+		foreach ($arr as $key     => $value) {
+			foreach ($value as $key2 => $value2) {
+				$check = $this->coreFunctions->datareader("select psection as value from profile where doc='SED' and psection=?", [$key2]);
+				if ($check == '') {
+					$data = ['doc' => 'SED', 'psection' => $key2, 'pvalue' => $value2['prefix'], 'master' => $value2['title']];
+					$this->coreFunctions->sbcinsert('profile', $data);
+				} else {
+					$check = $this->coreFunctions->datareader("select master as value from profile where doc='SED' and psection=?", [$key2]);
+					if ($check == '') {
+						$data = ['master'                                        => $value2['title']];
+						$this->coreFunctions->sbcupdate('profile', $data, ['doc' => 'SED', 'psection' => $key2]);
+					}
+				}
+			}
+		}
+	}
+}// end class

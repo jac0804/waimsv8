@@ -1,0 +1,1276 @@
+<?php
+
+namespace App\Http\Classes;
+
+/*
+*/
+
+use App\Http\Classes\companysetup;
+
+// last attribute 3502 - sales order summary
+
+class setreportlist {
+	public function __construct() {
+		$this->companysetup = new companysetup;
+	}
+
+	public function reportlist($params) {
+
+		// AMS AND AIMS
+		// MASTERFILE
+		$masterfile          = "('','\\9','','','',0,0,0,'Masterfile Report','\\900',3101,'0')";
+		$rep_chartofaccounts = "('','\\900','','','',0,1,0,'Chart of Accounts','\\90006',3102,'0')";
+		$warehouse_list      = "('','\\900','','','',0,1,0,'Warehouse List','\\90007',3103,'0')";
+		$employee_list       = "('','\\900','','','',0,1,0,'Employee List','\\90008',3104,'0')";
+		$department_list     = "('','\\900','','','',0,1,0,'Department List','\\90009',3105,'0')";
+
+		// ACCOUNTING BOOKS
+		$parent_accountingbooks   = "('','\\9','','','',0,0,0,'Accounting Books','\\901',3001,'0')";
+		$rep_cashdisbursementbook = "('','\\901','','','',0,1,0,'Cash Disbursement Book','\\90101',3002,'0')";
+		$rep_cashreceiptbook      = "('','\\901','','','',0,1,0,'Cash Receipt Book','\\90102',3003,'0')";
+		$rep_journalvoucher       = "('','\\901','','','',0,1,0,'Journal Voucher','\\90103',3004,'0')";
+		$rep_purchasejournal      = "('','\\901','','','',0,1,0,'Purchase Journal','\\90104',3005,'0')";
+		$rep_salesjournal         = "('','\\901','','','',0,1,0,'Sales Journal','\\90105',3006,'0')";
+		$rep_debit_memo           = "('','\\901','','','',0,1,0,'Debit Memo','\\90106',3404,'0')";
+		$rep_credit_memo          = "('','\\901','','','',0,1,0,'Credit Memo','\\90107',3405,'0')";
+
+		// CHECK MONITORING REPORTS
+		$parent_checkmonitoringreports = "('','\\9','','','',0,0,0,'Check Monitoring Reports','\\902',3008,'0')";
+		$rep_bouncedchecks             = "('','\\902','','','',0,1,0,'Bounced Checks','\\90201',3009,'0')";
+		$rep_issuedchecks              = "('','\\902','','','',0,1,0,'Issued Checks','\\90202',3010,'0')";
+		$rep_receivedchecks            = "('','\\902','','','',0,1,0,'Received Checks','\\90203',3011,'0')";
+		$rep_undepositedchecks         = "('','\\902','','','',0,1,0,'Undeposited Checks','\\90204',3012,'0')";
+
+		// FINANCIAL STATEMENTS
+		$parent_financialstatements    = "('','\\9','','','',0,0,0,'Financial Statements','\\903',3013,'0')";
+		$rep_balancesheet              = "('','\\903','','','',0,1,0,'Balance Sheet','\\90301',3014,'0')";
+		$rep_incomestatement           = "('','\\903','','','',0,1,0,'Income Statement','\\90302',3015,'0')";
+		$rep_subsidiaryledger          = "('','\\903','','','',0,1,0,'Subsidiary Ledger','\\90303',3016,'0')";
+		$rep_trialbalance              = "('','\\903','','','',0,1,0,'Trial Balance','\\90304',3017,'0')";
+		$rep_comparativeincomestatment = "('','\\903','','','',0,1,0,'Comparative Income Statement','\\90306',3083,'0')";
+		$rep_comparativebalancesheet   = "('','\\903','','','',0,1,0,'Comparative Balance Sheet','\\90307',3084,'0')";
+		$rep_comparativetrialbalance   = "('','\\903','','','',0,1,0,'Comparative Trial Balance','\\90309',3480,'0')";
+		$rep_monthlyincomestatement    = "('','\\903','','','',0,1,0,'Monthly Income Statement','\\90308',3085,'0')";
+
+		if ($params['companyid'] == 10) {
+			$isperdept    = "('','\\903','','','',0,1,0,'Profit and Loss per Department','\\90310',3453,'0')";
+			$isperbranch  = "('','\\903','','','',0,1,0,'Profit and Loss per Branch','\\90311',3454,'0')";
+			$isperproject = "('','\\903','','','',0,1,0,'Profit and Loss per Product Line','\\90312',3455,'0')";
+		} else {
+			$isperdept    = "";
+			$isperbranch  = "";
+			$isperproject = "";
+		}
+
+		// ITEMS
+		$parent_items                         = "('','\\9','','','',0,0,0,'Items','\\904',3018,'0')";
+		$rep_inventorybalance                 = "('','\\904','','','',0,1,0,'Inventory Balance','\\90401',3019,'0')";
+		$rep_analyzeitempurchasemonthly       = "('','\\904','','','',0,1,0,'Monthly Analyze Item Purchase','\\90402',3020,'0')";
+		$rep_analyzeitemsalesmonthly          = "('','\\904','','','',0,1,0,'Monthly Analyze Item Sales','\\90403',3021,'0')";
+		$rep_itemlist                         = "('','\\904','','','',0,1,0,'Item List','\\90404',3022,'0')";
+		$rep_currentinventoryaging            = "('','\\904','','','',0,1,0,'Current Inventory Aging','\\9041',3023,'0')";
+		$rep_fastmovingitems                  = "('','\\904','','','',0,1,0,'Fast Moving Items','\\90405',3024,'0')";
+		$rep_slowmovingitems                  = "('','\\904','','','',0,1,0,'Slow Moving Items','\\90408',3027,'0')";
+		$rep_analyzeitemsaleswithprofitmarkup = "('','\\904','','','',0,1,0,'Analyze Item Sales with Profit Markup','\\90406',3025,'0')";
+		$rep_itempurchasereport               = "('','\\904','','','',0,1,0,'Item Purchase Report','\\90425',3139,'1')";
+		$rep_salesperitempercustomer          = "('','\\904','','','',0,1,0,'Sales Per Item Per Customer','\\90409',3028,'0')";
+		$rep_itemtoexpired                    = "('','\\904','','','',0,1,0,'Item to Expired','\\90410',3029,'0')";
+		$rep_itembalance_belowminimum         = "('','\\904','','','',0,1,0,'Item Balance Below Minimum','\\90411',3030,'0')";
+		$rep_itembalance_aboveminimum         = "('','\\904','','','',0,1,0,'Item Balance Above Maximum','\\90412',3031,'0')";
+		$rep_reorder                          = "('','\\904','','','',0,1,0,'Reorder Report','\\90507',3112,'0')";
+
+		if ($this->companysetup->getsystemtype($params) == 'AMS') {
+			$parent_items                         = "";
+			$rep_inventorybalance                 = "";
+			$rep_analyzeitempurchasemonthly       = "";
+			$rep_analyzeitemsalesmonthly          = "";
+			$rep_itemlist                         = "";
+			$rep_currentinventoryaging            = "";
+			$rep_fastmovingitems                  = "";
+			$rep_slowmovingitems                  = "";
+			$rep_analyzeitemsaleswithprofitmarkup = "";
+			$rep_itempurchasereport               = "";
+			$rep_salesperitempercustomer          = "";
+			$rep_itemtoexpired                    = "";
+			$rep_itembalance_belowminimum         = "";
+			$rep_itembalance_aboveminimum         = "";
+			$rep_reorder                          = "";
+
+		}
+
+		// CUSTOMER
+		$parent_customers                     = "('','\\9','','','',0,0,0,'Customers','\\905',3032,'0')";
+		$rep_customerlist                     = "('','\\905','','','',0,1,0,'Customers List','\\90501',3033,'0')";
+		$rep_currentcustomerreceivable        = "('','\\905','','','',0,1,0,'Current Customer Receivables','\\90502',3034,'0')";
+		$rep_currentcustomerreceivableaging   = "('','\\905','','','',0,1,0,'Current Customer Receivables Aging','\\90503',3035,'0')";
+		$rep_analyzecustomersalesmonthly      = "('','\\905','','','',0,1,0,'Analyze Customer Sales Monthly','\\90504',3036,'0')";
+		$rep_customersalesreport              = "('','\\905','','','',0,1,0,'Customer Sales Report','\\90505',3037,'0')";
+		$rep_pendingsalesorders               = "('','\\905','','','',0,1,0,'Pending Sales Orders','\\90506',3038,'0')";
+		$rep_customerperformancereport        = "('','\\905','','','',0,1,0,'Customer Performance Report','\\90509',3053,'0')";
+		$rep_analyzecustomercollectionmonthly = "('','\\905','','','',0,1,0,'Analyze Customer Collection Monthly','\\90519',3127,'0')";
+		$rep_salespercustomerperitem          = "('','\\905','','','',0,1,0,'Sales Per Customer Per Item','\\90510',3082,'0')";
+		$rep_monthlysalesreport_graphy        = "('','\\905','','','',0,1,0,'Monthly Sales Report Graph','\\90511',3039,'0')";
+		$rep_salescomparison_graph            = "('','\\905','','','',0,1,0,'Sales Comparison Graph','\\90512',3086,'0')";
+
+		$rep_sales_order_aftech = "";
+		switch ($params['companyid']) {
+			case '10':
+				$rep_sales_order_aftech = "('','\\905','','','',0,1,0,'Sales Order Summary','\\90514',3502,'0')";
+				break;
+		}
+
+		// SUPPLIER
+		$parent_supplier                      = "('','\\9','','','',0,0,0,'Supplier','\\906',3040,'0')";
+		$rep_supplierlist                     = "('','\\906','','','',0,1,0,'Supplier List','\\90601',3041,'0')";
+		$rep_currentsupplierpayables          = "('','\\906','','','',0,1,0,'Current Supplier Payables','\\90602',3042,'0')";
+		$rep_currentsupplierpayablesaging     = "('','\\906','','','',0,1,0,'Current Supplier Payables Aging','\\90603',3043,'0')";
+		$rep_analyzedsupplierpurchasesmonthly = "('','\\906','','','',0,1,0,'Analyzed Supplier Purchases Monthly','\\90604',3044,'0')";
+		$rep_supplierpurchasereport           = "('','\\906','','','',0,1,0,'Supplier Purchase Report','\\90605',3045,'0')";
+		$rep_pendingpurchaseorders            = "('','\\906','','','',0,1,0,'Pending Purchase Orders','\\90606',3046,'0')";
+		$rep_supplierperformancereport        = "('','\\906','','','',0,1,0,'Supplier Performance Report','\\90609',3054,'0')";
+		$rep_purchasepersupp                  = "('','\\906','','','',0,1,0,'Purchase Per Supplier','\\90612',3093,'0')";
+		$rep_monthlypurchasesreport_graph     = "('','\\906','','','',0,1,0,'Monthly Purchases Report Graph','\\90607',3399,'0')";
+		$rep_purchasescomparison_graph        = "('','\\906','','','',0,1,0,'Purchases Comparison Graph','\\90608',3398,'0')";
+		$rep_withholdingtax                   = "('','\\906','','','',0,1,0,'Withholding Tax Report','\\90611',3400,'0')";
+
+		// SALES AGENT
+		$parent_salesagent             = "('','\\9','','','',0,0,0,'Sales Agent','\\907',3047,'0')";
+		$rep_salesagentlist            = "('','\\907','','','',0,1,0,'Sales Agent List','\\90701',3048,'0')";
+		$rep_analyzedagentsalesmonthly = "('','\\907','','','',0,1,0,'Analyzed Agent Sales Monthly','\\90702',3049,'0')";
+
+		// OTHER REPORTS
+		$parent_otherreports            = "('','\\9','','','',0,0,0,'Other Reports','\\908',3050,'0')";
+		$rep_statementofaccount         = "('','\\908','','','',0,1,0,'Statement of Account','\\90801',3051,'0')";
+		$rep_expensesreport             = "('','\\908','','','',0,1,0,'Expenses Report','\\90804',3052,'0')";
+		$rep_receivingconsignmentreport = "('','\\906','','','',0,1,0,'Receiving Consignment Report','\\90610',3055,'0')";
+		$user_access_report             = "('','\\908','','','',0,1,0,'User Access Report','\\90805',3100,'0')";
+
+		switch ($params['companyid']) {
+			case 1:// vitaline
+				$rep_daily_sales_report = "('','\\908','','','',0,1,0,'Daily Sales Report','\\90815',3408,'0')";
+				$rep_sales_report       = "('','\\908','','','',0,1,0,'Sales Report','\\90807',3410,'0')";
+				break;
+
+			default:
+				$rep_sales_report       = "";
+				$rep_daily_sales_report = "";
+				break;
+		}
+
+		// TRANSACTION LIST
+		$parent_transactionlist        = "('','\\9','','','',0,0,0,'Transaction List','\\909',3056,'0')";
+		$subparent_purchases           = "('','\\909','','','',0,0,0,'Purchases','\\90901',3057,'0')";
+		$rep_purchaserequisitionreport = "('','\\90901','','\\\\909','',0,1,0,'Purchase Requisition Report','\\9090101',3061,'0')";
+		$rep_purchaseorderreport       = "('','\\90901','','\\\\909','',0,1,0,'Purchase Order Report','\\9090102',3060,'0')";
+		$rep_receivingreport           = "('','\\90901','','\\\\909','',0,1,0,'Receiving Report','\\9090103',3058,'0')";
+		$rep_purchasereturnreport      = "('','\\90901','','\\\\909','',0,1,0,'Purchase Return Report','\\9090104',3059,'0')";
+
+		//jly #1432
+		$rep_packinglistreport          = "('','\\90901','','\\\\909','',0,1,0,'Packing List Report','\\9090107',3495,'0')";
+		$rep_packinglistreceivingreport = "('','\\90901','','\\\\909','',0,1,0,'Packing List Receiving Report','\\9090108',3496,'0')";
+		$rep_warrantyrequestreport      = "('','\\90901','','\\\\909','',0,1,0,'Warranty Request Report','\\9090109',3497,'0')";
+		$rep_warrantyreceivingreport    = "('','\\90901','','\\\\909','',0,1,0,'Warranty Receiving Report','\\9090110',3498,'0')";
+
+		$rep_canvass_sheet = "";
+		switch ($params['companyid']) {
+			case '10':
+				$rep_canvass_sheet = "('','\\90901','','\\\\909','',0,1,0,'Canvass Sheet Report','\\9090106',3481,'0')";
+				break;
+		}
+
+		$subparent_sales        = "('','\\909','','','',0,0,0,'Sales','\\90902',3062,'0')";
+		$rep_salesorderreport   = "('','\\90902','','\\\\909','',0,1,0,'Sales Order Report','\\9090201',3063,'0')";
+		$rep_salesjournalreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Journal Report','\\9090202',3064,'0')";
+		$rep_salesreturnreport  = "('','\\90902','','\\\\909','',0,1,0,'Sales Return Report','\\9090203',3065,'0')";
+
+		//jly #1432
+		$rep_salesorderdealerreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Order Dealer Report','\\9090204',3486,'0')";
+		$rep_salesorderbranchreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Order Branch Report','\\9090205',3487,'0')";
+		$rep_salesorderonlinereport = "('','\\90902','','\\\\909','',0,1,0,'Sales Order Online Report','\\9090206',3488,'0')";
+
+		$rep_salesjournaldealerreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Journal Dealer Report','\\9090207',3489,'0')";
+		$rep_salesjournalbranchreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Journal Branch Report','\\9090208',3490,'0')";
+		$rep_salesjournalonlinereport = "('','\\90902','','\\\\909','',0,1,0,'Sales Journal Online Report','\\9090209',3491,'0')";
+
+		$rep_specialpartsrequestreport  = "('','\\90902','','\\\\909','',0,1,0,'Special Parts Request Report','\\9090210',3492,'0')";
+		$rep_specialpartsissuancereport = "('','\\90902','','\\\\909','',0,1,0,'Special Parts Issuance Report','\\9090211',3493,'0')";
+		$rep_specialpartsreturnreport   = "('','\\90902','','\\\\909','',0,1,0,'Special Parts Return Report','\\9090212',3494,'0')";
+
+		$rep_quotation = "";
+		switch ($params['companyid']) {
+			case '10':
+				$rep_quotation = "('','\\90902','','\\\\909','',0,1,0,'Quotation Report','\\9090205',3482,'0')";
+				break;
+		}
+		//#1433
+		$rep_salesactivityreport     = "('','\\90902','','\\\\909','',0,1,0,'Sales Activity Report','\\9090213',3499,'0')";
+		$rep_servicesalesorderreport = "('','\\90902','','\\\\909','',0,1,0,'Service Sales Order Report','\\9090214',3500,'0')";
+		$rep_taskerrandreport        = "('','\\90902','','\\\\909','',0,1,0,'Task/Errand Report','\\9090215',3501,'0')";
+
+		$subparent_inventory           = "('','\\909','','','',0,0,0,'Inventory','\\90903',3066,'0')";
+		$rep_inventorysetupreport      = "('','\\90903','','\\\\909','',0,1,0,'Inventory Setup Report','\\9090301',3067,'0')";
+		$rep_physicalcountreport       = "('','\\90903','','\\\\909','',0,1,0,'Physical Count Report','\\9090302',3068,'0')";
+		$rep_transferslipreport        = "('','\\90903','','\\\\909','',0,1,0,'Transfer Slip Report','\\9090303',3069,'0')";
+		$rep_inventoryadjustmentreport = "('','\\90903','','\\\\909','',0,1,0,'Inventory Adjustment Report','\\9090304',3070,'0')";
+
+		$subparent_payables         = "('','\\909','','','',0,0,0,'Payables','\\90904',3071,'0')";
+		$rep_apsetupreport          = "('','\\90904','','\\\\909','',0,1,0,'AP Setup','\\9090401',3072,'0')";
+		$rep_apvoucherreport        = "('','\\90904','','\\\\909','',0,1,0,'AP Voucher','\\9090402',3073,'0')";
+		$rep_cashcheckvoucherreport = "('','\\90904','','\\\\909','',0,1,0,'Cash Check Voucher','\\9090403',3074,'0')";
+
+		$subparent_receivables     = "('','\\909','','','',0,0,0,'Receivables','\\90905',3075,'0')";
+		$rep_arsetupreport         = "('','\\90905','','\\\\909','',0,1,0,'AR Setup','\\9090501',3076,'0')";
+		$rep_receivedpaymentreport = "('','\\90905','','\\\\909','',0,1,0,'Received Payment','\\9090502',3077,'0')";
+		$rep_counterreceiptreport  = "('','\\90905','','\\\\909','',0,1,0,'Counter Receipt','\\9090503',3078,'0')";
+
+		$subparent_accounting     = "('','\\909','','','',0,0,0,'Accounting','\\90906',3079,'0')";
+		$rep_generaljournalreport = "('','\\90906','','\\\\909','',0,1,0,'General Journal','\\9090601',3080,'0')";
+		$rep_depositslipreport    = "('','\\90906','','\\\\909','',0,1,0,'Deposit Slip','\\9090602',3081,'0')";
+		$rep_debit_memo_sum       = "('','\\90906','','\\\\909','',0,1,0,'Debit Memo Summary','\\9090603',3406,'0')";
+		$rep_credit_memo_sum      = "('','\\90906','','\\\\909','',0,1,0,'Credit Memo Summary','\\9090604',3407,'0')";
+
+		$rep_monthlysummary_outputtax = "('','\\905','','','',0,1,0,'Monthly Summary of Output Tax','\\90513',3401,'0')";
+		$monthly_sum_ewt              = "('','\\906','','','',0,1,0,'Monthly Summary of EWT Report','\\90613',3402,'0')";
+		$rep_withholdingtax           = "('','\\906','','','',0,1,0,'Monthly Summary of Input Tax','\\90614',3403,'0')";
+
+		$rep_material_issuance_report = $rep_purchase_detailed = $rep_sched_fifo = $rep_inv_movement =
+		$rep_items_negative_bal       = $rep_quantity_on_hand       = $rep_unserved_po       = $rep_non_moving_items       = $inv_checksheet       = $price_list       =
+		$jobrequeststatus             = $listcrewpervessel             = $listvoyage             = $listwarehousevessels             = $subparent_voyage             = $rep_voyagereport             =
+		$rep_listcrewpervessel        = $rep_listvoyagereportpervessel        = $rep_listwarehousevessels        = $rep_supplierinvoicereport        = "";
+
+		$subparent_crm          = "";
+		$rep_Lead               = "";
+		$rep_opportunity_module = "";
+
+		switch ($params['companyid']) {
+			case '10':
+				$subparent_crm          = "('','\\909','','','',0,0,0,'CRM','\\90909',3483,'0')";
+				$rep_Lead               = "('','\\90909','','\\\\909','',0,1,0,'Lead Report','\\9090901',3484,'0')";
+				$rep_opportunity_module = "('','\\90909','','\\\\909','',0,1,0,'Opportunity Module Report','\\9090902',3485,'0')";
+				break;
+		}
+
+		// PAYABLES
+		$rep_petty_cash         = "('','\\90904','','','',0,1,0,'Petty Cash Voucher Report','\\9090404',3451,'0')";
+		$rep_petty_cash_request = "('','\\90904','','','',0,1,0,'Petty Cash Request Report','\\9090405',3456,'0')";
+
+		switch ($params['companyid']) {
+			case 3:// conti
+				// SALES
+				$rep_material_issuance_report = "('','\\90902','','\\\\909','',0,1,0,'Material Issuance Report','\\9090204',3450,'0')";
+
+				// SUPPLIER
+				$rep_purchase_detailed = "('','\\906','','','',0,1,0,'Purchases Detailed Report','\\90615',3455,'0')";
+
+				// ITEMS
+				$rep_sched_fifo         = "('','\\904','','','',0,1,0,'Schedule of Inventory FIFO','\\90414',3457,'0')";
+				$rep_inv_movement       = "('','\\904','','','',0,1,0,'Inventory Movement Report','\\90415',3458,'0')";
+				$rep_items_negative_bal = "('','\\904','','','',0,1,0,'Items With Negative Balance','\\90416',3459,'0')";
+				$rep_quantity_on_hand   = "('','\\904','','','',0,1,0,'Quantity On Hand','\\90417',3462,'0')";
+				$rep_unserved_po        = "('','\\904','','','',0,1,0,'Unserved Purchase Order','\\90418',3463,'0')";
+				$rep_non_moving_items   = "('','\\904','','','',0,1,0,'Non Moving Items','\\90419',3465,'0')";
+				$inv_checksheet         = "('','\\904','','','',0,1,0,'Inventory Checksheet','\\90413',3446,'0')";
+				$price_list             = "('','\\904','','','',0,1,0,'Price List','\\90520',3464,'0')";
+
+				// JOB REQUEST REPORT
+				$jobrequeststatus = "('','\\900','','','',0,1,0,'Job Request Status','\\3449',3105,'0')";
+
+				// VESSEL REPORT
+				$subparent_voyage              = "('','\\909','','','',0,0,0,'Vessel','\\90907',3466,'0')";
+				$rep_voyagereport              = "('','\\90907','','\\\\909','',0,1,0,'Voyage Report','\\9090701',3467,'0')";
+				$rep_listcrewpervessel         = "('','\\90907','','\\\\909','',0,1,0,'List of Crew per Vessel','\\9090702',3452,'0')";
+				$rep_listvoyagereportpervessel = "('','\\90907','','\\\\909','',0,1,0,'List of Voyage Report per Vessel','\\9090703',3460,'0')";
+				$rep_listwarehousevessels      = "('','\\90907','','\\\\909','',0,1,0,'List of Warehouses or Vessels per Type','\\9090704',3461,'0')";
+
+				// TRANSACTION LIST PURCHASES
+				$rep_supplierinvoicereport = "('','\\90901','','\\\\909','',0,1,0,'Supplier Invoice','\\9090105',3468,'0')";
+
+				break;
+		}
+
+		// HRIS
+		$subparent_applicant        = "('','\\A','','','',0,0,0,'HRIS Reports','\\A01',3413,'0')";
+		$rep_hris_applicant_listing = "('','\\A01','','','',0,1,0,'Applicant Listing','\\A0101',3414,'0')";
+		$rep_personnel_req          = "('','\\A01','','','',0,1,0,'Personnel Requisition','\\A0102',3436,'0')";
+		$rep_job_offer              = "('','\\A01','','','',0,1,0,'Job Offer','\\A0103',3437,'0')";
+		$rep_req_train_dev          = "('','\\A01','','','',0,1,0,'Request for Training and Development','\\A0104',3438,'0')";
+		$rep_train_entry            = "('','\\A01','','','',0,1,0,'Training Entry','\\A0105',3439,'0')";
+
+		$rep_turn_over_items       = "('','\\A01','','','',0,1,0,'Turn Over of Items','\\A0106',3440,'0')";
+		$rep_return_items          = "('','\\A01','','','',0,1,0,'Return of Items','\\A0107',3441,'0')";
+		$rep_emp_stat_entry_change = "('','\\A01','','','',0,1,0,'Employment Status Entry or Change','\\A0108',3442,'0')";
+		$rep_incident_rep          = "('','\\A01','','','',0,1,0,'Incident Report','\\A0109',3443,'0')";
+		$rep_notice_explain        = "('','\\A01','','','',0,1,0,'Notice to Explain','\\A01010',3444,'0')";
+		$rep_notice_discip_action  = "('','\\A01','','','',0,1,0,'Notice of Disciplinary Action','\\A01011',3445,'0')";
+
+		$subparent_construction = "";
+		$rep_liquidation        = "";
+		$rep_jo_summ            = "";
+
+		$rep_jo_list              = "";
+		$rep_jo_completion_list   = "";
+		$rep_project_cost_summary = "";
+
+		$trans_list_subparent_construction = "";
+		$project_monitoring                = "";
+
+		$consolidated_project_cost_summary = "";
+		$subcon_project_monitoring         = "";
+
+		switch ($params['companyid']) {
+			case '8':
+				// CONSTRUCTION
+				$subparent_construction            = "('','\\D','','','',0,0,0,'Construction Reports','\\D01',3469,'0')";
+				$rep_liquidation                   = "('','\\D01','','','',0,1,0,'Liquidation Report','\\D0101',3470,'0')";
+				$rep_jo_summ                       = "('','\\D01','','','',0,1,0,'Job Order Summary','\\D0102',3471,'0')";
+				$rep_project_cost_summary          = "('','\\D01','','','',0,1,0,'Project Cost Summary','\\D0105',3474,'0')";
+				$project_monitoring                = "('','\\D01','','','',0,1,0,'Project Monitoring','\\D0106',3475,'0')";
+				$consolidated_project_cost_summary = "('','\\D01','','','',0,1,0,'Consolidated Project Cost Summary','\\D0107',3476,'0')";
+				$subcon_project_monitoring         = "('','\\D01','','','',0,1,0,'Subcon Project Monitoring','\\D0108',3477,'0')";
+
+				//TRANSACTION LIST
+				$trans_list_subparent_construction = "('','\\909','','','',0,0,0,'Construction','\\90908',3409,'0')";
+				$rep_jo_list                       = "('','\\90908','','\\\\909','',0,1,0,'JO List','\\9090801',3472,'0')";
+				$rep_jo_completion_list            = "('','\\90908','','\\\\909','',0,1,0,'JO Completion List','\\9090802',3473,'0')";
+
+				break;
+		}
+
+		// PAYROLL
+		$subparent_other_report       = '';
+		$rep_payroll_employee_listing = '';
+		$rep_month_pay_13th           = '';
+		$rep_dep_advise               = '';
+		$rep_emp_loan_balance         = '';
+		$rep_emp_rate_                = '';
+
+		$subparent_bir_tax_report = '';
+		$rep_payroll_tax_witheld  = '';
+		$rep_bir_2316             = '';
+
+		$subparent_pagibig_report         = '';
+		$rep_payroll_pagibig_remittance   = '';
+		$rep_payroll_pagibig_loan_payment = '';
+
+		$subparent_philhealth_report       = '';
+		$rep_payroll_philhealth_remittance = '';
+
+		$subparent_sss_report         = '';
+		$rep_payroll_sss_remittance   = '';
+		$rep_payroll_sss_loan_payment = '';
+
+		$subparent_payroll_report = '';
+		$rep_payslip              = '';
+		$rep_payregister          = '';
+
+		$subparent_time_attendance_report = '';
+		$rep_dtr                          = '';
+
+		$rep_paymonthly_summary = "";
+		$rep_alphalist          = "";
+
+		switch ($this->companysetup->getsystemtype($params)) {
+			case 'ALL':
+				$subparent_other_report       = "('','\\B','','','',0,0,0,'Payroll Other Report','\\B01',3415,'0')";
+				$rep_payroll_employee_listing = "('','\\B01','','','',0,1,0,'Employee Listing','\\B0101',3416,'0')";
+				$rep_month_pay_13th           = "('','\\B01','','','',0,1,0,'Employee 13th Month Pay','\\B0102',3417,'0')";
+				$rep_dep_advise               = "('','\\B01','','','',0,1,0,'Deposit Advise','\\B0103',3433,'0')";
+				$rep_emp_loan_balance         = "('','\\B01','','','',0,1,0,'Employee Loan Balances','\\B0104',3434,'0')";
+				$rep_emp_rate_                = "('','\\B01','','','',0,1,0,'Employee Rate Report','\\B0105',3435,'0')";
+
+				$subparent_bir_tax_report = "('','\\B','','','',0,0,0,'Bir Tax Reports','\\B02',3418,'0')";
+				$rep_payroll_tax_witheld  = "('','\\B02','','','',0,1,0,'Tax Withheld Report','\\B0201',3419,'0')";
+				$rep_bir_2316             = "('','\\B02','','','',0,1,0,'BIR 2316','\\B0202',3468,'0')";
+				$rep_alphalist            = "('','\\B02','','','',0,1,0,'Alphalist','\\B0203',3479,'0')";
+
+				$subparent_pagibig_report         = "('','\\B','','','',0,0,0,'Pag Ibig Reports','\\B03',3420,'0')";
+				$rep_payroll_pagibig_remittance   = "('','\\B03','','','',0,1,0,'Pag Ibig Remittance Report','\\B0301',3421,'0')";
+				$rep_payroll_pagibig_loan_payment = "('','\\B03','','','',0,1,0,'Pag Ibig Loan Payment Report','\\B0302',3422,'0')";
+
+				$subparent_philhealth_report       = "('','\\B','','','',0,0,0,'Philhealth Reports','\\B04',3423,'0')";
+				$rep_payroll_philhealth_remittance = "('','\\B04','','','',0,1,0,'Philhealth Remittance Report','\\B0401',3424,'0')";
+
+				$subparent_sss_report         = "('','\\B','','','',0,0,0,'SSS Reports','\\B05',3425,'0')";
+				$rep_payroll_sss_remittance   = "('','\\B05','','','',0,1,0,'SSS Remittance Report','\\B0501',3426,'0')";
+				$rep_payroll_sss_loan_payment = "('','\\B05','','','',0,1,0,'SSS Loan Payment Report','\\B0502',3427,'0')";
+
+				$subparent_payroll_report = "('','\\B','','','',0,0,0,'Payroll Reports','\\B06',3428,'0')";
+				$rep_payslip              = "('','\\B06','','','',0,1,0,'Pay Slip','\\B0601',3429,'0')";
+				$rep_payregister          = "('','\\B06','','','',0,1,0,'Payroll Register','\\B0602',3430,'0')";
+				$rep_paymonthly_summary   = "('','\\B06','','','',0,1,0,'Payroll Monthly Summary','\\B0603',3478,'0')";
+
+				$subparent_time_attendance_report = "('','\\B','','','',0,0,0,'Time and Attendance Report','\\B07',3431,'0')";
+				$rep_dtr                          = "('','\\B07','','','',0,1,0,'Daily Time Record','\\B0701',3432,'0')";
+				break;
+		}
+
+		switch ($this->companysetup->getsystemtype($params)) {
+			case 'WAIMS':case 'ALL':
+				// WAREHOUSING
+				$rep_warehousing       = "('','\\C','','','',0,0,0,'Warehousing Report','\\C01',3447,'0')";
+				$rep_qr_code_generator = "('','\\C01','','','',0,1,0,'QR Code Generator','\\C0101',3448,'0')";
+				break;
+			default:
+				$rep_warehousing       = "";
+				$rep_qr_code_generator = "";
+				break;
+		}
+
+		switch ($this->companysetup->getsystemtype($params)) {
+			case 'MIS':
+				$report_sysmenu = [
+					$masterfile,
+					$warehouse_list,
+					$employee_list,
+					$department_list,
+
+					// ITEMS
+					$parent_items,
+					$rep_inventorybalance,
+					$rep_analyzeitempurchasemonthly,
+					$rep_analyzeitemsalesmonthly,
+					$rep_itemlist,
+					$rep_currentinventoryaging,
+					$rep_fastmovingitems,
+					$rep_analyzeitemsaleswithprofitmarkup,
+					$rep_slowmovingitems,
+					$rep_itempurchasereport,
+					$rep_salesperitempercustomer,
+					$rep_itemtoexpired,
+					$rep_itembalance_belowminimum,
+					$rep_itembalance_aboveminimum,
+					$rep_reorder,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_analyzecustomersalesmonthly,
+					$rep_customersalesreport,
+					$rep_pendingsalesorders,
+					$rep_customerperformancereport,
+					$rep_salespercustomerperitem,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_pendingpurchaseorders,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+
+					// SALES AGENT
+					$parent_salesagent,
+					$rep_salesagentlist,
+					$rep_analyzedagentsalesmonthly,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_receivingconsignmentreport,
+					$user_access_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_purchases,
+					$rep_purchaserequisitionreport,
+					$rep_purchaseorderreport,
+					$rep_receivingreport,
+					$rep_purchasereturnreport,
+					$subparent_sales,
+					$rep_salesorderreport,
+					$rep_salesjournalreport,
+					$rep_salesreturnreport,
+					$subparent_inventory,
+					$rep_inventorysetupreport,
+					$rep_physicalcountreport,
+					$rep_transferslipreport,
+					$rep_inventoryadjustmentreport,
+				];
+
+				break;
+			case 'AMS':
+				$report_sysmenu = [
+					$masterfile,
+					$rep_chartofaccounts,
+					$employee_list,
+					$department_list,
+					// ACCOUNTING BOOKS
+					$parent_accountingbooks,
+					$rep_cashdisbursementbook,
+					$rep_cashreceiptbook,
+					$rep_journalvoucher,
+					$rep_purchasejournal,
+					$rep_salesjournal,
+					// CHECK MONITORING REPORTS
+					$parent_checkmonitoringreports,
+					$rep_bouncedchecks,
+					$rep_issuedchecks,
+					$rep_receivedchecks,
+					$rep_undepositedchecks,
+					// FINANCIAL STATEMENTS
+					$parent_financialstatements,
+					$rep_balancesheet,
+					$rep_incomestatement,
+					$rep_subsidiaryledger,
+					$rep_trialbalance,
+					$rep_comparativeincomestatment,
+					$rep_comparativebalancesheet,
+					$rep_comparativetrialbalance,
+					$rep_monthlyincomestatement,
+					$isperdept,
+					$isperbranch,
+					$isperproject,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_currentcustomerreceivable,
+					$rep_currentcustomerreceivableaging,
+					$rep_analyzecustomersalesmonthly,
+					$rep_customersalesreport,
+					$rep_customerperformancereport,
+					$rep_analyzecustomercollectionmonthly,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+					$rep_monthlysummary_outputtax,
+					$monthly_sum_ewt,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_currentsupplierpayables,
+					$rep_currentsupplierpayablesaging,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+					$rep_withholdingtax,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_statementofaccount,
+					$rep_expensesreport,
+					$user_access_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_payables,
+					$rep_apsetupreport,
+					$rep_apvoucherreport,
+					$rep_cashcheckvoucherreport,
+					$subparent_receivables,
+					$rep_arsetupreport,
+					$rep_receivedpaymentreport,
+					$rep_counterreceiptreport,
+					$subparent_accounting,
+					$rep_generaljournalreport,
+					$rep_depositslipreport,
+				];
+				break;
+			case 'AIMS':
+				$report_sysmenu = [
+					$masterfile,
+					$rep_chartofaccounts,
+					$warehouse_list,
+					$employee_list,
+					$department_list,
+					// ACCOUNTING BOOKS
+					$parent_accountingbooks,
+					$rep_cashdisbursementbook,
+					$rep_cashreceiptbook,
+					$rep_journalvoucher,
+					$rep_purchasejournal,
+					$rep_salesjournal,
+					// CHECK MONITORING REPORTS
+					$parent_checkmonitoringreports,
+					$rep_bouncedchecks,
+					$rep_issuedchecks,
+					$rep_receivedchecks,
+					$rep_undepositedchecks,
+					// FINANCIAL STATEMENTS
+					$parent_financialstatements,
+					$rep_balancesheet,
+					$rep_incomestatement,
+					$rep_subsidiaryledger,
+					$rep_trialbalance,
+					$rep_comparativeincomestatment,
+					$rep_comparativebalancesheet,
+					$rep_comparativetrialbalance,
+					$rep_monthlyincomestatement,
+					$isperdept,
+					$isperbranch,
+					$isperproject,
+
+					// ITEMS
+					$parent_items,
+					$rep_inventorybalance,
+					$rep_analyzeitempurchasemonthly,
+					$rep_analyzeitemsalesmonthly,
+					$rep_itemlist,
+					$rep_currentinventoryaging,
+					$rep_fastmovingitems,
+					$rep_analyzeitemsaleswithprofitmarkup,
+					$rep_slowmovingitems,
+					$rep_itempurchasereport,
+					$rep_salesperitempercustomer,
+					$rep_itemtoexpired,
+					$rep_itembalance_belowminimum,
+					$rep_itembalance_aboveminimum,
+					$rep_reorder,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_currentcustomerreceivable,
+					$rep_currentcustomerreceivableaging,
+					$rep_analyzecustomersalesmonthly,
+					$rep_customersalesreport,
+					$rep_pendingsalesorders,
+					$rep_customerperformancereport,
+					$rep_analyzecustomercollectionmonthly,
+					$rep_salespercustomerperitem,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+					$rep_monthlysummary_outputtax,
+					$monthly_sum_ewt,
+					$rep_sales_order_aftech,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_currentsupplierpayables,
+					$rep_currentsupplierpayablesaging,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_pendingpurchaseorders,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+					$rep_withholdingtax,
+
+					// SALES AGENT
+					$parent_salesagent,
+					$rep_salesagentlist,
+					$rep_analyzedagentsalesmonthly,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_statementofaccount,
+					$rep_expensesreport,
+					$rep_receivingconsignmentreport,
+					$user_access_report,
+					$rep_sales_report,
+					$rep_daily_sales_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_purchases,
+					$rep_purchaserequisitionreport,
+					$rep_purchaseorderreport,
+					$rep_receivingreport,
+					$rep_purchasereturnreport,
+					$rep_canvass_sheet,
+					$subparent_sales,
+					$rep_salesorderreport,
+					$rep_salesjournalreport,
+					$rep_salesreturnreport,
+					$rep_quotation,
+					//#1433
+					$rep_salesactivityreport,
+					$rep_servicesalesorderreport,
+					$rep_taskerrandreport,
+					$subparent_inventory,
+					$rep_inventorysetupreport,
+					$rep_physicalcountreport,
+					$rep_transferslipreport,
+					$rep_inventoryadjustmentreport,
+					$subparent_payables,
+					$rep_petty_cash,
+					$rep_petty_cash_request,
+					$rep_apsetupreport,
+					$rep_apvoucherreport,
+					$rep_cashcheckvoucherreport,
+					$subparent_receivables,
+					$rep_arsetupreport,
+					$rep_receivedpaymentreport,
+					$rep_counterreceiptreport,
+					$subparent_accounting,
+					$rep_generaljournalreport,
+					$rep_depositslipreport,
+					$subparent_crm,
+					$rep_Lead,
+					$rep_opportunity_module,
+				];
+				break;
+			case "CAIMS":
+				$report_sysmenu = [
+					$masterfile,
+					$rep_chartofaccounts,
+					$warehouse_list,
+					$employee_list,
+					$department_list,
+					$jobrequeststatus,
+					// ACCOUNTING BOOKS
+					$parent_accountingbooks,
+					$rep_cashdisbursementbook,
+					$rep_cashreceiptbook,
+					$rep_journalvoucher,
+					$rep_purchasejournal,
+					$rep_salesjournal,
+					$rep_debit_memo,
+					$rep_credit_memo,
+					// CHECK MONITORING REPORTS
+					$parent_checkmonitoringreports,
+					$rep_bouncedchecks,
+					$rep_issuedchecks,
+					$rep_receivedchecks,
+					$rep_undepositedchecks,
+					// FINANCIAL STATEMENTS
+					$parent_financialstatements,
+					$rep_balancesheet,
+					$rep_incomestatement,
+					$rep_subsidiaryledger,
+					$rep_trialbalance,
+					$rep_comparativeincomestatment,
+					$rep_comparativebalancesheet,
+					$rep_comparativetrialbalance,
+					$rep_monthlyincomestatement,
+
+					// ITEMS
+					$parent_items,
+					$rep_inventorybalance,
+					$rep_analyzeitempurchasemonthly,
+					$rep_analyzeitemsalesmonthly,
+					$rep_itemlist,
+					$rep_currentinventoryaging,
+					//$rep_fastmovingitems,
+					$rep_analyzeitemsaleswithprofitmarkup,
+					//$rep_slowmovingitems,
+					$rep_itempurchasereport,
+					$rep_salesperitempercustomer,
+					//$rep_itemtoexpired,
+					//$rep_itembalance_belowminimum,
+					//$rep_itembalance_aboveminimum,
+					//$rep_reorder,
+					//$inv_checksheet,
+					//$rep_sched_fifo,
+					//$rep_inv_movement,
+					//$price_list,
+					//$rep_items_negative_bal,
+					//$rep_quantity_on_hand,
+					$rep_unserved_po,
+					//$rep_non_moving_items,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_currentcustomerreceivable,
+					$rep_currentcustomerreceivableaging,
+					$rep_analyzecustomersalesmonthly,
+					//$rep_customersalesreport,
+					//$rep_pendingsalesorders,
+					$rep_customerperformancereport,
+					$rep_analyzecustomercollectionmonthly,
+					$rep_salespercustomerperitem,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+					$rep_monthlysummary_outputtax,
+					$monthly_sum_ewt,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_currentsupplierpayables,
+					$rep_currentsupplierpayablesaging,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_pendingpurchaseorders,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+					$rep_withholdingtax,
+					$rep_purchase_detailed,
+
+					// SALES AGENT
+					$parent_salesagent,
+					$rep_salesagentlist,
+					$rep_analyzedagentsalesmonthly,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_statementofaccount,
+					$rep_expensesreport,
+					$rep_receivingconsignmentreport,
+					$user_access_report,
+					$rep_daily_sales_report,
+					$rep_sales_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_purchases,
+					$rep_purchaserequisitionreport,
+					$rep_purchaseorderreport,
+					$rep_receivingreport,
+					$rep_purchasereturnreport,
+					$rep_supplierinvoicereport,
+					$subparent_sales,
+					//$rep_salesorderreport,
+					$rep_salesjournalreport,
+					//$rep_salesreturnreport,
+					$rep_material_issuance_report,
+					$subparent_inventory,
+					$rep_inventorysetupreport,
+					$rep_physicalcountreport,
+					$rep_transferslipreport,
+					$rep_inventoryadjustmentreport,
+					$subparent_payables,
+					$rep_apsetupreport,
+					$rep_apvoucherreport,
+					$rep_cashcheckvoucherreport,
+					$rep_petty_cash,
+					$subparent_receivables,
+					$rep_arsetupreport,
+					$rep_receivedpaymentreport,
+					$rep_counterreceiptreport,
+					$subparent_accounting,
+					$rep_generaljournalreport,
+					$rep_depositslipreport,
+					$rep_debit_memo_sum,
+					$rep_credit_memo_sum,
+					$trans_list_subparent_construction,
+					$rep_jo_list,
+					$rep_jo_completion_list,
+					$project_monitoring,
+					$consolidated_project_cost_summary,
+					$subcon_project_monitoring,
+
+					// CONSTRUCTION
+					$subparent_construction,
+					$rep_liquidation,
+					$rep_jo_summ,
+					$rep_project_cost_summary,
+				];
+				break;
+			case 'WAIMS':
+				$report_sysmenu = [
+					$masterfile,
+					$rep_chartofaccounts,
+					$warehouse_list,
+					$employee_list,
+					$department_list,
+					$jobrequeststatus,
+					// ACCOUNTING BOOKS
+					$parent_accountingbooks,
+					$rep_cashdisbursementbook,
+					$rep_cashreceiptbook,
+					$rep_journalvoucher,
+					$rep_purchasejournal,
+					$rep_salesjournal,
+					$rep_debit_memo,
+					$rep_credit_memo,
+					// CHECK MONITORING REPORTS
+					$parent_checkmonitoringreports,
+					$rep_bouncedchecks,
+					$rep_issuedchecks,
+					$rep_receivedchecks,
+					$rep_undepositedchecks,
+					// FINANCIAL STATEMENTS
+					$parent_financialstatements,
+					$rep_balancesheet,
+					$rep_incomestatement,
+					$rep_subsidiaryledger,
+					$rep_trialbalance,
+					$rep_comparativeincomestatment,
+					$rep_comparativebalancesheet,
+					$rep_comparativetrialbalance,
+					$rep_monthlyincomestatement,
+
+					// ITEMS
+					$parent_items,
+					$rep_inventorybalance,
+					$rep_analyzeitempurchasemonthly,
+					$rep_analyzeitemsalesmonthly,
+					$rep_itemlist,
+					$rep_currentinventoryaging,
+					$rep_fastmovingitems,
+					$rep_analyzeitemsaleswithprofitmarkup,
+					$rep_slowmovingitems,
+					$rep_itempurchasereport,
+					$rep_salesperitempercustomer,
+					$rep_itemtoexpired,
+					$rep_itembalance_belowminimum,
+					$rep_itembalance_aboveminimum,
+					$rep_reorder,
+					$inv_checksheet,
+					$rep_sched_fifo,
+					$rep_inv_movement,
+					$price_list,
+					$rep_items_negative_bal,
+					$rep_quantity_on_hand,
+					$rep_unserved_po,
+					$rep_non_moving_items,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_currentcustomerreceivable,
+					$rep_currentcustomerreceivableaging,
+					$rep_analyzecustomersalesmonthly,
+					$rep_customersalesreport,
+					$rep_pendingsalesorders,
+					$rep_customerperformancereport,
+					$rep_analyzecustomercollectionmonthly,
+					$rep_salespercustomerperitem,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+					$rep_monthlysummary_outputtax,
+					$monthly_sum_ewt,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_currentsupplierpayables,
+					$rep_currentsupplierpayablesaging,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_pendingpurchaseorders,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+					$rep_withholdingtax,
+					$rep_purchase_detailed,
+
+					// SALES AGENT
+					$parent_salesagent,
+					$rep_salesagentlist,
+					$rep_analyzedagentsalesmonthly,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_statementofaccount,
+					$rep_expensesreport,
+					$rep_receivingconsignmentreport,
+					$user_access_report,
+					$rep_daily_sales_report,
+					$rep_sales_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_purchases,
+					$rep_purchaserequisitionreport,
+					$rep_purchaseorderreport,
+					$rep_receivingreport,
+					$rep_purchasereturnreport,
+					$rep_supplierinvoicereport,
+
+					$rep_packinglistreport,
+					$rep_packinglistreceivingreport,
+					$rep_warrantyrequestreport,
+					$rep_warrantyreceivingreport,
+
+					$subparent_sales,
+					//$rep_salesorderreport,
+					//$rep_salesjournalreport,
+					//$rep_salesreturnreport,
+					//jly #1432
+					$rep_salesorderdealerreport,
+					$rep_salesorderbranchreport,
+					$rep_salesorderonlinereport,
+
+					$rep_salesjournaldealerreport,
+					$rep_salesjournalbranchreport,
+					$rep_salesjournalonlinereport,
+
+					$rep_specialpartsrequestreport,
+					$rep_specialpartsissuancereport,
+					$rep_specialpartsreturnreport,
+
+					$rep_material_issuance_report,
+					$subparent_inventory,
+					$rep_inventorysetupreport,
+					$rep_physicalcountreport,
+					$rep_transferslipreport,
+					$rep_inventoryadjustmentreport,
+					$subparent_payables,
+					$rep_apsetupreport,
+					$rep_apvoucherreport,
+					$rep_cashcheckvoucherreport,
+					$rep_petty_cash,
+					$subparent_receivables,
+					$rep_arsetupreport,
+					$rep_receivedpaymentreport,
+					$rep_counterreceiptreport,
+					$subparent_accounting,
+					$rep_generaljournalreport,
+					$rep_depositslipreport,
+					$rep_debit_memo_sum,
+					$rep_credit_memo_sum,
+					$subparent_voyage,
+					$rep_voyagereport,
+					$rep_listcrewpervessel,
+					$rep_listvoyagereportpervessel,
+					$rep_listwarehousevessels,
+					$trans_list_subparent_construction,
+					$rep_jo_list,
+					$rep_jo_completion_list,
+
+					// HRIS
+					$subparent_applicant,
+					$rep_hris_applicant_listing,
+					$rep_personnel_req,
+					$rep_job_offer,
+					$rep_req_train_dev,
+					$rep_train_entry,
+					$rep_turn_over_items,
+					$rep_return_items,
+					$rep_emp_stat_entry_change,
+					$rep_incident_rep,
+					$rep_notice_explain,
+					$rep_notice_discip_action,
+					// PAYROLL
+					$subparent_other_report,
+					$rep_payroll_employee_listing,
+					$rep_month_pay_13th,
+					$rep_dep_advise,
+					$rep_emp_loan_balance,
+					$rep_emp_rate_,
+					$subparent_bir_tax_report,
+					$rep_payroll_tax_witheld,
+					$rep_bir_2316,
+					$subparent_pagibig_report,
+					$rep_payroll_pagibig_remittance,
+					$rep_payroll_pagibig_loan_payment,
+					$subparent_philhealth_report,
+					$rep_payroll_philhealth_remittance,
+					$subparent_sss_report,
+					$rep_payroll_sss_remittance,
+					$rep_payroll_sss_loan_payment,
+					$subparent_payroll_report,
+					$rep_payslip,
+					$rep_payregister,
+					$subparent_time_attendance_report,
+					$rep_dtr,
+					$rep_paymonthly_summary,
+					$rep_alphalist,
+
+					// WAREHOUSING
+					$rep_warehousing,
+					$rep_qr_code_generator,
+
+					// CONSTRUCTION
+					$subparent_construction,
+					$rep_liquidation,
+					$rep_jo_summ,
+					$rep_project_cost_summary,
+				];
+				break;
+			default:
+				$report_sysmenu = [
+					$masterfile,
+					$rep_chartofaccounts,
+					$warehouse_list,
+					$employee_list,
+					$department_list,
+					$jobrequeststatus,
+					// ACCOUNTING BOOKS
+					$parent_accountingbooks,
+					$rep_cashdisbursementbook,
+					$rep_cashreceiptbook,
+					$rep_journalvoucher,
+					$rep_purchasejournal,
+					$rep_salesjournal,
+					$rep_debit_memo,
+					$rep_credit_memo,
+					// CHECK MONITORING REPORTS
+					$parent_checkmonitoringreports,
+					$rep_bouncedchecks,
+					$rep_issuedchecks,
+					$rep_receivedchecks,
+					$rep_undepositedchecks,
+					// FINANCIAL STATEMENTS
+					$parent_financialstatements,
+					$rep_balancesheet,
+					$rep_incomestatement,
+					$rep_subsidiaryledger,
+					$rep_trialbalance,
+					$rep_comparativeincomestatment,
+					$rep_comparativebalancesheet,
+					$rep_comparativetrialbalance,
+					$rep_monthlyincomestatement,
+
+					// ITEMS
+					$parent_items,
+					$rep_inventorybalance,
+					$rep_analyzeitempurchasemonthly,
+					$rep_analyzeitemsalesmonthly,
+					$rep_itemlist,
+					$rep_currentinventoryaging,
+					$rep_fastmovingitems,
+					$rep_analyzeitemsaleswithprofitmarkup,
+					$rep_slowmovingitems,
+					$rep_itempurchasereport,
+					$rep_salesperitempercustomer,
+					$rep_itemtoexpired,
+					$rep_itembalance_belowminimum,
+					$rep_itembalance_aboveminimum,
+					$rep_reorder,
+					$inv_checksheet,
+					$rep_sched_fifo,
+					$rep_inv_movement,
+					$price_list,
+					$rep_items_negative_bal,
+					$rep_quantity_on_hand,
+					$rep_unserved_po,
+					$rep_non_moving_items,
+
+					// CUSTOMER
+					$parent_customers,
+					$rep_customerlist,
+					$rep_currentcustomerreceivable,
+					$rep_currentcustomerreceivableaging,
+					$rep_analyzecustomersalesmonthly,
+					$rep_customersalesreport,
+					$rep_pendingsalesorders,
+					$rep_customerperformancereport,
+					$rep_analyzecustomercollectionmonthly,
+					$rep_salespercustomerperitem,
+					$rep_salescomparison_graph,
+					$rep_monthlysalesreport_graphy,
+					$rep_monthlysummary_outputtax,
+					$monthly_sum_ewt,
+
+					// SUPPLIER
+					$parent_supplier,
+					$rep_supplierlist,
+					$rep_currentsupplierpayables,
+					$rep_currentsupplierpayablesaging,
+					$rep_analyzedsupplierpurchasesmonthly,
+					$rep_supplierpurchasereport,
+					$rep_pendingpurchaseorders,
+					$rep_supplierperformancereport,
+					$rep_purchasepersupp,
+					$rep_monthlypurchasesreport_graph,
+					$rep_purchasescomparison_graph,
+					$rep_withholdingtax,
+					$rep_purchase_detailed,
+
+					// SALES AGENT
+					$parent_salesagent,
+					$rep_salesagentlist,
+					$rep_analyzedagentsalesmonthly,
+
+					// OTHER REPORTS
+					$parent_otherreports,
+					$rep_statementofaccount,
+					$rep_expensesreport,
+					$rep_receivingconsignmentreport,
+					$user_access_report,
+					$rep_daily_sales_report,
+					$rep_sales_report,
+
+					// TRANSACTION LIST
+					$parent_transactionlist,
+					$subparent_purchases,
+					$rep_purchaserequisitionreport,
+					$rep_purchaseorderreport,
+					$rep_receivingreport,
+					$rep_purchasereturnreport,
+					$rep_supplierinvoicereport,
+					$subparent_sales,
+					$rep_salesorderreport,
+					$rep_salesjournalreport,
+					$rep_salesreturnreport,
+					$rep_material_issuance_report,
+					$subparent_inventory,
+					$rep_inventorysetupreport,
+					$rep_physicalcountreport,
+					$rep_transferslipreport,
+					$rep_inventoryadjustmentreport,
+					$subparent_payables,
+					$rep_apsetupreport,
+					$rep_apvoucherreport,
+					$rep_cashcheckvoucherreport,
+					$rep_petty_cash,
+					$subparent_receivables,
+					$rep_arsetupreport,
+					$rep_receivedpaymentreport,
+					$rep_counterreceiptreport,
+					$subparent_accounting,
+					$rep_generaljournalreport,
+					$rep_depositslipreport,
+					$rep_debit_memo_sum,
+					$rep_credit_memo_sum,
+					$subparent_voyage,
+					$rep_voyagereport,
+					$rep_listcrewpervessel,
+					$rep_listvoyagereportpervessel,
+					$rep_listwarehousevessels,
+					$trans_list_subparent_construction,
+					$rep_jo_list,
+					$rep_jo_completion_list,
+
+					// HRIS
+					$subparent_applicant,
+					$rep_hris_applicant_listing,
+					$rep_personnel_req,
+					$rep_job_offer,
+					$rep_req_train_dev,
+					$rep_train_entry,
+					$rep_turn_over_items,
+					$rep_return_items,
+					$rep_emp_stat_entry_change,
+					$rep_incident_rep,
+					$rep_notice_explain,
+					$rep_notice_discip_action,
+					// PAYROLL
+					$subparent_other_report,
+					$rep_payroll_employee_listing,
+					$rep_month_pay_13th,
+					$rep_dep_advise,
+					$rep_emp_loan_balance,
+					$rep_emp_rate_,
+					$subparent_bir_tax_report,
+					$rep_payroll_tax_witheld,
+					$rep_bir_2316,
+					$subparent_pagibig_report,
+					$rep_payroll_pagibig_remittance,
+					$rep_payroll_pagibig_loan_payment,
+					$subparent_philhealth_report,
+					$rep_payroll_philhealth_remittance,
+					$subparent_sss_report,
+					$rep_payroll_sss_remittance,
+					$rep_payroll_sss_loan_payment,
+					$subparent_payroll_report,
+					$rep_payslip,
+					$rep_payregister,
+					$subparent_time_attendance_report,
+					$rep_dtr,
+					$rep_paymonthly_summary,
+					$rep_alphalist,
+
+					// WAREHOUSING
+					$rep_warehousing,
+					$rep_qr_code_generator,
+
+					// CONSTRUCTION
+					$subparent_construction,
+					$rep_liquidation,
+					$rep_jo_summ,
+					$rep_project_cost_summary,
+				];
+				break;
+		}
+		return $report_sysmenu;
+
+	}//end function
+
+}//end class

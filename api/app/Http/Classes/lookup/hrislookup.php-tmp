@@ -1,0 +1,521 @@
+<?php
+
+namespace App\Http\Classes\lookup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\sqlquery;
+
+class hrislookup {
+	private $coreFunctions;
+	private $othersClass;
+	private $sqlquery;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->sqlquery      = new sqlquery;
+	}
+
+	//HRIS
+
+	public function lookupledgerapplicant($config) {
+		$lookupsetup = array(
+			'type'         => 'singlesearch',
+			'actionsearch' => 'searchledgerapplicant',
+			'title'        => 'List of Applicants',
+			'style'        => 'width:900px;max-width:900px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'callback',
+			'action'   => 'loadledgerdata'
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'empcode', 'label' => 'Code', 'align' => 'left', 'field' => 'empcode', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$col = array('name' => 'empname', 'label' => 'Name', 'align' => 'left', 'field' => 'empname', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$col = array('name' => 'address', 'label' => 'Address', 'align' => 'right', 'field' => 'address', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		return ['status' => true, 'msg' => 'ok', 'data' => [], 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupatype($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Type',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('type' => 'type')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'type', 'label' => 'Type', 'align' => 'left', 'field' => 'type', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry  = "select 'DIRECT' as type union all select 'INDIRECT' as type";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupjstatus($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Status',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		switch ($config['params']['lookupclass']) {
+			case 'lookup_jostatus':
+				$plotsetup = array(
+					'plottype' => 'plothead',
+					'plotting' => array('empstat' => 'status')
+				);
+				break;
+
+			default:
+				$plotsetup = array(
+					'plottype' => 'plothead',
+					'plotting' => array('jstatus' => 'status')
+				);
+				break;
+		}
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'status', 'label' => 'Status', 'align' => 'left', 'field' => 'status', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry  = "select 'JOB OFFER' as status union all select 'NO SHOW' as status union all select 'KIP' as status union all select 'FAILED' as status";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupjobtitle($config) {
+		$plotting = array(
+			'jobid'    => 'line',
+			'jobcode'  => 'docno',
+			'jobtitle' => 'jobtitle',
+			'jobdesc'  => 'jobdesc',
+			'emptitle' => 'docno',
+		);
+		$plottype = 'plothead';
+
+		$title = 'List of Jobs';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'docno', 'label' => 'Code', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'jobtitle', 'label' => 'Job Title', 'align' => 'left', 'field' => 'jobtitle', 'sortable' => true, 'style' => 'font-size:16px;']
+		];
+
+		$qry  = "select j.line,j.docno,j.jobtitle,group_concat(jt.description) as jobdesc from jobthead as j left join jobtdesc as jt on jt.trno = j.trno  group by docno order by j.docno";
+		$data = $this->coreFunctions->opentable($qry);
+		// $btnadd = $this->sqlquery->checksecurity($config, 859, '/tableentries/tableentry/entryjobs'); //change this for job title entry
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}//end function
+
+	public function lookuprequirements($config) {
+		//default
+		$plotting = array(
+			'reqid' => 'line',
+			'pin'   => 'code',
+			'reqs'  => 'req'
+		);
+		// $plottype = 'plotgrid';
+		$title = 'List of Requirements';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'callback',
+			'action'   => 'addtogrid',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'req', 'label' => 'Requirement', 'align' => 'left', 'field' => 'req', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select line, code,req from emprequire order by code";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookuppreemptest($config) {
+		//default
+		$plotting = array(
+			'emptestid'  => 'line',
+			'pin'        => 'code',
+			'preemptest' => 'test'
+		);
+		// $plottype = 'plotgrid';
+		$title = 'List of Test';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'callback',
+			'action'   => 'addtogrid',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'test', 'label' => 'Test', 'align' => 'left', 'field' => 'test', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select line, code,test from preemp order by code";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookuptrainingtype($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Type',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('type' => 'type')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'type', 'label' => 'Type', 'align' => 'left', 'field' => 'type', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry = "select 'Seminar/Workshop' as type
+              union all
+            select 'Convention/Conference' as type";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function incidentreportlookup($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Incident Report',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('refx' => 'trno', 'irno' => 'docno', 'irdesc' => 'idescription')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'docno', 'label' => 'Docno', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'idescription', 'label' => 'Description', 'align' => 'left', 'field' => 'idescription', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry = "select 0 AS selectid,0 AS orderid, trno,docno,
+             dateid,idescription,tempname,fempname
+             from hincidenthead";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function articlelookup($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Article',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('artid' => 'artid', 'artcode' => 'code', 'articlename' => 'description')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'description', 'label' => 'Description', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry = "SELECT 0 AS selectid,0 as orderid,
+            artid,code,description
+            FROM codehead";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function sectionlookup($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Section',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype'     => 'plothead',
+			'plotting'     => array(
+				'sectionno'   => 'line',
+				'sectioncode' => 'section',
+				'sectionname' => 'description')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'section', 'label' => 'Code', 'align' => 'left', 'field' => 'section', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'description', 'label' => 'Description', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$artcode = $config['params']['addedparams'][0];
+		$qry     = "SELECT 0 AS selectid,0 as orderid,artid,
+            section,description,line
+            from codedetail
+            where artid= (select artid from codehead where code = '".$artcode."')";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	//payroll
+
+	public function lookuppaymode($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Status',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('paymode' => 'paymode')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'paymode', 'label' => 'Mode of Payment', 'align' => 'left', 'field' => 'paymode', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry  = "select 'Daily' as paymode union all select 'Semi-monthly' as paymode union all select 'Monthly' as paymode union all select 'Weekly' as paymode union all select 'Piece Rate' as paymode";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+	public function lookupempdivision($config) {
+		//default
+		switch ($config['params']['lookupclass']) {
+			case 'lookup_jodiv':
+				$plotting = array(
+					'divid' => 'divid',
+					'dcode' => 'divcode',
+					'dname' => 'divname'
+				);
+				break;
+
+			default:
+				$plotting = array(
+					'divid'    => 'divid',
+					'division' => 'divcode',
+					'divname'  => 'divname'
+				);
+				break;
+		}
+
+		$title = 'List of Division';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'divcode', 'label' => 'Code', 'align' => 'left', 'field' => 'divcode', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'divname', 'label' => 'Name', 'align' => 'left', 'field' => 'divname', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select divid, divcode,divname from division order by divcode";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookupempsection($config) {
+		//default
+		$plotting = array(
+			'sectid'     => 'sectid',
+			'orgsection' => 'sectcode',
+			'sectname'   => 'sectname'
+		);
+		$title = 'List of Section';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'sectcode', 'label' => 'Code', 'align' => 'left', 'field' => 'sectcode', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'sectname', 'label' => 'Name', 'align' => 'left', 'field' => 'sectname', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select sectid, sectcode,sectname from section order by sectcode";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookupemplevel($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Level',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('level' => 'level')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'level', 'label' => 'Level', 'align' => 'left', 'field' => 'level', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry  = "select '1' as level union all select '2' as level  union all select '3' as level  union all select '4' as level  union all select '5' as level  union all select '6' as level  union all select '7' as level  union all select '8' as level  union all select '9' as level  union all select '10' as level";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupempbatch($config) {
+		//default
+		$plotting = array(
+			'lastbatch' => 'batch'
+		);
+		$title = 'List of Batch';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'batch', 'label' => 'Batch', 'align' => 'left', 'field' => 'batch', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'startdate', 'label' => 'Start Date', 'align' => 'left', 'field' => 'startdate', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'enddate', 'label' => 'End Date', 'align' => 'left', 'field' => 'enddate', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select batch, startdate,enddate from batch order by batch";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookupclassrate($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Class Rate',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => 'plothead',
+			'plotting' => array('classrate' => 'class')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'class', 'label' => 'Class Rate', 'align' => 'left', 'field' => 'class', 'sortable' => true, 'style' => 'font-size:16px;'),
+		);
+
+		$qry = "select 'Daily' as class union all
+            select 'Monthly' as class
+            ";
+
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupapplicant($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'List of applicants',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype'   => 'plothead',
+			'plotting'   => [
+				'empid'     => 'empid',
+				'empcode'   => 'empcode',
+				'emplast'   => 'emplast',
+				'empfirst'  => 'empfirst',
+				'empmiddle' => 'empmiddle',
+				'empname'   => 'empname',
+			]
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'empcode', 'label' => 'Applicant Code', 'align' => 'left', 'field' => 'empcode', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'empname', 'label' => 'Applicant Name', 'align' => 'left', 'field' => 'empname', 'sortable' => true, 'style' => 'font-size:16px;'),
+		);
+
+		$qry = "select empid, empcode, emplast, empfirst, empmiddle, concat(emplast,', ',empfirst,' ',empmiddle) as empname from app where jstatus = 'JOB OFFER' ";
+
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+}//end class

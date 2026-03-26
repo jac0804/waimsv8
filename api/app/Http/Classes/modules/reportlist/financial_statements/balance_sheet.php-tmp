@@ -1,0 +1,376 @@
+<?php
+namespace App\Http\Classes\modules\reportlist\financial_statements;
+
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class balance_sheet {
+	public $modulename = 'Balance Sheet';
+	private $companysetup;
+	private $coreFunctions;
+	private $fieldClass;
+	private $othersClass;
+	private $reporter;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $directprint = false;
+
+	public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
+
+	public function __construct() {
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['radioprint'];
+		$col1   = $this->fieldClass->create($fields);
+
+		$fields = ['dateid', 'due', 'dcentername', 'costcenter'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'dateid.label', 'StartDate');
+		data_set($col2, 'dateid.readonly', false);
+		data_set($col2, 'due.label', 'EndDate');
+		data_set($col2, 'due.readonly', false);
+
+		$fields = ['radioposttype'];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = ['refresh'];
+		$col4   = $this->fieldClass->create($fields);
+		data_set($col4, 'refresh.action', 'history');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+	}
+
+	public function paramsdata($config) {
+
+		return $this->coreFunctions->opentable("select
+      'default' as print,
+      adddate(left(now(),10),-360) as dateid,
+      left(now(),10) as due,
+      '' as center,
+      '' as code,
+      '' as name,
+      '' as centername,
+      '' as dcentername,
+      '0' as posttype,
+      '' as costcenter
+      ");
+	}
+
+	// put here the plotting string if direct printing
+	public function getloaddata($config) {
+		return [];
+	}
+
+	public function reportdata($config) {
+		$str = $this->reportplotting($config);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+	}
+
+	public function default_query($filters) {
+		$isposted   = $filters['params']['dataparams']['posttype'];
+		$start      = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
+		$end        = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
+		$center     = $filters['params']['dataparams']['center'];
+		$costcenter = $filters['params']['dataparams']['code'];
+		$cc         = '';
+		$filter     = '';
+
+		// if($center != ""){
+		//   $center = $filters['params']['center']; // session center
+		// }
+
+		if ($costcenter != "") {
+			$filter = $costcenter;
+		}
+
+		$query2 = "select '' as acno,'' as acnoname,0 as levelid,'' as cat,'' as parent,0 as amt,0 as detail,0 as total";
+		$coa    = $this->coreFunctions->opentable($query2);
+		$amt1   = 0;
+		$amt1b  = 0;
+		$amt2   = 0;
+		$amt3   = 0;
+		$amt2b  = 0;
+		$amt3b  = 0;
+		$a      = 0;
+		$this->DEFAULT_PLANTTREE($coa, '\\\\', 'A', $amt1, $amt1b, $a, $start, $end, $center, $isposted, $cc, $filter);
+		$this->DEFAULT_PLANTTREE($coa, '\\\\', 'L', $amt2, $amt2b, $a, $start, $end, $center, $isposted, $cc, $filter);
+		$this->DEFAULT_PLANTTREE($coa, '\\\\', 'C', $amt3, $amt3b, $a, $start, $end, $center, $isposted, $cc, $filter);
+		$coa[] = array('acno' => '//4999', 'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt2b+$amt3b);
+
+		$array = json_decode(json_encode($coa), true);// for clearing set to array
+		return $array;
+	}
+
+	public function reportplotting($config) {
+
+		$result     = $this->default_query($config);
+		$reportdata = $this->DEFAULT_BALANCE_SHEET_LAYOUT($config, $result);
+		return $reportdata;
+	}
+
+	private function DEFAULT_PLANTTREE(&$a, $acno, $cat, &$amt1, &$amt9, $z, $date1, $date2, $center, $status, $cc, $filter, $addtionalparams = []) {
+
+		$z       = $z+1;
+		$amt     = 0;
+		$amt2    = 0;
+		$query2  = $this->DEFAULT_BALANCE_SHEET_QUERY($cat, $acno, $date1, $date2, $center, $status, $cc, $filter);
+		$result2 = $this->coreFunctions->opentable($query2);
+		foreach ($result2 as $key => $value) {
+			$a[] = array('acno'      => $value->acno, 'acnoname'      => $value->acnoname, 'levelid'      => $value->levelid,
+				'cat'                   => $value->cat, 'parent'                   => $value->parent, 'amt'                   => $value->amt,
+				'detail'                => $value->detail, 'total'                => $value->amt, 'alias'                => '');
+
+			$prevamt9 = $amt9;
+			$amt      = $amt+$value->amt;
+			$amt1     = $amt1+$amt;
+			$amt9     = $amt9+$value->amt;
+			$amt      = 0;
+
+			if ($value->detail == 0) {
+				if ($this->DEFAULT_PLANTTREE($a, '\\'.$value->acno, $value->cat, $amt, $amt9, $z, $date1, $date2, $center, $status, $cc, $filter, $addtionalparams)) {
+					if ($value->levelid > 1) {
+						if ($value->levelid == 2) {
+							$level2amt = $amt9-$prevamt9;
+							//THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
+							$a[] = array('acno' => $value->acno, 'acnoname' => '<b>TOTAL '.$value->acnoname.'</b>',
+								'levelid'          => $value->levelid, 'cat'          => $value->cat, 'parent'          => $value->parent,
+								'amt'              => $amt2, 'detail'              => $value->detail, 'total'              => $level2amt, 'alias'              => $value->alias);
+						} else {
+							//THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
+							$a[] = array('acno' => $value->acno, 'acnoname' => '<b>TOTAL '.$value->acnoname.'</b>',
+								'levelid'          => $value->levelid, 'cat'          => $value->cat, 'parent'          => $value->parent,
+								'amt'              => $amt2, 'detail'              => $value->detail, 'total'              => $amt, 'alias'              => $value->alias);
+						}//end if
+					} else {
+						if ($cat == 'C') {
+							$loss = 0;
+							$C    = "('R','G')";
+							$loss = $this->DEFAULT_BALANCE_SHEETDUE('CREDIT', $C, $date1, $date2, $center, $status);
+							$C    = "('E','O')";
+							$loss = $loss-$this->DEFAULT_BALANCE_SHEETDUE('DEBIT', $C, $date1, $date2, $center, $status);
+							$amt9 = $amt9+$loss;
+							//THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
+							$a[] = array('acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+								'levelid'          => $value->levelid+1, 'cat'          => $value->cat, 'parent'          => $value->parent,
+								'amt'              => $loss, 'detail'              => $value->detail, 'total'              => $loss, 'alias'              => $value->alias);
+						}//end if
+
+						//THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
+						$a[] = array('acno' => $value->acno,
+							'acnoname'         => '<b>TOTAL '.strtoupper($value->acnoname).'</b>',
+							'levelid'          => $value->levelid, 'cat'          => $value->cat,
+							'parent'           => $value->parent,
+							'amt'              => $amt2, 'detail'              => $value->detail, 'total'              => $amt9, 'alias'              => $value->alias);
+					}//end if IF LEVELID = 1
+
+				}
+			}
+
+		}
+		if (count((array) $result2) > 0) {// cast to array result2 is an object count function not work on object
+			return true;
+		} else {
+			return false;
+		}
+	}//Plantree
+
+	private function DEFAULT_BALANCE_SHEET_QUERY($cat, $acno, $date1, $date2, $center, $status, $cc, $filter) {
+		$field = '';
+
+		$filters = " where coa.parent='$acno' and coa.cat='$cat' ";// default filters
+
+		$addedfilters = '';
+
+		if ($filter != '') {
+			$addedfilters .= " and head.project = '".$filter."' ";// cost center filter
+		}
+
+		if ($center != '') {
+			$addedfilters .= " and cntnum.center = '".$center."' ";// center filter
+		}
+
+		switch ($cat) {
+			case 'L':case 'R':
+			case 'G':case 'C':
+				$field = " sum(round(detail.cr-detail.db,2)) ";
+				break;
+			default:
+				$field = " sum(round(detail.db-detail.cr,2)) ";
+				break;
+		}//end swtich
+
+		switch ($status) {
+			case 1:// unposted
+				$query1 = "select tb.alias,tb.acno, tb.acnoname, tb.levelid, tb.cat, tb.parent, tb.detail,sum(tb.amt) as amt from
+          (select coa.alias,coa.acno, coa.acnoname, coa.levelid, coa.cat, coa.parent,
+          coa.detail,ifnull((select 	$field from lahead as head
+          left join ladetail as detail on detail.trno=head.trno
+          left join cntnum on cntnum.trno=head.trno
+          where detail.acnoid=coa.acnoid and head.dateid between '	" .$date1."' and '".$date2."' ".$addedfilters."),0) as amt
+          from coa "	.$filters."
+          ) as tb
+          group by tb.acno, tb.acnoname, tb.levelid, tb.cat, tb.parent, tb.detail,tb.alias"	;
+				break;
+
+			default:// posted
+				$query1 = "select tb.alias,tb.acno, tb.acnoname, tb.levelid, tb.cat, tb.parent, tb.detail,sum(tb.amt) as amt from
+            (select coa.alias,coa.acno, coa.acnoname, coa.levelid, coa.cat, coa.parent,
+            coa.detail,ifnull((select 	$field from glhead as head
+            left join gldetail as detail on detail.trno=head.trno
+            left join cntnum on cntnum.trno=head.trno
+            where detail.acnoid=coa.acnoid and head.dateid between  '	" .$date1."' and '".$date2."' ".$addedfilters."),0) as amt
+            from coa "	.$filters."
+            ) as  tb
+            group by tb.acno, tb.acnoname, tb.levelid, tb.cat, tb.parent, tb.detail,tb.alias"	;
+				break;
+		}//end switch
+		return $query1;
+	}// DEFAULT BALANCE SHEET
+
+	private function DEFAULT_BALANCE_SHEETDUE($entry, $cat, $date1, $date2, $center, $status) {
+		$field   = '';
+		$filters = "";
+
+		if ($center != "") {
+			$filters .= " and cntnum.center = '".$center."' ";// center filter
+		}
+
+		switch ($entry) {
+			case 'CREDIT':
+				$field  = ' sum(detail.cr-detail.db) ';
+				$query1 = "select  ifnull(sum(tb.cr),0) as amt from  ";
+				break;
+			default:
+				$field  = ' sum(detail.db-detail.cr) ';
+				$query1 = "select  ifnull(sum(tb.cr),0) as amt from ";
+				break;
+		}
+		switch ($status) {
+			case 1:// unposted
+				$query1 = $query1." (select $field as cr from ((lahead as head left join ladetail as detail on detail.trno=head.trno)
+        left join coa on coa.acnoid=detail.acnoid)left join cntnum on cntnum.trno=head.trno
+        where  head.dateid between '	" .$date1."' and '".$date2."' and coa.cat in $cat " .$filters."
+        ) as tb "	;
+				break;
+
+			default:// posted
+				$query1 = $query1." (select $field as cr from ((glhead as head left join gldetail as detail on detail.trno=head.trno)
+        left join coa on coa.acnoid=detail.acnoid)left join cntnum on cntnum.trno=head.trno
+        where head.dateid between '	" .$date1."' and '".$date2."' and coa.cat in $cat " .$filters."
+        ) as tb "	;
+				break;
+		}
+		$result = $this->coreFunctions->opentable($query1);
+		$result = $result[0]->amt;
+		return $result;
+	}// DEFAULT BALANCE SHEETDUE
+
+	private function DEFAULT_BALANCE_SHEET_LAYOUT($filters, $data) {
+
+		$companyid        = $filters['params']['companyid'];
+		$decimal_currency = $this->companysetup->getdecimal('currency', $params['params']);
+
+		$isposted   = $filters['params']['dataparams']['posttype'];
+		$start      = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
+		$end        = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
+		$center     = $filters['params']['dataparams']['center'];
+		$costcenter = $filters['params']['dataparams']['code'];
+
+		if ($center == "") {
+			$center = "ALL";
+		}
+
+		$count = 58;
+		$page  = 48;
+		$str   = '';
+		$str .= $this->reporter->beginreport();
+		$str .= $this->DEFAULT_HEADER($filters, $center);
+		$str .= $this->reporter->begintable();
+
+		for ($i = 0; $i < count($data); $i++) {
+			$str .= $this->reporter->startrow();
+			//$txt='',$w=null,$h=null, $bg=false,  $b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m=''
+			$indent = '5'*($data[$i]['levelid']*3);
+			$str .= $this->reporter->addline();
+			$str .= $this->reporter->col($data[$i]['acnoname'], '580', null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '0px 0px 0px '.$indent.'px');
+			if ($data[$i]['amt'] == 0) {
+				$amt = '';
+			} else {
+				$amt = number_format($data[$i]['amt'], $decimal_currency);
+			}
+			$str .= $this->reporter->col($amt, '100', null, false, '1px solid ', '', 'r', 'Century Gothic', '10', '', '', '');
+
+			if ($data[$i]['total'] == 0) {
+				$total = '';
+			} else {
+				if ($amt == 0) {
+					$total         = number_format($data[$i]['total'], 2);
+				} else { $total = '';}
+			}
+
+			$str .= $this->reporter->col($total, '100', null, false, '1px solid ', '', 'R', 'Century Gothic', '10', 'B', '', '');
+
+			$str .= $this->reporter->endrow();
+			//}
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+				$str .= $this->DEFAULT_HEADER($filters, $center);
+				$str .= $this->reporter->begintable();
+				$page = $page+$count;
+			}
+		}//for
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}//default_Layout
+
+	private function DEFAULT_HEADER($filters, $center) {
+		$isposted = $filters['params']['dataparams']['posttype'];
+		$start    = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
+		$end      = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
+
+		$str = '';
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->letterhead($filters['params']['center'], $filters['params']['user']);
+		$str .= $this->reporter->endtable();
+		$str .= "<br/><br/>";
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		//        $txt='',        $w=null,$h=null, $bg=false,  $b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m=''
+		$str .= $this->reporter->col('BALANCE SHEET', null, null, false, '1px solid ', '', '', 'Century Gothic', '15', 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col(date('M-d-Y', strtotime($start)).' TO '.date('M-d-Y', strtotime($end)), null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+		$str .= $this->reporter->col('', '200');
+		$str .= $this->reporter->endrow();
+
+		$str .= $this->reporter->startrow(null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+		$str .= $this->reporter->col('Center:'.$center, null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+		if ($isposted == 0) {
+			$str .= $this->reporter->col('Transaction: POSTED', null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+		} else {
+			$str .= $this->reporter->col('Transaction: UNPOSTED', null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+		}
+		$str .= $this->reporter->pagenumber('Page');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+
+		return $str;
+	}//DEFAULT HEADER
+
+}//end class

@@ -1,0 +1,2571 @@
+<?php
+
+namespace App\Http\Classes\sbcdb;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\sbcdb\trigger_hris;
+
+use App\Http\Classes\sbcdb\trigger_masterfile;
+
+class trigger {
+
+	private $coreFunctions;
+
+	public function __construct() {
+		$this->coreFunctions      = new coreFunctions;
+		$this->trigger_masterfile = new trigger_masterfile;
+		$this->trigger_hris       = new trigger_hris;
+	}//end fn
+
+	public function deletetriggers() {
+
+		$this->coreFunctions->sbcdroptriggers('whdoc_update');
+		$this->coreFunctions->sbcdroptriggers('whnods_update');
+		$this->coreFunctions->sbcdroptriggers('whjobreq_update');
+		$this->coreFunctions->sbcdroptriggers('cdhead_update');
+		$this->coreFunctions->sbcdroptriggers('cdstock_delete');
+		$this->coreFunctions->sbcdroptriggers('cdstock_update');
+		$this->coreFunctions->sbcdroptriggers('cdstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('cdstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('costing_insert');
+		$this->coreFunctions->sbcdroptriggers('costing_update');
+		$this->coreFunctions->sbcdroptriggers('costing_delete');
+		$this->coreFunctions->sbcdroptriggers('apledger_update');
+		$this->coreFunctions->sbcdroptriggers('arledger_update');
+		$this->coreFunctions->sbcdroptriggers('center_update');
+		$this->coreFunctions->sbcdroptriggers('client_update');
+		$this->coreFunctions->sbcdroptriggers('frontend_highlights_update');
+		$this->coreFunctions->sbcdroptriggers('hjbstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('hcdstock_update');
+		$this->coreFunctions->sbcdroptriggers('hcnstock_triggers');
+		$this->coreFunctions->sbcdroptriggers('hpostock_update');
+		$this->coreFunctions->sbcdroptriggers('hsastock_update');
+		$this->coreFunctions->sbcdroptriggers('hsgstock_before_update');
+		$this->coreFunctions->sbcdroptriggers('hsgstock_delete');
+		$this->coreFunctions->sbcdroptriggers('glstock_update');
+		$this->coreFunctions->sbcdroptriggers('update_glstock');
+		$this->coreFunctions->sbcdroptriggers('htrstock_update');
+		$this->coreFunctions->sbcdroptriggers('hprstock_update');
+		$this->coreFunctions->sbcdroptriggers('hprstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('hsostock_update');
+		$this->coreFunctions->sbcdroptriggers('hqsstock_delete');
+		$this->coreFunctions->sbcdroptriggers('hqsstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('hplstock_update');
+		$this->coreFunctions->sbcdroptriggers('hplstock_delete');
+		$this->coreFunctions->sbcdroptriggers('hwastock_update');
+		$this->coreFunctions->sbcdroptriggers('ITEM_update');
+		$this->coreFunctions->sbcdroptriggers('item_insert');
+		$this->coreFunctions->sbcdroptriggers('itembal_update');
+		$this->coreFunctions->sbcdroptriggers('johead_update');
+		$this->coreFunctions->sbcdroptriggers('joservice_update');
+		$this->coreFunctions->sbcdroptriggers('krhead_update');
+		$this->coreFunctions->sbcdroptriggers('ladetail_update');
+		$this->coreFunctions->sbcdroptriggers('lahead_update');
+		$this->coreFunctions->sbcdroptriggers('lastock_update');
+		$this->coreFunctions->sbcdroptriggers('hmrstock_update');
+		$this->coreFunctions->sbcdroptriggers('pchead_update');
+		$this->coreFunctions->sbcdroptriggers('pcstock_update');
+		$this->coreFunctions->sbcdroptriggers('pohead_update');
+		$this->coreFunctions->sbcdroptriggers('postock_update_before');
+		$this->coreFunctions->sbcdroptriggers('postock_update_after');
+		$this->coreFunctions->sbcdroptriggers('postock_delete');
+		$this->coreFunctions->sbcdroptriggers('rrstatus_update');
+		$this->coreFunctions->sbcdroptriggers('rrstatus_delete');
+		$this->coreFunctions->sbcdroptriggers('sohead_update');
+		$this->coreFunctions->sbcdroptriggers('sostock_update_before');
+		$this->coreFunctions->sbcdroptriggers('sostock_update_after');
+		$this->coreFunctions->sbcdroptriggers('sostock_delete');
+		$this->coreFunctions->sbcdroptriggers('term_update');
+		$this->coreFunctions->sbcdroptriggers('useraccess_update');
+		$this->coreFunctions->sbcdroptriggers('users_update');
+		$this->coreFunctions->sbcdroptriggers('prhead_update');
+		$this->coreFunctions->sbcdroptriggers('prstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('trhead_update');
+		$this->coreFunctions->sbcdroptriggers('trstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('en_glsubject_update');
+		$this->coreFunctions->sbcdroptriggers('trstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('trstock_delete');
+		$this->coreFunctions->sbcdroptriggers('subproject_update_after');
+		$this->coreFunctions->sbcdroptriggers('stages_update_after');
+		$this->coreFunctions->sbcdroptriggers('pmhead_update');
+		$this->coreFunctions->sbcdroptriggers('sahead_update');
+		$this->coreFunctions->sbcdroptriggers('sastock_update_before');
+		$this->coreFunctions->sbcdroptriggers('sastock_update_after');
+		$this->coreFunctions->sbcdroptriggers('sastock_delete');
+		$this->coreFunctions->sbcdroptriggers('hsbstock_update');
+		$this->coreFunctions->sbcdroptriggers('sbhead_update');
+		$this->coreFunctions->sbcdroptriggers('sbstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('sbstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('sbstock_delete');
+		$this->coreFunctions->sbcdroptriggers('hscstock_update');
+		$this->coreFunctions->sbcdroptriggers('schead_update');
+		$this->coreFunctions->sbcdroptriggers('scstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('scstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('scstock_delete');
+		$this->coreFunctions->sbcdroptriggers('qthead_update');
+		$this->coreFunctions->sbcdroptriggers('qtstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('qtstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('qtstock_delete');
+		$this->coreFunctions->sbcdroptriggers('hqtstock_update');
+		$this->coreFunctions->sbcdroptriggers('lead_update');
+		$this->coreFunctions->sbcdroptriggers('hcnstock_update');
+		$this->coreFunctions->sbcdroptriggers('plhead_update');
+		$this->coreFunctions->sbcdroptriggers('wahead_update');
+		$this->coreFunctions->sbcdroptriggers('hjostock_update');
+		$this->coreFunctions->sbcdroptriggers('jostock_update_before');
+		$this->coreFunctions->sbcdroptriggers('jostock_update_after');
+		$this->coreFunctions->sbcdroptriggers('jostock_delete');
+
+		// GLEN 11.18.2021
+		$this->coreFunctions->sbcdroptriggers('employee_update');
+		// $this->coreFunctions->sbcdroptriggers('applicantledger_update');
+		// $this->coreFunctions->sbcdroptriggers('applicantledger_acontacts_update');
+		// $this->coreFunctions->sbcdroptriggers('app_dependents_update');
+		// $this->coreFunctions->sbcdroptriggers('app_education_update');
+		// $this->coreFunctions->sbcdroptriggers('app_req_update');
+		// $this->coreFunctions->sbcdroptriggers('app_emptest_update');
+		// $this->coreFunctions->sbcdroptriggers('emp_education_update');
+		// $this->coreFunctions->sbcdroptriggers('emp_employment_update');
+		// $this->coreFunctions->sbcdroptriggers('emp_contract_update');
+		// $this->coreFunctions->sbcdroptriggers('emp_rolesetup_update');
+		// $this->coreFunctions->sbcdroptriggers('earningdeductionsetup_update');
+		// $this->coreFunctions->sbcdroptriggers('earningdeductionsetup_manualpayment_update');
+		// $this->coreFunctions->sbcdroptriggers('advancesetup_update');
+		// $this->coreFunctions->sbcdroptriggers('advancesetup_manualpayment_update');
+		// $this->coreFunctions->sbcdroptriggers('leaveapplication_update');
+		// $this->coreFunctions->sbcdroptriggers('obapplication_update');
+		// $this->coreFunctions->sbcdroptriggers('loanapplication_update');
+		// $this->coreFunctions->sbcdroptriggers('tmshifts_update');
+		// $this->coreFunctions->sbcdroptriggers('shiftdetail_update');
+		// $this->coreFunctions->sbcdroptriggers('salesgroup_update');
+		// $this->coreFunctions->sbcdroptriggers('seminar_update');
+		// $this->coreFunctions->sbcdroptriggers('exhibit_update');
+		// $this->coreFunctions->sbcdroptriggers('checksetup_update');
+		// $this->coreFunctions->sbcdroptriggers('exchangerate_update');
+		$this->coreFunctions->sbcdroptriggers('cntnuminfo_update');
+	}
+
+	private function costing_triggers() {
+		//COSTING TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER costing_insert BEFORE INSERT on costing FOR EACH ROW
+                BEGIN
+                  declare iBal decimal(18,6);
+
+                  if NEW.REFX<>0 then
+                      update rrstatus set bal=bal - New.Served where trno=new.refx and line=NEW.LINEX;
+                  end if;
+                END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+
+		$qry = "create TRIGGER costing_update BEFORE UPDATE on costing FOR EACH ROW
+                BEGIN
+                    declare iBal decimal(18,6);
+
+                    if NEW.REFX<>0 then
+                      select Bal into iBal from rrstatus where Trno=NEW.REFX and line=NEW.LINEX;
+                      if ((iBal+OLD.Served)-NEW.SERVEd)>=0 then
+                        update rrstatus set bal=((bal + Old.Served) - New.Served) where Trno=NEW.REFX and line=NEW.LINEX;
+                      else
+                        CALL No_Stock_costing;
+                      end if;
+                    end if;
+                END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+
+		$qry = "create TRIGGER costing_delete BEFORE DELETE on costing FOR EACH ROW
+                BEGIN
+                 if OLD.SERVED<>0 then
+                   update rrstatus set bal=bal+OLD.Served where trno=OLD.refx and line=OLD.linex;
+                 end if;
+                END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+	}
+
+	private function apledger_triggers() {
+		//APLEDGER TRIGGER =================================================================================================================
+		$qry = "create TRIGGER apledger_update BEFORE UPDATE on apledger FOR EACH ROW
+            BEGIN
+              if New.bal<0 then
+                CALL BAL_IS_GREATER_THAN_REQUIRED_BAL;
+              end if;
+            END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+		//END OF APLEDGER TRIGGER ====================================================================================================================================
+	}
+
+	private function rrstatus_triggers() {
+		//rrstatus TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER rrstatus_update BEFORE UPDATE on rrstatus FOR EACH ROW
+        BEGIN
+           if New.Bal<0 then
+             CALL BELOW_QTY_RECEIVED;
+           elseif New.QA>New.QTY then
+             CALL DM_QTY_GREATER_THAN_RR_QTY;
+           end if;
+         END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+
+		$qry = "create TRIGGER rrstatus_delete BEFORE DELETE on rrstatus FOR EACH ROW
+        BEGIN
+
+          if (old.qty<>old.bal) or old.qa<>0 then
+            Call ITEM_ALREADY_SERVED_RRSTATUS;
+          end if;
+        END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+		//END OF rrstatus TRIGGER ====================================================================================================================================
+	}
+
+	private function arledger_triggers() {
+		//ARLEDGER TRIGGER =================================================================================================================
+		$qry = "create TRIGGER arledger_update BEFORE UPDATE on arledger FOR EACH ROW
+            BEGIN
+              if New.bal<0 then
+                CALL BAL_IS_GREATER_THAN_REQUIRED_BAL;
+              end if;
+            END";
+		$this->coreFunctions->execqry(strtolower($qry), 'trigger');
+	}
+
+	private function center_triggers() {
+		//CENTER TRIGGER ====================================================================================================================
+		$fields = [
+			'code'      => ['code'      => []],
+			'name'      => ['name'      => []],
+			'address'   => ['address'   => []],
+			'tel'       => ['tel'       => []],
+			'warehouse' => ['warehouse' => []],
+			'station'   => ['station'   => []],
+			'tin'       => ['tin'       => []],
+			'zipcode'   => ['zipcode'   => []]
+		];
+
+		$this->settriggerlogs('center_update', 'AFTER UPDATE', 'center', 'center_log', $fields, 'code', 'CENTER');
+	}
+
+	private function client_triggers() {
+		//CLIENT TRIGGER ==================================================================================================================
+		$fields = [
+			'client'         => ['client'         => []],
+			'clientname'     => ['clientname'     => []],
+			'address'        => ['addr'        => []],
+			'email'          => ['email'          => []],
+			'telephone'      => ['tel'      => []],
+			'mobile'         => ['tel2'         => []],
+			'fax'            => ['fax'            => []],
+			'Tin'            => ['Tin'            => []],
+			'contact'        => ['contact'        => []],
+			'agent'          => ['agent'          => []],
+			'terms'          => ['terms'          => []],
+			'discount'       => ['disc'       => []],
+			'class'          => ['class'          => []],
+			'type'           => ['type'           => []],
+			'Remarks'        => ['rem'        => []],
+			'Start Date'     => ['start'     => []],
+			'status'         => ['status'         => []],
+			'province'       => ['province'       => []],
+			'area'           => ['area'           => []],
+			'iscustomer'     => ['iscustomer'     => []],
+			'zipcode'        => ['zipcode'        => []],
+			'quota'          => ['quota'          => []],
+			'category'       => ['category'       => [true, 'cat_name', 'category_masterfile', 'cat_id']],
+			'Cur'            => ['forexid'            => [true, 'cur', 'forex_masterfile', 'line']],
+			'Is Supplier'    => ['issupplier'    => []],
+			'Is Agent'       => ['isagent'       => []],
+			'Is Warehouse'   => ['iswarehouse'   => []],
+			'Is Employee'    => ['isemployee'    => []],
+			'Is Inactive'    => ['isinactive'    => []],
+			'Is Department'  => ['isdepartment'  => []],
+			'Is No Cr Limit' => ['isnocrlimit' => []],
+			'Cr Limit'       => ['crlimit'       => []],
+			'Sales Account'  => ['rev'  => []],
+			'Group'          => ['groupid'          => []],
+			'Region'         => ['region'         => []],
+			'Parent Code'    => ['grpcode'    => []],
+			'User Level'     => ['userid'     => [true, 'username', 'users', 'idno']],
+			// 'E-Mail' => ['email' => []],
+			'Password'    => ['password'    => []],
+			'Warehouse'   => ['wh'   => []],
+			'Parent Dept' => ['department' => []],
+			'Dean'        => ['code'        => []],
+			'Level'       => ['intclient'       => []],
+			'Tax Code'    => ['ewtid'    => [true, "concat(code, '~', rate)", 'ewtlist', 'line']],
+			'bstyle'      => ['bstyle'      => []],
+		];
+
+		$customtrigger = "if OLD.dlock<>NEW.dlock and New.issynced = 1 then  delete from clientdlock where clientid = Old.clientid;  insert into clientdlock(clientid,dlock)values(Old.clientid,New.dlock);  end if;";
+
+		$this->settriggerlogs('client_update', 'AFTER UPDATE', 'client', 'client_log', $fields, 'clientid', 'CLIENT', $customtrigger);
+	}
+
+	private function employee_triggers() {
+		$fields = [
+			'empid' => ['empid' => []],
+			// 'empfirst' => ['empfirst' => []],
+			// 'empmiddle' => ['empmiddle' => []],
+			// 'emplast' => ['emplast' => []],
+			'role'              => ['roleid'              => [true, "name", "rolesetup", "line"]],
+			'dept'              => ['deptid'              => [true, "clientname", "client", "clientid"]],
+			'section'           => ['sectid'           => [true, "sectname", "section", "sectid"]],
+			'division'          => ['divid'          => [true, "divname", "division", "divid"]],
+			'shiftcode'         => ['shiftid'         => [true, "shftcode", "tmshifts", "line"]],
+			'jobtitle'          => ['jobid'          => [true, "jobtitle", "jobthead", "line"]],
+			'city'              => ['city'              => []],
+			'country'           => ['country'           => []],
+			'zipcode'           => ['zipcode'           => []],
+			'blood type'        => ['blood'        => []],
+			'citizenship'       => ['citizenship'       => []],
+			'religion'          => ['religion'          => []],
+			'telno'             => ['telno'             => []],
+			'mobileno'          => ['mobileno'          => []],
+			'status'            => ['status'            => []],
+			'bday'              => ['bday'              => []],
+			'maiden name'       => ['maidname'       => []],
+			'no. of child'      => ['nochild'      => []],
+			'gender'            => ['gender'            => []],
+			'alias'             => ['alias'             => []],
+			'tax status'        => ['teu'        => []],
+			'no. of dependents' => ['nodeps' => []],
+			'pay mode'          => ['paymode'          => []],
+			'class rate'        => ['classrate'        => []],
+			'level'             => ['level'             => []],
+			'hired'             => ['hired'             => []],
+			'id barcode'        => ['idbarcode'        => []],
+			'bank account'      => ['bankacct'      => []],
+			'atm'               => ['atm'               => []],
+			'is approver'       => ['isapprover'       => []],
+			'tin'               => ['tin'               => []],
+			'sss'               => ['sss'               => []],
+			'hdmf'              => ['hdmf'              => []],
+			'phic'              => ['phic'              => []],
+			'chk tin'           => ['chktin'           => []],
+			'chk sss'           => ['chksss'           => []],
+			'chk philhealth'    => ['chkphealth'    => []],
+			'chk HDMF'          => ['chkpibig'          => []],
+			'days'              => ['dyear'              => []],
+			'cola'              => ['cola'              => []],
+			'sss def'           => ['sssdef'           => []],
+			'philhealth def'    => ['philhdef'    => []],
+			'pagibig def'       => ['pibigdef'       => []],
+			'wtax def'          => ['wtaxdef'          => []],
+			'agency'            => ['agency'            => []],
+			'prob'              => ['prob'              => []],
+			'regular'           => ['regular'           => []],
+			'trainee'           => ['trainee'           => []],
+		];
+
+		$this->settriggerlogs('employee_update', 'AFTER UPDATE', 'employee', 'client_log', $fields, 'empid', 'UPDATE');
+	}
+
+	private function item_triggers() {
+		//ITEM TRIGGER =====================================================================================================================
+		$fields = [
+			'code'               => ['barcode'               => []],
+			'item name'          => ['itemname'          => []],
+			'group'              => ['groupid'              => [true, 'stockgrp_name', 'stockgrp_masterfile', 'stockgrp_id']],
+			'part'               => ['part'               => [true, 'part_name', 'part_masterfile', 'part_id']],
+			'model'              => ['model'              => [true, 'model_name', 'model_masterfile', 'model_id']],
+			'brand'              => ['brand'              => [true, 'brand_desc', 'frontend_ebrands', 'brandid']],
+			'class'              => ['class'              => [true, 'cl_name', 'item_class', 'cl_id']],
+			'Category'           => ['category'           => [true, 'name', 'itemcategory', 'line']],
+			'Sub Category'       => ['subcat'       => [true, 'name', 'itemsubcategory', 'line']],
+			'body'               => ['body'               => []],
+			'size'               => ['sizeid'               => []],
+			'Unit of Mesurement' => ['uom' => []],
+			'minimum'            => ['minimum'            => []],
+			'maximum'            => ['maximum'            => []],
+			'retail price'       => ['amt'       => []],
+			'wholesale price'    => ['amt2'    => []],
+			'price A'            => ['famt'            => []],
+			'price B'            => ['amt4'            => []],
+			'price C'            => ['amt5'            => []],
+			'price D'            => ['amt6'            => []],
+			'price E'            => ['amt7'            => []],
+			'price F'            => ['amt8'            => []],
+			'price G'            => ['amt9'            => []],
+			'markup'             => ['markup'             => []],
+			'discount R'         => ['disc'         => []],
+			'discount W'         => ['disc2'         => []],
+			'discount A'         => ['disc3'         => []],
+			'discount B'         => ['disc4'         => []],
+			'discount C'         => ['disc5'         => []],
+			'discount D'         => ['disc6'         => []],
+			'discount E'         => ['disc7'         => []],
+			'discount F'         => ['disc8'         => []],
+			'discount G'         => ['disc9'         => []],
+			'foreign amount'     => ['foramt'     => []],
+			'assets'             => ['asset'             => []],
+			'liability'          => ['liability'          => []],
+			'revenue'            => ['revenue'            => []],
+			'expense'            => ['expense'            => []],
+			'Critical'           => ['critical'           => []],
+			'Reorder'            => ['reorder'            => []],
+			'Supplier name'      => ['supplier'      => [true, 'clientname', 'client', 'clientid']],
+			'SKU'                => ['partno'                => []],
+			'Color'              => ['color'              => []],
+			'Is Inactive'        => ['isinactive'        => []],
+			'Vatable'            => ['isvat'            => []],
+			'Imported'           => ['isimport'           => []],
+			'Finished goods'     => ['fg_isfinishedgood'     => []],
+			'Equipment Tool'     => ['fg_isequipmenttool'     => []],
+			'Non Inventory'      => ['isnoninv'      => []],
+			'Labor'              => ['islabor'              => []],
+			'POS'                => ['ispositem'                => []],
+			'Life Of Asset'      => ['loa'      => []],
+			'Purchase Date'      => ['dateid'      => []],
+			'Item Remarks'       => ['itemrem'       => []],
+
+		];
+
+		$customtrigger = "if OLD.dlock<>NEW.dlock and New.ispositem = 1 then  delete from itemdlock where itemid = Old.itemid; insert into itemdlock(itemid,dlock)values(Old.itemid,New.dlock); end if;
+                      if OLD.amt<>NEW.amt then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt',New.amt,Old.amt,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt2<>NEW.amt2 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt2',New.amt2,Old.amt2,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.famt<>NEW.famt then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'famt',New.famt,Old.famt,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt4<>NEW.amt4 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt4',New.amt4,Old.amt4,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt5<>NEW.amt5 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt5',New.amt5,Old.amt5,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt6<>NEW.amt6 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt6',New.amt6,Old.amt6,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt7<>NEW.amt7 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt7',New.amt7,Old.amt7,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt8<>NEW.amt8 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt8',New.amt8,Old.amt8,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+
+                      if OLD.amt9<>NEW.amt9 then insert into prchange (itemid, dateid, prgroup, price, oldprice, userid) values (Old.itemid,New.editdate,'amt9',New.amt9,Old.amt9,New.editby);
+ delete from priceupdate where itemid=Old.itemid;
+ insert into priceupdate (itemid,dateid) values (Old.itemid,New.editdate);
+ end if;
+ ";
+
+		$this->settriggerlogs('ITEM_update', 'AFTER UPDATE', 'item', 'item_log', $fields, 'itemid', 'STOCKCARD', $customtrigger);
+		//END OF ITEM TRIGGER ====================================================================================================================================
+
+		//ITEMBAL TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER itembal_update BEFORE UPDATE on itembal FOR EACH ROW
+        BEGIN
+          if NEW.BAL<0 then
+            CALL OUT_OF_STOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ITEMBAL TRIGGER ====================================================================================================================================
+
+		//ITEM INSERT TRIGGER ==========================================================================================================================================
+		$qry = "create TRIGGER item_insert AFTER INSERT on item FOR EACH ROW
+        BEGIN
+          if NEW.ispositem = 1 then
+            insert into itemdlock(itemid,dlock)values(nEW.itemid,New.dlock);
+          end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF ITEMBAL TRIGGER ====================================================================================================================================
+	}
+
+	private function la_triggers() {
+		// GLEN 11.23.2021
+		// cntnuminfo TRIGGER
+		$fields = [
+			'forwarder' => ['truckid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+		];
+		$this->settriggerlogs('cntnuminfo_update', 'AFTER UPDATE', 'cntnuminfo', 'table_log', $fields, 'trno', 'HEAD');
+
+		//LADETAIl TRIGGER =================================================================================================================
+		$fields = [
+			'debit'        => ['db'        => []],
+			'credit'       => ['cr'       => []],
+			'client code'  => ['client'  => []],
+			'account #'    => ['acnoid'    => [true, 'acno', 'coa', 'acnoid']],
+			'account name' => ['acnoid' => [true, 'acnoname', 'coa', 'acnoid']],
+			'check #'      => ['checkno'      => []],
+			'remarks'      => ['rem'      => []],
+			'reference'    => ['ref'    => []],
+			'Date'         => ['postdate'         => []],
+			'ewt code'     => ['ewtcode'     => []],
+			'ewt rate'     => ['ewtrate'     => []],
+		];
+		$this->settriggerlogs('ladetail_update', 'AFTER UPDATE', 'ladetail', 'table_log', $fields, 'trno', 'DETAIL');
+		//END OF LADETAIL TRIGGER ====================================================================================================================================
+
+		//LAHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'              => ['docno'              => []],
+			'client code'             => ['client'             => []],
+			'client name'             => ['clientname'             => []],
+			'terms'                   => ['terms'                   => []],
+			'contra account'          => ['contra'          => [true, 'concat(acno,"~",acnoname)', 'coa', 'acno']],
+			'address'                 => ['address'                 => []],
+			'ship to'                 => ['shipto'                 => []],
+			'warehouse'               => ['wh'               => []],
+			'your ref'                => ['yourref'                => []],
+			'our ref'                 => ['ourref'                 => []],
+			'remarks'                 => ['rem'                 => []],
+			'forex'                   => ['forex'                   => []],
+			'tax'                     => ['tax'                     => []],
+			'date'                    => ['dateid'                    => []],
+			'due'                     => ['due'                     => []],
+			'project'                 => ['projectid'                 => [true, 'name', 'projectmasterfile', 'line']],
+			'tax'                     => ['tax'                     => []],
+			'vattype'                 => ['vattype'                 => []],
+			'agent'                   => ['agent'                   => [true, 'concat(client,"~",clientname)', 'client', 'client']],
+			'deliverytype'            => ['deliverytype'            => [true, "name", "deliverytype", "line"]],
+			'customername'            => ['customername'            => []],
+			'priority level'          => ['statid'          => [true, 'status', 'trxstatus', 'line']],
+			'Shipping Address'        => ['shipid'        => [true, 'addr', 'billingaddr', 'line']],
+			'Billing Address'         => ['billid'         => [true, 'addr', 'billingaddr', 'line']],
+			'Shipping Contact Person' => ['shipcontactid' => [true, 'concat(lname,", ",fname," ",mname)', 'contactperson', 'line']],
+			'Billing Contact Person'  => ['billcontactid'  => [true, 'concat(lname,", ",fname," ",mname)', 'contactperson', 'line']],
+		];
+
+		$this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
+		//END OF LAHEAD TRIGGER ====================================================================================================================================
+
+		//LASTOCK TRIGGER ==================================================================================================================
+		$fields = [
+			'total'       => ['ext'       => []],
+			'warehouse'   => ['whid'   => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'     => ['itemid'     => [true, 'barcode', 'item', 'itemid']],
+			'item name'   => ['itemid'   => [true, 'itemname', 'item', 'itemid']],
+			'uom'         => ['uom'         => []],
+			'amount'      => ['rrcost'      => []],
+			'amount'      => ['isamt'      => []],
+			'discount'    => ['disc'    => []],
+			'qty'         => ['rrqty'         => []],
+			'qty'         => ['isqty'         => []],
+			'note'        => ['rem'        => []],
+			'location'    => ['loc'    => []],
+			'ref'         => ['ref'         => []],
+			'expiry date' => ['expiry' => []],
+		];
+
+		$this->settriggerlogs('lastock_update', 'AFTER UPDATE', 'lastock', 'table_log', $fields, 'trno', 'STOCK');
+		//END OF LASTOCK TRIGGER ====================================================================================================================================
+	}
+
+	private function cd_triggers() {
+		//HCDSTOCK TRIGGER canvass==========================================================================================================================================
+		$qry = "create TRIGGER hcdstock_update BEFORE UPDATE on hcdstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_CANVASS;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HCDSTOCK TRIGGER ====================================================================================================================================
+
+		//CDHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document'    => ['docno'    => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('cdhead_update', 'AFTER UPDATE', 'cdhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF CDHEAD TRIGGER ====================================================================================================================================
+
+		//CDSTOCK TRIGGER canvass ==========================================================================================================
+		$qry = "create TRIGGER cdstock_update_before BEFORE UPDATE on cdstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_CANVASS;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'        => ['ext'        => []],
+			'warehouse'    => ['whid'    => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'product id'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'product name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'     => ['disc'     => []],
+			'qty'          => ['rrqty'          => []],
+			'amount'       => ['rrcost'       => []],
+			'notes'        => ['rem'        => []],
+			'uom'          => ['uom'          => []],
+		];
+
+		$this->settriggerlogs('cdstock_update_after', 'AFTER UPDATE', 'cdstock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER cdstock_delete BEFORE DELETE on cdstock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_CDSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function hsgstock_triggers() {
+		$qry = "create TRIGGER hsgstock_before_update BEFORE UPDATE on hsgstock FOR EACH ROW
+        BEGIN
+          if OLD.qa<>NEW.qa then
+          if New.qa>Old.iss then
+              CALL QTY_IS_GREATER_THAN_PARTS_REQUEST;
+            end if;
+          end if;
+
+          if OLD.waqa<>NEW.waqa then
+            if (New.qa + New.waqa)>New.iss then
+              CALL QTY_IS_GREATER_THAN_PARTS_REQUEST;
+            end if;
+          end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER hsgstock_delete BEFORE DELETE on hsgstock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE;
+          end if;
+
+          if OLD.WAQA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE;
+          end if;
+        END";
+
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function pr_triggers() {
+		//HPRSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hprstock_update_before BEFORE UPDATE on hprstock FOR EACH ROW
+        BEGIN
+
+        if OLD.tsqa<>NEW.tsqa then
+             if New.tsqa>New.qty then
+               CALL QTY_IS_GREATER_THAN_PURCHASE_REQUEST;
+             end if;
+          end if;
+
+        if OLD.qa<>NEW.qa then
+         if (New.qa + New.cdqa)>New.qty then
+            CALL QTY_IS_GREATER_THAN_PURCHASE_REQUEST;
+          end if;
+        end if;
+
+        if OLD.cdqa<>NEW.cdqa then
+         if (New.qa + New.cdqa)>New.qty then
+            CALL QTY_IS_GREATER_THAN_PURCHASE_REQUEST;
+          end if;
+        end if;
+
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		//PRHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'department'      => ['client'      => []],
+			'department name' => ['clientname' => []],
+			'address'         => ['address'         => []],
+			'date'            => ['dateid'            => []],
+			'required Date'   => ['due'   => []],
+			'warehouse'       => ['wh'       => []],
+			'notes'           => ['rem'           => []],
+			'your ref'        => ['yourref'        => []],
+			'our ref'         => ['ourref'         => []]
+		];
+		$this->settriggerlogs('prhead_update', 'AFTER UPDATE', 'prhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		// END PRHEAD TRIGGER =============================================================================================================+
+
+		//PRSTOCK TRIGGER ==================================================================================================================
+		$fields = [
+			'qty'       => ['rrqty'       => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'notes'     => ['rem'     => []]
+		];
+
+		$this->settriggerlogs('prstock_update_after', 'AFTER UPDATE', 'prstock', 'transnum_log', $fields, 'trno', 'STOCK');
+		//END PRSTOCK TRIGGER ==============================================================================================================
+	}
+
+	private function glstock_triggers() {
+		$qry = "create TRIGGER glstock_update BEFORE UPDATE on glstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>(New.qty+New.iss) then
+            CALL QTY_IS_GREATER_THAN_REF;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function hcnstock_triggers() {
+		$qry = "create TRIGGER hcnstock_update BEFORE UPDATE on hcnstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>(New.iss) then
+            CALL QTY_IS_GREATER_THAN_REF;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function po_triggers() {
+
+		//HPOSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hpostock_update BEFORE UPDATE on hpostock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HPOSTOCK TRIGGER ====================================================================================================================================
+
+		//POHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('pohead_update', 'AFTER UPDATE', 'pohead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF POHEAD TRIGGER ====================================================================================================================================
+
+		//POSTOCK TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER postock_update_before BEFORE UPDATE on postock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'      => ['ext'      => []],
+			'warehouse'  => ['whid'  => []],
+			'Product ID' => ['itemid' => []],
+			'discount'   => ['disc'   => []],
+			'qty'        => ['rrqty'        => []],
+			'amount'     => ['rrcost'     => []],
+			'uom'        => ['uom'        => []],
+			'notes'      => ['rem'      => []],
+		];
+		$this->settriggerlogs('postock_update_after', 'AFTER UPDATE', 'postock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER postock_delete BEFORE DELETE on postock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_POSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF postock TRIGGER ====================================================================================================================================
+	}
+
+	private function pl_triggers() {
+		$fields = [
+			'document #'           => ['docno'           => []],
+			'date'                 => ['dateid'                 => []],
+			'Remarks'              => ['rem'              => []],
+			'Packing List No.'     => ['plno'     => []],
+			'Shipment No.'         => ['shipmentno'         => []],
+			'Proforma Invoice No.' => ['invoiceno' => []],
+		];
+		$this->settriggerlogs('plhead_update', 'AFTER UPDATE', 'plhead', 'transnum_log', $fields, 'trno', 'HEAD');
+
+		$qry = "create TRIGGER hplstock_update BEFORE UPDATE on hplstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PL;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER hplstock_delete BEFORE DELETE on hplstock FOR EACH ROW
+    BEGIN
+
+      if OLD.QA<>0 then
+        CALL QTY_SERVED_CANNOT_DELETE_PLSTOCK;
+      end if;
+    END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function wa_triggers() {
+
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['clientid'      => [true, 'client', 'client', 'clientid']],
+			'client name' => ['clientname' => []],
+			'address'     => ['address'     => []],
+			'date'        => ['dateid'        => []],
+			'warehouse'   => ['whid'   => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'Notes'       => ['rem'       => []],
+			'currency'    => ['cur'    => []],
+			'forex'       => ['forex'       => []],
+		];
+		$this->settriggerlogs('wahead_update', 'AFTER UPDATE', 'wahead', 'transnum_log', $fields, 'trno', 'HEAD');
+
+		$qry = "create TRIGGER hwastock_update BEFORE UPDATE on hwastock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function frontend_triggers() {
+		$qry = "create TRIGGER frontend_highlights_update BEFORE UPDATE on frontend_highlights FOR EACH ROW
+        BEGIN
+          if NEW.promostart <> '0000-00-00' AND NEW.promostart <> '0000-00-00' AND NEW.promoend <> '1900-01-01' AND NEW.promoend <> '1900-01-01' then
+                 if NEW.promostart <> OLD.promostart OR NEW.promoend <> OLD.promoend then
+                      insert into frontend_endedsale (itemid,datestart,dateend,highlight)
+                      select hitem.itemid,highlights.promostart,left(highlights.promoend,10),hitem.highid from frontend_highlightitems as hitem
+                      left join frontend_highlights as highlights on highlights.highid = hitem.highid
+                      where hitem.highid = OLD.highid;
+                 end if;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function sa_triggers() {
+
+		//SAHEAD TRIGGER =============================================================================
+		$fields = [
+			'document #'   => ['docno'   => []],
+			'client code'  => ['client'  => []],
+			'client name'  => ['clientname'  => []],
+			'address'      => ['address'      => []],
+			'forwarder'    => ['truckid'    => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'date'         => ['dateid'         => []],
+			'terms'        => ['terms'        => []],
+			'due'          => ['due'          => []],
+			'wh'           => ['wh'           => [true, 'concat(client,"~",clientname)', 'client', 'client']],
+			'your ref'     => ['yourref'     => []],
+			'our ref'      => ['ourref'      => []],
+			'currency'     => ['cur'     => []],
+			'cur'          => ['forex'          => []],
+			'deliverytype' => ['deliverytype' => [true, "name", "deliverytype", "line"]],
+			'remarks'      => ['rem'      => []],
+		];
+		$this->settriggerlogs('sahead_update', 'AFTER UPDATE', 'sahead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF sahead TRIGGER ====================================================================================================================================
+
+		//sastock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER sastock_update_before BEFORE UPDATE on sastock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SA;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['isqty'       => []],
+			'amount'    => ['isamt'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('sastock_update_after', 'AFTER UPDATE', 'sastock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER sastock_delete BEFORE DELETE on sastock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF sastock TRIGGER ====================================================================================================================================
+
+		//HSASTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hsastock_update BEFORE UPDATE on hsastock FOR EACH ROW
+      BEGIN
+       if New.QA>New.ISS then
+          CALL QTY_IS_GREATER_THAN_SO;
+        end if;
+      END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HSASTOCK TRIGGER ====================================================================================================================================
+
+	}
+
+	private function sb_triggers() {
+
+		//SBHEAD TRIGGER =============================================================================
+		$fields = [
+			'document #'   => ['docno'   => []],
+			'client'       => ['client'       => []],
+			'client name'  => ['clientname'  => []],
+			'terms'        => ['terms'        => []],
+			'warehouse'    => ['wh'    => []],
+			'address'      => ['address'      => []],
+			'your ref'     => ['yourref'     => []],
+			'our ref'      => ['ourref'      => []],
+			'ship to'      => ['shipto'      => []],
+			'agent'        => ['agent'        => []],
+			'remarks'      => ['rem'      => []],
+			'forex'        => ['forex'        => []],
+			'date'         => ['dateid'         => []],
+			'currency'     => ['cur'     => []],
+			'due'          => ['due'          => []],
+			'customername' => ['customername' => []],
+			'forwarder'    => ['truckid'    => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+		];
+		$this->settriggerlogs('sbhead_update', 'AFTER UPDATE', 'sbhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF sbhead TRIGGER ====================================================================================================================================
+
+		//sbstock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER sbstock_update_before BEFORE UPDATE on sbstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['isqty'       => []],
+			'amount'    => ['isamt'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('sbstock_update_after', 'AFTER UPDATE', 'sbstock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER sbstock_delete BEFORE DELETE on sbstock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF sbstock TRIGGER ====================================================================================================================================
+
+		//HSBSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hsbstock_update BEFORE UPDATE on hsbstock FOR EACH ROW
+      BEGIN
+       if New.QA>New.ISS then
+          CALL QTY_IS_GREATER_THAN_SB;
+        end if;
+      END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HSBSTOCK TRIGGER ====================================================================================================================================
+
+	}// end
+
+	private function sc_triggers() {
+
+		//SCHEAD TRIGGER =============================================================================
+		$fields = [
+			'document #'   => ['docno'   => []],
+			'client'       => ['client'       => []],
+			'client name'  => ['clientname'  => []],
+			'terms'        => ['terms'        => []],
+			'warehouse'    => ['wh'    => []],
+			'address'      => ['address'      => []],
+			'your ref'     => ['yourref'     => []],
+			'our ref'      => ['ourref'      => []],
+			'ship to'      => ['shipto'      => []],
+			'agent'        => ['agent'        => []],
+			'remarks'      => ['rem'      => []],
+			'forex'        => ['forex'        => []],
+			'date'         => ['dateid'         => []],
+			'currency'     => ['cur'     => []],
+			'due'          => ['due'          => []],
+			'tel'          => ['tel'          => []],
+			'customername' => ['customername' => []],
+		];
+		$this->settriggerlogs('schead_update', 'AFTER UPDATE', 'schead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF schead TRIGGER ====================================================================================================================================
+
+		//scstock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER scstock_update_before BEFORE UPDATE on scstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SC;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['isqty'       => []],
+			'amount'    => ['isamt'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('scstock_update_after', 'AFTER UPDATE', 'scstock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER scstock_delete BEFORE DELETE on scstock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF scstock TRIGGER ====================================================================================================================================
+
+		//HSCSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hscstock_update BEFORE UPDATE on hscstock FOR EACH ROW
+      BEGIN
+       if New.QA>New.ISS then
+          CALL QTY_IS_GREATER_THAN_SC;
+        end if;
+      END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HSCSTOCK TRIGGER ====================================================================================================================================
+
+	}// end
+
+	private function mr_triggers() {
+		$qry = "create TRIGGER hmrstock_update BEFORE UPDATE on hmrstock FOR EACH ROW
+        BEGIN
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_MR;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function qs_triggers() {
+		//hqsstock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER hqsstock_update_before BEFORE UPDATE on hqsstock FOR EACH ROW
+        BEGIN
+
+          if New.SJQA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+
+
+          if Old.POQA <> New.POQA then
+            if New.POQA + New.SJQA>New.ISS then
+              CALL QTY_IS_GREATER_THAN_SO;
+            end if;
+          end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER hqsstock_delete BEFORE DELETE on hqsstock FOR EACH ROW
+        BEGIN
+
+           if OLD.SJQA<>0 then
+             CALL QTY_SERVED_IN_SALES_JOURNAL_CANNOT_DELETE;
+           end if;
+
+           if OLD.POQA<>0 then
+             CALL QTY_SERVED_IN_PURCHASE_ORDER_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF hsqstock TRIGGER ====================================================================================================================================
+	}
+
+	private function so_triggers() {
+		//HSOSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hsostock_update BEFORE UPDATE on hsostock FOR EACH ROW
+        BEGIN
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+
+         if New.MRSQA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HSOSTOCK TRIGGER ====================================================================================================================================
+
+		//SOHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'agent'       => ['agent'       => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('sohead_update', 'AFTER UPDATE', 'sohead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF sohead TRIGGER ====================================================================================================================================
+
+		//sostock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER sostock_update_before BEFORE UPDATE on sostock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['isqty'       => []],
+			'amount'    => ['isamt'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('sostock_update_after', 'AFTER UPDATE', 'sostock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER sostock_delete BEFORE DELETE on sostock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF sostock TRIGGER ====================================================================================================================================
+	}
+
+	private function pc_triggers() {
+		//PCHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'agent'       => ['agent'       => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('pchead_update', 'AFTER UPDATE', 'pchead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF PCHEAD TRIGGER ====================================================================================================================================
+
+		//PCSTOCK TRIGGER ==================================================================================================================
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['rrqty'       => []],
+			'amount'    => ['rrcost'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('pcstock_update', 'AFTER UPDATE', 'pcstock', 'transnum_log', $fields, 'trno', 'STOCK');
+		//END OF PCSTOCK TRIGGER ====================================================================================================================================
+	}
+
+	private function kr_triggers() {
+		//KRHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'agent'       => ['agent'       => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('krhead_update', 'AFTER UPDATE', 'krhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF KRHEAD TRIGGER ====================================================================================================================================
+	}
+
+	private function tr_triggers() {
+		//TRHEAD TRIGGER ================================================================================================================
+		$fields = [
+			'department'      => ['client'      => []],
+			'department name' => ['clientname' => []],
+			'date'            => ['dateid'            => []],
+			'warehouse'       => ['wh'       => []],
+			'notes'           => ['rem'           => []],
+			'yourref'         => ['yourref'         => []],
+			'ourref'          => ['ourref'          => []]
+		];
+
+		$this->settriggerlogs('trhead_update', 'AFTER UPDATE', 'trhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		// END TRHEAD TRIGGER ===========================================================================================================
+
+		// TRSTOCK TRIGGER ===============================================================================================================
+		$fields = [
+			'request qty' => ['reqqty' => []],
+			'warehouse'   => ['whid'   => [TRUE, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'     => ['itemid'     => [TRUE, 'barcode', 'item', 'itemid']],
+			'item name'   => ['itemid'   => [TRUE, 'itemname', 'item', 'itemid']],
+			'notes'       => ['rem'       => []]
+		];
+
+		$this->settriggerlogs('trstock_update_after', 'AFTER UPDATE', 'trstock', 'transnum_log', $fields, 'trno', 'STOCK');
+		//END TRSTOCK TRIGGER =============================================================================================================
+	}
+
+	private function terms_triggers() {
+		//TERMS TRIGGER ====================================================================================================================
+		$fields = [
+			'terms'     => ['terms'     => []],
+			'days name' => ['days' => []]
+		];
+
+		$this->settriggerlogs('term_update', 'AFTER UPDATE', 'terms', 'terms_log', $fields, 'line', 'TERMS');
+		//END OF terms TRIGGER ====================================================================================================================================
+	}
+
+	private function users_triggers() {
+		//useraccess TRIGGER ===============================================================================================================
+		$fields = [
+			'username'        => ['username'        => []],
+			'name'            => ['name'            => []],
+			'change password' => ['pwd' => []],
+			'name'            => ['name'            => []],
+			'picture'         => ['pic'         => []],
+		];
+
+		$this->settriggerlogs('useraccess_update', 'AFTER UPDATE', 'useraccess', 'useraccess_log', $fields, 'accessid', 'USERACCESS');
+		//END OF useraccess TRIGGER ====================================================================================================================================
+
+		//USERS TRIGGER ====================================================================================================================
+		$fields = [
+			'user levels' => ['username' => []],
+			'class'       => ['class'       => []],
+		];
+
+		$this->settriggerlogs('users_update', 'AFTER UPDATE', 'users', 'userlog', $fields, 'idno', 'USERS');
+
+		//  if OLD.attributes<>NEW.attributes then
+		//   insert into userlog(trno,field,oldversion,userid,dateid) values(OLD.idno,'USERS',concat('Attributes - ',OLD.attributes,'=>',NEW.attributes),New.editby,New.editdate);
+		// end if;
+		//END OF users TRIGGER ====================================================================================================================================
+	}
+
+	private function jo_triggers() {
+		//JOHEAD TRIGGER ==================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'address'     => ['address'     => []],
+			'voiddate'    => ['voiddate'    => []],
+			'branch'      => ['branch'      => []],
+			'agent'       => ['agent'       => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'date'        => ['dateid'        => []],
+			'due'         => ['due'         => []],
+			'print time'  => ['printtime'  => []],
+			'lockuser'    => ['lockuser'    => []],
+			'lockdate'    => ['lockdate'    => []],
+			'open by'     => ['openby'     => []],
+			'users'       => ['users'       => []],
+			'create date' => ['createdate' => []],
+			'create by'   => ['createby'   => []],
+			'edit by'     => ['editby'     => []],
+			'edit date'   => ['editdate'   => []],
+			'view by'     => ['viewby'     => []],
+			'view date'   => ['viewdate'   => []]
+		];
+
+		$this->settriggerlogs('johead_update', 'AFTER UPDATE', 'johead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF JOHEAD TRIGGER ====================================================================================================================================
+
+		//JOSERVICE TRIGGER ================================================================================================================
+		$fields = [
+			'sreceived by'    => ['sreceivedby'    => []],
+			'sreceived date'  => ['sreceiveddate'  => []],
+			'problem'         => ['problem'         => []],
+			'accessories'     => ['accessories'     => []],
+			'contact'         => ['contact'         => []],
+			'fax'             => ['fax'             => []],
+			'email'           => ['email'           => []],
+			'hreceived by'    => ['hreceivedby'    => []],
+			'hreceived date'  => ['hreceiveddate'  => []],
+			'hremarks'        => ['hremarks'        => []],
+			'sureceived by'   => ['sureceivedby'   => []],
+			'sureceived date' => ['sureceiveddate' => []],
+			'suremarks'       => ['suremarks'       => []],
+			'retdatesutoho'   => ['retdatesutoho'   => []],
+			'retremarks'      => ['retremarks'      => []],
+			'recfromsutoho'   => ['recfromsutoho'   => []],
+			'fromhtosdate'    => ['fromhtosdate'    => []],
+			'recfromhtosby'   => ['recfromhtosby'   => []],
+			'fromstocdate'    => ['fromstocdate'    => []],
+			'sissuedby'       => ['sissuedby'       => []],
+			'postdate'        => ['postdate'        => []],
+			'deltoho'         => ['deltoho'         => []],
+			'rettostore'      => ['rettostore'      => []],
+			'issuedtostoreby' => ['issuedtostoreby' => []],
+		];
+
+		$this->settriggerlogs('joservice_update', 'AFTER UPDATE', 'joservice', 'transnum_log', $fields, 'trno', 'HEAD');
+
+		$qry = "create TRIGGER hjostock_update BEFORE UPDATE on hjostock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$qry = "create TRIGGER jostock_update_before BEFORE UPDATE on jostock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_PO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'      => ['ext'      => []],
+			'warehouse'  => ['whid'  => []],
+			'Product ID' => ['itemid' => []],
+			'discount'   => ['disc'   => []],
+			'qty'        => ['rrqty'        => []],
+			'amount'     => ['rrcost'     => []],
+			'uom'        => ['uom'        => []],
+			'notes'      => ['rem'      => []],
+		];
+		$this->settriggerlogs('jostock_update_after', 'AFTER UPDATE', 'jostock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER jostock_delete BEFORE DELETE on jostock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_POSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function srhead_trigger() {
+		// SERVICE RECEIVING
+		$trigger_name = "srhead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client code' => ['client' => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'address'     => ['address'     => []],
+			'ship to'     => ['shipto'     => []],
+			'warehouse'   => ['wh'   => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'due'         => ['due'         => []],
+			'branch'      => ['branch'      => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'dept'        => ['deptid'        => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'srhead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function srstock_trigger() {
+		// SERVICE RECEIVING
+		$trigger_name = "srstock_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'total'       => ['ext'       => []],
+			'warehouse'   => ['whid'   => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'     => ['itemid'     => [true, 'barcode', 'item', 'itemid']],
+			'item name'   => ['itemid'   => [true, 'itemname', 'item', 'itemid']],
+			'uom'         => ['uom'         => []],
+			'amount'      => ['rrcost'      => []],
+			'amount'      => ['isamt'      => []],
+			'discount'    => ['disc'    => []],
+			'qty'         => ['rrqty'         => []],
+			'qty'         => ['isqty'         => []],
+			'location'    => ['loc'    => []],
+			'expiry date' => ['expiry' => []],
+			'note'        => ['rem'        => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'srstock', 'transnum_log', $fields, 'trno', 'STOCK');
+	}
+
+	public function createtriggers($config) {
+		$this->apledger_triggers();
+		$this->arledger_triggers();
+		$this->center_triggers();
+		$this->cd_triggers();
+		$this->client_triggers();
+		$this->employee_triggers();
+		$this->costing_triggers();
+		$this->en_triggers();
+		$this->frontend_triggers();
+		$this->glstock_triggers();
+		$this->hcnstock_triggers();
+		$this->hsgstock_triggers();
+		$this->htr_triggers();
+		$this->item_triggers();
+		$this->jo_triggers();
+		$this->kr_triggers();
+		$this->la_triggers();
+		$this->mr_triggers();
+		$this->pc_triggers();
+		$this->pl_triggers();
+		$this->pm_triggers();
+		$this->po_triggers();
+		$this->pr_triggers();
+		$this->qs_triggers();
+		$this->qt_triggers();
+		$this->rrstatus_triggers();
+		$this->sa_triggers();
+		$this->sb_triggers();
+		$this->sc_triggers();
+		$this->so_triggers();
+		$this->terms_triggers();
+		$this->tr_triggers();
+		$this->users_triggers();
+		$this->wa_triggers();
+		$this->whdoc_triggers();
+		$this->whnods_triggers();
+		$this->whjobreq_triggers();
+		$this->ld_triggers();
+		$this->op_triggers();
+		$this->opstock_trigger();
+		$this->qshead_triggers();
+		$this->qsstock_trigger();
+		$this->tehead_triggers();
+		$this->pqhead_triggers();
+		$this->pqdetail_trigger();
+		$this->svhead_triggers();
+		$this->svdetail_trigger();
+
+		$this->sghead_trigger();
+
+		$this->os_triggers();
+		$this->srhead_trigger();
+		$this->srstock_trigger();
+		$this->trigger_masterfile->createtriggers_masterfile($config);
+		$this->trigger_hris->createtriggers_hris($config);
+		// ADD HERE-->
+	}
+
+	// FOR TESTING -- JIKS [11.24.2020]
+	// SET TRIGGERS FOR HEAD LOGS
+	// UPDATE ADD ON STOCK LOGS AND IF A HAVE A MASTERFILE
+	// ADD PARAMS FOR CUSTOMIZE TRIGGERS
+
+	private function settriggerlogs($triggername, $type, $tablename, $table_log, $data = [], $keys, $level = '', $customizetrigger = '') {
+
+		$str = '';
+
+		if (strtoupper($level) == 'STOCK') {
+			$line = "( select concat(itemname,'(',barcode,')',' - ') from item where itemid = OLD.itemid )";
+		} else if (strtoupper($level) == 'DETAIL') {
+			$line = "( select concat(acnoname,'(',acno,')',' - ') from coa where acnoid = OLD.acnoid )";
+		} else {
+			$line = "''";
+		}
+
+		if (is_array($data)) {
+			foreach ($data as $key   => $value) {
+				foreach ($value as $col => $value2) {
+
+					if (isset($value2[0]) && $value2[0] == true) {
+
+						$str .= "
+                if OLD.$col<>NEW.$col then
+                insert into $table_log(trno,field,oldversion,userid,dateid)
+                values (OLD.$keys,'$level',concat('" .strtoupper($key)." - ',$line,
+                ifnull((select " .$value2[1]." from ".$value2[2]." WHERE ".$value2[3]." = OLD.$col),''), ' => ',
+                ifnull((select " .$value2[1]." FROM ".$value2[2]." WHERE ".$value2[3]." = NEW.$col),'')),
+                New.editby,New.editdate);
+                end if;
+";
+					} else {
+
+						$str .= "
+                if OLD.$col<>NEW.$col then
+                insert into $table_log(trno,field,oldversion,userid,dateid)
+                values (OLD.$keys,'$level',concat('" .strtoupper($key)." - ',$line,
+                OLD.$col,' => ',NEW.$col),New.editby,New.editdate);
+                end if;
+";
+					}
+				}
+			}// end foreach
+		}// end if
+
+		$qry = "create TRIGGER $triggername $type on $tablenameFOR EACH ROW
+            BEGIN
+" .$str."
+            ".$customizetrigger."
+            END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+	}
+
+	private function en_triggers() {
+		//HSOSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER en_glsubject_update BEFORE UPDATE on en_glsubject FOR EACH ROW
+        BEGIN
+          if New.maxslot>0 then
+             if New.ASQA>New.maxslot then
+                CALL ASSESSMENT_REACH_MAXIMUM_STUDENT_SLOTS;
+              end if;
+              if New.QA>New.maxslot then
+                CALL REGISTRATION_REACH_MAXIMUM_STUDENT_SLOTS;
+              end if;
+          END IF;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF EN_GLSUBJECT TRIGGER ====================================================================================================================================
+
+	}
+
+	private function htr_triggers() {
+
+		//HPOSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER htrstock_update BEFORE UPDATE on htrstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_REQUEST;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HTRSTOCK TRIGGER ====================================================================================================================================
+
+		$qry = "create TRIGGER trstock_delete BEFORE DELETE on trstock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_TRSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF trstock TRIGGER ====================================================================================================================================
+	}
+
+	private function pm_triggers() {
+		//PMHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'projectid'   => ['projectid'   => []],
+			'tcp'         => ['tcp'         => []],
+			'cost'        => ['cost'        => []],
+			'close date'  => ['closedate'  => []],
+			'completed'   => ['completed'   => []],
+			'retention'   => ['retention'   => []],
+			'dp'          => ['dp'          => []],
+			'remarks'     => ['rem'     => []],
+			'date'        => ['dateid'        => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('pmhead_update', 'AFTER UPDATE', 'pmhead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF sohead TRIGGER ====================================================================================================================================
+
+		//subproject TRIGGER ==================================================================================================================
+
+		$fields = [
+			'subproject'  => ['subproject'  => []],
+			'projpercent' => ['projpercent' => []],
+			'completed'   => ['completed'   => []],
+		];
+		$this->settriggerlogs('subproject_update_after', 'AFTER UPDATE', 'subproject', 'transnum_log', $fields, 'line', 'SUBPROJECT');
+
+		//END OF subproject TRIGGER ====================================================================================================================================
+
+		//stages TRIGGER ==================================================================================================================
+
+		$fields = [
+			'cost'        => ['cost'        => []],
+			'stage'       => ['stage'       => []],
+			'projpercent' => ['projpercent' => []],
+			'completed'   => ['completed'   => []],
+			'ar'          => ['ar'          => []],
+			'ap'          => ['ap'          => []],
+			'paid'        => ['paid'        => []],
+			'boq'         => ['boq'         => []],
+			'po'          => ['po'          => []],
+			'pr'          => ['pr'          => []],
+			'rr'          => ['rr'          => []],
+			'jo'          => ['jo'          => []],
+			'jc'          => ['jc'          => []],
+		];
+		$this->settriggerlogs('stages_update_after', 'AFTER UPDATE', 'stages', 'transnum_log', $fields, 'line', 'STAGES');
+
+		//END OF subproject TRIGGER ====================================================================================================================================
+	}
+
+	private function qt_triggers() {
+		//HSOSTOCK TRIGGER =================================================================================================================
+		$qry = "create TRIGGER hqtstock_update BEFORE UPDATE on hqtstock FOR EACH ROW
+        BEGIN
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF HQTSTOCK TRIGGER ====================================================================================================================================
+
+		//QTHEAD TRIGGER ===================================================================================================================
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'agent'       => ['agent'       => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+			'project'     => ['projectid'     => []],
+		];
+		$this->settriggerlogs('qthead_update', 'AFTER UPDATE', 'qthead', 'transnum_log', $fields, 'trno', 'HEAD');
+		//END OF qthead TRIGGER ====================================================================================================================================
+
+		//qtstock TRIGGER ==================================================================================================================
+		$qry = "create TRIGGER qtstock_update_before BEFORE UPDATE on qtstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.ISS then
+            CALL QTY_IS_GREATER_THAN_SO;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'warehouse' => ['whid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['isqty'       => []],
+			'amount'    => ['isamt'    => []],
+			'uom'       => ['uom'       => []],
+			'notes'     => ['rem'     => []],
+		];
+		$this->settriggerlogs('qtstock_update_after', 'AFTER UPDATE', 'qtstock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+		$qry = "create TRIGGER qtstock_delete BEFORE DELETE on qtstock FOR EACH ROW
+        BEGIN
+
+           if OLD.QA<>0 then
+             CALL QTY_SERVED_CANNOT_DELETE;
+           end if;
+         END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		//END OF qtstock TRIGGER ====================================================================================================================================
+	}
+
+	private function whdoc_triggers() {
+		//WHDOC TRIGGER ==================================================================================================================
+		$fields = [
+			'docno'  => ['docno'  => []],
+			'issued' => ['issued' => []],
+			'expiry' => ['expiry' => []],
+			'dateid' => ['dateid' => []],
+			'oic1'   => ['oic1'   => []],
+			'oic2'   => ['oic2'   => []],
+			'rem'    => ['rem'    => []],
+			'status' => ['status' => []],
+		];
+
+		$this->settriggerlogs('whdoc_update', 'AFTER UPDATE', 'whdoc', 'wh_log', $fields, 'whid', 'WH DOCUMENTS');
+	}
+
+	private function whnods_triggers() {
+		//WHDOC TRIGGER ==================================================================================================================
+		$fields = [
+			'docno'  => ['docno'  => []],
+			'issued' => ['issued' => []],
+			'expiry' => ['expiry' => []],
+			'dateid' => ['dateid' => []],
+			'oic1'   => ['oic1'   => []],
+			'oic2'   => ['oic2'   => []],
+			'rem'    => ['rem'    => []],
+			'status' => ['status' => []],
+		];
+
+		$this->settriggerlogs('whnods_update', 'AFTER UPDATE', 'whnods', 'wh_log', $fields, 'whid', 'WH NODS');
+	}
+
+	private function whjobreq_triggers() {
+		//WHDOC TRIGGER ==================================================================================================================
+		$fields = [
+			'docno'  => ['docno'  => []],
+			'issued' => ['issued' => []],
+			'expiry' => ['expiry' => []],
+			'dateid' => ['dateid' => []],
+			'oic1'   => ['oic1'   => []],
+			'oic2'   => ['oic2'   => []],
+			'rem'    => ['rem'    => []],
+			'status' => ['status' => []],
+		];
+
+		$this->settriggerlogs('whjobreq_update', 'AFTER UPDATE', 'whjobreq', 'wh_log', $fields, 'whid', 'WH JOB REQUESTS');
+	}
+
+	private function ld_triggers() {
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'address'     => ['address'     => []],
+			'tel'         => ['tel'         => []],
+			'contact'     => ['contact'     => []],
+			'date'        => ['dateid'        => []],
+		];
+		$this->settriggerlogs('lead_update', 'AFTER UPDATE', 'lead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function op_triggers() {
+		// SALES ACTIVITY
+		$trigger_name = "ophead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'address'     => ['address'     => []],
+			'ship to'     => ['shipto'     => []],
+			'telephone'   => ['tel'   => []],
+			'date'        => ['dateid'        => []],
+			'due'         => ['due'         => []],
+			'warehouse'   => ['wh'   => []],
+			'terms'       => ['terms'       => []],
+			'remarks'     => ['rem'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'forex'       => ['forex'       => []],
+			'currency'    => ['cur'    => []],
+			'agent'       => ['agent'       => []],
+			'compname'    => ['compname'    => []],
+			'designation' => ['designation' => []],
+			'contactname' => ['contactname' => []],
+			'contactno'   => ['contactno'   => []],
+			'email'       => ['email'       => []],
+			'source'      => ['source'      => []],
+			'salutation'  => ['salutation'  => []],
+		];
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'ophead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function opstock_trigger() {
+		// SALES ACTIVITY
+		$trigger_name = "opstock_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'uom'       => ['uom'       => []],
+			'amount'    => ['rrcost'    => []],
+			'amount'    => ['isamt'    => []],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['rrqty'       => []],
+			'qty'       => ['isqty'       => []],
+			'ref'       => ['ref'       => []],
+			'void'      => ['void'      => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'opstock', 'transnum_log', $fields, 'trno', 'STOCK');
+	}
+
+	private function qshead_triggers() {
+		// QUOTATION
+		$trigger_name = "qshead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'              => ['docno'              => []],
+			'client'                  => ['client'                  => []],
+			'client name'             => ['clientname'             => []],
+			'industry'                => ['industry'                => []],
+			'date'                    => ['dateid'                    => []],
+			'po date'                 => ['due'                 => []],
+			'delivery date'           => ['deldate'           => []],
+			'sales person'            => ['agent'            => [true, 'concat(client,"~",clientname)', 'client', 'client']],
+			'position'                => ['position'                => []],
+			'branch'                  => ['branch'                  => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'department'              => ['deptid'              => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'po number'               => ['yourref'               => []],
+			'currency'                => ['cur'                => []],
+			'forex'                   => ['forex'                   => []],
+			'probability'             => ['probability'             => []],
+			'Shipping Address'        => ['shipid'        => [true, 'addr', 'billingaddr', 'line']],
+			'Billing Address'         => ['billid'         => [true, 'addr', 'billingaddr', 'line']],
+			'Shipping Contact Person' => ['shipcontactid' => [true, 'concat(lname,", ",fname," ",mname)', 'contactperson', 'line']],
+			'Billing Contact Person'  => ['billcontactid'  => [true, 'concat(lname,", ",fname," ",mname)', 'contactperson', 'line']],
+			'probability'             => ['probability'             => []],
+		];
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'qshead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function qsstock_trigger() {
+		// QUOTATION
+		$trigger_name = "qsstock_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'total'     => ['ext'     => []],
+			'barcode'   => ['itemid'   => [true, 'barcode', 'item', 'itemid']],
+			'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+			'uom'       => ['uom'       => []],
+			'amount'    => ['rrcost'    => []],
+			'amount'    => ['isamt'    => []],
+			'discount'  => ['disc'  => []],
+			'qty'       => ['rrqty'       => []],
+			'qty'       => ['isqty'       => []],
+			'projectid' => ['projectid' => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'qsstock', 'transnum_log', $fields, 'trno', 'STOCK');
+	}
+
+	private function tehead_triggers() {
+		// TASK/ERRAND MODULE
+		$trigger_name = "tehead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'      => ['docno'      => []],
+			'client'          => ['clientid'          => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'date'            => ['dateid'            => []],
+			'errand type'     => ['errandtype'     => []],
+			'ppio'            => ['trno'            => [true, "docno", "ppio_series", "trno"]],
+			'date request'    => ['datereq'    => []],
+			'date needed'     => ['dateneed'     => []],
+			'date due'        => ['due'        => []],
+			'assign to'       => ['assignid'       => [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+			'company'         => ['company'         => []],
+			'company address' => ['companyaddress' => []],
+			'contact'         => ['contact'         => []],
+			'contact person'  => ['contactperson'  => []],
+		];
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'tehead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function pqhead_triggers() {
+		// PETTY CASH REQUEST
+		$trigger_name = "pqhead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'     => ['docno'     => []],
+			'client code'    => ['client'    => []],
+			'client name'    => ['clientname'    => []],
+			'address'        => ['address'        => []],
+			'date'           => ['dateid'           => []],
+			'contra account' => ['contra' => []],
+			'project'        => ['projectid'        => [true, 'name', 'projectmasterfile', 'line']],
+			'your ref'       => ['yourref'       => []],
+			'our ref'        => ['ourref'        => []],
+			'remarks'        => ['rem'        => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'pqhead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function pqdetail_trigger() {
+		// PETTY CASH REQUEST
+		$trigger_name = "pqdetail_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'amt'  => ['amt'  => []],
+			'date' => ['postdate' => []],
+			'rem'  => ['rem'  => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'pqdetail', 'transnum_log', $fields, 'trno', 'DETAIL');
+	}
+
+	private function svhead_triggers() {
+		// PETTY CASH VOUCHER
+		$trigger_name = "svhead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'      => ['docno'      => []],
+			'client code'     => ['client'     => []],
+			'client name'     => ['clientname'     => []],
+			'address'         => ['address'         => []],
+			'contra account'  => ['contra'  => []],
+			'date'            => ['dateid'            => []],
+			'project'         => ['projectid'         => [true, 'name', 'projectmasterfile', 'line']],
+			'ewtrate'         => ['ewt'         => [true, 'concat(code,"~",rate)', 'ewtlist', 'code']],
+			'your ref'        => ['yourref'        => []],
+			'our ref'         => ['ourref'         => []],
+			'vattype'         => ['vattype'         => []],
+			'amount released' => ['amt' => []],
+			'remarks'         => ['rem'         => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'svhead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function svdetail_trigger() {
+		// PETTY CASH VOUCHER
+		$trigger_name = "svdetail_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'isvat'  => ['isvat'  => []],
+			'isewt'  => ['isewt'  => []],
+			'isvewt' => ['isvewt' => []],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'svdetail', 'transnum_log', $fields, 'trno', 'DETAIL');
+	}
+
+	private function sghead_trigger() {
+		// MITSUKOSHI - SPECIAL PARTS REQUEST
+		$trigger_name = "sghead_update";
+		$this->coreFunctions->sbcdroptriggers($trigger_name);
+
+		$fields = [
+			'document #'        => ['docno'        => []],
+			'client'            => ['client'            => []],
+			'client name'       => ['clientname'       => []],
+			'terms'             => ['terms'             => []],
+			'wh'                => ['wh'                => [true, 'concat(client,"~",clientname)', 'client', 'client']],
+			'address'           => ['address'           => []],
+			'your ref'          => ['yourref'          => []],
+			'our ref'           => ['ourref'           => []],
+			'ship to'           => ['shipto'           => []],
+			'agent'             => ['agent'             => []],
+			'notes'             => ['rem'             => []],
+			'forex'             => ['forex'             => []],
+			'date'              => ['dateid'              => []],
+			'currency'          => ['cur'          => []],
+			'due'               => ['due'               => []],
+			'deliverytype'      => ['deliverytype'      => [true, "name", "deliverytype", "line"]],
+			'part request type' => ['partreqtypeid' => [true, "name", "partrequest", "line"]],
+		];
+
+		$this->settriggerlogs($trigger_name, 'AFTER UPDATE', 'sghead', 'transnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function os_triggers() {
+		// drop triggers before create
+		$this->coreFunctions->sbcdroptriggers('oshead_update');
+		$this->coreFunctions->sbcdroptriggers('osstock_update_before');
+		$this->coreFunctions->sbcdroptriggers('osstock_update_after');
+		$this->coreFunctions->sbcdroptriggers('osstock_delete');
+		$this->coreFunctions->sbcdroptriggers('hosstock_update');
+
+		$qry = "create TRIGGER hosstock_update BEFORE UPDATE on hosstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_OS;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		// ----- > END
+
+		$fields = [
+			'document #'  => ['docno'  => []],
+			'client'      => ['client'      => []],
+			'client name' => ['clientname' => []],
+			'terms'       => ['terms'       => []],
+			'warehouse'   => ['wh'   => []],
+			'address'     => ['address'     => []],
+			'your ref'    => ['yourref'    => []],
+			'our ref'     => ['ourref'     => []],
+			'ship to'     => ['shipto'     => []],
+			'remarks'     => ['rem'     => []],
+			'forex'       => ['forex'       => []],
+			'date'        => ['dateid'        => []],
+			'currency'    => ['cur'    => []],
+			'due'         => ['due'         => []],
+		];
+		$this->settriggerlogs('oshead_update', 'AFTER UPDATE', 'oshead', 'transnum_log', $fields, 'trno', 'HEAD');
+		// ----- > END
+
+		$qry = "create TRIGGER osstock_update_before BEFORE UPDATE on osstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_OS;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		// ----- > END
+
+		$fields = [
+			'total'      => ['ext'      => []],
+			'warehouse'  => ['whid'  => []],
+			'Product ID' => ['itemid' => []],
+			'discount'   => ['disc'   => []],
+			'qty'        => ['rrqty'        => []],
+			'amount'     => ['rrcost'     => []],
+			'uom'        => ['uom'        => []],
+			'notes'      => ['rem'      => []],
+		];
+		$this->settriggerlogs('osstock_update_after', 'AFTER UPDATE', 'osstock', 'transnum_log', $fields, 'trno', 'STOCK');
+		// ----- > END
+
+		$qry = "create TRIGGER osstock_delete BEFORE DELETE on osstock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_OSSTOCK;
+          end if;
+        END";
+		$this->coreFunctions->execqry($qry, 'trigger');
+		// ----- > END
+	}
+
+	public function cleardb_proc() {
+
+		$qry = "DROP PROCEDURE IF EXISTS `ClearDB`;
+      CREATE PROCEDURE `ClearDB`()
+      BEGIN
+        delete from acontacts;
+        delete from adependents;
+        delete from adminlog;
+        delete from aeducation;
+        delete from aemployment;
+        delete from agentcommtbl;
+        truncate allowsetup;
+        delete from apledger;
+        delete from app;
+        delete from arequire;
+        delete from arledger;
+        delete from attemptolog;
+        delete from bank;
+        delete from batch;
+        delete from boxinginfo;
+        delete from branchagent;
+        delete from branchbank;
+        delete from branchbrand;
+        delete from branchstation;
+        delete from branchtables;
+        delete from branchusers;
+        delete from branchwh;
+        delete from brecon;
+
+        delete from caledger;
+        delete from canvasshead;
+        delete from canvasslist;
+
+        delete from category_masterfile;
+        delete from cbledger;
+        delete from cdhead;
+        delete from center_log;
+        delete from checkerloc;
+        delete from clearance;
+        delete from client;
+        delete from clientdlock;
+        delete from clientprojects;
+        delete from client_log;
+
+        truncate cmodels;
+        delete from cntnum_picture;
+        delete from cntnuminfo;
+        -- delete from coa;
+        delete from component;
+        delete from contacts;
+        delete from contracts;
+
+        delete from costing;
+        delete from crledger;
+
+        delete from deposit;
+        delete from del_client_log;
+        delete from del_center_log;
+        delete from del_item_log;
+        delete from del_hrisnum_log;
+        delete from del_masterfile_log;
+        delete from del_table_log;
+        delete from del_terms_log;
+        delete from del_transnum_log;
+        delete from del_useraccess_log;
+        delete from del_users_log;
+        truncate deliverytype;
+        delete from department;
+        delete from dependents;
+        delete from division;
+        delete from docprefix_log;
+
+        delete from education;
+        delete from employee;
+        delete from employment;
+        delete from ewtlist;
+        delete from emprequire;
+        delete from empstatentry;
+        delete from en_addetail;
+        delete from en_adhead;
+        delete from en_adotherfees;
+        delete from en_adsubject;
+        delete from en_atfees;
+        delete from en_athead;
+        delete from en_atstudents;
+        delete from en_bldg;
+        delete from en_cchead;
+        delete from en_ccsubject;
+        delete from en_course;
+        delete from en_credentials;
+        delete from en_dept;
+        delete from en_fees;
+        delete from en_gegrades;
+        delete from en_gehead;
+        delete from en_glcredentials;
+        delete from en_gldetail;
+        delete from en_glfees;
+        delete from en_glhead;
+        delete from en_glotherfees;
+        delete from en_glsubject;
+        delete from en_glsummary;
+        delete from en_gradecomponent;
+        delete from en_gradeequivalent;
+        delete from en_gscomponent;
+        delete from en_instructor;
+        delete from en_levels;
+        delete from en_modeofpayment;
+        delete from en_period;
+        delete from en_requirements;
+        delete from en_rooms;
+        delete from en_schead;
+        delete from en_scheme;
+        delete from en_schoolyear;
+        delete from en_scsubject;
+        delete from en_section;
+        delete from en_sgshead;
+        delete from en_sgssubject;
+        delete from en_sjcredentials;
+        delete from en_sjdetail;
+        delete from en_sjhead;
+        delete from en_sjotherfees;
+        delete from en_sjsubject;
+        delete from en_sjsummary;
+        delete from en_socredentials;
+        delete from en_sodetail;
+        delete from en_sohead;
+        delete from en_sootherfees;
+        delete from en_sosubject;
+        delete from en_sosummary;
+        delete from en_studentcredentials;
+        delete from en_studentinfo;
+        delete from en_subject;
+        delete from en_subjectcurriculum;
+        delete from en_subjectequivalent;
+        delete from en_term;
+        delete from execution_log;
+
+        delete from fgi_colors;
+        delete from fgi_cylinder;
+        delete from fg_colors;
+        delete from fg_cylinder;
+        truncate floor;
+        delete from forex_masterfile;
+        delete from frontend_ebrands;
+        delete from frontend_endedsale;
+        delete from fsitedetails;
+
+        delete from generalitem;
+        delete from gldetail;
+        delete from glhead;
+        delete from glstock;
+
+        delete from hboxinginfo;
+        delete from hclearance;
+        delete from hcntnuminfo;
+        delete from hcnhead;
+        delete from hcnstock;
+        delete from hkrhead;
+        truncate hmsrooms;
+        truncate hmscharges;
+        truncate hmspackage;
+        truncate hmsrates;
+        truncate hmsratesetup;
+        truncate hms_log;
+        truncate holiday;
+        delete from hplhead;
+        update hplstock set qa=0;
+        delete from hplstock;
+        delete from hpohead;
+        delete from hpostock;
+        delete from hpchead;
+        delete from hpcstock;
+        delete from hreplacestock;
+
+        delete from hpostdatedchecks;
+        delete from hprhead;
+        delete from hprstock;
+        delete from hpschemehead;
+        delete from hpschemestock;
+        delete from hqahead;
+        delete from hqastock;
+        delete from hqshead;
+        delete from hqthead;
+        update hqtstock set qa=0;
+        update hqsstock set qa=0;
+        update hqsstock set sjqa=0;
+        delete from hqsstock;
+        delete from hqtstock;
+        delete from hsrstock;
+        delete from hsqhead;
+        delete from hsrhead;
+        delete from hsshead;
+        delete from hrppallet;
+        delete from hsahead;
+        delete from hsbhead;
+        delete from hschead;
+        delete from hsastock;
+        delete from hsbstock;
+        delete from hscstock;
+        delete from hsghead;
+        delete from hsgstock;
+
+        delete from hsohead;
+        delete from hsostock;
+        delete from hspchead;
+        delete from hspcstock;
+        delete from hstockinfo;
+        delete from hstockinfotrans;
+        delete from hwahead;
+        delete from hwastock;
+
+        delete from htrans_asset;
+        delete from htrhead;
+        delete from htrstock;
+        delete from hturnoveritemdetail;
+        delete from hturnoveritemhead;
+
+        delete from incidentdtail;
+        delete from incidenthead;
+        delete from iplog;
+        delete from item;
+        delete from itemamthistory;
+        delete from itemdlock;
+        delete from itemlevel;
+        delete from item_class;
+        delete from item_gallery;
+        delete from itemcmodels;
+        truncate itemcategory;
+        truncate itemsubcategory;
+
+        delete from item_log;
+        delete from itimages;
+
+        delete from jobtdesc;
+        delete from jobthead;
+        delete from jobtskills;
+
+        delete from kldetail;
+        delete from klhead;
+        delete from krhead;
+
+        delete from ladetail;
+        delete from lahead;
+        delete from lastock;
+        delete from location;
+
+        delete from mrshead;
+        delete from masterfile_log;
+        delete from model_masterfile;
+
+        delete from odr_table_log;
+
+        delete from paccount;
+        delete from pallet;
+        delete from part_masterfile;
+        delete from partrequest;
+        truncate paygroup;
+
+        delete from phictab;
+        delete from plhead;
+        delete from plstock;
+        delete from pohead;
+        update postock set qa=0;
+        delete from postock;
+
+        delete from preemp;
+        delete from prhead;
+
+        delete from projectmasterfile;
+        delete from prstock;
+        delete from psbatch;
+        delete from pschemehead;
+        delete from pschemestock;
+        delete from payment;
+        delete from pchead;
+        delete from pcstock;
+
+        delete from qadetail;
+        delete from qahead;
+        delete from qastock;
+
+        delete from qshead;
+        delete from qthead;
+
+        delete from quohead;
+        delete from quostock;
+        delete from quotehead;
+        delete from quotestock;
+
+        delete from replacestock;
+        delete from replenishstock;
+        delete from returnitemdetail;
+        delete from returnitemhead;
+        delete from reschedule;
+        delete from roomplan;
+        delete from rppallet;
+        delete from rqhead;
+        delete from rqstock;
+        update rrstatus set qa=0,bal=qty;
+        delete from rrstatus;
+        delete from rthead;
+        delete from rtrate;
+
+        delete from sahead;
+        delete from sbhead;
+        delete from schead;
+        delete from sastock;
+        delete from sbstock;
+        delete from scstock;
+        delete from scheddr;
+        delete from scheduler_anon;
+        delete from scheduler_reminder;
+        delete from schedule_logs;
+        delete from schedule_notes;
+        delete from sched_allowedcustomer;
+        delete from sched_alloweduser;
+        delete from sched_private;
+        delete from sched_projects;
+        delete from section;
+        delete from setmenu;
+        delete from setmenuchoices;
+
+        delete from series;
+        delete from sghead;
+        delete from sgstock;
+        truncate shiftdetail;
+        delete from skillrequire;
+        truncate sku;
+        delete from sohead;
+        update sostock set qa=0;
+        delete from sostock;
+        delete from spcstock;
+        delete from spchead;
+        delete from splitqty;
+        delete from splitstock;
+        delete from spstock;
+        delete from sqhead;
+        delete from srhead;
+        delete from sshead;
+        delete from ssstab;
+
+        delete from stockgrp_masterfile;
+        delete from stockinfo;
+        delete from stockinfotrans;
+        delete from table_log;
+
+        delete from taxtab;
+        truncate tblroomtype;
+        truncate timecard;
+        truncate timesheet;
+        truncate tmshifts;
+        delete from tblbnr;
+        delete from tblevnt;
+        delete from tblpricesetter;
+        delete from tp_shippingfees;
+        delete from trainingdetail;
+        delete from traininghead;
+        delete from transnum_log;
+        delete from trans_asset;
+        delete from turnoveritemdetail;
+        delete from turnoveritemhead;
+
+        truncate whrem;
+
+        delete from uchead;
+        delete from ucstock;
+        delete from uom;
+        delete from uv_principal;
+        delete from user_log;
+        truncate table user_log;
+        delete from userlog;
+        delete from useraccess_log;
+        truncate table useraccess_log;
+        delete from budget;
+        delete from fasched;
+        delete from hpqdetail;
+        delete from hqtstock;
+        delete from stages;
+        delete from hsvdetail;
+        delete from stagesmasterfile;
+        delete from annualtax;
+        delete from colltype_masterfile;
+        delete from hjostock;
+        delete from hqthead;
+        delete from subproject;
+        delete from hpqhead;
+        delete from jcstock;
+        delete from svdetail;
+        delete from billingaddr;
+        delete from hjcstock;
+        delete from hjohead;
+        delete from jchead;
+        delete from pmhead;
+        delete from blstock;
+        delete from hblstock;
+        delete from brstock;
+        delete from hbrstock;
+        delete from hcdhead;
+        delete from hcdstock;
+        delete from hjchead;
+        delete from hsvhead;
+        delete from hwcstock;
+        delete from johead;
+        delete from leavesetup;
+        delete from ratesetup;
+        delete from blhead;
+        delete from hblhead;
+        delete from brhead;
+        delete from checksetup;
+        delete from del_client_log;
+        delete from en_gshead;
+        delete from voiddetail;
+        delete from hvoiddetail;
+        delete from detailinfo;
+        delete from hdetailinfo;
+        delete from voidstock;
+        delete from hvoidstock;
+        delete from en_gssubcomponent;
+        delete from hbrhead;
+        delete from hjoboffer;
+        delete from hpersonreq;
+        delete from hwchead;
+        delete from jostock;
+        delete from leavetrans;
+        delete from standardsetup;
+        delete from svhead;
+        delete from trhead;
+        delete from trstock;
+        delete from wahead;
+        delete from wastock;
+        delete from wchead;
+        delete from wcstock;
+        delete from pricelist;
+
+        delete from cntnum;
+        truncate table cntnum;
+        delete from cntnum_picture;
+
+        delete from transnum;
+        truncate table transnum;
+        delete from transnum_picture;
+
+        truncate hrisnum;
+
+      END";
+
+		$this->coreFunctions->execqry($qry, 'procedure');
+	}
+}//end class

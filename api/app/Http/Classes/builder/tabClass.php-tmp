@@ -1,0 +1,1629 @@
+<?php
+
+namespace App\Http\Classes\builder;
+
+use App\Http\Classes\builder\gridbuttonClass;
+use App\Http\Classes\builder\gridcolumnClass;
+use App\Http\Classes\othersClass;
+
+class tabClass {
+
+	private $tabs         = [];
+	private $columns      = [];
+	private $tabbuttons   = [];
+	private $stockbuttons = [];
+	private $headgridbtns = [];
+	private $othersClass;
+	private $gridcolumnClass;
+	private $gridbuttonClass;
+
+	public function __construct() {
+		$this->othersClass     = new othersClass;
+		$this->gridcolumnClass = new gridcolumnClass;
+		$this->gridbuttonClass = new gridbuttonClass;
+
+		//setup of tabs
+		$this->tabs = array(
+			'multigrid' => array(
+				'label'    => 'Test',
+				'name'     => 'Test',
+				'obj'      => 'multigrid',
+				'columns'  => ''
+			),
+			'multigrid2' => array(
+				'label'     => 'Test',
+				'name'      => 'Test',
+				'obj'       => 'multigrid',
+				'columns'   => ''
+			),
+			'inventory'       => array(
+				'label'          => 'Inventory',
+				'name'           => 'inventory',
+				'obj'            => 'stockentrygrid',
+				'columns'        => '',
+				'totalfield'     => 'ext',
+				'descriptionrow' => ['itemname', 'barcode', 'Itemname'],
+				'showtotal'      => true
+			),
+			'adddocument' => array(
+				'label'      => 'Attachments',
+				'name'       => 'documents',
+				'icon'       => 'batch_prediction',
+				'obj'        => 'event',
+				'class'      => 'btnadddocument',
+				'visible'    => true
+			),
+			'otherfees'       => array(
+				'label'          => 'Other Fees',
+				'name'           => 'otherfees',
+				'obj'            => 'stockentrygrid',
+				'columns'        => '',
+				'descriptionrow' => ['acnoname', 'acno', 'Account Name'],
+				'showtotal'      => true
+			),
+			'credentials'     => array(
+				'label'          => 'Credentials',
+				'name'           => 'credentials',
+				'obj'            => 'stockentrygrid',
+				'columns'        => '',
+				'descriptionrow' => ['acnoname', 'acno', 'Account Name'],
+				'showtotal'      => true
+			),
+			'accounting'      => array(
+				'label'          => 'Accounting',
+				'name'           => 'accounting',
+				'obj'            => 'acctgentrygrid',
+				'columns'        => '',
+				'descriptionrow' => ['acnoname', 'acno', 'Account Name']
+			),
+			'customformacctg' => array(
+				'label'          => 'customformacctg',
+				'name'           => 'customformacctg',
+				'columns'        => '',
+				'totalfield'     => ['db', 'cr', 'bal'],
+				'obj'            => 'sbc_showgrid'
+			),
+			'customformlisting' => array(
+				'label'            => 'customformlisting',
+				'name'             => 'customformlisting',
+				'columns'          => '',
+				'obj'              => 'sbc_showgrid'
+			),
+			'voidgrid' => array(
+				'label'   => 'Inventory',
+				'name'    => 'inventory',
+				'obj'     => 'sbc_checkboxgrid',
+				'columns' => ''
+			),
+			'viewrefgrid' => array(
+				'label'      => 'Reference',
+				'name'       => 'inventory',
+				'obj'        => 'sbc_showgrid',
+				'columns'    => ''
+			),
+			'tableentry' => array(
+				'label'     => 'Reference',
+				'name'      => 'tableentry',
+				'obj'       => 'tableentry',
+				'columns'   => ''
+			),
+			'tableentry2' => array(
+				'label'      => 'Reference',
+				'name'       => 'tableentry',
+				'obj'        => 'tableentry',
+				'columns'    => ''
+			),
+			'singleinput' => array(
+				'label'      => 'Reference',
+				'name'       => 'singleinput',
+				'obj'        => 'singleinput'
+			),
+			'multiinput1' => array(
+				'label'      => 'Reference',
+				'name'       => 'multiinput',
+				'obj'        => 'multiinput'
+			),
+			'multiinput2' => array(
+				'label'      => 'Reference',
+				'name'       => 'multiinput',
+				'obj'        => 'multiinput'
+			),
+			'multiinput3' => array(
+				'label'      => 'Reference',
+				'name'       => 'multiinput',
+				'obj'        => 'multiinput'
+			),
+			'multiinput4' => array(
+				'label'      => 'Reference',
+				'name'       => 'multiinput',
+				'obj'        => 'multiinput'
+			),
+			'multiinput5' => array(
+				'label'      => 'Reference',
+				'name'       => 'multiinput',
+				'obj'        => 'multiinput'
+			),
+			'qcardcss' => array(
+				'label'   => 'Reference',
+				'name'    => 'qcardcss',
+				'obj'     => 'qcardcss'
+			),
+			'editgrid'        => array(
+				'label'          => 'Reference',
+				'name'           => 'editgrid',
+				'obj'            => 'editgrid',
+				'columns'        => '',
+				'descriptionrow' => ['clientname', 'client']
+			),
+			'jobdesctab' => array(
+				'label'     => 'Reference',
+				'name'      => 'tableentry',
+				'obj'       => 'tableentry',
+				'columns'   => ''
+			),
+			'skilldesctab' => array(
+				'label'       => 'Reference',
+				'name'        => 'tableentry',
+				'obj'         => 'tableentry',
+				'columns'     => ''
+			),
+			'entrygrid' => array(
+				'label'    => 'Schedule List',
+				'name'     => 'entrygrid',
+				'obj'      => 'entrygrid',
+				'columns'  => ''
+			),
+			'calendar' => array(
+				'label'   => 'Calendar',
+				'name'    => 'calendar',
+				'obj'     => 'calendar'
+			),
+			'calendar2' => array(
+				'label'    => 'Calendar',
+				'name'     => 'calendar',
+				'obj'      => 'calendar'
+			),
+			'scurriculum' => array(
+				'label'      => 'CURRICULUM',
+				'name'       => 'tableentry',
+				'obj'        => 'tableentry',
+				'columns'    => ''
+			),
+			'archive'  => array(
+				'label'   => 'ARCHIVE',
+				'name'    => 'tableentry',
+				'obj'     => 'tableentry',
+				'columns' => ''
+			),
+			'reference'       => array(
+				'label'          => 'Reference',
+				'name'           => 'inventory',
+				'obj'            => 'stockentrygrid',
+				'columns'        => '',
+				'totalfield'     => '',
+				'descriptionrow' => [],
+				'showtotal'      => false
+			),
+			'viewpcv'  => array(
+				'label'   => 'PCV List',
+				'name'    => 'tableentry',
+				'obj'     => 'tableentry',
+				'columns' => ''
+			),
+			'incomingpo' => array(
+				'label'     => 'INCOMING PO',
+				'name'      => 'tableentry',
+				'obj'       => 'tableentry',
+				'columns'   => ''
+			),
+			'viewprojref' => array(
+				'label'      => 'Reference',
+				'name'       => 'tableentry',
+				'obj'        => 'tableentry',
+				'columns'    => ''
+			),
+		);
+
+		// setup of tab buttons
+		$this->tabbuttons = array(
+			'pendingpr'    => array(
+				'label'       => 'PR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingpr',
+				'lookupclass' => 'pendingprsummary',
+				'action'      => 'pendingprsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingcd'    => array(
+				'label'       => 'CANVASS',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingcd',
+				'lookupclass' => 'pendingcdsummary',
+				'action'      => 'pendingcdsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingrr'    => array(
+				'label'       => 'RR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingrr',
+				'lookupclass' => 'pendingrrsummary',
+				'action'      => 'pendingrrsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingrrsn'  => array(
+				'label'       => 'Pending RR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'pendingrrsn',
+				'lookupclass' => 'pendingrrsnsummary',
+				'action'      => 'pendingrrsnsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingrp'    => array(
+				'label'       => 'Packing List RR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingrp',
+				'lookupclass' => 'pendingrpsummary',
+				'action'      => 'pendingrpsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingpo'    => array(
+				'label'       => 'PO',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingpo',
+				'lookupclass' => 'pendingposummary',
+				'action'      => 'pendingposummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'criticalstocks' => array(
+				'label'         => 'Critical Stocks',
+				'icon'          => 'batch_prediction',
+				'class'         => 'btncriticalstocks',
+				'lookupclass'   => 'criticalstocks',
+				'action'        => 'criticalstocks',
+				'access'        => 'additem',
+				'visible'       => true
+			),
+			'pendingmr'    => array(
+				'label'       => 'MR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingmr',
+				'lookupclass' => 'pendingmrsummary',
+				'action'      => 'pendingmrsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingwa'    => array(
+				'label'       => 'Warrany Request',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingwa',
+				'lookupclass' => 'pendingwasummary',
+				'action'      => 'pendingwasummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingso'    => array(
+				'label'       => 'SO',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingso',
+				'lookupclass' => 'pendingsosummary',
+				'action'      => 'pendingsosummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingsj'    => array(
+				'label'       => 'SJ',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingsj',
+				'lookupclass' => 'pendingsjsummary',
+				'action'      => 'pendingsjsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingtr'    => array(
+				'label'       => 'TR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingtr',
+				'lookupclass' => 'pendingtrsummary',
+				'action'      => 'pendingtrsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingpl'    => array(
+				'label'       => 'PL',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingpl',
+				'lookupclass' => 'pendingplsummary',
+				'action'      => 'pendingplsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingsplitqty' => array(
+				'label'          => 'SPLIT QTY - WHMAN',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnpendingsplitqty',
+				'lookupclass'    => 'pendingsplitqtydetail',
+				'action'         => 'pendingsplitqtydetail',
+				'access'         => 'additem',
+				'visible'        => true
+			),
+			'pendingsplitqtypicker' => array(
+				'label'                => 'PICKER ADJ.',
+				'icon'                 => 'batch_prediction',
+				'class'                => 'btnpendingsplitqtypicker',
+				'lookupclass'          => 'pendingsplitqtypicker',
+				'action'               => 'pendingsplitqtypicker',
+				'access'               => 'additem',
+				'visible'              => true,
+				'addedparams'          => ['whid']
+			),
+			'poserial'     => array(
+				'label'       => 'POSerial',
+				'icon'        => 'add_box',
+				'class'       => 'btnadditem',
+				'lookupclass' => 'poserial',
+				'action'      => 'poserial',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingqt'    => array(
+				'label'       => 'Quotation',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingqt',
+				'lookupclass' => 'pendingqtsummary',
+				'action'      => 'pendingqtsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'createversion' => array(
+				'label'        => 'C.Version',
+				'icon'         => 'add_box',
+				'class'        => 'btncreateversion',
+				'lookupclass'  => 'createversion',
+				'action'       => 'createversion',
+				'access'       => 'additem',
+				'visible'      => true
+			),
+			'viewversion'  => array(
+				'label'       => 'ViewVersion',
+				'icon'        => 'add_box',
+				'class'       => 'btnviewversion',
+				'lookupclass' => 'entryviewrevision',
+				'action'      => 'tableentry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'additem'      => array(
+				'label'       => 'Add Item',
+				'icon'        => 'add_box',
+				'class'       => 'btnadditem',
+				'lookupclass' => 'additem',
+				'action'      => 'additem',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addrow'       => array(
+				'label'       => 'New Row',
+				'icon'        => 'add_box',
+				'class'       => 'btnaddrow',
+				'lookupclass' => 'addrow',
+				'action'      => 'addrow',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'saveallentry' => array(
+				'label'       => 'Save all',
+				'icon'        => 'save',
+				'class'       => 'btnsaveallentry',
+				'lookupclass' => 'loaddata',
+				'action'      => 'saveallentry',
+				'access'      => 'saveallentry',
+				'visible'     => true
+			),
+			'print'        => array(
+				'label'       => 'Print',
+				'icon'        => 'print',
+				'class'       => 'btnprint',
+				'lookupclass' => 'print',
+				'action'      => 'print',
+				'access'      => 'print',
+				'visible'     => true
+			),
+			'additemcomponent' => array(
+				'label'           => 'Add Item',
+				'icon'            => 'add_box',
+				'class'           => 'btnadditemcomponent',
+				'lookupclass'     => 'additemcomponent',
+				'action'          => 'lookupsetup',
+				'access'          => 'additem',
+				'visible'         => true
+			),
+			'addbooks'     => array(
+				'label'       => 'Add Books',
+				'icon'        => 'add_box',
+				'class'       => 'btnadditem',
+				'lookupclass' => 'addbooks',
+				'action'      => 'addbooks',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'quickadd'     => array(
+				'label'       => 'Quick Add',
+				'icon'        => 'flash_on',
+				'class'       => 'btnquickadd',
+				'lookupclass' => 'quickadditem',
+				'action'      => 'quickadditem',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'scanpallet'   => array(
+				'label'       => 'Scan Pallet',
+				'icon'        => 'flash_on',
+				'class'       => 'btnscanpallet',
+				'lookupclass' => 'scanpallet',
+				'action'      => 'scanpallet',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'scanbarcode'  => array(
+				'label'       => 'Scan Barcode',
+				'icon'        => 'flash_on',
+				'class'       => 'btnscanbarcode',
+				'lookupclass' => 'scantext',
+				'action'      => 'scanbarcode',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'scanlocationrr' => array(
+				'label'         => 'Scan',
+				'icon'          => 'flash_on',
+				'class'         => 'btnscanlocationrr',
+				'lookupclass'   => 'scantext',
+				'action'        => 'scanlocationrr',
+				'access'        => 'additem',
+				'visible'       => true
+			),
+			'scanbox'      => array(
+				'label'       => 'Scan Box / SKU',
+				'icon'        => 'flash_on',
+				'class'       => 'btnscanbox',
+				'lookupclass' => 'scantext',
+				'action'      => 'scanbox',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'scanlocation' => array(
+				'label'       => 'Scan Location',
+				'icon'        => 'flash_on',
+				'class'       => 'btnscanlocation',
+				'lookupclass' => 'scanlocation',
+				'action'      => 'scanlocation',
+				'access'      => 'edit',
+				'visible'     => true
+			),
+			'changelocation' => array(
+				'name'          => 'backlisting',
+				'label'         => 'Change Location',
+				'icon'          => 'import_export',
+				'class'         => 'btnchangelocation',
+				'lookupclass'   => 'whpickerchangeloc',
+				'action'        => 'customform',
+				'access'        => 'edit',
+				'visible'       => true,
+				'addedparams'   => ['trno', 'line', 'sjtype', 'isqty', 'drqty']
+			),
+			'splitqtypicker' => array(
+				'name'          => 'backlisting',
+				'label'         => 'Split Qty',
+				'icon'          => 'call_split',
+				'class'         => 'btnsplitqtypicker',
+				'lookupclass'   => 'whpickersplitqty',
+				'action'        => 'customform',
+				'access'        => 'edit',
+				'visible'       => true,
+				'addedparams'   => ['trno', 'line', 'sjtype']
+			),
+			'saveitem'     => array(
+				'label'       => 'Save Item',
+				'icon'        => 'save',
+				'class'       => 'btnsaveitem',
+				'lookupclass' => 'edititem',
+				'action'      => 'saveitem',
+				'access'      => 'edititem',
+				'visible'     => true
+			),
+			'savesched'    => array(
+				'label'       => 'Save Sched',
+				'icon'        => 'save',
+				'class'       => 'btnsaveitem',
+				'lookupclass' => 'edititem',
+				'action'      => 'saveitem',
+				'access'      => 'edititem',
+				'visible'     => true
+			),
+			'deleteallitem' => array(
+				'label'        => 'Delete Item',
+				'icon'         => 'delete',
+				'class'        => 'btndeleteallitem',
+				'lookupclass'  => 'deleteallitem',
+				'action'       => 'deleteallitem',
+				'access'       => 'deleteitem',
+				'visible'      => true
+			),
+			'deleteallsched' => array(
+				'label'         => 'Delete Sched',
+				'icon'          => 'delete',
+				'class'         => 'btndeleteallitem',
+				'lookupclass'   => 'deleteallitem',
+				'action'        => 'deleteallitem',
+				'access'        => 'deleteitem',
+				'visible'       => true
+			),
+			'saveall'       => array(
+				'label'        => 'SAVE CHANGES',
+				'icon'         => 'save',
+				'class'        => 'btntableentry btnsaveall',
+				'lookupclass'  => 'loaddata',
+				'action'       => 'getdata',
+				'access'       => 'post',
+				'visible'      => true,
+				'confirm'      => true,
+				'confirmlabel' => 'Save Changes?'
+			),
+			'approveall'   => array(
+				'label'       => 'Approve All',
+				'icon'        => 'check',
+				'class'       => 'btntableentry btnapproveall',
+				'lookupclass' => 'loaddata',
+				'action'      => 'approveall',
+				'access'      => 'post',
+				'visible'     => true
+			),
+			'generatepr'   => array(
+				'label'       => 'Generate PR',
+				'icon'        => 'check',
+				'class'       => 'btntableentry btngeneratepr',
+				'lookupclass' => 'loaddata',
+				'action'      => 'approveall',
+				'access'      => 'post',
+				'visible'     => true
+			),
+			'unpaid'       => array(
+				'label'       => 'UNPAID',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnheaddetail btnunpaid',
+				'lookupclass' => 'unpaid',
+				'action'      => 'unpaid',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'unpaidchild'  => array(
+				'label'       => 'UNPAID CHILD ACCNT.',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnheaddetail btnunpaidchild',
+				'lookupclass' => 'unpaidchild',
+				'action'      => 'unpaid',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'checks'       => array(
+				'label'       => 'RECEIVED CHECKS',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btncheck',
+				'lookupclass' => 'checks',
+				'action'      => 'checks',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addrecord'    => array(
+				'label'       => 'Add',
+				'icon'        => 'add_box',
+				'class'       => 'btntableentry btnaddrecord',
+				'lookupclass' => 'add',
+				'action'      => 'add',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addserial'    => array(
+				'label'       => 'Add Serial',
+				'icon'        => 'add_box',
+				'class'       => 'btntableentry btnaddrecord',
+				'lookupclass' => 'add',
+				'action'      => 'addserial',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'generatestudcurriculum' => array(
+				'label'                 => 'GENERATE CURRICULUM',
+				'icon'                  => 'batch_prediction',
+				'class'                 => 'btnheadstock',
+				'lookupclass'           => 'loaddata',
+				'action'                => 'generatecurriculum',
+				'access'                => 'additem',
+				'visible'               => true
+			),
+			'archivestudcurriculum' => array(
+				'label'                => 'ARCHIVE CURRICULUM',
+				'icon'                 => 'folder_special',
+				'class'                => 'btnheadstock',
+				'lookupclass'          => 'loaddata',
+				'action'               => 'archivecurriculum',
+				'access'               => 'additem',
+				'visible'              => true
+			),
+			'viewar'       => array(
+				'label'       => 'A/R',
+				'icon'        => 'insert_chart_outlined',
+				'class'       => 'btnviewar',
+				'lookupclass' => 'viewar',
+				'action'      => 'customform',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewap'       => array(
+				'label'       => 'A/P',
+				'icon'        => 'folder_special',
+				'class'       => 'btnviewap',
+				'lookupclass' => 'viewap',
+				'action'      => 'customform',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewpdc'      => array(
+				'label'       => 'PDC',
+				'icon'        => 'insert_invitation',
+				'class'       => 'btnviewpdc',
+				'lookupclass' => 'viewpdc',
+				'action'      => 'customform',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewrc'       => array(
+				'label'       => 'RC',
+				'icon'        => 'money_off',
+				'class'       => 'btnviewrc',
+				'lookupclass' => 'viewrc',
+				'action'      => 'customform',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewinv'      => array(
+				'label'       => 'Inventory',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnviewinv',
+				'lookupclass' => 'viewcustomerinv',
+				'action'      => 'customform',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewstockcardtransactionledger' => array(
+				'label'                         => 'History',
+				'icon'                          => 'batch_prediction',
+				'class'                         => 'btnviewstockcardtransactionledger',
+				'lookupclass'                   => 'viewstockcardtransactionledger',
+				'action'                        => 'customform',
+				'access'                        => 'view',
+				'visible'                       => true
+			),
+			'viewstockcardrr' => array(
+				'label'          => 'IN-Transaction',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnviewstockcardrr',
+				'lookupclass'    => 'viewstockcardrr',
+				'action'         => 'customform',
+				'access'         => 'view',
+				'visible'        => true
+			),
+			'viewserialhistory' => array(
+				'label'            => 'Serial',
+				'icon'             => 'batch_prediction',
+				'class'            => 'btnviewserialhistory',
+				'lookupclass'      => 'viewserialhistory',
+				'action'           => 'customform',
+				'access'           => 'view',
+				'visible'          => true
+			),
+			'entrystockcarduom' => array(
+				'label'            => 'UOM',
+				'icon'             => 'batch_prediction',
+				'class'            => 'btnentrystockcarduom',
+				'lookupclass'      => 'entryuom',
+				'action'           => 'tableentry',
+				'access'           => 'view',
+				'visible'          => true
+			),
+			'entrystockcardcompatible' => array(
+				'label'                   => 'COMPATIBLE',
+				'icon'                    => 'batch_prediction',
+				'class'                   => 'btnentrystockcardcompatible',
+				'lookupclass'             => 'stockcardcompatible',
+				'action'                  => 'tableentry',
+				'access'                  => 'view',
+				'visible'                 => true
+			),
+			'pickcompatible' => array(
+				'label'         => 'ADD',
+				'icon'          => 'batch_prediction',
+				'class'         => 'btnpickcompatible',
+				'lookupclass'   => 'pickcompatible',
+				'action'        => 'lookupsetup',
+				'access'        => 'additem',
+				'visible'       => true
+			),
+			'pickitemcompatible' => array(
+				'label'             => 'ADD',
+				'icon'              => 'batch_prediction',
+				'class'             => 'btnpickitemcompatible',
+				'lookupclass'       => 'pickitemcompatible',
+				'action'            => 'lookupsetup',
+				'access'            => 'additem',
+				'visible'           => true
+			),
+			'entryitemsubcat' => array(
+				'label'          => 'ADD',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnentryitemsubcat',
+				'lookupclass'    => 'entryitemsubcat',
+				'action'         => 'lookupsetup',
+				'access'         => 'additem',
+				'visible'        => true
+			),
+			'viewstockcardwh' => array(
+				'label'          => 'WH',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnviewstockcardwh',
+				'lookupclass'    => 'viewstockcardwh',
+				'action'         => 'customform',
+				'access'         => 'view',
+				'visible'        => true
+			),
+			'viewstockcardpo' => array(
+				'label'          => 'PO',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnviewstockcardpo',
+				'lookupclass'    => 'viewstockcardpo',
+				'action'         => 'customform',
+				'access'         => 'view',
+				'visible'        => true
+			),
+			'viewstockcardso' => array(
+				'label'          => 'SO',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnviewstockcardso',
+				'lookupclass'    => 'viewstockcardso',
+				'action'         => 'customform',
+				'access'         => 'view',
+				'visible'        => true
+			),
+			'viewstockcardcomponent' => array(
+				'label'                 => 'COMPONENTS',
+				'icon'                  => 'batch_prediction',
+				'class'                 => 'btnviewstockcardcomponent',
+				'lookupclass'           => 'entrycomponent',
+				'action'                => 'tableentry',
+				'access'                => 'view',
+				'visible'               => true
+			),
+			'generateewt'  => array(
+				'label'       => 'Generate EWT',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btngenerateewt',
+				'lookupclass' => 'stockstatus',
+				'action'      => 'generateewt',
+				'access'      => 'edititem',
+				'visible'     => true
+			),
+			'viewstockcardstocklevel' => array(
+				'label'                  => 'STOCK LEVEL',
+				'icon'                   => 'batch_prediction',
+				'class'                  => 'btnviewstockcardstocklevel',
+				'lookupclass'            => 'entrystocklevel',
+				'action'                 => 'tableentry',
+				'access'                 => 'view',
+				'visible'                => true
+			),
+			'addwarehouse' => array(
+				'label'       => 'Add Warehouse',
+				'icon'        => 'add_box',
+				'class'       => 'btnaddwarehouse',
+				'lookupclass' => 'addwarehouse',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'unpaidkr'     => array(
+				'label'       => 'UNPAID',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnunpaidkr',
+				'lookupclass' => 'getkr',
+				'action'      => 'getkr',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'viewapprovetrqty' => array(
+				'label'           => 'Approve Qty',
+				'icon'            => 'batch_prediction',
+				'class'           => 'btnviewapprovetrqty',
+				'lookupclass'     => 'entryapprovetrqty',
+				'action'          => 'tableentry',
+				'access'          => 'view',
+				'visible'         => true
+			),
+			//Enrollment
+			'viewstudentcredentials' => array(
+				'label'                 => 'Credentials',
+				'icon'                  => 'batch_prediction',
+				'class'                 => 'btnviewstudentcredentials',
+				'lookupclass'           => 'entrystudentcredentials',
+				'action'                => 'enrollmententry',
+				'access'                => 'view',
+				'visible'               => true
+			),
+			'addstudentcredential' => array(
+				'label'               => 'Add',
+				'icon'                => 'add_box',
+				'class'               => 'btnaddstudentcredential',
+				'lookupclass'         => 'addstudentcredential',
+				'action'              => 'lookupsetup',
+				'access'              => 'additem',
+				'visible'             => true
+			),
+			'viewsubject'  => array(
+				'label'       => 'Subjects',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnsubject',
+				'lookupclass' => 'entrysubject',
+				'action'      => 'enrollmententry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'addsubject'   => array(
+				'label'       => 'Add',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addsubject',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'generateestud' => array(
+				'label'        => 'Generate Enrolled Students',
+				'icon'         => 'miscellaneous_services',
+				'class'        => 'btnheadstock',
+				'lookupclass'  => 'stockstatus',
+				'action'       => 'generateestud',
+				'access'       => 'additem',
+				'visible'      => true
+			),
+			'addcomponent' => array(
+				'label'       => 'Add Component',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupcomponent',
+				'action'      => 'lookupcomponent',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addcredentials' => array(
+				'label'         => 'Add Credentials',
+				'icon'          => 'add_box',
+				'class'         => 'btnheadstock',
+				'lookupclass'   => 'lookupaddcredentials',
+				'action'        => 'lookupsetup',
+				'access'        => 'additem',
+				'visible'       => true
+			),
+			'addotherfees' => array(
+				'label'       => 'Other Fees',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupaddotherfees',
+				'action'      => 'lookupsetup',
+				'action2'     => 'addas',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'addstudents'  => array(
+				'label'       => 'Select Students',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupaddstudents',
+				'action'      => 'lookupsetup',
+				'action2'     => 'addas',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'getschedule'  => array(
+				'label'       => 'Select Sched',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupsched',
+				'action'      => 'lookupsched',
+				'access'      => 'additem',
+				'visible'     => true,
+			),
+			'duplicatecc'  => array(
+				'label'       => 'Duplicate Curriculum',
+				'icon'        => 'folder_special',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupcurriculum',
+				'action'      => 'lookupcurriculum',
+				'access'      => 'additem',
+				'visible'     => true,
+				'addedparams' => ['trno']
+			),
+			'getreg'       => array(
+				'label'       => 'Select Reg',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'lookupreg',
+				'action'      => 'lookupreg',
+				'access'      => 'additem',
+				'visible'     => true,
+			),
+			'getassessment' => array(
+				'label'        => 'Assessment',
+				'icon'         => 'add_box',
+				'class'        => 'btnheadstock',
+				'lookupclass'  => 'lookupassessment',
+				'action'       => 'lookupassessment',
+				'access'       => 'additem',
+				'visible'      => true,
+			),
+
+			//ENROLLMENT
+			'generatesubject' => array(
+				'label'          => 'GENERATE SUBJECT',
+				'icon'           => 'batch_prediction',
+				'class'          => 'btnheadstock',
+				'lookupclass'    => 'stockstatus',
+				'action'         => 'generatesubject',
+				'access'         => 'additem',
+				'visible'        => true
+			),
+			'generatecurriculum' => array(
+				'label'             => 'GENERATE',
+				'icon'              => 'batch_prediction',
+				'class'             => 'btntableentry',
+				'lookupclass'       => 'lookupcurriculum',
+				'action'            => 'lookupcurriculum',
+				'access'            => 'view',
+				'visible'           => true
+			),
+			'getregstudent' => array(
+				'label'        => 'Select Student',
+				'icon'         => 'add_box',
+				'class'        => 'btnheadstock',
+				'lookupclass'  => 'lookupregstudent',
+				'action'       => 'lookupregstudent',
+				'access'       => 'additem',
+				'visible'      => true,
+			),
+
+			//HRIS
+			'viewdep'      => array(
+				'label'       => 'Dependents',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnempdependent',
+				'lookupclass' => 'entryappdependents',
+				'action'      => 'hrisentry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'vieweduc'     => array(
+				'label'       => 'Education',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnempeducation',
+				'lookupclass' => 'entryappeducation',
+				'action'      => 'hrisentry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewemployment' => array(
+				'label'         => 'Employment',
+				'icon'          => 'batch_prediction',
+				'class'         => 'btnempemployment',
+				'lookupclass'   => 'entryappemployment',
+				'action'        => 'hrisentry',
+				'access'        => 'view',
+				'visible'       => true
+			),
+			'viewrequirements' => array(
+				'label'           => 'Requirements',
+				'icon'            => 'batch_prediction',
+				'class'           => 'btnempreq',
+				'lookupclass'     => 'entryappreq',
+				'action'          => 'hrisentry',
+				'access'          => 'view',
+				'visible'         => true
+			),
+			'addemprequire' => array(
+				'label'        => 'Add',
+				'icon'         => 'add_box',
+				'class'        => 'btnheadstock',
+				'lookupclass'  => 'addemprequire',
+				'action'       => 'lookupsetup',
+				'access'       => 'additem',
+				'visible'      => true
+			),
+			'viewemptest'  => array(
+				'label'       => 'Pre-employment Test',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnemptest',
+				'lookupclass' => 'entryapptest',
+				'action'      => 'hrisentry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'addemppretest' => array(
+				'label'        => 'Add',
+				'icon'         => 'add_box',
+				'class'        => 'btnheadstock',
+				'lookupclass'  => 'addemppretest',
+				'action'       => 'lookupsetup',
+				'access'       => 'additem',
+				'visible'      => true
+			),
+			'pendingturnoveritems' => array(
+				'label'               => 'Turn Over of Items',
+				'icon'                => 'batch_prediction',
+				'class'               => 'btnheadstock',
+				'lookupclass'         => 'pendingturnoveritems',
+				'action'              => 'lookupsetup',
+				'access'              => 'additem',
+				'visible'             => true
+			),
+			'jobskillreq'  => array(
+				'label'       => 'Skill Requirements',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'entryskillreq',
+				'action'      => 'hrisentry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'addskillreq'  => array(
+				'label'       => 'Add',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addskillreq',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addempgrid'   => array(
+				'label'       => 'Add',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addempgrid',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'jobdesc'      => array(
+				'label'       => 'JOB DESCRIPTION',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'entryjobdesc',
+				'action'      => 'hrisentry',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'viewincidentmemo' => array(
+				'label'           => 'Incident Memo',
+				'icon'            => 'batch_prediction',
+				'class'           => 'btnviewincidentmemo',
+				'lookupclass'     => 'viewincidentmemo',
+				'action'          => 'customform',
+				'access'          => 'view',
+				'visible'         => true
+			),
+			'viewnoticetoexplain' => array(
+				'label'              => 'Notice to Explain',
+				'icon'               => 'batch_prediction',
+				'class'              => 'btnviewnoticetoexplain',
+				'lookupclass'        => 'viewnoticetoexplain',
+				'action'             => 'customform',
+				'access'             => 'view',
+				'visible'            => true
+			),
+			'viewnoticedisciplinary' => array(
+				'label'                 => 'Notice of Disciplinary',
+				'icon'                  => 'batch_prediction',
+				'class'                 => 'btnviewnoticedisciplinary',
+				'lookupclass'           => 'viewnoticedisciplinary',
+				'action'                => 'customform',
+				'access'                => 'view',
+				'visible'               => true
+			),
+			'viewempstatchangehistory' => array(
+				'label'                   => 'Details',
+				'icon'                    => 'batch_prediction',
+				'class'                   => 'btnviewempstatchangehistory',
+				'lookupclass'             => 'viewempstatchangehistory',
+				'action'                  => 'customform',
+				'access'                  => 'view',
+				'visible'                 => true
+			),
+
+			'adddocument'  => array(
+				'label'       => 'Documents',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnadddocument',
+				'lookupclass' => 'entrycntnumpicture',
+				'action'      => 'documententry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'viewratesetupdetail' => array(
+				'label'              => 'Details',
+				'icon'               => 'batch_prediction',
+				'class'              => 'btnviewratesetupdetail',
+				'lookupclass'        => 'viewratesetupdetail',
+				'action'             => 'customform',
+				'access'             => 'view',
+				'visible'            => true
+			),
+			'entrypayrollsetup' => array(
+				'label'            => 'ENTRY',
+				'icon'             => 'batch_prediction',
+				'class'            => 'btnEntrypayrollsetup',
+				'lookupclass'      => 'entrypayrollsetup',
+				'action'           => 'hrisentry',
+				'access'           => 'additem',
+				'visible'          => true
+			),
+			'otherfees'    => array(
+				'label'       => 'Other Fees',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnadddocument',
+				'lookupclass' => 'entryotherfees',
+				'action'      => 'enrollmententry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'credentials'  => array(
+				'label'       => 'Credentials',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnadddocument',
+				'lookupclass' => 'entrycredentials',
+				'action'      => 'enrollmententry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'assummary'    => array(
+				'label'       => 'Summary',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnadddocument',
+				'lookupclass' => 'entryassummary',
+				'action'      => 'enrollmententry',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'postinout'    => array(
+				'label'       => 'POST ACTUAL IN/OUT',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnadddocument',
+				'lookupclass' => 'loaddata',
+				'action'      => 'postinout',
+				'access'      => 'postinout',
+				'visible'     => true
+			),
+			//hms
+			'addratecode'  => array(
+				'label'       => 'Add',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addratecode',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'viewroomrates' => array(
+				'label'        => 'RATES',
+				'icon'         => 'batch_prediction',
+				'class'        => 'btnviewroomrates',
+				'lookupclass'  => 'entryrates',
+				'action'       => 'hmsentry',
+				'access'       => 'additem',
+				'visible'      => true
+			),
+			'addroom'      => array(
+				'label'       => 'ROOM LIST',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnaddroom',
+				'lookupclass' => 'entryroomlist',
+				'action'      => 'hmsentry',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			//end of hms
+
+			'viewpayrollsetupprocess' => array(
+				'label'                  => 'VIEW PROCESS',
+				'icon'                   => 'batch_prediction',
+				'class'                  => 'btnviewpayrollsetupprocess',
+				'lookupclass'            => 'viewpayrollsetupprocess',
+				'action'                 => 'viewpayrollsetupprocess',
+				'access'                 => 'view',
+				'visible'                => true,
+				'addedparams'            => ['empid', 'batchid']
+			),
+			'createschedule' => array(
+				'label'         => 'creates chedule',
+				'icon'          => 'batch_prediction',
+				'class'         => 'btncreateschedule',
+				'lookupclass'   => 'stockstatus',
+				'action'        => 'createschedule',
+				'access'        => 'view',
+				'visible'       => true
+			),
+
+			'defaults'     => array(
+				'label'       => 'DEFAULT',
+				'icon'        => 'add_box',
+				'class'       => 'btntableentry btnadddefaults',
+				'lookupclass' => 'loaddata',
+				'action'      => 'adddefaults',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addstages'    => array(
+				'label'       => 'Add Stages',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addstages',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingboq'   => array(
+				'label'       => 'BOQ',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingboq',
+				'lookupclass' => 'pendingboqsummary',
+				'action'      => 'pendingboqsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'entrylocation' => array(
+				'label'        => 'Location',
+				'icon'         => 'batch_prediction',
+				'class'        => 'btnentrylocation',
+				'lookupclass'  => 'entrylocation',
+				'action'       => 'tableentry',
+				'access'       => 'view',
+				'visible'      => true
+			),
+			'pendingjo'    => array(
+				'label'       => 'JO',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingjo',
+				'lookupclass' => 'pendingjosummary',
+				'action'      => 'pendingjosummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'compatible'   => array(
+				'label'       => 'COMPATIBLE',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnviewpicompatible',
+				'lookupclass' => 'lookupcompatible',
+				'action'      => 'lookupsetup',
+				'access'      => 'view',
+				'visible'     => true
+			),
+
+			'incoming'     => array(
+				'label'       => 'INCOMING',
+				'icon'        => 'archive',
+				'class'       => 'btnviewpiincoming',
+				'lookupclass' => 'lookupincoming',
+				'action'      => 'lookupsetup',
+				'access'      => 'view',
+				'visible'     => true
+			),
+
+			'openbox'      => array(
+				'label'       => 'OpenBox',
+				'icon'        => 'add_box',
+				'class'       => 'btnopenbox',
+				'lookupclass' => 'openbox',
+				'action'      => 'openbox',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'perpallet'    => array(
+				'label'       => 'Per Pallet',
+				'icon'        => 'archive',
+				'class'       => 'btnperpallet',
+				'lookupclass' => 'perpallet',
+				'action'      => 'scanpalletloc',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'dropoff'       => array(
+				'label'        => 'Drop-Off',
+				'icon'         => 'save_alt',
+				'class'        => 'btndropoff',
+				'lookupclass'  => 'dropoff',
+				'action'       => 'dropoff',
+				'access'       => 'view',
+				'visible'      => true,
+				'addedparams'  => ['palletid'],
+				'confirm'      => true,
+				'confirmlabel' => 'Drop-off selected pallet/item?'
+			),
+			'removepallet' => array(
+				'label'       => 'SKU to location',
+				'icon'        => 'archive',
+				'class'       => 'btndremovepallet',
+				'lookupclass' => 'removepallet',
+				'action'      => 'stockstatusposted',
+				'access'      => 'view',
+				'visible'     => true,
+				'addedparams' => ['palletid']
+			),
+			'pendingpcr'   => array(
+				'label'       => 'PCR',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingpcr',
+				'lookupclass' => 'pendingpcr',
+				'action'      => 'pendingpcr',
+				'access'      => 'additem',
+				'visible'     => true,
+				'addedparams' => ['contra']
+			),
+			'pendingpcv'   => array(
+				'label'       => 'Tag PCV',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpcv',
+				'lookupclass' => 'pendingpcv',
+				'action'      => 'pendingpcv',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'addpcv'       => array(
+				'label'       => 'Add PCV',
+				'icon'        => 'add_box',
+				'class'       => 'btnheadstock',
+				'lookupclass' => 'addpcv',
+				'action'      => 'lookupsetup',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'whlog'        => array(
+				'label'       => 'Logs',
+				'icon'        => 'description',
+				'class'       => 'btnwhlogs',
+				'lookupclass' => 'whlog',
+				'action'      => 'lookupsetup',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'uploadexcel'  => array(
+				'label'       => 'Upload Excel',
+				'icon'        => 'description',
+				'class'       => 'btnuploadexcel',
+				'lookupclass' => 'uploadexcel',
+				'action'      => 'uploadexcel',
+				'access'      => 'view',
+				'visible'     => true
+			),
+			'exportcsv'    => array(
+				'label'       => 'Export CSV',
+				'icon'        => 'description',
+				'class'       => 'btnexportcsv',
+				'lookupclass' => 'exportcsv',
+				'action'      => 'exportcsv',
+				'access'      => 'load',
+				'visible'     => true
+			),
+			'readfile'     => array(
+				'label'       => 'Read File',
+				'icon'        => 'description',
+				'class'       => 'btnreadfile',
+				'lookupclass' => 'readfile',
+				'action'      => 'readfile',
+				'access'      => 'load',
+				'visible'     => true
+			),
+			'viewboxdetail' => array(
+				'label'        => 'BOX DETAILS',
+				'icon'         => 'batch_prediction',
+				'class'        => 'btnviewboxdetail',
+				'lookupclass'  => 'viewboxdetail',
+				'action'       => 'customform',
+				'access'       => 'view',
+				'visible'      => true
+			),
+			'pendingjc'    => array(
+				'label'       => 'JC',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingjc',
+				'lookupclass' => 'pendingjcsummary',
+				'action'      => 'pendingjcsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'pendingcn'    => array(
+				'label'       => 'CN',
+				'icon'        => 'batch_prediction',
+				'class'       => 'btnpendingcn',
+				'lookupclass' => 'pendingcnsummary',
+				'action'      => 'pendingcnsummary',
+				'access'      => 'additem',
+				'visible'     => true
+			),
+			'masterfilelogs' => [
+				'label'         => 'Logs',
+				'icon'          => 'description',
+				'class'         => 'csmasterfilelogs',
+				'lookupclass'   => 'lookuplogs',
+				'action'        => 'lookupsetup',
+				'access'        => 'view',
+				'visible'       => true
+			],
+
+		);
+	}// end function
+
+	public function delcol($obj, $gridname, $gridindex = 0) {
+		$columns = [];
+		foreach ($obj[$gridindex][$gridname]['columns'] as $key => $value) {
+			if ($value['type'] != 'coldel') {
+				array_push($columns, $value);
+			}
+		}
+		return $columns;
+	}//end function
+
+	public function createtab($ptab, $pstockbuttons) {
+		$tab                = [];
+		$ltabs              = [];
+		$stockbtn           = [];
+		$lheadgridbtns      = [];
+		$this->columns      = $this->gridcolumnClass->getcolumn();
+		$this->stockbuttons = $this->gridbuttonClass->getgridbuttons();
+		$this->headgridbtns = $this->gridbuttonClass->getheadgridbuttons();
+		foreach ($ptab as $key => $value) {
+			$tab = array_only($this->tabs, [$key]);
+			switch ($tab[$key]['obj']) {
+				case 'acctgentrygrid':
+				case 'stockentrygrid':
+				case 'editgrid':
+				case 'entrygrid':
+					$tab[$key]['columns'] = array_only($this->columns, $ptab[$key]['gridcolumns']);
+					if (isset($ptab[$key]['stockbuttons'])) {
+						if (is_array($ptab[$key]['stockbuttons']) && !empty($ptab[$key]['stockbuttons'])) {
+							$stockbtn                               = array_only($this->stockbuttons, $ptab[$key]['stockbuttons']);
+							$tab[$key]['columns']['action']['btns'] = $stockbtn;
+						}
+					} else {
+						if (is_array($pstockbuttons) && !empty($pstockbuttons)) {
+							$stockbtn                               = array_only($this->stockbuttons, $pstockbuttons);
+							$tab[$key]['columns']['action']['btns'] = $stockbtn;
+						}
+					}
+					$sortcolumn = [];
+					if (isset($ptab[$key]['sortcolumns'])) {
+						$sortcolumn = $ptab[$key]['sortcolumns'];
+					} else {
+						$sortcolumn = $ptab[$key]['gridcolumns'];
+					}
+					$tab[$key]['columns'] = $this->othersClass->sortarray($tab[$key]['columns'], $sortcolumn);
+					list($k, $v)          = array_divide($tab[$key]['columns']);
+					$tab[$key]['columns'] = $v;
+					if (isset($ptab[$key]['gridcolumns'])) {
+						$tab[$key]['visiblecol'] = $ptab[$key]['gridcolumns'];
+					}
+					if (isset($ptab[$key]['computefield'])) {
+						$tab[$key]['computefield'] = $ptab[$key]['computefield'];
+					}
+					if (isset($ptab[$key]['headgridbtns'])) {
+						$lheadgridbtns             = array_only($this->headgridbtns, $ptab[$key]['headgridbtns']);
+						$tab[$key]['headgridbtns'] = $lheadgridbtns;
+					}
+					break;
+				case 'sbc_showgrid':
+				case 'sbc_checkboxgrid':
+					$tab[$key]['columns'] = array_only($this->columns, $ptab[$key]['gridcolumns']);
+					if (isset($ptab[$key]['stockbuttons'])) {
+						if (is_array($ptab[$key]['stockbuttons']) && !empty($ptab[$key]['stockbuttons'])) {
+							$stockbtn                               = array_only($this->stockbuttons, $ptab[$key]['stockbuttons']);
+							$tab[$key]['columns']['action']['btns'] = $stockbtn;
+						}
+					} else {
+						if (is_array($pstockbuttons) && !empty($pstockbuttons)) {
+							$stockbtn                               = array_only($this->stockbuttons, $pstockbuttons);
+							$tab[$key]['columns']['action']['btns'] = $stockbtn;
+						}
+					}
+					$tab[$key]['columns'] = $this->othersClass->sortarray($tab[$key]['columns'], $ptab[$key]['gridcolumns']);
+					list($k, $v)          = array_divide($tab[$key]['columns']);
+					$tab[$key]['columns'] = $v;
+					if (isset($ptab[$key]['gridcolumns'])) {
+						$tab[$key]['visiblecol'] = $ptab[$key]['gridcolumns'];
+					}
+					break;
+				case 'event':
+					$tab[$key]['event'] = $ptab[$key]['event'];
+					break;
+				case 'multigrid':
+				case 'tableentry':
+					if (isset($ptab[$key]['action'])) {
+						$tab[$key]['action'] = $ptab[$key]['action'];
+					}
+					if (isset($ptab[$key]['name'])) {
+						$tab[$key]['name'] = $ptab[$key]['name'];
+					}
+					if (isset($ptab[$key]['access'])) {
+						$tab[$key]['access'] = $ptab[$key]['access'];
+					}
+					$tab[$key]['lookupclass'] = $ptab[$key]['lookupclass'];
+					$tab[$key]['label']       = $ptab[$key]['label'];
+					break;
+				case 'qcardcss':
+					if (isset($ptab[$key]['btn'])) {
+						$tab[$key]['btn'] = $ptab[$key]['btn'];
+					}
+					if (isset($ptab[$key]['label'])) {
+						$tab[$key]['label'] = $ptab[$key]['label'];
+					}
+					if (isset($ptab[$key]['visible'])) {
+						$tab[$key]['visible'] = $ptab[$key]['visible'];
+					}
+					break;
+				case 'singleinput':
+				case 'multiinput':
+					if (isset($ptab[$key]['inputcolumn'])) {
+						$tab[$key]['inputcolumn'] = $ptab[$key]['inputcolumn'];
+					}
+					if (isset($ptab[$key]['label'])) {
+						$tab[$key]['label'] = $ptab[$key]['label'];
+					}
+					break;
+				case 'calendar':case 'calendar2':
+					$tab[$key]['action'] = $key;
+					if (isset($ptab[$key]['label'])) {
+						$tab[$key]['label'] = $ptab[$key]['label'];
+					}
+					break;
+			}
+			array_push($ltabs, $tab);
+		}
+		return $ltabs;
+	}// end function
+
+	public function createtabbutton($ptbuttons) {
+		$tbuttons = [];
+		if (is_array($ptbuttons) && !empty($ptbuttons)) {
+			foreach ($ptbuttons as $key => $value) {
+				array_push($tbuttons, $this->tabbuttons[$value]);
+			}
+		}
+		return $tbuttons;
+	}//end function
+
+	public function createdoclisting($getcols, $pstockbuttons = []) {
+		$cols               = [];
+		$this->columns      = $this->gridcolumnClass->getcolumn();
+		$this->stockbuttons = $this->gridbuttonClass->getgridbuttons();
+		if (is_array($getcols) && !empty($getcols)) {
+			$cols = array_only($this->columns, $getcols);
+			if (is_array($pstockbuttons) && !empty($pstockbuttons)) {
+				$stockbtn               = array_only($this->stockbuttons, $pstockbuttons);
+				$cols['action']['btns'] = $stockbtn;
+			}
+			$cols        = $this->othersClass->sortarray($cols, $getcols);
+			list($k, $v) = array_divide($cols);
+			$cols        = $v;
+		}
+		return $cols;
+	}
+}// end class

@@ -1,0 +1,116 @@
+<?php
+namespace App\Http\Classes;
+
+/*
+use Session;*/
+
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Http\Classes\stockClass;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\clientClass;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\headClass;
+use App\Http\Classes\Logger;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\builder\lookupClass;
+use Exception;
+use Throwable;
+use Session;
+
+
+
+class calendarClass {
+	private $othersClass;
+	private $coreFunctions;
+	private $headClass;
+	private $logger;
+	private $lookupClass;
+	private $companysetup;
+	private $config = [];
+	private $sqlquery;
+
+public function __construct() {
+	$this->othersClass = new othersClass;
+	$this->coreFunctions = new coreFunctions;
+	$this->headClass = new headClass;
+	$this->logger = new Logger;
+	$this->lookupClass = new lookupClass;
+	$this->companysetup = new companysetup;
+	$this->sqlquery = new sqlquery;
+}
+
+public function sbc($params){
+  $doc = strtolower($params['doc']);
+  $classname = __NAMESPACE__.'\\modules\\calendar\\'.$doc; 
+  try {
+     $this->config['docmodule'] = new $classname;
+    } catch (Exception $e) {
+      echo $e;
+    return $this;
+  }
+	$this->config['params'] = $params;
+  $access = $this->othersClass->getAccess($params['user']);    
+  $this->config['access'] = json_decode(json_encode($access),true);
+  return $this;
+}
+
+private function checksecurity($id){
+    $this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id - 1];
+    if ($this->config['verifyaccess'] == 0) {
+      return false;
+    } else {
+      return true;
+    }
+}
+
+public function loadform(){
+  $this->config['return'] = $this->config['docmodule']->loadform($this->config);
+  return $this;    	
+}
+
+
+
+
+public function execute(){
+  return response()->json($this->config['return'],200);	
+} // end function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+} // end class

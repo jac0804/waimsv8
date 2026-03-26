@@ -1,0 +1,137 @@
+<?php
+namespace App\Http\Classes\modules\dashboard;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class ar {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'ACCOUNT RECEIVABLE';
+	public $gridname   = 'customformacctg';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $issearchshow = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$tab = [$this->gridname => ['gridcolumns' => ['status', 'dateid', 'docno', 'db', 'cr', 'bal', 'ref', 'rem', 'rem1']
+			]
+		];
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// 3 = db
+		$obj[0][$this->gridname]['columns'][3]['align'] = 'right';
+		// 4 = cr
+		$obj[0][$this->gridname]['columns'][4]['align'] = 'right';
+		// 5 = bal
+		$obj[0][$this->gridname]['columns'][5]['align'] = 'right';
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['dateid'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'dateid.readonly', false);
+
+		$fields = ['refresh'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'refresh.action', 'ap');
+
+		$fields = [['db', 'cr']];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = ['bal'];
+		$col4   = $this->fieldClass->create($fields);
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+
+	}
+
+	public function paramsdata($config) {
+		$classid = $config['params']['classid'];
+		switch ($classid) {
+			case 'posted':
+				$this->modulename = 'POSTED - ACCOUNT RECEIVABLE';
+				break;
+			case 'unposted':
+				$this->modulename = 'UNPOSTED - ACCOUNT RECEIVABLE';
+				break;
+		}
+		return $this->coreFunctions->opentable('select adddate(left(now(),10),-360) as dateid, 0.0 as db, 0.0 as cr,0.0 as bal,? as classid', [$classid]);
+	}
+
+	public function data() {
+		return [];
+	}
+
+	public function loaddata($config) {
+		$center  = $config['params']['center'];
+		$date    = $config['params']['dataparams']['dateid'];
+		$classid = $config['params']['dataparams']['classid'];
+		switch ($classid) {
+			case 'posted':
+				$qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid,
+            FORMAT(db,2) as db,
+            FORMAT(cr,2) as cr,
+            FORMAT(bal,2) as bal,
+            ref, rem, status from (select `cntnum`.`doc` as `doc`,arledger.`docno`,`arledger`.`trno` as `trno`,
+            `arledger`.`line` as `line`,
+            `arledger`.`dateid` as `dateid`,`arledger`.`db` as `db`,`arledger`.`cr` as `cr`,arledger.bal,
+            `arledger`.`clientid` as `clientid`,`arledger`.`ref` as `ref`,'' as agent,
+            (`detail`.`rem`) as `rem`,((case when (`arledger`.`db` > 0) then 1 else -(1) end) * `arledger`.`bal`) as `balance`,
+            0 as `fbal`,`head`.`ourref` as `reference`,'POSTED' as `status` from ((((`arledger`
+            left join `cntnum` on((`cntnum`.`trno` = `arledger`.`trno`))) left join `gldetail` as detail
+            on(((`detail`.`trno` = `arledger`.`trno`) and (`detail`.`line` = `arledger`.`line`))))
+            left join `glhead` as head on((`head`.`trno` = `cntnum`.`trno`)))) where cntnum.doc='SJ' and arledger.bal>0 and arledger.dateid>='	$date'
+            and cntnum.center = '	$center'
+            ) as t  order by dateid desc,docno	";
+				break;
+			case 'unposted':
+				$qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid,
+            FORMAT(db,2) as db,
+            FORMAT(cr,2) as cr,
+            FORMAT(bal,2) as bal,
+            ref, rem, status from (
+            select `head`.`doc` as `doc`,head.docno,`head`.`trno` as `trno`,`detail`.`line` as `line`,`head`.`dateid` as `dateid`,
+            0 as `db`,ifnull(sum(detail.ext),0) as `cr`,ifnull(sum(detail.ext),0) as `bal`,
+            `client`.`clientid` as `clientid`,'' as `ref`,'' as `agent`,`detail`.`rem` as `rem`,
+            sum(detail.ext) as `balance`,0 as `fbal`,'' as `reference`,'UNPOSTED' as `status`
+            from `lahead` as head
+            left join `lastock` as detail on `detail`.`trno` = `head`.`trno`
+            left join `client` on `client`.`client` = `head`.`client`
+            left join cntnum on cntnum.trno = head.trno
+            where cntnum.doc = 'SJ' and head.dateid>='	$date' and cntnum.center = '$center'
+            group by head.docno) as t  order by dateid desc,docno	";
+				break;
+		}
+
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
+	}
+
+}//end class

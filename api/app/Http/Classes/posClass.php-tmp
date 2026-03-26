@@ -1,0 +1,203 @@
+<?php
+
+namespace App\Http\Classes;
+
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+class posClass {
+
+	private $coreFunctions;
+	private $logger;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+		$this->logger        = new Logger;
+		$this->companysetup  = new companysetup;
+	}//end fn
+
+	public function ftpwritefile($filename, $content) {
+		Storage::disk('ftp')->put($filename.'.tmp', $content);
+		if (is_array($this   ->ftpfilecheckendfile($filename.'.tmp'))) {
+			Storage::disk('ftp')->move($filename.'.tmp', $filename.'.sbc');
+		} else {
+			Storage::disk('ftp')->delete($filename.'.tmp');
+		}
+		return ['status' => true];
+	}
+
+	public function ftpdeletefile($filename) {
+		if (Storage::disk('ftp')->exists($filename)) {
+			Storage::disk('ftp')   ->delete($filename);
+		}
+		return ['status' => true];
+	}
+
+	public function itemlist() {
+		$starttime = $this->coreFunctions->datareader('select dlock as value from itemdlock order by dlock desc limit 1');
+		if ($starttime != '') {
+			$sql = "
+        SELECT item.itemid,barcode,REPLACE(itemname,'\r\n','') as itemname,groupid,part,model,brand,class,body,sizeid,category,cur,supp,acost,bcost,cost,avecost,uom,pc,bin,qty,minimum,maximum,reo,oqty,tqty,amt,asset,liability,country,
+        disc,caption,isinactive,amt3,shortname,critical,hierarchy,ispositem,color,points,
+        isvat as taxable,itemrem,issenior,iszerorated,isdisplay,isprintable,partno,suppname as supplier,subcode,isgc
+        FROM itemdlock AS id  LEFT JOIN item ON item.itemid=id.itemid WHERE barcode<>''
+      ";
+			//AND ispositem=1
+			$item = $this->coreFunctions->opentable($sql);
+			$csv  = '';
+			$csv  = $this->createcsv($item, 1);
+
+			$qry      = "select clientid,client from client where isbranch=1 and isinactive=0";
+			$branches = $this->coreFunctions->opentable($qry);
+			foreach ($branches as $branch => $value) {
+				$qry      = "select station from branchstation where clientid =?";
+				$stations = $this->coreFunctions->opentable($qry, [$value->clientid]);
+				foreach ($stations as $station => $value2) {
+					$result = $this->ftpcreatefile($csv, $value->client, $value2->station, 'download', 'item');
+				}
+			}
+
+			if (boolval($result)) {
+				$this->coreFunctions->execqry('delete from itemdlock where dlock<=?', 'delete', [$starttime]);
+			}
+		}
+	}
+
+	public function clientlist() {
+		$sql = "
+     SELECT clientid,client,clientname,email,REPLACE(addr,'\r\n','') as addr,tel,tel2,bday,fax,contact,terms,rem,tin,isagent,iscustomer,issupplier,iswarehouse,isbranch,area,birthday,isinactive,
+     isallitem,start,agent,issynced,ismain FROM client
+    ";
+		$client   = $this->coreFunctions->opentable($sql);
+		$csv      = '';
+		$csv      = $this->createcsv($client, 1);
+		$qry      = "select clientid,client from client where isbranch=1 and isinactive=0";
+		$branches = $this->coreFunctions->opentable($qry);
+		foreach ($branches as $branch => $value) {
+			$qry      = "select station from branchstation where clientid =?";
+			$stations = $this->coreFunctions->opentable($qry, [$value->clientid]);
+			foreach ($stations as $station => $value2) {
+				$result = $this->ftpcreatefile($csv, $value->client, $value2->station, 'download', 'client');
+			}
+		}
+	}
+
+	public function ftpcheckfiletoextract($branch, $station, $folder) {
+		foreach (Storage::disk('ftp')->files($branch.'/'.$station.'/'.$folder) as $filename) {
+			if (Str::substr($filename, -3) === 'sbc') {
+				$arrline = $this->ftpfilecheckendfile($filename);
+				if (is_array($arrline)) {
+					//$arrline = $this->ftpgetarrayfromfile($filename);
+					$a    = explode('/', $filename);
+					$b    = explode('~', $a[2]);
+					$c    = explode('.', $b[3]);
+					$trno = $c[0];
+					//doc~station~docno~trno
+					switch ($b[0]) {
+						case 'BP':
+							$isok = $this->coreFunctions->datareader('select ifnull(isok2,0) as value from head where trno=? and station=?', [$trno, $b[1]]);
+							if ($isok != '' && $isok != 0) {
+								$this->ftpdeletefile($branch.'/'.$station.'/error/'.Str::substr($a[2], 0, Str::length($a[2])-3).'err');
+								Storage::disk('ftp')->copy($filename, $branch.'/'.$station.'/error/'.Str::substr($a[2], 0, Str::length($a[2])-3).'err');
+								Storage::disk('ftp')->delete($filename);
+							} else {
+								if ($isok == 0) {
+									$this->coreFunctions->execqry('delete from stock where trno=? and station=?', 'delete', [$trno, $b[1]]);
+									$this->coreFunctions->execqry('delete from head where trno=? and station=?', 'delete', [$trno, $b[1]]);
+								}
+								if ($this            ->bpextraction($arrline)) {
+									Storage::disk('ftp')->delete($filename);
+								}
+							}
+							break;
+					}
+				}
+			}
+		}
+		return ['status' => true];
+	}
+
+	public function createcsv($data, $isfieldname) {
+		$itemlist  = '';
+		$itemline  = '';
+		$fieldname = '';
+		$tmpfield  = '';
+		$finallist = '';
+		foreach ($data as $row => $value) {
+			//'~'
+			$itemline = '';
+			foreach ($value as $row2 => $value2) {
+				if ($fieldname == '' && $isfieldname == 1) {
+					if ($tmpfield == '') {
+						$tmpfield = $row2;
+					} else {
+						$tmpfield = $tmpfield.'~'.$row2;
+					}
+				}
+				if ($itemline == '') {
+					$itemline = trim($value2);
+				} else {
+					$itemline = $itemline.'~'.trim($value2);
+				}
+			}
+			$itemlist  = $itemlist.$itemline.PHP_EOL;
+			$fieldname = $tmpfield;
+		}
+		if ($itemlist != '') {
+			if ($isfieldname == 1) {
+				$finallist = $fieldname.PHP_EOL.$itemlist.'ENDFILE';
+			} else {
+				$finallist = $itemlist.'ENDFILE';
+			}
+		}
+		return $finallist;
+	}
+
+	public function ftpcreatefile($csv, $branch, $station, $folder, $type, $iscurtime = 1) {
+		date_default_timezone_set('Asia/Singapore');
+		$current_timestamp = date('Y-m-dH.i.s');
+		if ($csv != '') {
+			if ($iscurtime == 1) {
+				$this->ftpwritefile('/'.$branch.'/'.$station.'/'.$folder.'/'.$type.'~'.$current_timestamp, $csv);
+			} else {
+				$this->ftpdeletefile('/'.$branch.'/'.$station.'/'.$folder.'/'.$type.'.sbc');
+				$this->ftpwritefile('/'.$branch.'/'.$station.'/'.$folder.'/'.$type, $csv);
+			}
+		}
+		return 'true';
+	}
+
+	public function ftpfilecheckendfile($path) {
+		$arrline = $this->ftpgetarrayfromfile($path);
+		if (!empty($arrline)) {
+			for ($i = count($arrline)-1; $i <= count($arrline)-1; $i--) {
+				if (trim($arrline[$i]) == 'ENDFILE') {
+					return $arrline;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function ftpgetarrayfromfile($path) {
+		$file    = Storage::disk('ftp')->get($path);
+		$arrline = explode(PHP_EOL, $file);
+		return $arrline;
+	}
+
+	private function bpextraction($arr) {
+		foreach ($arr as $row) {
+			if ($row != 'ENDFILE' && $row != '') {
+				if ($this->coreFunctions->execqry($row) == 0) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+}// end class

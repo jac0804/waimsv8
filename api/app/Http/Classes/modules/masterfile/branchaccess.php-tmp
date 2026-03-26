@@ -1,0 +1,108 @@
+<?php
+namespace App\Http\Classes\modules\masterfile;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sqlquery;
+
+class branchaccess {
+	private $btnClass;
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'BRANCH ACCESS';
+	public $gridname   = 'accounting';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	private $logger;
+	private $sqlquery;
+	public $head          = 'users';
+	public $tablelogs     = 'client_log';
+	public $tablelogs_del = 'del_client_log';
+
+	private $fields    = ['idno', 'username'];
+	private $except    = [];
+	private $blnfields = [];
+	private $reporter;
+
+	public function __construct() {
+		$this->btnClass      = new buttonClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->logger        = new Logger;
+		$this->sqlquery      = new sqlquery;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function loaddata($config) {
+		$levels = $this->coreFunctions->opentable("select md5(idno) as idno,username,attributes,class,ifnull((select count(username) from useraccess where useraccess.accessid=users.idno),0) as usercrt from users order by username");
+		return $levels;
+	}// end function
+
+	public function status($config) {
+		$action = $config['params']['action'];
+		switch ($action) {
+			case 'getattribute':
+				return $this->getattribute($config);
+				break;
+			case 'getcenterbyuser':
+				return $this->getcenterbyuser($config);
+				break;
+			case 'savenewlevel':
+				return $this->savenewlevel($config);
+				break;
+			case 'getuseraccess':
+				return $this->getuseraccess($config);
+				break;
+			case 'updatecenteraccess':
+				return $this->updatecenteraccess($config);
+				break;
+
+		}
+	}//end function
+
+	private function getuseraccess($config) {
+		$idno  = $config['params']['idno'];
+		$users = $this->coreFunctions->opentable("select username as label,md5(userid) as value from useraccess where md5(accessid)=?", [$idno]);
+		return ['status' => true, 'msg' => 'Loading data...', 'data' => $users];
+	}// end function
+
+	private function getattribute($config) {
+		$qry  = "select description as label,md5(code) as value from attributes where parent='\\\\'";
+		$data = $this->coreFunctions->opentable($qry);
+		return $data;
+	}//end function
+
+	private function getcenterbyuser($config) {
+		$selectedlevel = $config['params']['selectedlevel'];
+		$user          = $config['params']['selecteduser'];
+		$qry           = 'select center.code,center.name as description,ifnull((select count(centeraccess.line) from centeraccess where centeraccess.center=center.code and md5(centeraccess.userid)=?),0) as ctr from center';
+		$data          = $this->coreFunctions->opentable($qry, [$user]);
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
+
+	}//end function
+
+	private function updatecenteraccess($config) {
+		$userid = $this->coreFunctions->getfieldvalue('useraccess', 'userid', 'md5(userid)=?', [$config['params']['selecteduser']]);
+		$center = $config['params']['code'];
+		if ($config['params']['ctr'] == 0) {
+			$qry  = "insert into centeraccess (center,userid) values (?,?)";
+			$rows = $this->coreFunctions->execqry($qry, "insert", [$center, $userid]);
+		} else {
+			$qry  = "delete from centeraccess where userid = ? and center = ? ";
+			$rows = $this->coreFunctions->execqry($qry, "delete", [$userid, $center]);
+		}
+		return $this->getcenterbyuser($config);
+	}//end function
+
+}//end class

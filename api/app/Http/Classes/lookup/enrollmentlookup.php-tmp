@@ -1,0 +1,1020 @@
+<?php
+
+namespace App\Http\Classes\lookup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\sqlquery;
+
+class enrollmentlookup {
+	private $coreFunctions;
+	private $othersClass;
+	private $sqlquery;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->sqlquery      = new sqlquery;
+	}
+
+	public function lookupschoolyear($config) {
+		$plotting = array('sy' => 'sy');
+		$plottype = 'plotgrid';
+		$title    = 'List of School Year';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'sy', 'label' => 'School Year', 'align' => 'left', 'field' => 'sy', 'sortable' => true, 'style' => 'font-size:16px;']
+		];
+
+		$qry   = "select sy, issy from en_schoolyear";
+		$data  = $this->coreFunctions->opentable($qry);
+		$index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+	}
+
+	public function lookupdepartment($config) {
+		//default
+		$plotting = array('deptcode' => 'deptcode', 'department' => 'deptname');
+		$plottype = 'plotgrid';
+		$title    = 'List of Department';
+
+		$lookupclass = isset($config['params']['lookupclass2'])?$config['params']['lookupclass2']:$config['params']['lookupclass'];
+		switch ($lookupclass) {
+			case 'lookupparentdepartment':
+				$plotting = array('parentcode' => 'deptcode', 'parentname' => 'deptname');
+				break;
+			case 'coursedeptlookup':
+			case 'insdeptlookup':
+				$plottype = 'plothead';
+				$plotting = array('deptcode' => 'deptcode', 'department' => 'deptname');
+				break;
+			case 'lookupdeptgrid':
+				$plotting = array('deptcode' => 'deptcode', 'departid' => 'clientid');
+				break;
+			default:
+				$plotting = array('deptcode' => 'deptcode', 'department' => 'deptname');
+				break;
+		}
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'deptcode', 'label' => 'Code', 'align' => 'left', 'field' => 'deptcode', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$col = array('name' => 'deptname', 'label' => 'Name', 'align' => 'left', 'field' => 'deptname', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry = "select client as deptcode, clientname as deptname, clientid
+            from client
+            where isdepartment = 1";
+
+		$data = $this->coreFunctions->opentable($qry);
+		switch ($lookupclass) {
+			case 'coursedeptlookup':
+			case 'insdeptlookup':
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+				break;
+			case 'lookupdeptgrid':
+				$table    = $config['params']['table'];
+				$rowindex = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table, 'rowindex' => $rowindex];
+				break;
+			default:
+				$index = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+				break;
+		}
+	}// end function
+
+	public function enlookupdean($config) {
+		//default
+		$plotting = array(
+			'deanname' => 'teachername',
+		);
+		$plottype = '';
+		$title    = 'List of Dean';
+
+		$lookupclass = isset($config['params']['lookupclass2'])?$config['params']['lookupclass2']:$config['params']['lookupclass'];
+
+		switch ($lookupclass) {
+			case 'coursedeanlookup':
+				$plottype = 'plothead';
+				break;
+			case 'inslookupdean':
+				$plottype = 'plothead';
+				$plotting = array(
+					'deancode' => 'teachercode',
+					'deanname' => 'teachername',
+				);
+				break;
+			default:
+				$plottype = 'plotgrid';
+				break;
+		}
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'teachercode', 'label' => 'Code', 'align' => 'left', 'field' => 'teachercode', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$col = array('name' => 'teachername', 'label' => 'Name', 'align' => 'left', 'field' => 'teachername', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$col = array('name' => 'department', 'label' => 'Department', 'align' => 'left', 'field' => 'department', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry = "select client.client as teachercode, client.clientname as teachername, en_instructor.department
+            from en_instructor left join client on client.clientid = en_instructor.instructorid order by client.client,client.clientname";
+
+		$data = $this->coreFunctions->opentable($qry);
+		switch ($lookupclass) {
+			case 'coursedeanlookup':
+			case 'inslookupdean':
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+				break;
+			default:
+				$index = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+				break;
+		}
+	}// end function
+
+	public function lookuprank($config) {
+		//default
+		$plotting    = array('rank' => 'rank');
+		$plottype    = 'plotgrid';
+		$title       = 'List of Rank';
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'rank', 'label' => 'Rank', 'align' => 'left', 'field' => 'rank', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry = "SELECT DISTINCT rank
+            FROM en_instructor
+            WHERE rank <> ''
+            ORDER BY rank";
+
+		$data  = $this->coreFunctions->opentable($qry);
+		$index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+	}// end function
+
+	public function lookupcourse($config) {
+		$plottype = 'plothead';
+		switch (strtolower($config['params']['doc'])) {
+			case 'ec':
+				$plotting = array('coursecode' => 'coursecode', 'coursename' => 'coursename');
+				break;
+			case 'ea':
+				$plotting = array('coursecode' => 'coursecode', 'coursename' => 'coursename', 'deptcode' => 'deptcode');
+				break;
+			case 'et':
+				$plottype = 'plotgrid';
+				$plotting = array('coursecode' => 'coursecode', 'courseid' => 'line');
+				break;
+			default:
+				$plotting = array('course' => 'coursecode', 'coursename' => 'coursename');
+				break;
+		}
+
+		$title = 'List of Course';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'coursecode', 'label' => 'Course Code', 'align' => 'left', 'field' => 'coursecode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'coursename', 'label' => 'Course Name', 'align' => 'left', 'field' => 'coursename', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry = "select * from en_course where isinactive=0";
+
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_course');
+
+		if ($plottype == 'plotgrid') {
+			$table    = $config['params']['table'];
+			$rowindex = $config['params']['index'];
+			return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd, 'table' => $table, 'rowindex' => $rowindex];
+		} else {
+			return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+		}
+	}//end function
+
+	public function lookupacno($config) {
+		//default
+		$plottype = 'plotgrid';
+		$title    = 'List of Account';
+
+		$lookupclass = isset($config['params']['lookupclass2'])?$config['params']['lookupclass2']:$config['params']['lookupclass'];
+		switch ($lookupclass) {
+			case 'courseaccountlookup':
+				$plotting = array('tfaccount' => 'acno', 'acnoname' => 'acnoname');
+				break;
+			case 'coursetfaccountlookup':
+				$plottype = 'plothead';
+				$plotting = array('tfaccount' => 'acno', 'acnoname' => 'acnoname');
+				break;
+			default:
+				$plotting = array('acno' => 'acno', 'acnoname' => 'acnoname');
+				break;
+		}
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'acno', 'label' => 'Account Code', 'align' => 'left', 'field' => 'acno', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$col = array('name' => 'acnoname', 'label' => 'Account Name', 'align' => 'left', 'field' => 'acnoname', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry = "select acno, acnoname
+            from coa
+            order by acno;
+";
+
+		$data = $this->coreFunctions->opentable($qry);
+		switch ($lookupclass) {
+			case 'coursetfaccountlookup':
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+				break;
+			default:
+				$index = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+				break;
+		}
+	}// end function
+
+	public function lookuptypeoffees($config) {
+		//default
+		$plotting = array('feestype' => 'feestype');
+		$plottype = 'plotgrid';
+		$title    = 'List of Type';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'feestype', 'label' => 'Type', 'align' => 'left', 'field' => 'feestype', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry = "SELECT line, feescode, feesdesc, feestype, acno, vat, amount FROM en_fees WHERE feestype <> '' ORDER BY feestype";
+
+		$data  = $this->coreFunctions->opentable($qry);
+		$index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+	}// end function
+
+	public function lookupfees($config) {
+		//default
+		$plotting = array('feescode' => 'feescode', 'feesid' => 'line');
+		$plottype = 'plotgrid';
+		$title    = 'List of Fees';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'feescode', 'label' => 'Code', 'align' => 'left', 'field' => 'feescode', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'feesdesc', 'label' => 'Description', 'align' => 'left', 'field' => 'feesdesc', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'feestype', 'label' => 'Type', 'align' => 'left', 'field' => 'feestype', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "SELECT line, feescode, feesdesc, feestype, acno, vat, amount FROM en_fees ORDER BY feestype";
+
+		$data     = $this->coreFunctions->opentable($qry);
+		$index    = $config['params']['index'];
+		$table    = $config['params']['table'];
+		$rowindex = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'table' => $table, 'rowindex' => $rowindex];
+	}
+
+	public function lookupscheme($config) {
+		//default
+		$plotting = array('scheme' => 'scheme', 'schemeid' => 'line');
+		$plottype = 'plotgrid';
+		$title    = 'List of Scheme';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'scheme', 'label' => 'Scheme', 'align' => 'left', 'field' => 'scheme', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select line, scheme, orderscheme from en_scheme ORDER BY scheme";
+
+		$data     = $this->coreFunctions->opentable($qry);
+		$index    = $config['params']['index'];
+		$table    = $config['params']['table'];
+		$rowindex = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'table' => $table, 'rowindex' => $rowindex];
+	}
+
+	public function lookupsubject($config) {
+		//default
+		$trno     = $config['params']['trno'];
+		$plotting = array('subjectcode' => 'subjectcode', 'subjectname' => 'subjectname');
+		$title    = 'List of Subject';
+		$action   = '';
+		$table    = '';
+		if (isset($config['params']['table'])) {
+			$table = $config['params']['table'];
+		}
+		$rowindex = 0;
+		if (isset($config['params']['index'])) {
+			$rowindex = $config['params']['index'];
+		}
+
+		if (isset($config['params']['lookupclass2'])) {
+			$lookupclass = $config['params']['lookupclass2'];
+		} else {
+			if (isset($config['params']['lookupclass'])) {
+				$lookupclass = $config['params']['lookupclass'];
+			}
+		}
+
+		$index    = [];
+		$plottype = 'plothead';
+		switch ($lookupclass) {
+			case 'lookupcoreq':
+				$plotting = array(
+					'coreq'  => 'trno',
+					'dcoreq' => 'subjectname'
+				);
+				break;
+			case 'lookupprereq1':
+				$plotting = array(
+					'prereq1'  => 'trno',
+					'dprereq1' => 'subjectname'
+				);
+				break;
+			case 'lookupprereq2':
+				$plotting = array(
+					'prereq2'  => 'trno',
+					'dprereq2' => 'subjectname'
+				);
+				break;
+			case 'lookupprereq3':
+				$plotting = array(
+					'prereq3'  => 'trno',
+					'dprereq3' => 'subjectname'
+				);
+				break;
+			case 'lookupprereq4':
+				$plotting = array(
+					'prereq4'  => 'trno',
+					'dprereq4' => 'subjectname'
+				);
+				break;
+			case 'addsubject'://used in tableentry - entrysubject
+				$plottype = 'callback';
+				$action   = 'addtogrid';
+				$plotting = array(
+					'subjectid'   => 'trno',
+					'subjectcode' => 'subjectcode',
+					'subjectname' => 'subjectname'
+				);
+				break;
+
+			case 'lookupsubject':// used in curriculum module
+				$plotsetup = array(
+					'plottype' => 'callback',
+					'action'   => 'getsubject'
+				);
+				$lookupsetup = array(
+					'type'   => 'multi',
+					'rowkey' => 'trno',
+					'title'  => $title,
+					'style'  => 'width:900px;max-width:900px;'
+				);
+				break;
+			case 'lookupasssubject':
+				$plotsetup = array(
+					'plottype' => 'callback',
+					'action'   => 'getsubject'
+				);
+				$lookupsetup = array(
+					'type'   => 'multi',
+					'rowkey' => 'trno',
+					'title'  => $title,
+					'style'  => 'width:900px;max-width:900px;'
+				);
+				break;
+
+			case 'lookupgridcoreq':// used in curriculum module
+				$plottype = 'plotgrid';
+				$plotting = array('coreq' => 'subjectcode');
+				break;
+
+			case 'lookupgridpre1':
+				$plottype = 'plotgrid';
+				$plotting = array('pre1' => 'subjectcode');
+				break;
+			case 'lookupgridpre2':
+				$plottype = 'plotgrid';
+				$plotting = array('pre2' => 'subjectcode');
+				break;
+			case 'lookupgridpre3':
+				$plottype = 'plotgrid';
+				$plotting = array('pre3' => 'subjectcode');
+				break;
+			case 'lookupgridpre4':
+				$plottype = 'plotgrid';
+				$plotting = array('pre4' => 'subjectcode');
+				break;
+
+			case 'lookupsubjectgrid':
+				$plottype = 'plotgrid';
+				$plotting = array('subjectcode' => 'subjectcode', 'subjectid' => 'trno');
+				break;
+
+			default:
+				$plottype = 'plotgrid';
+				$plotting = array(
+					'subjectcode' => 'subjectcode',
+					'subjectname' => 'subjectname'
+				);
+				break;
+		}
+
+		switch ($lookupclass) {
+			case 'lookupsubject':case 'lookupasssubject':
+				$plotsetup = array(
+					'plottype' => 'callback',
+					'action'   => 'getsubject'
+				);
+				$lookupsetup = array(
+					'type'   => 'multi',
+					'rowkey' => 'trno',
+					'title'  => $title,
+					'style'  => 'width:900px;max-width:900px;'
+				);
+
+				break;
+
+			default:
+				$lookupsetup = array(
+					'type'  => 'single',
+					'title' => $title,
+					'style' => 'width:900px;max-width:900px;'
+				);
+
+				$plotsetup = array(
+					'plottype' => $plottype,
+					'action'   => $action,
+					'plotting' => $plotting
+				);
+				break;
+		}
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'subjectcode', 'label' => 'Code', 'align' => 'left', 'field' => 'subjectcode', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'subjectname', 'label' => 'Name', 'align' => 'left', 'field' => 'subjectname', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'units', 'label' => 'Units', 'align' => 'left', 'field' => 'units', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'lecture', 'label' => 'Lecture', 'align' => 'left', 'field' => 'lecture', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'laboratory', 'label' => 'Laboratory', 'align' => 'left', 'field' => 'laboratory', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'hours', 'label' => 'Hours', 'align' => 'left', 'field' => 'hours', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select trno, subjectcode, subjectname, units, lecture, laboratory, hours from en_subject";
+
+		$data = $this->coreFunctions->opentable($qry);
+		switch ($lookupclass) {
+			case 'lookupgridcoreq':
+			case 'lookupgridpre1':
+			case 'lookupgridpre2':
+			case 'lookupgridpre3':
+			case 'lookupgridpre4':
+			case 'lookupsubjectgrid':
+				$table    = $config['params']['table'];
+				$rowindex = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'table' => $table, 'rowindex' => $rowindex];
+				break;
+			case 'lookupasssubject':
+				$schedcode = $this->coreFunctions->getfieldvalue("en_sohead", "schedcode", "trno=?", [$trno]);
+				$qry       = "select s.trno, e.subjectcode, e.subjectname, ss.units, ss.lecture, ss.laboratory, ss.hours from en_glsubject as ss left join en_glhead as s on s.trno = ss.trno left join en_subject as e on e.trno=ss.subjectid where s.docno =?";
+
+				$data = $this->coreFunctions->opentable($qry, [$schedcode]);
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+				break;
+			default:
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+				break;
+		}
+	}// end function
+
+	public function lookupcredential($config) {
+		//default
+		$plotting = array(
+			'line'           => 'credentialid',
+			'credentialcode' => 'credentialcode',
+			'credentials'    => 'credentials'
+		);
+		// $plottype = 'plotgrid';
+		$title = 'List of Credential';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => 'callback',
+			'action'   => 'addtogrid',
+			'plotting' => $plotting
+		);
+
+		// lookup columns
+		$cols = array();
+		array_push($cols, array('name' => 'credentialcode', 'label' => 'Code', 'align' => 'left', 'field' => 'credentialcode', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		array_push($cols, array('name' => 'credentials', 'label' => 'Description', 'align' => 'left', 'field' => 'credentials', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+		$qry = "select line, credentials, amt, particulars, percentdisc, credentialcode, acno, acnoname, feescode, scheme, subjectcode, subjectname from en_credentials order by credentials";
+
+		$data = $this->coreFunctions->opentable($qry);
+		// $index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}// end function
+
+	public function lookupperiod($config) {
+		switch (strtoupper($config['params']['doc'])) {
+			case 'ET':
+				$plotting = array('period' => 'code', 'periodid' => 'line');
+				break;
+
+			default:
+				$plotting = array('period' => 'code');
+				break;
+		}
+
+		$plottype = 'plothead';
+		$title    = 'List of Period';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'period', 'label' => 'Period', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'name', 'label' => 'Name', 'align' => 'left', 'field' => 'name', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry    = "select * from en_period";
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_period');
+
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+	}//end function
+
+	public function lookupinstructor($config) {
+		$table = '';
+		if (isset($config['params']['table'])) {
+			$table = $config['params']['table'];
+		}
+		$rowindex = 0;
+		if (isset($config['params']['index'])) {
+			$rowindex = $config['params']['index'];
+		}
+
+		if (isset($config['params']['lookupclass2'])) {
+			$lookupclass = $config['params']['lookupclass2'];
+		} else {
+			if (isset($config['params']['lookupclass'])) {
+				$lookupclass = $config['params']['lookupclass'];
+			}
+		}
+
+		switch ($lookupclass) {
+			case 'lookupadviser':
+				$plotting = array('advisercode' => 'teachercode', 'advisername' => 'teachername');
+				$plottype = 'plothead';
+				break;
+			default:
+				$plotting = array('linstructorcode' => 'teachercode', 'instructorname' => 'teachername');
+				$plottype = 'plotgrid';
+				break;
+		}
+
+		$title = 'List of Instructor';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'teachercode', 'label' => 'Instructor Code', 'align' => 'left', 'field' => 'teachercode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'teachername', 'label' => 'Instructor Name', 'align' => 'left', 'field' => 'teachername', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'department', 'label' => 'Department', 'align' => 'left', 'field' => 'department', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry    = "select client.client as teachercode,client.clientname as teachername,e.department from en_instructor as e left join client on client.clientid=e.instructorid ";
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_instructor');
+
+		$index = [];
+		switch ($lookupclass) {
+			case 'lookupadviser':
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+				break;
+			default:
+				// $table = $config['params']['table'];
+				$rowindex = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'table' => $table, 'rowindex' => $rowindex];
+				break;
+		}
+	}//end function
+
+	public function lookuprooms($config) {
+		$table = '';
+		if (isset($config['params']['table'])) {
+			$table = $config['params']['table'];
+		}
+		$rowindex = 0;
+		if (isset($config['params']['index'])) {
+			$rowindex = $config['params']['index'];
+		}
+
+		if (isset($config['params']['lookupclass2'])) {
+			$lookupclass = $config['params']['lookupclass2'];
+		} else {
+			if (isset($config['params']['lookupclass'])) {
+				$lookupclass = $config['params']['lookupclass'];
+			}
+		}
+
+		$plotting = array('lroomcode' => 'roomcode');
+		$plottype = 'plotgrid';
+
+		$title = 'List of Rooms';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'roomcode', 'label' => 'Room Code', 'align' => 'left', 'field' => 'roomcode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'roomname', 'label' => 'Room Name', 'align' => 'left', 'field' => 'roomname', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry    = "select * from en_rooms";
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_rooms');
+
+		$index    = [];
+		$table    = $config['params']['table'];
+		$rowindex = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'table' => $table, 'rowindex' => $rowindex];
+	}//end function
+
+	public function lookupsemester($config) {
+		$title = 'List of Semester';
+
+		$lookupclass = $config['params']['lookupclass'];
+		switch ($lookupclass) {
+			case 'lookupsemestergrid':
+				$plottype = 'plotgrid';
+				$plotting = array('term' => 'term', 'semid' => 'line');
+				break;
+
+			default:
+				$plotting = array('terms' => 'term');
+				$plottype = 'plothead';
+				break;
+		}
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'term', 'label' => 'Semester', 'align' => 'left', 'field' => 'term', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry    = "select * from en_term";
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_term');
+
+		switch ($lookupclass) {
+			case 'lookupsemestergrid':
+				$table    = $config['params']['table'];
+				$rowindex = $config['params']['index'];
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd, 'table' => $table, 'rowindex' => $rowindex];
+				break;
+			default:
+				return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+				break;
+		}
+	}//end function
+
+	public function lookupsy($config) {
+
+		switch (strtoupper($config['params']['doc'])) {
+			case 'ET':
+				$plotting = array('syid' => 'line', 'sy' => 'sy');
+				break;
+
+			default:
+				$plotting = array('sy' => 'sy');
+				break;
+		}
+
+		$plottype = 'plothead';
+		$title    = 'List of School Year';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'sy', 'label' => 'School Year', 'align' => 'left', 'field' => 'sy', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry    = "select * from en_schoolyear";
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_schoolyear');
+
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+	}//end function
+
+	public function lookupcoursecode($config) {
+
+		$plotting = array('coursecode' => 'coursecode', 'coursename' => 'coursename');
+		$plottype = 'plothead';
+		$title    = 'List of Course';
+
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => $title,
+			'style' => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array(
+			'plottype' => $plottype,
+			'action'   => '',
+			'plotting' => $plotting
+		);
+		// lookup columns
+		$cols = [
+			['name' => 'coursecode', 'label' => 'Course Code', 'align' => 'left', 'field' => 'coursecode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'coursename', 'label' => 'Course Name', 'align' => 'left', 'field' => 'coursename', 'sortable' => true, 'style' => 'font-size:16px;'],
+		];
+
+		$qry = "select * from en_course where isinactive=0";
+
+		$data   = $this->coreFunctions->opentable($qry);
+		$btnadd = $this->sqlquery->checksecurity($config, 3640, '/tableentries/enrollmententry/en_course');
+
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+	}//end function
+
+	public function lookupcurriculum($config) {
+		//default
+		$plotting = array('curriculumcode' => 'curriculumcode', 'curriculumname' => 'curriculumname');
+		$title    = 'List of Curriculum';
+		$action   = '';
+		$table    = '';
+		if (isset($config['params']['table'])) {
+			$table = $config['params']['table'];
+		}
+		$rowindex = 0;
+		if (isset($config['params']['index'])) {
+			$rowindex = $config['params']['index'];
+		}
+
+		if (isset($config['params']['lookupclass2'])) {
+			$lookupclass = $config['params']['lookupclass2'];
+		} else {
+			if (isset($config['params']['lookupclass'])) {
+				$lookupclass = $config['params']['lookupclass'];
+			}
+		}
+
+		$index     = [];
+		$plottype  = 'plothead';
+		$plotsetup = array(
+			'plottype' => 'callback',
+			'action'   => 'generatecurriculum'
+		);
+		$lookupsetup = array(
+			'type'   => 'multi',
+			'rowkey' => 'docno',
+			'title'  => $title,
+			'style'  => 'width:900px;max-width:900px;'
+		);
+
+		// lookup columns
+		$cols = [
+			['name' => 'docno', 'label' => 'Document #', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'curriculumcode', 'label' => 'Curriculum Code', 'align' => 'left', 'field' => 'curriculumcode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'curriculumname', 'label' => 'Curriculum Name', 'align' => 'left', 'field' => 'curriculumname', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'coursecode', 'label' => 'Course Code', 'align' => 'left', 'field' => 'coursecode', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'coursename', 'label' => 'Course Name', 'align' => 'left', 'field' => 'coursename', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'level', 'label' => 'Level', 'align' => 'left', 'field' => 'level', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'sy', 'label' => 'School Year', 'align' => 'left', 'field' => 'sy', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'yearnum', 'label' => 'Year', 'align' => 'left', 'field' => 'yearnum', 'sortable' => true, 'style' => 'font-size:16px;'],
+			['name' => 'terms', 'label' => 'Semester', 'align' => 'left', 'field' => 'terms', 'sortable' => true, 'style' => 'font-size:16px;'],
+
+		];
+
+		$data   = $this->sqlquery->getcurriculum($config);
+		$btnadd = $this->sqlquery->checksecurity($config, 598, '/tableentries/enrollmententry/entryterms');
+		// return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'btnadd' => $btnadd];
+
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}//end function
+
+	public function lookupsched($config) {
+		$lookupsetup = array(
+			'type'   => 'single',
+			'rowkey' => 'trno',
+			'title'  => 'List of Schedules',
+			'style'  => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype'         => 'callback',
+			'action'           => 'getsubject',
+			'plotting'         => array(
+				'schedcode'       => 'docno',
+				'curriculumcode'  => 'curriculumcode',
+				'curriculumdocno' => 'curriculumdocno')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'curriculumcode', 'label' => 'Curriculum Code', 'align' => 'left', 'field' => 'curriculumcode', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'curriculumdocno', 'label' => 'Curriculum Doc#', 'align' => 'left', 'field' => 'curriculumdocno', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$trno       = $config['params']['trno'];
+		$coursecode = $this->coreFunctions->getfieldvalue("en_sohead", "coursecode", "trno=?", [$trno]);
+		$period     = $this->coreFunctions->getfieldvalue("en_sohead", "period", "trno=?", [$trno]);
+
+		$qry = "select head.docno,head.curriculumcode,head.curriculumdocno from en_glhead as head left join en_course as c on c.line = head.courseid where head.doc = 'es' and  c.coursecode = ? and period =?
+     ";
+		$data = $this->coreFunctions->opentable($qry, [$coursecode, $period]);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+	public function lookupmodeofpay($config) {
+		$lookupsetup = array(
+			'type'  => 'single',
+			'title' => 'Mode of Payment',
+			'style' => 'width:400px;max-width:400px;'
+		);
+
+		$plotsetup = array(
+			'plottype'       => 'plothead',
+			'plotting'       => array(
+				'modeofpayment' => 'code')
+		);
+
+		// lookup columns
+		$cols = array(
+			array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+			array('name' => 'modeofpayment', 'label' => 'Mode of Payment', 'align' => 'left', 'field' => 'modeofpayment', 'sortable' => true, 'style' => 'font-size:16px;')
+		);
+
+		$qry  = "select code,modeofpayment from en_modeofpayment";
+		$data = $this->coreFunctions->opentable($qry);
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+	}
+
+}// end function
+
+}// end class

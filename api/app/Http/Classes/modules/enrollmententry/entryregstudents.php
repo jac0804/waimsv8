@@ -1,0 +1,224 @@
+<?php
+
+namespace App\Http\Classes\modules\enrollmententry;
+
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use DB;
+use Session;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\Logger;
+use App\Http\Classes\sqlquery;
+use App\Http\Classes\lookup\enrollmentlookup;
+
+class entryregstudents
+{
+  private $fieldClass;
+  private $tabClass;
+  public $modulename = 'REGISTERED STUDENTS';
+  public $gridname = 'inventory';
+  private $companysetup;
+  private $coreFunctions;
+  private $table = 'en_sootherfees';
+  private $othersClass;
+  public $style = 'width:100%;';
+  private $fields = ['trno', 'line', 'cline', 'acnoid', 'isamt'];
+  public $showclosebtn = true;
+
+
+  public function __construct()
+  {
+    $this->fieldClass = new txtfieldClass;
+    $this->tabClass = new tabClass;
+    $this->companysetup = new companysetup;
+    $this->coreFunctions = new coreFunctions;
+    $this->othersClass = new othersClass;
+    $this->enrollmentlookup = new enrollmentlookup;
+    $this->sqlquery = new sqlquery;
+  }
+
+  public function getAttrib()
+  {
+    $attrib = array(
+      'load' => 0
+    );
+    return $attrib;
+  }
+
+  public function createTab($config)
+  {
+
+    $tab = [$this->gridname => ['gridcolumns' => ['action', 'client', 'clientname', 'docno', 'dateid']]];
+
+    $stockbuttons = ['delete'];
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;"; //action
+    $obj[0][$this->gridname]['columns'][3]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][3]['style'] = "width:40px;whiteSpace: normal;min-width:160px;"; //action
+    $obj[0][$this->gridname]['columns'][4]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][4]['style'] = "width:40px;whiteSpace: normal;min-width:130px;"; //action
+    $obj[0][$this->gridname]['columns'][1]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][1]['style'] = "width:40px;whiteSpace: normal;min-width:160px;"; //action
+    $obj[0][$this->gridname]['columns'][1]['type'] = "input";
+    $obj[0][$this->gridname]['columns'][1]['label'] = "Code";
+    $obj[0][$this->gridname]['columns'][2]['style'] = "width:40px;whiteSpace: normal;min-width:260px;"; //action
+    $obj[0][$this->gridname]['columns'][2]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][2]['label'] = "Student Name";
+
+    return $obj;
+  }
+
+  public function createtabbutton($config)
+  {
+    $tbuttons = ['addstudents'];
+    $obj = $this->tabClass->createtabbutton($tbuttons);
+    return $obj;
+  }
+
+  public function lookupsetup($config)
+  {
+    $lookupclass = $config['params']['lookupclass2'];
+    switch ($lookupclass) {
+      case 'lookupaddstudents':
+        return $this->enrollmentlookup->lookupaddstudents($config);
+        break;
+    }
+  }
+
+  public function lookupcallback($config)
+  {
+    $tableid = $config['params']['tableid'];
+    $row = $config['params']['rows'];
+    $doc = $config['params']['doc'];
+    $data = [];
+    $data2 = [];
+
+    foreach ($row  as $key2 => $value) {
+
+      $clientid = $value['clientid'];
+      $docno = $value['docno'];
+      $client = $value['client'];
+      $clientname = $value['clientname'];
+      $dateid = $value['dateid'];
+      $qry = "select distinct head.trno,head.docno,head.yr,head.curriculumdocno,head.adviserid,head.courseid,head.periodid,head.syid,head.semid,head.sectionid from en_glhead as head left join en_glsubject as stock on stock.trno=head.trno where head.doc='es' and head.trno=?";
+      $datahead = $this->coreFunctions->opentable($qry, [$tableid]);
+
+      foreach ($datahead as $key => $value) {
+        if (!empty($datahead[$key]->trno)) {
+          $docno = $datahead[$key]->docno;
+          $trno = $datahead[$key]->trno;
+          $curriculumdocno = $datahead[$key]->curriculumdocno;
+          $adviserid = $datahead[$key]->adviserid;
+          $courseid = $datahead[$key]->courseid;
+          $periodid = $datahead[$key]->periodid;
+          $syid = $datahead[$key]->syid;
+          $semid = $datahead[$key]->semid;
+          $sectionid = $datahead[$key]->sectionid;
+          $yr = $datahead[$key]->yr;
+
+          $qry =  "select distinct head.sotrno,head.trno," . $trno . " as sctrno,'" . $curriculumdocno . "' as curriculumdocno,client.clientid,head.docno,head.dateid,client.client,client.clientname,client.clientid,subject.semid from glhead as head left join client on client.clientid=head.clientid left join glsubject as subject on subject.trno=head.trno
+              where head.doc='ER'  and head.syid=? and head.periodid=? and head.courseid=? and subject.semid=? and head.sectionid=? and head.yr=? and client.clientid=?  and subject.screfx=0";
+
+          $data = $this->coreFunctions->opentable($qry, [$syid, $periodid, $courseid, $semid, $sectionid, $yr, $clientid]);
+          $status =  $this->sqlquery->generatestudentcurriculum($data);
+          if ($status['status'] ==  false) {
+            return ['status' => false, 'msg' => $status['msg'], 'data' => $data2];
+          }
+          $this->coreFunctions->execqry("update en_studentinfo set schedtrno=? where clientid=?", 'update', [$trno, $clientid]);
+          array_push($data2, $data[0]);
+        }
+      }
+
+      $config['params']['row']['client'] = $client;
+      $config['params']['row']['clientname'] = $clientname;
+      $config['params']['row']['docno'] = $docno;
+      $config['params']['row']['dateid'] = $dateid;
+    }
+
+    // $data = $this->loaddata($config);
+    return ['status' => true, 'msg' => 'Successfully added.', 'data' => $data2];
+  } // end function
+
+  public function setservedsubject($refx, $linex)
+  {
+    if ($refx == 0) {
+      return 1;
+    }
+    $qry1 = "select stock.trno from en_sjhead as head left join en_sjsubject as 
+          stock on stock.trno=head.trno where head.doc='ER' and stock.screfx=" . $refx . " and stock.sclinex=" . $linex;
+
+    $qry1 = $qry1 . " union all select stock.trno from glhead as head left join glsubject as stock on stock.trno=
+          head.trno where head.doc='ER' and stock.screfx=" . $refx . " and stock.sclinex=" . $linex;
+
+    $qry2 = "select ifnull(count(trno),0) as value from (" . $qry1 . ") as t";
+    $qty = $this->coreFunctions->datareader($qry2);
+    if ($qty == '') {
+      $qty = 0;
+    }
+    return $this->coreFunctions->execqry("update en_glsubject set asqa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
+  }
+
+  public function delete($config)
+  {
+    $row = $config['params']['row'];
+    $doc = $config['params']['doc'];
+
+    $docno = $config['params']['row']['docno'];
+    $client = $config['params']['row']['client'];
+    $sctrno = $config['params']['tableid'];
+
+    $semid = $this->coreFunctions->datareader("select semid as value from en_glhead where trno=?", [$sctrno]);
+    $sotrno = $this->coreFunctions->datareader("select sotrno as value from glhead where docno=?", [$docno]);
+    $trno = $this->coreFunctions->datareader("select trno as value from glhead where docno=?", [$docno]);
+    $clientid = $this->coreFunctions->datareader("select clientid as value from client where client=?", [$client]);
+
+    $qry = "update glsubject set screfx=0,sclinex=0,schedstarttime=null,schedendtime=null,roomid=0,bldgid=0,schedday='',instructorid=0 where trno=? and semid=?";
+    $this->coreFunctions->execqry($qry, 'update', [$trno, $semid]);
+
+    $qry = "update en_glsubject set refx=0,linex=0,schedstarttime=null,schedendtime=null,roomid=0,bldgid=0,schedday='',instructorid=0 where trno=? and semid=?";
+    $this->coreFunctions->execqry($qry, 'update', [$sotrno, $semid]);
+
+    $qry = "update en_studentinfo set schedtrno=0 where clientid=?";
+    $this->coreFunctions->execqry($qry, 'update', [$clientid]);
+
+    // $qry = "delete from en_scurriculum where clientid=?";
+    // $this->coreFunctions->execqry($qry,'delete',[$clientid]);
+
+    $data = $this->coreFunctions->opentable("select trno,line from en_glsubject where trno=?", [$sctrno]);
+    foreach ($data as $key => $value) {
+      $screfx = $data[$key]->trno;
+      $sclinex = $data[$key]->line;
+      $this->setservedsubject($screfx, $sclinex);
+    }
+
+    return ['status' => true, 'msg' => 'Successfully deleted.'];
+  }
+
+  private  function selectqry()
+  {
+    return " select stock.trno,stock.line,f.feesdesc as rem,f.feescode,stock.feestype,coa.acno,coa.acnoname,stock.feesid,stock.acnoid,stock.isamt,
+    '' as bgcolor,
+    '' as errcolor  ";
+  }
+
+  public function loaddata($config)
+  {
+
+    $tableid = $config['params']['tableid'];
+    $doc = $config['params']['doc'];
+
+    $qry =  "select distinct head.docno,head.dateid,client.client,client.clientname from glhead as head left join client on client.clientid=head.clientid left join glsubject as stock on stock.trno=head.trno
+    where head.doc='ER' and stock.screfx=? ";
+
+    //  and head.assessref='' and head.syid=0 and head.periodid=0 and head.courseid=0 and head.semid=0 and head.sectionid=0 and head.yr=0;
+    $data = $this->coreFunctions->opentable($qry, [$tableid]);
+    return $data;
+  }
+} //end class

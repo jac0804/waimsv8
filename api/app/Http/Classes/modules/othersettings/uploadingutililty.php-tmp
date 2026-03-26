@@ -1,0 +1,1016 @@
+<?php
+
+namespace App\Http\Classes\modules\othersettings;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+use Exception;
+
+class uploadingutililty {
+	private $btnClass;
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'Uploading Utility';
+	public $gridname   = 'entrygrid';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	public $style = 'width:100%;max-width:100%;';
+
+	public $issearchshow = false;
+	public $showclosebtn = false;
+
+	public function __construct() {
+		$this->btnClass      = new buttonClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function getAttrib() {
+		$attrib = array('view' => 2584, 'save' => 2584);
+		return $attrib;
+	}
+
+	public function createHeadbutton($config) {
+		return [];
+	}
+
+	public function createTab($config) {
+
+		return [];
+	}
+
+	public function createtabbutton($config) {
+		return [];
+	}
+
+	public function createHeadField($config) {
+		if ($config['params']['companyid'] == 10) {
+			//$fields = ['optionuploading', 'uploadexcel','downloaditemexcel','downloadcustomerexcel'];
+			$fields = ['optionuploading', 'uploadexcel'];
+		} else {
+			$fields = ['optionuploading', 'uploadexcel'];
+		}
+		$col1 = $this->fieldClass->create($fields);
+		if ($config['params']['companyid'] == 6) {
+			data_set($col1, 'optionuploading.options', array(['label' => 'Update Price', 'value' => 'updateprice', 'color' => 'green']));
+		}
+		if ($config['params']['companyid'] == 10) {
+			data_set($col1, 'optionuploading.options', array(
+					['label' => 'Upload New Item', 'value' => 'newitem', 'color' => 'green'],
+					['label' => 'Upload Price List Php', 'value' => 'uploadpricephp', 'color' => 'green'],
+					['label' => 'Upload Price List USD', 'value' => 'uploadpriceusd', 'color' => 'green'],
+					['label' => 'Upload Transfer Price USD', 'value' => 'uploadtpusd', 'color' => 'green']
+				));
+		}
+
+		if ($config['params']['companyid'] == 10) {
+			$fields = ['downloaditemexcel', 'dlexcelpricelistphp', 'dlexcelpricelistusd'];
+			$col2   = $this->fieldClass->create($fields);
+			return array('col1' => $col1, 'col2' => $col2);
+		} else {
+			return array('col1' => $col1);
+		}
+	}
+
+	public function paramsdata($config) {
+
+		$data = $this->coreFunctions->opentable("
+      select 'newitem' as utype");
+
+		return $data[0];
+	}
+
+	public function data($config) {
+		return $this->paramsdata($config);
+	}
+
+	public function headtablestatus($config) {
+
+		$action = $config['params']["action2"];
+		switch ($action) {
+			case 'uploadexcel':
+				$type = $config['params']['dataparams']['utype'];
+				switch ($type) {
+				case 'newitem':
+						return ['status' => true, 'msg' => 'Upload finished'];
+						break;
+				default:
+						return ['status' => false, 'msg' => 'Invalid uploading type'];
+						break;
+				}
+				break;
+
+			default:
+				return ['status' => false, 'msg' => 'Please check headtablestatus ('.$action.')'];
+				break;
+		}// end switch
+	}
+
+	public function stockstatusposted($config) {
+
+		$action = $config['params']["action"];
+		switch ($action) {
+			case 'uploadexcel':
+				// return ['status' => true, 'msg' => ''];
+				switch ($config['params']['dataparams']['utype']) {
+				case 'uploadpricephp':
+				case 'uploadpriceusd':
+				case 'uploadtpusd':
+						return $this->updatepricefromexcel($config['params']['dataparams']['utype'], $config['params']['data']);
+						break;
+				default:
+						return $this->insertdatafromexcel($config['params']['dataparams']['utype'], $config['params']['data'], $config);
+				}
+				break;
+			case 'downloaditemexcel':
+				return $this->setupexceltemplate($config);
+				break;
+			case 'dlexcelpricelistphp':
+				return ['status' => true, 'msg' => 'Item template ready to Download.', 'name' => 'item', 'data' => ['barcode' => '', 'phpamt' => '']];
+				break;
+			case 'dlexcelpricelistusd':
+				return ['status' => true, 'msg' => 'Item template ready to Download.', 'name' => 'item', 'data' => ['barcode' => '', 'usdamt' => '']];
+				break;
+			case 'downloadcustomerexcel':
+				return ['status' => true, 'msg' => 'Customer template ready to Download.', 'name' => 'customer', 'data' => ['client' => '', 'clientname' => '']];
+				break;
+			default:
+				return ['status' => false, 'msg' => 'Please check headtablestatus ('.$action.')'];
+				break;
+		}// end switch
+	}
+
+	public function setupexceltemplate($config) {
+		switch ($config['params']['companyid']) {
+			case 10:
+				return [
+					'status'  => true, 'msg'  => 'Item template ready to Download', 'name'  => 'item',
+					'data'    => [
+						'partno' => '', 'itemname' => '', 'project' => '', 'uom' => '', 'brand' => '', 'model' => '', 'description' => '', 'accessories' => '', 'isoutsource' => '', 'isservice' => '', 'isserial' => ''
+					]
+				];
+				break;
+			default:
+				return ['status' => true, 'msg' => 'Item template ready to Download', 'name' => 'item', 'data' => ['barcode' => '', 'itemname' => '']];
+				break;
+		}
+	}
+
+	public function validatetemplate($config, $tabletype) {
+		$rawdata = $config['params']['data'][0];
+		switch ($config['params']['companyid']) {
+			case 10:
+				if ($tabletype == "item") {
+					$array       = $this->setupexceltemplate($config);
+					$validheader = array_keys($array['data']);
+					$rawheader   = array_keys($rawdata);
+
+					foreach ($validheader as $key) {
+						if (!in_array($key, $rawheader)) {
+							return ['status' => false, 'msg' => 'Invalid template, missing field `'.$key.'`', 'valid' => $validheader, 'upload' => $rawheader];
+						}
+					}
+
+					return ['status' => true, 'msg' => '', 'data' => $rawdata];
+				}
+
+				return ['status' => true, 'msg' => ''];
+				break;
+			default:
+				return ['status' => true, 'msg' => ''];
+				break;
+		}
+
+	}
+
+	private function updatepricefromexcel($type, $rawdata) {
+		$amtfield = '';
+		switch ($type) {
+			case 'uploadpricephp':
+				$amtfield = 'amt';
+				break;
+			case 'uploadpriceusd':
+				$amtfield = 'amt2';
+				break;
+			case 'uploadtpusd':
+				$amtfield = 'amt3';
+				break;
+		}
+		return ['status' => true, 'msg' => 'Successfully uploaded '.$type];
+	}
+
+	private function insertdatafromexcel($type, $rawdata, $config) {
+
+		$status = true;
+		$msg    = '';
+
+		$blnIsert = true;
+
+		$tabletype = '';
+		switch ($type) {
+			case 'newitem':
+			case 'updateitem':
+			case 'updateprice':
+				$tabletype = 'item';
+				break;
+			case 'newcustomer':
+			case 'updatecustomer':
+				$tabletype = 'customer';
+				break;
+			case 'newsupplier':
+			case 'updatesupplier':
+				$tabletype = 'supplier';
+				break;
+			case 'newwh':
+			case 'updatewh':
+				$tabletype = 'wh';
+				break;
+		}
+
+		$isvalidtempate = $this->validatetemplate($config, $tabletype);
+		if (!$isvalidtempate['status']) {
+			return $isvalidtempate;
+		}
+
+		switch ($type) {
+			case 'updateitem':
+			case 'updatecustomer':
+			case 'updatesupplier':
+			case 'updatewh':
+			case 'updateprice':
+				$blnIsert = false;
+				break;
+		}
+
+		$table = $this->gettablename($tabletype, $tabletype);
+		if ($table == '') {
+			$status = false;
+			$msg    = 'Undefined table name '.$tabletype;
+			gotoexithere;
+		}
+
+		$unique = $this->getuniquefield($table, $config);
+		if ($unique == '') {
+			$status = false;
+			$msg    = 'Undefined unique field '.$tabletype;
+			gotoexithere;
+		}
+
+		foreach ($rawdata as $key => $value) {
+			$valtoinsert = [];
+			$uniqueval   = '';
+			$iteminfo    = [];
+
+			try {
+				$testcounter = 0;
+				foreach ($value as $k => $val) {
+					$testcounter = $testcounter+1;
+
+					$fieldname = $this->getequivalentfieldname(trim($k), $table);
+					$val       = $this->othersClass->sanitizekeyfield($fieldname, $val);
+
+					$val = preg_replace('/[\x00-\x1F\x7F]/u', '', $val);
+
+					if ($fieldname == '') {
+						// $status = false;
+						// $msg = 'Undefined column ' . $k;
+						// goto exithere;
+						// return ['status' => true, 'msg' => $msg, 'data' => $valtoinsert];
+					} else {
+						switch ($fieldname) {
+							case 'agent':
+							case 'supplier':
+							case 'terms':
+							case 'rev':
+								$check = $this->linktoothertable($fieldname, $val, $k, $table);
+								if (!$check['status']) {
+									$status = false;
+									$msg    = $check['msg'];
+									gotoexithere;
+								} else {
+									if ($fieldname == 'supplier' && $table == 'item') {
+										$val = $check['id'];
+									}
+								}
+								break;
+							case 'status':
+								$check = $this->clientstatus($fieldname, $val);
+								if (!$check['status']) {
+									$status = false;
+									$msg    = $check['msg'];
+									gotoexithere;
+								}
+								break;
+						}
+						if ($fieldname == $unique) {
+							$uniqueval = $val;
+						}
+						$valtoinsert[$fieldname] = $this->checkfieldmasterfield($fieldname, $val, $table);
+
+						// if($testcounter == 5){
+						//   return ['status' => true, 'msg' => $testcounter.' - '.$fieldname, 'data' => $valtoinsert];
+						// }
+					}
+				}
+
+				// return ['status' => true, 'msg' => 'test', 'data' => $valtoinsert];
+
+				switch ($tabletype) {
+					case 'customer':
+						$valtoinsert['iscustomer'] = 1;
+						break;
+					case 'supplier':
+						$valtoinsert['issupplier'] = 1;
+						break;
+					case 'agent':
+						$valtoinsert['isagent'] = 1;
+						break;
+					case 'wh':
+						$valtoinsert['iswarehouse'] = 1;
+						break;
+				}
+
+				foreach ($valtoinsert as $vi => $viv) {
+					$valtoinsert[$vi] = $this->othersClass->sanitizekeyfield($vi, $viv);
+				}
+
+				foreach ($valtoinsert as $vi => $viv) {
+					$iteminfo_field = $this->getiteminfofields($vi);
+					if ($iteminfo_field != '') {
+						$iteminfo[$vi] = $viv;
+						unset($valtoinsert[$vi]);
+					}
+				}
+
+				if ($iteminfo) {
+					$iteminfo[$unique] = $uniqueval;
+				}
+
+				$insert = 1;
+				if ($blnIsert) {
+					switch ($unique) {
+						case 'partno':
+							$partno_exist = $this->coreFunctions->getfieldvalue($table, $unique, $unique.'=?', [$uniqueval]);
+							if (!$partno_exist) {
+								$barcode                = $this->generatebarcode($config, $valtoinsert);
+								$valtoinsert['barcode'] = $barcode;
+							} else {
+								$msg = $msg.' Part No '.$uniqueval.' is already exists. ';
+							}
+							break;
+					}
+
+					$exist = $this->coreFunctions->getfieldvalue($table, $unique, $unique.'=?', [$uniqueval]);
+					if (!$exist) {
+						$insert = $this->coreFunctions->sbcinsert($table, $valtoinsert);
+					}
+				} else {
+					$insert = $this->coreFunctions->sbcupdate($table, $valtoinsert, [$unique => $uniqueval]);
+				}
+
+				if ($insert) {
+					if ($tabletype == 'item') {
+						if ($type == 'newitem') {
+							$result = $this->insertitemuom($valtoinsert, $unique);
+							if (!$result['status']) {
+								$status = false;
+								$msg .= $result['msg'];
+							}
+
+							if ($iteminfo) {
+								$result = $this->insertiteminfo($iteminfo, $unique);
+								if (!$result['status']) {
+									$status = false;
+									$msg .= $result['msg'];
+								}
+							}
+						}
+					}
+				} else {
+					$status = false;
+					$msg .= $uniqueval.', failed to upload ';
+				}
+			} catch (Exception $e) {
+				$status = false;
+				$msg .= 'Failed to upload. Exception error '.$e->getMessage();
+				gotoexithere;
+			}
+		}
+
+		exithere:
+		if ($msg == '') {
+			$msg = 'Successfully uploaded.';
+		}
+		return ['status' => $status, 'msg' => $msg];
+	}
+
+	private function gettablename($field, $type) {
+		switch ($field) {
+			case 'model':
+				return 'model_masterfile';
+				break;
+			case 'part':
+				return 'part_masterfile';
+				break;
+			case 'group':
+			case 'groupid':
+				return 'stockgrp_masterfile';
+				break;
+			case 'brand':
+				return 'frontend_ebrands';
+				break;
+			case 'class':
+				return 'item_class';
+				break;
+			case 'category':
+				if ($type == 'item') {
+					return 'itemcategory';
+				} else {
+					return 'category_masterfile';
+				}
+				break;
+			case 'subcat':
+				return 'itemsubcategory';
+				break;
+			case 'projectid':
+				return 'projectmasterfile';
+				break;
+			case 'customer':
+			case 'supplier':
+			case 'wh':
+			case 'agent':
+				return 'client';
+				break;
+			case 'item':
+				return $field;
+				break;
+			default:
+				return '';
+				break;
+		}
+	}
+
+	private function getuniquefield($id, $config) {
+		switch ($id) {
+			case 'client':
+				return 'client';
+				break;
+
+			case 'item':
+				switch ($config['params']['companyid']) {
+				case 10:
+						return 'partno';
+						break;
+
+				default:
+						return 'barcode';
+				}
+
+				break;
+			default:
+				return '';
+				break;
+		}
+	}
+
+	private function getequivalentfieldname($field, $table) {
+
+		switch (strtolower($field)) {
+			case 'customercode';
+			case 'warehousecode':
+				return 'client';
+				break;
+
+			case 'suppliercode':
+				if ($table == 'item') {
+					return 'supplier';
+				} else {
+					return 'client';
+				}
+				break;
+
+			case 'suppliername':
+				if ($table == 'item') {
+					return '';
+				} else {
+					return 'clientname';
+				}
+				break;
+
+			case 'customername':
+			case 'warehousename':
+				return 'clientname';
+				break;
+
+			case 'address':
+				return 'addr';
+				break;
+
+			case 'telephonenumber':
+				return 'tel';
+				break;
+
+			case 'faxnumber':
+				return 'fax';
+				break;
+
+			case 'contactperson':
+				return 'contact';
+				break;
+
+			case 'creditlimit':
+				return 'crlimit';
+				break;
+
+			case 'ownername':
+				return 'owner';
+				break;
+
+			case 'ownercontact':
+				return 'mobile';
+				break;
+
+			case 'businesstype':
+				return 'bstyle';
+				break;
+
+			case 'itemcode':
+				return 'barcode';
+				break;
+
+			case 'itemdescription':
+				return 'itemname';
+				break;
+
+			case 'classification':
+				return 'class';
+				break;
+
+			case 'suppliercode':
+				return 'supplier';
+				break;
+
+			case 'unitofmeasurement':
+				return 'uom';
+				break;
+
+			case 'price1':
+			case 'retail':
+				return 'amt';
+				break;
+
+			case 'wholesale':
+				return 'amt2';
+				break;
+
+			case 'price_a':
+				return 'famt';
+				break;
+
+			case 'price_b':
+				return 'amt4';
+				break;
+
+			case 'price_c':
+				return 'amt5';
+				break;
+
+			case 'price_d':
+				return 'amt6';
+				break;
+
+			case 'price_e':
+				return 'amt7';
+				break;
+
+			case 'price_f':
+				return 'amt8';
+				break;
+
+			case 'price_g':
+				return 'amt9';
+				break;
+
+			case 'discount1':
+			case 'discount_r':
+				return 'disc';
+				break;
+
+			case 'discount_w':
+				return 'disc2';
+				break;
+
+			case 'discount_a':
+				return 'disc3';
+				break;
+
+			case 'discount_b':
+				return 'disc4';
+				break;
+
+			case 'discount_c':
+				return 'disc5';
+				break;
+
+			case 'discount_d':
+				return 'disc6';
+				break;
+
+			case 'discount_e':
+				return 'disc7';
+				break;
+
+			case 'discount_f':
+				return 'disc8';
+				break;
+
+			case 'discount_g':
+				return 'disc9';
+				break;
+
+			case 'subcategory':
+				return 'subcat';
+				break;
+
+			case 'isservice':
+				return 'islabor';
+				break;
+
+			case 'description':
+				return 'itemdescription';
+				break;
+
+			case 'barcode':
+			case 'itemname':
+			case 'uom':
+			case 'class':
+			case 'brand':
+			case 'model':
+			case 'category':
+			case 'color';
+			case 'partno':
+			case 'isserial':
+			case 'isoutsource':
+			case 'email':
+			case 'area':
+			case 'province':
+			case 'region':
+			case 'accessories';
+				return strtolower($field);
+				break;
+
+			default:
+				return '';
+				break;
+		}
+	}
+
+	private function linktoothertable($field, $value, $excelheader, $tablename) {
+		$success = true;
+		$msg     = '';
+		$qry     = '';
+		$item    = [];
+
+		if ($value != '') {
+			switch ($field) {
+				case 'agent':
+					if ($tablename == 'item') {
+						$qry = "select clientid as value from client where isagent=1 and client='".$value."'";
+					} else {
+						return ['status' => $success, 'msg' => $msg, 'id' => 0];
+					}
+
+					break;
+				case 'supplier':
+					$qry = "select clientid as value from client where issupplier=1 and client='".$value."'";
+					break;
+				case 'terms':
+					$qry = "select line as value from terms where terms='".$value."'";
+					break;
+				case 'rev':
+					$value = str_replace("\\", "", $value);
+					$qry   = "select acnoid as value from coa where acno='\\\\".$value."'";
+					break;
+			}
+			if ($qry != '') {
+				$item = $this->coreFunctions->datareader($qry);
+				if ($item != null || !empty($item)) {
+					$success = true;
+				} else {
+					$success = false;
+					$msg     = $excelheader.' '.$value.' is not existing. Please setup first ';
+				}
+			}
+		}
+
+		return ['status' => $success, 'msg' => $msg, 'id' => $item];
+	}
+
+	private function clientstatus($field, $val) {
+		$stat = array('ACTIVE', 'LAPSED', 'ABANDONED', 'SUSPENDED', 'LEGAL', 'CLOSED', 'HOLD', 'INACTIVE');
+		if (in_array($val, $stat)) {
+		} else {
+			return ['status' => false, 'msg' => 'Invalid status '.$val, 'val' => ''];
+		}
+
+		return ['status' => true, 'msg' => '', 'val' => $val];
+	}
+
+	private function checkfieldmasterfield($field, $val, $tablename) {
+		$result = $val;
+		switch ($tablename) {
+			case 'item':
+				switch ($field) {
+				case 'class':
+				case 'groupid':
+				case 'model':
+				case 'part':
+				case 'brand':
+				case 'category':
+				case 'subcat':
+				case 'projectid':
+
+						if ($val == "") {
+							return 0;
+						}
+						getidhere:
+						$check = $this->isexist($field, $val, 'name', $tablename);
+
+						if ($check) {
+							// if ($field == 'brand') {
+							//   $result = $val;
+							// } else {
+							$result = $check;
+							// }
+						} else {
+							$value = [$this->getfieldmastername($field, $tablename)=> substr($val, 0, 150)];//substr($val,0,$max)
+							$this->coreFunctions->sbcinsert($this->gettablename($field, $tablename), $value);
+							// if ($field == 'brand') {
+							//   $result = $val;
+							// } else {
+							gotogetidhere;
+							// }
+						}
+						break;
+				}
+				break;
+		}
+		$result = $this->padslashes($field, $result);
+		$result = $this->formatdate($field, $result);
+		return $result;
+	}
+
+	private function getfieldmastername($field, $tablename) {
+		switch ($field) {
+			case 'class':
+				return 'cl_name';
+				break;
+			case 'part':
+				return 'part_name';
+				break;
+			case 'model':
+				return 'model_name';
+				break;
+			case 'groupid':
+				return 'stockgrp_name';
+				break;
+			case 'brand':
+				return 'brand_desc';
+				break;
+			case 'category':
+				if ($tablename == 'item') {
+					return 'name';
+				} else {
+					return 'cat_name';
+				}
+				break;
+			case 'subcat':
+			case 'projectid':
+				return 'name';
+				break;
+		}
+	}
+
+	private function padslashes($field, $val) {
+		$result = $val;
+		switch ($field) {
+			case 'asset':
+			case 'expense':
+				$result = "\\".str_replace("\\", "", $val);
+				break;
+		}
+		return $result;
+	}
+
+	private function formatdate($field, $value) {
+		switch ($field) {
+			case 'dateid':
+				$date = date_create($value);
+				return date_format($date, "Y-m-d H:i:s");
+				break;
+
+			default:
+				return $value;
+				break;
+		}
+	}
+
+	private function isexist($field, $id, $type = 'id', $tablename) {
+		$qry = '';
+		switch ($type) {
+			case 'id':
+				switch ($field) {
+				case 'model':
+						$qry = 'select model_id as value from model_masterfile where model_id='.$id;
+						break;
+				case 'part':
+						$qry = 'select part_id as value from part_masterfile where part_id='.$id;
+						break;
+				case 'group':
+				case 'groupid':
+						$qry = 'select stockgrp_id as value from stockgrp_masterfile where stockgrp_id='.$id;
+						break;
+				case 'brand':
+						$qry = 'select brandid as value from frontend_ebrands where brandid='.$id;
+						break;
+				case 'class':
+						$qry = 'select cl_id as value from item_class where cl_id='.$id;
+						break;
+				case 'category':
+						if ($tablename == 'item') {
+							$qry = 'select line as value from itemcategory where line='.$id;
+						} else {
+							$qry = 'select cat_id as value from category_masterfile where cat_id='.$id;
+						}
+						break;
+				case 'projectid':
+						$qry = 'select line as value from projectmasterfile where line='.$id;
+						break;
+				case 'subcat':
+						$qry = 'select line as value from itemsubcategory where line='.$id;
+						break;
+				}
+				break;
+
+			case 'name':
+				switch ($field) {
+				case 'class':
+						$qry = "select cl_id as value from item_class where cl_name='".$id."'";
+						break;
+				case 'groupid':
+						$qry = "select stockgrp_id as value from stockgrp_masterfile where stockgrp_name='".$id."'";
+						break;
+				case 'model':
+						$qry = "select model_id as value from model_masterfile where model_name='".$id."'";
+						break;
+				case 'part':
+						$qry = "select part_id as value from part_masterfile where part_name='".$id."'";
+						break;
+				case 'category':
+						if ($tablename == 'item') {
+							$qry = "select line as value from itemcategory where `name`='".$id."'";
+						} else {
+							$qry = "select cat_id as value from category_masterfile where cat_name='".$id."'";
+						}
+						break;
+				case 'brand':
+						$qry = "select brandid as value from frontend_ebrands where brand_desc='".$id."'";
+						break;
+				case 'projectid':
+						$qry = "select line as value from projectmasterfile where `name`='".$id."'";
+						break;
+				case 'subcat':
+						$qry = "select line as value from itemsubcategory where `name`='".$id."'";
+						break;
+				}
+
+				break;
+		}
+
+		if ($qry == '') {
+			return true;
+		}
+		$item = $this->coreFunctions->datareader($qry);
+		if ($item != null || !empty($item)) {
+			return $item;
+		} else {
+			// echo $field;
+			return false;
+		}
+	}
+
+	private function insertitemuom($params, $unique) {
+		$uom    = '';
+		$itemid = $this->coreFunctions->getfieldvalue("item", "itemid", $unique."=?", [$params[$unique]]);
+		if (isset($params['uom'])) {
+			$uom = $params['uom'];
+		} else {
+			return ['status' => false, 'msg' => 'Failed to insert uom factor. Missing UOM for item '.$unique];
+		}
+
+		if ($itemid) {
+			$check = $this->coreFunctions->getfieldvalue("uom", "itemid", "itemid=? and uom=?", [$itemid, $uom]);
+			if (!$check) {
+				$data = [
+					'itemid' => $itemid,
+					'uom'    => $uom,
+					'factor' => 1,
+					'kilos'  => 1
+				];
+				$this->coreFunctions->sbcinsert("uom", $data);
+			}
+		} else {
+			return ['status' => true, 'msg' => ''];
+		}
+
+		return ['status' => true, 'msg' => 'Failed to insert uom factor. Item '.$unique.' doesn`t exist'];
+	}
+
+	private function insertiteminfo($params, $unique) {
+		$msg    = '';
+		$itemid = $this->coreFunctions->getfieldvalue("item", "itemid", $unique."=?", [$params[$unique]]);
+		if ($itemid) {
+			$fields = ['itemid' => $itemid];
+			if (isset($params['itemdescription'])) {
+				$fields['itemdescription'] = $params['itemdescription'];
+			}
+			if (isset($params['accessories'])) {
+				$fields['accessories'] = $params['accessories'];
+			}
+			$check = $this->coreFunctions->getfieldvalue("iteminfo", "itemid", "itemid=?", [$itemid]);
+			if ($check) {
+				$this->coreFunctions->sbcupdate("iteminfo", $fields, ['itemid' => $itemid]);
+			} else {
+				$this->coreFunctions->sbcinsert("iteminfo", $fields);
+			}
+		}
+
+		return ['status' => true, 'msg' => $msg];
+	}
+
+	public function getiteminfofields($key) {
+		$arr = ['itemdescription', 'accessories'];
+
+		if (in_array($key, $arr)) {
+			return $key;
+		}
+		return '';
+	}
+
+	public function generatebarcode($config, $row) {
+		$barcodelength = $this->companysetup->getbarcodelength($config['params']);
+		$pref          = '';
+		$path          = 'App\Http\Classes\modules\masterfile\stockcard';
+
+		switch ($config['params']['companyid']) {
+			case 10:
+				$isoutsource = isset($row['isoutsource'])?$row['isoutsource']:0;
+				if ($isoutsource == 1) {
+					$pref = 'A';
+				} else {
+					$pref = 'I';
+				}
+				break;
+
+			default:
+				$pref = app($path)->prefix;
+				if (strlen($pref) == 0) {
+					$pref = app($path)->prefix;
+				}
+				if (!$pref) {
+					$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+					$pref     = isset($prefixes[0])?$prefixes[0]:$this->config['params']['doc'];
+				}
+				break;
+		}
+
+		$barcode2 = app($path)->getlastbarcode($pref);
+		$seq      = (substr($barcode2, $this->othersClass->SearchPosition($barcode2), strlen($barcode2)));
+		$seq += 1;
+
+		if ($seq == 0 || empty($pref)) {
+			if (empty($pref)) {
+				$pref = strtoupper($barcode);
+			}
+			$barcode2 = app($path)->getlastbarcode($pref);
+			$seq      = (substr($barcode2, $this->othersClass->SearchPosition($barcode2), strlen($barcode2)));
+			$seq += 1;
+		}
+		$poseq = $pref.$seq;
+
+		$newbarcode = $this->othersClass->PadJ($poseq, $barcodelength);
+
+		return $newbarcode;
+	}
+}//end class

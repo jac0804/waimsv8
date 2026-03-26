@@ -1,0 +1,579 @@
+<?php
+
+namespace App\Http\Classes;
+
+use App\Http\Classes\coreFunctions;
+
+class companysetup {
+
+	private $coreFunctions;
+
+	private $multibranch;
+	private $clientlength;
+	private $invdoc;
+	private $documentlength;
+	private $barcodelength;
+	private $tax;
+	private $serial;
+	private $isexpiry;
+	private $checkbelowcost;
+	private $wh;
+	private $module;
+	private $companyname;
+	private $systemtype;
+	private $branchaccess;
+	private $payroll_bonusmax;
+	private $payroll_daysInMonth;
+	private $ispallet;
+	private $iscreateversion;
+	private $issupplierinvoice;
+	private $ispricescheme;
+	private $isconsign;
+	private $isshortcutpo;
+	private $isuomamt;
+	private $isiteminfo;
+	private $defaultcurrency;
+	private $reportpathdefault = "\Http\Classes\modules\modulereport\main\\";
+	private $reportpath;
+
+	public function __construct() {
+		$this->coreFunctions = new coreFunctions;
+	}//end fn
+
+	//put here for documentation
+	// Listing of company id and name
+	// default = 0
+	//1 = vitaline
+
+	private function companylist($params) {
+		$this->multibranch         = false;
+		$this->branchaccess        = 0;
+		$this->isfa                = true;
+		$this->ispallet            = false;
+		$this->defaultcurrency     = 'P';
+		$this->issupplierinvoice   = false;
+		$this->ispricescheme       = false;
+		$this->isconsign           = false;
+		$this->iscrm               = false;
+		$this->isshortcutpo        = false;
+		$this->payroll_bonusmax    = 10000;
+		$this->payroll_daysInMonth = 26;
+		$this->reportpath          = $this->reportpathdefault;
+		$this->ispos               = true;
+		$this->isuomamt            = false;
+		$this->isshortcutjo        = false;
+		$this->isiteminfo          = false;
+
+		switch ($params['companyid']) {
+			case '11'://SUMMIT
+				$this->clientlength    = 0;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 15;
+				$this->tax             = 12;
+				$this->serial          = false;
+				$this->companyname     = 'SUMMIT';
+				$this->systemtype      = 'AIMS';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = true;
+				$this->isproject       = false;
+				$this->iscreateversion = false;
+				$this->isfa            = false;
+				$this->isconsign       = false;
+				$this->isshortcutpo    = false;
+				$this->iscrm           = false;
+				$this->isuomamt        = true;
+				break;
+			case '10'://AFTI
+				$this->clientlength    = 15;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 15;
+				$this->tax             = 12;
+				$this->serial          = true;
+				$this->companyname     = 'AFTI';
+				$this->systemtype      = 'AIMS';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = true;
+				$this->isproject       = false;
+				$this->iscreateversion = false;
+				$this->isfa            = false;
+				$this->isshortcutpo    = true;
+				$this->iscrm           = true;
+				$this->ispos           = false;
+				$this->isshortcutjo    = true;
+				$this->isiteminfo      = true;
+				$this->defaultcurrency = 'PHP';
+				$this->reportpath      = "\Http\Classes\modules\modulereport\afti\\";
+				break;
+			case '9'://PAYROLL PORTAL
+				$this->clientlength    = 7;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 10;
+				$this->tax             = 12;
+				$this->serial          = false;
+				$this->companyname     = 'XYZ Corp.';
+				$this->systemtype      = 'PAYROLLPORTAL';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = true;
+				$this->isproject       = false;
+				$this->iscreateversion = false;
+				break;
+			case '8'://MAXIPRO
+				$this->clientlength    = 7;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 9;
+				$this->tax             = 12;
+				$this->serial          = false;
+				$this->companyname     = 'MAXIPRO Dev`t Corp.';
+				$this->systemtype      = 'CAIMS';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = false;
+				$this->isproject       = true;
+				$this->iscreateversion = false;
+				$this->ispos           = false;
+				$this->iscrm           = false;
+				break;
+			case '7'://Enrollment
+				$this->clientlength    = 15;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 15;
+				$this->tax             = 12;
+				$this->serial          = false;
+				$this->companyname     = 'SolutionBase Corp.';
+				$this->systemtype      = 'SSMS';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = true;
+				$this->isproject       = false;
+				$this->iscreateversion = false;
+				break;
+			case '6'://MITSUKOSHI
+				$this->clientlength        = 15;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 0;
+				$this->tax                 = 12;
+				$this->serial              = false;
+				$this->companyname         = 'MITSUKOSHI';
+				$this->systemtype          = 'WAIMS';
+				$this->isexpiry            = false;
+				$this->checkbelowcost      = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->ispallet            = true;
+				$this->isproject           = false;
+				$this->iscreateversion     = true;
+				$this->isfa                = false;
+				$this->isshortcutpo        = true;
+				$this->reportpath          = "\Http\Classes\modules\modulereport\mitsukoshi\\";
+				break;
+			case '5'://HMS
+				$this->clientlength        = 15;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 15;
+				$this->tax                 = 12;
+				$this->serial              = false;
+				$this->companyname         = 'XYZ Corp.';
+				$this->systemtype          = 'HMS';
+				$this->isexpiry            = false;
+				$this->checkbelowcost      = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->isproject           = false;
+				$this->iscreateversion     = false;
+				break;
+			case '4'://MIS Client
+				$this->clientlength        = 15;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 15;
+				$this->tax                 = 12;
+				$this->serial              = false;
+				$this->companyname         = 'XYZ Corp.';
+				$this->systemtype          = 'MIS';
+				$this->isexpiry            = false;
+				$this->checkbelowcost      = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->isproject           = false;
+				$this->iscreateversion     = false;
+				break;
+			case '3'://conti - client ni joy cebu
+				$this->multibranch         = false;
+				$this->clientlength        = 15;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 15;
+				$this->tax                 = 12;
+				$this->serial              = false;
+				$this->companyname         = 'Conti';
+				$this->systemtype          = 'AIMSHRIS';
+				$this->branchaccess        = 1;
+				$this->isexpiry            = false;
+				$this->checkbelowcost      = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->isproject           = false;
+				$this->iscreateversion     = false;
+				$this->isfa                = false;
+				$this->issupplierinvoice   = true;
+				$this->reportpath          = "\Http\Classes\modules\modulereport\\conti\\";
+				break;
+			case '2'://mis - serial in and serial out
+				$this->clientlength        = 15;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 15;
+				$this->tax                 = 12;
+				$this->serial              = true;
+				$this->companyname         = 'Finden';
+				$this->systemtype          = 'AIMS';
+				$this->isexpiry            = false;
+				$this->checkbelowcost      = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->isproject           = false;
+				$this->iscreateversion     = true;
+				$this->isfa                = true;
+				break;
+			case '1'://vitaline
+				$this->clientlength        = 10;
+				$this->documentlength      = 15;
+				$this->barcodelength       = 13;
+				$this->tax                 = 12;
+				$this->serial              = false;
+				$this->companyname         = 'Vitaline';
+				$this->systemtype          = 'AIMS';
+				$this->isexpiry            = true;
+				$this->checkbelowcost      = true;
+				$this->isproject           = false;
+				$this->payroll_bonusmax    = 0;
+				$this->payroll_daysInMonth = 0;
+				$this->iscreateversion     = false;
+				$this->isfa                = true;
+				$this->reportpath          = "\Http\Classes\modules\modulereport\\vitaline\\";
+				break;
+			default:
+				$this->clientlength    = 10;
+				$this->documentlength  = 15;
+				$this->barcodelength   = 15;
+				$this->tax             = 12;
+				$this->serial          = false;
+				$this->companyname     = 'SolutionBase Corp.';
+				$this->systemtype      = 'ALL';
+				$this->isexpiry        = false;
+				$this->checkbelowcost  = true;
+				$this->isproject       = false;
+				$this->iscreateversion = false;
+				$this->isfa            = false;
+				$this->ispricescheme   = false;
+				$this->isconsign       = false;
+				$this->isshortcutpo    = false;
+				$this->iscrm           = false;
+				$this->ispos           = true;
+				$this->isshortcutjo    = false;
+				break;
+		}
+	}
+
+	public function getmultibranch($params) {
+		$this->companylist($params);
+		return $this->multibranch;
+	}
+
+	public function getdefaultcurrency($params) {
+		$this->companylist($params);
+		return $this->defaultcurrency;
+	}
+
+	public function getclientlength($params) {
+		$this->companylist($params);
+		return $this->clientlength;
+	}
+
+	public function getinvdoc($params) {
+		switch ($params['companyid']) {
+			default:
+				return "'RR','DM','SJ','CM','IS','AJ','TS','PK','MI'";
+				break;
+		}
+	}
+
+	public function getdocumentlength($params) {
+		$this->companylist($params);
+		return $this->documentlength;
+	}
+
+	public function getbarcodelength($params) {
+		$this->companylist($params);
+		return $this->barcodelength;
+	}
+
+	public function getserial($params) {
+		$this->companylist($params);
+		return $this->serial;
+	}
+
+	public function getiscreateversion($params) {
+		$this->companylist($params);
+		return $this->iscreateversion;
+	}
+
+	public function getcompanyname($params) {
+		$this->companylist($params);
+		return $this->companyname;
+	}
+
+	public function gettax($params) {
+		$this->companylist($params);
+		return $this->tax;
+	}
+
+	public function getwh($params) {
+		return $this->coreFunctions->getfieldvalue("center", "warehouse", "code=?", [$params['center']]);
+		// switch ($params['companyid']) {
+		//   default:
+		//     return 'WH0000000000003';
+		//     break;
+		// }
+	}
+
+	public function getaddress($params) {
+		return $this->coreFunctions->getfieldvalue("center", "address", "code=?", [$params['center']]);
+	}
+
+	public function getmodule($params) {
+		//List of modules
+		//['masterfile','purchase','sales','inventory','issuance','payable','receivable','accounting','itemmaster','schoolsetup',
+		//'transactionutilities','accountutilities','schoolsystem','roommanagement','customersupport','hris',
+		//'hrissetup','payrollsetup','payrolltransaction','announcement','dashboard'];
+
+		$modulelist = [];
+		$systemtype = $this->getsystemtype($params);
+		switch ($params['companyid']) {
+			case '10':
+				$modulelist = [
+					'masterfile', 'itemmaster', 'purchase', 'crm', 'sales', 'inventory', 'payable', 'receivable', 'accounting',
+					'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+				];
+				break;
+
+			default:
+				switch ($systemtype) {
+				case 'PAYROLLPORTAL':
+						$modulelist = [
+							'payrollportal'
+						];
+						break;
+				case 'ALL':
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'inventory', 'issuance', 'payable', 'receivable', 'accounting', 'itemmaster', 'schoolsetup',
+							'schoolsystem', 'customersupport', 'hris',
+							'hrissetup', 'payrollsetup', 'payrolltransaction', 'roommanagement', 'frontdesk', 'announcement', 'projectsetup', 'construction', 'warehousing',
+							'branch', 'dashboard', 'payrollportal', 'documentmanagement', 'transactionutilities', 'accountutilities'
+						];
+						break;
+				case 'DTS':// DOCUMENT MANAGEMENT
+						$modulelist = [
+							'masterfile', 'transactionutilities', 'accountutilities', 'dashboard', 'documentmanagement'
+						];
+						break;
+				case 'AIMSHRIS':
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster',
+							'transactionutilities', 'accountutilities', 'hris',
+							'hrissetup', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'AIMS':
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster',
+							'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'AIMSPOS':
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'pos', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster',
+							'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'MIS':
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'inventory', 'itemmaster',
+							'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'HMS':
+						$modulelist = [
+							'frontdesk', 'roommanagement', 'transactionutilities'
+						];
+						break;
+				case 'AMS':
+						$modulelist = [
+							'masterfile', 'payable', 'receivable', 'accounting',
+							'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'CAIMS':
+						$modulelist = [
+							'masterfile', 'projectsetup', 'construction', 'purchase', 'payable', 'receivable', 'inventory', 'accounting', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'
+						];
+						break;
+				case 'WAIMS':// Warehousing
+						$modulelist = [
+							'announcement', 'purchase', 'sales', 'warehousing', 'inventory', 'payable', 'receivable', 'accounting', 'masterfile', 'itemmaster',
+							'transactionutilities', 'accountutilities', 'branch', 'dashboard'
+						];
+						break;
+				case 'SSMS'://enrollment
+						$modulelist = [
+							'masterfile', 'purchase', 'sales', 'inventory', 'issuance', 'payable', 'receivable', 'accounting', 'itemmaster', 'schoolsetup',
+							'transactionutilities', 'accountutilities', 'announcement', 'schoolsystem', 'branch', 'dashboard'
+						];
+						break;
+				}
+
+				if ($this->getisconsign($params)) {
+					array_push($modulelist, 'consignment');
+				}
+
+				if ($this->getiscrm($params)) {
+					array_push($modulelist, 'crm');
+				}
+				break;
+		}
+
+		return $modulelist;
+	}//end function
+
+	public function getsystemtype($params) {
+		$this->companylist($params);
+		return $this->systemtype;
+	}//end function
+
+	public function getbranchaccess($params) {
+		//set 1 to enable branch
+		//set 0 to disable branch
+		// return 0;
+		$this->companylist($params);
+		return $this->branchaccess;
+	}
+
+	public function getdecimal($action, $params) {
+		switch ($params['companyid']) {
+			default:
+				switch ($action) {
+				case 'price':
+						return 2;
+						break;
+				case 'qty':
+						return 2;
+						break;
+				case 'currency':
+						return 2;
+						break;
+				default:
+						return 0;
+						break;
+				}
+				break;
+		}
+	}
+
+	public function getisexpiry($params) {
+		$this->companylist($params);
+		return $this->isexpiry;
+	}
+
+	public function getispallet($params) {
+		$this->companylist($params);
+		return $this->ispallet;
+	}
+
+	public function checkbelowcost($params) {
+		$this->companylist($params);
+		return $this->checkbelowcost;
+	}
+
+	public function getpayroll_bonusmax($params) {
+		$this->companylist($params);
+		return $this->payroll_bonusmax;
+	}
+
+	public function getpayroll_daysInMonth($params) {
+		$this->companylist($params);
+		return $this->payroll_daysInMonth;
+	}
+
+	public function getsupplierinvoice($params) {
+		$this->companylist($params);
+		return $this->issupplierinvoice;
+	}
+
+	public function getispricescheme($params) {
+		$this->companylist($params);
+		return $this->ispricescheme;
+	}
+
+	public function getisconsign($params) {
+		$this->companylist($params);
+		return $this->isconsign;
+	}
+
+	public function getisshortcutpo($params) {
+		$this->companylist($params);
+		return $this->isshortcutpo;
+	}
+
+	public function getiscrm($params) {
+		$this->companylist($params);
+		return $this->iscrm;
+	}
+
+	public function getispos($params) {
+		$this->companylist($params);
+		return $this->ispos;
+	}
+
+	public function getisuomamt($params) {
+		$this->companylist($params);
+		return $this->isuomamt;
+	}
+
+	public function getisshortcutjo($params) {
+		$this->companylist($params);
+		return $this->isshortcutjo;
+	}
+
+	public function getreportpath($params) {
+		$this->companylist($params);
+		// $path = $this->reportpath.strtolower($params['doc']);
+		// $path = '../'.$this->reportpath.strtolower($params['doc']).'.php';
+
+		$report_path = str_replace('\\', '/', $this->reportpath);
+		$path        = app_path().$report_path.strtolower($params['doc']).'.php';
+
+		if (file_exists($path)) {
+			return "App".$this->reportpath.strtolower($params['doc']);
+		} else {
+			return "App".$this->reportpathdefault.strtolower($params['doc']);
+		}
+	}
+
+	public function getisproject($params) {
+		$this->companylist($params);
+		return $this->isproject;
+	}
+	public function getisfixasset($params) {
+		$this->companylist($params);
+		return $this->isfa;
+	}
+
+	public function getisiteminfo($params) {
+		$this->companylist($params);
+		return $this->isiteminfo;
+	}
+
+	// public function gettin($params){
+	//   switch ($params['companyid']) {
+	//     default:
+	//       return '123-456-789-000';
+	//       break;
+	//   }
+	// }
+
+}

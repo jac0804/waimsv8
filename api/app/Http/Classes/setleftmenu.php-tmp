@@ -1,0 +1,320 @@
+<?php
+
+namespace App\Http\Classes;
+
+/*
+*/
+
+use App\Http\Classes\companysetup;
+use App\Http\Classes\leftmenu;
+
+class setleftmenu {
+	public function __construct() {
+		$this->companysetup = new companysetup;
+		$this->leftmenu     = new leftmenu;
+	}
+
+	public function createmodule($params, $module) {
+		$menu = $this->$module($params);
+		if (!isset($menu[$module])) {
+			return [];
+		}
+		$parentid    = $menu[$module]['parent'];
+		$i           = 1;
+		$left_menu   = '';
+		$left_parent = '';
+		foreach ($menu[$module]['modules'] as $key => $value) {
+			if (substr($value, 0, 6) != 'parent') {
+				if ($left_menu == '') {
+					$left_menu = $this->leftmenu->$value($params, $parentid, $i);
+				} else {
+					$left_menu = $left_menu.",".$this->leftmenu->$value($params, $parentid, $i);
+				}
+			} else {
+				$left_parent = $this->leftmenu->$value($params, $parentid, $i);
+			}
+			$i++;
+		}
+		if ($left_menu != '') {
+			$left_menu = "insert into left_menu (seq,parent_id,doc,url,module,class,access) values ".$left_menu;
+		}
+		return [$left_parent, $left_menu];
+	}//end function
+
+	public function masterfile($params) {
+		$masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster'];
+		if ($this->companysetup->getsystemtype($params) <> 'AMS') {
+			$masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'role'];
+		}
+
+		if ($this->companysetup->getsystemtype($params) == 'WAIMS') {
+			array_push($masterfile, 'forwarder');
+			if ($params['companyid'] == 6) {
+				if (($key = array_search('departmentmaster', $masterfile)) !== false) {
+					unset($masterfile[$key]);
+				}
+				if (($key = array_search('role', $masterfile)) !== false) {
+					unset($masterfile[$key]);
+				}
+			}
+		}
+
+		if ($this->companysetup->getsystemtype($params) == 'CAIMS') {
+			if (($key = array_search('role', $masterfile)) !== false) {
+				unset($masterfile[$key]);
+			}
+
+			if (($key = array_search('departmentmaster', $masterfile)) !== false) {
+				unset($masterfile[$key]);
+			}
+
+			if ($params['companyid'] == 8) {
+				if (($key = array_search('agent', $masterfile)) !== false) {
+					unset($masterfile[$key]);
+				}
+			}
+		}
+
+		if ($this->companysetup->getisfixasset($params)) {
+			array_push($masterfile, 'facard');
+		}
+		return ['masterfile' => ['parent' => 1, 'modules' => $masterfile]];
+	}// end function
+
+	public function itemmaster($params) {
+		switch ($params['companyid']) {
+			case '6':
+				$itemmaster = ['parentitemmaster', 'model', 'stockgroup', 'brand', 'clientcategories', 'project', 'compatible'];
+				break;
+			default:
+				$itemmaster = ['parentitemmaster', 'model', 'part', 'stockgroup', 'brand', 'itemclass', 'clientcategories', 'project', 'compatible', 'itemcategory', 'billingaddr'];
+				break;
+		}
+
+		if ($this->companysetup->getsystemtype($params) == 'WAIMS') {
+			array_push($itemmaster, 'partrequesttype', 'checkerlocation', 'deliverytype', 'itemcategory', 'whrem');//'pallet',
+		}
+
+		return ['itemmaster' => ['parent' => 2, 'modules' => $itemmaster]];
+	}//end function
+
+	public function purchase($params) {
+		switch ($params['companyid']) {
+			case '2':
+				$purchase = ['parentpurchase', 'po', 'rr', 'dm', 'pr', 'cd', 'cd2'];
+				break;
+			case '3':
+				$purchase = ['parentpurchase', 'pr', 'po', 'rr', 'sn', 'dm', 'cd', 'cd2'];
+				break;
+			default:
+				$purchase = ['parentpurchase', 'po', 'rr', 'dm'];
+				break;
+		}
+		return ['purchase' => ['parent' => 3, 'modules' => $purchase]];
+	}// end function
+
+	public function sales($params) {
+		switch ($params['companyid']) {
+			case 3:
+				$sales = ['parentsales', 'qt', 'so', 'sj', 'cm', 'mr', 'mi'];
+				break;
+			case 6:
+				$sales = ['parentsales', 'sa', 'sd', 'sb', 'se', 'sc', 'sf', 'cm', 'sg', 'sh', 'si'];
+				break;
+			default:
+				if ($this->companysetup->getiscreateversion($params)) {
+					$sales = ['parentsales', 'qt', 'pa', 'so', 'sj', 'cm'];
+				} else {
+					$sales = ['parentsales', 'pa', 'so', 'sj', 'cm'];
+				}
+				break;
+		}
+		return ['sales' => ['parent' => 4, 'modules' => $sales]];
+	}// end function
+
+	public function inventory($params) {
+		switch ($params['companyid']) {
+			case 3:// conti
+				$inventory = ['parentinventory', 'pc', 'aj', 'ts', 'is', 'va'];
+				break;
+			default:
+				$inventory = ['parentinventory', 'pc', 'aj', 'ts', 'is'];
+				break;
+		}
+		return ['inventory' => ['parent' => 5, 'modules' => $inventory]];
+	}// end function
+
+	public function payable($params) {
+		$payable = ['parentpayable', 'pq', 'sv', 'ap', 'pv', 'cv'];
+		return ['payable' => ['parent' => 6, 'modules' => $payable]];
+	}// end function
+
+	public function receivable($params) {
+		$receivable = ['parentreceivable', 'ar', 'cr', 'kr'];
+		return ['receivable' => ['parent' => 7, 'modules' => $receivable]];
+	}//end function
+
+	public function accounting($params) {
+		$accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds', 'bankrecon'];
+		switch ($params['companyid']) {
+			case 6:
+				break;
+
+			default:
+				array_push($accounting, 'budget', 'checksetup', 'exchangerate');
+				break;
+		}
+		if ($this->companysetup->getisfixasset($params)) {
+			array_push($accounting, 'postdep');
+		}
+		return ['accounting' => ['parent' => 8, 'modules' => $accounting]];
+	}// end function
+
+	public function issuance($params) {
+		$issuance = ['parentissuance', 'tr', 'trapproval', 'st', 'ss'];
+		return ['issuance' => ['parent' => 15, 'modules' => $issuance]];
+	}//end function
+
+	public function schoolsetup($params) {
+		$schoolsetup = [
+			'parentschoolsetup', 'levels', 'semester', 'roomlist', 'subject', 'student', 'new_student_requirement', 'transfer_requirement',
+			'instructor', 'schoolyear', 'scheme', 'period', 'course', 'fees', 'credentials', 'mode_of_payment', 'quarter_setup', 'grade_component', 'grade_equivalent',
+			'grade_setup', 'attendance_type'
+		];
+		return ['schoolsetup' => ['parent' => 10, 'modules' => $schoolsetup]];
+	}//end function
+
+	public function schoolsystem($params) {
+		$schoolsystem = [
+			'parentschoolsystem', 'ec', 'assessmentsetup', 'schedule', 'grade_school_assessment', 'college_assessment', 'registration',
+			'addordrop', 'gradeentry', 'studentgradeentry', 'attendanceentry', 'en_levelup'
+		];
+		return ['schoolsystem' => ['parent' => 11, 'modules' => $schoolsystem]];
+	}//end function
+
+	public function roommanagement($params) {
+		$roommanagement = ['parentroommanagement', 'hmsratecode', 'hmsroomtype', 'hmsothercharges', 'hmspackagesetup'];
+		return ['roommanagement' => ['parent' => 12, 'modules' => $roommanagement]];
+	}//end function
+
+	public function frontdesk($params) {
+		$frontdesk = ['parentfrontdesk', 'hmsreservation', 'hmstempreservation', 'hmswalkin', 'hmsroomplan'];
+		return ['frontdesk' => ['parent' => 13, 'modules' => $frontdesk]];
+	}//end function
+
+	public function customersupport($params) {
+		$customersupport = ['parentcustomersupport', 'create_ticket', 'update_ticket', 'ticket_history'];
+		return ['customersupport' => ['parent' => 14, 'modules' => $customersupport]];
+	}//end function
+
+	public function hrissetup($params) {
+		$hrissetup = [
+			'parenthrissetup', 'code_of_conduct', 'employment_status', 'status_change', 'skill_requirement', 'job_title',
+			'employmentrequirements', 'pre_employment_test'
+		];
+		return ['hrissetup' => ['parent' => 17, 'modules' => $hrissetup]];
+	}//end function
+
+	public function hris($params) {
+		switch ($params['companyid']) {
+			case 3:// conti
+				$hris = ['parenthris', 'applicant', 'personnel_requisition', 'job_offer', 'ha', 'ht', 'ho', 'hr', 'hi', 'hn', 'hd', 'hc', 'hs', 'empndahistory', 'empchangehistory', 'employeepayroll'];
+				break;
+			default:
+				$hris = [
+					'parenthris', 'applicant', 'personnel_requisition', 'job_offer', 'ha', 'ht', 'ho', 'hr', 'hi', 'hn', 'hd', 'hc', 'hs', 'empndahistory',
+					'empchangehistory'
+				];
+				break;
+		}
+		return ['hris' => ['parent' => 16, 'modules' => $hris]];
+	}//end function
+
+	public function payrollsetup($params) {
+		$payrollsetup = [
+			'parentpayrollsetup', 'division', 'section', 'paygroup', 'annualtax', 'philhealth', 'sss', 'pagibig', 'tax', 'holiday', 'leavesetup', 'payrollaccount',
+			'ratesetup', 'shiftsetup'
+		];
+		return ['payrollsetup' => ['parent' => 18, 'modules' => $payrollsetup]];
+	}//end function
+
+	public function payrolltransaction($params) {
+		$payrolltransaction = [
+			'parentpayrolltransaction', 'employeepayroll', 'earningdeductionsetup', 'leaveapplication', 'pieceentry', 'batchsetup',
+			'emptimecard', 'timecardsetup', 'otapproval', 'payrollsetup', 'obapplication', 'loanapplication'
+		];
+		return ['payrolltransaction' => ['parent' => 19, 'modules' => $payrolltransaction]];
+	}//end function
+
+	public function projectsetup($params) {
+		$projectsetup = ['parentprojectsetup', 'project', 'pm', 'stages'];
+		return ['projectsetup' => ['parent' => 25, 'modules' => $projectsetup]];
+	}//end function
+
+	public function construction($params) {
+		$construction = ['parentconstruction', 'br', 'al', 'bl', 'bq', 'constructionpr', 'jr', 'jo', 'jc', 'mi', 'mt', 'wc', 'pb'];
+		return ['construction' => ['parent' => 20, 'modules' => $construction]];
+	}//end function
+
+	public function warehousing($params) {
+		$warehousing = [
+			'parentwarehousing', 'pi', 'pl', 'rp', 'forklift',
+			'warehouseman', 'warehousecontroller', 'warehousepicker', 'warehousechecker', 'dispatching', 'logistics',
+			'wa', 'wb', 'replenishitem'
+		];//'replenishpallet' 8.5.2021 temporary hide
+		return ['warehousing' => ['parent' => 24, 'modules' => $warehousing]];
+	}//end function
+
+	public function payrollportal($params) {
+		$payrollportal = ['parentpayrollportal', 'leaveapplicationportal', 'obapplication', 'loanapplication'];
+		return ['payrollportal' => ['parent' => 26, 'modules' => $payrollportal]];
+	}// end function
+
+	public function consignment($params) {
+		$consignment = ['parentconsignment', 'cn', 'co', 'cs'];
+		return ['consignment' => ['parent' => 28, 'modules' => $consignment]];
+	}//end function
+
+	public function crm($params) {
+		$crm = ['parentcrm', 'ld', 'op'];
+		return ['crm' => ['parent' => 29, 'modules' => $crm]];
+	}//end function
+
+	public function announcement($params) {
+		$announcement = ['parentannouncement', 'notice', 'event', 'holidayannouncement'];
+		return ['announcement' => ['parent' => 22, 'modules' => $announcement]];
+	}//end function
+
+	public function branch($params) {
+		$branch = ['parentbranch', 'branch'];
+		return ['branch' => ['parent' => 23, 'modules' => $branch]];
+	}
+
+	public function transactionutilities($params) {
+		if ($this->companysetup->getsystemtype($params) <> 'AMS') {
+			$transactionutilities = ['parenttransactionutilities', 'terms', 'prefix', 'ewtsetup', 'audittrail', 'unposted_transaction', 'forex', 'executionlog', 'changeitem', 'othersettings'];
+		} else {
+			$transactionutilities = ['parenttransactionutilities', 'terms', 'prefix', 'ewtsetup', 'audittrail', 'unposted_transaction', 'forex', 'executionlog', 'othersettings'];
+		}
+		return ['transactionutilities' => ['parent' => 87, 'modules' => $transactionutilities]];
+	}//end function
+
+	public function accountutilities($params) {
+		$isproject = $this->companysetup->getisproject($params);
+		if ($this->companysetup->getbranchaccess($params)) {
+			$accountutilities = ['parentaccountutilities', 'useraccess', 'branchaccess'];
+		} else {
+			$accountutilities = ['parentaccountutilities', 'useraccess'];
+		}
+		if ($isproject) {
+			array_push($accountutilities, 'projectaccess');
+		}
+		return ['accountutilities' => ['parent' => 88, 'modules' => $accountutilities]];
+	}//end function
+
+	public function dashboard($params) {
+		$announcement = ['parentdashboard'];
+		return ['dashboard' => ['parent' => 27, 'modules' => $announcement]];
+	}//end function
+
+}// end class

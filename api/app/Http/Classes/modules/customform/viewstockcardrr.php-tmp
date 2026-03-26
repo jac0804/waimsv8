@@ -1,0 +1,217 @@
+<?php
+namespace App\Http\Classes\modules\customform;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class viewstockcardrr {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'IN-Transaction';
+	public $gridname   = 'customformacctg';
+	private $companysetup;
+	private $coreFunctions;
+	public $style = 'width:1500px;max-width:1500px;';
+
+	public $issearchshow = true;
+	public $showclosebtn = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function createTab($config) {
+		$viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
+		if ($viewcost == '1') {
+			$tab = [$this->gridname => [
+					'gridcolumns'         => [
+						'docno', 'dateid',
+						'listclientname', 'cost', 'disc',
+						'rrqty', 'status', 'uom',
+						'loc', 'expiry',
+						'rem', 'center'
+					]
+				]];
+		} else {
+			$tab = [$this->gridname => [
+					'gridcolumns'         => [
+						'docno', 'dateid',
+						'listclientname', 'disc',
+						'rrqty', 'status', 'uom',
+						'loc', 'expiry',
+						'rem', 'center'
+					]
+				]];
+		}
+
+		$stockbuttons = [];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+		$obj[0][$this->gridname]['totalfield'] = [];
+		# docno
+		$obj[0][$this->gridname]['columns'][0]['style'] = 'width:90px;whiteSpace: normal;min-width:90px;';
+
+		#dateid
+		$obj[0][$this->gridname]['columns'][1]['label'] = 'Date';
+		#listclientname
+		$obj[0][$this->gridname]['columns'][2]['style'] = 'width:90px;whiteSpace: normal;min-width:120px;';
+
+		#cost
+		if ($viewcost == '1') {
+			$obj[0][$this->gridname]['columns'][3]['label'] = 'Unit Cost';
+			$obj[0][$this->gridname]['columns'][3]['align'] = 'right';
+		}
+		#disc
+		$obj[0][$this->gridname]['columns'][4]['style'] = 'width:90px;whiteSpace: normal;min-width:80px;';
+
+		#rrqty
+		$obj[0][$this->gridname]['columns'][5]['label'] = 'Quantity';
+		$obj[0][$this->gridname]['columns'][5]['align'] = 'right';
+		#status
+		$obj[0][$this->gridname]['columns'][6]['align'] = 'right';
+		$obj[0][$this->gridname]['columns'][6]['style'] = 'width:90px;whiteSpace: normal;min-width:80px;';
+
+		#uom
+		$obj[0][$this->gridname]['columns'][7]['style'] = 'width:90px;whiteSpace: normal;min-width:90px;';
+
+		#loc
+		$obj[0][$this->gridname]['columns'][8]['style'] = 'width:90px;whiteSpace: normal;min-width:90px;';
+
+		#expiry
+		$obj[0][$this->gridname]['columns'][9]['style'] = 'width:90px;whiteSpace: normal;min-width:90px;';
+
+		#rem
+		$obj[0][$this->gridname]['columns'][10]['label'] = 'Remarks';
+		#center
+		$obj[0][$this->gridname]['columns'][11]['label'] = 'Branch Encoded';
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = [['dateid', 'luom']];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'dateid.readonly', false);
+		data_set($col1, 'luom.lookupclass', 'uomledger');
+
+		$fields = ['wh'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'wh.lookupclass', 'whledger');
+
+		$fields = [['refresh', 'db']];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'refresh.action', 'history');
+		data_set($col3, 'db.label', 'IN');
+
+		$fields = [['cr', 'bal']];
+		$col4   = $this->fieldClass->create($fields);
+		data_set($col4, 'cr.label', 'OUT');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+	}
+
+	public function paramsdata($config) {
+		$itemid = $config['params']['clientid'];
+		$uom    = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
+		$wh     = $this->companysetup->getwh($config['params']);
+		$data   = $this->getbal($config, $itemid, $wh, $uom);
+		if (!empty($data)) {
+			return $this->coreFunctions->opentable("select
+        adddate(left(now(),10),-360) as dateid,
+        '$wh' as wh,
+        '$uom' as uom,
+        '" .$data[0]->qty."' as db,
+        '".$data[0]->iss."' as cr,
+        '".$data[0]->bal."' as bal");
+		} else {
+			return $this->coreFunctions->opentable("select adddate(left(now(),10),-360) as dateid,'$wh' as wh, '$uom' as uom,'0.0' as db,'0.0' as cr,'0.0' as bal");
+		}
+	}
+
+	public function data() {
+		return [];
+	}
+
+	public function loaddata($config) {
+		$itemid = $config['params']['itemid'];
+		$center = $config['params']['center'];
+		$date   = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
+		$uom    = $config['params']['dataparams']['uom'];
+		$wh     = $config['params']['dataparams']['wh'];
+
+		$qry = "select (round(stock.cost * 1.12, 2)) as netprice, cntnum.doc, rrstatus.trno, rrstatus.line, client.clientname,
+      round(ifnull((stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),2) as cost,
+      round((rrstatus.qty / (case when ifnull(uom.factor, 0)=0 then 1 else uom.factor end)),2) as rrqty,
+      cast(case when rrstatus.bal = 0 then 'applied' else
+        round((rrstatus.bal / (case when ifnull(uom.factor, 0)=0 then 1 else uom.factor end)),2) end as char(50)) as status,
+      left(rrstatus.dateid,10) as dateid,
+      rrstatus.whid, rrstatus.uom, rrstatus.disc, rrstatus.docno,
+      round(stock.rrcost,2) as rrcost,
+      rrstatus.loc,rrstatus.expiry,rrstatus.isimport,stock.rem,cntnum.center
+      from rrstatus
+      left join client on client.clientid=rrstatus.clientid
+      left join client as wh on wh.clientid=rrstatus.whid
+      left join item on item.itemid=rrstatus.itemid
+      left join uom on uom.itemid=rrstatus.itemid and uom.uom='".$uom."'
+      left join cntnum on cntnum.trno=rrstatus.trno
+      left join glstock as stock on stock.trno = rrstatus.trno and stock.line = rrstatus.line
+      where cntnum.center='".$center."' and rrstatus.itemid=".$itemid." and rrstatus.dateid >= '".$date."'
+      and wh.client='".$wh."' group by rrstatus.trno,rrstatus.line,cntnum.doc,client.clientname,stock.cost,uom.factor,rrstatus.qty,rrstatus.bal,rrstatus.dateid,rrstatus.whid,rrstatus.uom,rrstatus.disc,rrstatus.docno,stock.rrcost,rrstatus.loc,rrstatus.expiry,rrstatus.isimport,stock.rem,cntnum.center
+      order by rrstatus.dateid desc";
+		$data = $this->coreFunctions->opentable($qry);
+
+		$databal = $this->getbal($config, $itemid, $wh, $uom);
+		if (!empty($databal)) {
+			$txtdata = $this->coreFunctions->opentable("
+        select adddate(left(now(),10),-360) as dateid,
+        '$wh' as wh,
+        '$uom' as uom,
+        '" .$databal[0]->qty."' as db,
+        '".$databal[0]->iss."' as cr,
+        '".$databal[0]->bal."' as bal");
+		} else {
+			$txtdata = $this->coreFunctions->opentable("select
+        adddate(left(now(),10),-360) as dateid,
+        '$wh' as wh,
+        '$uom' as uom,
+        '0.0' as db,
+        '0.0' as cr,
+        '0.0' as bal");
+		}
+
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata];
+	}//end function
+
+	public function getbal($config, $itemid, $wh, $uom) {
+		$center = $config['params']['center'];
+		$qry    = "select rr.itemid,ifnull(round(sum(rr.qty / (case when ifnull(uom.factor, 0)=0 then 1 else uom.factor end)), 2), 0) as qty,
+    ifnull(round(sum((rr.qty-rr.bal) / (case when ifnull(uom.factor, 0)=0 then 1 else uom.factor end)), 2), 0) as iss,
+     ifnull(round(sum(rr.bal / (case when ifnull(uom.factor, 0)=0 then 1 else uom.factor end)), 2), 0) as bal
+      from rrstatus as rr left join client on client.clientid=rr.clientid left join client as wh on wh.clientid=rr.whid
+      left join item on item.itemid=rr.itemid
+      left join uom on uom.itemid=rr.itemid and uom.uom='".$uom."'
+      left join cntnum on cntnum.trno=rr.trno
+      where cntnum.center='".$center."' and rr.itemid=".$itemid." and wh.client='".$wh."' group by rr.itemid,uom.factor,uom.uom,wh.clientid
+      order by rr.dateid";
+
+		$data = $this->coreFunctions->opentable($qry);
+		return $data;
+
+	}//end function
+
+}//end class

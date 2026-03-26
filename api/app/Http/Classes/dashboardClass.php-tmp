@@ -1,0 +1,213 @@
+<?php
+namespace App\Http\Classes;
+
+/*
+*/
+
+use App\Http\Classes\builder\lookupClass;
+
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\headClass;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+
+class dashboardClass {
+	private $othersClass;
+	private $coreFunctions;
+	private $headClass;
+	private $logger;
+	private $lookupClass;
+	private $companysetup;
+	private $config = [];
+	private $sqlquery;
+
+	public function __construct() {
+		$this->othersClass   = new othersClass;
+		$this->coreFunctions = new coreFunctions;
+		$this->headClass     = new headClass;
+		$this->logger        = new Logger;
+		$this->lookupClass   = new lookupClass;
+		$this->companysetup  = new companysetup;
+		$this->sqlquery      = new sqlquery;
+	}
+
+	public function sbc($params) {
+		$this->config['params'] = $params;
+		$access                 = $this->othersClass->getAccess($params['user']);
+		$this->config['access'] = json_decode(json_encode($access), true);
+		return $this;
+	}
+
+	private function checksecurity($id) {
+		$this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id-1];
+		if ($this->config['verifyaccess'] == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	public function loadform() {
+		if ($this->checksecurity(79)) {
+			$this->modulecount('RR', 'red-3');
+		}
+		if ($this->checksecurity(98)) {
+			$this->modulecount('DM', 'blue-3');
+		}
+		if ($this->checksecurity(117)) {
+			$this->modulecount('CV', 'light-blue-3');
+		}
+		$this->ap();
+		$this->ar();
+
+		$graphcolumn            = $this->graphColumn();
+		$this->config['return'] = ['status' => true, 'msg' => 'Loaded Success', 'qcard' => $this->config['qcard'], 'graphcolumn' => $graphcolumn];
+		return $this;
+	}
+
+	//type
+	//1.display - no happenings, just display
+	//2.customform - may pop up form
+
+	private function ap() {
+		$qry                         = 'select ifnull(format(sum(case when apledger.cr then 1 else -1 end * apledger.bal),2),0) as value from  apledger where bal>0';
+		$pap                         = $this->coreFunctions->datareader($qry);
+		$qry                         = 'select ifnull(format(sum(stock.ext),2),0) as value from lahead as head left join lastock as stock on stock.trno=head.trno where head.doc=? and stock.ext>0';
+		$uap                         = $this->coreFunctions->datareader($qry, ['RR']);
+		$pap2                        = str_replace(',', '', $pap);
+		$uap2                        = str_replace(',', '', $uap);
+		$total                       = number_format(floatval($pap2)+floatval($uap2), 2);
+		$this->config['qcard']['ap'] =
+		[
+			'class'      => 'bg-primary text-white',
+			'headalign'  => 'right',
+			'title'      => 'Accounts Payable',
+			'subtitle'   => $total,
+			'object'     => 'btn',
+			'isvertical' => true,
+			'align'      => 'right',
+			'detail'     => [
+				'btn1'      => [
+					'label'    => 'Posted '.$pap,
+					'type'     => 'customform',
+					'action'   => 'ap',
+					'classid'  => 'posted'
+				],
+				'btn2'     => [
+					'label'   => 'Unposted '.$uap,
+					'type'    => 'customform',
+					'action'  => 'ap',
+					'classid' => 'unposted'
+				]
+			]
+		];
+	}// end function
+
+	private function ar() {
+		$qry                         = 'select ifnull(format(sum(case when arledger.db then 1 else -1 end * arledger.bal),2),0) as value from  arledger where bal>0';
+		$pap                         = $this->coreFunctions->datareader($qry);
+		$qry                         = 'select ifnull(format(sum(stock.ext),2),0) as value from lahead as head left join lastock as stock on stock.trno=head.trno where head.doc=? and stock.ext>0';
+		$uap                         = $this->coreFunctions->datareader($qry, ['SJ']);
+		$pap2                        = str_replace(',', '', $pap);
+		$uap2                        = str_replace(',', '', $uap);
+		$total                       = number_format(floatval($pap2)+floatval($uap2), 2);
+		$this->config['qcard']['ar'] =
+		[
+			'class'      => 'bg-purple text-white',
+			'headalign'  => 'right',
+			'title'      => 'Accounts Receivable',
+			'subtitle'   => $total,
+			'object'     => 'btn',
+			'isvertical' => true,
+			'align'      => 'right',
+			'detail'     => [
+				'btn1'      => [
+					'label'    => 'Posted '.$pap,
+					'type'     => 'customform',
+					'action'   => 'ar',
+					'classid'  => 'posted'
+				],
+				'btn2'     => [
+					'label'   => 'Unposted '.$uap,
+					'type'    => 'customform',
+					'action'  => 'ar',
+					'classid' => 'unposted'
+				]
+			]
+		];
+	}// end function
+
+	private function modulecount($doc, $color) {
+		$dateid                      = date('Y-m-d');
+		$qry                         = 'select ifnull(count(head.trno),0) as value from glhead as head where head.doc=? and dateid=?';
+		$pap                         = $this->coreFunctions->datareader($qry, [$doc, $dateid]);
+		$qry                         = 'select ifnull(count(head.trno),0) as value from lahead as head where head.doc=? and dateid=?';
+		$uap                         = $this->coreFunctions->datareader($qry, [$doc, $dateid]);
+		$pap2                        = str_replace(',', '', $pap);
+		$uap2                        = str_replace(',', '', $uap);
+		$total                       = number_format(floatval($pap2)+floatval($uap2), 2);
+		$this->config['qcard'][$doc] =
+		[
+			'class'      => 'bg-'.$color.' text-white',
+			'headalign'  => 'right',
+			'title'      => $doc.' Transaction',
+			'subtitle'   => $dateid.' - '.$total,
+			'object'     => 'btn',
+			'isvertical' => true,
+			'align'      => 'right',
+			'detail'     => [
+				'btn1'      => [
+					'label'    => 'Posted '.$pap,
+					'type'     => 'customform',
+					'action'   => $doc,
+					'classid'  => 'posted'
+				],
+				'btn2'     => [
+					'label'   => 'Unposted '.$uap,
+					'type'    => 'customform',
+					'action'  => $doc,
+					'classid' => 'unposted'
+				]
+			]
+		];
+	}// end function
+
+	private function graphColumn() {
+		$dateid = date('Y-m-d');
+		$year   = date('Y');
+		$center = $this->config['params']['center'];
+		$qry    = "select m,sum(amt) as amt from (select month(head.dateid) as m,sum(stock.ext) as amt from
+        glhead as head left join glstock as stock
+        on stock.trno=head.trno left join cntnum on cntnum.trno=head.trno where head.doc='SJ' and
+        year(dateid)='".$year."' group by month(head.dateid)
+        UNION ALL
+        select month(head.dateid),sum(stock.ext) from lahead as head
+        left join lastock as stock
+        on stock.trno=head.trno left join cntnum on cntnum.trno=head.trno where head.doc='SJ' and
+        year(dateid)='".$year."' group by month(head.dateid)) as T group by m";
+		$data      = $this->coreFunctions->opentable($qry);
+		$months    = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		$graphdata = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		foreach ($data as $key => $value) {
+			$graphdata[$data[$key]->m-1] = $data[$key]->amt;
+		}
+		$series      = array('name' => 'Total', 'data' => $graphdata);
+		$chartoption = [
+			'colors'     => ['#FCCF31', '#17ead9', '#f02fc2'],
+			'grid'       => ['show'       => true, 'strokeDashArray'       => 0, 'xaxis'       => ['line'       => ['show'       => true]]],
+			'title'      => ['text'      => 'Sales '.$year, 'align'      => 'left', 'style'      => ['color'      => '#FFF']],
+			'fill'       => ['type'       => 'gradient', 'gradient'       => ['shade'       => 'dark', 'type'       => 'vertical', 'shadeIntensity'       => 0.5, 'inverseColors'       => false, 'opacityFrom'       => 1, 'opacityTo'       => 0.8, 'stops'       => [0, 100]]],
+			'dataLabels' => ['enabled' => false],
+			'stroke'     => ['width'     => 0],
+			'xaxis'      => ['categories'      => $months, 'labels'      => ['style'      => ['colors'      => '#fff']]],
+			'yaxis'      => ['title'      => ['text'      => '$ (thousands)'], 'labels'      => ['style'      => ['color'      => '#fff']]]
+		];
+		return array('series' => $series, 'chartoption' => $chartoption);
+	}
+
+	public function execute() {
+		return response()->json($this->config['return'], 200);
+	}// end function
+
+}// end class

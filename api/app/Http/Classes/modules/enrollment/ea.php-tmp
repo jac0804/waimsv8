@@ -1,0 +1,1148 @@
+<?php
+namespace App\Http\Classes\modules\enrollment;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class ea {
+	private $btnClass;
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'Assessment';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	private $logger;
+	public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
+	public $tablenum     = 'transnum';
+	public $head         = 'en_sohead';
+	public $stock        = 'en_sosubject';
+	public $otherfees    = 'en_sootherfees';
+	public $credentials  = 'en_socredentials';
+	public $detail       = 'en_sodetail';
+	public $assessment   = 'en_sosummary';
+
+	public $hhead         = 'en_glhead';
+	public $hstock        = 'en_glsubject';
+	public $hotherfees    = 'en_glotherfees';
+	public $hcredentials  = 'en_glcredentials';
+	public $hdetail       = 'en_gldetail';
+	public $hassessment   = 'en_glsummary';
+	public $defaultContra = 'AR1';
+
+	public $tablelogs     = 'transnum_log';
+	public $tablelogs_del = 'del_transnum_log';
+	private $stockselect;
+	private $fields          = ['trno', 'docno', 'dateid', 'client', 'clientname', 'periodid', 'syid', 'courseid', 'schedcode', 'curriculumcode', 'curriculumdocno', 'rem', 'deptid', 'levelid', 'semid', 'yr', 'section', 'contra', 'modeofpayment'];
+	private $except          = ['trno', 'dateid'];
+	public $showfilteroption = true;
+	public $showfilter       = true;
+	public $showcreatebtn    = true;
+	private $reporter;
+
+	public function __construct() {
+		$this->btnClass      = new buttonClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->logger        = new Logger;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function getAttrib() {
+		$attrib = array('view' => 973,
+			'edit'                => 972,
+			'new'                 => 974,
+			'save'                => 975,
+			'change'              => 977,
+			'delete'              => 976,
+			//'print'=>158,
+			'lock'   => 980,
+			'unlock' => 981,
+			'post'   => 978,
+			'unpost' => 979,
+
+			'additem'    => 1318,
+			'edititem'   => 1319,
+			'deleteitem' => 1320
+		);
+		return $attrib;
+	}
+
+	public function createdoclisting($config) {
+		$getcols          = ['action', 'liststatus', 'listdocument', 'listdate', 'listsy', 'listperiod'];
+		$stockbuttons     = ['view'];
+		$cols             = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+		$cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+
+		return $cols;
+	}
+
+	public function loaddoclisting($config) {
+
+		$date1        = date('Y-m-d', strtotime($config['params']['date1']));
+		$date2        = date('Y-m-d', strtotime($config['params']['date2']));
+		$itemfilter   = $config['params']['itemfilter'];
+		$doc          = $config['params']['doc'];
+		$center       = $config['params']['center'];
+		$condition    = '';
+		$searchfilter = $config['params']['search'];
+		if ($searchfilter != '') {
+			$condition = " and (head.docno like '%".$searchfilter."%')";
+		}
+
+		switch ($itemfilter) {
+			case 'draft':
+				$condition = ' and num.postdate is null ';
+				break;
+			case 'posted':
+				$condition = ' and num.postdate is not null ';
+				break;
+		}
+
+		$qry = "select head.trno, head.docno, c.coursecode, left(head.dateid,10) as dateid, 'DRAFT' as status, c.coursename, head.curriculumname, head.section, t.term as terms, p.code as period, head.yr, head.curriculumcode,sy.sy as sy,client.client,client.clientname
+      from ".$this->head." as head left join ".$this->tablenum." as num on num.trno=head.trno left join en_course as c on c.line=head.courseid
+      left join en_term as t on t.line=head.semid left join en_period as p on p.line=head.periodid left join en_schoolyear as sy on sy.line=head.syid
+      left join client on client.client=head.client
+      where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? ".$condition."
+      union all
+      select head.trno, head.docno, c.coursecode, left(head.dateid,10) as dateid, 'DRAFT' as status, c.coursename, head.curriculumname, head.section, t.term as terms, p.code as period, head.yr, head.curriculumcode,sy.sy as sy,client.client,client.clientname
+      from ".$this->hhead." as head left join ".$this->tablenum." as num on num.trno=head.trno  left join en_course as c on c.line=head.courseid
+      left join en_term as t on t.line=head.semid left join en_period as p on p.line=head.periodid left join en_schoolyear as sy on sy.line=head.syid
+      left join client on client.clientid=head.clientid
+      where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? ".$condition."
+      order by dateid desc,docno desc limit 150";
+
+		$data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
+		return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
+	}
+
+	public function createHeadbutton($config) {
+		$btns = array('load',
+			'new',
+			'save',
+			'delete',
+			'cancel',
+			'print',
+			'post',
+			'unpost',
+			'lock',
+			'unlock',
+			'logs',
+			'edit',
+			'backlisting',
+			'toggleup',
+			'toggledown');
+		$buttons = $this->btnClass->create($btns);
+		return $buttons;
+	}// createHeadbutton
+
+	public function createTab($access, $config) {
+		$fields = ['otherfees'];
+		$col1   = $this->fieldClass->create($fields);
+		$tab    = [$this->gridname => ['gridcolumns' => ['action', 'subjectcode', 'subjectname', 'units', 'lecture', 'laboratory', 'hours', 'linstructorcode', 'instructorname', 'lbldgcode', 'roomcode', 'schedday', 'schedstarttime', 'schedendtime']]
+		];
+
+		$stockbuttons                              = ['save', 'delete'];
+		$obj                                       = $this->tabClass->createtab($tab, $stockbuttons);
+		$obj[0][$this->gridname]['label']          = 'SUBJECT';
+		$obj[0][$this->gridname]['descriptionrow'] = ['subjectname', 'subjectcode', 'Subject'];
+		$obj[0][$this->gridname]['showtotal']      = false;
+
+		$obj[0][$this->gridname]['columns'][1]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][2]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][3]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][4]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][5]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][6]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][7]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][8]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][9]['readonly'] = true;//action
+
+		$obj[0][$this->gridname]['columns'][10]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][11]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][12]['readonly'] = true;//action
+		$obj[0][$this->gridname]['columns'][13]['readonly'] = true;//action
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = ['otherfees', 'credentials', 'assummary', 'getschedule', 'savesched', 'deleteallsched'];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['docno', 'sy', 'yr', 'client', 'coursecode', 'schedcode', 'rem'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'docno.label', 'Transaction#');
+		data_set($col1, 'coursecode.type', 'lookup');
+		data_set($col1, 'coursecode.action', 'lookupcourse');
+		data_set($col1, 'coursecode.lookupclass', 'lookupcourse');
+		data_set($col1, 'coursecode.class', 'sbccsreadonly');
+		data_set($col1, 'client.lookupclass', 'student');
+		data_set($col1, 'client.label', 'Student#');
+		data_set($col1, 'schedcode.type', 'input');
+		data_set($col1, 'schedcode.readonly', true);
+
+		$fields = ['dateid', 'deptcode', 'semester', 'clientname', 'coursename', 'curriculumcode', 'curriculumdocno'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'curriculumcode.class', 'sbccsreadonly');
+		data_set($col2, 'curriculumdocno.class', 'sbccsreadonly');
+
+		$fields = ['period', 'dlevel', 'section', 'modeofpayment', 'contra'];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'deptcode.type', 'input');
+		data_set($col3, 'yr.type', 'input');
+		data_set($col3, 'dlevel.class', 'sbccsreadonly');
+		data_set($col3, 'section.class', 'sbccsreadonly');
+		data_set($col3, 'contra.lookupclass', 'AR');
+
+		return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
+	}
+
+	public function createnewtransaction($docno, $params) {
+		$data                       = [];
+		$data[0]['trno']            = 0;
+		$data[0]['docno']           = $docno;
+		$data[0]['dateid']          = date('Y-m-d');
+		$data[0]['courseid']        = 0;
+		$data[0]['coursename']      = '';
+		$data[0]['periodid']        = $this->coreFunctions->getfieldvalue('en_period', 'line', 'isactive=1');
+		$data[0]['period']          = $this->coreFunctions->getfieldvalue('en_period', 'code', 'isactive=1');
+		$data[0]['semid']           = 0;
+		$data[0]['yr']              = '';
+		$data[0]['syid']            = $this->coreFunctions->getfieldvalue('en_schoolyear', 'line', 'issy=1');
+		$data[0]['sy']              = $this->coreFunctions->getfieldvalue('en_schoolyear', 'sy', 'issy=1');
+		$data[0]['deptid']          = 0;
+		$data[0]['curriculumcode']  = '';
+		$data[0]['curriculumdocno'] = '';
+		$data[0]['terms']           = '';
+		$data[0]['client']          = '';
+		$data[0]['clientname']      = '';
+		$data[0]['deptcode']        = '';
+		$data[0]['levelid']         = 0;
+		$data[0]['contra']          = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
+		$data[0]['rem']             = '';
+		$data[0]['modeofpayment']   = '';
+		$data[0]['schedcode']       = '';
+		return $data;
+
+	}
+
+	public function loadheaddata($config) {
+		$doc    = $config['params']['doc'];
+		$center = $config['params']['center'];
+		$trno   = $config['params']['trno'];
+		if ($trno == 0) {
+			$trno = $this->othersClass->readprofile('TRNO', $config);
+			if ($trno == '') {
+				$trno = $this->coreFunctions->datareader("select trno as value from ".$this->tablenum." where doc=? and center=? order by trno desc limit 1", [$doc, $center]);
+			}
+			$config['params']['trno'] = $trno;
+		} else {
+			$this->othersClass->checkprofile('TRNO', $trno, $config);
+		}
+		$head      = [];
+		$islocked  = $this->othersClass->islocked($config);
+		$isposted  = $this->othersClass->isposted($config);
+		$table     = $this->head;
+		$htable    = $this->hhead;
+		$tablenum  = $this->tablenum;
+		$qryselect = "select head.trno,head.doc,head.docno,client.client,client.clientname,head.dateid,head.courseid,course.coursecode,course.coursename,head.periodid,
+      p.code as period,head.syid,sy.sy,head.schedcode,head.rem,head.levelid,l.levels as `level`,head.deptid,d.client as deptcode,head.yr,head.section,
+      head.contra,head.semid,t.term as terms,head.modeofpayment,head.curriculumcode,head.curriculumdocno,l.levels as dlevel ";
+
+		$qry = $qryselect." from $table as head
+        left join $tablenum as num on num.trno = head.trno  left join client on client.client = head.client left join en_course as course on course.line=head.courseid left join en_period as p on p.line=head.periodid left join en_schoolyear as sy on sy.line=head.syid
+        left join client as d on d.clientid=head.deptid left join en_term as t on t.line=head.semid left join en_levels as l on l.line=head.levelid
+        where head.trno = ? and num.center = ?
+        union all " .$qryselect." from $htable as head
+        left join $tablenum as num on num.trno = head.trno left join client on client.clientid=head.clientid left join en_course as course on course.line=head.courseid left join en_period as p on p.line=head.periodid left join en_schoolyear as sy on sy.line=head.syid left join client as d on d.clientid=head.deptid left join en_term as t on t.line=head.semid left join en_levels as l on l.line=head.levelid
+        where head.trno = ? and num.center=? ";
+
+		$head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
+
+		if (!empty($head)) {
+			$stock       = $this->openstock($trno, $config);
+			$otherfees   = $this->openotherfees($trno, $config);
+			$credentials = $this->opencredentials($trno, $config);
+			$viewdate    = $this->othersClass->getCurrentTimeStamp();
+			$viewby      = $config['params']['user'];
+			$msg         = 'Data Fetched Success';
+			if (isset($config['msg'])) {
+				$msg = $config['msg'];
+			}
+			$this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
+			return ['head'                                           => $head, 'griddata'                                           => ['inventory'                                           => $stock, 'otherfees'                                           => $otherfees, 'credentials'                                           => $credentials], 'islocked'                                           => $islocked, 'isposted'                                           => $isposted, 'isnew'                                           => false, 'status'                                           => true, 'msg'                                           => $msg];
+		} else {
+			$head[0]['trno']  = 0;
+			$head[0]['docno'] = '';
+			return ['status' => false, 'isnew' => true, 'head' => $head, 'griddata' => ['inventory' => [], 'otherfees' => [], 'crdentials' => []], 'msg' => 'Data Head Fetched Failed'];
+		}
+	}
+
+	public function updatehead($config, $isupdate) {
+		$head = $config['params']['head'];
+		$data = [];
+		if ($isupdate) {
+			unset($this->fields['docno']);
+		}
+		foreach ($this->fields as $key) {
+			$data[$key] = $head[$key];
+			if (!in_array($key, $this->except)) {
+				$data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+			}//end if
+		}
+		$data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+		$data['editby']   = $config['params']['user'];
+		if ($isupdate) {
+			$this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+		} else {
+			$data['doc']        = $config['params']['doc'];
+			$data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+			$data['createby']   = $config['params']['user'];
+			$this->coreFunctions->sbcinsert($this->head, $data);
+			$this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'].' - '.$head['coursecode'].' - '.$head['curriculumcode'].' - '.$head['curriculumdocno']);
+		}
+	}// end function
+
+	public function deletetrans($config) {
+		$trno  = $config['params']['trno'];
+		$doc   = $config['params']['doc'];
+		$table = $config['docmodule']->tablenum;
+		$docno = $this->coreFunctions->datareader("select docno as value from ".$table.' where trno=?', [$trno]);
+		$qry   = "select trno as value from ".$this->tablenum." where doc=? and trno<? order by trno desc limit 1 ";
+		$trno2 = $this->coreFunctions->datareader($qry, [$doc, $trno]);
+
+		$this->coreFunctions->execqry('delete from '.$this->stock." where trno=?", 'delete', [$trno]);
+		$this->coreFunctions->execqry('delete from '.$this->head." where trno=?", 'delete', [$trno]);
+		$this->coreFunctions->execqry('delete from '.$this->tablenum." where trno=?", 'delete', [$trno]);
+		$this->logger->sbcdel_log($trno, $config, $docno);
+		return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
+	}//end function
+
+	public function posttrans($config) {
+		$trno = $config['params']['trno'];
+		$user = $config['params']['user'];
+		$qry  = "select trno from ".$this->stock." where trno=? and iss=0 limit 1";
+		// $isitemzeroqty = $this->coreFunctions->opentable($qry,[$trno]);
+		// if(!empty($isitemzeroqty)){
+		//   return ['status'=>false,'msg'=>'Posting failed. Check carefully, some items have zero quantity.'];
+		// }
+		$docno = $this->coreFunctions->datareader('select docno as value from '.$this->tablenum.' where trno=?', [$trno]);
+
+		if ($this->othersClass->isposted($config)) {
+			return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
+		}
+		//for glhead
+		$qry = "insert into ".$this->hhead."(trno,doc,docno,dateid,courseid,curriculumname,sy,section,terms,period,yr,curriculumcode,adviserid,curriculumdocno,editdate,editby,createdate,createby,encodeddate,encodedby,viewdate,viewby,lockdate)
+      SELECT head.trno,head.doc,head.docno,head.dateid,course.line,head.curriculumname,head.sy,head.section,head.terms,head.period,head.yr,head.curriculumcode,instructor.line as adviserid,head.curriculumdocno,head.editdate,head.editby,head.createdate,head.createby,head.encodeddate,head.encodedby,head.viewdate,head.viewby,head.lockdate FROM ".$this->head." as head left join ".$this->tablenum." as cntnum on cntnum.trno=head.trno left join en_course as course on course.coursecode=head.coursecode left join en_instructor as instructor on instructor.teachercode=head.advisercode
+      where head.trno=? limit 1";
+		$posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+		if ($posthead) {
+			// for glstock
+			$qry = "insert into ".$this->hstock."(trno,line,subjectid,units,laboratory,lecture,hours,instructorid,roomcode,schedday,schedtime,schedendtime,schedstarttime,minslot,maxslot,asqa,astempqa,qa,encodeddate,encodedby,editdate,editby)
+        SELECT subject.trno,subject.line,sub.trno as subjectid,subject.units,subject.laboratory,subject.lecture,subject.hours,instructor.line as instructorid,subject.roomcode,subject.schedday,subject.schedtime,subject.schedendtime,subject.schedstarttime,subject.minslot,subject.maxslot,subject.asqa,subject.astempqa,subject.qa,subject.encodeddate,subject.encodedby,subject.editdate,subject.editby FROM ".$this->stock." as subject left join en_subject as sub on sub.subjectcode=subject.subjectcode left join en_instructor as instructor on instructor.teachercode=subject.instructorcode where subject.trno =? ";
+			if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+				//update transnum
+				$date = date("Y-m-d H:i:s");
+				$data = ['postdate'                                             => $date, 'postedby'                                             => $config['params']['user']];
+				$this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+				$this->coreFunctions->execqry("delete from ".$this->stock." where trno=?", "delete", [$trno]);
+				$this->coreFunctions->execqry("delete from ".$this->head." where trno=?", "delete", [$trno]);
+				$this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+				return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+			} else {
+				$this->coreFunctions->execqry("delete from ".$this->hhead." where trno=?", "delete", [$trno]);
+				return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting stock'];
+			}
+			//if($posthead){
+		} else {
+			return ['status' => false, 'msg' => 'Error on Posting Head'];
+		}
+	}//end function
+
+	public function unposttrans($config) {
+		$trno = $config['params']['trno'];
+		$user = $config['params']['user'];
+		$qry  = "select trno from ".$this->hstock." where trno=? and (qa>0 or void<>0)";
+		$data = $this->coreFunctions->opentable($qry, [$trno]);
+		if (!empty($data)) {
+			return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, either already served or have item voided...'];
+		}
+		$docno = $this->coreFunctions->datareader('select docno as value from '.$this->tablenum.' where trno=?', [$trno]);
+
+		$qry = "insert into ".$this->head."(trno,doc,docno,dateid,coursecode,curriculumname,sy,section,terms,period,yr,curriculumcode,advisercode,curriculumdocno,editdate,editby,createdate,createby,encodeddate,encodedby,viewdate,viewby,lockdate)
+  SELECT head.trno,head.doc,head.docno,head.dateid,course.coursecode,head.curriculumname,head.sy,head.section,head.terms,head.period,head.yr,head.curriculumcode,instructor.teachercode as advisercode,head.curriculumdocno,head.editdate,head.editby,head.createdate,head.createby,head.encodeddate,head.encodedby,head.viewdate,head.viewby,head.lockdate FROM ".$this->hhead." as head left join ".$this->tablenum." as cntnum on cntnum.trno=head.trno left join en_course as course on course.line=head.courseid left join en_instructor as instructor on instructor.line=head.adviserid
+      where head.trno=?  limit 1";
+		//head
+		if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+			$qry = "insert into ".$this->stock."(trno,line,subjectcode,units,laboratory,lecture,hours,instructorcode,roomcode,schedday,schedtime,schedendtime,schedstarttime,minslot,maxslot,asqa,astempqa,qa,encodeddate,encodedby,editdate,editby)
+        SELECT subject.trno,subject.line,sub.subjectcode,subject.units,subject.laboratory,subject.lecture,subject.hours,instructor.teachercode,subject.roomcode,subject.schedday,subject.schedtime,subject.schedendtime,subject.schedstarttime,subject.minslot,subject.maxslot,subject.asqa,subject.astempqa,subject.qa,subject.encodeddate,subject.encodedby,subject.editdate,subject.editby FROM ".$this->hstock." as subject left join en_subject as sub on sub.trno=subject.subjectid left join en_instructor as instructor on instructor.line=subject.instructorid where subject.trno =?";
+			//stock
+			if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+				$this->coreFunctions->execqry("update ".$this->tablenum." set postdate=null where trno=?", 'update', [$trno]);
+				$this->coreFunctions->execqry("delete from ".$this->hhead." where trno=?", "delete", [$trno]);
+				$this->coreFunctions->execqry("delete from ".$this->hstock." where trno=?", "delete", [$trno]);
+				$this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+				return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+			} else {
+				$this->coreFunctions->execqry("delete from ".$this->head." where trno=?", 'delete', [$trno]);
+				return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
+			}
+		}
+	}//end function
+
+	private function getstockselect($config) {
+		$sqlselect = "select stock.trno,stock.line,stock.subjectid,sub.subjectcode,sub.subjectname,stock.units,stock.laboratory,stock.lecture,stock.hours,stock.instructorid,i.client as linstructorcode,i.clientname as instructorname,stock.schedday,stock.schedstarttime,stock.schedendtime, stock.roomid,r.roomcode as roomcode,stock.bldgid, b.bldgcode as lbldgcode, stock.schedref,stock.origdocno,stock.origsubjectcode,
+    '' as bgcolor,
+    '' as errcolor ";
+		return $sqlselect;
+	}
+
+	public function openstock($trno, $config) {
+		$sqlselect = $this->getstockselect($config);
+
+		$qry = $sqlselect."
+    FROM $this->stock as stock left join $this->tablenumas num on num.trno=stock.trno left join en_subject as sub on sub.trno=stock.subjectid left join client as i on i.clientid=stock.instructorid left join en_rooms as r on r.line=stock.roomid left join en_bldg as b on b.line=stock.bldgid
+    where stock.trno = ? and num.postdate is null
+    UNION ALL
+" .$sqlselect."
+    FROM $this->hstock as stock left join $this->tablenum as num on num.trno=stock.trno left join en_subject as sub on sub.trno=stock.subjectid left join client as i on i.clientid=stock.instructorid left join en_rooms as r on r.line=stock.roomid left join en_bldg as b on b.line=stock.bldgid
+    where stock.trno = ?  and num.postdate is not null";
+
+		$stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+		return $stock;
+	}//end function
+
+	public function openstockline($config) {
+		$sqlselect = $this->getstockselect($config);
+		$trno      = $config['params']['trno'];
+		$line      = $config['params']['line'];
+		$qry       = $sqlselect."
+   FROM $this->stock as stock left join $this->tablenumas num on num.trno=stock.trno left join en_subject as sub on sub.trno=stock.subjectid left join client as i on i.clientid=stock.instructorid left join en_rooms as r on r.line=stock.roomid left join en_bldg as b on b.line=stock.bldgid where stock.trno = ? and stock.line = ?
+   UNION ALL
+" .$sqlselect."
+    FROM $this->hstock as stock left join $this->tablenum as num on num.trno=stock.trno
+    left join en_subject as sub on sub.trno=stock.subjectid left join client as i on i.clientid=stock.instructorid left join en_rooms as r on r.line=stock.roomid left join en_bldg as b on b.line=stock.bldgid where stock.trno = ? and stock.line = ? ";
+		$stock = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
+		return $stock;
+	}// end function
+
+	public function openotherfeesline($config) {
+		$sqlselect = $this->getotherfeesselect($config);
+		$trno      = $config['params']['trno'];
+		$line      = $config['params']['line'];
+		$qry       = $sqlselect."
+   FROM $this->otherfees as stock left join $this->tablenumas num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno = ? and stock.line = ?
+   UNION ALL
+" .$sqlselect."
+    FROM $this->hotherfees as stock left join $this->tablenum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno = ? and stock.line = ? ";
+
+		$stock = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
+		return $stock;
+	}// end function
+
+	private function getotherfeesselect($config) {
+		$sqlselect = "select stock.trno,stock.line,stock.rem,f.feescode,stock.feestype,stock.scheme,coa.acno,coa.acnoname,stock.feesid,stock.acnoid,stock.isamt,
+    '' as bgcolor,
+    '' as errcolor ";
+		return $sqlselect;
+	}
+
+	public function openotherfees($trno, $config) {
+		$sqlselect = $this->getotherfeesselect($config);
+
+		$qry = $sqlselect."
+    FROM $this->otherfees as stock left join $this->tablenumas num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid
+    where stock.trno = ? and num.postdate is null
+    UNION ALL
+" .$sqlselect."
+    FROM $this->hotherfees as stock left join $this->tablenum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid
+    where stock.trno = ?  and num.postdate is not null";
+
+		$otherfees = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+		return $otherfees;
+	}//end function
+
+	public function opencredentialsline($config) {
+		$sqlselect = $this->getotherfeesselect($config);
+		$trno      = $config['params']['trno'];
+		$line      = $config['params']['line'];
+		$qry       = $sqlselect."
+    FROM $this->credentials as soc left join $this->tablenumas num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid  where stock.trno = ? and stock.line = ?
+   UNION ALL
+" .$sqlselect."
+    FROM $this->hcredentials as soc  left join $this->tablenum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid  where stock.trno = ? and stock.line = ? ";
+
+		$stock = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
+		return $stock;
+	}// end function
+
+	private function getcredentialsselect($config) {
+		$sqlselect = "select soc.credentialid,soc.amt,soc.particulars,soc.percentdisc,soc.acnoid,soc.feesid,coa.acno,coa.acnoname,c.credentials,c.credentialcode,s.subjectcode,s.subjectname,soc.camt,f.feescode as feescode,soc.scheme,f.feestype,
+    '' as bgcolor,
+    '' as errcolor ";
+		return $sqlselect;
+	}
+
+	public function opencredentials($trno, $config) {
+		$sqlselect = $this->getcredentialsselect($config);
+
+		$qry = $sqlselect."
+    FROM $this->credentials as soc left join $this->tablenumas num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid
+    where soc.trno = ? and num.postdate is null
+    UNION ALL
+" .$sqlselect."
+    FROM $this->hcredentials as soc  left join $this->tablenum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid
+    where soc.trno = ?  and num.postdate is not null";
+
+		$otherfees = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+		return $otherfees;
+	}//end function
+
+	public function stockstatus($config) {
+		switch ($config['params']['action']) {
+			case 'additem':
+				return $this->additem('insert', $config);
+				break;
+			case 'saveitem'://save all item edited
+				return $this->updateitem($config);
+				break;
+			case 'saveperitem'://save per line item edited
+				return $this->updateperitem($config);
+				break;
+			case 'deleteitem':
+				return $this->deleteitem($config);
+				break;
+			case 'deleteallitem':
+				return $this->deleteallitem($config);
+				break;
+			case 'schedsummary':
+				return $this->schedsummary($config);
+				break;
+			case 'addotherfees':
+				return ['status' => true, 'msg' => 'dfdddd'];
+				break;
+			default:
+				return ['status' => 'false', 'msg' => 'Please check stockstatus ('.$config['params']['action'].')'];
+				break;
+		}
+	}
+
+	public function schedsummary($config) {
+		$trno = $config['params']['trno'];
+		$rows = [];
+
+		foreach ($config['params']['rows'] as $key => $value) {
+			$qry = "select h.trno, s.subjectid, s.units, s.lecture, s.laboratory, s.hours,s.schedday,s.schedstarttime,s.schedendtime,
+    s.instructorid, s.roomid,s.bldgid
+    from en_glhead as h left join en_glsubject as s on s.trno=h.trno
+     where s.trno= ? ";
+
+			$headdetail = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
+
+			if (!empty($headdetail)) {
+				foreach ($headdetail as $key2 => $value) {
+					$config['params']['trno']                    = $trno;
+					$config['params']['data']['subjectid']       = $headdetail[$key2]->subjectid;
+					$config['params']['data']['units']           = $headdetail[$key2]->units;
+					$config['params']['data']['lecture']         = $headdetail[$key2]->lecture;
+					$config['params']['data']['laboratory']      = $headdetail[$key2]->laboratory;
+					$config['params']['data']['hours']           = $headdetail[$key2]->hours;
+					$config['params']['data']['schedday']        = $headdetail[$key2]->schedday;
+					$config['params']['data']['schedstarttime']  = $headdetail[$key2]->schedstarttime;
+					$config['params']['data']['schedendtime']    = $headdetail[$key2]->schedendtime;
+					$config['params']['data']['instructorid']    = $headdetail[$key2]->instructorid;
+					$config['params']['data']['roomid']          = $headdetail[$key2]->roomid;
+					$config['params']['data']['bldgid']          = $headdetail[$key2]->bldgid;
+					$config['params']['data']['schedref']        = '';
+					$config['params']['data']['origdocno']       = '';
+					$config['params']['data']['origsubjectcode'] = '';
+					$return                                      = $this->additem('insert', $config);
+					array_push($rows, $return['row'][0]);
+				}
+			}
+		}
+
+		$this->generateotherfees($config);
+		$this->generatecredentials($config);
+		$otherfees   = $this->openotherfees($trno, $config);
+		$credentials = $this->opencredentials($trno, $config);
+		return ['row' => $rows, 'status' => true, 'reloadgriddata' => true, 'griddata' => ['otherfees' => $otherfees, 'credentials' => $credentials], 'msg' => 'Added Subject Successfull...'];
+	}
+
+	public function generatecredentials($config) {
+		$trno     = $config['params']['trno'];
+		$qry      = "select client.clientid as values from en_sohead as head left join client on client.client=head.client where head.trno=? ";
+		$clientid = $this->coreFunctions->datareader($qry, [$trno]);
+
+		$qry = "select credentialid,percentdisc,amt from en_studentcredentials as sc where sc.clientid=? ";
+
+		$clientdata = $this->coreFunctions->opentable($qry, [$clientid]);
+
+		if (!empty($clientdata)) {
+			foreach ($clientdata as $key => $value) {
+				$credentialid = $clientdata[$key]->credentialid;
+				$percentdisc  = $clientdata[$key]->percentdisc;
+				$amt          = $clientdata[$key]->amt;
+
+				$config['params']['data']['amt']          = $amt;
+				$config['params']['data']['credentialid'] = $credentialid;
+				$config['params']['data']['percentdisc']  = $percentdisc;
+				$return                                   = $this->addcredentials('insert', $config);
+				array_push($rows, $return['row'][0]);
+
+			}
+		}
+	}
+
+	public function generateotherfees($config) {
+		$itrno = $config['params']['rows'][0]['trno'];
+		$trno  = $config['params']['trno'];
+		$qry   = "select c.isnew,c.isold,c.islateenrollee,c.isforeign,c.isadddrop,c.iscrossenrollee,c.istransferee,head.periodid,head.courseid from en_sohead as head left join client on client.client=head.client left join en_studentinfo as c on c.clientid=client.clientid where head.trno= ? ";
+
+		$clientdata = $this->coreFunctions->opentable($qry, [$trno]);
+
+		$isnew           = false;
+		$isold           = false;
+		$islateenrollee  = false;
+		$isforeign       = false;
+		$isadddrop       = false;
+		$iscrossenrollee = false;
+		$istransferee    = false;
+		$filter          = '';
+		$periodid        = 0;
+		$courseid        = 0;
+		$dcSLab          = 0;
+		$dcS             = 0;
+		$dcSCnt          = 0;
+		$dcCntLab        = 0;
+
+		if (!empty($clientdata)) {
+			foreach ($clientdata as $key => $value) {
+				$isnew           = $clientdata[$key]->isnew;
+				$isold           = $clientdata[$key]->isold;
+				$islateenrollee  = $clientdata[$key]->islateenrollee;
+				$isforeign       = $clientdata[$key]->isforeign;
+				$isadddrop       = $clientdata[$key]->isadddrop;
+				$iscrossenrollee = $clientdata[$key]->iscrossenrollee;
+				$istransferee    = $clientdata[$key]->istransferee;
+				$periodid        = $clientdata[$key]->periodid;
+				$courseid        = $clientdata[$key]->courseid;
+			}
+		}
+
+		if ($isnew) {
+			$filter = " and fees.isnew=true";
+		} elseif ($isold) {
+			$filter = " and fees.isold=true";
+		} elseif ($islateenrollee) {
+			$filter = " and fees.islateenrollee=true";
+		} elseif ($isforeign) {
+			$filter = " and fees.isforeign=true";
+		} elseif ($isadddrop) {
+			$filter = " and fees.isadddrop=true";
+		} elseif ($iscrossenrollee) {
+			$filter = " and fees.iscrossenrollee=true";
+		} elseif ($istransferee) {
+			$filter = " and fees.istransferee=true";
+		}
+
+		$qry = "select s.lecture,s.laboratory from en_sosubject as s
+      where s.trno= ?  ";
+
+		$subjectdetail = $this->coreFunctions->opentable($qry, [$trno]);
+
+		if (!empty($subjectdetail)) {
+			foreach ($subjectdetail as $key2 => $value) {
+
+				$dcS    = $dcS+$subjectdetail[$key2]->lecture;
+				$dcSLab = $dcSLab+$subjectdetail[$key2]->laboratory;
+				$dcSCnt = $dcSCnt+1;
+				if ($subjectdetail[$key2]->laboratory > 0) {
+					$dcCntLab = $dcCntLab+1;
+				}
+			}
+
+			$qry = "select head.trno,head.docno,head.dateid,head.semid,head.syid,head.curriculumcode,
+      head.periodid,head.adviserid,head.curriculumdocno,fees.trno,fees.line,fees.subjectid,fees.feesid,
+      fees.schemeid,fees.rate,fees.isnew,fees.isold,fees.isforeign,fees.isadddrop,fees.iscrossenrollee,fees.istransferee,fees.levelid,fees.departid,
+      fees.courseid,fees.section,fees.sex,fees.rooms,fees.yrid,fees.semid,f.feestype,f.acno,f.feesdesc,s.scheme,f.feescode,coa.acnoid
+      from en_glhead as head left join en_glfees as fees on fees.trno=head.trno left join en_fees as f on f.line=fees.feesid
+      left join en_scheme as s on s.line=fees.schemeid  left join coa on coa.acno=f.acno
+      where head.doc='ET'  and f.feestype not in ('REG','MISC','TF') ".$filter." and head.periodid= ? and fees.courseid= ?";
+
+			$otherfeesdetail = $this->coreFunctions->opentable($qry, [$periodid, $courseid]);
+
+			$i     = 0;
+			$isamt = 0;
+			$rem   = '';
+			$rows  = [];
+
+			foreach ($otherfeesdetail as $key2 => $value) {
+				$feestype = $otherfeesdetail[$key2]->feestype;
+				$scheme   = $otherfeesdetail[$key2]->scheme;
+				$feescode = $otherfeesdetail[$key2]->feescode;
+				$acnoid   = $otherfeesdetail[$key2]->acnoid;
+				$feesid   = $otherfeesdetail[$key2]->feesid;
+				$rate     = $otherfeesdetail[$key2]->rate;
+				switch ($scheme) {
+					case "PER UNIT":
+						if ($feescode = "LAB") {
+							$isamt = $rate*$dcSLab;
+						} else {
+							$isamt = $rate*$dcS;
+						}
+						break;
+					case "PER SUBJECT":
+						if ($feescode = "LAB") {
+							$isamt = $rate*$dcCntLab;
+						} else {
+							$isamt = $rate*$dcSCnt;
+						}
+						break;
+					default:
+						$isamt = $rate;
+						break;
+				}
+
+				$config['params']['data']['isamt']    = $isamt;
+				$config['params']['data']['rem']      = $rem;
+				$config['params']['data']['feestype'] = $feestype;
+				$config['params']['data']['feescode'] = $feescode;
+				$config['params']['data']['scheme']   = $scheme;
+				$config['params']['data']['acnoid']   = $acnoid;
+				$config['params']['data']['feesid']   = $feesid;
+				$return                               = $this->addotherfees('insert', $config);
+				array_push($rows, $return['row'][0]);
+
+			}
+		}
+	}
+
+	public function additem($action, $config) {
+		$trno = $config['params']['trno'];
+		$line = 0;
+		if ($action == 'insert') {
+			$qry  = "select line as value from ".$this->stock." where trno=? order by line desc limit 1";
+			$line = $this->coreFunctions->datareader($qry, [$trno]);
+			if ($line == '') {
+				$line = 0;
+			}
+			$line = $line+1;
+		} else {
+			$line = $config['params']['data']['line'];
+		}
+		$config['params']['line'] = $line;
+
+		$data = [
+			'trno'            => $config['params']['trno'],
+			'line'            => $line,
+			'subjectid'       => $config['params']['data']['subjectid'],
+			'units'           => $config['params']['data']['units'],
+			'lecture'         => $config['params']['data']['lecture'],
+			'laboratory'      => $config['params']['data']['laboratory'],
+			'hours'           => $config['params']['data']['hours'],
+			'schedday'        => $config['params']['data']['schedday'],
+			'schedstarttime'  => $config['params']['data']['schedstarttime'],
+			'schedendtime'    => $config['params']['data']['schedendtime'],
+			'instructorid'    => $config['params']['data']['instructorid'],
+			'roomid'          => $config['params']['data']['roomid'],
+			'bldgid'          => $config['params']['data']['bldgid'],
+			'schedref'        => $config['params']['data']['schedref'],
+			'origdocno'       => $config['params']['data']['origdocno'],
+			'origsubjectcode' => $config['params']['data']['origsubjectcode']
+		];
+		if ($action == 'insert') {
+			if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
+				$row = $this->openstockline($config);
+				return ['row' => $row, 'status' => true, 'msg' => 'Add subject successfully.'];
+			} else {
+				return ['status' => false, 'msg' => 'Add item failed'];
+			}
+		} else if ($action == 'update') {
+			$this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
+		}
+
+		return true;
+	}
+
+	public function addcredentials($action, $config) {
+		$trno = $config['params']['trno'];
+		$line = 0;
+		if ($action == 'insert') {
+			$qry  = "select line as value from ".$this->otherfees." where trno=? order by line desc limit 1";
+			$line = $this->coreFunctions->datareader($qry, [$trno]);
+			if ($line == '') {
+				$line = 0;
+			}
+			$line = $line+1;
+		} else {
+			$line = $config['params']['data']['line'];
+		}
+		$config['params']['line'] = $line;
+
+		$data = [
+			'trno'         => $config['params']['trno'],
+			'line'         => $line,
+			'amt'          => $config['params']['data']['amt'],
+			'credentialid' => $config['params']['data']['credentialid'],
+			'percentdisc'  => $config['params']['data']['percentdisc']
+		];
+
+		if ($action == 'insert') {
+			if ($this->coreFunctions->sbcinsert($this->otherfees, $data) == 1) {
+				$row = $this->opencredentialsline($config);
+				return ['row' => $row, 'status' => true, 'msg' => 'Add Credential successfully.'];
+			} else {
+				return ['status' => false, 'msg' => 'Add Credential failed'];
+			}
+		} else if ($action == 'update') {
+			$this->coreFunctions->sbcupdate($this->otherfees, $data, ['trno' => $trno, 'line' => $line]);
+		}
+
+		return true;
+	}
+
+	public function addotherfees($action, $config) {
+		$trno = $config['params']['trno'];
+		$line = 0;
+		if ($action == 'insert') {
+			$qry  = "select line as value from ".$this->otherfees." where trno=? order by line desc limit 1";
+			$line = $this->coreFunctions->datareader($qry, [$trno]);
+			if ($line == '') {
+				$line = 0;
+			}
+			$line = $line+1;
+		} else {
+			$line = $config['params']['data']['line'];
+		}
+		$config['params']['line'] = $line;
+
+		$data = [
+			'trno'     => $config['params']['trno'],
+			'line'     => $line,
+			'isamt'    => $config['params']['data']['isamt'],
+			'rem'      => $config['params']['data']['rem'],
+			'feestype' => $config['params']['data']['feestype'],
+			'scheme'   => $config['params']['data']['scheme'],
+			'acnoid'   => $config['params']['data']['acnoid'],
+			'feesid'   => $config['params']['data']['feesid']
+		];
+
+		if ($action == 'insert') {
+			if ($this->coreFunctions->sbcinsert($this->otherfees, $data) == 1) {
+				$row = $this->openotherfeesline($config);
+				return ['row' => $row, 'status' => true, 'msg' => 'Add Other fees successfully.'];
+			} else {
+				return ['status' => false, 'msg' => 'Add Other Fees failed'];
+			}
+		} else if ($action == 'update') {
+			$this->coreFunctions->sbcupdate($this->otherfees, $data, ['trno' => $trno, 'line' => $line]);
+		}
+
+		return true;
+	}
+
+	public function updateperitem($config) {
+		$config['params']['data'] = $config['params']['row'];
+		$this->additem('update', $config);
+		$data = $this->openstockline($config);
+		return ['row' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
+	}
+
+	public function updateitem($config) {
+		foreach ($config['params']['row'] as $key => $value) {
+			$config['params']['data'] = $value;
+			$this->additem('update', $config);
+		}
+		$data     = $this->openstock($config['params']['trno'], $config);
+		$data2    = json_decode(json_encode($data), true);
+		$isupdate = true;
+		$msg1     = '';
+		$msg2     = '';
+
+		if ($isupdate) {
+			return ['inventory' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
+		} else {
+			return ['inventory' => $data, 'status' => true, 'msg' => 'Please check some items have zero qty ('.$msg1.' / '.$msg2.')'];
+		}
+
+	}//end function
+
+	public function deleteallitem($config) {
+		$isallow = true;
+		$trno    = $config['params']['trno'];
+		$this->coreFunctions->execqry('delete from '.$this->stock.' where trno=?', 'delete', [$trno]);
+		$this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
+		return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
+	}
+
+	public function deleteitem($config) {
+		$config['params']['trno'] = $config['params']['row']['trno'];
+		$config['params']['line'] = $config['params']['row']['line'];
+		$data                     = $this->openstockline($config);
+		//if(($data[0]->qa == $data[0]->qty)){
+		$trno = $config['params']['trno'];
+		$line = $config['params']['line'];
+		$qry  = "delete from ".$this->stock." where trno=? and line=?";
+		$this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
+		$data = json_decode(json_encode($data), true);
+		$this->logger->sbcwritelog($trno, $config, 'SUBJECT', 'REMOVED - Line:'.$line.' Subject ID:'.$data[0]['subjectid'].' units:'.$data[0]['units'].' InstructorID:'.$data[0]['instructorid'].' schedday:'.$data[0]['schedday'].' schedstarttime:'.$data[0]['schedstarttime'].' schedendtime:'.$data[0]['schedendtime'].' bldgid:'.$data[0]['bldgid'].' room:'.$data[0]['roomid']);
+		return ['status' => true, 'msg' => 'Item was successfully deleted.'];
+		//} else {
+		//    return ['status'=>false,'msg'=>'Cannot delete, already served'];
+		//}
+	}// end function
+
+	public function reportsetup($config) {
+		$txtfield   = $this->createreportfilter();
+		$txtdata    = $this->reportparamsdata($config);
+		$modulename = $this->modulename;
+		$data       = [];
+		$style      = 'width:500px;max-width:500px;';
+
+		return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+	}
+
+	public function createreportfilter() {
+		$fields = ['radioprint', 'prepared', 'approved', 'received', 'refresh'];
+		$col1   = $this->fieldClass->create($fields);
+		return array('col1' => $col1);
+	}
+
+	public function reportparamsdata($config) {
+		return $this->coreFunctions->opentable(
+			"select
+      'default' as print,
+      '' as prepared,
+      '' as approved,
+      '' as received
+      ");
+	}
+
+	private function report_default_query($trno) {
+
+		$query = "select head.rtype,head.rdate,cust.tel2,cust.email,head.docno,head.trno, head.clientname, head.address,
+      date(head.dateid) as dateid,head.terms, head.rem,head.agent,head.wh,
+      item.barcode, item.itemname, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
+      stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
+      item.sizeid,m.model_name as model
+      from sohead as head left join sostock as stock on stock.trno=head.trno
+      left join item on item.itemid=stock.itemid
+      left join model_masterfile as m on m.model_id = item.model
+      left join client on client.client=head.wh
+      left join client as cust on cust.client = head.client
+      where head.trno='$trno'
+      union all
+      select head.rtype,head.rdate,cust.tel2,cust.email,head.docno,head.trno, head.clientname, head.address,
+      date(head.dateid) as dateid, head.terms, head.rem,head.agent,head.wh,
+      item.barcode, item.itemname, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
+      stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
+      item.sizeid,m.model_name as model
+      from hsohead as head
+      left join hsostock as stock on stock.trno=head.trno
+      left join item on item.itemid=stock.itemid
+      left join model_masterfile as m on m.model_id = item.model
+      left join client on client.client=head.wh
+      left join client as cust on cust.client = head.client
+      where head.doc='so' and head.trno='$trno' order by line";
+
+		$result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+		return $result;
+	}//end fn
+
+	public function reportdata($config) {
+		$data = $this->report_default_query($config['params']['dataid']);
+		$str  = $this->reportplotting($config, $data);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+	}
+
+	public function reportplotting($params, $data) {
+		$companyid = $params['params']['companyid'];
+		$decimal   = $this->companysetup->getdecimal('currency', $params['params']);
+
+		$center   = $params['params']['center'];
+		$username = $params['params']['user'];
+
+		$str   = '';
+		$count = 35;
+		$page  = 35;
+		$str .= $this->reporter->beginreport();
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endtable();
+		$str .= '<br><br>';
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('SALES ORDER', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
+		$str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
+		$str .= $this->reporter->col((isset($data[0]['docno'])?$data[0]['docno']:''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('CUSTOMER : ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+		$str .= $this->reporter->col((isset($data[0]['clientname'])?$data[0]['clientname']:''), '520', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+		$str .= $this->reporter->col('DATE : ', '40', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col((isset($data[0]['dateid'])?$data[0]['dateid']:''), '160', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('ADDRESS : ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+		$str .= $this->reporter->col((isset($data[0]['address'])?$data[0]['address']:''), '500', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+		$str .= $this->reporter->col('TERMS : ', '50', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col((isset($data[0]['terms'])?$data[0]['terms']:''), '150', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '4px');
+		$str .= $this->reporter->pagenumber('Page');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		// $str .= $this->reporter->printline();
+		//($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('QTY', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+		$str .= $this->reporter->col('UNIT', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+		$str .= $this->reporter->col('D E S C R I P T I O N', '500px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+		$str .= $this->reporter->col('UNIT PRICE', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+		$str .= $this->reporter->col('(+/-) %', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+		$str .= $this->reporter->col('TOTAL', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+
+		$totalext = 0;
+		for ($i = 0; $i < count($data); $i++) {
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->addline();
+			$str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'])), '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+			$str .= $this->reporter->col($data[$i]['uom'], '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+			$str .= $this->reporter->col($data[$i]['itemname'], '500px', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '2px');
+			$str .= $this->reporter->col(number_format($data[$i]['gross'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
+			$str .= $this->reporter->col($data[$i]['disc'], '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '');
+			$str .= $this->reporter->col(number_format($data[$i]['ext'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
+			$totalext = $totalext+$data[$i]['ext'];
+
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->letterhead($center, $username);
+				$str .= $this->reporter->endtable();
+				$str .= '<br><br>';
+
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->startrow();
+				//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+				$str .= $this->reporter->col('SALES ORDER', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
+				$str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
+				$str .= $this->reporter->col((isset($data[0]['docno'])?$data[0]['docno']:''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '').'<br />';
+				$str .= $this->reporter->endrow();
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->startrow();
+				$str .= $this->reporter->col('CUSTOMER : ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+				$str .= $this->reporter->col((isset($data[0]['clientname'])?$data[0]['clientname']:''), '520', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+				$str .= $this->reporter->col('DATE : ', '40', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+				$str .= $this->reporter->col((isset($data[0]['dateid'])?$data[0]['dateid']:''), '160', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
+				$str .= $this->reporter->endrow();
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->startrow();
+				$str .= $this->reporter->col('ADDRESS : ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+				$str .= $this->reporter->col((isset($data[0]['address'])?$data[0]['address']:''), '500', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+				$str .= $this->reporter->col('TERMS : ', '50', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+				$str .= $this->reporter->col((isset($data[0]['terms'])?$data[0]['terms']:''), '150', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
+				$str .= $this->reporter->endrow();
+				$str .= $this->reporter->endtable();
+
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '4px');
+				$str .= $this->reporter->pagenumber('Page');
+				$str .= $this->reporter->endrow();
+				$str .= $this->reporter->endtable();
+
+				$str .= $this->reporter->printline();
+
+				$str .= $this->reporter->begintable('800');
+				$str .= $this->reporter->startrow();
+				//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+				$str .= $this->reporter->col('QTY', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->col('UNIT', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->col('D E S C R P T I O N', '500px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->col('UNIT PRICE', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->col('(+/-) %', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->col('TOTAL', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+				$str .= $this->reporter->endrow();
+				$str .= $this->reporter->printline();
+				$page = $page+$count;
+			}
+		}
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col('', '500px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col('', '125px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col('GRAND TOTAL :', '50px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col(number_format($totalext, $decimal), '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->endrow();
+
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('NOTE : ', '40', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col($data[0]['rem'], '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->col('', '160', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= '<br><br>';
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('Prepared By : ', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->col('Approved By :', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->col('Received By :', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= '<br>';
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col($params['params']['dataparams']["prepared"], '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col($params['params']['dataparams']["approved"], '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col($params['params']['dataparams']["received"], '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+}//end class

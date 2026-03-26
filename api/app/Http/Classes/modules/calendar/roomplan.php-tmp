@@ -1,0 +1,102 @@
+<?php
+namespace App\Http\Classes\modules\calendar;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+//view
+//1. month-scheduler
+//2. week-scheduler
+
+class roomplan {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'ROOM PLAN';
+	public $view       = 'month-scheduler';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	private $style = 'height: 400px;';
+
+	private $divstyle = 'max-width: 1200px; width: 100%;';
+
+	private $resourceheight = '40';
+	private $form           = 'roomplanentry';
+	private $classid        = '';
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function loadform($config) {
+		switch ($config['params']['action']) {
+			case 'load':
+				return $this->load($config);
+				break;
+			case 'getdata':
+				$data = $this->getdata($config);
+				return ['status' => true, 'msg' => 'Successful.', 'data' => $data];
+			default:
+				# code...
+				break;
+		}
+	}//end function
+
+	private function load($config) {
+		$qry       = 'select userid as id,username as label from useraccess';
+		$resources = $this->coreFunctions->opentable($qry);
+
+		$data = $this->getdata($config);
+
+		$plots = array(
+			'SJ'          => array(
+				'background' => 'purple',
+				'color'      => 'white',
+				'label'      => 'SJ'
+			),
+			'CM'          => array(
+				'background' => 'yellow',
+				'color'      => 'black',
+				'label'      => 'CM'
+			),
+			'GJ'          => array(
+				'background' => 'green',
+				'color'      => 'white',
+				'label'      => 'GJ'
+			),
+			'RR'          => array(
+				'background' => 'red',
+				'color'      => 'white',
+				'label'      => 'RR'
+			),
+			'PV'          => array(
+				'background' => 'blue',
+				'color'      => 'white',
+				'label'      => 'PV'
+			),
+		);
+		$defaultplot = array('background' => 'white', 'color' => 'black', 'label' => 'V');
+
+		return ['status' => true, 'msg' => 'Successfully loaded.', 'view' => $this->view, 'resources' => $resources, 'plots' => $plots, 'defaultplot' => $defaultplot, 'style' => $this->style, 'divstyle' => $this->divstyle, 'resourceheight' => $this->resourceheight, 'data' => $data, 'form' => $this->form, 'classid' => $this->classid];
+
+	}//end function
+
+	private function getdata($config) {
+		$month = $config['params']['month'];
+		$year  = $config['params']['year'];
+
+		$qry  = 'select u.userid as id,left(lahead.dateid,10) as dateid,lahead.doc as status from lahead left join useraccess as u on u.username = lahead.createby where month(lahead.dateid)=? and year(lahead.dateid)=? group by u.userid,lahead.dateid';
+		$data = $this->coreFunctions->opentable($qry, [$month, $year]);
+		return $data;
+	}//end function
+
+}//end class

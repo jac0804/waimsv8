@@ -1,0 +1,257 @@
+<?php
+namespace App\Http\Classes\modules\tableentry;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class entrycenter {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'Branch Masterfile';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $table = 'center';
+	private $othersClass;
+	public $style = 'width:100%;';
+
+	//private $fields = ['code','name','address','tel','tin','zipcode','station','warehouse','ismain','email'];
+	private $fields      = ['code', 'name', 'address', 'tel', 'tin', 'email', 'zipcode', 'station', 'warehouse', 'ismain'];
+	public $showclosebtn = false;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function getAttrib() {
+		$attrib = array('load' => 798);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$action    = 0;
+		$code      = 1;
+		$name      = 2;
+		$address   = 3;
+		$tel       = 4;
+		$email     = 5;
+		$tin       = 6;
+		$zipcode   = 7;
+		$station   = 8;
+		$warehouse = 9;
+		$ismain    = 10;
+
+		$tab = [$this->gridname => ['gridcolumns' => ['action', 'code', 'name', 'address', 'tel', 'email', 'tin', 'zipcode', 'station', 'warehouse', 'ismain']]];
+
+		if ($this->companysetup->getmultibranch($config['params'])) {
+			// $stockbuttons = ['save','delete'];
+		} else {
+			// $stockbuttons = ['save'];
+			$this->modulename = 'Company Information';
+		}
+		if ($config['params']['companyid'] == 10) {
+			$tab = [$this->gridname => ['gridcolumns' => ['action', 'code', 'name', 'address', 'tel', 'tin', 'zipcode', 'email', 'warehouse', 'ismain']]];
+		}
+		$stockbuttons = ['save'];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// action
+		$obj[0][$this->gridname]['columns'][$action]['style'] = "width:30px;whiteSpace: normal;min-width:30px;";
+
+		$obj[0][$this->gridname]['columns'][$code]['style'] = "width:30px;whiteSpace: normal;min-width:30px;";
+
+		$obj[0][$this->gridname]['columns'][$name]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+
+		$obj[0][$this->gridname]['columns'][$address]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$tel]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+
+		$obj[0][$this->gridname]['columns'][$email]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+
+		$obj[0][$this->gridname]['columns'][$tin]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+
+		$obj[0][$this->gridname]['columns'][$zipcode]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$station]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$warehouse]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$ismain]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+		$obj[0][$this->gridname]['columns'][$warehouse]['action'] = "lookupsetup";
+
+		$obj[0][$this->gridname]['columns'][$code]['type'] = "label";
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		// $tbuttons = ['addrecord', 'saveallentry'];
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+
+		return $obj;
+	}
+
+	public function add($config) {
+		$data              = [];
+		$data['line']      = 0;
+		$data['code']      = '';
+		$data['name']      = '';
+		$data['address']   = '';
+		$data['tel']       = '';
+		$data['tin']       = '';
+		$data['zipcode']   = '';
+		$data['station']   = '';
+		$data['ismain']    = 'false';
+		$data['warehouse'] = '';
+		$data['email']     = '';
+		$data['bgcolor']   = 'bg-blue-2';
+		return $data;
+	}
+
+	private function selectqry() {
+		$qry = "line,code,name,address,tel,tin,zipcode,station,warehouse,email,
+      case when ismain=0 then 'false' else 'true' end as ismain ";
+		return $qry;
+	}
+
+	public function saveallentry($config) {
+		$data = $config['params']['data'];
+		foreach ($data as $key => $value) {
+			$data2 = [];
+			if ($data[$key]['bgcolor'] != '') {
+				foreach ($this->fields as $key2 => $value2) {
+					$data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+				}
+				if ($data[$key]['line'] == 0) {
+					$line = $this->coreFunctions->insertGetId($this->table, $data2);
+				} else {
+					$this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
+				}
+			}// end if
+		}// foreach
+		$returndata = $this->loaddata($config);
+		return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
+	}// end function
+
+	public function save($config) {
+		$data = [];
+		$row  = $config['params']['row'];
+		$code = $row['code'];
+
+		foreach ($this->fields as $key => $value) {
+			$data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+		}
+
+		if ($row['line'] == 0) {
+			$line = $this->coreFunctions->insertGetId($this->table, $data);
+			if ($line != 0) {
+				$returnrow = $this->loaddataperrecord($line);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		} else {
+			$qry   = "select code as value from center where line =?";
+			$ocode = $this->coreFunctions->datareader($qry, [$row['line']]);
+
+			if ($ocode != $code) {
+				$qry   = "select center as value from cntnum where center = ?";
+				$count = $this->coreFunctions->datareader($qry, [$ocode]);
+
+				if ($count != '') {
+					$data['code'] = $ocode;
+					if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+						$returnrow = $this->loaddataperrecord($row['line']);
+						return ['status' => true, 'msg' => 'Successfully saved. Cannot update branch code, already have transaction...', 'row' => $returnrow];
+					} else {
+						return ['status' => false, 'msg' => 'Saving failed.'];
+					}
+					// return ['code' => $code, 'status' => false, 'msg' => 'Cannot update branch code, already have transaction...'];
+				}
+			} else {
+				if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+					$returnrow = $this->loaddataperrecord($row['line']);
+					return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+				} else {
+					return ['status' => false, 'msg' => 'Saving failed.'];
+				}
+			}
+
+		}
+	}//end function
+
+	public function delete($config) {
+		$row  = $config['params']['row'];
+		$code = $row['code'];
+
+		$qry   = "select center as value from cntnum where center = ?";
+		$count = $this->coreFunctions->datareader($qry, [$code]);
+		if ($count != '') {
+			return ['code' => $code, 'status' => false, 'msg' => 'Already have transaction...'];
+		}
+
+		$qry = "delete from ".$this->table." where line=?";
+		$this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
+		return ['status' => true, 'msg' => 'Successfully deleted.'];
+	}
+
+	private function loaddataperrecord($line) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where line=?";
+		$data   = $this->coreFunctions->opentable($qry, [$line]);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." order by line";
+		$data   = $this->coreFunctions->opentable($qry);
+		return $data;
+	}
+
+	public function lookupsetup($config) {
+		return $this->lookupwh($config);
+	}
+
+	public function lookupwh($config) {
+		//default
+		$plotting    = array('warehouse' => 'client');
+		$plottype    = 'plotgrid';
+		$title       = 'List of Warehouse';
+		$lookupsetup = array('type' => 'single',
+			'title'                    => $title,
+			'style'                    => 'width:900px;max-width:900px;'
+		);
+		$plotsetup = array('plottype' => $plottype,
+			'action'                     => '',
+			'plotting'                   => $plotting
+		);
+		// lookup columns
+		$cols = array();
+		$col  = array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+		$col = array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;');
+
+		array_push($cols, $col);
+
+		$qry   = "select client,clientname from client where iswarehouse=1 order by client";
+		$data  = $this->coreFunctions->opentable($qry);
+		$index = $config['params']['index'];
+		return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+
+	}// end function
+
+}//end class

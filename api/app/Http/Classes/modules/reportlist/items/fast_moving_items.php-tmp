@@ -1,0 +1,437 @@
+<?php
+namespace App\Http\Classes\modules\reportlist\items;
+
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class fast_moving_items {
+	public $modulename = 'Fast Moving Items';
+	private $companysetup;
+	private $coreFunctions;
+	private $fieldClass;
+	private $othersClass;
+	private $reporter;
+	public $style = 'width:1200px;max-width:1200px;';
+
+	public $directprint  = false;
+	public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
+
+	public function __construct() {
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['radioprint', 'start', 'end', 'ditemname', 'divsion', 'brand', 'class', 'dwhname', 'year'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'divsion.label', 'Group');
+		data_set($col1, 'year.label', 'Top # of Items');
+		data_set($col1, 'year.required', true);
+
+		$fields = ['radioposttype', 'radioreportitemtype'];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = ['refresh'];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'refresh.action', 'history');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+	}
+
+	public function paramsdata($config) {
+		// NAME NG INPUT YUNG NAKA ALIAS
+		return $this->coreFunctions->opentable("select
+    'default' as print,
+    left(adddate(now(),-30),10) as start,
+    left(now(),10) as end,
+    '' as ditemname,
+    '' as barcode,
+    '' as groupid,
+    '' as stockgrp,
+    '' as brandid,
+    '' as brandname,
+    '' as classid,
+    '' as classic,
+    '' as wh,
+    '' as whname,
+    '0' as posttype,
+    '(0,1)' as itemtype,
+    '10' as year,
+    '' as divsion,
+    '' as brand,
+    '' as class,
+    '' as dwhname
+    ");
+	}
+
+	// put here the plotting string if direct printing
+	public function getloaddata($config) {
+		return [];
+	}
+
+	public function reportdata($config) {
+		$str = $this->reportplotting($config);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+	}
+
+	public function reportplotting($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$result = $this->reportDefaultLayout($config);
+
+		return $result;
+	}
+
+	public function reportDefault($config) {
+		// QUERY
+		$posttype = $config['params']['dataparams']['posttype'];
+
+		switch ($posttype) {
+			case '0':// POSTED
+				$query = $this->default_QUERY_POSTED($config);
+				break;
+			case '1':// UNPOSTED
+				$query = $this->default_QUERY_UNPOSTED($config);
+				break;
+		}
+		// return $query;
+		return $this->coreFunctions->opentable($query);
+	}
+
+	public function default_QUERY_POSTED($config) {
+		$start     = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+		$end       = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+		$classid   = $config['params']['dataparams']['classid'];
+		$classname = $config['params']['dataparams']['classic'];
+		$brandid   = $config['params']['dataparams']['brandid'];
+		$brandname = $config['params']['dataparams']['brandname'];
+		$groupid   = $config['params']['dataparams']['groupid'];
+		$groupname = $config['params']['dataparams']['stockgrp'];
+		$barcode   = $config['params']['dataparams']['barcode'];
+		$wh        = $config['params']['dataparams']['wh'];
+		$whname    = $config['params']['dataparams']['whname'];
+		$posttype  = $config['params']['dataparams']['posttype'];
+		$loc       = $config['params']['dataparams']['itemtype'];
+		$top       = $config['params']['dataparams']['year'];
+
+		$isqty = "stock.iss";
+
+		$filter = " and item.isimport in $loc";
+		if ($barcode != "") {
+			$filter = $filter." and item.barcode='$barcode'";
+		}
+		if ($groupid != "") {
+			$filter .= " and stockgrp.stockgrp_id='$groupid'";
+		}
+		if ($brandname != "") {
+			$filter = $filter." and item.brand='$brandname'";
+		}
+		if ($classname != "") {
+			$filter = $filter." and item.class='$classname'";
+		}
+		if ($wh != "") {
+			$filter = $filter." and wh.client='$wh'";
+		}
+
+		if ($top != "") {
+			$top = " limit ".$top."";
+		} else {
+			$top = " limit 1 ";
+		}
+
+		$query = "select size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,qty,uom,part,body from (
+    select item.sizeid as size,'P' as tr, ifnull(item.groupid,'') as groupid, ifnull(item.brand,'') as brand,
+    ifnull(item.part,'') as part,ifnull(mm.model_name,'') as model,item.body,
+    ifnull(cc.cl_name,'') as class,wh.client as whcode,ifnull(wh.clientname,'') as whname,
+    ifnull(item.itemname,'') as itemname,item.barcode,sum(".$isqty.") as qty,stock.uom
+    from glhead as head left join glstock as stock on stock.trno=head.trno
+    left join item on item.itemid=stock.itemid
+    left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
+    left join model_masterfile as mm on mm.model_id = item.model
+    left join item_class as cc on cc.cl_id = item.class
+    left join cntnum on cntnum.trno=head.trno
+    left join client as wh on wh.clientid=stock.whid
+    where head.doc='sj' and head.dateid between '$start' and '$end' and ifnull(item.itemid,'')<>'' $filter
+    group by item.sizeid,item.groupid, item.brand,cc.cl_name,wh.client,
+    item.part,item.model,item.body,wh.clientname,item.barcode,item.itemname,mm.model_name,
+    item.barcode,stock.uom) as FM group by size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,uom,part,body,qty order by part,brand,qty desc $top";
+
+		return $query;
+	}
+
+	public function default_QUERY_UNPOSTED($config) {
+		$start     = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+		$end       = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+		$classid   = $config['params']['dataparams']['classid'];
+		$classname = $config['params']['dataparams']['classic'];
+		$brandid   = $config['params']['dataparams']['brandid'];
+		$brandname = $config['params']['dataparams']['brandname'];
+		$groupid   = $config['params']['dataparams']['groupid'];
+		$groupname = $config['params']['dataparams']['stockgrp'];
+		$barcode   = $config['params']['dataparams']['barcode'];
+		$wh        = $config['params']['dataparams']['wh'];
+		$whname    = $config['params']['dataparams']['whname'];
+		$posttype  = $config['params']['dataparams']['posttype'];
+		$loc       = $config['params']['dataparams']['itemtype'];
+		$top       = $config['params']['dataparams']['year'];
+
+		$isqty = "stock.iss";
+
+		$filter = " and item.isimport in $loc";
+		if ($barcode != "") {
+			$filter = $filter." and item.barcode='$barcode'";
+		}
+		if ($groupid != "") {
+			$filter .= " and stockgrp.stockgrp_id='$groupid'";
+		}
+		if ($brandname != "") {
+			$filter = $filter." and item.brand='$brandname'";
+		}
+		if ($classname != "") {
+			$filter = $filter." and item.class='$classname'";
+		}
+		if ($wh != "") {
+			$filter = $filter." and wh.client='$wh'";
+		}
+
+		if ($top != "") {
+			$top = " limit ".$top."";
+		} else {
+			$top = " limit 1 ";
+		}
+
+		$query = "select size,model,tr,groupid,brand,class,whcode,
+    whname,itemname,barcode,qty,uom,part,body from (
+    select item.sizeid as size,'U' as tr, ifnull(item.groupid,'') as groupid, ifnull(item.brand,'') as brand,
+    ifnull(item.part,'') as part,ifnull(mm.model_name,'') as model,item.body,
+    ifnull(cc.cl_name,'') as class,wh.client as whcode,ifnull(wh.clientname,'') as whname,
+    ifnull(item.itemname,'') as itemname,item.barcode,sum(".$isqty.") as qty,stock.uom
+    from lahead as head left join lastock as stock on stock.trno=head.trno
+    left join item on item.itemid=stock.itemid
+    left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
+    left join model_masterfile as mm on mm.model_id = item.model
+    left join item_class as cc on cc.cl_id = item.class
+    left join cntnum on cntnum.trno=head.trno
+    left join client as wh on wh.clientid=stock.whid
+    where head.doc='sj' and head.dateid between '$start' and '$end'  and ifnull(item.itemid,'')<>'' $filter
+    group by item.sizeid,item.groupid, item.brand,cc.cl_name,wh.client,
+    item.part,item.model,item.body,wh.clientname,item.barcode,item.itemname,mm.model_name,
+    item.barcode,stock.uom) as FM group by size,model,tr,groupid,brand,class,whcode,
+    whname,itemname,barcode,qty,uom,part,body order by part,brand,qty desc $top";
+
+		return $query;
+	}
+
+	private function default_displayHeader($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$start     = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+		$end       = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+		$classid   = $config['params']['dataparams']['classid'];
+		$classname = $config['params']['dataparams']['classic'];
+		$brandid   = $config['params']['dataparams']['brandid'];
+		$brandname = $config['params']['dataparams']['brandname'];
+		$groupid   = $config['params']['dataparams']['groupid'];
+		$groupname = $config['params']['dataparams']['stockgrp'];
+		$barcode   = $config['params']['dataparams']['barcode'];
+		$wh        = $config['params']['dataparams']['wh'];
+		$whname    = $config['params']['dataparams']['whname'];
+		$posttype  = $config['params']['dataparams']['posttype'];
+		$itemtype  = $config['params']['dataparams']['itemtype'];
+		$top       = $config['params']['dataparams']['year'];
+
+		$str        = '';
+		$layoutsize = '1000';
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endtable();
+		$str .= '<br/><br/>';
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('FAST MOVING ITEMS', null, null, false, '1px solid ', '', '', 'Verdana', '18', 'B', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('Date Period : '.$start.' TO '.$end, null, null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+
+		if ($posttype == '0') {
+			$posttype = 'Posted';
+		} else {
+			$posttype = 'Unposted';
+		}
+
+		$str .= $this->reporter->col('Transaction: '.strtoupper($posttype), null, null, '', '1px solid ', '', 'l', 'Century Gothic', '10', '', '', '');
+		// $str .= $this->reporter->col('Printdate: '. date('M-d-Y h:i:s a',time()),null,null,'','1px solid ','','R','Century Gothic','10','','','');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		if ($barcode == '') {
+			$str .= $this->reporter->col('Item : ALL', '150', null, false, '1px solid ', '', 'L', 'Verdana', '10', '', '', '');
+		} else {
+			$str .= $this->reporter->col('Item :'.$barcode, '150', null, false, '1px solid ', '', 'L', 'Verdana', '10', '', '', '');
+		}
+		if ($groupname == '') {
+			$str .= $this->reporter->col('Group : ALL', '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		} else {
+			$str .= $this->reporter->col('Group :'.$groupname, '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		}
+		if ($brandname == '') {
+			$str .= $this->reporter->col('Brand : ALL', '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		} else {
+			$str .= $this->reporter->col('Brand :'.$brandname, '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		}
+		if ($classname == '') {
+			$str .= $this->reporter->col('Class : ALL', null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		} else {
+			$str .= $this->reporter->col('Class'.$classname, null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		}
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->startrow(null, null, '', '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '');
+
+		switch ($itemtype) {
+			case '(0)':
+				$itemtype = 'Local';
+				break;
+			case '(1)':
+				$itemtype = 'Import';
+				break;
+			case '(0,1)':
+				$itemtype = 'Both';
+				break;
+		}
+
+		$str .= $this->reporter->col('Item Type : '.strtoupper($itemtype), null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		//$str .= $this->reporter->col('Center : '.$cname,null,null,'','1px solid ','','L','Century Gothic','10','','','');
+		$str .= $this->reporter->col('WH : '.$wh, null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		$str .= $this->reporter->col('', null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		$str .= $this->reporter->col('', null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+		$str .= $this->reporter->pagenumber('Page');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->printline();
+		//($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('PRODUCT CODE', '150', null, false, '1px solid ', 'B', 'C', 'Verdana', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('PRODUCT DESCRIPTION', '500', null, false, '1px solid ', 'B', 'C', 'Verdana', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('QTY', '100', null, false, '1px solid ', 'B', 'C', 'Verdana', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('UOM', '50', null, false, '1px solid ', 'B', 'C', 'Verdana', '11', 'B', '30px', '8px');
+
+		return $str;
+	}
+
+	public function reportDefaultLayout($config) {
+		$result   = $this->reportDefault($config);
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$start     = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+		$end       = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+		$classid   = $config['params']['dataparams']['classid'];
+		$classname = $config['params']['dataparams']['classic'];
+		$brandid   = $config['params']['dataparams']['brandid'];
+		$brandname = $config['params']['dataparams']['brandname'];
+		$groupid   = $config['params']['dataparams']['groupid'];
+		$groupname = $config['params']['dataparams']['stockgrp'];
+		$barcode   = $config['params']['dataparams']['barcode'];
+		$wh        = $config['params']['dataparams']['wh'];
+		$whname    = $config['params']['dataparams']['whname'];
+		$posttype  = $config['params']['dataparams']['posttype'];
+		$itemtype  = $config['params']['dataparams']['itemtype'];
+		$top       = $config['params']['dataparams']['year'];
+
+		$count = 38;
+		$page  = 40;
+
+		$str        = '';
+		$layoutsize = '1000';
+		$str .= $this->reporter->beginreport($layoutsize);
+		$str .= $this->default_displayHeader($config);
+
+		$part  = "";
+		$brand = "";
+		foreach ($result as $key => $data) {
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->addline();
+			if ($part == strtoupper($data->part)) {
+				$part = "";
+				if (strtoupper($brand) == strtoupper($data->brand)) {
+					$brand = "";
+				} else {
+					$brand = strtoupper($data->brand);
+				}
+			} else {
+				$part = $data->part;
+				if (strtoupper($brand) == strtoupper($data->brand)) {
+					$brand = "";
+				} else {
+					$brand = strtoupper($data->brand);
+				}
+			}
+			$str .= $this->reporter->col($part, '150', null, false, '1px solid ', '', 'L', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->col('', '500', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->col('', '50', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->endrow();
+
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->col($brand, '150', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'Bi', '', '');
+			$str .= $this->reporter->col('', '500', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+			$str .= $this->reporter->col('', '50', null, false, '1px solid ', '', 'C', 'Verdana', '10', 'B', '', '');
+
+			$item_desc = $data->itemname;
+
+			if ($data->brand != "") {
+				$item_desc = $data->brand." ".$item_desc;
+			}//end if
+
+			if ($data->model != "") {
+				$item_desc = $item_desc." ".$data->model;
+			}//end if
+
+			if ($data->size != "") {
+				$item_desc = $item_desc." ".$data->size;
+			}//end if
+
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->col($data->barcode, '150', null, false, '1px solid ', '', 'C', 'Verdana', '10', '', '', '');
+			$str .= $this->reporter->col($item_desc, '500', null, false, '1px solid ', '', 'L', 'Verdana', '11', '', '', '');
+			$str .= $this->reporter->col(number_format($data->qty, 2), '100', null, false, '1px solid ', '', 'R', 'Verdana', '11', '', '', '');
+			$str .= $this->reporter->col($data->uom, '50', null, false, '1px solid ', '', 'C', 'Verdana', '11', '', '', '');
+
+			$brand = strtoupper($data->brand);
+			$part  = $data->part;
+			$str .= $this->reporter->endrow();
+
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+				$str .= $this->default_displayHeader($config);
+				$page = $page+$count;
+			}
+		}
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+}//end class

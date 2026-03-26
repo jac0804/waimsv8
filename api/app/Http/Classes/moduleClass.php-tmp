@@ -1,0 +1,1651 @@
+<?php
+
+namespace App\Http\Classes;
+
+/*
+*/
+use App\Http\Classes\builder\lookupClass;
+use App\Http\Classes\companysetup;
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\headClass;
+use App\Http\Classes\Logger;
+
+//use Illuminate\Http\Request;
+use App\Http\Classes\menusetup;
+use App\Http\Classes\menusetupclient;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\sbcdb\login;
+use App\Http\Classes\sbcdb\setprefixdoc;
+
+use App\Mail\SendMail;
+use Exception;
+use Mail;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\Printer;
+use PDF;
+
+use Request;
+
+class moduleClass {
+	private $othersClass;
+	private $coreFunctions;
+	private $headClass;
+	private $logger;
+	private $lookupClass;
+	private $companysetup;
+	private $config = [];
+	private $sqlquery;
+	private $menusetup;
+	private $menusetupclient;
+	private $loginupdate;
+	private $setprefixdoc;
+
+	public function __construct() {
+		$this->othersClass     = new othersClass;
+		$this->coreFunctions   = new coreFunctions;
+		$this->headClass       = new headClass;
+		$this->logger          = new Logger;
+		$this->lookupClass     = new lookupClass;
+		$this->companysetup    = new companysetup;
+		$this->sqlquery        = new sqlquery;
+		$this->menusetup       = new menusetup;
+		$this->menusetupclient = new menusetupclient;
+		$this->loginupdate     = new login;
+		$this->setprefixdoc    = new setprefixdoc;
+	}
+
+	public function seenMsg($data) {
+		$this->coreFunctions->execqry("update privatechat set isSeen=1 where line=?", 'update', [$data['line']]);
+	}
+
+	public function getUsersList($data) {
+		$users = $this->coreFunctions->opentable("select u.username as username2, u.name as username, md5(u.userid) as userid from useraccess as u");
+		if (count($users) > 0) {
+			foreach ($users as $user) {
+				$user->hasMsg                = false;
+				$user->isOnline              = false;
+				$msg                         = $this->coreFunctions->datareader("select count(*) as value from privatechat where `from`=? and `to`=? and isSeen=0", [$user->userid, $data['userid']]);
+				if ($msg > 0) {$user->hasMsg = true;
+				}
+			}
+		}
+
+		return ['users' => $users];
+	}
+
+	public function getGCmsg($data) {
+		$lastid                       = 0;
+		$latestid                     = $data['latestid'];
+		$latestmsg                    = [];
+		$firstid                      = $this->coreFunctions->datareader("select line as value from groupchat where roomname=? order by line asc limit 1", [$data['roomname']]);
+		if ($firstid == '') {$firstid = 0;
+		}
+
+		if ($data['lastid'] == 0) {
+			$msg = $this->coreFunctions->opentable("select * from (select * from groupchat where roomname=? order by line desc limit 15) as tbl order by line asc", [$data['roomname']]);
+			if (count($msg) > 0) {
+				$latestid = end($msg);
+				$latestid = $latestid->line;
+				$lastid   = $msg[0]->line;
+			}
+		} else {
+			$latestmsg                            = $this->coreFunctions->opentable("select * from groupchat where roomname=? and line>? order by line desc", [$data['roomname'], $data['latestid']]);
+			if (count($latestmsg) > 0) {$latestid = $latestmsg[0]->line;
+			}
+
+			$msg = $this->coreFunctions->opentable("select * from groupchat where roomname=? and line<? order by line desc limit 15", [$data['roomname'], $data['lastid']]);
+			if (count($msg) > 0) {
+				$lastid = end($msg);
+				$lastid = $lastid->line;
+			}
+		}
+		return ['msg' => $msg, 'latestmsg' => $latestmsg, 'lastid' => $lastid, 'latestid' => $latestid, 'firstid' => $firstid];
+	}
+
+	public function getPMmsg($data) {
+		$lastid    = 0;
+		$latestid  = $data['latestid'];
+		$latestmsg = [];
+		$this->coreFunctions->execqry("update privatechat set isSeen=1 where `from`=? and `to`=?", 'update', [$data['user2'], $data['user1']]);
+		$firstid                      = $this->coreFunctions->datareader("select line as value from privatechat where (`from`=? and `to`=?) or (`from`=? and `to`=?) order by line asc limit 1", [$data['user1'], $data['user2'], $data['user2'], $data['user1']]);
+		if ($firstid == '') {$firstid = 0;
+		}
+
+		if ($data['lastid'] == 0) {
+			$msg = $this->coreFunctions->opentable("select * from (select * from privatechat where (`from`=? and `to`=?) or (`from`=? and `to`=?) order by line desc limit 15) as tbl order by line asc", [$data['user1'], $data['user2'], $data['user2'], $data['user1']]);
+			if (count($msg) > 0) {
+				$latestid = end($msg);
+				$latestid = $latestid->line;
+				$lastid   = $msg[0]->line;
+			}
+		} else {
+			$latestmsg                            = $this->coreFunctions->opentable("select * from privatechat where ((`from`=? and `to`=?) or (`from`=? and `to`=?)) and line>? order by line desc", [$data['user1'], $data['user2'], $data['user2'], $data['user1'], $data['latestid']]);
+			if (count($latestmsg) > 0) {$latestid = $latestmsg[0]->line;
+			}
+
+			$msg = $this->coreFunctions->opentable("select * from privatechat where ((`from`=? and `to`=?) or (`from`=? and `to`=?)) and line<? order by line desc limit 15", [$data['user1'], $data['user2'], $data['user2'], $data['user1'], $data['lastid']]);
+			if (count($msg) > 0) {
+				$lastid = end($msg);
+				$lastid = $lastid->line;
+			}
+		}
+		return ['msg' => $msg, 'latestmsg' => $latestmsg, 'lastid' => $lastid, 'latestid' => $latestid, 'firstid' => $firstid];
+	}
+
+	public function viberbot($data) {
+		switch ($data['event']) {
+			case 'message':
+				var_dump($data['sender']);
+				var_dump($data['message']);
+				$sender  = $data['sender'];
+				$message = $data['message'];
+
+				$check = $this->coreFunctions->datareader("select id as value from viberid where id=?", [$data['sender']['id']]);
+				if ($check == '') {
+					$waw = $this->coreFunctions->execqry("insert into viberid(id, name) values('{$data['sender']['id']	}', '{$data['sender']['name']}')", 'insert');
+			}
+
+			//API Url
+			$url = 'https://chatapi.viber.com/pa/send_message';
+			//Initiate cURL.
+			$ch = curl_init($url);
+			// The JSON data.
+			// var_dump($sender);
+			$d = [
+				'receiver' => $sender['id'],
+				'sender'   => [
+					'name'    => 'Solutionbase Corp'
+				],
+				'tracking_data' => 'tracking data',
+				'type'          => 'text',
+				'text'          => 'Waimsv2, Hello '.$sender['name'].' You sent message:'.$message['text']
+			];
+			$jsonData = json_encode($d);
+
+			//Encode the array into JSON.
+			$jsonDataEncoded = $jsonData;
+			//Tell cURL that we want to send a POST request.
+			curl_setopt($ch, CURLOPT_POST, 1);
+			//Attach our encoded JSON string to the POST fields.
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+			//Set the content type to application/json
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'X-Viber-Auth-Token: 4d608cfb9b27d279-738bebdd738f46d0-a81ac346e1fac1b6'));
+			//Execute the request
+			if (!empty($message['text'])) {
+				$result = curl_exec($ch);
+			}
+			return json_decode($result);
+			break;
+			case 'subscribed':
+			var_dump("User Subscribed");
+			var_dump($data['user']);
+			$this->coreFunctions->execqry("insert into viberid(id, name) values('{$data['user']['id']}', '{$data['user']['name']}')", 'insert');
+			break;
+			case 'conversation_started':
+			$check = $this->coreFunctions->datareader("select id as value from viberid where id='{$data['user']['id']}'");
+			if ($check == '') {
+				$this->coreFunctions->execqry("insert into viberid(id, name) values('{$data['user']['id']}', '{$data['user']['name']}')", 'insert');
+			}
+			break;
+			case 'unsubscribed':
+			var_dump("User Unsubscribed");
+			var_dump($data['user_id']);
+			$this->coreFunctions->execqry("delete from viberid where id='{$data['user_id']}'", 'delete');
+			break;
+		}
+	}
+
+	public function setviberwebhook($params) {
+		$webhook = $params['webhook'];
+		$url     = 'https://chatapi.viber.com/pa/set_webhook';
+		//Initiate cURL.
+		$ch = curl_init($url);
+		// The JSON data.
+		$d = [
+			'url'         => $params['webhook'],
+			'event_types' => [
+				'delivered',
+				'seen',
+				'faiiled',
+				'subscribed',
+				'unsubscribed',
+				'conversation_started'
+			],
+			'send_name'  => true,
+			'send_photo' => true
+		];
+		$jsonData = json_encode($d);
+
+		//Encode the array into JSON.
+		$jsonDataEncoded = $jsonData;
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'X-Viber-Auth-Token: 4d608cfb9b27d279-738bebdd738f46d0-a81ac346e1fac1b6'));
+		//Execute the request
+		$result = curl_exec($ch);
+		// return json_decode($result);
+	}
+
+	public function sendvibermsg($params) {
+		$url = 'https://chatapi.viber.com/pa/send_message';
+		//Initiate cURL.
+		$ch = curl_init($url);
+		// The JSON data.
+		$d = [
+			'receiver' => $params['user'],
+			'sender'   => [
+				'name'    => 'Solutionbase Corp'
+			],
+			'tracking_data' => 'tracking data',
+			'type'          => 'text',
+			'text'          => $params['msg']
+		];
+		$jsonData = json_encode($d);
+
+		//Encode the array into JSON.
+		$jsonDataEncoded = $jsonData;
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'X-Viber-Auth-Token: 4d608cfb9b27d279-738bebdd738f46d0-a81ac346e1fac1b6'));
+		//Execute the request
+		$result = curl_exec($ch);
+		// return json_decode($result);
+	}
+
+	public function getviberusers() {
+		$users = $this->coreFunctions->opentable("select id, name from viberid");
+		return json_encode($users);
+	}
+
+	public function escposprintsample($params) {
+		// escpos documentation
+		// https://github.com/mike42/escpos-php
+
+		// share printer to network first.
+		if ($params['printer'] != '') {
+			$connector = new WindowsPrintConnector("smb:".$params['printer']);// smb://computername/printername
+			//$connector = new WindowsPrintConnector($params['printer']);
+			$printer = new Printer($connector);
+
+			// initialize printer
+			$printer->initialize();
+
+			// set text to print
+			$printer->text("Hello World!");
+			$printer->setBarcodeHeight(8);
+			$printer->barcode("ABC", Printer::BARCODE_CODE39);
+
+			// feed printer
+			$printer->feed(1);
+
+			// close printer
+			$printer->close();
+		}
+	}
+
+	public function login($params) {
+		$this->loginupdate->onloadtableupdate();
+		$username  = $params['username'];
+		$password  = $params['password'];
+		$logintype = 'users';
+		$log       = $this->othersClass->checkUseraccess($username, $password);
+		if (!$log['status']) {
+			$log       = $this->othersClass->checkclientaccess($username, $params['pwd']);
+			$logintype = 'client';
+		}
+		if ($log['status']) {
+			$this->loginupdate->adminlogs($params['username']);
+			return $this->userscredential($params, $log['data'], $logintype);
+		} else {
+			return response()->json(['status' => false, 'msg' => 'Error Login'], 200);
+		}
+		/*
+	switch ($params['id']) {
+	case md5('users'):
+	break;
+	case md5('client'):
+	$logintype = 'client';
+	$log = $this->othersClass->checkclientaccess($username, $password);
+	if ($log['status']) {
+	return $this->clientcredential($params, $log['data']);
+	} else {
+	return response()->json(['status' => false, 'msg' => 'Error Login'], 200);
+	}
+	break;
+	}
+	 */
+	}
+
+	public function userscredential($params, $log, $logintype) {
+		if (count($log) > 0) {
+			$username    = $params['username'];
+			$password    = $params['password'];
+			$multicenter = $this->companysetup->getmultibranch($params);
+			$companyname = $this->companysetup->getcompanyname($params);
+			$systemtype  = $this->companysetup->getsystemtype($params);
+			$msg         = "";
+			$status      = false;
+			$data        = $parent        = $child        = $access        = $center        = [];
+			$menus       = [];
+			$report      = [];
+			$mailcount   = 0;
+
+			$this->logger->sbciplog('LOGIN', $params['ip'], $params['username']);
+			$this->menusetup->setupparentmenu($params);
+			//$this->menusetup->generateaccesslist($params); // SET UP REPORT
+			$this->menusetup->generatereportlist($params);// SET UP REPORT
+			$this->setprefixdoc->setupdoc($params);
+
+			if ($log[0]->clientid != 0) {
+				$qry = "
+			  select count(msguser.is_view) as value
+			  from conversation_user as msguser
+			  left join conversation_msg as msg on msg.conversation_id=msguser.conversation_id
+			  where msguser.user_id = ".$log[0]->clientid." and msg.start=1 and msguser.trash=0 and msguser.is_view=0
+			  ";
+				$mailcount = $this->coreFunctions->datareader($qry);
+			}
+
+			$parent = $this->coreFunctions->opentable("select id, name, seq, class, doc from left_parent order by seq");
+			$access = $this->othersClass->getAccess($username);
+			$access = json_decode(json_encode($access), true);
+
+			foreach ($parent as $p) {
+				$child       = $this->coreFunctions->opentable("select parent.id, parent.name, parent.class as pclass, parent.doc as pdoc, menu.doc, menu.url, menu.module, menu.class as mclass, menu.access from left_parent as parent left join left_menu as menu on menu.parent_id = parent.id where parent.id=".$p->id." and menu.doc is not null order by parent.id, menu.seq");
+				$pm['name']  = $p->name;
+				$pm['id']    = $p->id;
+				$pm['class'] = $p->class;
+				$pm['docs']  = $p->doc;
+				$pm['menus'] = array();
+				foreach ($child as $c) {
+					$cm = array();
+					if ($access[0]['attributes'][$c->access-1] === '1') {
+						$cm['id']     = $c->id;
+						$cm['doc']    = $c->doc;
+						$cm['module'] = $c->module;
+						$cm['url']    = $c->url;
+						$cm['icon']   = $c->mclass;
+						array_push($pm['menus'], $cm);
+					}
+				}
+				if (count($pm['menus']) > 0) {
+					array_push($menus, $pm);
+				}
+			}// end foreach($parent as $p)
+
+			$parent = $this->coreFunctions->opentable("select description,code,attribute from menu where parent in ('\\\9','\\\A','\\\B','\\\C','\\\D')");
+			foreach ($parent as $p) {
+				if ($access[0]['attributes'][$p->attribute-1] === '1') {
+					$rm['name']  = $p->description;
+					$rm['code']  = $p->code;
+					$rm['menus'] = [];
+					$child       = $this->coreFunctions->opentable("select description,code,attribute from menu where parent='\\".$p->code."'");
+					foreach ($child as $c) {
+						$rm2 = [];
+						if ($access[0]['attributes'][$c->attribute-1] === '1') {
+							$rm2['name']  = $c->description;
+							$rm2['code']  = $c->code;
+							$rm2['level'] = 1;
+							$rm2['menus'] = [];
+							$child2       = $this->coreFunctions->opentable("select description,code,attribute from menu where parent='\\".$c->code."'");
+							if (!empty($child2)) {
+								foreach ($child2 as $d) {
+									$rm3 = [];
+									if ($access[0]['attributes'][$d->attribute-1] === '1') {
+										$rm3['name']  = $d->description;
+										$rm3['code']  = $d->code;
+										$rm3['level'] = 1;
+										array_push($rm2['menus'], $rm3);
+									}
+								}
+								$rm2['level'] = 0;
+								array_push($rm['menus'], $rm2);
+							} else {
+								array_push($rm['menus'], $rm2);
+							}//end if
+
+						}
+					}
+					array_push($report, $rm);
+				}
+			}
+
+			if ($multicenter) {
+				$center = $this->coreFunctions->opentable("select center.line, center.code, center.name, center.address, center.tel, center.warehouse, center.sellingprice,
+					center.commission, center.icommission, wh.clientname as whname
+					from center left join client as wh on wh.client = center.warehouse left join centeraccess on centeraccess.center = center.code where md5(centeraccess.userid) = '{$log[0]->userid}' order by center.name");
+			} else {
+				$center = $this->coreFunctions->opentable("select distinct center.line, center.code, center.name, center.address, center.tel, center.warehouse, center.sellingprice,
+					center.commission, center.icommission, wh.clientname as whname
+					from center left join client as wh on wh.client = center.warehouse left join centeraccess on centeraccess.center=center.code where center.code = '001'");
+			}
+			$timer = ['timer'                    => 60, 'visible'                    => true];
+			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer], 200);
+		} else {
+			$this->logger->sbciplog('LOG-FAIL', $params['ip'], $params['username']);
+			$status = false;
+			$msg    = "Error Login";
+			return response()->json(['status' => $status, 'msg' => $msg], 200);
+		}
+	}// end function
+
+	public function getcenter($params) {
+		$center = $this->coreFunctions->opentable("select center.line, center.code, center.name, center.address, center.tel, center.warehouse, center.sellingprice,
+	  center.commission, center.icommission, wh.clientname as whname
+	  from center left join client as wh on wh.client = center.warehouse left join centeraccess on centeraccess.center = center.code where md5(centeraccess.userid) = ? order by center.name", [$params['userid']]);
+		return response()->json(['status' => true, 'msg' => 'Success', 'center' => $center]);
+	}// end function
+
+	public function clientcredential($params, $log) {
+		if (count($log) > 0) {
+			$username    = $params['username'];
+			$multicenter = $this->companysetup->getmultibranch($params);
+			$companyname = $this->companysetup->getcompanyname($params);
+			$msg         = "";
+			$status      = false;
+			$data        = $parent        = $child        = $access        = $center        = [];
+			$menus       = [];
+			$report      = [];
+			$mailcount   = 0;
+
+			$this->logger->sbciplog('LOGIN', $params['ip'], $params['username']);
+			$this->menusetup->setupparentmenu($params);
+			//$this->menusetup->generateaccesslist($params); // SET UP REPORT
+			//$this->menusetup->generatereportlist($params); // SET UP REPORT
+			$this->setprefixdoc->setupdoc($params);
+
+			if ($log[0]->clientid != 0) {
+				$qry = "
+			  select count(msguser.is_view) as value
+			  from conversation_user as msguser
+			  left join conversation_msg as msg on msg.conversation_id=msguser.conversation_id
+			  where msguser.user_id = ".$log[0]->clientid." and msg.start=1 and msguser.trash=0 and msguser.is_view=0
+			  ";
+				$mailcount = $this->coreFunctions->datareader($qry);
+			}
+
+			$parent = $this->coreFunctions->opentable("select id, name, seq, class, doc from left_parent order by seq");
+			//$access = $this->othersClass->getAccess($username);
+			//$access = json_decode(json_encode($access), true);
+
+			foreach ($parent as $p) {
+				$pm['name']  = $p->name;
+				$pm['id']    = $p->id;
+				$pm['class'] = $p->class;
+				$pm['docs']  = $p->doc;
+				$pm['menus'] = array();
+				$child       = $this->coreFunctions->opentable("select parent.id, parent.name, parent.class as pclass, parent.doc as pdoc, menu.doc, menu.url, menu.module, menu.class as mclass, menu.access from left_parent as parent left join left_menu as menu on menu.parent_id = parent.id where parent.id=".$p->id." and menu.doc is not null order by parent.seq, menu.seq");
+				foreach ($child as $c) {
+					$cm           = array();
+					$cm['id']     = $c->id;
+					$cm['doc']    = $c->doc;
+					$cm['module'] = $c->module;
+					$cm['url']    = $c->url;
+					$cm['icon']   = $c->mclass;
+					array_push($pm['menus'], $cm);
+				}
+				if (count($pm['menus']) > 0) {
+					array_push($menus, $pm);
+				}
+			}// end foreach($parent as $p)
+
+			$parent = $this->coreFunctions->opentable("select description,code,attribute from menu where parent in ('\\\9','\\\A','\\\B','\\\C','\\\D')");
+			foreach ($parent as $p) {
+				//if ($access[0]['attributes'][$p->attribute - 1] === '1') {
+				$rm['name']  = $p->description;
+				$rm['code']  = $p->code;
+				$rm['menus'] = [];
+				$child       = $this->coreFunctions->opentable("select description,code,attribute from menu where parent='\\".$p->code."'");
+				foreach ($child as $c) {
+					$rm2          = [];
+					$rm2['name']  = $c->description;
+					$rm2['code']  = $c->code;
+					$rm2['menus'] = [];
+					$child2       = $this->coreFunctions->opentable("select description,code,attribute from menu where parent='\\".$c->code."'");
+					if (!empty($child2)) {
+						foreach ($child2 as $d) {
+							$rm3         = [];
+							$rm3['name'] = $d->description;
+							$rm3['code'] = $d->code;
+							array_push($rm2['menus'], $rm3);
+						}
+						array_push($rm['menus'], $rm2);
+					} else {
+						array_push($rm['menus'], $rm2);
+					}//end if
+
+				}
+				array_push($report, $rm);
+				//}
+			}
+
+			if ($multicenter) {
+				$center = $this->coreFunctions->opentable("select center.line, center.code, center.name, center.address, center.tel, center.warehouse, center.sellingprice,
+					center.commission, center.icommission, wh.clientname as whname
+					from center left join client as wh on wh.client = center.warehouse left join centeraccess on centeraccess.center = center.code where md5(centeraccess.userid) = '{$log[0]->userid}' order by center.name");
+			} else {
+				$center = $this->coreFunctions->opentable("select distinct center.line, center.code, center.name, center.address, center.tel, center.warehouse, center.sellingprice,
+					center.commission, center.icommission, wh.clientname as whname
+					from center left join client as wh on wh.client = center.warehouse left join centeraccess on centeraccess.center=center.code where center.code = '001'");
+			}
+			$timer = ['timer'                => 60, 'visible'                => true];
+			return response()->json(['menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer], 200);
+		} else {
+			$this->logger->sbciplog('LOG-FAIL', $params['ip'], $params['username']);
+			$status = false;
+			$msg    = "Error Login";
+			return response()->json(['status' => $status, 'msg' => $msg], 200);
+		}
+	}
+
+	public function sbc($params) {
+		//$classname = 'App\\Http\\Classes\\modules\\'.$params['moduletype'].'\\'.$params['doc'];
+		$doc       = strtolower($params['doc']);
+		$type      = strtolower($params['moduletype']);
+		$classname = __NAMESPACE__ .'\\modules\\'.$type.'\\'.$doc;
+		try {
+			$this->config['classname'] = $classname;
+			$this->config['docmodule'] = new $classname();
+		} catch (Exception $e) {
+			echo $e;
+			return $this;
+		}
+		$this->config['params'] = $params;
+		if (isset($this->config['params']['logintype'])) {
+			if ($this->config['params']['logintype'] == '62608e08adc29a8d6dbc9754e659f125') {
+				$access = $this->othersClass->getportalaccess($params['user']);
+			} else {
+				$access = $this->othersClass->getAccess($params['user']);
+			}
+		} else {
+			$access = $this->othersClass->getAccess($params['user']);
+		}
+		$this->config['access']  = json_decode(json_encode($access), true);
+		$this->config['mattrib'] = $this->config['docmodule']->getAttrib();
+		return $this;
+	}
+
+	public function checksecurity($accessid) {
+		$id                           = $this->config['mattrib'][$accessid];
+		$this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id-1];
+		if ($this->config['verifyaccess'] == 0) {
+			$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access'];
+		}
+		return $this;
+	}
+
+	public function isposted() {
+		switch ($this->config['params']['doc']) {
+			case 'JOBTITLEMASTER':
+			case 'PAYROLLSETUP':
+			case 'PIECEENTRY':
+			case 'WAREHOUSE':
+				$this->config['isposted'] = false;
+				$this->config['islocked'] = false;
+				break;
+			default:
+				$this->config['isposted'] = $this->othersClass->isposted($this->config);
+				$this->config['islocked'] = $this->othersClass->islocked($this->config);
+				break;
+		}
+		return $this;
+	}
+
+	public function loadform() {
+		if ($this->config['verifyaccess'] == 1) {
+			//$this->logger->sbciplog($this->config['params']['doc'], $this->config['params']['ip'], $this->config['params']['user']);
+			$access            = $this->getmoduleaccess($this->config['mattrib']);
+			$buttons           = $this->config['docmodule']->createHeadbutton($this->config);
+			$txtfield          = $this->config['docmodule']->createHeadField($this->config);
+			$tab               = $this->config['docmodule']->createTab($access, $this->config);
+			$tabbtn            = $this->config['docmodule']->createtabbutton($this->config);
+			$doclistingcols    = $this->config['docmodule']->createdoclisting($this->config);
+			$modulename        = $this->config['docmodule']->modulename;
+			$isexpiry          = $this->companysetup->getisexpiry($this->config['params']);
+			$ispallet          = $this->companysetup->getispallet($this->config['params']);
+			$isproject         = $this->companysetup->getisproject($this->config['params']);
+			$tab2              = [];
+			$paramsdatalisting = [];
+			if (method_exists($this->config['classname'], 'createtab2')) {
+				$tab2 = $this->config['docmodule']->createtab2($access, $this->config);
+			}
+			if (method_exists($this->config['classname'], 'paramsdatalisting')) {
+				$paramsdatalisting = $this->config['docmodule']->paramsdatalisting($this->config);
+			}
+
+			if ($isexpiry) {
+				$expirystatus = $this->config['docmodule']->expirystatus;
+				$itembalcol   = [
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
+					['name' => 'loc', 'label' => 'Location', 'align' => 'left', 'field' => 'loc'],
+					['name' => 'expiry', 'label' => 'Expiry', 'align' => 'left', 'field' => 'expiry'],
+					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
+					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],
+					['name' => 'max', 'label' => 'Maximum', 'align' => 'left', 'field' => 'max'],
+					['name' => 'uom', 'label' => 'UOM', 'align' => 'left', 'field' => 'uom']
+				];
+			} elseif ($ispallet) {
+				switch ($this->config['params']['doc']) {
+					case 'SO':
+						$expirystatus = ['readonly' => true, 'show' => false, 'showdate' => false, 'showpallet' => false];
+						break;
+					default:
+						$expirystatus = ['readonly' => true, 'show' => false, 'showdate' => false, 'showpallet' => true];
+						break;
+				}
+				$itembalcol = [
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
+					['name' => 'location', 'label' => 'Location', 'align' => 'left', 'field' => 'location'],
+					['name' => 'pallet', 'label' => 'Pallet', 'align' => 'left', 'field' => 'pallet'],
+					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
+					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],
+					['name' => 'max', 'label' => 'Maximum', 'align' => 'left', 'field' => 'max'],
+					['name' => 'uom', 'label' => 'UOM', 'align' => 'left', 'field' => 'uom']
+				];
+			} elseif ($isproject) {
+				$expirystatus = ['readonly' => true, 'show' => false, 'showdate' => false, 'showstage' => true];
+				$itembalcol   = [
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
+					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
+					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],
+					['name' => 'max', 'label' => 'Maximum', 'align' => 'left', 'field' => 'max'],
+					['name' => 'uom', 'label' => 'UOM', 'align' => 'left', 'field' => 'uom']
+				];
+			} else {
+				$expirystatus = ['readonly' => true, 'show' => false, 'showdate' => false];
+				$itembalcol   = [
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
+					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
+					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],
+					['name' => 'max', 'label' => 'Maximum', 'align' => 'left', 'field' => 'max'],
+					['name' => 'uom', 'label' => 'UOM', 'align' => 'left', 'field' => 'uom']
+				];
+			}
+
+			$showfilter       = $this->config['docmodule']->showfilter;
+			$showfilteroption = $this->config['docmodule']->showfilteroption;
+
+			if (isset($this->config['docmodule']->showfilterlabel)) {
+				$showfilterlabel = $this->config['docmodule']->showfilterlabel;
+			} else {
+				$showfilterlabel = [
+					['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+					['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+					['val' => 'all', 'label' => 'All', 'color' => 'primary']
+				];
+			}
+
+			$showcreatebtn          = $this->config['docmodule']->showcreatebtn;
+			$timer                  = ['timer' => 60, 'visible' => true];
+			$this->config['return'] = [
+				'txtfield'          => $txtfield, 'toolbar'          => $buttons, 'tab'          => $tab, 'tabbuttons'          => $tabbtn,
+				'maccess'           => $access, 'status'           => true, 'msg'           => 'Loaded Success',
+				'modulename'        => $modulename, 'doclistingcols'        => $doclistingcols, 'expirystatus'        => $expirystatus,
+				'showfilter'        => $showfilter, 'showcreatebtn'        => $showcreatebtn, 'showfilteroption'        => $showfilteroption, 'timer'        => $timer,
+				'itembalcol'        => $itembalcol,
+				'showfilterlabel'   => $showfilterlabel,
+				'tab2'              => $tab2,
+				'paramsdatalisting' => $paramsdatalisting
+			];
+		} else {
+			$this->logger->sbciplog($this->config['params']['doc'].'-FAIL', $this->config['params']['ip'], $this->config['params']['user']);
+		}
+		return $this;
+	}// end function
+
+	public function loadheaddata() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->loadheaddata($this->config);
+		}
+		return $this;
+	}// end function
+
+	public function lockunlock() {
+		if ($this->config['verifyaccess'] == 1) {
+			if ($this->config['isposted']) {
+				return $this;
+			}
+			$this->config['return'] = $this->headClass->lockunlock($this->config);
+		}
+		return $this;
+	}
+
+	public function newstockcard($isnew = true) {
+		try {
+			if ($this->config['verifyaccess'] == 1) {
+				$barcodelength = $this->companysetup->getbarcodelength($this->config['params']);
+				$barcode       = trim($this->config['params']['barcode']);
+
+				if ($isnew && $barcodelength > 0) {
+					$this->checkstockcardbarcode($barcode, 'GETLASTSEQ');
+				} else {
+					$itemid = $this->coreFunctions->getfieldvalue('item', 'itemid', 'barcode=?', [$barcode]);
+					if ($itemid !== '') {
+						$this->config['newbarcode'] = "";
+					} else {
+						$this->config['newbarcode'] = $barcode;
+					}
+				}
+				$this->config['return'] = $this->config['docmodule']->newstockcard($this->config);
+			}
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}
+
+	public function newclient($isnew = true) {
+		try {
+			if ($this->config['verifyaccess'] == 1) {
+				if (isset($this->config['params']['client'])) {
+					$client = trim($this->config['params']['client']);
+				} else {
+					$client = "";
+				}
+				$clientlength = $this->companysetup->getclientlength($this->config['params']);
+				if ($isnew && $clientlength > 0) {
+					$this->checkclientcode($client, 'GETLASTSEQ');
+				} else {
+					$this->config['newclient'] = $client;
+				}
+				$this->config['return'] = $this->config['docmodule']->newclient($this->config);
+			}
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}
+
+	public function newtransaction() {
+		try {
+			if ($this->config['verifyaccess'] == 1) {
+
+				if ($this->config['params']['doc'] == 'SB') {
+					$prefix = $this->coreFunctions->getfieldvalue("client", "prefix", "clientid=?", [$this->config['params']['adminid']]);
+					if ($prefix == '') {
+						$this->config['return'] = ['head' => [], 'griddata' => [], 'islocked' => false, 'isposted' => false, 'status' => false, 'msg' => 'Please setup valid prefix for Branch', 'clickobj' => [], 'backlisting' => true];
+						return $this;
+					}
+				}
+
+				$docno = trim($this->config['params']['docno']);
+				$this->checkdocno($docno, 'GETLASTSEQ');
+				$this->config['head'] = $this->config['docmodule']->createnewtransaction($this->config['newdocno'], $this->config['params']);
+				switch ($this->config['params']['doc']) {
+					case 'SG':
+						$clickclient = ['button.cspartreqtype'];
+						break;
+					case 'CS':
+						$clickclient = ['button.cswhname'];
+						break;
+					case 'OP':
+						$clickclient = [];
+						break;
+					default:
+						$clickclient = ['button.csclient'];
+						break;
+				}
+				$this->config['return'] = ['head' => $this->config['head'], 'griddata' => [$this->config['docmodule']->gridname => []], 'islocked' => false, 'isposted' => false, 'status' => true, 'msg' => 'Ready for New Transaction', 'clickobj' => $clickclient];
+			}//end if
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}//end function
+
+	public function searchbarcode() {
+		$barcode       = trim($this->config['params']['barcode']);
+		$barcodelength = $this->companysetup->getbarcodelength($this->config['params']);
+		if ($barcodelength > 0) {
+			$this->checkstockcardbarcode($barcode, 'GET');
+			$barcode = $this->config['newbarcode'];
+		}
+		$this->config['params']['barcode'] = $barcode;
+		$itemid                            = $this->coreFunctions->getfieldvalue('item', 'itemid', 'barcode=?', [$barcode]);
+		if ($itemid == '') {
+			$this->newstockcard(false);
+		} else {
+			$this->config['params']['itemid'] = $itemid;
+			$this->loadheaddata();
+		}
+		return $this;
+	}//end function
+
+	public function searchclient() {
+		$client = $this->config['params']['client'];
+
+		if (isset($this->config['newclient'])) {
+			$this->checkclientcode($client, 'GET');
+			$client                           = $this->config['newclient'];
+			$this->config['params']['client'] = $client;
+		}
+		$c        = $this->getClient($this->config['params']['doc']);
+		$clientid = $this->coreFunctions->getfieldvalue($c[0], $c[1], $c[2].'=?', [$client]);
+
+		if ($clientid == '') {
+			$this->newclient(false);
+		} else {
+			$this->config['params']['clientid'] = $clientid;
+			$this->loadheaddata();
+		}
+		return $this;
+	}//end function
+
+	private function getClient($doc) {
+		//return params @tableName, @fieldIncrement, @fieldCode
+		switch (strtoupper($doc)) {
+			case 'EN_SUBJECT':
+				return array('en_subject', 'trno', 'subjectcode');
+				break;
+			case 'CLEARANCE':
+				return array('clearance', 'trno', 'docno');
+				break;
+			case 'APPLICANTLEDGER':
+				return array('app', 'empid', 'empcode');
+				break;
+			case 'EN_COURSE':
+				return array('en_course', 'line', 'coursecode');
+				break;
+			case 'EN_ROOMLIST':
+				return array('en_bldg', 'line', 'bldgcode');
+				break;
+			case 'CODECONDUCT':
+				return array('codehead', 'artid', 'code');
+				break;
+			case 'JOBTITLEMASTER':
+				return array('jobthead', 'line', 'docno');
+				break;
+			case 'ROOMTYPE':
+				return array('tblroomtype', 'id', 'roomtype');
+				break;
+			case 'SHIFTSETUP':
+				return array('tmshifts', 'line', 'shftcode');
+				break;
+			case 'BATCHSETUP':
+				return array('batch', 'line', 'batch');
+				break;
+			case 'EARNINGDEDUCTIONSETUP':
+			case 'LOANAPPLICATION':
+				return array('standardsetup', 'trno', 'docno');
+				break;
+			case 'LEAVESETUP':
+				return array('leavesetup', 'trno', 'docno');
+				break;
+			case 'REPLENISHITEM':
+				return array('lahead', 'trno', 'docno');
+				break;
+			default:
+				return array('client', 'clientid', 'client');
+				break;
+		}
+	}
+
+	public function searchdocno() {
+		try {
+			$docno     = $this->config['params']['docno'];
+			$isversion = $this->othersClass->isnumber($this->othersClass->Getsuffix($docno));
+
+			$this->checkdocno($docno, 'GET');
+			$this->isdocnoprefixvalid();
+			$blnExist    = $this->config['isdocnoprefixvalid'];
+			$pref        = $this->config['pref'];
+			$seq         = $this->config['seq'];
+			$newdocno    = $this->config['newdocno'];
+			$docnolength = $this->config['docnolength'];
+			if ($blnExist) {
+				if ($isversion) {
+					$poseq = $pref.$seq;
+				} else {
+					$poseq    = $docno;
+					$newdocno = $docno;
+				}
+
+				$newdocno = $this->othersClass->PadJ($poseq, $docnolength);
+				$trno     = $this->othersClass->gettrnodocno($newdocno, $this->config);
+				//$this->config['return'] = ['newdocno'=>$newdocno,'poseq'=>$poseq];
+				//return $this;
+				$this->config['params']['docno'] = $newdocno;
+				if ($trno == '') {
+					if ($this->config['verifyaccess'] == 1) {
+						$this->config['head']   = $this->config['docmodule']->createnewtransaction($this->config['newdocno'], $this->config['params']);
+						$this->config['return'] = ['head' => $this->config['head'], 'griddata' => ['inventory' => []], 'isnew' => true, 'islocked' => false, 'isposted' => false, 'status' => true, 'msg' => 'Ready for New Transaction'];
+					}
+				} else {
+					if ($this->config['access'][0]['attributes'][$this->config['mattrib']['view']] == 1) {
+						$this->config['params']['trno'] = $trno;
+						$this->config['return']         = $this->config['docmodule']->loadheaddata($this->config);
+					}
+				}
+			} else {
+				$prefix   = "/";
+				$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+				for ($x = 0; $x < count($prefixes); $x++) {
+					$prefix .= $prefixes[$x]." / ";
+				}//END FOR EACH
+				$message                = 'Invalid prefix , Available prefixes are: ['.$prefix.']';
+				$this->config['return'] = ['trno' => 0, 'docno' => '', 'status' => false, 'msg' => $message, 'type' => ''];
+			}
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}// end function
+
+	public function savestockcard() {
+		try {
+			$itemid                                    = $this->config['params']['itemid'];
+			$barcode                                   = $this->config['params']['head']['barcode'];
+			$barcodelength                             = $this->companysetup->getbarcodelength($this->config['params']);
+			$barcode                                   = $this->othersClass->PadJ($barcode, $barcodelength);
+			$this->config['params']['head']['barcode'] = $barcode;
+			if ($itemid != 0) {
+				$itemid = $this->config['docmodule']->updatehead($this->config, true);
+			} else {
+				$itemid = $this->config['docmodule']->updatehead($this->config, false);
+			}
+			$this->config['params']['itemid'] = $itemid;
+			$this->loadheaddata();
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}
+
+	public function saveledgerhead() {
+		try {
+			$clientid = $this->config['params']['clientid'];
+			$client   = $this->config['params']['head']['client'];
+
+			$c = $this->getClient($this->config['params']['doc']);
+			switch ($c[0]) {
+				case 'en_subject':
+				case 'en_course':
+				case 'en_bldg':
+				case 'codehead':
+				case 'tblroomtype':
+				case 'tmshifts':
+				case 'batch':
+				case 'replenishitem':
+					break;
+				default:
+					$clientlength                             = $this->companysetup->getclientlength($this->config['params']);
+					$client                                   = $this->othersClass->PadJ($client, $clientlength);
+					$this->config['params']['head']['client'] = $client;
+					break;
+			}
+
+			if ($clientid != 0) {
+				$result = $this->config['docmodule']->updatehead($this->config, true);
+			} else {
+				$result = $this->config['docmodule']->updatehead($this->config, false);
+			}
+
+			if ($result['status']) {
+				$this->config['params']['clientid'] = $result['clientid'];
+				if (isset($result['msg'])) {
+					$this->config['msg'] = $result['msg'];
+				}
+				$this->loadheaddata();
+			} else {
+				$this->config['return'] = $result;
+			}
+
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}
+
+	public function savehead() {
+		try {
+			if ($this->config['verifyaccess'] == 1) {
+				if ($this->config['isposted']) {
+					return $this;
+				}
+				if ($this->config['islocked']) {
+					return $this;
+				}
+				if (!$this->othersClass->checkDefaultWH($this->config)) {
+					$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Invalid warehouse code '.$this->config['params']['head']['wh'], 'type' => '', 'status' => false];
+					return $this;
+				}
+
+				if (!$this->othersClass->checkLockDate($this->config['params']['head']['dateid'])) {
+					$lockdate               = $this->coreFunctions->getfieldvalue('profile', 'pvalue', "doc='SYSL'");
+					$lockdatemsg            = 'Cannot create/edit Document. System Date is locked from date '.$lockdate;
+					$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => $lockdatemsg, 'type' => '', 'status' => false];
+					return $this;
+				}
+				$this->checkdocno($this->config['params']['head']['docno'], 'GET');
+				$this->isdocnoprefixvalid();
+				$blnExist = $this->config['isdocnoprefixvalid'];
+				if ($blnExist) {
+					if ($this->config['params']['trno'] != 0) {
+						// update
+						$this->config['docmodule']->updatehead($this->config, true);
+					} else {
+						// //for project management
+
+						// if ($this->config['params']['doc'] == 'PM') {
+						// 	$pexist = $this->coreFunctions->getfieldvalue("projectmasterfile", "line", "code = '" . $this->config['params']['head']['project'] . "'");
+						// 	if (strlen($pexist) > 0) {
+						// 		$pmexist = $this->coreFunctions->getfieldvalue("pmhead", "trno", "projectid = " . $this->config['params']['head']['projectid']);
+						// 		if (floatval($pmexist) != 0) {
+						// 			$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Project already exist', 'type' => '', 'status' => false];
+						// 			return $this;
+						// 		} else {
+						// 			$pmexist = $this->coreFunctions->getfieldvalue("hpmhead", "trno", "projectid = " . $this->config['params']['head']['projectid']);
+						// 			if (floatval($pmexist) != 0) {
+						// 				$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Project already exist', 'type' => '', 'status' => false];
+						// 				return $this;
+						// 			}
+						// 		}
+						// 		$this->config['params']['head']['projectid'] = $pexist;
+						// 	} else {
+						// 		$col = ['code' => $this->config['params']['head']['project'], 'name' => $this->config['params']['head']['projectname']];
+						// 		$projectid =  $this->coreFunctions->insertGetId("projectmasterfile", $col);
+						// 		$this->config['params']['head']['projectid'] = $projectid;
+						// 	}
+						// }
+						//insert
+						$this->inserthead();
+					}
+					// get the latest data
+					$this->loadheaddata();
+				} else {
+					$prefix   = "/";
+					$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+					if (empty($prefixes)) {
+						if ($this->config['params']['doc'] == 'SB') {
+							$message = 'Please setup valid prefix for Branch '.$this->config['params']['head']['clientname'];
+						} else {
+							$message = 'Please setup valid prefix in "MANAGE PREFIXES" module under Transaction Utilities.';
+						}
+					} else {
+						for ($x = 0; $x < count($prefixes); $x++) {
+							$prefix .= $prefixes[$x]." / ";
+						}//END FOR EACH
+						$message = 'Invalid prefix , Available prefixes are: ['.$prefix.']';
+					}
+					$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => $message, 'type' => '', 'status' => false];
+				}// else if blnExist
+			}//end if
+			return $this;
+		} catch (Exception $e) {
+			echo $e;
+		}
+	}// end function
+
+	private function checkstockcardbarcode($barcode, $action) {
+		$barcode       = $this->othersClass->sanitize($barcode, 'STRING');
+		$barcodelength = $this->companysetup->getbarcodelength($this->config['params']);
+		$pref          = '';
+
+		if (strlen($barcode) != 0) {
+			$pref = $this->othersClass->GetPrefix($barcode);
+		} else {
+			$pref = $this->config['docmodule']->prefix;
+		}//end if
+		if (strlen($pref) == 0) {
+			$pref = $this->config['docmodule']->prefix;
+		}
+		if (!$pref) {
+			$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+			$pref     = isset($prefixes[0])?$prefixes[0]:$this->config['params']['doc'];
+		}//end if $pref
+
+		switch ($action) {
+			case 'GETLASTSEQ':
+				$barcode2 = $this->config['docmodule']->getlastbarcode($pref);
+				$seq      = (substr($barcode2, $this->othersClass->SearchPosition($barcode2), strlen($barcode2)));
+				$seq += 1;
+				break;
+			default:
+				$seq = (substr($barcode, $this->othersClass->SearchPosition($barcode), strlen($barcode)));
+				break;
+		}
+
+		if ($seq == 0 || empty($pref)) {
+			if (empty($pref)) {
+				$pref = strtoupper($barcode);
+			}
+			$barcode2 = $this->config['docmodule']->getlastbarcode($pref);
+			$seq      = (substr($barcode2, $this->othersClass->SearchPosition($barcode2), strlen($barcode2)));
+			$seq += 1;
+		}
+		$poseq = $pref.$seq;
+
+		$newbarcode                    = $this->othersClass->PadJ($poseq, $barcodelength);
+		$this->config['pref']          = $pref;
+		$this->config['seq']           = $seq;
+		$this->config['newbarcode']    = $newbarcode;
+		$this->config['barcodelength'] = $barcodelength;
+		return $this;
+	}//end function
+
+	private function checkclientcode($client, $action) {
+		$client       = $this->othersClass->sanitize($client, 'STRING');
+		$clientlength = $this->companysetup->getclientlength($this->config['params']);
+		$pref         = '';
+
+		if (strlen($client) != 0) {
+			$pref = $this->othersClass->GetPrefix($client);
+		} else {
+			$pref = $this->config['docmodule']->prefix;
+		}//end if
+		if (strlen($pref) == 0) {
+			$pref = $this->config['docmodule']->prefix;
+		}
+
+		if (!$pref) {
+			$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+			$pref     = isset($prefixes[0])?$prefixes[0]:$this->config['params']['doc'];
+		}//end if $pref
+
+		switch ($action) {
+			case 'GETLASTSEQ':
+				$client2              = $this->config['docmodule']->getlastclient($pref);
+				$seq                  = (substr($client2, $this->othersClass->SearchPosition($client2), strlen($client2)));
+				if ($seq == '') {$seq = 0;
+				}
+
+				$seq += 1;
+				break;
+			default:
+				$seq = (substr($client, $this->othersClass->SearchPosition($client), strlen($client)));
+				break;
+		}
+
+		if ($seq == 0 || empty($pref)) {
+			if (empty($pref)) {
+				$pref = strtoupper($client);
+			}
+			$client2 = $this->config['docmodule']->getlastclient($pref);
+			$seq     = (substr($client2, $this->othersClass->SearchPosition($client2), strlen($client2)));
+			$seq += 1;
+		}
+		$poseq = $pref.$seq;
+
+		$c = $this->getClient($this->config['params']['doc']);
+		switch ($c[0]) {
+			case 'en_subject':
+			case 'en_course':
+			case 'en_bldg':
+			case 'codehead':
+			case 'tblroomtype':
+			case 'tmshifts':
+			case 'batch':
+			case 'replenishitem':
+				// case 'standardsetup':
+				$newclient = '';
+				break;
+			default:
+				$newclient = $this->othersClass->PadJ($poseq, $clientlength);
+				break;
+		}
+		$this->config['pref']         = $pref;
+		$this->config['seq']          = $seq;
+		$this->config['newclient']    = $newclient;
+		$this->config['clientlength'] = $clientlength;
+		return $this;
+	}//end function
+
+	private function checkdocno($docno, $action) {
+		$docno       = $this->othersClass->sanitize($docno, 'STRING');
+		$docnolength = $this->companysetup->getdocumentlength($this->config['params']);
+		$pref        = '';
+		if (strlen($docno) != 0) {
+			$pref = $this->othersClass->GetPrefix($docno);
+		} else {
+			$pref = $this->othersClass->last_bref($this->config);
+		}//end if
+		if (strlen($pref) == 0) {
+			$pref = $this->othersClass->last_bref($this->config);
+		}
+		if (!$pref) {
+			$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+			if ($this->config['params']['doc'] == 'SB') {
+				$pref = isset($prefixes[0])?$prefixes[0]:'';
+			} else {
+				$pref = isset($prefixes[0])?$prefixes[0]:$this->config['params']['doc'];
+			}
+		}//end if $pref
+
+		switch ($action) {
+			case 'GETLASTSEQ':
+				$seq = $this->othersClass->getlastseq($pref, $this->config);
+				break;
+			default:
+				$seq = (substr($docno, $this->othersClass->SearchPosition($docno), strlen($docno)));
+				break;
+		}
+
+		if ($seq == 0 || empty($pref)) {
+			if (empty($pref)) {
+				$pref = strtoupper($docno);
+			}
+			$seq = $this->othersClass->getlastseq($pref, $this->config);
+		}
+
+		$poseq = $pref.$seq;
+
+		$newdocno                    = $this->othersClass->PadJ($poseq, $docnolength);
+		$this->config['pref']        = $pref;
+		$this->config['seq']         = $seq;
+		$this->config['newdocno']    = $newdocno;
+		$this->config['docnolength'] = $docnolength;
+		return $this;
+	}//end function
+
+	// need to call savehead first
+	private function inserthead() {
+		$pref         = $this->config['pref'];
+		$seq          = $this->config['seq'];
+		$docno        = $this->config['newdocno'];
+		$blnExist     = $this->config['isdocnoprefixvalid'];
+		$docnolength  = $this->config['docnolength'];
+		$doc          = $this->config['params']['doc'];
+		$message      = '';
+		$insertcntnum = $this->insertcntnum($doc, $docno, $seq, $pref, $this->config['params']['center']);
+		if ($insertcntnum == 0) {
+			$i = 5;
+			while ($insertcntnum == 0 && $i >= 1) {
+				$i = $i-1;
+				$this->checkdocno($docno, 'GETLASTSEQ');
+				$this->isdocnoprefixvalid();
+				$pref         = $this->config['pref'];
+				$seq          = $this->config['seq'];
+				$newdocno     = $this->config['newdocno'];
+				$blnExist     = $this->config['isdocnoprefixvalid'];
+				$insertcntnum = $this->insertcntnum($doc, $newdocno, $seq, $pref, $this->config['params']['center']);
+
+				if (($docno != $newdocno) && ($insertcntnum != 0)) {
+					$docno                                   = $newdocno;
+					$this->config['params']['head']['docno'] = $newdocno;
+					$this->config['msg']                     = 'Your transaction has been saved under document # '.$newdocno;
+				}
+			}//end white insertcntnum
+		}//END insertcntnum 0
+
+		if ($insertcntnum == 0) {
+			$msg                    = '1.Error cannot create Document. Please try again.';
+			$this->config['msg']    = $msg;
+			$this->config['return'] = ['trno' => '', 'docno' => '', 'msg' => $msg, 'head' => [], 'type' => '', 'istransposted' => false];
+		} else {
+			$trno                                   = $insertcntnum;
+			$this->config['params']['head']['trno'] = $trno;
+			$this->config['params']['trno']         = $trno;
+
+			$this->config['docmodule']->updatehead($this->config, false);
+		}//end else if($insertcntnum==0) {
+		return $this;
+	}
+
+	private function insertcntnum($doc, $docno, $seq, $bref, $center) {
+		if (!empty($center) || $center != '') {
+			$col   = [];
+			$col   = ['doc' => $doc, 'docno' => $docno, 'seq' => $seq, 'bref' => $bref, 'center' => $center];
+			$table = $this->config['docmodule']->tablenum;
+			return $this->coreFunctions->insertGetId($table, $col);
+		} else {
+			return -1;
+		}//end if empty center
+	}
+
+	//need to call function checkdocno first
+	private function isdocnoprefixvalid() {
+		$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
+		$blnExist = false;
+		if (!empty($prefixes)) {
+			for ($i = 0; $i < count($prefixes); $i++) {
+				if ($this->config['pref'] == $prefixes[$i]) {
+					$blnExist = true;
+				}//END COMPARE
+			}//END FOR LOOP
+		}//END IF else
+		$this->config['isdocnoprefixvalid'] = $blnExist;
+		return $this;
+	}//end function
+
+	public function getmoduleaccess($attrib) {
+		$access = $this->config['access'];
+		foreach ($attrib as $key => $value) {
+			if ($access[0]['attributes'][$value-1] == 1) {
+				$maccess[$key] = true;
+			} else {
+				$maccess[$key] = false;
+			}
+		}//end for each
+		return $maccess;
+	}//end function
+
+	public function openstock() {
+		$trno  = $this->config['params']['trno'];
+		$stock = $this->config['docmodule']->openstock($trno, $this->config);
+		if (!empty($stock)) {
+			$this->config['return'] = response()->json(['griddata' => ['inventory' => $stock], 'status' => true, 'msg' => $this->config['params']['user'].' Data Stock Fetched Success'], 200);
+		} else {
+			$this->config['return'] = ['status' => false, 'griddata' => ['inventory' => []], 'msg' => $this->config['params']['user'].' Data Stock Fetched Failed'];
+		}
+		return $this;
+	}// end function
+
+	public function checkperstock() {
+		if ($this->config['isposted']) {
+			return $this;
+		}
+		if ($this->config['islocked']) {
+			return $this;
+		}
+		$ischange                       = false;
+		$msg                            = '';
+		$editedfield                    = $this->config['params']['editedfield'];
+		$editedfieldval                 = $this->config['params']['editedfieldval'];
+		$this->config['params']['line'] = $this->config['params']['row']['line'];
+		$data                           = $this->config['docmodule']->openstockline($this->config);
+		if (!empty($data)) {
+			unset($data[0]->bgcolor);
+			unset($data[0]->errcolor);
+			foreach ($data[0] as $field => $value) {
+				if ($editedfield == $field) {
+					if ($editedfieldval != $value) {
+						$ischange = true;
+					}
+				} else {
+					if ($this->config['params']['row'][$field] != $value) {
+						$ischange = true;
+						break;
+					}
+				}
+			}
+			$stock = [];
+			if ($ischange) {
+				$stock = $this->config['docmodule']->openstock($this->config['params']['trno'], $this->config);
+				$msg   = ' Data not updated, pls wait updating...';
+			} else {
+				$msg = ' Data is still updated, you can continue to edit...';
+			}
+			$this->config['return'] = ['status' => $ischange, 'griddata' => ['inventory' => $stock], 'msg' => $msg, 'forcereload' => false];
+		} else {
+			$this->config['return'] = ['status' => $ischange, 'msg' => 'Sorry, this product has already been deleted. Kindly wait for an update.', 'forcereload' => true];
+		}
+
+		return $this;
+	}
+
+	public function checkperacctg() {
+		if ($this->config['isposted']) {
+			return $this;
+		}
+		if ($this->config['islocked']) {
+			return $this;
+		}
+		$ischange                       = false;
+		$msg                            = '';
+		$editedfield                    = $this->config['params']['editedfield'];
+		$editedfieldval                 = $this->config['params']['editedfieldval'];
+		$this->config['params']['line'] = $this->config['params']['row']['line'];
+		$data                           = $this->config['docmodule']->opendetailline($this->config);
+		$x                              = '';
+		$y                              = '';
+		if (!empty($data)) {
+			unset($data[0]->bgcolor);
+			unset($data[0]->errcolor);
+			foreach ($data[0] as $field => $value) {
+				$x = $editedfield.' - '.$field;
+				if ($editedfield == $field) {
+					if ($editedfieldval != $value) {
+						$ischange = true;
+					}
+				} else {
+					if ($this->config['params']['row'][$field] != $value) {
+						$y        = $this->config['params']['row'][$field].' - '.$value;
+						$ischange = true;
+						break;
+					}
+				}
+			}
+			$stock = [];
+			if ($ischange) {
+				$stock = $this->config['docmodule']->opendetail($this->config['params']['trno'], $this->config);
+				$msg   = ' Data not updated, pls wait updating...'.$x.'='.$y;
+			} else {
+				$msg = ' Data is still updated, you can continue to edit...';
+			}
+			$this->config['return'] = ['status' => $ischange, 'griddata' => ['accounting' => $stock], 'msg' => $msg, 'forcereload' => false];
+		} else {
+			$this->config['return'] = ['status' => $ischange, 'msg' => 'Sorry, this Entry has already been deleted. Kindly wait for an update.', 'forcereload' => true];
+		}
+
+		return $this;
+	}
+
+	public function qcardstatus() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->stockstatus($this->config);
+		}
+		return $this;
+	}
+
+	public function stockstatus() {
+		if ($this->config['isposted']) {
+			return $this;
+		}
+		if ($this->config['islocked']) {
+			return $this;
+		}
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->stockstatus($this->config);
+		}
+		return $this;
+	}
+
+	public function stockstatusposted() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->stockstatusposted($this->config);
+		}
+		return $this;
+	}
+
+	public function deletetrans() {
+		if ($this->config['isposted']) {
+			return $this;
+		}
+		if ($this->config['islocked']) {
+			return $this;
+		}
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->deletetrans($this->config);
+		}
+		return $this;
+	}
+
+	public function deletestockcard() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->deletetrans($this->config);
+		}
+		return $this;
+	}
+
+	public function deleteclient() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->deletetrans($this->config);
+		}
+		return $this;
+	}
+
+	public function posttrans() {
+		if ($this->config['verifyaccess'] == 1) {
+			switch ($this->config['params']['action']) {
+				case 'post':
+					$this->config['return'] = $this->config['docmodule']->posttrans($this->config);
+					break;
+				case 'unpost':
+					$this->config['return'] = $this->config['docmodule']->unposttrans($this->config);
+					break;
+			}
+			return $this;
+		}
+	}// end function
+
+	public function getlatestprice() {
+		$this->config['return'] = $this->config['docmodule']->getlatestprice($this->config);
+		return $this;
+	}//end function
+
+	public function txtlookupdirect($params) {
+		$this->config['params'] = $params;
+		$this->config['return'] = $this->lookupClass->lookupsetup($this->config);
+		return $this;
+	}// end function
+
+	public function lookupcallbackdirect($params) {
+		$this->config['params'] = $params;
+		$this->config['return'] = $this->lookupClass->lookupcallback($this->config);
+		return $this;
+	}// end function
+
+	public function txtlookup() {
+		$this->config['return'] = $this->lookupClass->lookupsetup($this->config);
+		return $this;
+	}// end function
+
+	public function lookupcallback() {
+		$this->config['return'] = $this->lookupClass->lookupcallback($this->config);
+		return $this;
+	}// end function
+
+	public function lookupsearch() {
+		$this->config['return'] = $this->lookupClass->lookupsearch($this->config);
+		return $this;
+	}// end function
+
+	public function inquiry() {
+		$this->config['return'] = $this->sqlquery->inquiry($this->config);
+		return $this;
+	}
+
+	public function doclistingreport() {
+		$this->config['return'] = $this->config['docmodule']->doclistingreport($this->config);
+		return $this;
+	}
+
+	public function reportsetup() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->reportsetup($this->config);
+		}
+		return $this;
+	}
+
+	public function reportdata() {
+		$method = Request::Method();
+		if ($method == 'GET') {
+			$params                               = json_decode($this->config['params']['dataparams'], true);
+			$this->config['params']['dataparams'] = $params;
+			$this->config['params']['companyid']  = intVal($this->config['params']['companyid']);
+		}
+
+		$this->config['return'] = $this->config['docmodule']->reportdata($this->config);
+		if ($this->config['params']['dataparams']['print'] == 'PDF') {
+		} else {
+			if (isset(app($this->companysetup->getreportpath($this->config['params']))->reportParams)) {
+				$repParams = app($this->companysetup->getreportpath($this->config['params']))->reportParams;
+			} else {
+				$repParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+			}
+
+			$str = $this->config['return']['report'];
+			switch (strtolower($repParams['format'])) {
+				case 'legal':
+					if (strtolower($repParams['orientation']) == 'p') {
+						$width  = 800;
+						$height = 1000;
+
+					} else {
+						$width  = 1000;
+						$height = 800;
+
+					}
+					break;
+				case 'a4':
+					if (strtolower($repParams['orientation']) == 'p') {
+						$width  = 760;
+						$height = 950;
+
+					} else {
+						$width  = 950;
+						$height = 760;
+
+					}
+					break;
+				default:// letter
+					if (strtolower($repParams['orientation']) == 'p') {
+						$width  = 800;
+						$height = 1000;
+
+					} else {
+						$width  = 1000;
+						$height = 800;
+
+					}
+					break;
+			}
+			$width  = PDF::pixelsToUnits($width);
+			$height = PDF::pixelsToUnits($height);
+			PDF::SetTitle($this->config['params']['name']);
+			PDF::AddPage($repParams['orientation'], [$width, $height]);
+			//PDF::setPageUnit('px');
+			PDF::SetMargins(0, 0);
+			PDF::writeHtml($str, true, 0, true, 0);
+
+			$pdf = PDF::Output($this->config['params']['name'].'.pdf', 'S');
+			if ($method == 'GET') {
+				$this->config['return'] = $pdf;
+			} else {
+				$this->config['params']['pdf'] = $pdf;
+				if (isset($this->config['params']['email'])) {
+					Mail::to($this->config['params']['email'])->send(new SendMail($this->config['params']));
+				}
+				$this->config['return'] = $str;
+			}
+		}
+		return $this;
+	}
+
+	public function execute() {
+		if (isset($this->config['isposted'])) {
+			if ($this->config['isposted']) {
+				return response()->json(['status' => false, 'msg' => 'Already posted. Please wait while connecting to the server.', 'checkposted' => true], 200);
+			} else if ($this  ->config['islocked']) {
+				return response()->json(['status' => false, 'msg' => 'Already locked. Please wait while connecting to the server.', 'checkposted' => true], 200);
+			} else {
+				$request = Request();
+				if ($request->isMethod('get')) {
+					return $this->config['return'];
+				} else {
+					return response()->json($this->config['return'], 200);
+				}
+			}
+		} else {
+			if (Request::isMethod('get')) {
+				return $this->config['return'];
+			} else {
+				return response()->json($this->config['return'], 200);
+			}
+		}
+	}// end function
+
+	public function loaddoclisting() {
+		if ($this->config['verifyaccess'] == 1) {
+			$this->config['return'] = $this->config['docmodule']->loaddoclisting($this->config);
+		}
+		return $this;
+	}
+}// end class

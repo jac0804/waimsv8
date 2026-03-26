@@ -1,0 +1,347 @@
+<?php
+
+namespace App\Http\Classes\modules\payroll;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sqlquery;
+
+class obapplication {
+	private $btnClass;
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'OB APPLICATION';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	private $logger;
+	private $sqlquery;
+	public $expirystatus  = ['readonly' => false, 'show' => false, 'showdate' => true];
+	public $head          = 'obapplication';
+	public $prefix        = '';
+	public $tablelogs     = 'payroll_log';
+	public $tablelogs_del = '';
+	private $stockselect;
+
+	private $fields = [
+		'empid', 'dateid', 'rem', 'type'
+	];
+	// 'remarks','acno','days','bal',
+	private $except          = ['clientid', 'client'];
+	private $blnfields       = [];
+	public $showfilteroption = false;
+	public $showfilter       = false;
+	public $showcreatebtn    = true;
+	private $reporter;
+	private $isexist = 0;
+
+	public function __construct() {
+		$this->btnClass      = new buttonClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->logger        = new Logger;
+		$this->sqlquery      = new sqlquery;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function getAttrib() {
+		$attrib = array(
+			'view'   => 2540,
+			'new'    => 2538,
+			'save'   => 2536,
+			'delete' => 2539,
+			'print'  => 2537,
+			'edit'   => 2541,
+		);
+		return $attrib;
+	}
+
+	public function createdoclisting($config) {
+		$getcols          = ['action', 'dateid', 'type', 'listappstatus', 'rem'];
+		$stockbuttons     = ['view'];
+		$cols             = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+		$cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+
+		$cols[3]['type'] = 'label';
+		return $cols;
+	}
+
+	public function loaddoclisting($config) {
+		$id = $config['params']['adminid'];
+
+		$qry = "
+      select obapp.line as trno, obapp.line as clientid,
+      cl.client, cl.clientname, cl.clientid as empid,
+      obapp.type, obapp.dateid, obapp.rem,
+      case
+        when obapp.status = 'E' then 'ENTRY'
+      END as jstatus
+      from obapplication as obapp
+      left join employee as emp on emp.empid = obapp.empid
+      left join client as cl on cl.clientid = emp.empid
+      where obapp.empid = '$id'";
+		$data = $this->coreFunctions->opentable($qry);
+
+		return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
+	}
+
+	public function createHeadbutton($config) {
+		$btns = array(
+			'load',
+			'new',
+			'save',
+			'delete',
+			'cancel',
+			'print',
+			'logs',
+			'edit',
+			'backlisting',
+			'toggleup',
+			'toggledown'
+		);
+		$buttons = $this->btnClass->create($btns);
+		return $buttons;
+	}// createHeadbutton
+
+	public function createTab($access, $config) {
+		// $tab = [];
+		// $stockbuttons = [];
+		// $obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = [];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['client', 'dateid', 'itime', 'type', 'status'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'client.label', 'Code');
+		data_set($col1, 'client.action', 'lookupledger');
+		data_set($col1, 'client.lookupclass', 'lookupemployeeobapplication');
+		data_set($col1, 'client.type', 'hidden');
+
+		data_set($col1, 'type.action', 'lookupobtype');
+		data_set($col1, 'type.lookupclass', 'lookupobtype');
+
+		$fields = ['rem'];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = [];
+		$col3   = $this->fieldClass->create($fields);
+
+		$fields = [];
+		$col4   = $this->fieldClass->create($fields);
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+	}
+
+	public function newclient($config) {
+		$data = $this->resetdata($config['newclient']);
+		return ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
+	}
+
+	private function resetdata($client = '') {
+		$data                = [];
+		$data[0]['clientid'] = 0;
+		$data[0]['client']   = $client;
+		$data[0]['dateid']   = date('Y-m-d');
+		$data[0]['itime']    = '00:00';
+		$data[0]['rem']      = '';
+		$data[0]['type']     = '';
+		$data[0]['status']   = 'ENTRY';
+
+		return $data;
+	}
+
+	function getheadqry($trno) {
+		return "
+        select obapp.line as trno, obapp.line as clientid, cl.client,
+        cl.clientname, cl.clientid as empid,
+        obapp.type, date(obapp.dateid) as dateid, time(dateid) as itime,
+        obapp.rem,
+        case
+          when obapp.status = 'E' then 'ENTRY'
+        END as status
+        from obapplication as obapp
+        left join employee as emp on emp.empid = obapp.empid
+        left join client as cl on cl.clientid = emp.empid
+        where obapp.line=".$trno;
+	}
+
+	public function loadheaddata($config) {
+		$trno = $config['params']['clientid'];
+
+		if ($trno == 0) {
+			$trno = $this->getlastclient();
+		}
+
+		$head = $this->coreFunctions->opentable($this->getheadqry($trno));
+		if (!empty($head)) {
+			$msg = 'Data Fetched Success';
+			if (isset($config['msg'])) {
+				$msg = $config['msg'];
+			}
+			return ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid']];
+		} else {
+			$msg = 'Data Fetched Failed, either somebody already deleted the transaction or modified...';
+
+			if ($this->isexist == 1) {
+				$msg = "Already Exist";
+			}
+
+			$head = $this->resetdata();
+			return ['status' => false, 'isnew' => true, 'head' => $head, 'msg' => $msg];
+		}
+	}
+
+	public function updatehead($config, $isupdate) {
+		$head   = $config['params']['head'];
+		$center = $config['params']['center'];
+		$data   = [];
+		// if ($isupdate) {
+		//     unset($this->fields['docno']);
+		// } else {
+		//     $data['docno'] = $head['client'];
+		//     $head['docno'] = $head['client'];
+		// }
+		$clientid = 0;
+		$msg      = '';
+		foreach ($this->fields as $key) {
+			if (isset($head[$key])) {
+				$data[$key] = $head[$key];
+				if (!in_array($key, $this->except)) {
+					$data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+				}//end if
+			}
+		}
+
+		$data['dateid'] = $head['dateid']." ".$head['itime'];
+		$empname        = $this->coreFunctions->datareader("select cl.clientname as value
+      from employee as e
+      left join client as cl on cl.clientid = e.empid
+      where empid = ?", [$config['params']['adminid']]);
+
+		if ($isupdate) {
+			$date = date('Y-m-d', strtotime($data['dateid']));
+			$type = $head['type'];
+			if (!empty($this->checking($config, $date, $type))) {
+				// $msg = "Already Exist";
+				$clientid      = 0;
+				$this->isexist = 1;
+			} else {
+				$this->coreFunctions->sbcupdate($this->head, $data, ['line' => $head['clientid']]);
+				$clientid      = $head['clientid'];
+				$this->isexist = 0;
+				$this->logger->sbcmasterlog(
+					$clientid,
+					$config,
+					"UPDATE - NAME: $empname, DATE: " .$data['dateid']." TYPE: ".$data['type'].",
+          REMARKS: ".$data['rem'].""
+				);
+			}
+		} else {
+			$data['empid']  = $config['params']['adminid'];
+			$data['status'] = 'E';
+
+			$date = date('Y-m-d', strtotime($data['dateid']));
+			$type = $head['type'];
+			if (!empty($this->checking($config, $date, $type))) {
+				// $msg = "Already Exist";
+				$clientid      = 0;
+				$this->isexist = 1;
+			} else {
+				$clientid = $this->coreFunctions->insertGetId($this->head, $data);
+
+				$this->logger->sbcmasterlog(
+					$clientid,
+					$config,
+					"CREATE - NAME: $empname, DATE: " .$data['dateid']." TYPE: ".$data['type'].",
+          REMARKS: ".$data['rem'].""
+				);
+			}
+		}
+		// return $clientid;
+		return ['status' => $msg == ''?true:false, 'msg' => $msg, 'clientid' => $clientid];
+	}// end function
+
+	public function checking($config, $date, $type) {
+		$head  = $config['params']['head'];
+		$empid = $config['params']['adminid'];
+		$line  = $head['clientid'];
+
+		$filter = "";
+		if ($line != 0) {
+			$exist = $this->coreFunctions->datareader("select date(dateid) as value from ".$this->head.' where line = "'.$line.'" and empid = "'.$empid.'" and date(dateid) = "'.$date.'" and type = "'.$type.'"');
+
+			if (!empty($exist)) {
+				return [];
+			} else {
+				return $this->coreFunctions->datareader("select date(dateid) as value from ".$this->head.' where empid = "'.$empid.'" and date(dateid) = "'.$date.'" and type = "'.$type.'"');
+			}
+		} else {
+			return $this->coreFunctions->datareader("select date(dateid) as value from ".$this->head.' where empid = "'.$empid.'" and date(dateid) = "'.$date.'" and type = "'.$type.'"');
+		}
+	}
+
+	public function getlastclient() {
+		$last_id = $this->coreFunctions->datareader("select line as value
+        from ".$this->head."
+        order by line DESC LIMIT 1");
+
+		return $last_id;
+	}
+
+	public function openstock($trno, $config) {
+		$qry = "";
+		return $this->coreFunctions->opentable($qry);
+	}
+
+	public function deletetrans($config) {
+		$clientid = $config['params']['clientid'];
+
+		$qry   = "select line as value from obapplication where line = '$clientid' and status != 'E'";
+		$count = $this->coreFunctions->datareader($qry);
+
+		if ($count != "") {
+			return ['clientid' => '0', 'status' => false, 'msg' => "Transaction cannot be deleted."];
+		}
+
+		$this->coreFunctions->execqry('delete from obapplication where line=?', 'delete', [$clientid]);
+		return ['clientid' => $clientid, 'status' => true, 'msg' => 'Successfully deleted.', 'qq' => $qry];
+	}//end function
+
+	// -> print function
+	public function reportsetup($config) {
+		$txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
+		$txtdata  = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
+
+		$modulename = $this->modulename;
+		$data       = [];
+		$style      = 'width:500px;max-width:500px;';
+
+		return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+	}
+
+	public function reportdata($config) {
+		$this->logger->sbcviewreportlog($config);
+		$data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+		$str  = app($this->companysetup->getreportpath($config['params']))->rpt_obapplication_layout($config, $data);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+	}
+
+}//end class

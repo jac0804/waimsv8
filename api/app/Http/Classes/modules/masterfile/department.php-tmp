@@ -1,0 +1,400 @@
+<?php
+namespace App\Http\Classes\modules\masterfile;
+
+use App\Http\Classes\builder\buttonClass;
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+use App\Http\Classes\Logger;
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sqlquery;
+
+class department {
+	private $btnClass;
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'DEPARTMENT LEDGER';
+	public $gridname   = 'accounting';
+	private $companysetup;
+	private $coreFunctions;
+	private $othersClass;
+	private $logger;
+	private $sqlquery;
+	public $expirystatus  = ['readonly' => false, 'show' => false, 'showdate' => true];
+	public $head          = 'client';
+	public $prefix        = 'DEP';
+	public $tablelogs     = 'client_log';
+	public $tablelogs_del = 'del_client_log';
+	private $stockselect;
+
+	private $fields = [
+		'client', 'clientname', 'addr', 'start', 'tel2',
+		'contact', 'rem', 'type',
+		'iscustomer', 'issupplier', 'isagent', 'iswareHouse', 'isinactive', 'isdepartment', 'isemployee'];
+	private $except    = ['clientid'];
+	private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswareHouse', 'isinactive', 'isdepartment', 'isemployee'];
+	private $acctg     = [];
+	public $showfilter = false;
+	private $reporter;
+
+	public function __construct() {
+		$this->btnClass      = new buttonClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->logger        = new Logger;
+		$this->sqlquery      = new sqlquery;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function getAttrib() {
+		$attrib = array('view' => 32,
+			'edit'                => 33,
+			'new'                 => 34,
+			'save'                => 35,
+			'change'              => 36,
+			'delete'              => 37,
+			'print'               => 38
+		);
+		return $attrib;
+	}
+
+	public function createdoclisting($config) {
+		$getcols = ['listclient', 'listclientname', 'listaddr'];
+		$cols    = $this->tabClass->createdoclisting($getcols);
+		return $cols;
+	}
+
+	public function loaddoclisting($config) {
+		$date1      = $config['params']['date1'];
+		$date2      = $config['params']['date2'];
+		$itemfilter = $config['params']['itemfilter'];
+		$doc        = $config['params']['doc'];
+		$center     = $config['params']['center'];
+		$condition  = '';
+		switch ($itemfilter) {
+			case 'draft':
+				$condition = ' and num.postdate is null ';
+				break;
+			case 'posted':
+				$condition = ' and num.postdate is not null ';
+				break;
+		}
+		$qry = "select client.clientid,client.client,client.clientname,client.addr from client where isdepartment =1
+     order by client";
+
+		$data = $this->coreFunctions->opentable($qry);
+		return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
+	}
+
+	public function createHeadbutton($config) {
+		$btns = array('load',
+			'new',
+			'save',
+			'delete',
+			'cancel',
+			'print',
+			'logs',
+			'edit',
+			'backlisting',
+			'toggleup',
+			'toggledown');
+		$buttons = $this->btnClass->create($btns);
+		return $buttons;
+	}// createHeadbutton
+
+	public function createTab($access, $config) {
+		$tab          = [];
+		$stockbuttons = [];
+		$obj          = $this->tabClass->createtab($tab, $stockbuttons);
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$tbuttons = ['viewap', 'viewar', 'viewinv'];
+		$obj      = $this->tabClass->createtabbutton($tbuttons);
+		data_set($obj, 'viewinv.lookupclass', 'viewsupplierinv');
+		return $obj;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['client', 'clientname', 'addr', 'start'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'client.label', 'Department Code');
+		data_set($col1, 'client.class', 'csclient sbccsenablealways');
+		data_set($col1, 'client.lookupclass', 'department');
+		data_set($col1, 'client.action', 'lookupledgerclient');
+
+		$fields = ['contact', 'tel2', 'rem', 'type'];
+		$col2   = $this->fieldClass->create($fields);
+		data_set($col2, 'contact.label', 'Contact Person');
+		data_set($col2, 'rem.required', false);
+		data_set($col2, 'type.required', false);
+
+		$fields = ['isdepartment', 'iswarehouse', 'issupplier', 'iscustomer', 'isagent', 'isinactive', 'isemployee'];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'isdepartment.class', 'isdepartment sbccsreadonly');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+	}
+
+	public function newclient($config) {
+		$data                  = [];
+		$data[0]['clientid']   = 0;
+		$data[0]['client']     = $config['newclient'];
+		$data[0]['clientname'] = '';
+		$data[0]['addr']       = '';
+		$data[0]['contact']    = '';
+		$data[0]['tel2']       = '';
+		$data[0]['type']       = '';
+		$data[0]['rem']        = '';
+		$data[0]['start']      = null;
+
+		$data[0]['isdepartment'] = '1';
+		$data[0]['iscustomer']   = '0';
+		$data[0]['issupplier']   = '0';
+		$data[0]['isagent']      = '0';
+		$data[0]['iswareHouse']  = '0';
+		$data[0]['isinactive']   = '0';
+		$data[0]['isemployee']   = '0';
+		return ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
+	}
+
+	public function loadheaddata($config) {
+		$doc      = $config['params']['doc'];
+		$clientid = $config['params']['clientid'];
+		$center   = $config['params']['center'];
+		if ($clientid == 0) {
+			$clientid = $this->othersClass->readprofile($doc, $config);
+			if ($clientid == 0) {
+				$clientid = $this->coreFunctions->datareader("select clientid as value from client where isdepartment=1 and center=? order by clientid desc limit 1", [$center]);
+			}
+			$config['params']['clientid'] = $clientid;
+		} else {
+			$this->othersClass->checkprofile($doc, $clientid, $config);
+		}
+		$center = $config['params']['center'];
+		$head   = [];
+		$fields = 'client.clientid';
+		foreach ($this->fields as $key => $value) {
+			$fields = $fields.',client.'.$value;
+		}
+		$qryselect = "select ".$fields;
+
+		$qry = $qryselect." from client
+        where client.clientid = ? ";
+
+		$head = $this->coreFunctions->opentable($qry, [$clientid]);
+		if (!empty($head)) {
+			foreach ($this->blnfields as $key => $value) {
+				if ($head[0]->$value) {
+					$head[0]->$value = "1";
+				} else {
+
+					$head[0]->$value = "0";
+				}
+			}
+
+			$viewdate = $this->othersClass->getCurrentTimeStamp();
+			$viewby   = $config['params']['user'];
+			$this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['clientid' => $clientid]);
+			$msg = 'Data Fetched Success';
+			if (isset($config['msg'])) {
+				$msg = $config['msg'];
+			}
+			return ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid']];
+		} else {
+			$head[0]['clientid']   = 0;
+			$head[0]['client']     = '';
+			$head[0]['clientname'] = '';
+			return ['status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
+		}
+	}
+
+	public function updatehead($config, $isupdate) {
+		$head   = $config['params']['head'];
+		$center = $config['params']['center'];
+		$data   = [];
+		if ($isupdate) {
+			unset($this->fields['client']);
+		}
+		$clientid = 0;
+		foreach ($this->fields as $key) {
+			$data[$key] = $head[$key];
+			if (!in_array($key, $this->except)) {
+				$data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+			}//end if
+		}
+		$data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+		$data['editby']   = $config['params']['user'];
+		if ($isupdate) {
+			$this->coreFunctions->sbcupdate('client', $data, ['clientid' => $head['clientid']]);
+			$clientid = $head['clientid'];
+		} else {
+			$data['createdate']   = $this->othersClass->getCurrentTimeStamp();
+			$data['createby']     = $config['params']['user'];
+			$data['isdepartment'] = 1;
+			$data['center']       = $center;
+			$clientid             = $this->coreFunctions->insertGetId('client', $data);
+			$this->logger->sbcwritelog($clientid, $config, 'CREATE', $clientid.' - '.$head['client'].' - '.$head['clientname']);
+		}
+		return $clientid;
+	}// end function
+
+	public function getlastclient($pref) {
+		$length = strlen($pref);
+		$return = '';
+		if ($length == 0) {
+			$return = $this->coreFunctions->datareader('select client as value from client where  isdepartment=1 order by client desc limit 1');
+		} else {
+			$return = $this->coreFunctions->datareader('select client as value from client where  isdepartment=1 and left(client,?)=? order by client desc limit 1', [$length, $pref]);
+		}
+		return $return;
+	}
+
+	public function deletetrans($config) {
+		$clientid = $config['params']['clientid'];
+		$doc      = $config['params']['doc'];
+		$client   = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$clientid]);
+		$qry      = "select lahead.trno from lahead where client=?
+            union all
+            select glhead.trno from glhead where clientid=? limit 1";
+		$count = $this->coreFunctions->datareader($qry, [$client, $clientid, $client, $client]);
+		if (($count != '')) {
+			return ['clientid' => $clientid, 'status' => false, 'msg' => 'Already have transaction...'];
+		}
+
+		$qry       = "select clientid as value from client where clientid<? and isdepartment=1 order by clientid desc limit 1 ";
+		$clientid2 = $this->coreFunctions->datareader($qry, [$clientid]);
+		$this->coreFunctions->execqry('delete from client where clientid=?', 'delete', [$clientid]);
+		$this->logger->sbcdel_log($clientid, $config, $client);
+		return ['clientid' => $clientid2, 'status' => true, 'msg' => 'Successfully deleted.'];
+	}//end function
+
+	public function reportsetup($config) {
+		$txtfield   = $this->createreportfilter();
+		$txtdata    = $this->reportparamsdata($config);
+		$modulename = $this->modulename;
+		$data       = [];
+		$style      = 'width:500px;max-width:500px;';
+
+		return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+	}
+
+	public function createreportfilter() {
+		$fields = [
+			'prepared',
+			'approved',
+			'received',
+			'refresh'
+		];
+
+		$col1 = $this->fieldClass->create($fields);
+		return array('col1' => $col1);
+	}
+
+	public function reportparamsdata($config) {
+		return $this->coreFunctions->opentable("
+    select
+      'default' as print,
+      '' as prepared,
+      '' as approved,
+      '' as received
+  ");
+	}
+
+	public function generateResult($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+		$clientid = md5($config['params']['dataid']);
+
+		$prepared = $config['params']['dataparams']['prepared'];
+		$approved = $config['params']['dataparams']['approved'];
+		$received = $config['params']['dataparams']['received'];
+
+		$query = "select client.client,client.clientname,client.addr,client.tel,
+    client.tel2,client.tin,client.mobile,client.rem,
+    client.email,client.contact,client.fax,client.start,client.status,client.quota,
+    client.area,client.province,client.region,client.groupid,client.issupplier,client.iscustomer,
+    client.isagent,client.isemployee
+    from client where md5(client.clientid)='$clientid'";
+
+		return $this->coreFunctions->opentable($query);
+	}
+
+	public function reportdata($config) {
+		$str = $this->reportplotting($config);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+	}
+
+	public function reportplotting($config) {
+		$data     = $this->generateResult($config);
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$prepared = $config['params']['dataparams']['prepared'];
+		$approved = $config['params']['dataparams']['approved'];
+		$received = $config['params']['dataparams']['received'];
+
+		$str   = '';
+		$count = 55;
+		$page  = 54;
+		$str .= $this->reporter->beginreport();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('WAREHOUSE LEDGER - PROFILE ', null, null, false, '1px solid ', '', '', 'Century Gothic', '18', 'B', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '');
+		$str .= $this->reporter->col('Run Date :'.date('M-d-Y h:i:s a', time()), null, null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('Warehouse:', '50', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '1px');
+		$str .= $this->reporter->col('('.(isset($data[0]->client)?$data[0]->client:'').')'.'&nbsp;&nbsp;&nbsp;'.(isset($data[0]->clientname)?$data[0]->clientname:''), '750', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', 'B', '', '1px');
+
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('Address:', '50', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '1px');
+		$str .= $this->reporter->col((isset($data[0]->addr)?$data[0]->addr:''), '750', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', 'B', '', '1px');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= '<br/><br/>';
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col('Prepared By : ', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->col('Received By :', '266', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->col('Approved By :', '266', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', '', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= '<br/>';
+		$str .= $this->reporter->begintable('800');
+		$str .= $this->reporter->startrow();
+		$str .= $this->reporter->col($prepared, '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col($received, '266', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->col($approved, '266', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', 'B', '', '');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+}//end class

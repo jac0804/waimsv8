@@ -1,0 +1,261 @@
+<?php
+
+namespace App\Http\Classes\modules\tableentry;
+
+use App\Http\Classes\builder\tabClass;
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+
+class entryserialin {
+	private $fieldClass;
+	private $tabClass;
+	public $modulename = 'ADD SERIAL - IN';
+	public $gridname   = 'inventory';
+	private $companysetup;
+	private $coreFunctions;
+	private $table = 'serialin';
+	private $othersClass;
+	public $style = 'width:100%;';
+
+	private $fields      = ['serial', 'chassis', 'color'];
+	public $showclosebtn = true;
+
+	public function __construct() {
+		$this->fieldClass    = new txtfieldClass;
+		$this->tabClass      = new tabClass;
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+	}
+
+	public function getAttrib() {
+		$attrib = array(
+			'load' => 2999
+		);
+		return $attrib;
+	}
+
+	public function createTab($config) {
+		$action  = 0;
+		$serial  = 1;
+		$chassis = 2;
+		$color   = 3;
+
+		$tab = [
+			$this->gridname => [
+				'gridcolumns'  => ['action', 'serial', 'chassis', 'color']
+			]
+		];
+
+		$stockbuttons = ['save', 'delete'];
+
+		$companyid = $config['params']['companyid'];
+
+		$obj = $this->tabClass->createtab($tab, $stockbuttons);
+		// action
+		$obj[0][$this->gridname]['columns'][0]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
+
+		$obj[0]['params']['trno']  = $config['params']['row']['trno'];
+		$obj[0]['params']['line']  = $config['params']['row']['line'];
+		$obj[0]['params']['qty']   = $config['params']['row']['qty'];
+		$obj[0]['params']['type']  = 'IN';
+		$obj[0]['params']['label'] = 'Enter Serial';
+
+		if ($companyid == 40) {
+			$obj[0]['inventory']['columns'][$color]['type'] = 'input';
+		} else {
+			$obj[0]['inventory']['columns'][$color]['type']   = 'coldel';
+			$obj[0]['inventory']['columns'][$chassis]['type'] = 'coldel';
+		}
+
+		$obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
+
+		return $obj;
+	}
+
+	public function createtabbutton($config) {
+		$row      = $config['params']['row'];
+		$isserial = $this->coreFunctions->getfieldvalue('item', 'isserial', 'itemid=?', [$row['itemid']]);
+		if ($isserial != '' && $isserial != 0) {
+			$tbuttons = ['addserial'];
+		} else {
+			$this->modulename = 'Not Serialized Item';
+			$tbuttons         = [];
+		}
+
+		$obj = $this->tabClass->createtabbutton($tbuttons);
+
+		return $obj;
+	}
+
+	public function addserial($config) {
+		$dinsert            = [];
+		$trno               = $config['params']['data']['trno'];
+		$line               = $config['params']['data']['line'];
+		$doc                = $config['params']['doc'];
+		$serial             = $config['params']['loc'];
+		$trno               = $this->othersClass->sanitizekeyfield('trno', $trno);
+		$line               = $this->othersClass->sanitizekeyfield('line', $line);
+		$serial             = $this->othersClass->sanitizekeyfield('serial', $serial);
+		$dinsert['trno']    = $trno;
+		$dinsert['line']    = $line;
+		$dinsert['serial']  = $serial;
+		$dinsert['outline'] = 0;
+		$this->coreFunctions->insertGetId($this->table, $dinsert);
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where trno=? and line=? order by sline";
+		$data   = $this->coreFunctions->opentable($qry, [$trno, $line]);
+
+		$path = '';
+
+		switch ($doc) {
+			case 'SJ':
+				$path = 'App\Http\Classes\modules\sales\\'.strtolower($doc);
+				break;
+			case 'AJ':case 'IS':case 'TS':
+				$path = 'App\Http\Classes\modules\inventory\\'.strtolower($doc);
+				break;
+			default:
+				$path = 'App\Http\Classes\modules\purchase\\'.strtolower($doc);
+				break;
+
+		}
+
+		$config['params']['trno'] = $trno;
+		$stock                    = app($path)->openstock($trno, $config);
+
+		return ['status' => true, 'msg' => 'Ready For New Record', 'data' => $data, 'reloadgriddata' => ['inventory' => $stock]];
+	}
+
+	public function addmultipleserial($config) {
+		$dinsert            = [];
+		$trno               = $config['params']['data']['trno'];
+		$line               = $config['params']['data']['line'];
+		$trno               = $this->othersClass->sanitizekeyfield('trno', $trno);
+		$line               = $this->othersClass->sanitizekeyfield('line', $line);
+		$dinsert['trno']    = $trno;
+		$dinsert['line']    = $line;
+		$dinsert['outline'] = 0;
+		$serial             = $config['params']['loc'];
+		$doc                = $config['params']['doc'];
+
+		foreach ($serial as $key) {
+			$dinsert['serial'] = $key['serial'];
+			$this->coreFunctions->insertGetId($this->table, $dinsert);
+		}
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where trno=? and line=? order by sline";
+		$data   = $this->coreFunctions->opentable($qry, [$trno, $line]);
+
+		$path = '';
+
+		switch ($doc) {
+			case 'SJ':
+				$path = 'App\Http\Classes\modules\sales\\'.strtolower($doc);
+				break;
+			case 'AJ':case 'IS':case 'TS':
+				$path = 'App\Http\Classes\modules\inventory\\'.strtolower($doc);
+				break;
+			default:
+				$path = 'App\Http\Classes\modules\purchase\\'.strtolower($doc);
+				break;
+
+		}
+
+		$config['params']['trno'] = $trno;
+		$stock                    = app($path)->openstock($trno, $config);
+
+		return ['status' => true, 'msg' => 'Ready For New Record', 'data' => $data, 'reloadgriddata' => ['inventory' => $stock]];
+	}//end function
+
+	private function selectqry() {
+		$qry = "sline";
+		foreach ($this->fields as $key => $value) {
+			$qry = $qry.','.$value;
+		}
+		return $qry;
+	}
+
+	public function save($config) {
+		$data = [];
+		$row  = $config['params']['row'];
+		foreach ($this->fields as $key => $value) {
+			$data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+		}
+		if ($row['sline'] == 0) {
+			$stockgrp_id = $this->coreFunctions->insertGetId($this->table, $data);
+			if ($stockgrp_id != 0) {
+				$returnrow = $this->loaddataperrecord($stockgrp_id);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		} else {
+			if ($this->coreFunctions->sbcupdate($this->table, $data, ['sline' => $row['sline']]) == 1) {
+				$returnrow = $this->loaddataperrecord($row['sline']);
+				return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+			} else {
+				return ['status' => false, 'msg' => 'Saving failed.'];
+			}
+		}
+	}//end function
+
+	public function delete($config) {
+		$row  = $config['params']['row'];
+		$doc  = $config['params']['doc'];
+		$trno = $config['params']['tableid'];
+
+		$qry   = "select serial as value from ".$this->table." where sline=? and outline<>0";
+		$count = $this->coreFunctions->datareader($qry, [$row['sline']]);
+
+		if ($count != '') {
+			return ['clientid' => $row['sline'], 'status' => false, 'msg' => 'Already have transaction...'];
+		}
+
+		$qry = "delete from ".$this->table." where sline=?";
+		$this->coreFunctions->execqry($qry, 'delete', [$row['sline']]);
+
+		$path = '';
+
+		switch ($doc) {
+			case 'SJ':
+				$path = 'App\Http\Classes\modules\sales\\'.strtolower($doc);
+				break;
+			case 'AJ':case 'IS':case 'TS':
+				$path = 'App\Http\Classes\modules\inventory\\'.strtolower($doc);
+				break;
+			default:
+				$path = 'App\Http\Classes\modules\purchase\\'.strtolower($doc);
+				break;
+
+		}
+
+		$config['params']['trno'] = $trno;
+		$stock                    = app($path)->openstock($trno, $config);
+
+		return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadgriddata' => ['inventory' => $stock]];
+	}
+
+	private function loaddataperrecord($stockgrp_id) {
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where sline=?";
+		$data   = $this->coreFunctions->opentable($qry, [$stockgrp_id]);
+		return $data;
+	}
+
+	public function loaddata($config) {
+		$row    = $config['params']['row'];
+		$select = $this->selectqry();
+		$select = $select.",'' as bgcolor ";
+		$qry    = "select ".$select." from ".$this->table." where trno=? and line=? order by sline";
+		$data   = $this->coreFunctions->opentable($qry, [$row['trno'], $row['line']]);
+		return $data;
+	}
+}//end class

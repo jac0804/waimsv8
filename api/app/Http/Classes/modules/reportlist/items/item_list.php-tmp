@@ -1,0 +1,318 @@
+<?php
+namespace App\Http\Classes\modules\reportlist\items;
+
+use App\Http\Classes\builder\txtfieldClass;
+use App\Http\Classes\companysetup;
+
+use App\Http\Classes\coreFunctions;
+
+use App\Http\Classes\othersClass;
+use App\Http\Classes\SBCPDF;
+
+class item_list {
+	public $modulename = 'Item List';
+	private $companysetup;
+	private $coreFunctions;
+	private $fieldClass;
+	private $othersClass;
+	private $reporter;
+	public $style = 'width:1000px;max-width:1000px;';
+
+	public $directprint = false;
+
+	public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
+
+	public function __construct() {
+		$this->companysetup  = new companysetup;
+		$this->coreFunctions = new coreFunctions;
+		$this->othersClass   = new othersClass;
+		$this->fieldClass    = new txtfieldClass;
+		$this->reporter      = new SBCPDF;
+	}
+
+	public function createHeadField($config) {
+		$fields = ['radioprint', 'ditemname', 'divsion', 'brand', 'class'];
+		$col1   = $this->fieldClass->create($fields);
+		data_set($col1, 'divsion.label', 'Group');
+
+		$fields = ['radioreportitemtype', 'radioreportitemstatus'];
+		$col2   = $this->fieldClass->create($fields);
+
+		$fields = ['refresh'];
+		$col3   = $this->fieldClass->create($fields);
+		data_set($col3, 'refresh.action', 'history');
+
+		return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+	}
+
+	public function paramsdata($config) {
+		// NAME NG INPUT YUNG NAKA ALIAS
+		return $this->coreFunctions->opentable("select
+    'default' as print,
+    '' as itemname,
+    '' as barcode,
+    '' as groupid,
+    '' as stockgrp,
+    '' as brandid,
+    '' as brandname,
+    '' as classid,
+    '' as classic,
+    '(0,1)' as itemtype,
+    '(0,1)' as itemstatus
+    ");
+	}
+
+	// put here the plotting string if direct printing
+	public function getloaddata($config) {
+		return [];
+	}
+
+	public function reportdata($config) {
+		$str = $this->reportplotting($config);
+		return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+	}
+
+	public function reportplotting($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$result = $this->reportDefaultLayout($config);
+
+		return $result;
+	}
+
+	public function reportDefault($config) {
+		// QUERY PER FUNCTION
+
+		$query = $this->DEFAULT_QUERY($config);
+
+		// return $query;
+		return $this->coreFunctions->opentable($query);
+	}
+
+	// QUERY
+	public function DEFAULT_QUERY($config) {
+		$barcode    = $config['params']['dataparams']['barcode'];
+		$itemname   = $config['params']['dataparams']['itemname'];
+		$groupid    = $config['params']['dataparams']['groupid'];
+		$groupname  = $config['params']['dataparams']['stockgrp'];
+		$brandid    = $config['params']['dataparams']['brandid'];
+		$brandname  = $config['params']['dataparams']['brandname'];
+		$classid    = $config['params']['dataparams']['classid'];
+		$classname  = $config['params']['dataparams']['classic'];
+		$itemtype   = $config['params']['dataparams']['itemtype'];
+		$itemstatus = $config['params']['dataparams']['itemstatus'];
+
+		$filter = "";
+		//start
+		if ($barcode != "") {
+			$filter = $filter." and barcode='$barcode'";
+		}
+
+		if ($groupid != "") {
+			$filter = $filter." and stockgrp.stockgrp_id='$groupid'";
+		}
+
+		if ($brandid != "") {
+			$filter = $filter." and brand='$brandid'";
+		}
+
+		if ($classid != "") {
+			$filter = $filter." and cl_id='$classid'";
+		}
+
+		$order = " order by ifnull(parts.part_name,''),brand,itemname";
+
+		$query = "select sizeid as size,current_timestamp as print_date, 0 as sort, barcode, itemname,
+      ifnull(stockgrp.stockgrp_name,'') as groupid, brand,
+      ifnull(parts.part_name,'') as part,ifnull(mm.model_name,'') as model,
+      body,class,supplier,cost, amt as price, item.isinactive,ifnull(itclass.cl_name,'') as cl_name
+      from item
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join model_masterfile as mm on mm.model_id=item.model
+      left join item_class as itclass on item.class = itclass.cl_id
+      where item.barcode <> '' and item.isinactive in $itemstatus $filter $order";
+
+		return $query;
+	}
+
+	private function default_displayHeader($config) {
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$barcode    = $config['params']['dataparams']['barcode'];
+		$itemname   = $config['params']['dataparams']['itemname'];
+		$groupid    = $config['params']['dataparams']['groupid'];
+		$groupname  = $config['params']['dataparams']['stockgrp'];
+		$brandid    = $config['params']['dataparams']['brandid'];
+		$brandname  = $config['params']['dataparams']['brandname'];
+		$classid    = $config['params']['dataparams']['classid'];
+		$classname  = $config['params']['dataparams']['classic'];
+		$itemtype   = $config['params']['dataparams']['itemtype'];
+		$itemstatus = $config['params']['dataparams']['itemstatus'];
+
+		$str        = '';
+		$layoutsize = '1000';
+		$str .= $this->reporter->begintable($layoutsize);
+		$str .= $this->reporter->letterhead($center, $username);
+		$str .= $this->reporter->endtable();
+		$str .= '<br/><br/>';
+		$str .= $this->reporter->begintable('1000');
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('ITEM LISTS', null, null, false, '1px solid ', '', '', 'Century Gothic', '18', 'B', '', '').'<br />';
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->startrow(NULL, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '30px', '5px');
+		//$str .= $this->reporter->col('Sort By : ' .strtoupper($sortby),NULL,null,false,'1px solid ','','L','Century Gothic','10','','30px','5px');
+		// $str .= $this->reporter->col('Printdate :'. date('M-d-Y h:i:s a',time()),null,null,false,'1px solid ','','R','Century Gothic','10','','','');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+
+		$str .= $this->reporter->begintable('1000');
+		$str .= $this->reporter->startrow(null, null, false, '1px solid ', '', '', 'Century Gothic', '10', '', '', '');
+
+		if ($barcode == '') {
+			$ritem = ' All';
+		} else {
+			$ritem = $barcode;
+		}
+		$str .= $this->reporter->col('Item :'.$ritem, '150', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+
+		if ($groupname == '') {
+			$rgroup = ' All';
+		} else {
+			$rgroup = $groupname;
+		}
+		$str .= $this->reporter->col('Group :'.$rgroup, '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+
+		if ($brandname == '') {
+			$rbrand = ' All';
+		} else {
+			$rbrand = $brandname;
+		}
+		$str .= $this->reporter->col('Brand :'.$rbrand, '200', null, false, '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+
+		if ($classname == '') {
+			$rclass = ' All';
+		} else {
+			$rclass = $classname;
+		}
+		$str .= $this->reporter->col('Class :'.$rclass, null, null, '', '1px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
+
+		$str .= $this->reporter->pagenumber('Page');
+		$str .= $this->reporter->endrow();
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->printline();
+
+		$str .= $this->reporter->begintable('1000');
+		$str .= $this->reporter->startrow();
+		//($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+		$str .= $this->reporter->col('ITEM CODE', '150', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('ITEM DESCRIPTION', '400', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('GROUP / CATEGORY', '150', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('PRICE', '200', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->col('STATUS', '100', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '11', 'B', '30px', '8px');
+		$str .= $this->reporter->endrow();
+
+		return $str;
+	}
+
+	public function reportDefaultLayout($config) {
+		$result   = $this->reportDefault($config);
+		$center   = $config['params']['center'];
+		$username = $config['params']['user'];
+
+		$barcode   = $config['params']['dataparams']['barcode'];
+		$itemname  = $config['params']['dataparams']['itemname'];
+		$groupid   = $config['params']['dataparams']['groupid'];
+		$groupname = $config['params']['dataparams']['stockgrp'];
+		$brandid   = $config['params']['dataparams']['brandid'];
+		$brandname = $config['params']['dataparams']['brandname'];
+		$classid   = $config['params']['dataparams']['classid'];
+		$classname = $config['params']['dataparams']['classic'];
+		$itemtype  = $config['params']['dataparams']['itemtype'];
+
+		$count = 38;
+		$page  = 40;
+
+		$str        = '';
+		$layoutsize = '1000';
+		$str .= $this->reporter->beginreport($layoutsize);
+		$str .= $this->default_displayHeader($config);
+
+		$part  = "";
+		$brand = "";
+		foreach ($result as $key => $data) {
+			if (strtoupper($part) == strtoupper($data->part)) {
+				$part = "";
+			} else {
+				$part = $data->part;
+			}//end if
+
+			if (strtoupper($brand) == strtoupper($data->brand)) {
+				$brand = "";
+			} else {
+				$brand = strtoupper($data->brand);
+			}//end if
+
+			$price = number_format($data->price, 2);
+			if ($price == 0) {
+				$price = '-';
+			}//end if
+
+			if ($part != "") {
+				$str .= $this->reporter->startrow();
+				$str .= $this->reporter->col($part, '150', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', 'B', '', '0px');
+				$str .= $this->reporter->col('', '400', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', 'Bi', '', '0px');
+				$str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->endrow();
+			}
+			if ($brand != "") {
+				$str .= $this->reporter->startrow();
+				$str .= $this->reporter->col($brand, '150', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', 'Bi', '', '0px');
+				$str .= $this->reporter->col('', '400', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', 'Bi', '', '0px');
+				$str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '0px');
+				$str .= $this->reporter->endrow();
+			}
+
+			$str .= $this->reporter->startrow();
+			$str .= $this->reporter->addline();
+			if ($data->isinactive) {
+				$isinactive = 'INACTIVE';
+			} else {
+				$isinactive = 'ACTIVE';
+			}//end if
+
+			$str .= $this->reporter->col($data->barcode, '150', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '0px');
+			$str .= $this->reporter->col($data->itemname, '400', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '0px');
+			$str .= $this->reporter->col($data->groupid, '150', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '0px');
+			$str .= $this->reporter->col($price, '200', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '0px');
+			$str .= $this->reporter->col($isinactive, '100', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '0px');
+
+			$brand = strtoupper($data->brand);
+			$part  = $data->part;
+
+			$str .= $this->reporter->endrow();
+
+			if ($this->reporter->linecounter == $page) {
+				$str .= $this->reporter->endtable();
+				$str .= $this->reporter->page_break();
+				$str .= $this->default_displayHeader($config);
+				$str .= $this->reporter->addline();
+				$page = $page+$count;
+			}//end if
+
+		}
+
+		$str .= $this->reporter->endtable();
+		$str .= $this->reporter->endreport();
+
+		return $str;
+	}
+
+}//end class
