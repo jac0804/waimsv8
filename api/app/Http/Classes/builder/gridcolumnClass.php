@@ -11761,6 +11761,53 @@ class gridcolumnClass
                             'style' => 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;',
                             'readonly' => false
                      ),
+                     'disc7' => array(
+                            'name' => 'disc7',
+                            'type' => 'input',
+                            'label' => 'DR Disc',
+                            'field' => 'disc7',
+                            'align' => 'text-left',
+                            'style' => 'width:130px;whiteSpace: normal;min-width:130px;',
+                            'readonly' => true
+                     ),
+                     'carton' => array(
+                            'name' => 'carton',
+                            'field' => 'carton',
+                            'type' => 'input',
+                            'label' => 'Cartons',
+                            'align' => 'text-right',
+                            'style' => 'width: 150px;whiteSpace: normal;min-width:150px;max-width:160px;text-align:left;',
+                            'readonly' => false
+                     ),
+                     'expirydate' => array(
+                            'name' => 'expirydate',
+                            'type' => 'date',
+                            'label' => 'Expiry Date',
+                            'field' => 'expirydate',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:130px;',
+                            'readonly' => false
+                     ),
+
+                     'spot' => array(
+                            'name' => 'spot',
+                            'field' => 'spot',
+                            'type' => 'input',
+                            'label' => 'Special OT Multiplier',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;text-align:left;',
+                            'readonly' => false
+                     ),
+
+                     's3maxbracket' => array(
+                            'name' => 's3maxbracket',
+                            'field' => 's3maxbracket',
+                            'type'  => 'input',
+                            'label' => 'SSS Max Bracket',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;text-align:left;',
+                            'readonly' => false
+                     ),
 
 
               );

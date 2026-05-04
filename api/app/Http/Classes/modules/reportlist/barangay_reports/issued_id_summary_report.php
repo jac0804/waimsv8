@@ -95,91 +95,55 @@ class issued_id_summary_report
         $username = $config['params']['user'];
         $companyid = $config['params']['companyid'];
         return $this->issued_id_summary_layout($config);
-        break;
     }
 
     // QUERY
-    // public function default_qry($config)
-    // {
-    //     // $center = $config['params']['dataparams']['center'];
-    //     $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    //     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    //     $clientid = ($config['params']['dataparams']['clientid']);
-    //     $clientname = ($config['params']['dataparams']['clientname']);
-    //     $center = ($config['params']['center']);
-    //     $divname = ($config['params']['dataparams']['divname']);
-    //     $divid = ($config['params']['dataparams']['divid']);
-    //     $deptid = ($config['params']['dataparams']['deptid']);
-    //     $deptname = ($config['params']['dataparams']['deptname']);
-    //     $sectid = ($config['params']['dataparams']['sectid']);
-    //     $sectname = ($config['params']['dataparams']['sectname']);
-    //     $paygroupid = ($config['params']['dataparams']['paygroupid']);
-    //     $tpaygroup = ($config['params']['dataparams']['tpaygroup']);
+    public function default_qry($config)
+    {
+        // $center = $config['params']['dataparams']['center'];
+        $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+        $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $clientid = ($config['params']['dataparams']['clientid']);
+        $clientname = ($config['params']['dataparams']['clientname']);
+        $area = ($config['params']['dataparams']['area']);
+        $street = ($config['params']['dataparams']['street']);
 
-    //     $filter = '';
-    //     $leftjoin = '';
-    //     $leftjoin2 = '';
-    //     $leftjoin3 = '';
+        $filter = '';
+        $leftjoin = '';
+        $leftjoin2 = '';
+        $leftjoin3 = '';
 
-    //     if (
-    //         $divname != ''
-    //     ) {
-    //         $leftjoin3  .= " left join division on division.divcode = e.division";
-    //         $leftjoin2 .= " left join division on division.divid = e.division";
-    //         $filter .= " and division.divid = $divid";
-    //     }
+        if ($area != '') {
+            $filter .= " and c.area = '$area'";
+        }
 
-    //     if ($deptname != '') {
-    //         $leftjoin .= " left join department on department.deptcode = e.dept";
-    //         $filter .= " and e.deptid = $deptid";
-    //     }
-
-    //     if ($sectname != '') {
-    //         $leftjoin .= " left join section on section.sectid = e.sectid";
-    //         $filter .= " and e.sectid = $sectid";
-    //     }
-
-    //     if ($tpaygroup != '') {
-    //         $filter .= " and e.emptype = $paygroupid";
-    //     }
-
-    //     $query = "select e.empfirst, e.emplast, LEFT(e.empmiddle,1) as mi, e.empid,
-    //     e.sss  as sssno, e.phic as phicno, e.hdmf as hdmfno,
-    //     sum(case when pa.code = 'PT44' then p.cr else 0 end) as sss,
-    //     sum(case when pa.code = 'PT48' then p.cr else 0 end) as phic,
-    //     sum(case when pa.code = 'PT51' then p.cr else 0 end) as hdmf
-    //     from paytrancurrent as p
-    //     left join employee as e ON e.empid = p.empid
-    //     left join paccount as pa ON pa.line = p.acnoid
-    //     $leftjoin3
-    //     $leftjoin
-    //     where pa.code IN ('PT44','PT48','PT51') 
-    //     and dateid between '$start' and '$end'
-    //     $filter
-    //     group by e.empid, e.empfirst, e.emplast, e.empmiddle, e.sss, e.phic, e.hdmf
-
-    //     union all
-
-    //     select e.empfirst, e.emplast, left(e.empmiddle,1) as mi, e.empid,
-    //     e.sss  as sssno, e.phic as phicno, e.hdmf as hdmfno,
-    //     sum(case when pa.code = 'PT44' then p.cr else 0 end) as sss,
-    //     sum(case when pa.code = 'PT48' then p.cr else 0 end) as phic,
-    //     sum(case when pa.code = 'PT51' then p.cr else 0 end) as hdmf
-    //     FROM paytranhistory as p
-    //     left join employee as e ON e.empid = p.empid
-    //     left join paccount as pa ON pa.line = p.acnoid
-    //     $leftjoin2
-    //     $leftjoin
-    //     where pa.code in ('PT44','PT48','PT51') 
-    //     and dateid between '$start' and '$end'
-    //     $filter
-    //     group by e.empid, e.empfirst, e.emplast, e.empmiddle, e.sss, e.phic, e.hdmf
-    //     ";
-    //     // var_dump($query);
-    //     // $data = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-    //     // return $data;
-    //     return $this->coreFunctions->opentable($query);
-    // }
+        $query = "select cnum.doc, date(head.dateid) as dateid, head.clientname, c.addr, head.address,  c.client as brgyid, head.amount,
+                (select gh.docno
+                from glhead gh
+                left join cntnum cn on cn.trno = gh.trno 
+                where cn.doc = 'CR' and gh.clientid = head.clientid
+                limit 1) as ref
+                from glhead as head
+                left join client as c on c.clientid = head.clientid
+                left join cntnum as cnum on cnum.trno = head.trno
+                where cnum.doc = 'BK' and date(head.dateid) between '$start' and '$end' $filter
+                union all
+                select cnum.doc, date(head.dateid) as dateid, head.clientname, c.addr,  head.address, c.client as brgyid,  head.amount,
+                (select lh.docno
+                from lahead lh
+                left join cntnum cn on cn.trno = lh.trno
+                where cn.doc = 'CR' and lh.client = head.client 
+                limit 1) as ref
+                from lahead as head
+                left join client as c on c.client = head.client
+                left join cntnum as cnum on cnum.trno = head.trno
+                where cnum.doc = 'BK' and date(head.dateid) between '$start' and '$end' $filter
+                ";
+        // var_dump($query);
+        // $data = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+        // return $data;
+        return $this->coreFunctions->opentable($query);
+    }
 
     public function issued_id_summary_header($config)
     {
@@ -265,70 +229,138 @@ class issued_id_summary_report
 
     public function issued_id_summary_layout($config)
     {
-
-        // $result = $this->default_qry($config);
+        $result = $this->default_qry($config);
 
         $str = '';
         $layoutsize = '1000';
         $font = 'Tahoma';
-        // $font = $this->companysetup->getrptfont($config['params']);
-        // $font='Courier New';
         $fontsize = "10";
         $border = "1px solid";
         $this->reporter->linecounter = 0;
 
-        // $count = count($result);
+        $count = count($result);
 
-        // if (empty($result)) {
-        //     return $this->othersClass->emptydata($config);
-        // }
-
-        // Grand totals
-        $grandSss   = 0;
-        $grandPhic = 0;
-        $grandHdmf = 0;
+        if (empty($result)) {
+            return $this->othersClass->emptydata($config);
+        }
 
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->issued_id_summary_header($config);
 
-        // foreach ($result as $data) {
-        //     $fullname = trim($data->emplast . ', ' . $data->empfirst . ' ' . $data->mi . '. ');
+        $prevDate = '';
+        $dateTotal = 0;
+        $dateCount = 0;
 
-        //     $str .= $this->reporter->begintable($layoutsize);
-        //     $str .= $this->reporter->startrow();
-        //     $str .= $this->reporter->col('&nbsp&nbsp' . $fullname, '250', null, true, '2px dotted', 'B', 'L', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col(!empty($data->sssno)  ? $data->sssno  : '-', '125', null, true, '2px dotted', 'B', 'L', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col(!empty($data->phicno) ? $data->phicno : '-', '125', null, true, '2px dotted', 'B', 'L', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col(!empty($data->hdmfno) ? $data->hdmfno : '-', '125', null, true, '2px dotted', 'B', 'L', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col($data->sss  != 0 ? number_format($data->sss,  2) : '-', '125', null, true, '2px dotted', 'B', 'R', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col($data->phic != 0 ? number_format($data->phic, 2) : '-', '125', null, true, '2px dotted', 'B', 'R', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->col($data->hdmf != 0 ? number_format($data->hdmf, 2) : '-', '125', null, true, '2px dotted', 'B', 'R', $font, $fontsize, '', '', '', '', '', '', '', '', '#757575');
-        //     $str .= $this->reporter->endrow();
-        //     $str .= $this->reporter->endtable();
+        $grandTotal = 0;
+        $grandCount = 0;
 
-        //     $grandSss  += $data->sss;
-        //     $grandPhic += $data->phic;
-        //     $grandHdmf += $data->hdmf;
-        // }
+        foreach ($result as $key => $data) {
 
-        // $grandTotal += $undefined['total'];
+            if ($prevDate != '' && $prevDate != $data->dateid) {
 
-        // Grand Total Row
-        // $str .= $this->reporter->begintable($layoutsize);
-        // $str .= $this->reporter->addline();
-        // $str .= $this->reporter->startrow();
-        // $str .= $this->reporter->col('', '250', null, false, '', '', 'L', $font, $fontsize, '', '', '');
-        // $str .= $this->reporter->col('Grand Total',      '125', null, false, '', '', 'L', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->col('',   '125', null, false, '', '', 'C', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->col('', '125', null, false, '', '', 'C', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->col($grandSss, '125', null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->col($grandPhic,  '125', null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->col($grandHdmf, '125', null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
-        // $str .= $this->reporter->endrow();
-        // $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', null, '10', false, '1px dashed', '', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
 
-        // $str .= $this->reporter->endreport();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('TOTAL ID:', '170', null, false, '', 'B', 'LT', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col($dateCount, '150', null, false, '1px solid', 'TBRL', 'CT', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '290', null, false, '', 'B', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('TOTAL AMOUNT : ', '210', null, false, '', 'B', 'RT', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col(number_format($dateTotal, 2) ?: '-', '130', null, false, '1px solid', 'TBRL', 'RT', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
 
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', null, '10', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+
+                $dateTotal = 0;
+                $dateCount = 0;
+            }
+
+            if ($prevDate != $data->dateid) {
+                $str .= $this->reporter->begintable($layoutsize);
+            }
+
+            $dateTotal += $data->amount;
+            $dateCount++;
+
+            $grandTotal += $data->amount;
+            $grandCount++;
+
+            $str .= $this->reporter->startrow();
+
+            // Only show date if it's different from previous date
+            $displayDate = ($prevDate != $data->dateid) ? $data->dateid : '';
+
+            $str .= $this->reporter->col($displayDate, '120', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->brgyid, '170', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->clientname, '330', null, false, '2px solid', '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->ref, '170', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->amount != 0 ? number_format($data->amount, 2) : '-', '170', null, false, '2px solid', '', 'R', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->endrow();
+
+            $prevDate = $data->dateid;
+        }
+
+        if ($prevDate != '') {
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', null, '10', false, '1px dashed', '', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('TOTAL ID:', '170', null, false, '', 'B', 'LT', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col($dateCount, '150', null, false, '1px solid', 'TBRL', 'CT', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('', '290', null, false, '', 'B', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('TOTAL AMOUNT : ', '210', null, false, '', 'B', 'RT', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col(number_format($dateTotal, 2) ?: '-', '130', null, false, '1px solid', 'TBRL', 'RT', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', null, '10', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+        }
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '1000', '10', false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+
+        $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '170', null, false, '', 'B', 'LT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '150', null, false, '1px solid', '', 'CT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '290', null, false, '', 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('GRAND TOTAL : ', '210', null, false, '', 'B', 'RT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($grandTotal, 2) ?: '-', '130', null, false, '1px solid', 'TBRL', 'RT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->endreport();
         return $str;
     }
 }//end class

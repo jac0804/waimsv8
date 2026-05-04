@@ -161,6 +161,28 @@ class bt
 
         return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
     }
+
+    public function reportsetup($config)
+    {
+        $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
+        $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
+
+        $modulename = $this->modulename;
+        $data = [];
+        $style = 'width:500px;max-width:500px;';
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    }
+
+    public function reportdata($config)
+    {
+        $this->logger->sbcviewreportlog($config);
+
+        $data = app($this->companysetup->getreportpath($config['params']))->generateResult($config);
+        $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+
+        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+    }
+
     public function createTab($config)
     {
         $tab = [];
@@ -503,20 +525,19 @@ class bt
         }
     }
     public function stockstatusposted($config)
-  {
-    $action = $config['params']['action'];
-    if ($action == 'stockstatusposted') {
-      $action = $config['params']['lookupclass'];
-    }
+    {
+        $action = $config['params']['action'];
+        if ($action == 'stockstatusposted') {
+            $action = $config['params']['lookupclass'];
+        }
 
-    switch ($action) {
-      case 'navigation':
-        return $this->othersClass->navigatedocno($config);
-        break;
-      default:
-        return ['status' => false, 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
-        break;
+        switch ($action) {
+            case 'navigation':
+                return $this->othersClass->navigatedocno($config);
+                break;
+            default:
+                return ['status' => false, 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
+                break;
+        }
     }
-  }
-
 }

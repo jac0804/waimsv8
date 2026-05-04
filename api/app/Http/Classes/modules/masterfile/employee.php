@@ -77,7 +77,7 @@ class employee
     'customerid'
   ];
 
-  private $otherfields = ['isapprover', 'idbarcode'];
+  private $otherfields = ['isapprover', 'idbarcode', 'maxsjamt'];
 
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isemployee', 'isdepartment', 'isadmin', 'uv_ischecker', 'uv_ispicker', 'isapprover', 'isdriver', 'ispassenger'];
@@ -295,6 +295,11 @@ class employee
       array_push($fields, 'dcustomer');
     }
 
+    if ($companyid == 67) { //yulick
+      array_push($fields, 'maxsjamt');
+    }
+
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.label', 'Employee Code');
     data_set($col1, 'client.required', true);
@@ -446,6 +451,8 @@ class employee
     $data[0]['customercode'] = '';
     $data[0]['customername'] = '';
 
+    $data[0]['maxsjamt'] = 0;
+
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -573,7 +580,7 @@ class employee
       $clientid = $this->coreFunctions->insertGetId('client', $data);
       $this->logger->sbcwritelog($clientid, $config, 'CREATE', $clientid . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
-    if ($companyid == 16) { //ati
+    if ($companyid == 16 || $companyid == 67) { //ati && yulick
       $empid = $this->coreFunctions->getfieldvalue("employee", "empid", "empid=?", [$clientid]);
       if ($empid == "") {
         $otherdata['empid'] = $clientid;

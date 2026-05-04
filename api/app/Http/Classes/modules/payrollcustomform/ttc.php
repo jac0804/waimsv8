@@ -310,8 +310,8 @@ class ttc
         //     $left .= $approver['leftjoin'];
         // }
 
-        $qry = "select t.empid, t.`daytype`,tm.shftcode as shiftcode,date_format(t.dateid,'%m-%d-%Y') as dateid,dayofweek(dateid) as dayn,
-        date_format(t.schedin,'%m-%d-%Y %H:%i') as schedin, date_format(t.schedout,'%m-%d-%Y %H:%i') as schedout,
+        $qry = "select t.empid, t.`daytype`,tm.shftcode as shiftcode,date_format(t.dateid,'%m/%d/%Y') as dateid,dayofweek(dateid) as dayn,
+        date_format(t.schedin,'%m/%d/%Y %H:%i') as schedin, date_format(t.schedout,'%m/%d/%Y %H:%i') as schedout,
         date_format(t.schedbrkin,'%Y-%m-%d %H:%i') as schedbrkin, date_format(t.schedbrkout,'%Y-%m-%d %H:%i') as schedbrkout, 
         date_format(t.actualin,'%Y-%m-%d %H:%i') as actualin, date_format(t.actualout,'%Y-%m-%d %H:%i') as actualout, 
         date_format(t.actualbrkin,'%Y-%m-%d %H:%i') as actualbrkin, date_format(t.actualbrkout,'%Y-%m-%d %H:%i') as actualbrkout, 
@@ -343,11 +343,11 @@ class ttc
                 if ($val["bgcolor"] == 'bg-blue-2') {
                     unset($val["bgcolor"]);
                     $val["isok"] = 0;
+                    $date = DateTime::createFromFormat('m/d/Y', $val["dateid"]);
+                    $val["dateid"] = $date->format('Y-m-d');
                     $valmonth = (int) date('m', strtotime($val["dateid"]));
                     $curmonth = (int) date('m', strtotime($dateid));
 
-                    $date = DateTime::createFromFormat('m-d-Y', $val["dateid"]);
-                    $val["dateid"] = $date->format('Y-m-d');
                     if ($valmonth <= $curmonth) { // month
                         if ($val["dateid"] <= $dateid) {
                             $msg .= " " . $val["dateid"] . ', ';
@@ -356,15 +356,12 @@ class ttc
                     } else {
 
                         if ($config['params']['companyid'] != 58) { //not cdo
-                            $firsttdate = new DateTime(date_format(date_create($val["dateid"]), "Y-m-01"));
-
+                            $firsttdate = new DateTime(date_format(date_create($val["dateid"]), "Y-m-01")); // first date of the month of the dateid
                             $alloweditdate = $firsttdate->modify('-10 days');
-                            if ($dateid < $alloweditdate) {
-                                $update = false;
+                            if ($dateid < $alloweditdate) { //allow pag mataas yung allow date
                                 if (($valmonth - $curmonth) > 1) {
+                                    $update = false;
                                     $msg2 .= " " . date('F', strtotime($val["dateid"])) . ', ';
-                                } else {
-                                    $msg3 .= " " . $firsttdate . ', ';
                                 }
                             }
                         }
@@ -394,11 +391,7 @@ class ttc
         if ($msg2 != '') {
             $msg5 =  "Can't edit schedule of month" . $msg2;
         }
-        $msg6 = '';
-        if ($msg3 != '') {
-            $msg6 =  "Can't edit less than 10 days before cutoff" . $msg3;
-        }
-        return ['status' => $update, 'msg' => $msg4 . $msg5 . $msg6];
+        return ['status' => $update, 'msg' => $msg4 . $msg5];
     }
     public function stockstatus($config)
     {

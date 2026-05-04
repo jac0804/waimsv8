@@ -283,25 +283,19 @@ class aj
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'post', 'unpost', 'lock', 'unlock', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown', 'help', 'others');
+
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
+
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'cswhname', 'dateid', 'yourref', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'cswhname', 'dateid', 'yourref', 'csrem', 'btnsave']);
@@ -413,7 +407,7 @@ class aj
         $lot = 28;
         $amenityname = 29;
         $subamenityname = 30;
-        array_push($column, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
+        array_push($columns, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         array_push($sortcolumn, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         break;
     }
@@ -469,17 +463,35 @@ class aj
           default: //main
             array_push($stockbuttons, 'stockinfo');
             break;
-          
         }
         break;
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
+
     if ($viewcost == '0') {
-      $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+      if($companyid == 50){
+        if (!$access['changeamt']) {
+          $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+        }else{
+          $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+        }
+      }else{
+        $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+      }
+      
     }
 
     switch ($companyid) {
@@ -1048,11 +1060,14 @@ class aj
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
-      $checkacct = $this->othersClass->checkcoaacct(['IN1', 'IS1']);
+      if($companyid != 10){
+        $checkacct = $this->othersClass->checkcoaacct(['IN1', 'IS1']);
 
-      if ($checkacct != '') {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
+        if ($checkacct != '') {
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
+        }
       }
+      
 
       $stock = $this->openstock($trno, $config);
       $checkcosting = $this->othersClass->checkcosting($stock);
@@ -1902,7 +1917,7 @@ class aj
     $trno = $config['params']['trno'];
     $defuominout = $this->companysetup->getisdefaultuominout($config['params']);
     $data = [];
-    $companyid =$config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $filter = '';
     switch ($config['params']['companyid']) {
@@ -1913,7 +1928,7 @@ class aj
     }
 
     if ($defuominout) {
-      $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from(select head.docno,head.dateid,
+      $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from (select head.docno,head.dateid,
           stock.cost as amt,stock.uom,stock.disc
           from lahead as head
           left join lastock as stock on stock.trno = head.trno
@@ -1937,7 +1952,7 @@ class aj
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
       $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
     } else {
-      if($companyid == 60){//transpower
+      if ($companyid == 60) { //transpower
         $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from(
         select '' as docno,now() as dateid,item.namt4 as amt,item.uom,'' as disc from item
         where item.barcode =? 
@@ -1964,8 +1979,8 @@ class aj
           and item.barcode = ? 
           and stock." . $this->damt . " <> 0 and cntnum.trno <>?
           order by dateid desc limit 5) as tbl ";
-          $data = $this->coreFunctions->opentable($qry, [$barcode,$center, $barcode, $trno, $center, $barcode, $trno]);
-      }else{
+        $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $trno, $center, $barcode, $trno]);
+      } else {
         $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from(select head.docno,head.dateid,
         (stock.rrcost*if(head.forex=0,1,head.forex)) as amt,stock.uom,stock.disc
         from lahead as head
@@ -1990,7 +2005,6 @@ class aj
         order by dateid desc limit 5) as tbl order by dateid desc limit 1";
         $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
       }
-      
     }
 
 
@@ -2034,32 +2048,32 @@ class aj
       } else {
         if ($this->companysetup->getisuomamt($config['params'])) {
           $data[0]->docno = 'UOM';
-          if($companyid != 50){
+          if ($companyid != 50) {
             $data[0]->amt = $this->coreFunctions->datareader("select ifnull(uom.amt,0) as value from item left join uom on uom.itemid=item.itemid and uom.uom=item.uom where item.barcode=?", [$barcode]);
           }
         }
       }
-    }else{
+    } else {
       if ($this->companysetup->getisdefaultuominout($config['params'])) {
         $this->coreFunctions->LogConsole("test 1");
         $data[0]['docno'] = 'UOM';
-        
+
         $defuom = $this->coreFunctions->datareader("select ifnull(uom.uom,'') as value from item left join uom on uom.itemid=item.itemid and uom.isdefault = 1 where item.barcode=?", [$barcode]);
-        $this->coreFunctions->LogConsole('Def('. $barcode.')' . $defuom);
+        $this->coreFunctions->LogConsole('Def(' . $barcode . ')' . $defuom);
         if ($defuom != "") {
           $data[0]['uom'] = $defuom;
-          $data[0]['amt'] =0;
+          $data[0]['amt'] = 0;
         }
       } else {
         if ($this->companysetup->getisuomamt($config['params'])) {
-           $data[0]['docno'] = 'UOM';
-           if($companyid != 50){
+          $data[0]['docno'] = 'UOM';
+          if ($companyid != 50) {
             $data[0]['amt'] = $this->coreFunctions->datareader("select ifnull(uom.amt,0) as value from item left join uom on uom.itemid=item.itemid and uom.uom=item.uom where item.barcode=?", [$barcode]);
-           }
+          }
         }
       }
     }
-    
+
 
     if (!empty($data)) {
       return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data];
@@ -2414,9 +2428,14 @@ class aj
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

@@ -42,7 +42,20 @@ class pd
   public $htablelogs = 'htransnum_log';
   private $stockselect;
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'yourref', 'ourref', 'rem', 'itemid', 'qty', 'uom', 'pitrno', 'sotrno', 'soline', 'wh'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'yourref',
+    'ourref',
+    'rem',
+    'itemid',
+    'qty',
+    'uom',
+    'pitrno',
+    'sotrno',
+    'soline',
+    'wh'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -133,7 +146,7 @@ class pd
     $condition = '';
     $searchfilter = $config['params']['search'];
     $limit = "limit 150";
-   
+
     $filtersearch = "";
     if (isset($config['params']['search'])) {
       $searchfield = ['head.docno', 'head.clientname', 'head.createby', 'head.editby', 'head.viewby', 'num.postedby', 'head.yourref', 'head.ourref', 'item.itemname'];
@@ -195,10 +208,10 @@ class pd
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -359,8 +372,15 @@ class pd
       $hidetabbtn = ['btndeleteallitem' => false];
       $clickobj = ['button.btnadditem'];
       return  [
-        'head' => $head, 'griddata' => ['inventory' => []], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => []],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;

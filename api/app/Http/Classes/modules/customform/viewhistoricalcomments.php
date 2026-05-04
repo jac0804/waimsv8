@@ -219,7 +219,7 @@ class viewhistoricalcomments
 
       case 'update':
         $updatedrem = $config['params']['dataparams']['rem'];
-        $useridd = $config['params']['dataparams']['userid'];
+        $useridd = isset($config['params']['dataparams']['userid']) ? $config['params']['dataparams']['userid'] : 0;
 
         if ($updatedrem != '') { //check comment if not empty
           $createby = $config['params']['user'];
@@ -304,11 +304,13 @@ class viewhistoricalcomments
 
             $lines2 = $this->coreFunctions->opentable($qry1);
             if (!empty($lines2)) {
-              $this->othersClass->insertUpdatePendingapp($trno, $lines2[0]->line, 'TM', $data2, $url, $config, $idhere, false, true); //insert sa pendingapp
-              $stat = $this->coreFunctions->sbcupdate('pendingapp', ['approver' => 'COMMENT'], ['trno' => $trno, 'line' => $lines2[0]->line]);
-              $config['params']['doc'] = 'ENTRYTASK';
-              $task = $this->coreFunctions->getfieldvalue('tmdetail', "title", "trno=? and line=?", [$trno, $line]); //assigned
-              $this->logger->sbcmasterlog($trno, $config, 'CREATE - Comment: ' . $lines2[0]->rem . ' for Task: ' . $task . ' on Line: ' . $line);
+              if ($idhere != 0) {
+                $this->othersClass->insertUpdatePendingapp($trno, $lines2[0]->line, 'TM', $data2, $url, $config, $idhere, false, true); //insert sa pendingapp
+                $stat = $this->coreFunctions->sbcupdate('pendingapp', ['approver' => 'COMMENT'], ['trno' => $trno, 'line' => $lines2[0]->line]);
+                $config['params']['doc'] = 'ENTRYTASK';
+                $task = $this->coreFunctions->getfieldvalue('tmdetail', "title", "trno=? and line=?", [$trno, $line]); //assigned
+                $this->logger->sbcmasterlog($trno, $config, 'CREATE - Comment: ' . $lines2[0]->rem . ' for Task: ' . $task . ' on Line: ' . $line);
+              }
             }
           }
 

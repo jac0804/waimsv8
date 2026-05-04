@@ -66,7 +66,7 @@ class viewitemstockinfo
 
     if ($config['params']['companyid'] == 60) { //transpower
       if ($config['params']['doc'] == "SJ" || $config['params']['doc'] == "SO" || $config['params']['doc'] == "RR" || $config['params']['doc'] == "DM" || $config['params']['doc'] == "PO") {
-        $column = [  'action','barcode', 'itemname', 'isamt',  'disc','agentamt', 'namt5', 'namt7',  'amt2','disc2', 'namt2', 'amt4','disc4','namt4' ];
+        $column = ['action', 'barcode', 'itemname', 'isamt',  'disc', 'agentamt', 'namt5', 'amt7', 'disc7', 'namt7',  'amt2', 'disc2', 'namt2', 'amt4', 'disc4', 'namt4'];
       }
     }
 
@@ -136,6 +136,15 @@ class viewitemstockinfo
       $obj[0][$this->gridname]['columns'][$disc]['type'] = "label";
       $obj[0][$this->gridname]['columns'][$disc2]['type'] = "label";
       $obj[0][$this->gridname]['columns'][$namt2]['type'] = "label";
+
+
+      $obj[0][$this->gridname]['columns'][$amt7]['type'] = "label";
+      $obj[0][$this->gridname]['columns'][$amt7]['label'] = "DR Price";
+
+      $obj[0][$this->gridname]['columns'][$amt7]['style'] = "width:70px;whiteSpace: normal;min-width:70px;  text-align:right;";
+
+      $obj[0][$this->gridname]['columns'][$disc7]['type'] = "label";
+      $obj[0][$this->gridname]['columns'][$disc7]['style'] = "width:70px;whiteSpace: normal;min-width:70px;  text-align:right;";
 
       if ($allowview) {
         $obj[0][$this->gridname]['columns'][$amt4]['type'] = "label";
@@ -265,7 +274,7 @@ class viewitemstockinfo
             $addf = ",s.disc,format(item.namt7,2) as namt7,format(item.namt5,2) as namt5,
             format(item.amt2,2) as amt2,item.disc2,format(item.namt2,2) as namt2,
             format(item.amt,2) as amt ,
-            format(item.amt4,2) as amt4, item.disc4,format(item.namt4,2) as namt4 $amtfield";
+            format(item.amt4,2) as amt4, item.disc4,format(item.namt4,2) as namt4, format(item.amt7,2) as amt7,item.disc7 $amtfield";
           }
           if ($config['params']['doc'] == "SO" || $config['params']['doc'] == "PO") {
             $filter = '';

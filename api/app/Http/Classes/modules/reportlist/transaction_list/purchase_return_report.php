@@ -250,13 +250,14 @@ class purchase_return_report
             $query = "select * from (select docno, dateid, supplier, wh, clientname as whname, ext as amount, hrem, deptcode, deptname, prdoc, ctrlno, ifnull(bal,0) as balance,
               (case when bal = 0 then 'CLOSED' else 'OPEN' end) as status
               from (select head.docno, head.clientname as supplier, sum(stock.ext) as ext, wh.clientname, left(head.dateid,10) as dateid,
-              wh.client as wh, head.rem as hrem,dept.client as deptcode, dept.clientname as deptname,pr.docno as prdoc, prinfo.ctrlno, sum(stock.ext) as bal
+              wh.client as wh, head.rem as hrem,dept.client as deptcode, dept.clientname as deptname,pr.docno as prdoc, prinfo.ctrlno, ap.bal
               from glstock as stock left join glhead as head on head.trno=stock.trno left join item on item.itemid=stock.itemid
               left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid
               left join client as supp on supp.clientid=head.clientid left join client as dept on dept.clientid = head.deptid
               left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline left join hprhead as pr on pr.trno=prinfo.trno
+              left join apledger as ap on ap.trno = head.trno
               where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
-              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno
+              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno,ap.bal
               ) as a 
               ) as x
               where $statusFilter1
@@ -267,13 +268,12 @@ class purchase_return_report
             $query = "select * from (select docno, dateid, supplier, wh, clientname as whname, ext as amount, hrem, deptcode, deptname, prdoc, ctrlno, ifnull(bal,0) as balance,
               (case when bal = 0 then 'CLOSED' else 'OPEN' end) as status
               from (select head.docno, head.clientname as supplier, sum(stock.ext) as ext, wh.clientname, left(head.dateid,10) as dateid, wh.client as wh, head.rem as hrem,
-              dept.client as deptcode, dept.clientname as deptname, pr.docno as prdoc, prinfo.ctrlno, ap.bal as bal
+              dept.client as deptcode, dept.clientname as deptname, pr.docno as prdoc, prinfo.ctrlno, sum(stock.ext) as bal
               from lastock as stock left join lahead as head on head.trno=stock.trno left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid
               left join client as supp on supp.client = head.client left join item on item.itemid=stock.itemid left join client as dept on dept.clientid = head.deptid
               left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline left join hprhead as pr on pr.trno=prinfo.trno
-              left join apledger as ap on ap.trno = head.trno
               where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
-              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno,bal
+              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno
               ) as a 
               ) as x
               where $statusFilter1
@@ -284,22 +284,22 @@ class purchase_return_report
             $query = "select * from (select docno, dateid, supplier, wh, clientname as whname, ext as amount, hrem, deptcode, deptname, prdoc, ctrlno, ifnull(bal,0) as balance,
               (case when bal = 0 then 'CLOSED' else 'OPEN' end) as status
               from (select head.docno, head.clientname as supplier, sum(stock.ext) as ext, wh.clientname, left(head.dateid,10) as dateid,
-              wh.client as wh, head.rem as hrem,dept.client as deptcode, dept.clientname as deptname,pr.docno as prdoc, prinfo.ctrlno, sum(stock.ext) as bal
+              wh.client as wh, head.rem as hrem,dept.client as deptcode, dept.clientname as deptname,pr.docno as prdoc, prinfo.ctrlno, ap.bal
               from glstock as stock left join glhead as head on head.trno=stock.trno left join item on item.itemid=stock.itemid
               left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid
               left join client as supp on supp.clientid=head.clientid left join client as dept on dept.clientid = head.deptid
               left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline left join hprhead as pr on pr.trno=prinfo.trno
+              left join apledger as ap on ap.trno = head.trno
               where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
-              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno
+              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno,ap.bal
               union all
               select head.docno, head.clientname as supplier, sum(stock.ext) as ext, wh.clientname, left(head.dateid,10) as dateid, wh.client as wh, head.rem as hrem,
-              dept.client as deptcode, dept.clientname as deptname, pr.docno as prdoc, prinfo.ctrlno, ap.bal as bal
+              dept.client as deptcode, dept.clientname as deptname, pr.docno as prdoc, prinfo.ctrlno, sum(stock.ext) as bal
               from lastock as stock left join lahead as head on head.trno=stock.trno left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid
               left join client as supp on supp.client = head.client left join item on item.itemid=stock.itemid left join client as dept on dept.clientid = head.deptid
               left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline left join hprhead as pr on pr.trno=prinfo.trno
-              left join apledger as ap on ap.trno = head.trno
               where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
-              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno,bal
+              group by head.docno, head.clientname, wh.clientname, head.dateid, wh.client, head.rem, dept.client, dept.clientname, pr.docno, prinfo.ctrlno
               ) as a
               ) as x
               where $statusFilter1
@@ -315,11 +315,12 @@ class purchase_return_report
             $query = "select * from (select head.docno, head.clientname as supplier " . $barcodeitemnamefield . ", stock.uom, stock.rrqty, 
             stock.rrcost, stock.disc, stock.ext, wh.clientname, head.createby, stock.expiry, stock.loc,
             stock.rem, head.dateid, stock.ref, dept.client as deptcode, dept.clientname as deptname, stock.isqty, 
-            stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno, 'OPEN' as status
+            stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno, case ap.bal when 0 then 'CLOSED' else 'OPEN' end as status
             from glstock as stock left join glhead as head on head.trno=stock.trno left join item on item.itemid=stock.itemid 
             left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid 
             left join client as supp on supp.clientid=head.clientid left join client as dept on dept.clientid = head.deptid
             left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline 
+            left join apledger as ap on ap.trno = head.trno
             left join hprhead as pr on pr.trno=prinfo.trno " . $addjoin . "
             where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
             ) as x
@@ -333,13 +334,12 @@ class purchase_return_report
             stock.rrcost, stock.disc, stock.ext, wh.clientname, head.createby, stock.expiry, stock.loc,
             stock.rem, head.dateid, stock.ref, dept.client as deptcode, dept.clientname as deptname, stock.isqty, 
             stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno,
-            (case when ap.bal = 0 then 'CLOSED' else 'OPEN' end) as status
+            'OPEN' as status
             from lastock as stock left join lahead as head on head.trno=stock.trno left join cntnum on cntnum.trno=head.trno 
             left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid 
             left join client as supp on supp.client = head.client left join client as dept on dept.clientid = head.deptid
             left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline 
-            left join hprhead as pr on pr.trno=prinfo.trno
-            left join apledger as ap on ap.trno = head.trno " . $addjoin . "
+            left join hprhead as pr on pr.trno=prinfo.trno " . $addjoin . "
             where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
             ) as x
             where $statusFilter1
@@ -351,7 +351,7 @@ class purchase_return_report
             $query = "select * from (select head.docno, head.clientname as supplier " . $barcodeitemnamefield . ", stock.uom, stock.rrqty, 
             stock.rrcost, stock.disc, stock.ext, wh.clientname, head.createby, stock.expiry, stock.loc,
             stock.rem, head.dateid, stock.ref, dept.client as deptcode, dept.clientname as deptname, stock.isqty, 
-            stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno, 'OPEN' as status
+            stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno,(case when ap.bal = 0 then 'CLOSED' else 'OPEN' end) as status
             from glstock as stock left join glhead as head on head.trno=stock.trno left join item on item.itemid=stock.itemid 
             left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid 
             left join client as supp on supp.clientid=head.clientid left join client as dept on dept.clientid = head.deptid
@@ -363,7 +363,7 @@ class purchase_return_report
             stock.rrcost, stock.disc, stock.ext, wh.clientname, head.createby, stock.expiry, stock.loc,
             stock.rem, head.dateid, stock.ref, dept.client as deptcode, dept.clientname as deptname, stock.isqty, 
             stock.iss, stock.isamt, stock.amt, pr.docno as prdoc, prinfo.ctrlno,
-            (case when ap.bal = 0 then 'CLOSED' else 'OPEN' end) as status
+            'OPEN' as status
             from lastock as stock left join lahead as head on head.trno=stock.trno left join cntnum on cntnum.trno=head.trno 
             left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid 
             left join client as supp on supp.client = head.client left join client as dept on dept.clientid = head.deptid

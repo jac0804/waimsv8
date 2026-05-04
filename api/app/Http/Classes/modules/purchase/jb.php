@@ -44,9 +44,32 @@ class jb
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms',
-    'forex', 'cur', 'wh', 'address', 'projectid', 'subproject', 'branch', 'deptid', 'shipid', 'billid', 'shipcontactid',
-    'billcontactid', 'vattype', 'tax', 'whreceiver', 'insurance'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'branch',
+    'deptid',
+    'shipid',
+    'billid',
+    'shipcontactid',
+    'billcontactid',
+    'vattype',
+    'tax',
+    'whreceiver',
+    'insurance'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -282,10 +305,10 @@ class jb
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -362,18 +385,47 @@ class jb
     $stock_projectname = 15;
 
     $column = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname', 'qa',
-      'ref', 'poref', 'void', 'itemname', 'barcode', 'stock_projectname'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'qa',
+      'ref',
+      'poref',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname'
     ];
 
     $sortcolumn = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname', 'qa',
-      'ref', 'poref', 'void', 'itemname', 'barcode', 'stock_projectname'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'qa',
+      'ref',
+      'poref',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname'
     ];
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => ['itemvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram']
       ]
@@ -620,8 +672,16 @@ class jb
       $hidetabbtn = ['btndeleteallitem' => false];
       $clickobj = ['button.btnadditem'];
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'hideobj' => $hideobj, 'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -1436,7 +1496,7 @@ class jb
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
 
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
@@ -1720,7 +1780,7 @@ class jb
             } else {
               $config['params']['data']['amt'] = $data[$key2]->tpphp;
             }
-          }else{
+          } else {
             $config['params']['data']['amt'] = $data[$key2]->isamt;
           }
           $return = $this->additem('insert', $config);
@@ -1791,7 +1851,7 @@ class jb
             } else {
               $config['params']['data']['amt'] = $data[$key2]->tpphp;
             }
-          }else{
+          } else {
             $config['params']['data']['amt'] = $data[$key2]->isamt;
           }
           $return = $this->additem('insert', $config);

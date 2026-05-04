@@ -109,14 +109,16 @@ class ear
 
         if (isset($config['params']['search'])) {
             $search = $config['params']['search'];
-            foreach ($searcfield as $key => $sfield) {
-                if ($filtersearch == "") {
-                    $filtersearch .= " and (" . $sfield . " like '%" . $search . "%'";
-                } else {
-                    $filtersearch .= " or " . $sfield . " like '%" . $search . "%'";
-                } //end if
+            if ($search != "") {
+                foreach ($searcfield as $key => $sfield) {
+                    if ($filtersearch == "") {
+                        $filtersearch .= " and (" . $sfield . " like '%" . $search . "%'";
+                    } else {
+                        $filtersearch .= " or " . $sfield . " like '%" . $search . "%'";
+                    } //end if
+                }
+                $filtersearch .= ")";
             }
-            $filtersearch .= ")";
         }
         $filterdoc = '';
         $tracking = " ";
@@ -166,7 +168,7 @@ class ear
 
         $qry = "select * from (
         
-        select date(allapp.createdate) as dateid,
+        select allapp.line,date(allapp.createdate) as dateid,
         
         concat(
           IF(allapp.dateid is not null, concat('In - ', allapp.dateid), ''),
@@ -176,22 +178,23 @@ class ear
         
         , if(allapp.islatefilling=1,'Late Filling','') as ref,'' as tothrs,ifnull(allapp.dateid,allapp.dateid2) as sortdate,
         case
-        when allapp.status = 'E' and allapp.status2 = 'A' then 'FOR APPROVAL'
+        when (allapp.status = 'E' or allapp.status = '') and allapp.status2 = 'A' then 'FOR APPROVAL'
         when allapp.status = 'E' then 'ENTRY'
         when allapp.status = 'A' then 'APPROVED'
         else 'DISAPPROVED' end as jstatus,
         case
-        when allapp.status2 = 'E' and allapp.submitdate is null then 'ENTRY' 
+        when (allapp.status2 = 'E' or allapp.status2 = '') and allapp.submitdate is null then 'ENTRY' 
         when allapp.status2 = 'E' and allapp.submitdate is not null then 'FOR APPROVAL'
         when allapp.status2 = 'A' then 'APPROVED'
          else 'DISAPPROVED' end as status2,
         cl.clientname,allapp.rem as remarks,'Tracking Application' as title,ifnull(allapp.approvedate,allapp.disapprovedate) as approvedate,
-        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved from obapplication as allapp
+        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved,'false' as isapp
+        from obapplication as allapp
         join client as cl on cl.clientid = allapp.empid $joins
         where (date(allapp.dateid) between '$date1' and '$date2' or date(allapp.dateid2) between '$date1' and '$date2' and batchob <> 0) $addsvfliter $tracking 
 
         union all 
-        select date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,allapp.othrs as tothrs,allapp.dateid as sortdate,
+        select allapp.line,date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,if(allapp.apothrs <> 0,allapp.apothrs,allapp.othrs) as tothrs,allapp.dateid as sortdate,
         case
         when allapp.otstatus = '1' and allapp.otstatus2 = '2' then 'FOR APPROVAL'
         when allapp.otstatus = '1' then 'ENTRY'
@@ -203,13 +206,18 @@ class ear
         when allapp.otstatus2 = '2' then 'APPROVED'
         else 'DISAPPROVED' end as status2,
         cl.clientname,allapp.rem as remarks,'OT Application' as title,ifnull(allapp.approvedate,allapp.disapprovedate) as approvedate,
-        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved from otapplication as allapp
+        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved,'false' as isapp 
+        from otapplication as allapp
         join client as cl on cl.clientid = allapp.empid $joins
         where date(allapp.dateid) between '$date1' and '$date2' $addsvfliter $otapp
         
 
         union all 
-        select date(allapp.createdate) as dateid,allapp.dateid as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
+        select allapp.line,date(allapp.createdate) as dateid,concat(
+          IF(allapp.dateid is not null, concat('In - ', allapp.dateid), ''),
+          IF(allapp.dateid is not null AND allapp.dateid2 is not null, ' ', ''),
+          IF(allapp.dateid2 is not null, concat('Out - ', allapp.dateid2), '')
+        ) as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
         case
         when allapp.status = 'E' and allapp.status2 = 'A' then 'FOR APPROVAL'
         when allapp.status = 'E' then 'ENTRY'
@@ -222,13 +230,14 @@ class ear
         else 'DISAPPROVED' end as status2,
 
         cl.clientname,allapp.rem as remarks,'Undertime Application' as title,ifnull(allapp.approvedate,allapp.disapprovedate) as approvedate,
-        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved from undertime as allapp
+        ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved,'false' as isapp 
+        from undertime as allapp
         join client as cl on cl.clientid = allapp.empid $joins
         where date(allapp.dateid) between '$date1' and '$date2' $addsvfliter $undertime
         
 
         union all
-        select date(allapp.dateid) as dateid,date(allapp.effectivity) as scheddate,st.docno as ref,
+        select allapp.trno as line,date(allapp.dateid) as dateid,date(allapp.effectivity) as scheddate,st.docno as ref,
         case when allapp.adays = 1 then 'Whole Day'
         else 'Half Day' end as tothrs,allapp.effectivity as sortdate,
         case
@@ -241,14 +250,15 @@ class ear
         when allapp.status2 = 'A' then 'APPROVED'
         else 'DISAPPROVED' end as status2,
         cl.clientname,allapp.remarks,'Leave Application' as title,allapp.date_approved_disapproved as approvedate,
-        date_approved_disapproved2 as date_approved_disapproved from leavetrans as allapp
+        date_approved_disapproved2 as date_approved_disapproved,'true' as isapp
+        from leavetrans as allapp
         join client as cl on cl.clientid = allapp.empid
         left join leavesetup as st on st.trno = allapp.trno $joins
         where date(allapp.effectivity) between '$date1' and '$date2' $addsvfliter $leave
         
 
         union all
-        select date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
+        select allapp.line,date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
         case
         when allapp.status = '0' and allapp.status2 = '1' then 'FOR APPROVAL'
         when allapp.status = '0' then 'ENTRY'
@@ -261,13 +271,14 @@ class ear
         else 'DISAPPROVED' end as status2,
         
         cl.clientname,allapp.rem as remarks,'Restday Application' as title,ifnull(allapp.approveddate,disapproveddate) as approvedate,
-        ifnull(allapp.approveddate2,disapproveddate2) as date_approved_disapproved  from changeshiftapp as allapp
+        ifnull(allapp.approveddate2,disapproveddate2) as date_approved_disapproved,'false' as isapp 
+        from changeshiftapp as allapp
         join client as cl on cl.clientid = allapp.empid  $joins
-        where date(allapp.dateid) between '$date1' and '$date2' $addsvfliter $restday
+        where allapp.isrestday = 1 and date(allapp.dateid) between '$date1' and '$date2' $addsvfliter $restday
         
 
         union all
-        select date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
+        select allapp.line,date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,'' as tothrs,allapp.dateid as sortdate,
         case
         when allapp.status = '0' and allapp.status2 = '1' then 'FOR APPROVAL'
         when allapp.status = '0' then 'ENTRY'
@@ -278,14 +289,15 @@ class ear
         when allapp.status2 = '0' and  allapp.submitdate is not null then 'FOR APPROVAL' 
         when allapp.status2 = '1' then 'APPROVED'
         else 'DISAPPROVED' end as status2,
-        cl.clientname,allapp.rem as remarks,' Working On Rest Day Application' as title,ifnull(allapp.approveddate,disapproveddate) as approvedate,
-        ifnull(allapp.approveddate2,disapproveddate2) as date_approved_disapproved from changeshiftapp as allapp
+        cl.clientname,allapp.rem as remarks,'Working On Rest Day Application' as title,ifnull(allapp.approveddate,disapproveddate) as approvedate,
+        ifnull(allapp.approveddate2,disapproveddate2) as date_approved_disapproved,'false' as isapp
+        from changeshiftapp as allapp
         join client as cl on cl.clientid = allapp.empid $joins
-        where date(allapp.dateid) between '$date1' and '$date2'  $addsvfliter $word
+        where allapp.isword = 1 and date(allapp.dateid) between '$date1' and '$date2'  $addsvfliter $word
         
 
         union all
-        select date(allapp.dateid) as dateid,date(allapp.effdate) as scheddate,allapp.docno as ref,'' as tothrs,allapp.effdate as sortdate,
+        select allapp.trno as line,date(allapp.dateid) as dateid,date(allapp.effdate) as scheddate,allapp.docno as ref,'' as tothrs,allapp.effdate as sortdate,
         case
         when allapp.status = 'E' and allapp.status2 = 'A' then 'FOR APPROVAL'
         when allapp.status = 'E' then 'ENTRY'
@@ -297,13 +309,14 @@ class ear
         when allapp.status2 = 'A' then 'APPROVED'
         else 'DISAPPROVED' end as status2,
         cl.clientname,allapp.remarks,'Loan Application' as title,allapp.date_approved_disapproved as approvedate,
-        date_approved_disapproved2 as date_approved_disapproved from loanapplication as allapp
+        date_approved_disapproved2 as date_approved_disapproved,'true' as isapp
+        from loanapplication as allapp
         join client as cl on cl.clientid = allapp.empid $joins
         where date(allapp.effdate) between '$date1' and '$date2' $addsvfliter $loan
         
 
         union all
-        select allapp.dateid,
+        select allapp.trno as line,allapp.dateid,
         concat(
           IF(date(allapp.startdate) is not null, concat('Start Date - ', date(allapp.startdate)), ''),
           IF(date(allapp.startdate) is not null and date(allapp.enddate) is not null, ' ', ''),
@@ -319,7 +332,8 @@ class ear
         when allapp.status2 = 'E' and  allapp.submitdate is not null then 'FOR APPROVAL'
         when allapp.status2 = 'A' then 'APPROVED'
         else 'DISAPPROVED' end as status2,cl.clientname,allapp.remarks,'Travel Application' as title,
-        ifnull(allapp.approvedate,disapprovedate) as approvedate,ifnull(allapp.approvedate2,disapprovedate2) as date_approved_disapproved
+        ifnull(allapp.approvedate,disapprovedate) as approvedate,ifnull(allapp.approvedate2,disapprovedate2) as date_approved_disapproved,
+        'false' as isapp
 		FROM itinerary as allapp
 	    join client as cl on cl.clientid = allapp.empid
         where date(startdate) between '$date1' and '$date2' $addsvfliter $travel
@@ -343,8 +357,8 @@ class ear
     public function createdoclisting($config)
     {
         // 'action', 
-        $getcols = ['title', 'scheddate', 'tothrs', 'listappstatus2', 'date_approved_disapproved', 'listappstatus', 'listapprovedate', 'listclientname', 'remarks', 'ref'];
-        $stockbuttons = [];
+        $getcols = ['action', 'title', 'scheddate', 'tothrs', 'listappstatus2', 'date_approved_disapproved', 'listappstatus', 'listapprovedate', 'listclientname', 'remarks', 'ref'];
+        $stockbuttons = ['viewear'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -369,6 +383,7 @@ class ear
         $cols[$date_approved_disapproved]['label'] = 'First Approved Date';
         $cols[$listapprovedate]['label'] = 'Last Approved Date';
         $cols[$listapprovedate]['style'] = 'width:130px;whiteSpace: normal;min-width:130px;';
+        $cols[$action]['btns']['viewear']['checkfield'] = "isapp";
 
         return $cols;
     }

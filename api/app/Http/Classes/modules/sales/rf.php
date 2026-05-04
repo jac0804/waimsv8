@@ -43,8 +43,27 @@ class rf
   public $damt = 'isamt';
   public $hamt = 'amt';
   public $fields = [
-    'trno', 'docno', 'client', 'clientname', 'empid', 'cperson',  'email', 'dateid', 'yourref',
-    'sotrno', 'tel',  'shipid', 'billid', 'shipcontactid', 'billcontactid', 'reason', 'recommend', 'others', 'rfnno', 'ourref', 'invoiceno'
+    'trno',
+    'docno',
+    'client',
+    'clientname',
+    'empid',
+    'cperson',
+    'email',
+    'dateid',
+    'yourref',
+    'sotrno',
+    'tel',
+    'shipid',
+    'billid',
+    'shipcontactid',
+    'billcontactid',
+    'reason',
+    'recommend',
+    'others',
+    'rfnno',
+    'ourref',
+    'invoiceno'
   ];
   public $except = ['trno', 'dateid'];
   public $showfilteroption = true;
@@ -263,10 +282,10 @@ class rf
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -363,8 +382,10 @@ class rf
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
-        'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'], 'headgridbtns' => $headgridbtns
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
+        'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
+        'headgridbtns' => $headgridbtns
       ],
     ];
 

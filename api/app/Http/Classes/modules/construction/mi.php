@@ -186,10 +186,10 @@ class mi
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -240,19 +240,11 @@ class mi
     $arrived_tab = $this->othersClass->checkAccess($config['params']['user'], 4491);
     $trip_approve = $this->othersClass->checkAccess($config['params']['user'], 4495);
 
-    $action = 0;
-    $isqty = 1;
-    $uom = 2;
-    $cost = 3;
-    $ext = 4;
-    $wh = 5;
-    $location = 6;
-    $expiry = 7;
-    $ref = 8;
-    $stage = 9;
-    $itemname = 10;
-    $barcode = 11;
     $column = ['action', 'isqty', 'uom', 'cost', 'isamt', 'ext', 'wh', 'loc', 'expiry', 'ref', 'stage', 'itemname', 'barcode'];
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
 
     $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram'];
     switch ($companyid) {
@@ -297,6 +289,9 @@ class mi
       case 20: //proline
       case 28: //xcomp
       case 39: //CBBSI
+        $obj[0]['inventory']['columns'][$stage]['type'] = 'coldel';
+        break;
+      case 65: //metro dragon - aims
         $obj[0]['inventory']['columns'][$stage]['type'] = 'coldel';
         break;
       default:
@@ -414,6 +409,10 @@ class mi
       if ($companyid == 43) { // mighty
         data_set($col1, 'client.label', 'Code');
       }
+      if ($companyid == 65) { // metro dragon - aims
+        data_set($col1, 'client.label', 'Department');
+        data_set($col1, 'client.lookupclass', 'replookupdepartment');
+      }
       data_set($col1, 'client.readonly', true);
       data_set($col1, 'dwhname.required', true);
       //col2
@@ -430,6 +429,9 @@ class mi
         data_set($col2, 'empname.action', 'lookupclient');
         data_set($col2, 'empname.type', 'lookup');
         data_set($col2, 'empname.label', 'Driver/Operator');
+      }
+      if ($companyid == 65) { // metro dragon - aims
+        data_set($col2, 'dprojectname.label', 'Route');
       }
     }
 

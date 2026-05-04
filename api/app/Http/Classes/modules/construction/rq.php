@@ -166,10 +166,10 @@ class rq
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -230,7 +230,20 @@ class rq
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'rqty', 'rrqty', 'uom', 'rrcost', 'ext', 'qa', 'rem', 'void', 'stage', 'ref', 'loc', 'itemname', 'barcode'
+          'action',
+          'rqty',
+          'rrqty',
+          'uom',
+          'rrcost',
+          'ext',
+          'qa',
+          'rem',
+          'void',
+          'stage',
+          'ref',
+          'loc',
+          'itemname',
+          'barcode'
         ],
         'computefield' => ['dqty' => 'rqty', 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns

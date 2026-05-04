@@ -402,7 +402,7 @@ class rr
       $itemname = $data[$i]['itemname'];
       $qty = number_format($data[$i]['qty'], 2);
       $uom = $data[$i]['uom'];
-      $amt = number_format($data[$i]['netamt'], 2);
+      $amt = number_format($data[$i]['gross'], 2);
       $disc = $data[$i]['disc'];
       $ext = number_format($data[$i]['ext'], 2);
 

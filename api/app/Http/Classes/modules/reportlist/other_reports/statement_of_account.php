@@ -252,6 +252,12 @@ class statement_of_account
             break;
         }
         break;
+        case 52: //technolab
+          switch ($config['params']['dataparams']['radiotechlabcomp']) {
+            case 'c0':
+            return $this->technolab_layout($config);
+              break;
+          }
       default:
         return $this->reportDefaultLayout($config);
         break;
@@ -2476,7 +2482,7 @@ class statement_of_account
     return $str;
   }
 
-  public function reportDefaultLayout($config)
+    public function reportDefaultLayout($config)
   {
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
@@ -2920,6 +2926,517 @@ class statement_of_account
           }
 
           $str .= $this->reporter->col(number_format($data->balance, 2), '100', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+
+          if ($data->debit != 0) {
+            $balance = $balance + $data->balance;
+          } else {
+            $balance = $balance - $data->balance;
+          }
+
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $page = $page + $count;
+        }
+      }
+
+      if ($customersub == '') {
+        $customersub = $data->clientname;
+      }
+    }
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, '1', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('TOTAL DUE : ', null, null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($balance, 2), null, null, false, '1.5px solid ', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', '', 'L', 'Courier New', '10', 'B');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('PLEASE DISREGARD STATEMENT', null, null, false, $border, 'LTR', 'C', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    //$txt='',$w=null,$h=null, $bg=false,  $b=false, $b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m=''
+    $str .= $this->reporter->col('IF ALREADY PAID', null, null, false, $border, 'LRB', 'C', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Important: This statement is presumed correct unless otherwise notified within fifteen (15) days of receipt', null, '50px', false, $border, 'LR', 'C', $font, '10', 'BI', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('<br>', null, null, false, $border, 'LRB', 'C', $font, '10', '', '', 'BI');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', '', 'L', $font, '10', '', 'B', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('CERTIFIED CORRECT:', null, null, false, '1px dotted ', '', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('RECEIVED BY:', null, null, false, '1px dotted ', '', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<br>' . $certifby, null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function technolab_layout($config)
+  {
+    $companyid = $config['params']['companyid'];
+    $result     = $this->reportDefault($config);
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $attention  = $config['params']['dataparams']['attention'];
+    $certifby   = $config['params']['dataparams']['certifby'];
+    $asof       = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
+
+    $count = 51;
+    $page = 50;
+    $this->reporter->linecounter = 0;
+    $str = '';
+    $font = "Century Gothic";
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport('1000');
+    $str .= $this->displayHeader($config);
+    $customer = '';
+    $customersub = '';
+    $balance = 0;
+    foreach ($result as $key => $data) {
+      if ($customer == '' || ($customer == $data->clientname && $data->clientname != '')) {
+        if ($customer != $data->clientname) {
+          $customer = $data->clientname;
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('CUSTOMER : ' . $data->clientname, '75px', null, false, $border, 'LTR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ADDRESS    : ' . $data->addr, null, null, false, $border, 'LR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ATTENTION : ' . $attention, null, null, false, $border, 'LRB', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DOCUMENT', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('', '250', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DOCUMENT', '270', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DATE', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('PO NO.#', '250', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('NO.', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DEBIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('CREDIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('BALANCE DUE', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col($data->docdate, '120', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->yourref, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->refno, '270', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          if ($data->debit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->debit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+          if ($data->credit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->credit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+          $str .= $this->reporter->col(number_format($data->balance, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          if ($data->debit != 0) {
+            $balance = $balance + $data->balance;
+          } else {
+            $balance = $balance - $data->balance;
+          }
+
+
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+        } elseif ($customer == $data->clientname) {
+          $customer = $data->clientname;
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          //($txt='',$w=null,$h=null, $bg=false,  $b=false, $b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+          $str .= $this->reporter->col($data->docdate, '120', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->yourref, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->refno, '270', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+
+          if ($data->debit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->debit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+
+          if ($data->credit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->credit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+          $str .= $this->reporter->col(number_format($data->balance, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+
+          if ($data->debit != 0) {
+            $balance = $balance + $data->balance;
+          } else {
+            $balance = $balance - $data->balance;
+          }
+
+
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+        } else {
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, $border, 'LR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+        }
+      } else {
+        $customer = $data->clientname;
+
+        if (($customersub != '' && $customersub != $customer) && $balance != 0) {
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, '1', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('TOTAL DUE : ', null, null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($balance, 2), null, null, false, '1.5px solid ', 'T', 'R', $font, $fontsize, 'B', '', '');
+
+          $customersub = $data->clientname;
+          $balance = 0;
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', '', 'L', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          if ($companyid != 52) { //not technolab
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('PLEASE DISREGARD STATEMENT', null, null, false, $border, 'LTR', 'C', $font, '10', 'B', '', '');
+            $str .= $this->reporter->endrow();
+
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('IF ALREADY PAID', null, null, false, $border, 'LRB', 'C', $font, '10', 'B', '', '');
+            $str .= $this->reporter->endrow();
+          } else {
+            $str .= $this->reporter->col('<br>', null, null, false, $border, 'TLR', 'C', $font, '10', '', '', 'BI');
+          }
+
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('Important: This statement is presumed correct unless otherwise notified within fifteen (15) days of receipt', null, '50px', false, $border, 'LR', 'C', $font, '10', 'BI', '', '');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+
+          $str .= $this->reporter->col('<br>', null, null, false, $border, 'LRB', 'C', $font, '10', '', '', 'BI');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', '', 'L', $font, '10', '', 'B', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('CERTIFIED CORRECT:', null, null, false, '1px dotted ', '', 'L', $font, '10', 'B', '', '');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('RECEIVED BY:', null, null, false, '1px dotted ', '', 'L', $font, '10', 'B', '', '');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>' . $certifby, null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', '', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->col('<br>', null, null, false, '1.5px solid ', 'B', 'L', $font, '10', '', '', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', '', 'L', $font, '10', '', 'B', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+        }
+        $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('<br>');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->addline();
+
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->page_break();
+          $str .= $this->displayHeader($config);
+
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('CUSTOMER : ' . $data->clientname, '75px', null, false, $border, 'LTR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ADDRESS    : ' . $data->addr, null, null, false, $border, 'LR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ATTENTION : ' . $attention, null, null, false, $border, 'LRB', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DOCUMENT', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('', '250', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DOCUMENT', '270', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DATE', '', '120', false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('PO NO.#', '250', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('NO.', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DEBIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('CREDIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('BALANCE DUE', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          //($txt='',$w=null,$h=null, $bg=false,  $b=false, $b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+          $str .= $this->reporter->col($data->docdate, '120', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->yourref, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->refno, '270', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+
+          if ($data->debit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->debit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+          if ($data->credit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->credit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+          $str .= $this->reporter->col(number_format($data->balance, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+
+          if ($data->debit != 0) {
+            $balance = $balance + $data->balance;
+          } else {
+            $balance = $balance - $data->balance;
+          }
+
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+          $page = $page + $count;
+        } else {
+          $str .= $this->reporter->page_break();
+
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br><br><br><br><br>', null, null, false, '2px solid ', '', 'L', $font, '10', '', 'B', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('For the Period Ending ' . date('M-d-Y', strtotime($asof)), null, null, false, $border, '', 'C', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br> ', null, null, false, $border, '', 'L', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('CUSTOMER : ' . $data->clientname, '75px', null, false, $border, 'LTR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ADDRESS    : ' . $data->addr, null, null, false, $border, 'LR', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('ATTENTION : ' . $attention, null, null, false, $border, 'LRB', 'L', $font, '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DOCUMENT', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('', '250', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DOCUMENT', '270', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('<br>', '120', null, false, $border, '', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('DATE', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('PO NO.#', '250', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('NO.', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('DEBIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('CREDIT', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('BALANCE DUE', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable('1000');
+          $str .= $this->reporter->startrow();
+          //($txt='',$w=null,$h=null, $bg=false,  $b=false, $b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+          $str .= $this->reporter->col($data->docdate, '120', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->yourref, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->refno, '270', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+
+          if ($data->debit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->debit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+          if ($data->credit == 0) {
+            $str .= $this->reporter->col('-', '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col(number_format($data->credit, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
+          }
+
+          $str .= $this->reporter->col(number_format($data->balance, 2), '120', null, false, $border, 'LTRB', 'R', $font, $fontsize, '', '', '');
 
           if ($data->debit != 0) {
             $balance = $balance + $data->balance;

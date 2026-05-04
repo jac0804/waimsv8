@@ -43,8 +43,24 @@ class sg
   public $damt = 'isamt';
   public $hamt = 'amt';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',
-    'wh', 'address', 'agent', 'creditinfo', 'deliverytype', 'partreqtypeid'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'agent',
+    'creditinfo',
+    'deliverytype',
+    'partreqtypeid'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -190,10 +206,10 @@ class sg
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -257,7 +273,23 @@ class sg
     $barcode = 16;
 
     $gridcolumn = [
-      'action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'rem', 'qa', 'void', 'itemname', 'partno', 'subcode', 'model', 'boxcount', 'rem', 'barcode'
+      'action',
+      'isqty',
+      'uom',
+      'isamt',
+      'disc',
+      'ext',
+      'wh',
+      'rem',
+      'qa',
+      'void',
+      'itemname',
+      'partno',
+      'subcode',
+      'model',
+      'boxcount',
+      'rem',
+      'barcode'
     ];
 
 

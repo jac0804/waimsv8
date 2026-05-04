@@ -95,7 +95,7 @@ class monthly_turnover_rate
     public function totalemp($config)
     {
         $year = $config['params']['dataparams']['year'];
-        $query = "select count(empid) as totalemp from employee where year(hired) <='" . $year . "'";
+        $query = "select count(empid) as totalemp from employee where year(hired) <'" . $year . "' ";
         return $this->coreFunctions->opentable($query);
     }
 
@@ -117,62 +117,22 @@ class monthly_turnover_rate
         $year = $config['params']['dataparams']['year'];
         // $query = "select count(clr.trno) as total, month(clr.dateid) as month from hclearance as clr where year(clr.dateid) <='" . $year . "'
         //           group by month(clr.dateid)";
-        $query = "select count(clr.empid) as total, month(clr.resigned) as month from employee as clr where year(clr.resigned) <='" . $year . "' group by month(clr.resigned)";
+        // $query = "select count(clr.empid) as total, month(clr.resigned) as month from employee as clr where year(clr.resigned) <='" . $year . "' group by month(clr.resigned)";
+
+        $query = "select count(clr.empid) as total, month(clr.hired) as month from employee as clr where year(clr.hired) ='" . $year . "' group by month(clr.hired)";
         return $this->coreFunctions->opentable($query);
     }
 
 
-
-    public function reportDefaultLayouts($config)
+    public function reportdefaultlayout($config)
     {
-        $result = $this->reportDefault($config);
-        $month = $this->month($config);
-
-
-        $border = '1px solid #C0C0C0 !important';
-        $font = 'Century Gothic';
-        $font_size = '10';
-        $count = 3;
-        $page = 3;
-        $str = '';
-
-        if (empty($result)) {
-            return $this->othersClass->emptydata($config);
-        }
-
-        $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
-        $str .= $this->displayHeader($config);
-
-        foreach ($result as $key => $data) {
-            $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
-
-            $str .= $this->reporter->col($month, '250', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', ''); // Array to string conversion
-
-            if ($this->reporter->linecounter == $page) {
-                $str .= $this->reporter->endtable();
-                $str .= $this->reporter->page_break();
-                $str .= $this->displayHeader($config);
-                $str .= $this->reporter->endrow();
-                $str .= $this->reporter->endtable();
-                $page = $page + $count;
-            }
-        }
-
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->endreport();
-        return $str;
-    }
-
-    public function reportDefaultLayout($config)
-    {
-        $result = $this->reportDefault($config);
+        $year = $config['params']['dataparams']['year'];
+        $result = $this->reportdefault($config); // hired per month
         $totalemployee = $this->totalemp($config);
         $month = $this->month($config);
 
-        $border = '1px solid #C0C0C0 !important';
-        $font = 'Century Gothic';
+        $border = '1px solid #c0c0c0 !important';
+        $font = 'century gothic';
         $font_size = '10';
         $str = '';
 
@@ -181,55 +141,112 @@ class monthly_turnover_rate
         }
 
         $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
-        $str .= $this->displayHeader($config);
+        $str .= $this->displayheader($config);
 
         $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->addline();
 
+        // total employee (all time)
+        $runningtotalemp  = $totalemployee[0]->totalemp;
 
-        //ang ginawa ko total na ng 2025 yung nilagay ko sa total employee tapos niminus ko na lang kada nagkakroon ng nagreresign sa bawat month
-        $runningTotalEmp  = $totalemployee[0]->totalemp;
-        foreach ($month as $index => $m) {
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($m, '250', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
-            // month number
-            $intmonth = $index + 1;
+        // previous separated (before selected year)
+        $query = "select count(empid) as totalemp 
+              from employee 
+              where resigned is not null 
+              and year(resigned) < '" . $year . "'";
+        $seperated = $this->coreFunctions->opentable($query);
+        $prevseparated = isset($seperated[0]->totalemp) ? $seperated[0]->totalemp : 0;
 
-            $totalseparated = 0;
-            foreach ($result as $tlseparated) {
-                if ($tlseparated->month == $intmonth) {
-                    $totalseparated = $tlseparated->total;
-                    break;
-                }
-            }
-            $totalremaining = $runningTotalEmp - $totalseparated;
-            if ($totalseparated != 0) {
-                $turnov = round(($totalseparated / $totalremaining) * 100, 2);
-                $turnover = $turnov . ' %';
-            } else {
-                $turnover = '';
-            }
-            $str .= $this->reporter->col($totalremaining, '250', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($totalseparated, '250', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($turnover, '250', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
+        // starting employee (beginning of year)
+        $runningtotalemp = $runningtotalemp - $prevseparated;
 
-            $str .= $this->reporter->endrow();
+        // separated per month
+        $query = "select month(resigned) as month, count(empid) as total
+              from employee
+              where resigned is not null
+              and year(resigned) = '" . $year . "'
+              group by month(resigned)";
+        $separatedmonthly = $this->coreFunctions->opentable($query);
 
-            $runningTotalEmp = $totalremaining;
+        $separatedmap = [];
+        foreach ($separatedmonthly as $row) {
+            $separatedmap[$row->month] = $row->total;
         }
 
 
-        $str .= $this->reporter->endrow();
+        $prevSeparated = 0;
+        $totalturnoverrate = 0;
+        $monthcount = 0;
+        foreach ($month as $index => $m) {
 
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($m, '250', null, false, $border, 'tlb', 'ct', $font, $font_size, '', '', '');
+            $intmonth = $index + 1;
 
+            // hired per month
+            $totalempno = 0;
+            foreach ($result as $cnumberofemployee) {
+                if ($cnumberofemployee->month == $intmonth) {
+                    $totalempno = $cnumberofemployee->total;
+                    break;
+                }
+            }
 
+            // separated this month
+            $totalseparated = isset($separatedmap[$intmonth]) ? $separatedmap[$intmonth] : 0;
+            $tlemployee = $runningtotalemp + $totalempno - $prevSeparated;
+
+            // turnover
+            if ($totalseparated != 0 && $tlemployee != 0) {
+                $turnov = round(($totalseparated / $tlemployee) * 100, 2);
+                $turnover = $turnov . ' %';
+                $totalturnoverrate += $turnov;
+                $monthcount += 1;
+            } else {
+                $turnover = '';
+            }
+
+            $str .= $this->reporter->col($tlemployee, '250', null, false, $border, 'tlb', 'ct', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($totalseparated, '250', null, false, $border, 'tlb', 'ct', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($turnover, '250', null, false, $border, 'tlb', 'ct', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+
+            //next loop
+            $prevSeparated = $totalseparated;
+            $runningtotalemp = $tlemployee;
+        }
+
+        $aveturnover = number_format($totalturnoverrate / $monthcount, 2);
+        $average = $aveturnover . ' %';
+        $totalturnoverrate = $totalturnoverrate . ' %';
         $str .= $this->reporter->endtable();
+
+        //Annual Turn Over = (total ng Turn Over Rate)
+        //Average Turn Over = (total ng Turn Over Rate / 12 months)
+        $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'ct', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'ct', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Annual Turn Over', '250', null, false, $border, '', 'ct', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($totalturnoverrate, '250', null, false, $border, '', 'ct', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+
+        $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'ct', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'ct', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Average Turn Over', '250', null, false, $border, '', 'ct', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($average, '250', null, false, $border, '', 'ct', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
         $str .= $this->reporter->endreport();
 
         return $str;
     }
-
 
     private function displayHeader($config)
     {

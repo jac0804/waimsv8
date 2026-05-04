@@ -44,8 +44,19 @@ class ec
   public $defaultContra = 'IS1';
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'curriculumcode', 'curriculumname', 'courseid', 'coursename',
-    'effectfromdate', 'effecttodate', 'levelid', 'syid', 'doc', 'ischinese'
+    'trno',
+    'docno',
+    'dateid',
+    'curriculumcode',
+    'curriculumname',
+    'courseid',
+    'coursename',
+    'effectfromdate',
+    'effecttodate',
+    'levelid',
+    'syid',
+    'doc',
+    'ischinese'
   ];
   private $except = ['trno'];
   private $acctg = [];
@@ -152,10 +163,10 @@ class ec
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -414,11 +425,11 @@ class ec
         return $this->getsubject($config);
         break;
       case 'saveperitem':
-        
+
         return $this->saveperitem($config);
         break;
       case 'saveitem': //save all item edited
-        
+
         return $this->saveitem($config);
         break;
       case 'deleteitem':
@@ -909,7 +920,7 @@ class ec
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data, $books);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
-  
+
   // public function reportsetup($config){
   //   $txtfield = $this->createreportfilter();
   //   $txtdata = $this->reportparamsdata($config);

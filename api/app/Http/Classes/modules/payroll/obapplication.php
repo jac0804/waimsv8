@@ -169,7 +169,7 @@ class obapplication
     }
 
 
-    $getcols = ['action', 'createdate', 'clientname', 'scheddate', 'dateid', 'dateid2', 'type', 'trackingtype', 'rem', 'listinitialstatus2', 'initial_date_approved2', 'approvedby_initial2', 'initialremarks2', 'listinitialstatus', 'initial_date_approved', 'approvedby_initial', 'initialremarks', 'listappstatus2', 'date_approved_disapprovedsup', 'approvedby_disapprovedbysup', 'rem2', 'listappstatus', 'date_approved_disapproved', 'approvedby_disapprovedby', 'remarks'];
+    $getcols = ['action', 'createdate', 'clientname', 'scheddate', 'dateid', 'type', 'trackingtype', 'rem', 'listinitialstatus2', 'initial_date_approved2', 'approvedby_initial2', 'initialremarks2', 'listinitialstatus', 'initial_date_approved', 'approvedby_initial', 'initialremarks', 'listappstatus2', 'date_approved_disapprovedsup', 'approvedby_disapprovedbysup', 'rem2', 'listappstatus', 'date_approved_disapproved', 'approvedby_disapprovedby', 'remarks'];
 
     // switch ($companyid) {
     //   case 51: //ulitc
@@ -324,12 +324,10 @@ class obapplication
 
     if ($companyid != 58) {
       $cols[$trackingtype]['type'] = 'coldel';
-      $cols[$dateid2]['type'] = 'coldel';
     } else {
       $cols[$type]['type'] = 'coldel';
 
-      $cols[$dateid]['label'] = 'Time-In';
-      $cols[$dateid2]['label'] = 'Time-Out';
+      $cols[$dateid]['label'] = 'Time Log';
     }
 
     if (count($approversetup) == 1) {
@@ -1040,21 +1038,22 @@ class obapplication
             $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid2']));
             break;
-          case "BLACK OUT (1 ATTLOG)":
-          case "BLACK OUT WHOLEDAY":
-          case "RELIEVER FOR CASHIER (WHOLE DAY)":
-          case "DAMAGE BIOMETRIC":
-          case "PRORATE":
+          // case "BLACK OUT (1 ATTLOG)":
+          // case "BLACK OUT WHOLEDAY":
+          // case "RELIEVER FOR CASHIER (WHOLE DAY)":
+          // case "DAMAGE BIOMETRIC":
+          // case "PRORATE":
+          default:
             $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
             $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
         }
         break;
       case 51:
         $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
         $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
-        $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+        $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
         break;
       case 53:
         switch ($head['type']) {
@@ -1154,7 +1153,18 @@ class obapplication
     if ($companyid == 53) { // camera
       // $initial = ' ,initialstatus';
       // $filter .= " and (initialstatus <> 'D' or initialstatus2 <> 'D')";
-      goto status;
+
+      if ($head['type'] == 'Time-Out' || $head['type'] == 'Time-In') {
+        $qry = "select line from $this->head where empid = $empid and type = '" . $head['type'] . "' and date(scheddate) = '" . $date . "'";
+        $data = $this->coreFunctions->opentable($qry);
+        if (empty($data) || $data[0]->line == $line) {
+          goto status;
+        } else {
+          return  $data;
+        }
+      } else {
+        goto status;
+      }
     }
     if ($companyid == 58) { //cdohris
       $filter .= " and trackingtype = '" . $head['trackingtype'] . "'";
@@ -1231,21 +1241,25 @@ class obapplication
           return ['status' => false, 'msg' => 'Cannot delete an already disapproved.', 'clientid' => $clientid];
         }
         if ($approved[0]->submitdate != null) {
-          return ['status' => false, 'msg' => 'Cannot delete an already disapproved.', 'clientid' => $clientid];
+          return ['status' => false, 'msg' => 'The application cannot be deleted, as it is already for approval.', 'clientid' => $clientid];
         }
       }
     }
 
-
-    $qry = "select line as value from obapplication where line = '$clientid' and status != 'E'";
-    $count = $this->coreFunctions->datareader($qry);
-
-    if ($count != "") {
-      return ['clientid' => '0', 'status' => false, 'msg' => "Transaction cannot be deleted."];
+    $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where line = ? and doc in ('OB','INITIALOB') limit 1", [$clientid]);
+    if ($appdoc != "") {
+      return ['clientid' => '0', 'status' => false, 'msg' => "This application can’t be deleted because it’s already in the Pending Application"];
     }
-    $date = $this->othersClass->getCurrentDate();
+
+    $qry = "select submitdate as value from obapplication where line = '$clientid' and submitdate is not null";
+    $submitdate = $this->coreFunctions->datareader($qry);
+
+    if ($submitdate) {
+      return ['clientid' => '0', 'status' => false, 'msg' => "The application cannot be deleted, as it is already for approval."];
+    }
     $this->coreFunctions->execqry('delete from obapplication where line=?', 'delete', [$clientid]);
-    $this->logger->sbcmasterlog($clientid, $config, "DELETED - DATE: '$date' ");
+    $this->coreFunctions->execqry("delete from pendingapp where line=? and doc='OB'", 'delete', [$clientid]);
+    $this->logger->sbcmasterlog($clientid, $config, "DELETED " . $this->modulename);
     return ['clientid' => $clientid, 'status' => true, 'msg' => 'Successfully deleted.', 'action' => 'backlisting'];
   } //end function
 

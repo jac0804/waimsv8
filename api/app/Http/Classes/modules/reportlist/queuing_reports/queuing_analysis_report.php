@@ -42,14 +42,14 @@ class queuing_analysis_report
     }
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end', 'username'];
+        $fields = ['radioprint', 'start', 'end'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'Default', 'value' => 'default', 'color' => 'red']
         ]);
         data_set($col1, 'start.required', true);
         data_set($col1, 'end.required', true);
-        data_set($col1, 'username.lookupclass', 'lookupusers2');
+
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -67,7 +67,6 @@ class queuing_analysis_report
       '" . $this->othersClass->getCurrentDate() . "' as start,
       '" . $this->othersClass->getCurrentDate() . "' as end,
       '' as dclientname,
-      '' as username,
       '" . $center . "' as center,
       '" . $dcenter[0]->dcentername . "' as dcentername,
       '" . $dcenter[0]->name . "' as centername,
@@ -95,7 +94,8 @@ class queuing_analysis_report
     public function reportplotting($config)
     {
         $center = $config['params']['center'];
-        $username = $config['params']['user'];
+
+
         $companyid = $config['params']['companyid'];
 
         return $this->reportDefault_Layout($config);
@@ -107,7 +107,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -126,8 +127,8 @@ class queuing_analysis_report
            sum(case when cs.isdone = 1 then 1 else 0 end) + sum(case when cs.iscancel = 1 then 1 else 0 end) as totaltickets,
            sum(case when cs.isdone = 1 then 1 else 0 end) as totalserved,
            sum(case when cs.iscancel = 1 then 1 else 0 end) as totalcancelled,
-           sum(case when cs.ispwd = 1 then 1 else 0 end) as totalpwd,
-           sum(case when cs.ispwd = 0 then 1 else 0 end) as totalregular
+           sum(case when cs.ispwd = 1 and isdone = 1 then 1 else 0 end) as totalpwd,
+           sum(case when cs.ispwd = 0 and isdone = 1 then 1 else 0 end) as totalregular
            from currentservice as cs
            left join reqcategory as rc on rc.line = cs.serviceline
            where date(cs.dateid) between '$start' and '$end' $filter
@@ -138,8 +139,8 @@ class queuing_analysis_report
            sum(case when cs.isdone = 1 then 1 else 0 end) + sum(case when cs.iscancel = 1 then 1 else 0 end) as totaltickets,
            sum(case when cs.isdone = 1 then 1 else 0 end) as totalserved,
            sum(case when cs.iscancel = 1 then 1 else 0 end) as totalcancelled,
-           sum(case when cs.ispwd = 1 then 1 else 0 end) as totalpwd,
-           sum(case when cs.ispwd = 0 then 1 else 0 end) as totalregular
+           sum(case when cs.ispwd = 1 and isdone = 1 then 1 else 0 end) as totalpwd,
+           sum(case when cs.ispwd = 0 and isdone = 1 then 1 else 0 end) as totalregular
            from hcurrentservice as cs
            left join reqcategory as rc on rc.line = cs.serviceline
            where date(cs.dateid) between '$start' and '$end' $filter
@@ -154,7 +155,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -199,7 +201,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -209,19 +212,19 @@ class queuing_analysis_report
 
         $query3 = "select users, sum(served) as served, sum(total) as total
             from (
-                select users, case when isdone = 1 then 1 else 0 end as served,
+                select users,  isdone = 1  as served,
                case when isdone = 1 then ifnull(timestampdiff(minute, startdate, enddate), 0) else 0 end as total
                 from currentservice
-                where date(dateid) between '$start' and '$end'  $filter 
-                group by users,startdate, enddate, isdone
+                where date(dateid) between '$start' and '$end' $filter
+
 
                 union all
 
-                select users, case when isdone = 1 then 1 else 0 end as served,
+                select users, isdone = 1  as served,
                 case when isdone = 1 then ifnull(timestampdiff(minute, startdate, enddate), 0) else 0 end as total
                 from hcurrentservice
-                where date(dateid) between '$start' and '$end'   $filter
-                group by users,startdate, enddate, isdone
+                where date(dateid) between '$start' and '$end' $filter
+
             ) as x
             group by users
             order by users";
@@ -234,7 +237,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -268,7 +272,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -337,7 +342,8 @@ class queuing_analysis_report
         $center = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $user = $config['params']['dataparams']['username'];
+
+
         $filter = "";
 
         if (!empty($user)) {
@@ -651,7 +657,7 @@ class queuing_analysis_report
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('TOTAL', '334', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col($totalserved, '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col(round($totalavg / $countavg, 0) . '(avg)', '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col( ($countavg > 0) ? round($totalavg / $countavg, 0) : 0 . '(avg)', '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '<br></br>';

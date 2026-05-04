@@ -132,9 +132,9 @@ class forecast_report
     if ($agent != '') {
       $filter .= " and agent.clientid = '" . $agentid . "'";
     }
-    if ($probability != "") {
-      $filter .= " and head.probability = '" . $probability . "'";
-    }
+    // if ($probability != "") {
+    //   $filter .= " and head.probability = '" . $probability . "'";
+    // }
 
     $query = "select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,

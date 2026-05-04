@@ -62,7 +62,9 @@ class cr
     'aftrno',
     'amount',
     'checkno',
-    'checkdate', 'rctrno', 'rcline'
+    'checkdate',
+    'rctrno',
+    'rcline'
   ];
   private $except = ['trno', 'dateid', 'checkdate'];
   private $acctg = [];
@@ -274,10 +276,10 @@ class cr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -439,7 +441,7 @@ class cr
     data_set($col1, 'client.lookupclass', 'customer');
     data_set($col1, 'docno.label', 'Transaction#');
 
-    $fields = ['dateid', 'appref', ['yourref', 'ourref'],'radiopaytype'];
+    $fields = ['dateid', 'appref', ['yourref', 'ourref'], 'radiopaytype'];
     $col2 = $this->fieldClass->create($fields);
 
     data_set($col2, 'appref.label', 'Application #');
@@ -1430,8 +1432,8 @@ left join cntnum as num on num.trno = head.trno
     $fb = $this->coreFunctions->getfieldvalue($this->head, "contra", "trno=?", [$trno]);
     $crdate = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
     $client = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
-    $takeout =0;
-    $apptrno ="";
+    $takeout = 0;
+    $apptrno = "";
     $data = $config['params']['rows'];
     foreach ($data as $key => $value) {
       $config['params']['data']['acno'] = $data[$key]['acno'];
@@ -1449,7 +1451,7 @@ left join cntnum as num on num.trno = head.trno
         //   }else{
         //     $apptrno = $this->coreFunctions->getfieldvalue("glhead","aftrno","trno = ?",[$data[$key]['trno']]);
         //   }
-          
+
         // }
       } else {
         $config['params']['data']['db'] = $data[$key]['bal'];
@@ -1493,7 +1495,7 @@ left join cntnum as num on num.trno = head.trno
       $config['params']['data']['client'] = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
       $checkno = $this->coreFunctions->getfieldvalue($this->head, "checkno", "trno=?", [$trno]);
       $checkamt = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
-      if($checkamt !=0){
+      if ($checkamt != 0) {
         $total = $checkamt;
       }
       if ($total < 0) {
@@ -1519,7 +1521,7 @@ left join cntnum as num on num.trno = head.trno
     //reverse takout fee
     // $qry = "select sum(i.entryfee+i.lrf+i.itfee+i.regfee+i.ofee,i.nf,i.pf) as value
     // from heainfo as i where i.trno in (?)";
-  
+
     // $tf = $this->coreFunctions->datareader($qry, [$apptrno]);
 
     // if($takeout != 0){
@@ -1528,7 +1530,7 @@ left join cntnum as num on num.trno = head.trno
     //   }
     //     $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE3'");
     //     $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE3'");
-  
+
     //     $config['params']['data']['acno'] = $intacno;
     //     $config['params']['data']['acnoname'] = $intacnoname;
     //     $config['params']['data']['db'] = $takeout;
@@ -1545,15 +1547,15 @@ left join cntnum as num on num.trno = head.trno
     //     $config['params']['data']['linex'] = 0;
     //     $config['params']['data']['ref'] = '';
     //     $config['params']['data']['rem'] = '';
-  
+
     //     $return = $this->additem('insert', $config);
     //     if ($return['status']) {
     //       array_push($rows, $return['row'][0]);
     //     }
-  
+
     //     $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA4'");
     //     $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA4'");
-  
+
     //     $config['params']['data']['acno'] = $intacno;
     //     $config['params']['data']['acnoname'] = $intacnoname;
     //     $config['params']['data']['db'] = 0;
@@ -1570,13 +1572,13 @@ left join cntnum as num on num.trno = head.trno
     //     $config['params']['data']['linex'] = 0;
     //     $config['params']['data']['ref'] = '';
     //     $config['params']['data']['rem'] = '';
-  
+
     //     $return = $this->additem('insert', $config);
     //     if ($return['status']) {
     //       array_push($rows, $return['row'][0]);
     //     }
     // }
-    
+
 
 
     return ['row' => $rows, 'status' => true, 'msg' => 'Added accounts Successfull...'];
@@ -1628,10 +1630,10 @@ left join cntnum as num on num.trno = head.trno
     if ($aptrno != 0) {
       $latrno = $this->coreFunctions->getfieldvalue("transnum", "trno", "cvtrno=?", [$aptrno]);
       $planid = $this->coreFunctions->getfieldvalue("heahead", "planid", "trno=?", [$latrno]);
-      $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line=?", [$planid],'',true);
-      $applyto = $this->coreFunctions->getfieldvalue($this->head, "purposeid", "trno=?", [$trno]);//0 - MA 1 - Adv 2- Balloon
-     
-      if($applyto == 2){
+      $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line=?", [$planid], '', true);
+      $applyto = $this->coreFunctions->getfieldvalue($this->head, "purposeid", "trno=?", [$trno]); //0 - MA 1 - Adv 2- Balloon
+
+      if ($applyto == 2) {
         return $this->applyardiminish($config);
       }
       //delete existing entry
@@ -1933,7 +1935,7 @@ left join cntnum as num on num.trno = head.trno
     $headamt = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
     $headdoc = $this->coreFunctions->getfieldvalue($this->tablenum, "bref", "trno=?", [$trno]);
 
-    $applyto = $this->coreFunctions->getfieldvalue($this->head, "purposeid", "trno=?", [$trno]);//0 - MA 1 - Adv 2- Balloon
+    $applyto = $this->coreFunctions->getfieldvalue($this->head, "purposeid", "trno=?", [$trno]); //0 - MA 1 - Adv 2- Balloon
 
 
     if ($aptrno != 0) {
@@ -1980,10 +1982,10 @@ left join cntnum as num on num.trno = head.trno
         left join arledger as ar on head.trno = ar.trno left join cntnum as num on num.trno=head.trno
         left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line left join coa on coa.acnoid = ar.acnoid
         left join heainfo as i on i.trno = num.dptrno
-        where head.trno = ".$aptrno." and ar.bal<>0  order by dateid asc,trno,line desc ";
+        where head.trno = " . $aptrno . " and ar.bal<>0  order by dateid asc,trno,line desc ";
 
         $ar = $this->coreFunctions->opentable($qry);
-        
+
         // krsort($ar);
         // var_dump($ar);
         // return 0;
@@ -2058,25 +2060,25 @@ left join cntnum as num on num.trno = head.trno
           }
 
 
-        //qry to apply payment
-        $qry = "select * from (select 1 as ma,ar.trno,ar.line, ar.bal,ar.db,ar.cr,ar.dateid,ar.docno,ar.acnoid,detail.rem,coa.alias,num.dptrno,i.penalty,ifnull(ar.lpaydate,'') as lpaydate from glhead as head
+          //qry to apply payment
+          $qry = "select * from (select 1 as ma,ar.trno,ar.line, ar.bal,ar.db,ar.cr,ar.dateid,ar.docno,ar.acnoid,detail.rem,coa.alias,num.dptrno,i.penalty,ifnull(ar.lpaydate,'') as lpaydate from glhead as head
         left join arledger as ar on head.trno = ar.trno left join cntnum as num on num.trno=head.trno
         left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line left join coa on coa.acnoid = ar.acnoid
         left join heainfo as i on i.trno = num.dptrno
-        where head.trno = ".$aptrno." and ar.bal<>0 and left(ar.dateid,10) ='".$firstdue."' order by dateid asc,trno,line desc) as a
+        where head.trno = " . $aptrno . " and ar.bal<>0 and left(ar.dateid,10) ='" . $firstdue . "' order by dateid asc,trno,line desc) as a
         union all
         select * from (select 0 as ma,ar.trno,ar.line, ar.bal,ar.db,ar.cr,ar.dateid,ar.docno,ar.acnoid,detail.rem,coa.alias,num.dptrno,i.penalty,ifnull(ar.lpaydate,'') as lpaydate from glhead as head
         left join arledger as ar on head.trno = ar.trno left join cntnum as num on num.trno=head.trno
         left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line left join coa on coa.acnoid = ar.acnoid
         left join heainfo as i on i.trno = num.dptrno
-        where head.trno = ".$aptrno." and ar.bal<>0 and left(ar.dateid,10) <>'".$firstdue."' order by dateid desc,trno,line desc) as b";
+        where head.trno = " . $aptrno . " and ar.bal<>0 and left(ar.dateid,10) <>'" . $firstdue . "' order by dateid desc,trno,line desc) as b";
 
-        $this->coreFunctions->LogConsole($qry);
-        $ar = $this->coreFunctions->opentable($qry);
-        
-        $amt = $appamt;
+          $this->coreFunctions->LogConsole($qry);
+          $ar = $this->coreFunctions->opentable($qry);
 
-          foreach ($ar as $k => $v) {   
+          $amt = $appamt;
+
+          foreach ($ar as $k => $v) {
             if ($appamt != 0) {
               if ($ar[$k]->db != 0) {
                 $bal = $ar[$k]->bal;
@@ -2117,16 +2119,16 @@ left join cntnum as num on num.trno = head.trno
               $d['rem'] = $ar[$k]->rem;
 
               array_push($detail, $d);
-              if($ar[$k]->ma == 1){
+              if ($ar[$k]->ma == 1) {
                 if ($ar[$k]->alias == 'AR2') {
                   $interest += $amt;
                 }
-  
+
                 if ($ar[$k]->alias == 'AR3') {
                   $pf += $amt;
                 }
               }
-              
+
               $line += 1;
             }
           }

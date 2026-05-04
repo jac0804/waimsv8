@@ -101,18 +101,18 @@ class gj
     // $yourref = 5;
     // $ourref = 6;
     // $postdate = 7;
-    switch($companyid){
-      case 56://homeworks
-          $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'client', 'listclientname', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    switch ($companyid) {
+      case 56: //homeworks
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'client', 'listclientname', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         break;
-      case 29://sbc
-          $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname','rem', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+      case 29: //sbc
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         break;
       default:
-          $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         break;
     }
-    
+
     $stockbuttons = ['view', 'duplicatedoc'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -133,9 +133,9 @@ class gj
       $cols[$client]['label'] = 'Code';
     }
 
-    if($companyid==29){ //sbc
-       $cols[$listdate]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
-       $cols[$rem]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
+    if ($companyid == 29) { //sbc
+      $cols[$listdate]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+      $cols[$rem]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
     }
 
 
@@ -196,12 +196,12 @@ class gj
         $hjoin = " left join client as cl on cl.clientid= head.clientid";
         $field = ", cl.client";
         break;
-      case 29://sbc
+      case 29: //sbc
         $dateid = "left(head.dateid,10) as dateid";
         if ($searchfilter == "") $limit = 'limit 150';
         $orderby =  "order by  dateid desc, docno desc";
         $field = ", head.rem";
-        break;  
+        break;
       default:
         $dateid = "left(head.dateid,10) as dateid";
         if ($searchfilter == "") $limit = 'limit 150';
@@ -230,6 +230,7 @@ class gj
 
   public function createHeadbutton($config)
   {
+    $companyid = $config['params']['companyid'];
     $btns = array(
       'load',
       'new',
@@ -237,10 +238,10 @@ class gj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -249,6 +250,16 @@ class gj
       'help',
       'others'
     );
+
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'customersupplier', 'dateid', 'terms', 'yourref', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customersupplier', 'dateid', 'terms', 'yourref', 'csrem', 'btnsave']);
@@ -308,7 +319,7 @@ class gj
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
 
-      if ($config['params']['companyid'] == 60) { //transpower      
+    if ($config['params']['companyid'] == 60) { //transpower      
       $changecode = $this->othersClass->checkAccess($config['params']['user'], 5504);
       if ($changecode) {
         $changecode = ['customform' => ['action' => 'customform', 'lookupclass' => 'changebarcode']];
@@ -442,6 +453,10 @@ class gj
         $obj[0]['accounting']['columns'][$isvewt]['type'] = 'coldel';
         $obj[0]['accounting']['columns'][$ewtcode]['type'] = 'coldel';
         $obj[0]['accounting']['columns'][$stockgrp]['type'] = 'coldel';
+
+
+        $obj[0]['accounting']['columns'][$checkno]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+        $obj[0]['accounting']['columns'][$rem]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
         break;
     }
 
@@ -2323,9 +2338,24 @@ class gj
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    $companyid = $config['params']['companyid'];
+    switch ($companyid) {
+      case 59: //roosevelt
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->othersClass->posttransacctg($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
+          }
+        }
+        break;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

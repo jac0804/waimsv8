@@ -315,12 +315,12 @@ class dailytask_report
     {
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
-        $limitQuery = "select createdate from dailytask where trno = $trno 
+        $limitQuery = "select donedate from dailytask where trno = $trno 
                union 
-               select createdate from hdailytask where trno = $trno 
+               select donedate from hdailytask where trno = $trno 
                limit 1";
         $limitResult = json_decode(json_encode($this->coreFunctions->opentable($limitQuery)), true);
-        $limitDate = !empty($limitResult) ? $limitResult[0]['createdate'] : $end . ' 23:59:59';
+        $limitDate = (!empty($limitResult) && !empty($limitResult[0]['donedate'])) ? $limitResult[0]['donedate'] : $end . ' 23:59:59';
 
         // ---- query 1: dytrno based (regular task comments) - skip for TM ----
         $data1 = array();
@@ -354,7 +354,7 @@ class dailytask_report
             }
 
             $query1 = "
-            select hp.rem as hprem, hp.dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst,hp.deadline2 
+            select hp.rem as hprem, hp.dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst,hp.deadline2
             from headprrem as hp
             left join client as cl on cl.email = hp.createby
             left join employee as emp on emp.empid = cl.clientid
@@ -550,6 +550,7 @@ class dailytask_report
         $subtotal = 0;
         $grandtotal = 0;
         $currentUser = '';
+        $rowNum = 0;
 
         for ($i = 0; $i < count($data); $i++) {
 

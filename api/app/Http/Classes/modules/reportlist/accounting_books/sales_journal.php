@@ -176,7 +176,7 @@ class sales_journal
         break;
       case 10: //afti
       case 12: //afti usd
-        $condition = " (head.doc = 'SJ' or head.doc = 'AI') ";
+        $condition = " (head.doc in ('SJ','AI')) ";
         if ($projectcode != "") {
           $filter .= " and detail.projectid=" . $projectid;
         }
@@ -220,7 +220,7 @@ class sales_journal
         switch ($companyid) {
           case 10: //ati
           case 12: //afti usd
-            $query = "select left(head.dateid,10) as dateid,head.dateid as dateid2, head.docno, head.clientname, head.rem, head.doc,
+            $query = "select left(head.dateid,10) as dateid,head.dateid as dateid2, head.docno, head.clientname, head.rem, head.doc,cntnum.seq,cntnum.bref,
             case when lower(head.rem ) != 'cancelled' then ifnull(sum(stock.ext),0) else 0 end as amt, head.tax
             from ((glhead as head 
             left join glstock as stock on stock.trno=head.trno)
@@ -228,8 +228,8 @@ class sales_journal
             left join client on head.clientid = client.clientid
             where " . $condition . " $filter
             and head.dateid between '" . $startdate . "' and '" . $enddate . "'
-            group by head.trno, head.dateid, head.docno, head.clientname, head.rem, head.tax, head.doc
-            order by dateid2 , docno";
+            group by head.trno, head.dateid, head.docno, head.clientname, head.rem, head.tax, head.doc,cntnum.seq,cntnum.bref
+            order by dateid2 , seq";
             break;
 
           case 32: //3m
@@ -1549,14 +1549,19 @@ class sales_journal
       } else {
         $netamt = $amt;
       }
-      $invoice = $value->doc === 'SJ' ? substr($value->docno, -5) : 'BS' . substr($value->docno, -8);
+      $invoice = $value->bref === 'DR' ? substr($value->docno, -5) : 'BS' . substr($value->docno, -8);
 
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($value->dateid, null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, '', '', '');
       $str .= $this->reporter->col($invoice, null, null, '', '1px solid', 'LTRB', 'C', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->clientname, null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
+      if($netamt ==0){
+        $str .= $this->reporter->col($value->clientname.'- CANCELLED', null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
+      }else{
+        $str .= $this->reporter->col($value->clientname, null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
+      }
+      
       $str .= $this->reporter->col($amt == 0 ? '-' : number_format($amt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
       $str .= $this->reporter->col($vatamt == 0 ? '-' : number_format($vatamt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
       $str .= $this->reporter->col($netamt == 0 ? '-' : number_format($netamt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);

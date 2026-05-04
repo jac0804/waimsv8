@@ -46,8 +46,10 @@ class entrybudget
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 2371, 'save' => 2372,
-      'saveallentry' => 2372
+      'view' => 2371,
+      'save' => 2372,
+      'saveallentry' => 2372,
+      'print' => 3623
     );
     return $attrib;
   }
@@ -86,7 +88,7 @@ class entrybudget
   public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['year', 'project', ['refresh'], 'radiooption'];
+    $fields = ['year', 'project', ['refresh', 'print'], 'radiooption'];
     if ($companyid == 10) { //afti
       $fields = ['year', 'project', 'branchname', 'deptname', ['refresh'], 'radiooption'];
     }
@@ -101,7 +103,7 @@ class entrybudget
     data_set($col1, 'year.lookupclass', 'lookupyear');
     data_set($col1, 'year.action', 'lookupyear');
     data_set($col1, 'refresh.action', 'load');
-
+    data_set($col1, 'print.action', 'print');
     return array('col1' => $col1);
   }
 
@@ -136,6 +138,9 @@ class entrybudget
         $this->save($config);
         return $this->loadgrid($config);
         break;
+      case 'print':
+        return $this->reportsetup($config);
+        break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $action . ')'];
         break;
@@ -145,6 +150,7 @@ class entrybudget
   private function loadgrid($config)
   {
     $center = $config['params']['center'];
+    $companyid = $config['params']['companyid'];
     $year  = $config['params']['dataparams']['year'];
     $project  = $config['params']['dataparams']['project'];
     $projectid  = $config['params']['dataparams']['projectid'];
@@ -161,21 +167,34 @@ class entrybudget
       $cat = "('A','L','C')";
     }
 
+    $addonfilter = '';
+    if ($deptid != 0) $addonfilter .= " and b.deptid=" . $deptid;
+    if ($branchid != 0) $addonfilter .= " and b.branch=" . $branchid;
+
+
     $qry = "select b.line,b.year,concat(c.acno,' ',c.acnoname) as acno,c.acnoname,b.acnoid,b.projectid,format(b.amt1," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt1,format(b.amt2," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt2,format(b.amt3," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt3,format(b.amt4," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt4,format(b.amt5," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt5,format(b.amt6," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt6,format(b.amt7," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt7,format(b.amt8," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt8,format(b.amt9," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt9,format(b.amt10," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt10,format(b.amt11," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt11,format(b.amt12," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt12,format((b.amt1+b.amt2+b.amt3+b.amt4+b.amt5+b.amt6+b.amt7+b.amt8+b.amt9+b.amt10+b.amt11+b.amt12)," . $this->companysetup->getdecimal('price', $config['params']) . ") as total,'' as bgcolor ,
-    d.client as dept,d.clientid as deptid,br.clientid as branch,br.client as branchcode,d.clientname as deptname,br.clientname as branchname,'' as ddeptname
+    d.client as dept,d.clientid as deptid,br.clientid as branch,br.client as branchcode,d.clientname as deptname,br.clientname as branchname,'' as ddeptname    
     from budget as b left join coa as c on c.acnoid = b.acnoid left join projectmasterfile as p on p.line = b.projectid 
-    left join client as d on d.clientid = b.deptid left join client as br on br.clientid = b.branch where c.cat in " . $cat . " and b.projectid = ? and b.year=? and b.deptid =? and b.branch =? ";
-    $data = $this->coreFunctions->opentable($qry, [$projectid, $year, $deptid, $branchid]);
+    left join client as d on d.clientid = b.deptid left join client as br on br.clientid = b.branch where c.cat in " . $cat . " and b.projectid=? and b.year=? " . $addonfilter;
+    $data = $this->coreFunctions->opentable($qry, [$projectid, $year]);
 
     if (empty($data)) {
-      if ($year == '' || $project == '' || $deptname == '' || $branchname == '') {
+      if ($year == '' || $project == '') {
         return ['status' => 'false', 'msg' => 'Please fill all fields.', 'griddata' => [], 'action' => 'load'];
+      }
+
+      if ($companyid == 10) { //afti
+        if ($deptname == '') return ['status' => 'false', 'msg' => 'Please fill department.', 'griddata' => [], 'action' => 'load'];
+        if ($branchname == '') return ['status' => 'false', 'msg' => 'Please fill branch.', 'griddata' => [], 'action' => 'load'];
       }
     }
 
+    $addonfilter2 = '';
+    if ($deptid != 0) $addonfilter2 .= " and deptid=" . $deptid;
+    if ($branchid != 0) $addonfilter2 .= " and branch=" . $branchid;
 
     $accts = "select acno,acnoid,acnoname from coa where acno not in (select distinct parent from coa) and acnoid not in 
-      (select acnoid from budget where projectid=" . $projectid . " and year =" . $year . " and deptid =" . $deptid . " and branch =" . $branchid . ") and cat in " . $cat . " order by acno";
+      (select acnoid from budget where projectid=" . $projectid . " and year =" . $year . ") and cat in " . $cat . " order by acno";
     $dataacc  = $this->coreFunctions->opentable($accts);
 
     if (!empty($dataacc)) {
@@ -204,26 +223,31 @@ class entrybudget
 
   private function save($config)
   {
+    $companyid = $config['params']['companyid'];
+
     $rows = $config['params']['rows'];
 
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
-        if ($val['total'] != 0) {
-          $val['total'] = $this->othersClass->sanitizekeyfield("amt", $val['total']);
-          $budget = round($val['total'] / 12, 2);
-          $val['amt1'] = $budget;
-          $val['amt2'] = $budget;
-          $val['amt3'] = $budget;
-          $val['amt4'] = $budget;
-          $val['amt5'] = $budget;
-          $val['amt6'] = $budget;
-          $val['amt7'] = $budget;
-          $val['amt8'] = $budget;
-          $val['amt9'] = $budget;
-          $val['amt10'] = $budget;
-          $val['amt11'] = $budget;
-          $val['amt12'] = $budget;
+        if ($companyid == 10) { //afti
+          if ($val['total'] != 0) {
+            $val['total'] = $this->othersClass->sanitizekeyfield("amt", $val['total']);
+            $budget = round($val['total'] / 12, 2);
+            $val['amt1'] = $budget;
+            $val['amt2'] = $budget;
+            $val['amt3'] = $budget;
+            $val['amt4'] = $budget;
+            $val['amt5'] = $budget;
+            $val['amt6'] = $budget;
+            $val['amt7'] = $budget;
+            $val['amt8'] = $budget;
+            $val['amt9'] = $budget;
+            $val['amt10'] = $budget;
+            $val['amt11'] = $budget;
+            $val['amt12'] = $budget;
+          }
         }
+
         foreach ($this->fields as $k) {
           $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
         }
@@ -236,8 +260,78 @@ class entrybudget
         unset($val['branchname']);
         unset($val['ddeptname']);
         unset($val['bgcolor']);
+        unset($val['total']);
         $this->coreFunctions->sbcupdate("budget", $val, ['line' => $val["line"]]);
       }
     }
+  }
+
+  public function reportsetup($config)
+  {
+    $txtfield = $this->createreportfilter($config);
+    $txtdata = $this->reportparamsdata($config);
+
+    $modulename = $this->modulename;
+    $data = [];
+    $style = 'width:500px;max-width:500px;';
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'action' => 'print'];
+  }
+
+  public function reportdata($config)
+  {
+    $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+    $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+
+    return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+  }
+
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'radioreporttype', 'print', 'year', 'project', 'projectid', 'deptid', 'branch', 'poption'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'radioreporttype.options', [
+      ['label' => 'Monthly Format', 'value' => '0', 'color' => 'red'],
+      ['label' => 'Annual Format', 'value' => '1', 'color' => 'red']
+    ]);
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
+    ]);
+    data_set($col1, 'year.type', 'hidden');
+    data_set($col1, 'project.type', 'hidden');
+    data_set($col1, 'projectid.type', 'hidden');
+    data_set($col1, 'deptid.type', 'hidden');
+    data_set($col1, 'branch.type', 'hidden');
+    data_set($col1, 'poption.type', 'hidden');
+    data_set($col1, 'start.type', 'hidden');
+    data_set($col1, 'end.type', 'hidden');
+    data_set($col1, 'username.type', 'hidden');
+    data_set($col1, 'moduledesc.type', 'hidden');
+    return array('col1' => $col1);
+  }
+
+  public function reportparamsdata($config)
+  {
+    $year      = isset($config['params']['dataparams']['year'])      ? $config['params']['dataparams']['year']      : '';
+    $projectid = isset($config['params']['dataparams']['projectid']) ? $config['params']['dataparams']['projectid'] : 0;
+    $deptid    = isset($config['params']['dataparams']['deptid'])    ? $config['params']['dataparams']['deptid']    : 0;
+    $branch    = isset($config['params']['dataparams']['branch'])    ? $config['params']['dataparams']['branch']    : 0;
+    $poption   = isset($config['params']['dataparams']['poption'])   ? $config['params']['dataparams']['poption']   : 1;
+    $project   = isset($config['params']['dataparams']['project'])   ? $config['params']['dataparams']['project']   : '';
+    $reporttype = isset($config['params']['dataparams']['reporttype']) ? $config['params']['dataparams']['reporttype'] : '0';
+
+    return $this->coreFunctions->opentable(
+      "select
+            'PDFM' as print,
+            '$reporttype' as reporttype,
+            '' as moduledoc,
+            '' as modulename,
+            '$year' as year,
+            '$project' as project,
+            $projectid as projectid,
+            $deptid as deptid,
+            $branch as branch,
+            $poption as poption
+        "
+    );
   }
 } //end class

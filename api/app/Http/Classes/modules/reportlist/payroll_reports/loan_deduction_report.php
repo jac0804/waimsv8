@@ -42,12 +42,26 @@ class loan_deduction_report
 
   public function createHeadField($config)
   {
+    $companyid = $config['params']['companyid'];
     $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'month', 'year'];
+
+    if ($companyid == 58) { //cdohris
+      $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'radioreporttype', 'month', 'year', 'batchrep'];
+    }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
     data_set($col1, 'divrep.label', 'Company');
     data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
     data_set($col1, 'deptrep.label', 'Department');
+
+    if ($companyid == 58) {
+      data_set($col1, 'radioreporttype.label', 'Monthly Option');
+      data_set($col1, 'radioreporttype.options', [
+        ['label' => 'Monthly', 'value' => 'mon', 'color' => 'red'],
+        ['label' => 'Per Cut-off', 'value' => 'cut', 'color' => 'red']
+      ]);
+      data_set($col1, 'batchrep.lookupclass', 'lookupbatchrepcdo');
+    }
 
     $fields = ['dloantype'];
     $col2 = $this->fieldClass->create($fields);
@@ -77,7 +91,11 @@ class loan_deduction_report
     '' as sectname,
     '' as sectid,
     '' as month,
-    '' as year
+    '' as year,
+    '' as batchrep,
+    '' as line,
+    '' as batch,
+    'mon' as reporttype
     ");
   }
 
@@ -103,13 +121,16 @@ class loan_deduction_report
 
   public function reportDefault($config)
   {
+    $companyid  = $config['params']['companyid'];
     $code = $config['params']['dataparams']['code'];
     $divid      = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $monthlyoption = $config['params']['dataparams']['reporttype'];
     $emplvl = $this->othersClass->checksecuritylevel($config);
     $month = intval($config['params']['dataparams']['month']);
     $year = intval($config['params']['dataparams']['year']);
+    $batchid     = $config['params']['dataparams']['line'];
 
     $filter = '';
     if ($code != '') $filter = "and pa.code = '$code'";
@@ -117,13 +138,20 @@ class loan_deduction_report
     if ($divid != 0) $filter .= " and emp.divid = $divid";
     if ($sectid != 0) $filter .= " and emp.sectid = $sectid";
 
+    $filtermonthly = " month(st.dateid)= '" . $month . "' and year(st.dateid)= '" . $year . "'";
+    if ($companyid == 58) { //cdohris
+      if ($monthlyoption == 'cut') {
+        $filtermonthly = " st.batchid = '$batchid' ";
+      }
+    }
+
     $query = "select pa.code, pa.codename, concat(emp.emplast, ', ', emp.empfirst, ' ', emp.empmiddle) as empname, 
                     ss.docno, ifnull(sum(st.cr),0) as amt, ss.balance
               from standardsetup as ss
               left join standardtrans as st on ss.trno = st.trno
               left join employee as emp on ss.empid = emp.empid
               left join paccount as pa on pa.line = ss.acnoid
-              where month(st.dateid)= '" . $month . "' and year(st.dateid)= '" . $year . "' and emp.level in $emplvl $filter
+              where $filtermonthly and emp.level in $emplvl $filter
               group by pa.code, pa.codename, emp.emplast, emp.empfirst, emp.empmiddle, ss.docno, ss.balance
               having ifnull(sum(st.cr),0)<>0
               order by pa.code, ss.docno";
@@ -134,6 +162,7 @@ class loan_deduction_report
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
+    $monthlyoption = $config['params']['dataparams']['reporttype'];
 
     $str = '';
     $layoutsize = '1000';
@@ -157,8 +186,15 @@ class loan_deduction_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Year:' . $config['params']['dataparams']['year'], '150', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Month:' . $config['params']['dataparams']['month'], '250', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+
+    if ($monthlyoption == 'cut') {
+      $str .= $this->reporter->col('Batch: ' . $config['params']['dataparams']['batch'], '400', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+    } else {
+      $str .= $this->reporter->col('Year: ' . $config['params']['dataparams']['year'], '150', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col('Month: ' . $config['params']['dataparams']['month'], '250', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+    }
+
+
     $str .= $this->reporter->col('', '200', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', '400', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -317,5 +353,38 @@ class loan_deduction_report
     $str .= $this->reporter->endtable();
 
     return $str;
+  }
+  public function sbcscript($config)
+  {
+    $companyid = $config['params']['companyid'];
+    if ($companyid == 58) { //camera
+      return [
+
+        'report' => '
+        let val = state.reportdata.params.reporttype;
+          switch (val) {
+            case "cut":
+                state.reportobject.txtfield.col1.month.style="display:none"
+                state.reportobject.txtfield.col1.year.style="display:none"
+                state.reportobject.txtfield.col1.batchrep.style="display:block"
+                state.reportobject.txtfield.col1.batchrep.required=true
+                state.reportobject.txtfield.col1.month.required=false
+                state.reportobject.txtfield.col1.year.required=false
+                break;
+            case "mon":
+                state.reportobject.txtfield.col1.month.style="display:block"
+                state.reportobject.txtfield.col1.year.style="display:block"
+                state.reportobject.txtfield.col1.batchrep.style="display:none"
+                state.reportobject.txtfield.col1.batchrep.required=false
+                state.reportobject.txtfield.col1.month.required=true
+                state.reportobject.txtfield.col1.year.required=true
+              
+            break;
+        }
+        '
+      ];
+    } else {
+      return true;
+    }
   }
 }

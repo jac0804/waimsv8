@@ -32,7 +32,7 @@ class changeschedule
     private $othersClass;
     private $payrollprocess;
     public $style = 'width:100%;max-width:100%;';
-    public $issearchshow = false;
+    public $issearchshow = true;
     public $showclosebtn = false;
     public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout',     'logactualin',     'logactualout',     'loglunchin',     'loglunchout'];
 
@@ -70,14 +70,33 @@ class changeschedule
     {
         $companyid = $config['params']['companyid'];
 
-        $columns = [];
-        $tab = [];
+        $columns = ['ispicked', 'client', 'clientname'];
+
+        foreach ($columns as $key => $value) {
+            $$value = $key;
+        }
+        $tab = [
+            $this->gridname => [
+                'gridcolumns' => $columns
+            ]
+        ];
 
         $stockbuttons = [];
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         // $obj[0][$this->gridname]['obj'] = 'editgrid';
-        // $obj[0][$this->gridname]['descriptionrow'] = [];
+        $obj[0][$this->gridname]['descriptionrow'] = []; // adding description row show details
+
+        $obj[0][$this->gridname]['columns'][$client]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$client]['label'] = "Employee Code";
+        $obj[0][$this->gridname]['columns'][$clientname]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Employee";
+
+        $obj[0][$this->gridname]['columns'][$client]['style'] = "width:10px;min-width:10px;";
+        $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:10px;min-width:10px;";
+        $obj[0][$this->gridname]['columns'][$ispicked]['style'] = "width:10px;min-width:10px;";
+
+        $obj[0][$this->gridname]['label'] = 'Employee List';
 
         // $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -88,7 +107,6 @@ class changeschedule
         $companyid = $config['params']['companyid'];
         $tbuttons = [];
         $obj = $this->tabClass->createtabbutton($tbuttons);
-        //$obj[0]
         return $obj;
     }
 
@@ -96,6 +114,9 @@ class changeschedule
     {
         $companyid = $config['params']['companyid'];
         $fields = ['company', 'department'];
+        if ($companyid == 62) { //onesky
+            array_push($fields, 'sectrep', 'empcode', 'empname');
+        }
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'company.type', 'lookup');
         data_set($col1, 'company.lookupclass', 'lookupcompany');
@@ -103,16 +124,29 @@ class changeschedule
         data_set($col1, 'company.readonly', true);
         data_set($col1, 'company.required', true);
 
+        if ($companyid == 62) { //onesky
+            unset($col1['sectrep']['labeldata']);
+            unset($col1['labeldata']['sectrep']);
+            data_set($col1, 'sectrep.name', 'sectname');
+
+            data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
+            data_set($col1, 'dclientname.label', 'Employee');
+        }
         data_set($col1, 'department.type', 'lookup');
         data_set($col1, 'department.lookupclass', 'lookupdepartments');
         data_set($col1, 'department.action', 'lookupdepartments');
         data_set($col1, 'department.required', true);
 
 
-        $fields = [['start', 'end'], ['shiftcode', 'shiftcode2']];
+        $fields = [['start', 'end'], ['shiftcode', 'shiftcode2'], 'refresh'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'start.style', 'padding:0px;');
         data_set($col2, 'end.style', 'padding:0px;');
+
+        if ($companyid == 62) { //onesky
+            data_set($col2, 'refresh.action', 'load');
+            data_set($col2, 'refresh.style', 'width:50%;height:100%;');
+        }
 
 
         data_set($col2, 'shiftcode.label', 'Shift From:');
@@ -150,6 +184,7 @@ class changeschedule
       0 as empid,
       0 as divid,
       0 as deptid,
+      0 as sectid,
       '' as shiftcode,
       0 as shiftid,
       '' as shiftcode2,
@@ -177,10 +212,41 @@ class changeschedule
             case "create":
                 return $this->create($config);
                 break;
+            case "load":
+                return $this->loaddetails($config);
+                break;
             default:
                 return ['status' => false, 'msg' => 'Data is not yet setup in the headtablestatus.'];
                 break;
         }
+    }
+    public function loaddetails($config)
+    {
+        $empid = $config['params']['dataparams']['empid'];
+
+        $divid = $config['params']['dataparams']['divid'];
+        $deptid = $config['params']['dataparams']['deptid'];
+        $sectid = $config['params']['dataparams']['sectid'];
+
+        $filter = "";
+        if ($sectid != 0) {
+            $filter .= " and emp.sectid = $sectid";
+        }
+        if ($empid != 0) {
+            $filter .= " and emp.empid = $empid";
+        }
+        if ($divid != 0) {
+            $filter .= " and emp.divid = $divid";
+        }
+        if ($deptid != 0) {
+            $filter .= " and emp.deptid = $deptid";
+        }
+
+        $query = "select emp.empid,client.clientname,client.client,'true' as ispicked from employee as emp
+            left join client on client.clientid = emp.empid
+            where  1= 1 $filter";
+        $data = $this->coreFunctions->opentable($query);
+        return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
     }
 
     private function create($config)
@@ -193,6 +259,7 @@ class changeschedule
         $shiftid2 = $config['params']['dataparams']['shiftid2'];
         $divid = $config['params']['dataparams']['divid'];
         $deptid = $config['params']['dataparams']['deptid'];
+        $sectid = $config['params']['dataparams']['sectid'];
 
 
         if ($divid == 0) {
@@ -208,21 +275,33 @@ class changeschedule
             return ['status' => false, 'msg' => 'Please select Shift To.'];
         }
 
-        $created_schedule = $this->getallemployees($config, $start, $end, $shiftid, $shiftid2, $divid, $deptid);
+        $created_schedule = $this->getallemployees($config, $start, $end, $shiftid, $shiftid2, $divid, $deptid, $sectid);
         if (!$created_schedule['status']) {
             return ['status' => false, 'msg' => $created_schedule['msg']];
         }
+        $result = $this->loaddetails($config);
 
-        return ['status' => true, 'msg' => $created_schedule['msg'], 'action' => 'load'];
+        return ['status' => true, 'msg' => $created_schedule['msg'], 'action' => 'load', 'griddata' => ['entrygrid' => $result['griddata']['entrygrid']]];
     }
 
-    public function getallemployees($config, $start, $end, $shiftid, $shiftid2, $divid, $deptid)
+    public function getallemployees($config, $start, $end, $shiftid, $shiftid2, $divid, $deptid, $sectid)
     {
-        $query = "select emp.empid,client.clientname from employee as emp
-            left join client on client.clientid = emp.empid
-            where emp.shiftid = $shiftid and emp.divid = $divid and emp.deptid = $deptid";
+        $companyid = $config['params']['companyid'];
+        $filter = "";
+        if ($sectid != 0) {
+            $filter = " and emp.sectid = $sectid";
+        }
 
-        $data_currentshift = $this->coreFunctions->opentable($query);
+        if ($companyid == 62) { //onesky
+            $result = $this->loaddetails($config);
+            $data_currentshift = $result['griddata']['entrygrid']; // filter pa ng tagging kulang
+        } else {
+            $query = "select emp.empid,client.clientname from employee as emp
+            left join client on client.clientid = emp.empid
+            where emp.shiftid = $shiftid and emp.divid = $divid and emp.deptid = $deptid $filter";
+            $data_currentshift = $this->coreFunctions->opentable($query);
+        }
+
         if (!empty($data_currentshift)) {
             foreach ($data_currentshift as $key => $value) {
 

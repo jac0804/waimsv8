@@ -111,7 +111,8 @@ class customer
     'accountid',
     'sex',
     'charge1',
-    'center'
+    'center',
+    'ar'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment', 'isnocrlimit', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'issenior'];
@@ -869,6 +870,9 @@ class customer
           unset($fields[$key]);
         }
         break;
+      case '59':
+        array_push($fields, 'contact');
+        break;
     }
 
     $col1 = $this->fieldClass->create($fields);
@@ -985,7 +989,7 @@ class customer
                 break;
               case 59: //roosevelt
                 unset($fields[5]);
-                array_push($fields, 'dpricegroup', 'tin', 'rem');
+                array_push($fields, 'dpricegroup', 'tin', 'dvattype', 'rem');
                 break;
               default:
                 array_push($fields, 'tin');
@@ -1162,6 +1166,9 @@ class customer
       case 60: //TRANSPOWER
         array_push($fields, 'rem');
         break;
+      case '59': //roosevelt
+        array_push($fields, 'type', 'ar');
+        break;
     }
 
     $col3 = $this->fieldClass->create($fields);
@@ -1188,6 +1195,11 @@ class customer
         break;
       case 23: //labsol cebu
         data_set($col3, 'dcategory.label', 'Business Style');
+        break;
+      case 59: //umbrella
+        data_set($col3, 'type.action', 'lookuprandom');
+        data_set($col3, 'type.lookupclass', 'lookuptype1');
+        data_set($col3, 'type.class', 'sbccsreadonly');
         break;
       default:
         data_set($col3, 'disc.label', 'Mark Up');
@@ -1355,6 +1367,7 @@ class customer
     $data[0]['terms'] = '';
     $data[0]['crlimit'] = '0';
     $data[0]['center'] = '';
+    $data[0]['ar'] = '0.00';
 
     switch ($config['params']['companyid']) {
       case 60: //transpower
@@ -1422,6 +1435,10 @@ class customer
         break;
       case 29: //sbc
         $data[0]['center'] = $config['params']['center'];
+        break;
+      case 59: //roosevelt
+        $data[0]['vattype'] = 'VATABLE';
+        $data[0]['tax'] = '12';
         break;
       default:
         $data[0]['isnocrlimit'] = '0';
@@ -1530,10 +1547,13 @@ class customer
     }
 
     $addfields = "";
+    $arball = 0;
     if ($companyid == 55) { //AFLI Lending
       $addfields = ", info.fname, info.mname, info.lname";
     } else if ($companyid == 59) { //roosevelt
-      $addfields = ", '' as dpricegroup";
+      $getbal = $this->getbal($config);
+      $arball = isset($getbal[0]->bal) ? $getbal[0]->bal : 0;
+      $addfields = ", '' as dpricegroup,if(client.ar='0', '$arball',client.ar) as ar";
     }
 
     $qryselect = "select " . $fields . ", ifnull(a.clientname, '') as agentname, ifnull(coa.acnoname, '') as acnoname, ifnull(ar.acnoname, '') as assetname,
@@ -1783,6 +1803,34 @@ class customer
     $this->othersClass->deleteattachments($config); // attachment delete
     return ['clientid' => $clientid2, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
+
+  public function getbal($config)
+  {
+    $clientid = $config['params']['clientid'];
+    $center = $config['params']['center'];
+    $date = $this->othersClass->getCurrentDate();
+    $companyid = $config['params']['companyid'];
+
+    $qry = "
+      select FORMAT(ifnull(sum(balance),0),2) as bal  from
+          (select cntnum.postdate,
+            ((case when (arledger.db > 0) then 1 else -(1) end) * arledger.bal) as balance
+            from arledger
+            left join cntnum on cntnum.trno = arledger.trno
+            where arledger.clientid= $clientid  and date(arledger.dateid)<='$date'
+            and cntnum.center = '$center'
+            UNION ALL
+            select '' as postdate,
+            sum(detail.ext) as balance
+            from lahead as head
+            left join lastock as detail on detail.trno=head.trno
+            left join client on client.client =head.client
+            left join cntnum on cntnum.trno = head.trno
+            where cntnum.doc = 'SJ' and client.clientid= $clientid and date(head.dateid)<='$date' and cntnum.center = '$center' and detail.line is not null ) as t";
+
+    $data = $this->coreFunctions->opentable($qry);
+    return $data;
+  }
 
   public function reportsetup($config)
   {

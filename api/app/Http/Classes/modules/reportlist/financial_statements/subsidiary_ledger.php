@@ -3726,8 +3726,8 @@ class subsidiary_ledger
                   $str .= $this->reporter->col($data_->drem, '100', null, false, '1px solid', '', 'L', $font, $fontsize, '', '', '', '', '');
                 }
                 $str .= $this->reporter->col(number_format($data_->db, 2), '75', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
-                $str .= $this->reporter->col(number_format($data_->cr, 2), '75', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 0);
-                $str .= $this->reporter->col(number_format($data_->begbal, 2), '100', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 0);
+                $str .= $this->reporter->col(number_format($data_->cr, 2), '75', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
+                $str .= $this->reporter->col(number_format($data_->begbal, 2), '100', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
                 break;
             }
 

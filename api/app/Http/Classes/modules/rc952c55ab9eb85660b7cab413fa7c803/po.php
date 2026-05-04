@@ -157,95 +157,37 @@ class po
     {
         ini_set('max_execution_time', -1);
         $companyid = $config['params']['companyid'];
-
-        if ($companyid == 8) { //maxipro
-            $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'listclientname', 'rem', 'ourref', 'total', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
-            $stockbuttons = ['view', 'diagram'];
-            foreach ($getcols as $key => $value) {
-                $$value = $key;
-            }
-            $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-
-            $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-            $cols[$lblstatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-            $cols[$listclientname]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
-            $cols[$rem]['style'] = 'width:800px;whiteSpace: normal;min-width:800px;';
-            $cols[$ourref]['align'] = 'text-left';
-            $cols[$total]['label'] = 'PO Total Amount';
-        } else {
+        $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'total', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
 
-            if ($companyid == 56) { //homeworks
-                $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'client', 'listclientname', 'yourref', 'ourref', 'total', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
-            } else {
-                $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'total', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
-            }
-
-            $stockbuttons = ['view', 'diagram'];
-            foreach ($getcols as $key => $value) {
-                $$value = $key;
-            }
-
-            if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                $this->showfilterlabel = [
-                    ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
-                    ['val' => 'locked', 'label' => 'Locked', 'color' => 'primary'],
-                    ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
-                    ['val' => 'complete', 'label' => 'Complete', 'color' => 'primary'],
-                    ['val' => 'all', 'label' => 'All', 'color' => 'primary']
-                ];
-            }
-
-            $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-
-            $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-            $cols[$lblstatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-            $cols[$listclientname]['style'] = 'width:350px;whiteSpace: normal;min-width:350px;';
-            $cols[$yourref]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
-            $cols[$yourref]['align'] = 'text-left';
-            $cols[$ourref]['align'] = 'text-left';
-            $cols[$total]['label'] = 'Grand Total';
-
-            if ($companyid != 28) { // not xcomp 
-                $cols[$rem]['type'] = 'coldel';
-                if ($companyid != 47) { //not kitchenstar
-                    $cols[$total]['type'] = 'coldel';
-                }
-            }
-            if ($companyid == 47) { // kitchenstar
-                $cols[$total]['label'] = 'Total Amount';
-            }
-            $cols[$postdate]['label'] = 'Post Date';
-
-            if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                $cols[$yourref]['label'] = 'Customer PO';
-            }
+        $stockbuttons = ['view', 'diagram'];
+        foreach ($getcols as $key => $value) {
+            $$value = $key;
         }
 
-        if ($companyid == 56) { //homeworks
-            $cols[$listdocument]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
-            $cols[$client]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;';
-            $cols[$client]['type'] = 'label';
-            $cols[$client]['label'] = 'Code';
-        }
+        $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
 
-        if ($this->companysetup->linearapproval($config['params'])) {
-            array_push(
-                $this->showfilterlabel,
-                ['val' => 'forapproval', 'label' => 'For Approval', 'color' => 'primary'],
-                ['val' => 'approved', 'label' => 'Approved', 'color' => 'primary']
-            );
-        }
+        $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+        $cols[$lblstatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+        $cols[$listclientname]['style'] = 'width:350px;whiteSpace: normal;min-width:350px;';
+        $cols[$yourref]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+        $cols[$yourref]['align'] = 'text-left';
+        $cols[$ourref]['align'] = 'text-left';
+        $cols[$total]['label'] = 'Grand Total';
 
-        if ($companyid != 10 && $companyid != 12) { //not afti and afti usd
-            array_push(
-                $this->showfilterlabel,
-                ['val' => 'pending', 'label' => 'Pending', 'color' => 'primary'],
-                ['val' => 'locked', 'label' => 'Locked', 'color' => 'primary'],
-                ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
-                ['val' => 'all', 'label' => 'All', 'color' => 'primary']
-            );
-        }
+
+        $cols[$rem]['type'] = 'coldel';
+        $cols[$total]['type'] = 'coldel';
+
+        $cols[$postdate]['label'] = 'Post Date';
+
+
+        $this->showfilterlabel = [
+            ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+            ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+            ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+        ];
+
 
         $cols = $this->tabClass->delcollisting($cols);
 
@@ -255,62 +197,7 @@ class po
     public function paramsdatalisting($config)
     {
         $companyid = $config['params']['companyid'];
-        switch ($companyid) {
-            case 10: //afti
-            case 12: //afti usd
-                $fields = ['selectprefix', 'docno'];
-                $col1 = $this->fieldClass->create($fields);
-                data_set($col1, 'docno.type', 'input');
-                data_set($col1, 'docno.label', 'Search');
-                data_set($col1, 'selectprefix.label', 'Search by');
-                data_set($col1, 'selectprefix.type', 'lookup');
-                data_set($col1, 'selectprefix.lookupclass', 'lookupsearchby');
-                data_set($col1, 'selectprefix.action', 'lookupsearchby');
-                $data = $this->coreFunctions->opentable("select '' as docno,'' as selectprefix");
-                return ['status' => true, 'data' => $data[0], 'txtfield' => ['col1' => $col1]];
-                break;
-            case 39: //cbbsi
-                $fields = [];
-                $allownew = $this->othersClass->checkAccess($config['params']['user'], 81);
-                if ($allownew == '1') $fields = ['pickpo'];
-                $col1 = $this->fieldClass->create($fields);
-                data_set($col1, 'pickpo.label', 'pick pr');
-                data_set($col1, 'pickpo.lookupclass', 'pendingprsummaryshortcut');
-                data_set($col1, 'pickpo.action', 'pendingprsummary');
-                data_set($col1, 'pickpo.confirmlabel', 'Proceed to pick PR?');
-                data_set($col1, 'pickpo.addedparams', ['docno', 'selectprefix']);
-
-                $fields = ['selectprefix', 'docno'];
-                $col2 = $this->fieldClass->create($fields);
-
-                $prefix = $this->coreFunctions->getfieldvalue('profile', 'pvalue', 'doc=? and psection=?', ['SED', 'PR']);
-                if ($prefix != '') {
-                    $prefixes = explode(",", $prefix);
-                    $list = array();
-                    foreach ($prefixes as $key) {
-                        array_push($list, ['label' => $key, 'value' => $key]);
-                    }
-                    data_set($col2, 'selectprefix.options', $list);
-                }
-                $data = $this->coreFunctions->opentable("select '' as docno, '' as selectprefix");
-                return ['status' => true, 'data' => $data[0], 'txtfield' => ['col1' => $col1, 'col2' => $col2]];
-                break;
-            case 3: //conti
-                $fields = [];
-                $allownew = $this->othersClass->checkAccess($config['params']['user'], 4192);
-                if ($allownew == '1') $fields = ['pickpo'];
-                $col1 = $this->fieldClass->create($fields);
-                data_set($col1, 'pickpo.label', 'pick canvass');
-                data_set($col1, 'pickpo.lookupclass', 'pendingcdsummaryshortcut');
-                data_set($col1, 'pickpo.action', 'pendingcdsummary');
-                data_set($col1, 'pickpo.confirmlabel', 'Proceed to pick CD?');
-                return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1]];
-                break;
-            default:
-                return ['status' => true, 'data' => [], 'txtfield' => ['col1' => []]];
-
-                break;
-        }
+        return ['status' => true, 'data' => [], 'txtfield' => ['col1' => []]];
     }
 
     public function loaddoclisting($config)
@@ -361,37 +248,11 @@ class po
         $homejoin = "";
         $addf = "";
         $grp = "";
-        switch ($companyid) {
-            case 10: //afti
-            case 12: //afti usd
-                $dateid = "date_format(head.dateid,'%m-%d-%Y') as dateid, head.dateid as date2 ";
-                $status = "case stat.line when 5 then 'Posted' else stat.status end";
-                $ustatus = "'Draft'";
-                if ($search != "") $limit = 'limit 25';
-                $orderby = "order by date2 desc, docno desc";
-                break;
-            case 19: //housegem
-                $dateid = "left(head.dateid,10) as dateid";
-                $status = "stat.status";
-                if ($search != "") $limit = 'limit 150';
-                $orderby = "order by docno desc, dateid desc";
-                break;
-            case 56: //homeworks
-                $dateid = "left(head.dateid,10) as dateid";
-                $status = "stat.status";
-                if ($search != "") $limit = 'limit 150';
-                $orderby = "order by dateid desc, docno desc";
-                $homejoin = " left join client as cl on cl.client= head.client";
-                $addf = ", cl.client";
-                $grp = ", cl.client";
-                break;
-            default:
-                $dateid = "left(head.dateid,10) as dateid";
-                $status = "stat.status";
-                if ($search != "") $limit = 'limit 150';
-                $orderby = "order by dateid desc, docno desc";
-                break;
-        }
+
+        $dateid = "left(head.dateid,10) as dateid";
+        $status = "stat.status";
+        if ($search != "") $limit = 'limit 150';
+        $orderby = "order by dateid desc, docno desc";
 
 
         $leftjoin = "";
@@ -489,12 +350,6 @@ class po
         if (isset($config['params']['search'])) {
             $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
 
-            switch ($companyid) {
-                case 28: //xcomp
-                case 8: //maxipro
-                    array_push($searchfield, 'head.rem');
-                    break;
-            }
             $search = $config['params']['search'];
             if ($search != "") {
                 $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -538,8 +393,8 @@ class po
             'print',
             'post',
             'unpost',
-            'lock',
-            'unlock',
+            // 'lock',
+            // 'unlock',
             'logs',
             'edit',
             'backlisting',
@@ -548,9 +403,6 @@ class po
             'help',
             'others'
         );
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            array_push($btns, 'others');
-        }
 
         $buttons = $this->btnClass->create($btns);
         $step1 = $this->helpClass->getFields(['btnnew', 'supplier', 'dateid', 'terms', 'cswhname', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -570,29 +422,11 @@ class po
             'deletehead' => ['label' => 'How to delete whole transaction', 'action' => $step6]
         ];
 
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            $buttons['others']['label'] = 'Text File';
-            $buttons['others']['items'] = [
-                'aftech' => ['label' => 'Create F File', 'todo' => ['type' => 'exportcsv', 'action' => 'exportcsv', 'lookupclass' => 'exportcsv', 'access' => 'view']],
-                'dfile' => ['label' => 'Create D File', 'todo' => ['type' => 'exportcsv', 'action' => 'exportcsvd', 'lookupclass' => 'exportcsvd', 'access' => 'view']]
-            ];
-        } else {
-            $buttons['others']['items']['first'] =  ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']];
-            $buttons['others']['items']['prev'] =  ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']];
-            $buttons['others']['items']['next'] = ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']];
-            $buttons['others']['items']['last'] = ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['first'] =  ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['prev'] =  ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['next'] = ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['last'] = ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']];
 
-            switch ($config['params']['companyid']) {
-                case 40: // cdo
-                    $buttons['others']['items']['export'] = ['label' => 'Export CSV', 'todo' => ['type' => 'exportcsv', 'action' => 'exportcdocsv', 'lookupclass' => 'exportcdocsv', 'access' => 'view']];
-                    break;
-                case 47: // kitchenstar
-                case 56: // homeworks
-                    $buttons['others']['items']['uploadexcel'] = ['label' => 'Upload Items', 'todo' => ['type' => 'uploadexcel', 'action' => 'uploadexcel', 'lookupclass' => 'uploadexcel', 'access' => 'view']];
-                    $buttons['others']['items']['downloadexcel'] = ['label' => 'Download PO Template', 'todo' => ['type' => 'downloadexcel', 'action' => 'downloadexcel', 'lookupclass' => 'downloadexcel', 'access' => 'view']];
-                    break;
-            }
-        }
 
         if ($this->companysetup->getisshowmanual($config['params'])) {
             $buttons['others']['items']['manual'] = ['label' => 'View Manual', 'todo' => ['lookupclass' => 'po', 'title' => 'PO_MANUAL', 'action' => 'viewpdf',  'access' => 'view', 'type' => 'viewmanual']];
@@ -616,28 +450,11 @@ class po
         $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
 
 
-        if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-            $return['INSTRUCTION'] = ['icon' => 'fa fa-info', 'customform' => $instructiontab];
-            $return['SHIPPING/BILLING ADDRESS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $billshipdefault];
-            $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysqcomment', 'label' => 'Comments']];
-            $comments = $this->tabClass->createtab($tab, []);
-            $return['COMMENTS'] = ['icon' => 'fa fa-comment', 'tab' => $comments];
-        }
-
         if ($this->companysetup->getistodo($config['params'])) {
             $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrytransnumtodo', 'label' => 'To Do', 'access' => 'view']];
             $objtodo = $this->tabClass->createtab($tab, []);
             $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
         }
-
-        if ($config['params']['companyid'] == 60) { //transpower      
-            $changecode = $this->othersClass->checkAccess($config['params']['user'], 5491);
-            if ($changecode) {
-                $changecode = ['customform' => ['action' => 'customform', 'lookupclass' => 'changebarcode']];
-                $return['CHANGE CODE'] = ['icon' => 'fa fa-qrcode', 'customform' => $changecode];
-            }
-        }
-
         return $return;
     }
 
@@ -646,25 +463,12 @@ class po
     {
         $companyid = $config['params']['companyid'];
         $viewrrcost = $this->othersClass->checkAccess($config['params']['user'], 843);
-        $isproject = $this->companysetup->getisproject($config['params']);
-        $po_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 3592);
-        $systype = $this->companysetup->getsystemtype($config['params']);
-        $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-
-        $column = ['action', 'barcode', 'rrqty', 'uom',  'itemname', 'rrcost','disc', 'ext', 'qa', 'rem', 'ref', 'void'];
-
-        $sortcolumn = ['action',  'barcode', 'rrqty', 'uom',  'itemname', 'rrcost','disc', 'ext', 'qa', 'rem', 'ref', 'void'];
 
 
-        foreach ($column as $key => $value) {
-            $$value = $key;
-        }
+        $column = ['action', 'barcode', 'rrqty', 'uom',  'itemname', 'rrcost', 'disc', 'ext', 'qa', 'rem', 'ref', 'void'];
+        $sortcolumn = ['action',  'barcode', 'rrqty', 'uom',  'itemname', 'rrcost', 'disc', 'ext', 'qa', 'rem', 'ref', 'void'];
 
         $headgridbtns = ['itemvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram'];
-
-        if ($po_btnvoid_access == 0) {
-            unset($headgridbtns[0]);
-        }
 
         foreach ($column as $key => $value) {
             $$value = $key;
@@ -685,11 +489,9 @@ class po
         ];
 
 
-        $stockbuttons = ['save', 'delete', 'showbalance'];
 
 
-
-
+        $stockbuttons = ['delete'];
 
         if ($this->companysetup->getiseditsortline($config['params'])) {
             array_push($stockbuttons, 'sortline');
@@ -697,11 +499,19 @@ class po
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+
 
         $obj[0]['inventory']['columns'][$barcode]['label'] = 'Barcode';
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$barcode]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0]['inventory']['columns'][$rrqty]['checkfield'] = 'void';
         $obj[0]['inventory']['columns'][$rrcost]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
-        $obj[0]['inventory']['columns'][$hidden]['type'] = 'label';
+
+        $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
+
+
 
         if ($viewrrcost == 0) {
             $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
@@ -714,7 +524,7 @@ class po
             $obj[0]['inventory']['columns'][$rrcost]['readonly'] = true;
             $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
         }
-
+        $obj[0]['inventory']['descriptionrow'] = [];
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
@@ -730,103 +540,27 @@ class po
 
         $ispr =  $this->companysetup->getispr($config['params']);
 
-        switch ($companyid) {
-            case 2: //mis
-            case 3: //conti
-                $tbuttons = ['pendingcd', 'pendingpr', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
-                if ($prmod == 0) {
-                    unset($tbuttons[1]);
-                } else {
-                    if ($pr_access == 0) {
-                        unset($tbuttons[1]);
-                    }
-                }
-
-                if ($canvass_access == 0) {
-                    unset($tbuttons[0]);
-                }
-                break;
-            case 1: //vitaline
-            case 6: //mitsukoshi
-            case 23: //labsol cebu
-            case 41: //labsol manila
-            case 52: //technolab
-                $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem'];
-                if ($companyid == 6) {
-                    array_push($tbuttons, 'criticalstocks');
-                }
-                break;
-            case 10: //afti
-            case 12: //afti usd
-                $tbuttons = ['pendingos', 'pendingpr', 'pendingsqpo', 'additem', 'saveitem', 'deleteallitem'];
-                if ($prmod == 0) {
-                    unset($tbuttons[1]);
-                } else {
-                    if ($pr_access == 0) {
-                        unset($tbuttons[1]);
-                    }
-                }
-                break;
-            case 60: //transpower
-                $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsj'];
-                break;
-            case 63: //ericco
-                $tbuttons = ['multiitem', 'quickadd', 'saveitem', 'deleteallitem'];
-                break;
-
-            default:
-
-                $tbuttons = [];
-                if ($ispr) {
-                    array_push($tbuttons, 'pendingpr');
-                }
-
-                array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem');
-
-                if ($isversion) {
-                    array_push($tbuttons, 'pendingso');
-                    array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem');
-                }
-                if ($ispr) {
-                    if ($prmod == 0) {
-                        unset($tbuttons[0]);
-                    } else {
-                        if ($pr_access == 0) {
-                            unset($tbuttons[0]);
-                        }
-                    }
-                }
-                break;
+        $tbuttons = [];
+        if ($ispr) {
+            array_push($tbuttons, 'pendingpr');
         }
 
+        array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem');
 
-        if ($companyid == 47) { //kitchenstar
-            if ($viewcost == '0') {
-                $obj[0]['inventory']['showtotal'] = false;
+        if ($isversion) {
+            array_push($tbuttons, 'pendingso');
+            array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem');
+        }
+        if ($ispr) {
+            if ($prmod == 0) {
+                unset($tbuttons[0]);
+            } else {
+                if ($pr_access == 0) {
+                    unset($tbuttons[0]);
+                }
             }
         }
         $obj = $this->tabClass->createtabbutton($tbuttons);
-
-        switch ($this->companysetup->getsystemtype($config['params'])) {
-            case 'CAIMS':
-                $obj[0]['action'] = "pendingprdetail";
-                $obj[0]['lookupclass'] = "pendingprdetail_pr";
-                break;
-        }
-
-        if ($companyid == 8) { //maxipro
-            $obj[3]['label'] = "SAVE ALL";
-            $obj[4]['label'] = "DELETE ALL";
-        }
-
-        if ($companyid == 3) { //conti
-            $obj[0]['access'] = "addcditem";
-        }
-
-        if ($companyid == 56) { //homeworks
-            $obj[0]['addedparams'] = ['isfa'];
-        }
-
         return $obj;
     }
 
@@ -835,264 +569,29 @@ class po
         $systype = $this->companysetup->getsystemtype($config['params']);
         $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4851);
         $fields = ['docno', 'client', 'clientname', 'address'];
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            unset($fields[3]); // remove address for afti
-            array_push($fields, 'whreceivername');
-        }
-        switch ($systype) {
-            case 'CAIMS':
-                array_push($fields, 'deldate', 'deladdress');
-                break;
-        }
+
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'client.label', 'Vendor');
         data_set($col1, 'docno.label', 'Transaction#');
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            data_set($col1, 'clientname.type', 'textarea');
 
-            data_set($col1, 'empname.label', 'Contact Person');
-            data_set($col1, 'empname.lookupclass', 'lookupemployeepo');
-            data_set($col1, 'empname.action', 'lookupclient');
-            data_set($col1, 'empname.type', 'lookup');
-            data_set($col1, 'tel2.label', 'Contact No.');
-            data_set($col1, 'tel2.class', 'cstel2 sbccsreadonly');
-        }
+        $fields = [['dateid', 'terms'], 'due', 'whname'];
 
-        if ($this->companysetup->getisproject($config['params'])) {
-            if ($config['params']['companyid'] == 8) { //maxipro
-                $fields = [['dateid', 'terms'], 'due', 'dvattype', 'tin', 'dwhname', 'dprojectname'];
-            } else {
-                $fields = [['dateid', 'terms'], 'due', 'dvattype', 'dwhname', 'dprojectname'];
-            }
-            $col2 = $this->fieldClass->create($fields);
-            data_set($col2, 'dprojectname.required', true);
-            data_set($col2, 'dprojectname.lookupclass', 'projectcode');
-            data_set($col2, 'dprojectname.condition', ['checkstock']);
-            data_set($col2, 'dprojectname.addedparams', []);
-            if ($config['params']['companyid'] == 8) { //maxipro
-                data_set($col2, 'tin.readonly', true);
-            }
-        } else {
-            switch ($config['params']['companyid']) {
-                case 10: //afti
-                case 12: //afti usd
-                    $fields = [['dateid', 'terms'], ['due', 'dvattype']];
-                    array_push($fields, 'dbranchname');
-                    array_push($fields, 'ddeptname');
-                    array_push($fields, 'insurance');
-                    break;
-                default:
-                    switch ($config['params']['companyid']) {
-                        case 24: //goodfound
-                            $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'whname'];
-                            array_push($fields, 'ddeptname');
-                            break;
-                        case 39: //cbbsi
-                            $fields = [['dateid', 'terms'], 'due', 'whname', 'instructions'];
-                            break;
-                        case 56:
-                            $fields = [['dateid', 'terms'], 'due', ['expiration', 'days'], 'whname'];
-                            break;
-                        default:
-                            $fields = [['dateid', 'terms'], 'due', 'whname'];
-                            break;
-                    }
-                    break;
-            }
 
-            $col2 = $this->fieldClass->create($fields);
-            if ($config['params']['companyid'] != 10 && $config['params']['companyid'] != 12) {
-                data_set($col2, 'whname.required', true);
-                data_set($col2, 'whname.type', 'lookup');
-                data_set($col2, 'whname.action', 'lookupclient');
-                data_set($col2, 'whname.lookupclass', 'wh');
-            }
-            switch ($config['params']['companyid']) {
-                case 10: //afti
-                case 12: //afti usd
-                case 24: //goodfound
-                    data_set($col2, 'ddeptname.label', 'Department');
-                    break;
-                case 39: //cbbsi
-                    data_set($col2, 'instructions.type', 'textarea');
-                    data_set($col2, 'instructions.label', 'Shipping Instructions');
-                    data_set($col2, 'instructions.readonly', false);
-                    data_set($col2, 'instructions.class', 'csinstructions');
-                    break;
-                case 40: //cdo
-                    if ($noeditdate) {
-                        data_set($col2, 'dateid.class', 'sbccsreadonly');
-                    }
-                case 56: //homeworks
-                    data_set($col2, 'expiration.type', 'date');
-                    data_set($col2, 'expiration.class', 'csdaytype sbccsreadonly');
-                    data_set($col2, 'days.addedparams', ['dateid']);
-                    data_set($col2, 'days.type', 'lookup');
-                    data_set($col2, 'days.action', 'lookupexpiration');
-                    data_set($col2, 'days.lookupclass', 'days');
-                    data_set($col2, 'days.label', 'Days');
-                    data_set($col2, 'days.readonly', true);
-                    data_set($col2, 'days.class', 'csdaytype sbccsreadonly');
-                    break;
-            }
-        }
+        $col2 = $this->fieldClass->create($fields);
 
-        if ($this->companysetup->getisproject($config['params'])) {
-            $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'subprojectname'];
-            $col3 = $this->fieldClass->create($fields);
-            data_set($col3, 'subprojectname.required', true);
-        } else {
-            switch ($config['params']['companyid']) {
-                case 10: //afti
-                case 12: //afti usd
-                    $fields = ['yourref', ['cur', 'forex'], 'sodocno'];
-                    break;
-                case 28: //xcomp
-                case 27: //NTE
-                case 36: //rozlab
-                    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype'];
-                    break;
-                case 24: //good found cement 
-                    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dewt'];
-                    break;
-                case 39: //cbbsi
-                    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'declaredval'];
-                    break;
-                case 56: // homeworks
-                    $fields = $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dewt', 'isfa'];
-                    break;
-                default:
-                    $fields = [['yourref', 'ourref'], ['cur', 'forex']];
-                    break;
-            }
-            switch ($systype) {
-                case 'REALESTATE':
-                    array_push($fields, 'rem');
-                    break;
-            }
-            $col3 = $this->fieldClass->create($fields);
-            if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-                data_set($col3, 'yourref.label', 'Customer PO');
-                data_set($col3, 'sodocno.condition', ['checkstock']);
-            }
-        }
+        data_set($col2, 'whname.required', true);
+        data_set($col2, 'whname.type', 'lookup');
+        data_set($col2, 'whname.action', 'lookupclient');
+        data_set($col2, 'whname.lookupclass', 'wh');
 
-        if ($config['params']['companyid'] == 8) { //maxipro
-            data_set($col3, 'yourref.type', 'lookup');
-            data_set($col3, 'yourref.class', 'csyourref sbccsreadonly');
-            data_set($col3, 'yourref.lookupclass', 'pendingpr_yourref');
-            data_set($col3, 'yourref.action', 'pendingpr_yourref');
-            data_set($col3, 'yourref.addedparams', ['projectid', 'subproject']);
-        }
+        $fields = [['yourref', 'ourref'], ['cur', 'forex']];
 
-        if ($config['params']['companyid'] == 60) { //transpower
-            data_set($col3, 'yourref.required', true);
-            data_set($col3, 'yourref.label', 'SJ Ref');
-        }
+        $col3 = $this->fieldClass->create($fields);
 
         $fields = ['rem'];
-
-        if ($this->companysetup->getistodo($config['params'])) {
-            array_push($fields, 'donetodo');
-        }
-        if ($config['params']['companyid'] == 8) { //maxipro
-            array_push($fields, 'revision');
-        }
-
-        if ($config['params']['companyid'] == 56) { //HOMEWORKS
-            $accessupinfo = $this->othersClass->checkAccess($config['params']['user'], 5301);
-            if ($accessupinfo) {
-                array_push($fields, 'updatepostedinfo');
-            }
-        }
-        switch ($systype) {
-            case 'REALESTATE':
-                $fields = ['dprojectname', 'phase', 'housemodel', ['blklot', 'lot'], 'amenityname', 'subamenityname'];
-
-                $col4 = $this->fieldClass->create($fields);
-                data_set($col4, 'dprojectname.lookupclass', 'project');
-                data_set($col4, 'phase.addedparams', ['projectid']);
-                data_set($col4, 'housemodel.addedparams', ['projectid']);
-                data_set($col4, 'blklot.addedparams', ['projectid', 'phaseid', 'modelid', 'fpricesqm']);
-                data_set($col4, 'subamenityname.addedparams', ['amenityid']);
-                data_set($col4, 'lot.readonly', true);
-                break;
-            default:
-                if ($this->companysetup->linearapproval($config['params'])) {
-                    array_push($fields, 'forapproval', 'doneapproved', 'lblapproved');
-                }
-                $col4 = $this->fieldClass->create($fields);
-                data_set($col4, 'lblapproved.type', 'label');
-                data_set($col4, 'lblapproved.label', 'APPROVED!');
-                data_set($col4, 'lblapproved.style', 'font-weight:bold;font-family:Century Gothic;color: green;');
-                break;
-        }
-
-        if ($config['params']['companyid'] == 8) { //maxipro
-            data_set($col4, 'rem.type', 'textarea');
-        }
-        if ($config['params']['companyid'] == 56) { //HOMEWORKS
-            data_set($col4, 'updatepostedinfo.label', 'UPDATE EXPIRATION');
-            data_set($col4, 'updatepostedinfo.access', 'view');
-        }
-
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            data_set($col4, 'rem.type', 'textarea');
-        }
-
+        $col4 = $this->fieldClass->create($fields);
         return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
     }
-
-
-    // public function sbcscript($config){
-    //   return ['head'=>'
-    //     console.log("from backend1111111", payload)
-    //    if (payload.field !== undefined) {                
-    //       if (payload.field === "address") {
-    //         console.log("from backend1111111", payload)        
-    //         if(state.headerdata["address"]==="A"){
-    //           state.headercols.col4.rem.required = true
-    //           state.headercols.col4.rem.readonly = true
-    //         } else if(state.headerdata["address"]==="B"){
-    //           state.headerdata["rem"] = "BB"
-    //         } else if(state.headerdata["address"]==="C"){
-    //           state.headerdata["rem"] = "CC"
-    //         }
-    //       }
-    //       if (payload.field === "client") {
-    //          console.log("client:" + payload.value)
-    //       }
-    //       if (payload.field === "clientname") {
-    //          state.headerdata["rem"] = state.headerdata["clientname"]
-    //       }
-    //    } else {
-    //      console.log("rem status", state.headercols.col4.rem.required)
-    //      state.headercols.col4.rem.required = false
-    //    }
-
-    //   ',
-    //    'stock'=>'console.log("stock",payload)',
-
-    //    'report'=>'
-    //      console.log("report field",payload)
-    //      if(state.reportdata.params.prepared===""){
-    //        state.reportobject.txtfield.col1.approved.style="display:none"
-    //        state.reportobject.txtfield.col1.received.style="display:none"
-    //      }else{
-    //        state.reportobject.txtfield.col1.approved.style="display:block"
-    //      }
-    //        if(state.reportdata.params.approved===""){
-    //           state.reportobject.txtfield.col1.received.style="display:none"
-    //        }else {
-    //           state.reportobject.txtfield.col1.received.style="display:block"
-    //        }
-    //      ',
-    //      'printbtn'=>'console.log("reportbtn",payload)'
-    //    ];
-    // }
-
-
-
     public function defaultheaddata($params)
     {
         $data = [];
@@ -1121,14 +620,10 @@ class po
         $data[0]['ddeptname'] = '';
         $data[0]['deptid'] = '0';
         $data[0]['dept'] = '';
-        if ($params['companyid'] == 8) { //maxipro
-            $data[0]['tax'] = 12;
-            $data[0]['vattype'] = 'VATABLE';
-            $data[0]['tin'] = '';
-        } else {
-            $data[0]['tax'] = 0;
-            $data[0]['vattype'] = 'NON-VATABLE';
-        }
+
+        $data[0]['tax'] = 0;
+        $data[0]['vattype'] = 'NON-VATABLE';
+
 
         $data[0]['wh'] = $this->companysetup->getwh($params);
         $name = $this->coreFunctions->datareader("select clientname as value from client where client='" . $data[0]['wh'] . "'");
@@ -1153,10 +648,6 @@ class po
         $data[0]['insurance'] = 0;
         $data[0]['ewt'] = '';
         $data[0]['ewtrate'] = '0';
-        if ($params['companyid'] == 39) { //cbbsi
-            $data[0]['instructions'] = '';
-            $data[0]['declaredval'] = '0';
-        }
 
         $data[0]['dprojectname'] = '';
         $data[0]['phaseid'] = 0;
@@ -1190,19 +681,11 @@ class po
         $data[0]['rem'] = '';
         $data[0]['terms'] = '';
 
-        if ($companyid == 47) { //kitchenstar
-            $data[0]['cur'] = "RMB";
-            $data[0]['forex'] =  $this->coreFunctions->datareader("select curtopeso as value from forex_masterfile where cur='RMB'");;
-            $data[0]['wh'] = 'BULACAN001';
-            $name = $this->coreFunctions->datareader("select clientname as value from client where client='BULACAN001'");
-            $data[0]['whname'] = $name;
-        } else {
-            $data[0]['cur'] = $this->companysetup->getdefaultcurrency($params);
-            $data[0]['wh'] = $this->companysetup->getwh($params);
-            $name = $this->coreFunctions->datareader("select clientname as value from client where client='" . $data[0]['wh'] . "'");
-            $data[0]['whname'] = $name;
-            $data[0]['forex'] = 1;
-        }
+        $data[0]['cur'] = $this->companysetup->getdefaultcurrency($params);
+        $data[0]['wh'] = $this->companysetup->getwh($params);
+        $name = $this->coreFunctions->datareader("select clientname as value from client where client='" . $data[0]['wh'] . "'");
+        $data[0]['whname'] = $name;
+        $data[0]['forex'] = 1;
 
         $data[0]['projectcode'] = '';
         $data[0]['projectname'] = '';
@@ -1217,14 +700,8 @@ class po
         $data[0]['deptid'] = '0';
         $data[0]['dept'] = '';
 
-        if ($params['companyid'] == 8) { //maxipro
-            $data[0]['tax'] = 12;
-            $data[0]['vattype'] = 'VATABLE';
-            $data[0]['tin'] = '';
-        } else {
-            $data[0]['tax'] = 0;
-            $data[0]['vattype'] = 'NON-VATABLE';
-        }
+        $data[0]['tax'] = 0;
+        $data[0]['vattype'] = 'NON-VATABLE';
 
         $data[0]['empid'] = '0';
         $data[0]['empname'] = '';
@@ -1265,15 +742,6 @@ class po
         $data[0]['expiryid'] = 0;
         $data[0]['days'] = 0;
 
-        if ($params['companyid'] == 56) {
-            $expiration = $this->coreFunctions->opentable("select line, expiry, DATE_ADD('" . $data[0]['dateid'] . "', INTERVAL days DAY) as days from expiration where days='14 Days'");
-            if (!empty($expiration)) {
-                $data[0]['expiration'] = $expiration[0]->days;
-                $data[0]['expiryid'] = $expiration[0]->line;
-                $data[0]['days'] = $expiration[0]->expiry;
-            }
-        }
-
         $data[0]['isfa'] = '0';
         return $data;
     }
@@ -1306,50 +774,9 @@ class po
         $table = $this->head;
         $htable = $this->hhead;
 
-        switch ($this->companysetup->getsystemtype($config['params'])) {
-            case 'CAIMS':
-                $addedfield = ", rqhead.docno as yourref, head.rqtrno, left(head.deldate, 10) as deldate, head.deladdress,client.tin";
-                $addedjoin = "left join hprhead as rqhead on rqhead.trno = head.rqtrno";
-                break;
-            case 'AIMS':
-                $addedfield = ", head.yourref, head.rqtrno, left(head.deldate, 10) as deldate, head.deladdress";
-                $addedjoin = "";
-                break;
-            case 'REALESTATE':
-                $addedfield = "
-          ,'' as dprojectname, 
-          ph.code as phase,
-          hm.model as housemodel,  
-          bl.blk as blklot, 
-          bl.lot,
-          
-          amh.line as amenityid,
-          amh.description as amenityname,
-          subamh.line as subamenityid,
-          subamh.description as subamenityname";
 
-                $addedjoin = "
-          left join phase as ph on ph.line = head.phaseid
-          left join housemodel as hm on hm.line = head.modelid
-          left join blklot as bl on bl.line = head.blklotid
-
-          left join amenities as amh on amh.line= head.amenityid
-          left join subamenities as subamh on subamh.line=head.subamenityid and subamh.amenityid=head.amenityid";
-                break;
-            case 'AIMSPOS':
-                $addedfield = ", head.yourref, head.rqtrno, left(head.deldate, 10) as deldate, head.deladdress";
-                $addedjoin = "";
-                if ($companyid == 56) { //homeworks
-                    $addedfield .= ", head.expiration,exp.days,exp.line as expiryid,exp.expiry";
-                    $addedjoin = "left join expiration as exp on exp.line = head.expiryid";
-                }
-
-                break;
-            default:
-                $addedfield = ", head.yourref, head.rqtrno, left(head.deldate, 10) as deldate, head.deladdress";
-                $addedjoin = "";
-                break;
-        }
+        $addedfield = ", head.yourref, head.rqtrno, left(head.deldate, 10) as deldate, head.deladdress";
+        $addedjoin = "";
 
         $qryselect = "select
          num.center,
@@ -1445,37 +872,8 @@ class po
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
             $hidetabbtn = ['btndeleteallitem' => false];
             $clickobj = ['button.btnadditem'];
-            switch ($config['params']['companyid']) {
-                case 10: //afti
-                case 12: //afti usd
-                case 28: //xcomp
-                case 60: //transpower
-                    $clickobj = [];
-                    break;
-            }
 
             $hideobj = [];
-            // fortesting
-            if ($this->companysetup->linearapproval($config['params'])) {
-                switch ($head[0]->statid) {
-                    case 10: // forapproval
-                        $hideobj = ['forapproval' => true, 'doneapproved' => false, 'lblapproved' => true];
-                        break;
-                    case 36: // approved
-                        $hideobj = ['forapproval' => true, 'doneapproved' => true, 'lblapproved' => false];
-                        break;
-                    case 0: // draf
-                        $hideobj = ['forapproval' => false, 'doneapproved' => true, 'lblapproved' => true];
-                        break;
-                }
-            }
-
-            if ($this->companysetup->getistodo($config['params'])) {
-                $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
-                $hideobj = ['donetodo' => !$btndonetodo];
-            }
-            //$msg2 = 'Document # '.$head[0]->docno.' open by '.$user ;
-            //$this->othersClass->socketmsg($config,$msg2,'','sbc2');
             return  [
                 'head' => $head,
                 'griddata' => ['inventory' => $stock],
@@ -1528,135 +926,19 @@ class po
         $info['instructions'] = $head['instructions'];
         $info['declaredval'] = $head['declaredval'];
 
-        if ($companyid == 56) { // homeworks
-            $data['expiration'] = $head['expiration'];
-        }
 
         if ($isupdate) {
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-            if ($companyid == 39) { //cbbsi
-                $exist = $this->coreFunctions->getfieldvalue($this->infohead, "trno", "trno=?", [$head['trno']]);
-                if (floatval($exist) <> 0) {
-                    $this->coreFunctions->sbcupdate($this->infohead, $info, ['trno' => $head['trno']]);
-                } else {
-                    $info['trno'] = $head['trno'];
-                    $this->coreFunctions->sbcinsert($this->infohead, $info);
-                }
-            }
             $this->recomputecost($head, $config);
         } else {
             $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $insert = $this->coreFunctions->sbcinsert($this->head, $data);
-            if ($companyid == 39) { //cbbsi
-                $info['trno'] = $head['trno'];
-                $this->coreFunctions->sbcinsert($this->infohead, $info);
-            }
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
-        }
-
-        if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-            $this->insertsostock($config, $head['sotrno']);
         }
     } // end function
 
-    private function insertsostock($config, $sotrno)
-    {
-        $center = $config['params']['center'];
-        $trno = $config['params']['trno'];
-        $qty_deci = $this->companysetup->getdecimal('qty', $config['params']);
-        $currency_deci = $this->companysetup->getdecimal('currency', $config['params']);
-
-        $sostock = $this->coreFunctions->opentable("select concat(stock.trno,stock.line) as keyid, so.docno, stock.trno as sorefx, stock.line as solinex, stock.itemid, item.barcode, item.itemname, so.docno, date(head.dateid) as dateid,
-      FORMAT(stock.isqty," . $qty_deci . ") as isqty,
-      FORMAT(stock.iss," . $qty_deci . ") as iss,
-      FORMAT(stock.isamt," . $currency_deci . ") as isamt, stock.disc,
-      FORMAT(item.amt4," . $currency_deci . ") as amt,
-      FORMAT(item.famt," . $currency_deci . ") as damt,
-      FORMAT(stock.ext," . $currency_deci . ") as ext,wh.client as wh, stock.whid,
-      FORMAT(((stock.qa+stock.sjqa) / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $qty_deci . ") as qa,
-      FORMAT(((stock.iss-(stock.qa+stock.sjqa))/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $qty_deci . ") as pending,
-      head.yourref,m.model_name as model,
-      stock.uom, stock.projectid, stock.stageid, stock.loc,stock.sortline
-      from hsqhead as so 
-      left join hqshead as head on head.sotrno=so.trno 
-      left join hqsstock as stock on stock.trno=head.trno
-      left join item on item.itemid=stock.itemid
-      left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
-      left join model_masterfile as m on m.model_id = item.model
-      left join transnum on transnum.trno = head.trno
-      left join client as wh on wh.clientid=stock.whid
-      where so.doc='SQ' and stock.iss > (stock.qa + stock.sjqa + stock.poqa) 
-      and stock.iscanvass=0 and so.trno = '" . $sotrno . "'
-      and stock.void = 0 and transnum.center = '" . $center . "'  
-      order by so.docno,stock.sortline, stock.line");
-
-        $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
-        $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
-        foreach ($sostock as $key => $val) {
-            $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
-            $line = $this->coreFunctions->datareader($qry, [$trno]);
-            if ($line == '') {
-                $line = 0;
-            }
-            $line = $line + 1;
-
-            //$line = $key + 1;
-            $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
-            $item = $this->coreFunctions->opentable($qry, [$val->uom, $val->itemid]);
-            $factor = 1;
-            if (!empty($item)) {
-                $item[0]->factor = $this->othersClass->val($item[0]->factor);
-                if ($item[0]->factor !== 0) $factor = $item[0]->factor;
-            }
-            if ($forex != 1) {
-                $amt = $this->othersClass->sanitizekeyfield('amt', $val->amt);
-            } else {
-                $amt = $this->othersClass->sanitizekeyfield('amt', $val->damt);
-            }
-
-            $isqty = round($val->isqty, $this->companysetup->getdecimal('qty', $config['params']));
-            $isqty = $this->othersClass->sanitizekeyfield('isqty', $isqty);
-            $computedata = $this->othersClass->computestock($amt, $val->disc, $isqty, $factor);
-            $cost = $computedata['amt'] * $forex;
-            $cost = $this->othersClass->sanitizekeyfield('cost', number_format($cost, $currency_deci));
-            $qry = "
-          insert into postock(
-          trno, line, itemid, rrcost,
-          cost, rrqty, qty, ext,
-          disc, whid, loc, uom,
-          void, refx, linex, cdrefx, cdlinex, 
-          sorefx, solinex, osrefx,
-          oslinex, rem, ref, stageid, projectid,
-          poref, sgdrate,sortline)
-          select '" . $trno . "' as trno, '" . $line . "' as line, '" . $val->itemid . "' as itemid, '" . $amt . "' as rrcost,
-          '" . $cost . "' as cost, '" . $isqty . "' as rrqty, '" . $computedata['qty'] . "' as qty, '" . $computedata['ext'] . "' as ext,
-          '' as disc, '" . $val->whid . "' as whid, '" . $val->loc . "' as loc, '" . $val->uom . "' as uom,
-          0 as void, 0 as refx, 0 as linex, 0 as cdrefx, 0 as cdlinex, 
-          '" . $val->sorefx . "' as sorefx, '" . $val->solinex . "' as solinex, 0 as osrefx, 0 as oslinex, '' as rem, '" . $val->docno . "' as ref, '" . $val->stageid . "' as stageid, '" . $val->projectid . "' as projectid,
-          '" . $val->yourref . "' as poref, '" . $sgdrate . "' as sgdrate," . $val->sortline . " as sortline
-        ";
-            $this->coreFunctions->execqry($qry, 'insert');
-
-            if ($val->sorefx != 0) {
-                if ($this->setservedsoitems($val->sorefx, $val->solinex) === 0) {
-                    $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-                    $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                    $this->setservedsoitems($val->sorefx, $val->solinex);
-                    $return = false;
-                }
-            }
-            if ($val->sorefx != 0) {
-                if ($this->setservedsqitems($val->sorefx, $val->solinex) === 0) {
-                    $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-                    $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                    $this->setservedsqitems($val->sorefx, $val->solinex);
-                    $return = false;
-                }
-            }
-        }
-    }
 
     public function deletetrans($config)
     {
@@ -1688,21 +970,6 @@ class po
         }
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
-        if ($config['params']['companyid'] == 36) { //rozlab
-            if (!$this->othersClass->islocked($config)) {
-                return ['status' => false, 'msg' => 'Posting failed. PO needs to be locked first.'];
-            }
-        }
-
-        // if ($config['params']['companyid'] == 40) { pinaremove ni mam monching 10/03/2024
-        //   $qty = $this->coreFunctions->datareader('select sum(qty) as value from headprrem where trno=?', [$trno]);
-        //   $sqty = $this->coreFunctions->datareader("select sum(s.qty) as value from " . $this->stock . " as s 
-        //   left join item on item.itemid = s.itemid left join itemcategory as cat on cat.line = item.category where cat.name ='MC UNIT' and s.trno=? ", [$trno]);
-        //   if ($qty <> $sqty) {
-        //     return ['status' => false, 'msg' => 'Posting failed. Incorrect color quantity for Units.'];
-        //   }
-        // }
-
         if ($this->othersClass->isposted($config)) {
             return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
         }
@@ -1722,10 +989,6 @@ class po
       where head.trno=? limit 1";
         $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
         if ($posthead) {
-            if ($config['params']['companyid'] == 39) { //cbbsi
-                $qry = "insert into " . $this->hinfohead . "(trno, instructions, declaredval) select trno, instructions, declaredval from " . $this->infohead . " where trno=?";
-                $this->coreFunctions->execqry($qry, 'insert', [$trno]);
-            }
             // for glstock
 
             if (!$this->othersClass->postingstockinfotrans($config)) {
@@ -1785,10 +1048,6 @@ class po
     where head.trno=? limit 1";
         //head
         if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-            if ($config['params']['companyid'] == 39) { //cbbsi
-                $qry = "insert into " . $this->infohead . "(trno, instructions, declaredval) select trno, instructions, declaredval from " . $this->hinfohead . " where trno=?";
-                $this->coreFunctions->execqry($qry, 'insert', [$trno]);
-            }
             if (!$this->othersClass->unpostingstockinfotrans($config)) {
                 $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
                 return ['trno' => $trno, 'status' => false, 'msg' => 'Unposting failed. There are issues with inventory.'];
@@ -1822,9 +1081,6 @@ class po
     {
         $companyid = $config['params']['companyid'];
         $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
-        if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-            $qty_dec = 0;
-        }
 
         $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -1927,13 +1183,6 @@ class po
     where stock.trno =? order by sortline,line";
 
         $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
-        if ($config['params']['companyid'] == 39) { //cbbsi
-            if (!empty($stock)) {
-                foreach ($stock as $s) {
-                    $s->netamt = number_format($this->othersClass->Discount(floatval($s->rrcost2), $s->disc), 2);
-                }
-            }
-        }
         return $stock;
     } //end function
 
@@ -1963,9 +1212,6 @@ class po
 
     where stock.trno = ? and stock.line = ? ";
         $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
-        if ($config['params']['companyid'] == 39) { //cbbsi
-            $stock[0]->netamt = $this->othersClass->Discount($stock[0]->rrcost2, $stock[0]->disc);
-        }
         return $stock;
     } // end function
 
@@ -2723,13 +1969,6 @@ class po
         }
         $wh = $config['params']['wh'];
         $item = $this->coreFunctions->opentable("select item.itemid,0 as amt,item.disc,'' as loc,'" . $wh . "' as wh, 1 as qty, uom,famt from item where barcode=?", [$barcode]);
-        if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-            $trno = $config['params']['trno'];
-            $forex = $this->coreFunctions->getfieldvalue($this->head, "forex", "trno=?", [$trno]);
-            if (floatval($forex) != 1) {
-                $item = $this->coreFunctions->opentable("select item.itemid,case " . $forex . " when 1 then 0 else famt end as amt,item.disc,'' as loc,'" . $wh . "' as wh, 1 as qty, uom from item where barcode=?", [$barcode]);
-            }
-        }
 
         $item = json_decode(json_encode($item), true);
         $defuom = '';
@@ -2857,64 +2096,7 @@ class po
             $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
         }
 
-        if ($companyid == 8) { //maxipro
-            if (isset($config['params']['data']['ext'])) {
-                $ext = $config['params']['data']['ext'];
-            }
-        }
 
-        if ($companyid == 19) { //housegem
-            $prevamt = 0;
-            $prevdate = NULL;
-            if (isset($config['params']['data']['prevamt'])) {
-                $prevamt = $config['params']['data']['prevamt'];
-            }
-
-            if (isset($config['params']['data']['prevdate'])) {
-                $prevdate = $config['params']['data']['prevdate'];
-            }
-        }
-
-        if ($systype == 'REALESTATE') {
-
-            if (isset($config['params']['data']['projectid'])) {
-                $projectid = $config['params']['data']['projectid'];
-            }
-            if (isset($config['params']['data']['phaseid'])) {
-                $phaseid = $config['params']['data']['phaseid'];
-            }
-            if (isset($config['params']['data']['modelid'])) {
-                $modelid = $config['params']['data']['modelid'];
-            }
-            if (isset($config['params']['data']['blklotid'])) {
-                $blklotid = $config['params']['data']['blklotid'];
-            }
-            if (isset($config['params']['data']['amenityid'])) {
-                $amenityid = $config['params']['data']['amenityid'];
-            }
-            if (isset($config['params']['data']['subamenityid'])) {
-                $subamenityid = $config['params']['data']['subamenityid'];
-            }
-
-            if ($projectid == 0) {
-                $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
-            }
-            if ($phaseid == 0) {
-                $phaseid = $this->coreFunctions->getfieldvalue($this->head, "phaseid", "trno=?", [$trno]);
-            }
-            if ($modelid == 0) {
-                $modelid = $this->coreFunctions->getfieldvalue($this->head, "modelid", "trno=?", [$trno]);
-            }
-            if ($blklotid == 0) {
-                $blklotid = $this->coreFunctions->getfieldvalue($this->head, "blklotid", "trno=?", [$trno]);
-            }
-            if ($amenityid == 0) {
-                $amenityid = $this->coreFunctions->getfieldvalue($this->head, "amenityid", "trno=?", [$trno]);
-            }
-            if ($subamenityid == 0) {
-                $subamenityid = $this->coreFunctions->getfieldvalue($this->head, "subamenityid", "trno=?", [$trno]);
-            }
-        }
 
         if (isset($config['params']['data']['sjlinex'])) {
             $sjlinex = $config['params']['data']['sjlinex'];
@@ -2925,11 +2107,6 @@ class po
         }
 
         $line = 0;
-        //itemprice
-        if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-            $itempriceqry = "select amt from itemprice where itemid = ? and ? between startqty and endqty";
-        }
-
         if ($action == 'insert') {
             $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
             $line = $this->coreFunctions->datareader($qry, [$trno]);
@@ -2940,29 +2117,12 @@ class po
             $config['params']['line'] = $line;
             $amt = $config['params']['data']['amt'];
             $qty = $config['params']['data']['qty'];
-
-
-            if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                $projectid = $this->coreFunctions->getfieldvalue("item", 'projectid', 'itemid=?', [$itemid]);
-                $itemprice = $this->coreFunctions->opentable($itempriceqry, [$itemid, $qty]);
-                if (!empty($itemprice)) {
-                    $amt = $itemprice[0]->amt;
-                }
-            }
         } elseif ($action == 'update') {
             $config['params']['line'] = $config['params']['data']['line'];
             $line = $config['params']['data']['line'];
             $amt = $config['params']['data'][$this->damt];
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
-
-            if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                $projectid = $config['params']['data']['projectid'];
-                $itemprice = $this->coreFunctions->opentable($itempriceqry, [$itemid, $qty]);
-                if (!empty($itemprice)) {
-                    $amt = $itemprice[0]->amt;
-                }
-            }
         }
         $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
         $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -2982,65 +2142,11 @@ class po
         $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
         $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
 
-        if ($companyid == 60) { //TRANSPOWER
-            if ($disc != "") {
-                $discper = "";
-                if (!str_contains($disc, '%')) {
-                    $d = explode("/", $disc);
-                    foreach ($d as $k => $x) {
-                        if ($discper != "") {
-                            $discper .= "/";
-                        }
-
-                        $discper .= $x . '%';
-                    }
-                    $disc = $discper;
-                }
-            }
-        }
 
         $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
 
-        switch ($companyid) {
-            case 28: // xcomp disc per unit
-                $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, 'P', 0, 0, 1);
-                break;
-            case 39: //cbbsi
-                $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, 'P', 0, 1, 1);
-                break;
-            default:
-                $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
-                break;
-        }
-
-        #START [2024-07-17][KIM] wag muna etong idedelete 
-        // if ($companyid == 8) {
-        //   if ($action == 'update') {
-        //     $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
-        //   } else {
-        //     if ($refx == 0) {
-        //       $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
-        //     }
-        //   }
-        // } else {
         $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
-        // }
-        #END
-
         $cost = number_format($computedata['amt'] * $forex, $this->companysetup->getdecimal('price', $config['params']), '.', '');
-
-        if ($companyid == 23) { //labsol cebu
-            if ($forex == 1) {
-                $cost = number_format($computedata['amt'] * $forex * 1.15, $this->companysetup->getdecimal('price', $config['params']), '.', '');
-            } else {
-                $cost = number_format($computedata['amt'] * $forex * 1.3, $this->companysetup->getdecimal('price', $config['params']), '.', '');
-            }
-        }
-
-        if ($companyid == 41 || $companyid == 52) { //labsol manila, technolab
-            $cost = number_format($computedata['amt'] * $forex * 1.05, $this->companysetup->getdecimal('price', $config['params']), '.', '');
-        }
-
 
         $data = [
             'trno' => $trno,
@@ -3071,20 +2177,6 @@ class po
             'stageid' => $stageid
         ];
 
-        if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-            $data['projectid'] = $projectid;
-            $data['poref'] = $poref;
-            $data['sgdrate'] = $sgdrate;
-        }
-
-        if ($systype == 'REALESTATE') {
-            $data['projectid'] = $projectid;
-            $data['phaseid'] = $phaseid;
-            $data['modelid'] = $modelid;
-            $data['blklotid'] = $blklotid;
-            $data['amenityid'] = $amenityid;
-            $data['subamenityid'] = $subamenityid;
-        }
 
         foreach ($data as $key => $value) {
             $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
@@ -3115,36 +2207,9 @@ class po
             }
 
             if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
-                switch ($this->companysetup->getsystemtype($config['params'])) {
-                    case 'AIMS':
-                        switch ($companyid) {
-                            case 0: //main
-                            case 10: //afti
-                            case 12: //afti usd
-                                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'rem' => $rem];
-                                break;
-                            case 19: //housegem
-                                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'prevamt' => $prevamt, 'prevdate' => $prevdate];
-                                break;
-                            case 36: //rozlab
-                                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'itemdesc' => $itemdesc];
-                                break;
-                        }
-                        if (!empty($stockinfo_data)) $this->coreFunctions->sbcinsert('stockinfotrans', $stockinfo_data);
 
-                        break;
-                    case 'AIMSPOS':
-                        switch ($companyid) {
-                            case 17:
-                                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'rem' => $rem, 'itemdesc' => $itemdesc];
-                                break;
-                            case 56: //homeworks
-                                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'amt1' => $retailamt];
-                                break;
-                        }
-                        if (!empty($stockinfo_data))  $this->coreFunctions->sbcinsert('stockinfotrans', $stockinfo_data);
-                        break;
-                }
+                $stockinfo_data = ['trno' => $trno, 'line' => $line, 'rem' => $rem];
+                if (!empty($stockinfo_data)) $this->coreFunctions->sbcinsert('stockinfotrans', $stockinfo_data);
 
                 $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:' . $computedata['ext'] . ' Uom ' . $uom);
                 if ($isproject) {
@@ -3162,32 +2227,6 @@ class po
             if ($isproject) {
                 $this->updateprojmngmt($config, $stageid);
             }
-
-            switch ($this->companysetup->getsystemtype($config['params'])) {
-                case 'AIMS':
-                    if ($companyid == 19) { //kitchenstar
-                        $stockinfo_data = [
-                            'trno' => $trno,
-                            'line' => $line,
-                            'prevamt' => $prevamt,
-                            'prevdate' => $prevdate
-                        ];
-                        $checkstockinfo = $this->coreFunctions->getfieldvalue("stockinfotrans", "trno", "trno=? and line =?", [$trno, $line]);
-
-                        if ($checkstockinfo == '') {
-                            $this->coreFunctions->sbcinsert("stockinfotrans", $stockinfo_data);
-                        } else {
-                            $stockinfo_data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                            $stockinfo_data['editby'] = $config['params']['user'];
-                            foreach ($stockinfo_data as $key => $valueinfo) {
-                                $stockinfo_data[$key] = $this->othersClass->sanitizekeyfield($key, $stockinfo_data[$key]);
-                            }
-                            $this->coreFunctions->sbcupdate("stockinfotrans", $stockinfo_data, ['trno' => $trno, 'line' => $line]);
-                        }
-                    }
-                    break;
-            }
-
             if ($refx != 0) {
                 if ($this->setserveditems($refx, $linex) === 0) {
                     $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
@@ -3401,9 +2440,6 @@ class po
         $rows = [];
         $filtercenter = " and transnum.center = '" . $center . "' ";
         foreach ($config['params']['rows'] as $key => $value) {
-            if ($companyid == 40) { //cdo
-                $filtercenter = "";
-            }
             $qry = "
         select head.docno, item.itemid,stock.trno,
         stock.line, item.barcode,stock.uom, stock.cost,
@@ -3541,9 +2577,6 @@ class po
         $rows = [];
         $filtercenter = " and transnum.center = '" . $center . "' ";
         foreach ($config['params']['rows'] as $key => $value) {
-            if ($companyid == 40) { //cdo
-                $filtercenter = "";
-            }
             $qry = "
         select head.docno, item.itemid,stock.trno,
         stock.line, item.barcode,stock.uom, stock.cost,
@@ -3752,45 +2785,7 @@ class po
         $trno = $config['params']['trno'];
         $forex = $this->coreFunctions->getfieldvalue($this->head, "forex", "trno=?", [$trno]);
 
-        switch ($config['params']['companyid']) {
-            case 10:
-            case 12:
-                $qry = "select docno,left(dateid,10) as dateid,case " . $forex . " when 1 then round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") else famt end as amt,disc,uom from(select head.docno,head.dateid,
-            stock.rrcost as amt,stock.uom,stock.disc,item.famt
-            from lahead as head
-            left join lastock as stock on stock.trno = head.trno
-            left join cntnum on cntnum.trno=head.trno
-            left join item on item.itemid=stock.itemid
-            where head.doc = 'RR' and cntnum.center = ?
-            and item.barcode = ? and head.client = ?
-            and stock.rrcost <> 0
-            UNION ALL
-            select head.docno,head.dateid,stock.rrcost as computeramt,
-            stock.uom,stock.disc ,item.famt from glhead as head
-            left join glstock as stock on stock.trno = head.trno
-            left join item on item.itemid = stock.itemid
-            left join client on client.clientid = head.clientid
-            left join cntnum on cntnum.trno=head.trno
-            where head.doc = 'RR' and cntnum.center = ?
-            and item.barcode = ? and client.client = ?
-            and stock.rrcost <> 0
-            order by dateid desc limit 5) as tbl order by dateid desc limit 1";
-                $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
-                break;
-
-            case 56: //homeworks
-                $dateid = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
-                $qry = "select 'PRICE LIST' as docno, '" . $dateid . "' as dateid, avecost as amt, '' as disc, item.uom 
-              from item left join pricelist as pl on pl.itemid=item.itemid where item.barcode='" . $barcode . "' and '" . $dateid . "' between startdate and enddate order by pl.line desc limit 1";
-                $data = $this->coreFunctions->opentable($qry);
-                if (empty($data)) {
-                    $qry = "select 'STOCKCARD' as docno, '" . $dateid . "' as dateid, avecost as amt, '' as disc, item.uom from item where item.barcode='" . $barcode . "'";
-                    $data = $this->coreFunctions->opentable($qry);
-                }
-                break;
-
-            default:
-                $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,disc,uom from(select head.docno,head.dateid,
+        $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,disc,uom from(select head.docno,head.dateid,
             stock.rrcost as amt,stock.uom,stock.disc
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
@@ -3810,9 +2805,7 @@ class po
             and item.barcode = ? and client.client = ?
             and stock.rrcost <> 0
             order by dateid desc limit 5) as tbl order by dateid desc limit 1";
-                $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
-                break;
-        }
+        $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
 
         if (!empty($data)) {
             return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data];
@@ -3882,9 +2875,6 @@ class po
                     $config['params']['data']['sorefx'] = $data[$key2]->trno;
                     $config['params']['data']['solinex'] = $data[$key2]->line;
                     $config['params']['data']['ref'] = $data[$key2]->docno;
-                    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
 
                     $return = $this->additem('insert', $config);
 
@@ -3947,9 +2937,7 @@ class po
                     $config['params']['data']['sorefx'] = $data[$key2]->trno;
                     $config['params']['data']['solinex'] = $data[$key2]->line;
                     $config['params']['data']['ref'] = $data[$key2]->docno;
-                    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
+
                     $return = $this->additem('insert', $config);
                     if ($msg = '') {
                         $msg = $return['msg'];
@@ -4008,20 +2996,7 @@ class po
                     $config['params']['data']['expiry'] = '';
                     $config['params']['data']['rem'] = '';
                     $config['params']['data']['amt'] = 0;
-                    if ($config['params']['companyid'] == 10) { //afti
-                        if (floatval($forex) != 1) {
-                            $config['params']['data']['amt'] = $data[$key2]->tpdollar;
-                        } else {
-                            $config['params']['data']['amt'] = $data[$key2]->tpphp;
-                        }
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
 
-                    if ($config['params']['companyid'] == 12) { //afti usd
-                        $config['params']['data']['amt'] = $data[$key2]->isamt;
-                        $config['params']['data']['disc'] = $data[$key2]->disc;
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
 
                     $config['params']['data']['sorefx'] = $data[$key2]->trno;
                     $config['params']['data']['solinex'] = $data[$key2]->line;
@@ -4088,20 +3063,6 @@ class po
                     $config['params']['data']['expiry'] = '';
                     $config['params']['data']['rem'] = '';
                     $config['params']['data']['amt'] = 0;
-                    if ($config['params']['companyid'] == 10) { //afti
-                        if (floatval($forex) != 1) {
-                            $config['params']['data']['amt'] = $data[$key2]->tpdollar;
-                        } else {
-                            $config['params']['data']['amt'] = $data[$key2]->tpphp;
-                        }
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
-
-                    if ($config['params']['companyid'] == 12) { //afti usd
-                        $config['params']['data']['amt'] = $data[$key2]->isamt;
-                        $config['params']['data']['disc'] = $data[$key2]->disc;
-                        $config['params']['data']['poref'] = $data[$key2]->yourref;
-                    }
 
                     $config['params']['data']['sorefx'] = $data[$key2]->trno;
                     $config['params']['data']['solinex'] = $data[$key2]->line;
@@ -4205,20 +3166,6 @@ class po
                 $config['params']['data']['expiry'] = '';
                 $config['params']['data']['rem'] = '';
                 $config['params']['data']['amt'] = 0;
-                if ($config['params']['companyid'] == 10) { //afti
-                    if (floatval($forex) != 1) {
-                        $config['params']['data']['amt'] = $data2[$key2]->tpdollar;
-                    } else {
-                        $config['params']['data']['amt'] = $data[$key2]->tpphp;
-                    }
-                    $config['params']['data']['poref'] = $data2[$key2]->yourref;
-                }
-
-                if ($config['params']['companyid'] == 12) { //afti usd
-                    $config['params']['data']['amt'] = $data2[$key2]->isamt;
-                    $config['params']['data']['disc'] = $data2[$key2]->disc;
-                    $config['params']['data']['poref'] = $data2[$key2]->yourref;
-                }
 
                 $config['params']['data']['sorefx'] = $data2[$key2]->trno;
                 $config['params']['data']['solinex'] = $data2[$key2]->line;
@@ -4382,16 +3329,7 @@ class po
             } else {
                 $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, $head['tax'], 'P');
             }
-
-            if ($config['params']['companyid'] == 23 || $config['params']['companyid'] == 41 || $config['params']['companyid'] == 52) { //labsol cebu, labsol manila, technolab
-                if ($head['forex'] == 1) {
-                    $exec = $this->coreFunctions->execqry("update postock set cost = " . $computedata['amt'] . "*1.15 where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
-                } else {
-                    $exec = $this->coreFunctions->execqry("update postock set cost = " . $computedata['amt'] . "*1.30 where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
-                }
-            } else {
-                $exec = $this->coreFunctions->execqry("update postock set cost = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
-            }
+            $exec = $this->coreFunctions->execqry("update postock set cost = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
         }
         return $exec;
     }
@@ -4526,11 +3464,7 @@ class po
 
     public function sbcscript($config)
     {
-        if ($config['params']['companyid'] == 60) { //transpower
-            return $this->sbcscript->loaditembal($config);
-        } else {
-            return true;
-        }
+        return true;
     }
 
     // start
@@ -4542,9 +3476,10 @@ class po
         $modulename = $this->modulename;
         $data = [];
         $isreload = false;
-        if ($config['params']['companyid'] == 60) { //transpower
-            $this->posttrans($config);
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
             $isreload = true;
+            $this->posttrans($config);
         }
 
         $style = 'width:500px;max-width:500px;';
@@ -4558,25 +3493,8 @@ class po
         $config['params']['trno'] = $config['params']['dataid'];
         $dataparams = $config['params']['dataparams'];
 
-        // if ($companyid == 56) { //homeworks
-        //   $isposted = $this->othersClass->isposted($config);
-        //   if (!$isposted) {
-        //     $this->logger->sbcviewreportlog($config, "Please post the transaction first.");
-        //     $str = app($this->companysetup->getreportpath($config['params']))->notallowtoprint($config, "Please post the transaction first.");
-        //   } else {
-        //     $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);
-        //     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
-        //   }
-        // } else {
 
-        //other companies
-        if ($companyid == 36) { //rozlab
-            if (isset($dataparams['audited'])) $this->othersClass->writeSignatories($config, 'audited', $dataparams['audited']);
-        } else if ($companyid == 3 || $companyid == 39 || $companyid == 40) { //conti,cbbsi,cdo
-            if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
-        } else {
-            if (isset($dataparams['checked'])) $this->othersClass->writeSignatories($config, 'checked', $dataparams['checked']);
-        }
+        if (isset($dataparams['checked'])) $this->othersClass->writeSignatories($config, 'checked', $dataparams['checked']);
         if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
         if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
         $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);

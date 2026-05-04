@@ -163,10 +163,10 @@ class dc
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -729,7 +729,17 @@ class dc
 
       if ($vatvalue != 0) {
         $entry = [
-          'line' => $line, 'acnoid' => $taxacno, 'client' => $data[0]['client'], 'cr' => ($vatvalue < 0 ? abs(round($vatvalue, 2)) : 0), 'db' => ($vatvalue < 0 ? 0 : abs(round($vatvalue, 2))), 'postdate' => $data[0]['dateid'], 'fdb' => ($vatvalue < 0 ? 0 : abs($vatvalue)) * $forex, 'fcr' => ($vatvalue < 0 ? abs($vatvalue) : 0) * $forex, 'rem' => "Auto entry", 'cur' => $cur, 'forex' => $forex
+          'line' => $line,
+          'acnoid' => $taxacno,
+          'client' => $data[0]['client'],
+          'cr' => ($vatvalue < 0 ? abs(round($vatvalue, 2)) : 0),
+          'db' => ($vatvalue < 0 ? 0 : abs(round($vatvalue, 2))),
+          'postdate' => $data[0]['dateid'],
+          'fdb' => ($vatvalue < 0 ? 0 : abs($vatvalue)) * $forex,
+          'fcr' => ($vatvalue < 0 ? abs($vatvalue) : 0) * $forex,
+          'rem' => "Auto entry",
+          'cur' => $cur,
+          'forex' => $forex
         ];
 
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);

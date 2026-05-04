@@ -229,10 +229,10 @@ class sv
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -284,7 +284,19 @@ class sv
       $this->gridname => [
         'gridcolumns' => [
           'action',
-          'isvewt', 'isvat', 'isewt', 'db', 'cr', 'postdate', 'ewtcode', 'ewtrate', 'rem', 'project', 'client', 'ref', 'acnoname'
+          'isvewt',
+          'isvat',
+          'isewt',
+          'db',
+          'cr',
+          'postdate',
+          'ewtcode',
+          'ewtrate',
+          'rem',
+          'project',
+          'client',
+          'ref',
+          'acnoname'
         ],
         'headgridbtns' => ['viewdiagram']
       ],
@@ -455,8 +467,14 @@ class sv
       }
 
       return  [
-        'head' => $head, 'griddata' => ['accounting' => $detail], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['accounting' => $detail],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;

@@ -732,11 +732,11 @@ class loanapplicationportal
       }
     }
     if ($companyid == 53) {
-      $checkcutoffdate = $this->payrollcommon->checkbatchsched($data['effdate'], $head['divid']);
-      if (!empty($checkcutoffdate['msg'])) {
-        $msg = $checkcutoffdate['msg'];
-        return ['status' => false, 'msg' => $msg];
-      }
+      // $checkcutoffdate = $this->payrollcommon->checkbatchsched($data['effdate'], $head['divid']);
+      // if (!empty($checkcutoffdate['msg'])) {
+      //   $msg = $checkcutoffdate['msg'];
+      //   return ['status' => false, 'msg' => $msg];
+      // }
     }
     $date = date('Y-m-d', strtotime($head['effdate']));
 
@@ -812,7 +812,15 @@ class loanapplicationportal
   public function deletetrans($config)
   {
     $clientid = $config['params']['clientid'];
+    $res = $this->approved_dis($config);
 
+    if ($res['status']) {
+      $msg = 'Cannot update; already approved.';
+      if ($res['istatus'] == 'D') {
+        $msg = 'Cannot update; already disapproved.';
+      }
+      return ['status' => false, 'msg' => $msg, 'clientid' => $clientid];
+    }
     $approved = $this->coreFunctions->opentable("select status,status2 from loanapplication where trno=? ", [$clientid]);
     if (!empty($approved)) {
       if ($approved[0]->status == "A") {
@@ -823,15 +831,20 @@ class loanapplicationportal
       }
     }
 
-    $qry = "select line as value from loanapplication where trno=? and status != 'E'";
-    $count = $this->coreFunctions->datareader($qry, [$clientid]);
-
-    if ($count != "") {
-      return ['clientid' => $clientid, 'status' => false, 'msg' => "Transaction cannot be deleted."];
+    $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where trno = ? and doc = 'LOAN'", [$clientid]);
+    if ($appdoc != "") {
+      return ['clientid' => '0', 'status' => false, 'msg' => "This application can’t be deleted because it’s already in the Pending Application"];
     }
 
+    $qry = "select submitdate as value from loanapplication where trno=? and submitdate is not null";
+    $submitdate = $this->coreFunctions->datareader($qry, [$clientid]);
+
+    if ($submitdate) {
+      return ['clientid' => $clientid, 'status' => false, 'msg' => "The application cannot be deleted, as it is already for approval."];
+    }
     $this->coreFunctions->execqry('delete from ' . $this->head . ' where trno=?', 'delete', [$clientid]);
-    $this->coreFunctions->execqry('delete from pendingapp where trno=?', 'delete', [$clientid]);
+    $this->coreFunctions->execqry("delete from pendingapp where trno=? and doc = 'LOAN' ", 'delete', [$clientid]);
+    $this->logger->sbcmasterlog($clientid, $config, "DELETED " . $this->modulename);
     return ['clientid' => 0, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
 
@@ -1013,5 +1026,22 @@ class loanapplicationportal
     } else {
       return true;
     }
+  }
+  public function approved_dis($config)
+  {
+    $clientid = $config['params']['clientid'];
+    $qry = "select status, status2 from loanapplication where trno = ?";
+    $status = $this->coreFunctions->opentable($qry, [$clientid]);
+    $array_stat = ['A', 'D'];
+
+    if (in_array($status[0]->status2, $array_stat)) {
+      return ['status' => true, 'istatus' => $status[0]->status2];
+    }
+
+    if (in_array($status[0]->status, $array_stat)) {
+      return ['status' => true, 'istatus' => $status[0]->status];
+    }
+
+    return ['status' => false];
   }
 } //end class

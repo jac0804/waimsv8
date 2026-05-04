@@ -253,9 +253,9 @@ class business_clearance_list_report
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '50', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col($data->clientname, '350', 30, true,  $rowBorder, 'B', 'LT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
-            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, '', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
+            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col($data->brgyid, '200', 30, true,  $rowBorder, 'B', 'CT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
-            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, '', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
+            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col($data->address, '350', 30, true,  $rowBorder, 'B', 'LT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col('', '50', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->endrow();

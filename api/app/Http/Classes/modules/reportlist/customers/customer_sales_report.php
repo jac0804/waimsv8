@@ -2197,7 +2197,9 @@ class customer_sales_report
 
     if ($companyid == 59) { //roosevelt
       $area = $config['params']['dataparams']['area'];
-      $filter .= " and client.area='" . $area . "'";
+      if ($area != "") {
+        $filter .= " and client.area='" . $area . "'";
+      }
     }
 
 

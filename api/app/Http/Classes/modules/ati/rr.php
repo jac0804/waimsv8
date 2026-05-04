@@ -355,10 +355,10 @@ class rr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -3054,7 +3054,7 @@ class rr
         $this->coreFunctions->sbcupdate($this->head, $headdata, ['trno' => $trno]);
         $this->coreFunctions->sbcupdate("cntnuminfo", ['pdeadline' => $data[0]->pdeadline], ['trno' => $trno]);
 
-        foreach ($data as $key2 => $value) {
+        foreach ($data as $key2 => $value2) {
           if ($data[$key2]->isadv == 1 && $data[$key2]->cvtrno == 0) {
             if ($reqpayment_msg == "") {
               $reqpayment_msg = $data[$key2]->itemdesc . "";

@@ -45,9 +45,36 @@ class po
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms',
-    'forex', 'cur', 'wh', 'address', 'projectid', 'subproject', 'branch', 'deptid', 'tax', 'vattype', 'empid', 'sotrno', 'billid', 'shipid', 'billcontactid', 'shipcontactid',
-    'revision', 'rqtrno', 'deldate', 'deladdress'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'branch',
+    'deptid',
+    'tax',
+    'vattype',
+    'empid',
+    'sotrno',
+    'billid',
+    'shipid',
+    'billcontactid',
+    'shipcontactid',
+    'revision',
+    'rqtrno',
+    'deldate',
+    'deladdress'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -358,10 +385,10 @@ class po
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -452,9 +479,40 @@ class po
 
 
     $column = [
-      'action', 'ctrlno', 'rrqty',
-      'uom', 'inputuom', 'sgdrate', 'rrcost', 'disc', 'ext', 'wh', 'qa', 'requestorname', 'department', 'purpose', 'barcode', 'itemdesc', 'rem', 'specs', 'unit', 'isreturn', 'isadv', 'amt1', 'amt2', 'amt3',
-      'amt4', 'amt5',  'ref', 'void', 'price', 'itemname', 'clientname', 'sanodesc', 'waivedqty', 'waivedspecs'
+      'action',
+      'ctrlno',
+      'rrqty',
+      'uom',
+      'inputuom',
+      'sgdrate',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'qa',
+      'requestorname',
+      'department',
+      'purpose',
+      'barcode',
+      'itemdesc',
+      'rem',
+      'specs',
+      'unit',
+      'isreturn',
+      'isadv',
+      'amt1',
+      'amt2',
+      'amt3',
+      'amt4',
+      'amt5',
+      'ref',
+      'void',
+      'price',
+      'itemname',
+      'clientname',
+      'sanodesc',
+      'waivedqty',
+      'waivedspecs'
     ];
 
     $headgridbtns = ['itemqtyvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram', 'viewsobreakdown']; // itemqtyvoiding-----itemvoiding
@@ -849,8 +907,16 @@ class po
         }
       }
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;

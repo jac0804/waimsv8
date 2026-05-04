@@ -42,7 +42,17 @@ class pi
   public $htablelogs = 'htransnum_log';
   private $stockselect;
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'yourref', 'ourref', 'rem', 'wh', 'itemid', 'qty', 'uom'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'yourref',
+    'ourref',
+    'rem',
+    'wh',
+    'itemid',
+    'qty',
+    'uom'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -197,10 +207,10 @@ class pi
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -351,8 +361,15 @@ class pi
       $hidetabbtn = ['btndeleteallitem' => false];
       $clickobj = ['button.btnadditem'];
       return  [
-        'head' => $head, 'griddata' => ['inventory' => []], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => []],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;

@@ -121,11 +121,20 @@ class dy
     $viewall = $this->othersClass->checkAccess($config['params']['user'], 5584);
     $limit = ' limit 500';
     $filtersearch = "";
-    $searcfield = $this->fields;
+
     $search = '';
     $userid = $config['params']['adminid'];
-    if (isset($config['params']['filter'])) {
-      $search = $config['params']['filter'];
+
+    if ($userid == 0) {
+      return ['data' => [], 'status' => false, 'msg' => 'Sorry, you`re not allowed to create transaction. Please setup first your Employee Code.'];
+    }
+
+
+    if (isset($config['params']['search'])) {
+      $search = $config['params']['search'];
+
+      $searcfield = ['ck.clientname', 'c.clientname', 'dt.rem', 'dt.rem1', 'dt.jono', 'dt.amt'];
+
       foreach ($searcfield as $key => $sfield) {
         if ($filtersearch == "") {
           $filtersearch .= " and (" . $sfield . " like '%" . $search . "%'";
@@ -301,8 +310,11 @@ class dy
     data_set($col2, 'category.label', 'Task Category');
     data_set($col2, 'category.required', true);
 
-    $fields = ['updatenotes'];
+    $fields = ['updatenotes', 'updatetaskinfo'];
     $col3 = $this->fieldClass->create($fields);
+
+    data_set($col3, 'updatetaskinfo.label', 'UPDATE TASK INFO');
+    data_set($col3, 'updatetaskinfo.lookupclass', 'updatetaskinfo');
 
     data_set($col3, 'updatenotes.label', 'ASSIGNED TO USER');
     data_set($col3, 'updatenotes.lookupclass', 'assignuser');
@@ -391,9 +403,14 @@ class dy
     $head = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     if (!empty($head)) {
       $hideobj = [];
-      $hideobj['updatenotes'] = false; //nakahide 
+      $hideobj['updatenotes'] = false; //nakashow 
       $tasktrno = $head[0]->tasktrno;
+      $assignedid = $head[0]->assignedid;
+
       if ($tasktrno != 0) { // galing task monitoring
+        $hideobj['updatenotes'] = true; //nakahide 
+      }
+      if ($assignedid != 0) {
         $hideobj['updatenotes'] = true; //nakahide 
       }
 
@@ -431,6 +448,11 @@ class dy
       }
     }
 
+    // MJM - BMC - MICRO - SPARKS - JOY CEBU
+    if ($head['reseller'] == '' && ($head['client'] == 'SB0000000000140' || $head['client'] == 'SB0000000000031' || $head['client'] == 'SB0000000000380' || $head['client'] == 'SB0000000000594' || $head['client'] == 'SB0000000000101')) {
+      return ['status' => false, 'msg' => "Please input valid Reseller Customer for " . $head['clientname'], 'trno' => $trno, 'clientid' => $trno];
+    }
+
     if ($data['statid'] != 0) {
       CantUpdateHere:
       return ['status' => false, 'msg' => "Cannot update task that is already done/undone/for checking/cancelled.", 'trno' => $trno, 'clientid' => $trno];
@@ -439,26 +461,34 @@ class dy
     }
 
     if ($isupdate) {
-      $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
-    } else {
-      if ($head['clientid'] != 0) {
-        $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
-        $trno = $this->coreFunctions->insertGetId($this->head, $data);
+      if ($head['empid'] != $head['userid']) {
+        $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
+        return ['status' =>  true, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno];
       } else {
-        $msg == 'Please refresh the customer lookup list before adding a customer.';
+        return ['status' => false, 'msg' => 'The checker cannot be the same as the user.', 'trno' => $trno, 'clientid' => $trno];
       }
+    } else {
+      if ($userid != 0) {
+        if ($head['clientid'] != 0) {
+          if ($head['empid'] != $head['userid']) {
+            $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
+            $trno = $this->coreFunctions->insertGetId($this->head, $data);
+            return ['status' =>  true, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno];
+          } else {
+            return ['status' => false, 'msg' => 'The checker cannot be the same as the user.', 'trno' => $trno, 'clientid' => $trno];
+          }
+        } else {
+          return ['status' => false, 'msg' => 'Please refresh the customer lookup list before adding a customer.', 'trno' => $trno, 'clientid' => $trno];
+        }
 
-      //  if($userid != 0){
-      //    $data3=[];
-      //    $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
-      //    $this->othersClass->insertUpdatePendingapp($trno, 0, 'DY', $data3, $url, $config, $userid, false, true);
-
-      // }
-      $this->logger->sbcmasterlog($trno, $config, 'CREATE' . ' - ' . 'CUSTOMER : ' . 'ID:' . $head['clientid'] . ' ' . $head['clientname'] . ' ' . 'REMARKS : ' . $head['rem'] . ' AMOUNT : ' . $head['amt'] . ' JO# :' . $head['jono'], 0, 0, 0, 1);
-      //($trno, $config, $task, $isedit = 0, $ismultigrid = 0, $trno2 = 0, $istemp = 0)
+        $this->logger->sbcmasterlog($trno, $config, 'CREATE' . ' - ' . 'CUSTOMER : ' . 'ID:' . $head['clientid'] . ' ' . $head['clientname'] . ' ' . 'REMARKS : ' . $head['rem'] . ' AMOUNT : ' . $head['amt'] . ' JO# :' . $head['jono'], 0, 0, 0, 1);
+      } else {
+        // $msg = 'Sorry, you`re not allowed to create transaction. Please setup first your Employee Code.';
+        return ['status' => false, 'msg' => 'Sorry, you`re not allowed to create transaction. Please setup first your Employee Code.', 'trno' => $trno, 'clientid' => $trno];
+      }
     }
 
-    return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno];
+    // return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno];
   } // end function
 
 

@@ -60,7 +60,8 @@ class itinerary
         'gas',
         'misc',
         'ext',
-        'islatefilling'
+        'islatefilling',
+        'area'
     ];
     private $except = ['clientid', 'client'];
     private $blnfields = ['islatefilling'];
@@ -300,7 +301,7 @@ class itinerary
         $companyid = $config['params']['companyid'];
 
         if ($companyid == 58) { //cdo
-            $fields = ['client', 'lblcleared', 'remarks', 'lblitemdesc', ['startdate', 'enddate'], 'islatefilling'];
+            $fields = ['client', 'lblcleared', 'remarks', 'lblitemdesc', ['startdate', 'enddate'], 'islatefilling', 'lblrem', 'area'];
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'client.label', 'Code');
             data_set($col1, 'client.action', 'lookupledger');
@@ -312,6 +313,10 @@ class itinerary
             data_set($col1, 'startdate.required', true);
             data_set($col1, 'enddate.required', true);
             data_set($col1, 'remarks.required', true);
+            data_set($col1, 'area.label', '');
+            data_set($col1, 'area.type', 'input');
+            data_set($col1, 'lblrem.label', 'AREA OF TRAVEL:');
+
 
             $fields = [
                 'lblaccessories',
@@ -457,6 +462,7 @@ class itinerary
         $data[0]['lengthstay'] = '';
         $data[0]['misc'] = '';
         $data[0]['islatefilling'] = '0';
+        $data[0]['area'] = '';
         return $data;
     }
 
@@ -479,7 +485,7 @@ class itinerary
             $amt = ',(it.mealamt * it.mealnum) as amt4';
             $transpo = ', (case when it.expensetype="Gasoline" then 0 else it.texpense end) as amt5';
             $lodge = ',(it.lodgeexp * it.lengthstay) as amt6';
-            $misc = ',it.misc as amt7';
+            $misc = ',it.misc as amt7,it.area';
 
             $total = ", (case when it.expensetype='Gasoline' then sum((it.mealamt * it.mealnum) + (it.lodgeexp * it.lengthstay) + it.misc) else 
                          sum((it.mealamt * it.mealnum) + (it.lodgeexp * it.lengthstay) + it.misc + it.texpense) end) as amt8";

@@ -72,7 +72,9 @@ class cr
     'invoiceno',
     'refdate',
     'amenityid',
-    'subamenityid'
+    'subamenityid',
+    'ewt',
+    'ewtrate'
   ];
   private $otherfields = ['cptrno'];
   private $except = ['trno', 'dateid', 'checkdate'];
@@ -260,7 +262,7 @@ class cr
         $cols[$rem]['type'] = 'coldel';
         $cols[$db]['label'] = 'Amount';
         break;
-      case 10://afti
+      case 10: //afti
         $cols[$db]['type'] = 'coldel';
         break;
       default:
@@ -271,6 +273,15 @@ class cr
 
     if ($config['params']['companyid'] <> 8) { //not maxipro
       $cols[$listprojectname]['type'] = 'coldel';
+    }
+
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
     }
 
     $cols = $this->tabClass->delcollisting($cols);
@@ -667,6 +678,7 @@ class cr
         $obj[0][$this->gridname]['columns'][$qtref]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$lastdp]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$client]['style'] = 'text-align: left;';
+        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
         break;
     }
 
@@ -914,6 +926,10 @@ class cr
       $fields = ['dagentname', ['checkno', 'checkdate'], ['ourref', 'amount'], 'rem'];
     }
 
+    if ($companyid == 59) { //roosevelt
+      $fields = ['dagentname', 'dewt', 'amount'];
+    }
+
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
     }
@@ -965,6 +981,9 @@ class cr
         data_set($col4, 'subamenityname.addedparams', ['amenityid']);
       } else {
         $fields = ['lblpaid'];
+        if ($companyid == 59) { //roosevelt
+          $fields = ['rem', 'lblpaid'];
+        }
         $col4 = $this->fieldClass->create($fields);
         data_set($col4, 'lblpaid.style', 'font-family:Century Gothic; color:red; font-size:20px;font-weight:bold;');
         data_set($col4, 'lblpaid.label', 'VOID!');
@@ -1027,6 +1046,9 @@ class cr
 
     $data[0]['subamenityid'] = 0;
     $data[0]['subamenityname'] = '';
+
+    $data[0]['ewt'] = '';
+    $data[0]['ewtrate'] = 0;
     return $data;
   }
 
@@ -1098,7 +1120,7 @@ class cr
         amh.line as amenityid,
         amh.description as amenityname,
         subamh.line as subamenityid,
-        subamh.description as subamenityname  ";
+        subamh.description as subamenityname,head.ewt,head.ewtrate,'' as dewt  ";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -1208,7 +1230,6 @@ class cr
 
 
       if ($this->companysetup->getsystemtype($config['params']) == 'REALESTATE') {
-
         if ($head['rctrno'] != 0) {
           $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => $head['trno']], ['trno' => $head['rctrno'], 'line' => $head['rcline']]);
         }
@@ -1510,6 +1531,8 @@ class cr
       $return = $this->additem('insert', $config);
       if ($return['status']) {
         array_push($rows, $return['row'][0]);
+      } else {
+        return ['status' => false, 'msg' => 'Error adding entry: ' . $return['msg']];
       }
     } //end foreach
 
@@ -2391,6 +2414,8 @@ class cr
       $return = $this->additem('insert', $config);
       if ($return['status']) {
         array_push($rows, $return['row'][0]);
+      } else {
+        return ['status' => false, 'msg' => 'Error adding entry: ' . $return['msg']];
       }
     } //end foreach
 
@@ -2416,6 +2441,8 @@ class cr
       $return = $this->additem('insert', $config);
       if ($return['status']) {
         array_push($rows, $return['row'][0]);
+      } else {
+        return ['status' => false, 'msg' => 'Error adding entry: ' . $return['msg']];
       }
     }
 
@@ -3229,9 +3256,24 @@ class cr
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    $companyid = $config['params']['companyid'];
+    switch ($companyid) {
+      case 59: //roosevelt
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->othersClass->posttransacctg($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
+          }
+        }
+        break;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
   public function reportdata($config)
   {
@@ -3241,6 +3283,7 @@ class cr
     switch ($companyid) {
       case 39: //cbbsi
       case 40: //cdo
+      case 61: //bytesized
         $dataparams = $config['params']['dataparams'];
         if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
         if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);

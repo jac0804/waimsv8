@@ -96,8 +96,18 @@ class wb
   {
     $postdate = 7;
     $getcols = [
-      'action', 'liststatus', 'status', 'listdocument', 'listdate', 'listclientname',
-      'lockdate', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+      'action',
+      'liststatus',
+      'status',
+      'listdocument',
+      'listdate',
+      'listclientname',
+      'lockdate',
+      'postdate',
+      'listpostedby',
+      'listcreateby',
+      'listeditby',
+      'listviewby'
     ];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -161,10 +171,10 @@ class wb
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

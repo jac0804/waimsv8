@@ -90,6 +90,8 @@ class entrycodeconductsection
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
     $obj[0][$this->gridname]['columns'][$section]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
     $obj[0][$this->gridname]['columns'][$description]['style'] = "width:1000px;whiteSpace: normal;min-width:1000px;";
+    $obj[0][$this->gridname]['columns'][$description]['type'] = "textarea";
+
     $obj[0][$this->gridname]['columns'][$d1a]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";
     $obj[0][$this->gridname]['columns'][$d1b]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
 

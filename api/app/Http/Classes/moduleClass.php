@@ -557,8 +557,9 @@ class moduleClass
 			$dashboardwh =  $this->companysetup->isdashboardwh($params);
 			$socketserver = $this->companysetup->getsocketserver($params);
 			$socketnotify = $this->companysetup->getsocketnotify($params);
+			$isnavigation = $this->companysetup->getisnavigation($params);
             $lookupclientpermodule= $this->companysetup->getlookupclientpermodule($params);
-			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url'=>$socketserver,'notify'=>$socketnotify],'lookupclientpermodule'=>$lookupclientpermodule], 200);
+			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url'=>$socketserver,'notify'=>$socketnotify],'lookupclientpermodule'=>$lookupclientpermodule,'otherparams'=>['isnavigation'=>$isnavigation]], 200);
 		} else {
 			$this->logger->sbciplog('LOG-FAIL', $params['ip'], $params['username']);
 			$status = false;
@@ -2251,16 +2252,19 @@ class moduleClass
 
 				$systemtype = $this->companysetup->getsystemtype($this->config['params']);
 				if ($systemtype != 'SSMS') {
-					if (isset($this->config['params']['head']['terms'])) {
-						if ($this->config['params']['head']['terms'] != '') {
-							$terms_exist = $this->coreFunctions->getfieldvalue("terms", "terms", "terms=?", [$this->config['params']['head']['terms']]);
-
-							if ($terms_exist == '') {
-								$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Terms ' . $this->config['params']['head']['terms'] . ' does not exist', 'type' => '', 'status' => false];
-								return $this;
+					if($this->config['params']['companyid'] !=57){//cdo finance
+						if (isset($this->config['params']['head']['terms'])) {
+							if ($this->config['params']['head']['terms'] != '') {
+								$terms_exist = $this->coreFunctions->getfieldvalue("terms", "terms", "terms=?", [$this->config['params']['head']['terms']]);
+	
+								if ($terms_exist == '') {
+									$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Terms ' . $this->config['params']['head']['terms'] . ' does not exist', 'type' => '', 'status' => false];
+									return $this;
+								}
 							}
 						}
 					}
+					
 				}
 
 				if ($this->config['params']['companyid'] == 10 || $this->config['params']['companyid'] == 12) { //afti, afti usd

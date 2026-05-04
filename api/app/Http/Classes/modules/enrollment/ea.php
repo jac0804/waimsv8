@@ -152,7 +152,7 @@ class ea
       left join client on client.clientid=head.clientid
       where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
       order by dateid desc,docno desc " . $limit;
-      
+
     $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
   }
@@ -166,10 +166,10 @@ class ea
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

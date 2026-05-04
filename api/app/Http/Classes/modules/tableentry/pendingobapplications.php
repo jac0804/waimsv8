@@ -86,7 +86,7 @@ class pendingobapplications
                 }
             }
         }
-        $cols = ['action', 'lblforapp', 'clientname', 'dateid', "dateid2", 'type', "trackingtype", 'rem', 'rem2', 'contact', 'remarkslast'];
+        $cols = ['action', 'lblforapp', 'clientname', 'dateid', "dateid2", 'type', "trackingtype", 'rem', 'rem2', 'location', 'contact', 'remarkslast'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
@@ -149,6 +149,7 @@ class pendingobapplications
 
                 $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:120px;min-width:120px;';
                 $obj[0][$this->gridname]['columns'][$rem2]['style'] = 'width:120px;min-width:120px;';
+                $obj[0][$this->gridname]['columns'][$location]['type'] = 'coldel';
                 break;
             case 53: //camera
                 $obj[0][$this->gridname]['columns'][$trackingtype]['type'] = 'coldel';
@@ -157,10 +158,14 @@ class pendingobapplications
                 $obj[0][$this->gridname]['columns'][$dateid2]['style'] = 'width:150px;min-width:150px;';
                 $obj[0][$this->gridname]['columns'][$dateid]['label'] = 'Date In';
 
+                $obj[0][$this->gridname]['columns'][$location]['type'] = 'label';
+                $obj[0][$this->gridname]['columns'][$location]['label'] = 'Location/Destination';
+
                 break;
             default:
                 $obj[0][$this->gridname]['columns'][$dateid2]['type'] = 'coldel';
                 $obj[0][$this->gridname]['columns'][$trackingtype]['type'] = 'coldel';
+                $obj[0][$this->gridname]['columns'][$location]['type'] = 'coldel';
                 break;
         }
 

@@ -168,6 +168,15 @@ class cm
       unset($this->showfilterlabel[1]);
       unset($this->showfilterlabel[2]);
     }
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -390,10 +399,10 @@ class cm
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -562,10 +571,9 @@ class cm
           $stockbuttons = ['save', 'delete', 'showbalance'];
           break;
       }
-    
     }
 
-    
+
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
     }
@@ -581,13 +589,19 @@ class cm
           default: //main
             array_push($stockbuttons, 'stockinfo');
             break;
-          
         }
 
         break;
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
+
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 

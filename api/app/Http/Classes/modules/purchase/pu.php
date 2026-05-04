@@ -45,9 +45,38 @@ class pu
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms',
-    'forex', 'cur', 'wh', 'address', 'projectid', 'subproject', 'branch', 'deptid', 'tax', 'vattype', 'empid', 'sotrno', 'billid', 'shipid', 'billcontactid', 'shipcontactid',
-    'revision', 'rqtrno', 'deldate', 'deladdress', 'whreceiver', 'insurance'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'branch',
+    'deptid',
+    'tax',
+    'vattype',
+    'empid',
+    'sotrno',
+    'billid',
+    'shipid',
+    'billcontactid',
+    'shipcontactid',
+    'revision',
+    'rqtrno',
+    'deldate',
+    'deladdress',
+    'whreceiver',
+    'insurance'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -284,10 +313,10 @@ class pu
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -384,13 +413,57 @@ class pu
     $loc = 23;
 
     $column = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'cost', 'ext', 'wh', 'whname', 'served', 'qa', 'rem',
-      'ref', 'poref', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'loc'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'cost',
+      'ext',
+      'wh',
+      'whname',
+      'served',
+      'qa',
+      'rem',
+      'ref',
+      'poref',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount',
+      'loc'
     ];
 
     $sortcolumn = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'cost', 'ext', 'wh', 'whname', 'served', 'qa', 'rem',
-      'ref', 'poref', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'loc'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'cost',
+      'ext',
+      'wh',
+      'whname',
+      'served',
+      'qa',
+      'rem',
+      'ref',
+      'poref',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount',
+      'loc'
     ];
 
     $headgridbtns = ['itemvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram'];
@@ -401,7 +474,8 @@ class pu
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ]
@@ -716,8 +790,16 @@ class pu
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -1793,7 +1875,7 @@ class pu
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
 
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);

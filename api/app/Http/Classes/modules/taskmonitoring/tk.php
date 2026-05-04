@@ -98,7 +98,7 @@ class tk
     $viewcompletebtn = $this->othersClass->checkAccess($config['params']['user'], 5481);
     $edittask = $this->othersClass->checkAccess($config['params']['user'], 5462);
 
-    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'title', 'assignto', 'startdate', 'enddate', 'requestby'];
+    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'rem', 'title', 'assignto', 'startdate', 'enddate', 'requestby'];
     $stockbuttons = ['viewtaskinfo', 'addattachments', 'addcomments', 'postomitem']; //,, 'pickerdrop' 
 
     foreach ($getcols as $key => $value) {
@@ -119,6 +119,7 @@ class tk
     $cols[$action]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$statname]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listdate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$rem]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
     $cols[$listclientname]['label'] = 'Customer';
     $cols[$statname]['label'] = 'Status';
     $cols[$listdate]['label'] = 'Date Create';
@@ -242,7 +243,7 @@ class tk
        if(d.enddate is null and d.status = 4,'false','true') as iscompleted,h.requestby as reqid,d.status,h.amount,
        '../taskmonitoring/' as url,'ledgergrid' as moduletype, if(d.userid = 0 and d.startdate is null and d.status not in (2,4),'false','true') as ismine,
 
-       'TM' as doc,d.line,d.userid as assignedid $stat
+       'TM' as doc,d.line,d.userid as assignedid,h.rem $stat
     from tmhead as h
     left join client as c on c.clientid = h.clientid
     left join client as e on e.clientid = h.requestby

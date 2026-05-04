@@ -519,7 +519,8 @@ class othersClass
     array_push($number, 'supid', 'ndesid', 'sectid', 'todeptid', 'countsupervisor', 'countapprover', 'count', 'charge1');
     array_push($number, 'namt', 'namt2', 'nfamt', 'namt4', 'namt5', 'namt6', 'namt7', 'iseq', 'first', 'last', 'jobid', 'jobid2', 'branchid2', 'roleid2', 'loanlimit');
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
-    array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat');
+    array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
+    array_push($number, 'brandid');
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -556,7 +557,7 @@ class othersClass
     array_push($boolean, 'isplanholder', 'isnotallow', 'ispartialpaid', 'isactivity', 'issp', 'ismc', 'isinvoice', 'atm', 'isss', 'isprojexp');
     array_push($boolean, 'isorder', 'ischannel', 'default_in', 'default_out', 'uom_inactive', 'isreasoncode', 'ishelper', 'isreassigned', 'ispexp');
     array_push($boolean, 'isonelog', 'isbank', 'isnonserial', 'isbrgyoff', 'isbusiness', 'isallowliquor', 'issupervisor', 'isapprover', 'isdiminishing');
-    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan');
+    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible');
 
 
     $date = [];
@@ -571,13 +572,13 @@ class othersClass
     array_push($date, 'scheddate', 'receivedate', 'schedstarttime', 'schedendtime', 'warranty', 'trainee', 'enddate', 'podate', 'leasedate');
     array_push($date, 'schedin', 'schedout', 'deldate', 'returndate_sup', 'dateclose', 'startdate', 'effectivity', 'createdate', 'seendate');
     array_push($date, 'donedate', 'deadline', 'origdeadline', 'deadline2', 'conndate', 'disconndate', 'expirydate', 'refdate', 'datefrom');
-    array_push($date, 'dateto', 'shipdate', 'ordate', 'wbdate', 'dateid2,submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
+    array_push($date, 'dateto', 'shipdate', 'ordate', 'wbdate', 'dateid2','submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
     array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
     array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
     array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
-    array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate');
+    array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
+    array_push($date, 'regdate', 'expiry');
 
     switch ($companyid) {
       case 10: //afti
@@ -617,6 +618,7 @@ class othersClass
         }
         break;
       case 47: //kstar
+        $toupper = [];
         if ($doc != 'AGENT') {
           $toupper = ['clientname'];
         }
@@ -1170,8 +1172,8 @@ class othersClass
         $selectaddedfield = " ,rctrno,rcline,purposeid,acctname";
         break;
       case 'BMS':
-        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr";
-        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr";
+        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh";
+        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh";
         break;
     }
     switch ($config['params']['companyid']) {
@@ -1282,8 +1284,8 @@ class othersClass
             $selectaddedfield = ", head.ied, head.bankcharges, head.interest, head.brokerfee, head.arrastre";
             break;
           case 'SJ':
-            $addedfield = ",bpo, ctnsno";
-            $selectaddedfield = ", head.bpo, head.ctnsno";
+            $addedfield = ",bpo, ctnsno,rem2";
+            $selectaddedfield = ", head.bpo, head.ctnsno,head.rem2";
             break;
         }
         break;
@@ -1325,7 +1327,7 @@ class othersClass
                     salestype, sano,pono, deldate, crref, returndate, refunddate, sdate1,sdate2,empid,driver,
                     plateno,excess,excessrate,aftrno,checkno,checkdate,amount,refdate,istrip,voiddate,voidby,
                     orderno,strdate1,strdate2,trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,
-                    ista,layref,isfa,isnoentry,rrfactor " . $add . $addedfield  . ")
+                    ista,layref,isfa,isnoentry,rrfactor,voyage " . $add . $addedfield  . ")
             SELECT head.trno,head.doc, head.docno,ifnull(client.clientid,0), ifnull(head.clientname,''), head.address,head.shipto,
                     head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
                     head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,
@@ -1339,7 +1341,7 @@ class othersClass
                     sdate1,sdate2,head.empid,head.driver,head.plateno,head.excess,head.excessrate,head.aftrno,
                     head.checkno,head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                     head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,head.fpid,head.crno,head.rfno,head.chsino,head.swsno,head.cotrno,
-                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor " . $select . $selectaddedfield  . "    
+                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage " . $select . $selectaddedfield  . "    
             FROM " . $config['docmodule']->head . " as head 
             left join cntnum on cntnum.trno=head.trno 
             left join client on client.client=head.client
@@ -2021,13 +2023,13 @@ class othersClass
         $selectaddedfield = " ,rctrno,rcline,purposeid";
         break;
       case 'BMS':
-        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr";
-        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr";
+        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh";
+        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh";
         break;
     }
 
     switch ($config['params']['companyid']) {
-      case 19: //housegem
+      case 19: //housegem  
         switch ($config['params']['doc']) {
           case 'RR':
             $addedfield = ", driver, plateno";
@@ -2140,8 +2142,8 @@ class othersClass
             $selectaddedfield = ", head.ied, head.bankcharges, head.interest, head.brokerfee, head.arrastre";
             break;
           case 'SJ':
-            $addedfield = ", bpo, ctnsno";
-            $selectaddedfield = ", head.bpo, head.ctnsno";
+            $addedfield = ", bpo, ctnsno,rem2";
+            $selectaddedfield = ", head.bpo, head.ctnsno,head.rem2";
             break;
         }
         break;
@@ -2150,6 +2152,14 @@ class othersClass
           case 'SJ':
             $addedfield = ",cmtrno";
             $selectaddedfield = ",head.cmtrno";
+            break;
+        }
+        break;
+      case 65: //metrodragon  
+        switch ($config['params']['doc']) {
+          case 'SJ':
+            $addedfield = ", plateno";
+            $selectaddedfield = ",head.plateno";
             break;
         }
         break;
@@ -4759,7 +4769,7 @@ class othersClass
   public function checkserialin($config)
   {
     $trno = $config['params']['trno'];
-    $data = $this->coreFunctions->opentable("select stock.trno,stock.line,stock.qty from lastock as stock left join item on item.itemid=stock.itemid where stock.trno=" . $trno . " and item.isserial=1");
+    $data = $this->coreFunctions->opentable("select stock.trno,stock.line,stock.qty from lastock as stock left join item on item.itemid=stock.itemid where stock.trno=" . $trno . "  and stock.qty > 0 and item.isserial=1");
     $serialcount = 0;
     if (!empty($data)) {
       foreach ($data as $key => $value) {
@@ -4797,7 +4807,7 @@ class othersClass
     if ($doc == 'AJ') {
       $fields = " case when stock.iss = 0 then stock.qty else stock.iss end as iss";
     }
-    $data = $this->coreFunctions->opentable("select stock.trno,stock.line,stock.iss as oqty, $fields from lastock as stock left join item on item.itemid=stock.itemid where stock.trno=" . $trno . " and item.isserial=1");
+    $data = $this->coreFunctions->opentable("select stock.trno,stock.line,stock.iss as oqty, $fields from lastock as stock left join item on item.itemid=stock.itemid where stock.iss>0 and stock.trno=" . $trno . " and item.isserial=1");
     $serialcount = 0;
     if (!empty($data)) {
       foreach ($data as $key => $value) {
@@ -4986,7 +4996,7 @@ class othersClass
           $approverlist = array_unique($approverlist);
           $approver = implode(",", $approverlist);
           $filter = " and ((mul.approverid in  (" . $approver . ") and mul.doc = '" . $doc . "' $filterdataparams) $filtersup $filterself)";
-          $leftjoin = " left join multiapprover as mul on mul.approverid = $approverid and mul.doc = '" . $doc . "' $addjoin ";
+          $leftjoin = " left join multiapprover as mul on mul.empid = " . $alias . ".empid and mul.doc = '" . $doc . "' $addjoin ";
         }
       } else {
         //reports na hindi kailangan ng doc
@@ -8329,6 +8339,7 @@ class othersClass
     $doc = $config['params']['doc'];
     $center = $config['params']['center'];
     $trno = $config['params']['trno'];
+    $systemtype = $this->companysetup->getsystemtype($config['params']);
 
     $return_module = 'module';
 
@@ -8379,11 +8390,24 @@ class othersClass
               break;
           }
         }
-
-
+        $filterlevel = "";
+        $leftjoin = "";
+        if ($doc == 'EMPLOYEE') {
+          switch ($systemtype) {
+            case 'PAYROLLPORTAL':
+            case 'PAYROLL':
+            case 'HRIS':
+            case 'HRISPAYROLL':
+            case 'AIMSPAYROLL';
+              $emplvl = $this->checksecuritylevel($config);
+              $filterlevel = " and emp.level in $emplvl ";
+              $leftjoin = " left join employee as emp on emp.empid = client.clientid ";
+              break;
+          }
+        }
 
         $tablenum = $config['docmodule']->head;
-        $qry = "select clientid as value from " . $tablenum . " where " . $config['docmodule']->tagging . "=1" . $filter;
+        $qry = "select clientid as value from " . $tablenum . $leftjoin .  " where " . $config['docmodule']->tagging . "=1  $filterlevel " . $filter;
         $newtrno = $this->coreFunctions->datareader($qry);
         break;
 
@@ -9235,6 +9259,8 @@ class othersClass
       case 'WAREHOUSE':
       case 'BRANCH':
       case 'BG':
+      case 'BY':
+      case 'WL':
         $table = 'client_picture';
         $trno = $config['params']['clientid'];
         break;

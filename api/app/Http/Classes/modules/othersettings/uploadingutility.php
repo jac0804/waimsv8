@@ -26,7 +26,7 @@ class uploadingutility
   private $btnClass;
   private $fieldClass;
   private $tabClass;
-  public $modulename = 'Uploading Utility';
+  public $modulename = 'UPLOADING UTILITY';
   public $gridname = 'entrygrid';
   private $companysetup;
   private $coreFunctions;
@@ -89,6 +89,21 @@ class uploadingutility
 
     $col1 = $this->fieldClass->create($fields);
     switch ($config['params']['companyid']) {
+      case 63: //ericco
+        data_set($col1, 'optionuploading.options',  array(
+          ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
+          ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
+          ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
+          ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
+          ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
+          ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
+          ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
+          ['label' => 'New UOM', 'value' => 'newuom', 'color' => 'green'],
+          ['label' => 'Barcode List', 'value' => 'newbarcodelist', 'color' => 'green'],
+          ['label' => 'Supplier Item List', 'value' => 'newslitemlist', 'color' => 'green'],
+        ));
+        break;
       case 50: //unitech
         data_set($col1, 'optionuploading.options',  array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
@@ -334,6 +349,14 @@ class uploadingutility
           ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary']
         ));
         break;
+
+      case 66: //metro dragon payroll
+        data_set($col1, 'optionuploading.options', array(
+          ['label' => 'New Employees', 'value' => 'newemployeepayroll', 'color' => 'green'],
+          ['label' => 'Update Employees', 'value' => 'updateemployeepayroll', 'color' => 'green'],
+          ['label' => 'Upload Rates', 'value' => 'updateemployeerate', 'color' => 'green'],
+        ));
+        break;
     }
 
     if ($this->companysetup->getisupdatabasetable($config['params'])) {
@@ -385,6 +408,13 @@ class uploadingutility
 
       case 60: //transpower
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadsupplierexcel', 'downloadagentexcel', 'downloaditemexcelmaster'];
+        break;
+      case 63: //ericco
+        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadbarcodelist', 'downloadsupplieritemexcel'];
+        break;
+
+      case 66: //  metro dragon payroll
+        $fields = ['downloademployeeexcel'];
         break;
 
       default:
@@ -505,6 +535,12 @@ class uploadingutility
           case 'newitemissuance':
             return $this->uploadtransaction($config['params']['dataparams']['utype'], $config['params']['data'], $config);
             break;
+          case 'newbarcodelist':
+            return $this->uploadbarcodelist($config);
+            break;
+          case 'newslitemlist':
+            return $this->uploadsupplieritemlist($config);
+            break;
           default:
             return $this->insertdatafromexcel($config['params']['dataparams']['utype'], $config['params']['data'], $config);
         }
@@ -530,6 +566,7 @@ class uploadingutility
       case 'downloadpricelistexcelmaster':
       case 'downloadwnexcel':
       case 'downloadpnpcsrexcelmaster':
+      case 'downloadbarcodelist':
         $result = $this->setupexceltemplate($config);
         $result['filename'] = str_replace("download", "", $action) . 'Template';
         return $result;
@@ -948,10 +985,16 @@ class uploadingutility
                   'SupplierCode' => '',
                   'SupplierName' => '',
                   'UOM' => '',
-                  'Price1' => '',
+                  'Retail' => '',
                   'Discount1' => '',
-                  'Price2' => '',
-                  'Discount2' => ''
+                  'Wholesale' => '',
+                  'Discount2' => '',
+                  'Price_A' => '',
+                  'Price_b' => '',
+                  'price_c' => '',
+                  'price_d' => '',
+                  'price_e' => '',
+                  'price_f' => ''
                 ]
               ]
             ];
@@ -1328,6 +1371,7 @@ class uploadingutility
             ];
             break;
           case 43: //mighty
+          case 66: // metro dragon payroll
             $col = [
               'EmployeeCode' => '',
               'LastName' => '',
@@ -1450,19 +1494,52 @@ class uploadingutility
 
         break;
       case 'downloadsupplieritemexcel':
+        switch ($config['params']['companyid']) {
+          case 63: //ericco
+            return [
+              'status' => true,
+              'msg' => 'Supplier item template ready to Download',
+              'name' => 'item',
+              'data' => [[
+                'suppliercode' => '',
+                'itembarcode' => '',
+                'price' => '',
+                'disc' => '',
+                'uom' => ''
+              ]]
+            ];
+            break;
+          default:
+            return [
+              'status' => true,
+              'msg' => 'Supplier item template ready to Download',
+              'name' => 'item',
+              'data' => [[
+                'SupplierCode' => '',
+                'SupplierName' => '',
+                'ItemCode' => '',
+                'ItemDescription' => '',
+              ]]
+            ];
+            break;
+        }
+
+        break;
+      case 'downloadbarcodelist':
         return [
           'status' => true,
-          'msg' => 'Supplier item template ready to Download',
+          'msg' => 'Barcode List template ready to Download',
           'name' => 'item',
           'data' => [[
-            'SupplierCode' => '',
-            'SupplierName' => '',
-            'ItemCode' => '',
-            'ItemDescription' => '',
+            'outletgroup' => '',
+            'itembarcode' => '',
+            'sku' => '',
+            'price' => '',
+            'disc' => '',
+            'uom' => ''
           ]]
         ];
         break;
-
       case 'downloadagentexcel':
         switch ($config['params']['companyid']) {
           case 60: //transpower
@@ -2246,6 +2323,160 @@ class uploadingutility
     return ['status' => $status, 'msg' => $msg];
   }
 
+  private function uploadbarcodelist($config)
+  {
+    $rawdata = $config['params']['data'];
+    $data = [];
+    $msg = '';
+    $status = true;
+
+    foreach ($rawdata as $key => $value) {
+      try {
+        $grp = $this->coreFunctions->getfieldvalue("client", "groupid", "groupid = '" . trim($rawdata[$key]['outletgroup']) . "'");
+        if ($grp == '') {
+          $status = false;
+          $msg .= 'Failed to upload. Outlet Group ' . trim($rawdata[$key]['outletgroup']) . ' does not exist. ';
+          continue;
+        }
+
+        $itemid = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode = '" . trim($rawdata[$key]['itembarcode']) . "'", [], '', true);
+        if ($itemid == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. Item ' . trim($rawdata[$key]['itembarcode']) . ' does not exist. ';
+          continue;
+        } else {
+          if (isset($rawdata[$key]['uom'])) {
+            $uom = $this->coreFunctions->getfieldvalue("uom", "uom", "itemid = ? and uom = ?", [$itemid, trim($rawdata[$key]['uom'])]);
+            if ($uom == '') {
+              $status = false;
+              $msg .= 'Failed to upload. UOM ' . trim($rawdata[$key]['uom']) . ' does not exist (' . $rawdata[$key]['itembarcode'] . '). ';
+              continue;
+            }
+            // else{
+            //   $data['uom2'] = trim($rawdata[$key]['uom']) ;
+            // }
+          } else {
+            $status = false;
+            $msg .= 'Failed to upload. UOM is blank (' . $rawdata[$key]['itembarcode'] . ').';
+            continue;
+            //$data['uom2'] = $this->coreFunctions->getfieldvalue("item", "uom", "itemid = ? ",[$itemid]); //comment this on live upload
+          }
+        }
+
+        $nsku =  isset($rawdata[$key]['sku']) ? trim($rawdata[$key]['sku']) : '';
+
+        $skuline = $this->coreFunctions->getfieldvalue("sku", "line", "issku = 1 and groupid = '" . trim($rawdata[$key]['outletgroup']) . "' and sku = '" . $nsku . "' and itemid =" . $itemid, [], '', true);
+
+        $data['sku'] = $nsku;
+        $data['itemid'] = $itemid;
+        $data['groupid'] = trim($rawdata[$key]['outletgroup']);
+        $data['amt'] = isset($rawdata[$key]['price']) ? $rawdata[$key]['price'] : 0;
+        $data['disc'] = isset($rawdata[$key]['disc']) ? $rawdata[$key]['disc'] : '';
+        $data['issku'] = 1;
+
+        if ($skuline == 0) {
+          $return = $this->coreFunctions->sbcinsert("sku", $data);
+        } else {
+          $data['editby'] = $config['params']['user'] . '(UPLOADING)';
+          $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $return = $this->coreFunctions->sbcupdate("sku", $data, ["line" => $skuline]);
+        }
+
+
+        if ($return == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. ';
+          goto exithere;
+        }
+      } catch (Exception $e) {
+        $status = false;
+        $msg .= 'Failed to upload. Exception error ' . $e->getMessage();
+        goto exithere;
+      }
+    }
+
+    exithere:
+
+    return ['status' => $status, 'msg' => $msg];
+  }
+
+  private function uploadsupplieritemlist($config)
+  {
+    $rawdata = $config['params']['data'];
+    $data = [];
+    $msg = '';
+    $status = true;
+
+    foreach ($rawdata as $key => $value) {
+      try {
+        $supplier = $this->coreFunctions->getfieldvalue("client", "clientid", "client = '" . trim($rawdata[$key]['suppliercode']) . "'", [], '', true);
+        if ($supplier == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. Supplier ' . trim($rawdata[$key]['suppliercode']) . ' does not exist. ';
+          continue;
+        }
+
+        $itemid = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode = '" . trim($rawdata[$key]['itembarcode']) . "'", [], '', true);
+        if ($itemid == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. Item ' . trim($rawdata[$key]['itembarcode']) . ' does not exist. ';
+          continue;
+        } else {
+          if (isset($rawdata[$key]['uom'])) { //remove this checking for live upload, temporary only
+            $uom = $this->coreFunctions->getfieldvalue("uom", "uom", "itemid = ? and uom = ?", [$itemid, trim($rawdata[$key]['uom'])]);
+            if ($uom == '') {
+              $status = false;
+              $msg .= 'Failed to upload. UOM ' . trim($rawdata[$key]['uom']) . ' does not exist (' . $rawdata[$key]['itembarcode'] . '). ';
+              continue;
+            }
+            // else{
+            //   $data['uom2'] = trim($rawdata[$key]['uom']) ;
+            // }
+          } else {
+            $status = false;
+            $msg .= 'Failed to upload. UOM is blank (' . $rawdata[$key]['itembarcode'] . ').';
+            continue;
+            //$data['uom2'] = $this->coreFunctions->getfieldvalue("item", "uom", "itemid = ? ",[$itemid]); //comment this on live upload
+          }
+        }
+
+        $nsku =  isset($rawdata[$key]['sku']) ? trim($rawdata[$key]['sku']) : '';
+
+        $skuline = $this->coreFunctions->getfieldvalue("sku", "line", "issupplier =1 and clientid = " . $supplier . " and sku = '" . $nsku . "' and itemid =" . $itemid, [], '', true);
+
+        $data['sku'] = $nsku;
+        $data['itemid'] = $itemid;
+        $data['clientid'] = $supplier;
+        $data['amt'] = isset($rawdata[$key]['price']) ? $rawdata[$key]['price'] : 0;
+        $data['disc'] = isset($rawdata[$key]['disc']) ? $rawdata[$key]['disc'] : '';
+        $data['issupplier'] = 1;
+
+        if ($skuline == 0) {
+          $return = $this->coreFunctions->sbcinsert("sku", $data);
+        } else {
+          $data['editby'] = $config['params']['user'] . '(UPLOADING)';
+          $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $return = $this->coreFunctions->sbcupdate("sku", $data, ["line" => $skuline]);
+        }
+
+
+        if ($return == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. ';
+          goto exithere;
+        }
+      } catch (Exception $e) {
+        $status = false;
+        $msg .= 'Failed to upload. Exception error ' . $e->getMessage();
+        goto exithere;
+      }
+    }
+
+    exithere:
+
+    return ['status' => $status, 'msg' => $msg];
+  }
+
   private function insertdatafromexcel($type, $rawdata, $config)
   {
     ini_set('max_execution_time', -1);
@@ -2816,7 +3047,6 @@ class uploadingutility
             break;
         }
 
-        //var_dump($valtoinsert);
         $currentdate = $this->othersClass->getCurrentTimeStamp();
         switch ($tabletype) {
           case 'customer':
@@ -2830,53 +3060,60 @@ class uploadingutility
             $valtoinsert['editby'] = $config['params']['user'];
             $valtoinsert['editdate'] = $currentdate;
             $valtoinsert['dlock'] = $currentdate;
-            if($tabletype=='item'){
-              if($companyid == 60){//transpower
-                if(isset($valtoinsert['disc'])){
+            if ($tabletype == 'item') {
+              if ($companyid == 60) { //transpower
+                if (isset($valtoinsert['disc'])) {
                   $namt = $this->othersClass->computestock($valtoinsert['amt'], $valtoinsert['disc'], 1, 1);
-                  $valtoinsert['namt'] = round($namt['ext'],2);
+                  $valtoinsert['namt'] = $namt['ext'];
                 }else{
                   $valtoinsert['namt'] =$valtoinsert['amt'];
                 }
 
-                if(isset($valtoinsert['disc2'])){
+                if (isset($valtoinsert['disc2'])) {
                   $namt2 = $this->othersClass->computestock($valtoinsert['amt2'], $valtoinsert['disc2'], 1, 1);
-                  $valtoinsert['namt2'] = round($namt2['ext'],2);
+                  $valtoinsert['namt2'] = $namt2['ext'];
                 }else{
                   $valtoinsert['namt2'] =$valtoinsert['amt2'];
                 }
-                
-                if(isset( $valtoinsert['disc3'])){
+
+                if (isset($valtoinsert['disc3'])) {
                   $nfamt = $this->othersClass->computestock($valtoinsert['famt'], $valtoinsert['disc3'], 1, 1);
-                  $valtoinsert['nfamt'] = round($nfamt['ext'],2);
+                  $valtoinsert['nfamt'] = $nfamt['ext'];
                 }else{
                   $valtoinsert['nfamt'] =$valtoinsert['famt'];
                 }
 
-                if(isset( $valtoinsert['disc4'])){
+                if (isset($valtoinsert['disc4'])) {
                   $namt4 = $this->othersClass->computestock($valtoinsert['amt4'], $valtoinsert['disc4'], 1, 1);
-                  $valtoinsert['namt4'] = round($namt4['ext'],2);
+                  $valtoinsert['namt4'] = $namt4['ext'];
                 }else{
                   $valtoinsert['namt4'] =$valtoinsert['amt4'];
                 }
                 
                 if(isset( $valtoinsert['disc5'])){
                   $namt5 = $this->othersClass->computestock($valtoinsert['amt5'], $valtoinsert['disc5'], 1, 1);
-                  $valtoinsert['namt5'] = round($namt5['ext'],2);
+                  $valtoinsert['namt5'] = $namt5['ext'];
                 }else{
                   $valtoinsert['namt5'] =$valtoinsert['amt5'];
                 }
 
                 if(isset($valtoinsert['disc6'])){
                   $namt6 = $this->othersClass->computestock($valtoinsert['amt6'], $valtoinsert['disc6'], 1, 1);
-                  $valtoinsert['namt6'] = round($namt6['ext'],2);
+                  $valtoinsert['namt6'] = $namt6['ext'];
                 }else{
                   $valtoinsert['namt6'] =$valtoinsert['amt6'];
                 }
-                
-                if(isset($valtoinsert['disc7'])){
+
+                if (isset($valtoinsert['disc6'])) {
+                  $namt6 = $this->othersClass->computestock($valtoinsert['amt6'], $valtoinsert['disc6'], 1, 1);
+                  $valtoinsert['namt6'] = round($namt6['ext'], 2);
+                } else {
+                  $valtoinsert['namt6'] = $valtoinsert['amt6'];
+                }
+
+                if (isset($valtoinsert['disc7'])) {
                   $namt7 = $this->othersClass->computestock($valtoinsert['amt7'], $valtoinsert['disc7'], 1, 1);
-                  $valtoinsert['namt7'] = round($namt7['ext'],2);
+                  $valtoinsert['namt7'] = $namt7['ext'];
                 }else{
                   $valtoinsert['namt7'] =$valtoinsert['amt7'];
                 }
@@ -3529,7 +3766,7 @@ class uploadingutility
         }
       } catch (Exception $e) {
         $status = false;
-        $msg .= "(" . $uniqueval . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
+        $msg .= "(" . $valtoinsert[$uniqueval] . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
         goto exithere;
       }
 

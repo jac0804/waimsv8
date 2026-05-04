@@ -44,6 +44,7 @@ class batchsetup
     'enddate',
     'paymode',
     'postdate',
+    'annualtax',
     'sss',
     'ph',
     'hdmf',
@@ -60,7 +61,7 @@ class batchsetup
   ];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
-  private $blnfields = ['istax', 'is13'];
+  private $blnfields = ['annualtax', 'is13', 'sss', 'ph', 'hdmf', 'tax'];
   public $showfilteroption = false;
   public $showfilter = false;
   public $showcreatebtn = true;
@@ -108,7 +109,9 @@ class batchsetup
     // $listpostedby = 8;
 
     $getcols = ['action', 'batch', 'listdate', 'startdate', 'enddate', 'paymode', 'paygroup', 'divname', 'branch', 'postdate', 'listpostedby'];
-
+    if ($companyid == 66) { //metrodragon payroll
+      $getcols = ['action', 'batch', 'listdate', 'startdate', 'enddate', 'paymode', 'paygroup', 'sssee', 'phicee', 'hdmfmulti', 'tax01', 'divname', 'branch', 'postdate', 'listpostedby'];
+    }
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -128,15 +131,28 @@ class batchsetup
 
     $cols[$listpostedby]['name'] = 'postby';
 
-
-    if ($companyid == 58) {
-      $cols[$divname]['label'] = 'Company';
-
-      $cols[$divname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-      $cols[$branch]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-    } else {
-      $cols[$divname]['type'] = 'coldel';
-      $cols[$branch]['type'] = 'coldel';
+    switch ($companyid) {
+      case 58:
+        $cols[$divname]['label'] = 'Company';
+        $cols[$divname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        $cols[$branch]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        break;
+      case 66:
+        $cols[$sssee]['label'] = 'SSS';
+        $cols[$sssee]['style'] = 'width:30px;whiteSpace: normal;min-width:30px;';
+        $cols[$divname]['type'] = 'coldel';
+        $cols[$branch]['type'] = 'coldel';
+        $cols[$phicee]['label'] = 'PHIC';
+        $cols[$phicee]['style'] = 'width:30px;whiteSpace: normal;min-width:30px;';
+        $cols[$hdmfmulti]['label'] = 'HDMF';
+        $cols[$hdmfmulti]['style'] = 'width:30px;whiteSpace: normal;min-width:30px;';
+        $cols[$tax01]['label'] = 'TAX';
+        $cols[$tax01]['style'] = 'width:30px;whiteSpace: normal;min-width:30px;';
+        break;
+      default:
+        $cols[$divname]['type'] = 'coldel';
+        $cols[$branch]['type'] = 'coldel';
+        break;
     }
 
     $cols = $this->tabClass->delcollisting($cols);
@@ -168,8 +184,12 @@ class batchsetup
               when b.paymode = 'p' then 'Pierce'
               when b.paymode = 'l' then 'Last Pay'
             end as paymode,
-            b.postdate, b.sss, b.ph, b.hdmf,
-            b.tax, b.adjustm, b.custcode, b.allow, pay.paygroup as paygroup,
+            b.postdate, 
+            if(b.sss=1,'YES','') as sssee,
+            if(b.ph=1,'YES','') as phicee,
+            if(b.hdmf=1,'YES','') as hdmfmulti,
+            if(b.tax=1,'YES','') as tax01,
+            b.adjustm, b.custcode, b.allow, pay.paygroup as paygroup,
             b.is13, b.13start, b.13end, b.postby, d.divname, br.clientname as branch
           from batch as b 
           left join paygroup as pay on pay.line=b.pgroup
@@ -202,7 +222,11 @@ class batchsetup
     return $buttons;
   } // createHeadbutton
 
-  public function createTab($access, $config) {}
+  public function createTab($access, $config)
+  {
+    $tab = [];
+    return $tab;
+  }
 
   public function createtabbutton($config)
   {
@@ -269,7 +293,7 @@ class batchsetup
     data_set($col2, 'start.required', true);
     data_set($col2, 'end.required', true);
 
-    $fields = ['start', 'end', 'is13', 'istax'];
+    $fields = ['start', 'end', 'is13', 'annualtax'];
     $col3 = $this->fieldClass->create($fields);
 
     data_set($col3, 'start.name', '13start');
@@ -278,20 +302,36 @@ class batchsetup
     data_set($col3, 'end.name', '13end');
     data_set($col3, 'end.label', 'To');
 
-    $fields = [];
-    $col4 = $this->fieldClass->create($fields);
+
+    if ($companyid == 66) { //metrodragon payroll
+      $fields = ['sss', 'chkphealth', 'hdmf', 'tax'];
+      $col4 = $this->fieldClass->create($fields);
+      data_set($col4, 'sss.label', 'SSS');
+      data_set($col4, 'sss.type', 'checkbox');
+      data_set($col4, 'chkphealth.label', 'PHIC');
+      data_set($col4, 'chkphealth.name', 'ph');
+      data_set($col4, 'hdmf.label', 'HDMF');
+      data_set($col4, 'hdmf.type', 'checkbox');
+      data_set($col4, 'tax.type', 'checkbox');
+      data_set($col4, 'tax.class', 'cstax');
+    } else {
+      $fields = [];
+      $col4 = $this->fieldClass->create($fields);
+    }
+
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
   public function newclient($config)
   {
-    $data = $this->resetdata($config['newclient']);
+    $data = $this->resetdata($config['newclient'], $config['params']);
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
-  private function resetdata($client = '')
+  private function resetdata($client = '', $config)
   {
+    $companyid = $config['companyid'];
     $data = [];
     $data[0]['clientid'] = 0;
     $data[0]['client'] = $client;
@@ -305,12 +345,16 @@ class batchsetup
     $data[0]['enddate'] = null;
     $data[0]['13start'] = null;
     $data[0]['13end'] = null;
-    $data[0]['istax'] = '0';
+    $data[0]['annualtax'] = '0';
     $data[0]['is13'] = '0';
     $data[0]['divid'] = '0';
     $data[0]['divname'] = '';
     $data[0]['branchid'] = '0';
     $data[0]['branchname'] = '';
+    $data[0]['sss'] = '0';
+    $data[0]['ph'] = '0';
+    $data[0]['hdmf'] = '0';
+    $data[0]['tax'] = '0';
     return $data;
   }
 
@@ -318,7 +362,7 @@ class batchsetup
   public function loadheaddata($config)
   {
     $clientid = $this->othersClass->val($config['params']['clientid']);
-    if ($clientid == 0) $clientid = $this->getlastclient();
+    // if ($clientid == 0) $clientid = $this->getlastclient();
 
     $qryselect = "
         select
@@ -345,7 +389,7 @@ class batchsetup
             when (b.paymode = 's') and right(b.batch, 2) = '04' then '2nd Half'
             when (b.paymode = 'm') and right(b.batch, 2) = '04' then '2nd Half'
           end as paymodetype,
-          b.tax as istax, b.tax, b.adjustm, b.custcode, b.allow, b.pgroup, is13, b.13start, b.13end, pay.paygroup as tpaygroupname, pay.code as paycode, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname
+          b.annualtax, b.tax, b.adjustm, b.custcode, b.allow, b.pgroup, is13, b.13start, b.13end, pay.paygroup as tpaygroupname, pay.code as paycode, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname
         ";
 
     $qry = $qryselect . " from " . $this->head . " as b left join paygroup as pay on pay.line=b.pgroup left join division as d on d.divid=b.divid left join client as br on br.clientid=b.branchid
@@ -367,7 +411,7 @@ class batchsetup
 
       return  ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid']];
     } else {
-      $head = $this->resetdata();
+      $head = $this->resetdata('', $config['params']);
       return ['status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
     }
   }
@@ -409,7 +453,6 @@ class batchsetup
       if ($data['branchid'] == 0) return ['status' => false, 'msg' => 'Please select valid branch.'];
     }
 
-    $data['tax'] = $head['istax'];
     $data['paymode'] = substr($head['paymode'][0], 0, 1);
     $data['batch'] = 'P' . substr($head['paymode'][0], 0, 1) . $head['paycode'] . date('Ym', strtotime($head['dateid'])) . $val;
 
@@ -448,7 +491,6 @@ class batchsetup
     $last_id = $this->coreFunctions->datareader("select line as value 
         from " . $this->head . " 
         order by line DESC LIMIT 1");
-
     return $last_id;
   }
 

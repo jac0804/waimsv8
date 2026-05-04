@@ -48,7 +48,16 @@ class jr
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due',  'yourref', 'ourref', 'rem', 'projectid', 'subproject', 'subcontractorid',
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'yourref',
+    'ourref',
+    'rem',
+    'projectid',
+    'subproject',
+    'subcontractorid',
     'revision'
   ];
   private $except = ['trno', 'dateid', 'due'];
@@ -190,10 +199,10 @@ class jr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -231,7 +240,17 @@ class jr
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'rqty', 'rrqty', 'uom', 'rrcost', 'ext', 'qa', 'rem', 'void', 'stage', 'ref'
+          'action',
+          'rqty',
+          'rrqty',
+          'uom',
+          'rrcost',
+          'ext',
+          'qa',
+          'rem',
+          'void',
+          'stage',
+          'ref'
         ],
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => ['itemvoiding', 'viewref']

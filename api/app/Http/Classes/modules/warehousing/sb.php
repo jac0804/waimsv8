@@ -104,8 +104,17 @@ class sb
       $this->showfilter = false;
     }
     $getcols = [
-      'action', 'lblstatus', 'listdocument', 'listdate', 'listclientname',
-      'lockdate', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+      'action',
+      'lblstatus',
+      'listdocument',
+      'listdate',
+      'listclientname',
+      'lockdate',
+      'postdate',
+      'listpostedby',
+      'listcreateby',
+      'listeditby',
+      'listviewby'
     ];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -193,10 +202,10 @@ class sb
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -271,9 +280,28 @@ class sb
     $barcode = 21;
 
     $gridcolumn = [
-      'action', 'isqty', 'uom', 'partno',
-      'subcode', 'model', 'boxcount', 'amt1', 'amt2', 'amt3', 'amt4', 'amt5', 'amtstatus', 'isamt', 'disc', 'ext', 'wh', 'rem', 'qa', 'void',
-      'itemname', 'barcode'
+      'action',
+      'isqty',
+      'uom',
+      'partno',
+      'subcode',
+      'model',
+      'boxcount',
+      'amt1',
+      'amt2',
+      'amt3',
+      'amt4',
+      'amt5',
+      'amtstatus',
+      'isamt',
+      'disc',
+      'ext',
+      'wh',
+      'rem',
+      'qa',
+      'void',
+      'itemname',
+      'barcode'
     ];
 
     $headgridbtns = ['itemvoiding', 'viewref', 'viewdiagram'];

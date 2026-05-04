@@ -21,7 +21,7 @@ class entryitemsubcategory
 {
   private $fieldClass;
   private $tabClass;
-  public $modulename = 'Item Sub-Category';
+  public $modulename = 'ITEM SUB-CATEGORY';
   public $gridname = 'inventory';
   private $companysetup;
   private $coreFunctions;

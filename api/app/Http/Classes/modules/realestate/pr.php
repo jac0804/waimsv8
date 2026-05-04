@@ -43,9 +43,29 @@ class pr
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref',
-    'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'purtype', 'requestor', 'budgetreqno',
-    'projectid', 'phaseid', 'modelid', 'blklotid', 'amenityid', 'subamenityid'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'purtype',
+    'requestor',
+    'budgetreqno',
+    'projectid',
+    'phaseid',
+    'modelid',
+    'blklotid',
+    'amenityid',
+    'subamenityid'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -288,10 +308,10 @@ class pr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -362,7 +382,24 @@ class pr
     $systype = $this->companysetup->getsystemtype($config['params']);
 
     $columns = [
-      'action', 'itemdescription', 'rrqty', 'rrcost', 'uom', 'disc', 'netamt', 'ext', 'qa', 'rem', 'wh', 'whname', 'void', 'itemname', 'partno', 'subcode', 'boxcount', 'barcode'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'rrcost',
+      'uom',
+      'disc',
+      'netamt',
+      'ext',
+      'qa',
+      'rem',
+      'wh',
+      'whname',
+      'void',
+      'itemname',
+      'partno',
+      'subcode',
+      'boxcount',
+      'barcode'
     ];
 
     $action = 0;
@@ -798,8 +835,14 @@ class pr
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -1782,7 +1825,7 @@ class pr
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
 

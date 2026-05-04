@@ -263,10 +263,10 @@ class sr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -1197,7 +1197,7 @@ class sr
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
     if ($companyid == 10) { //afti

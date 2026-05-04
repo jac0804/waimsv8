@@ -147,10 +147,10 @@ class cn
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -205,8 +205,10 @@ class cn
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
-        'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'], 'headgridbtns' => $headgridbtns
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
+        'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
+        'headgridbtns' => $headgridbtns
       ],
       'multiinput1' => ['inputcolumn' => ['col1' => $col1], 'label' => 'CREDIT INFO'],
       'adddocument' => ['event' => ['lookupclass' => 'entrytransnumpicture', 'action' => 'documententry', 'access' => 'view']]

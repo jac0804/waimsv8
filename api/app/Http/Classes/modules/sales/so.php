@@ -240,6 +240,16 @@ class so
       $cols[$lockdate]['type'] = 'coldel';
     }
 
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -555,10 +565,10 @@ class so
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -752,6 +762,12 @@ class so
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
 
     $obj[0]['inventory']['columns'][$kgs]['label'] = 'Selling Kgs';
     if (!$iskgs) {
@@ -3293,8 +3309,13 @@ class so
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
 

@@ -149,10 +149,10 @@ class en
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -414,7 +414,7 @@ class en
       scheddocno, subjectid, roomid, courseid, curriculumcode, curriculumdocno, adviserid, yr, schedtrno, schedline, ischinese from " . $this->head . " where trno=? limit 1";
     if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
       // $qry = "insert into " . $this->hstock . "(trno, line, atdate, status, clientid) select trno, line, atdate, status, clientid from " . $this->stock . " where trno=?";
-      $qry = "insert into ".$this->hstock."(trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno) select trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno from ".$this->stock." where trno=?";
+      $qry = "insert into " . $this->hstock . "(trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno) select trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno from " . $this->stock . " where trno=?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         $date = $this->othersClass->getCurrentTimeStamp();
         $data = ['postdate' => $date, 'postedby' => $config['params']['user']];
@@ -445,7 +445,7 @@ class en
       scheddocno, subjectid, roomid, courseid, curriculumcode, curriculumdocno, adviserid, yr, schedtrno, schedline, ischinese from " . $this->hhead . " where trno=? limit 1";
     if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
       // $qry = "insert into " . $this->stock . "(trno, line, atdate, status, clientid) select trno, line, atdate, status, clientid from " . $this->hstock . " where trno=?";
-      $qry = "insert into ".$this->stock."(trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno) select trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno from ".$this->hstock." where trno=?";
+      $qry = "insert into " . $this->stock . "(trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno) select trno, line, clientid, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec, schedtrno from " . $this->hstock . " where trno=?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null where trno=?", 'update', [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
@@ -462,9 +462,9 @@ class en
   public function openstock($trno, $config)
   {
     $sqlselect = $this->getstockselect($config);
-    $qry = $sqlselect." from ".$this->stock." as stock left join ".$this->tablenum." as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and num.postdate is null
+    $qry = $sqlselect . " from " . $this->stock . " as stock left join " . $this->tablenum . " as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and num.postdate is null
       union all
-      ".$sqlselect." from ".$this->hstock." as stock left join ".$this->tablenum." as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and num.postdate is not null";
+      " . $sqlselect . " from " . $this->hstock . " as stock left join " . $this->tablenum . " as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and num.postdate is not null";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
   } //end function    
@@ -485,7 +485,7 @@ class en
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
     $sqlselect = $this->getstockselect($config);
-    $qry = $sqlselect." from ".$this->stock." as stock left join ".$this->tablenum." as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and stock.line=?";
+    $qry = $sqlselect . " from " . $this->stock . " as stock left join " . $this->tablenum . " as num on num.trno=stock.trno left join client on client.clientid=stock.clientid where stock.trno=? and stock.line=?";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -542,7 +542,7 @@ class en
   {
     $trno = $config['params']['trno'];
     $schedtrno = $this->coreFunctions->getfieldvalue($this->head, "schedtrno", "trno=?", [$trno]);
-    $acount = $this->coreFunctions->datareader("select count(line) as value from en_atstudents where trno=".$trno);
+    $acount = $this->coreFunctions->datareader("select count(line) as value from en_atstudents where trno=" . $trno);
     if ($acount != '' && $acount != 0) {
       return ['status' => false, 'msg' => 'Students already generated'];
     }
@@ -550,13 +550,13 @@ class en
       from glhead as head
       left join client on client.clientid=head.clientid
       left join glsubject as stock on stock.trno=head.trno
-      where head.doc='ER' and stock.screfx=".$schedtrno);
+      where head.doc='ER' and stock.screfx=" . $schedtrno);
     if (!empty($students)) {
       foreach ($students as $stud) {
-        $lastline = $this->coreFunctions->datareader("select line as value from en_atstudents where trno=".$trno." order by line desc");
+        $lastline = $this->coreFunctions->datareader("select line as value from en_atstudents where trno=" . $trno . " order by line desc");
         if ($lastline == '') $lastline = 0;
         $lastline += 1;
-        $this->coreFunctions->execqry("insert into en_atstudents(trno, line, clientid, schedtrno) values(".$trno.", ".$lastline.", ".$stud->clientid.", ".$schedtrno.")", 'insert');
+        $this->coreFunctions->execqry("insert into en_atstudents(trno, line, clientid, schedtrno) values(" . $trno . ", " . $lastline . ", " . $stud->clientid . ", " . $schedtrno . ")", 'insert');
       }
       $stocks = $this->openstock($trno, $config);
       return ['status' => true, 'msg' => 'Attendance generated', 'reloaddata' => true];
@@ -746,7 +746,7 @@ class en
       'editdate' => $this->othersClass->getCurrentTimeStamp(),
       'editby' => $config['params']['user']
     ];
-    foreach($data as $key => $value) {
+    foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
     }
     $upd = $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);

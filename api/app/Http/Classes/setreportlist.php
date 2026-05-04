@@ -184,6 +184,9 @@ class setreportlist
     $rep_comparativebalancesheet = "";
     $rep_comparativetrialbalance = "";
     $rep_monthlyincomestatement = "";
+    $rep_invvssubsidiary = "";
+    $rep_list_of_accounts_beyond_budget = "";
+    $rep_actual_vs_budget_comparison = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -204,6 +207,7 @@ class setreportlist
           $rep_comparativebalancesheet = "('','\\903','','','',0,1,0,'Comparative Balance Sheet','\\90307',3084,'0'," . $params['levelid'] . ")";
           $rep_comparativetrialbalance = "('','\\903','','','',0,1,0,'Comparative Trial Balance','\\90309',3480,'0'," . $params['levelid'] . ")";
           $rep_monthlyincomestatement = "('','\\903','','','',0,1,0,'Monthly Income Statement','\\90308',3085,'0'," . $params['levelid'] . ")";
+          $rep_invvssubsidiary  = "('','\\903','','','',0,1,0,'Inventory Cost Vs Subsidiary Ledger','\\90319',5809,'0'," . $params['levelid'] . ")";
 
           if ($params['companyid'] == 24) { //goodfound
             $rep_perCostCenterReport = "('','\\903','','','',0,1,0,'Per Cost Center Report','\\90314',4032,'0'," . $params['levelid'] . ")";
@@ -226,6 +230,10 @@ class setreportlist
 
           if ($params['companyid'] == 8 || $params['companyid'] == 55) { //maxipro //afli
             $monthly_balancesheet  = "('','\\903','','','',0,1,0,'Monthly Balance Sheet','\\90317',4855,'0'," . $params['levelid'] . ")";
+          }
+          if ($params['companyid'] == 68) { //jda WEB AIMS w/ HRIS PAYROLL
+            $rep_list_of_accounts_beyond_budget  = "('','\\903','','','',0,1,0,'List Of Accounts Beyond Budget','\\90320',5824,'0'," . $params['levelid'] . ")";
+            $rep_actual_vs_budget_comparison  = "('','\\903','','','',0,1,0,'Actual Vs Budget Comparison','\\90321',5827,'0'," . $params['levelid'] . ")";
           }
         }
 
@@ -269,6 +277,7 @@ class setreportlist
     $rep_reorder = "";
     $rep_sales_summary_per_item_per_price = "";
     $rep_item_sales_report = "";
+    $rep_inventory_vs_receiving_report = "";
 
 
 
@@ -333,6 +342,7 @@ class setreportlist
               $rep_expiry_report = "('','\\904','','','',0,1,0,'Expiry Report','\\90422',3545,'0'," . $params['levelid'] . ")";
               break;
             case 15: //nathina
+            case 68: //jda
               $rep_inventory_per_wh_type = "('','\\904','','','',0,1,0,'Inventory Per WH Type','\\90428',3751,'0'," . $params['levelid'] . ")";
               break;
             case 39: //cbbsi
@@ -345,6 +355,7 @@ class setreportlist
             default: // UNIHOME
               if ($this->companysetup->getsystemtype($params) == 'AIMS') {
                 $rep_sales_summary_per_item = "";
+                $rep_inventory_vs_receiving_report = "('','\\904','','','',0,1,0,'Inventory Ledger Vs Receiving Report','\\90455',5811,'0'," . $params['levelid'] . ")";
                 if ($params['companyid'] == 36 || $params['companyid'] == 27) { //rozlab,nte
                   $rep_sales_summary_per_item = "('','\\904','','','',0,1,0,'Sales Summary per Item','\\90421',3533,'0'," . $params['levelid'] . ")";
                 }
@@ -504,6 +515,7 @@ class setreportlist
     $rep_customerlist = "";
     $rep_currentcustomerreceivable = "";
     $rep_currentcustomerreceivableaging = "";
+    $rep_receivables_report = "";
 
     $rep_analyzecustomersalesmonthly = "";
     $rep_customerperformancereport = "";
@@ -534,6 +546,10 @@ class setreportlist
     $rep_brandsales_report = "";
     $rep_dsalessumm_report = "";
     $rep_brandsalespersize_report = "";
+    // transpoer
+    $rep_daily_sales_collected_and_uncollected = "";
+    $rep_yearly_sales_collected_and_uncollected = "";
+    $rep_monthly_sales_collected_uncollected_report = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -551,6 +567,7 @@ class setreportlist
           $rep_customerlist = "('','\\905','','','',0,1,0,'Customers List','\\90501',3033,'0'," . $params['levelid'] . ")";
           $rep_currentcustomerreceivable = "('','\\905','','','',0,1,0,'Current Customer Receivables','\\90502',3034,'0'," . $params['levelid'] . ")";
           $rep_currentcustomerreceivableaging = "('','\\905','','','',0,1,0,'Current Customer Receivables Aging','\\90503',3035,'0'," . $params['levelid'] . ")";
+          $rep_receivables_report = "('','\\905','','','',0,1,0,'Receivables Trial Balance Report','\\90560',5645,'0'," . $params['levelid'] . ")";
 
           if ($params['companyid'] == 8) { //maxipro
           } else {
@@ -594,9 +611,9 @@ class setreportlist
               $rep_sawt_monitoring_report = "('','\\905','','','',0,1,0,'SAWT Monitoring Report','\\90525',3583,'0'," . $params['levelid'] . ")";
               $rep_summary_sales_report = "('','\\905','','','',0,1,0,'Summary Sales Report','\\90526',3709,'0'," . $params['levelid'] . ")";
               break;
-              // case 21: // kinggeorge
-              //   $rep_sales_report_with_markup = "('','\\905','','','',0,1,0,'Sales Report With Markup','\\90529',3755,'0'," . $params['levelid'] . ")";
-              //   break;
+            // case 21: // kinggeorge
+            //   $rep_sales_report_with_markup = "('','\\905','','','',0,1,0,'Sales Report With Markup','\\90529',3755,'0'," . $params['levelid'] . ")";
+            //   break;
             case 19: //housegem
               $rep_customer_transaction_history = "('','\\905','','','',0,1,0,'Customer Transaction History','\\90531',3812,'0'," . $params['levelid'] . ")";
               $rep_pendingsomonitoring = "('','\\905','','','',0,1,0,'Pending Sales Order Monitoring','\\90542',5023,'0'," . $params['levelid'] . ")";
@@ -666,6 +683,14 @@ class setreportlist
 
               $rep_dsalessumm_report = "('','\\905','','','',0,1,0,'Daily Sales Summary','\\90555',5448,'0'," . $params['levelid'] . ")";
               $rep_brandsalespersize_report = "('','\\905','','','',0,1,0,'Brand Sales Summary per Size','\\90556',5449,'0'," . $params['levelid'] . ")";
+              break;
+            case 60: //transpower
+              $rep_daily_sales_collected_and_uncollected = "('','\\905','','','',0,1,0,'Daily Sales Collected and Uncollected','\\90561',5646,'0'," . $params['levelid'] . ")";
+              $rep_yearly_sales_collected_and_uncollected = "('','\\905','','','',0,1,0,'Yearly Sales Collected And Uncollected','\\90562',5658,'0'," . $params['levelid'] . ")";
+              $rep_monthly_sales_collected_uncollected_report = "('','\\905','','','',0,1,0,'Monthly Sales Collected and Uncollected Report','\\90563',5657,'0'," . $params['levelid'] . ")";
+              break;
+            case 63: // ericco
+              $rep_collection_report = "('','\\905','','','',0,1,0,'Collection Report','\\90522',3553,'0'," . $params['levelid'] . ")";
               break;
           }
         }
@@ -875,8 +900,8 @@ class setreportlist
 
     $rep_customer_registration_report = '';
     $rep_reseller_status_summary_report = '';
-    $rep_dailtytask_report = '';
     $rep_task_monitoring_report = '';
+    $rep_dailytask_report = '';
 
 
     if ($this->companysetup->getispos($params)) {
@@ -1119,6 +1144,7 @@ class setreportlist
     $rep_Lead = "";
     $rep_opportunity_module = "";
     $rep_physical_count_sheet_per_batch_report = "";
+    $rep_call_monitoring = "";
 
     $subparent_pcf = "";
     $rep_pcf_summary = "";
@@ -1384,6 +1410,7 @@ class setreportlist
               $subparent_crm = "('','\\909','','','',0,0,0,'CRM','\\90909',3483,'0'," . $params['levelid'] . ")";
               $rep_Lead = "('','\\90909','','\\\\909','',0,1,0,'Lead Report','\\9090901',3484,'0'," . $params['levelid'] . ")";
               $rep_opportunity_module = "('','\\90909','','\\\\909','',0,1,0,'Opportunity Module Report','\\9090902',3485,'0'," . $params['levelid'] . ")";
+              $rep_call_monitoring = "('','\\90909','','\\\\909','',0,1,0,'Call Monitoring Report','\\9090903',5819,'0'," . $params['levelid'] . ")";
 
               $subparent_pcf = "('','\\909','','','',0,0,0,'PCF','\\90917',5409,'0'," . $params['levelid'] . ")";
               $rep_pcf_summary = "('','\\90917','','\\\\909','',0,1,0,'PCF Summary Report','\\9091701',5410,'0'," . $params['levelid'] . ")";
@@ -1611,6 +1638,7 @@ class setreportlist
           case 28: //xcomp
           case 36: //ROZLAB
           case 39: //CBBSI
+          case 68: //jda company
             $rep_sched_fifo = "('','\\904','','','',0,1,0,'Schedule of Inventory FIFO','\\90414',3457,'0'," . $params['levelid'] . ")";
             break;
         }
@@ -1687,6 +1715,7 @@ class setreportlist
     $rep_late_frequency_report = "";
     $rep_timekeeping_monthly_report = "";
     $rep_separated_employee_stat = "";
+    $rep_annual_turnover = "";
     $rep_monthly_turnover_rate = "";
     $rep_separation_breakdown_report = "";
     $rep_payroll_employee_listing = '';
@@ -1700,10 +1729,13 @@ class setreportlist
     $rep_recruitment_status_report = "";
     $rep_stayin_employee_report = "";
     $rep_wage_and_career_history_report = "";
+    $rep_end_of_contract_report = "";
+    $rep_applicant_status_report = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
       case 'AIMSHRIS':
+      case 'AIMSHRISPAYROLL':
       case 'HRISPAYROLL':
         $label = "Employment Status Entry or Change";
         if ($params['companyid'] == 58) { // cdohris
@@ -1731,6 +1763,9 @@ class setreportlist
         $rep_separated_employee_stat = "('','\\A01','','','',0,1,0,'Separated Employees and Status','\\A01017',5232,'0'," . $params['levelid'] . ")";
         $rep_monthly_turnover_rate = "('','\\A01','','','',0,1,0,'Monthly Turnover Rate','\\A01018',5233,'0'," . $params['levelid'] . ")";
         $rep_separation_breakdown_report = "('','\\A01','','','',0,1,0,'Separation Breakdown Report','\\A01019',5235,'0'," . $params['levelid'] . ")";
+        $rep_applicant_status_report = "('','\\A01','','','',0,1,0,'Applicant Status Report','\\A01032',5825,'0'," . $params['levelid'] . ")";
+
+
 
         $rep_employee_count = "('','\\A01','','','',0,1,0,'Active Employee Count','\\A01021',5452,'0'," . $params['levelid'] . ")";
         $rep_employee_movement = "('','\\A01','','','',0,1,0,'Employee Movement Report','\\A01022',5453,'0'," . $params['levelid'] . ")";
@@ -1748,6 +1783,12 @@ class setreportlist
         $rep_stayin_employee_report = "('','\\A01','','','',0,1,0,'Stay In Employee Report','\\A01028',5555,'0'," . $params['levelid'] . ")";
         //3/7/2026 -rwn
         $rep_wage_and_career_history_report = "('','\\A01','','','',0,1,0,'Wage and Career History Report','\\A01029',5590,'0'," . $params['levelid'] . ")";
+
+        $rep_annual_turnover = "('','\\A01','','','',0,1,0,'Annual Turn Over','\\A01030',5810,'0'," . $params['levelid'] . ")";
+
+        if ($params['companyid'] == 62) { //onesky
+          $rep_end_of_contract_report = "('','\\A01','','','',0,1,0,'End of Contract Report','\\A01031',5823,'0'," . $params['levelid'] . ")";
+        }
         break;
     }
 
@@ -1833,6 +1874,10 @@ class setreportlist
           $rep_amortization = "('','\\910','','','',0,0,0,'Amortization Report','\\91004',4805,'0'," . $params['levelid'] . ")";
         }
 
+        if ($params['companyid'] == 61) { //BYTESIZED
+          $rep_amortization = "('','\\908','','','',0,0,0,'Amortization Report','\\91004',4805,'0'," . $params['levelid'] . ")";
+        }
+
         if ($this->companysetup->isticketing($params)) {
           $parent_ticketingreports = "('','\\9','','','',0,0,0,'Ticketing Reports','\\910',4843,'0'," . $params['levelid'] . ")";
           $rep_ticketreports = "('','\\910','','','',0,0,0,'Ticket Report','\\91001',4844,'0'," . $params['levelid'] . ")";
@@ -1878,6 +1923,8 @@ class setreportlist
     $rep_paymonthly_summary = "";
     $rep_alphalist = "";
     $rep_emp_timein_out_logs = "";
+    $rep_payroll_receiving = "";
+    $rep_grosspay_rm = "";
     // POS REPORT
     $parent_pos_report = "";
     $rep_pos_detailed_sales_report = "";
@@ -1921,6 +1968,8 @@ class setreportlist
     $rep_attendance_summary_report = "";
     $rep_summary_of_absences_for_13th_report = "";
     $bir_e_sales = "";
+    $rep_ot_report = "";
+    $rep_employee_evaluation_record = "";
     //blank the access here if not applicable
     switch ($params['companyid']) {
       case 35: //aquamax
@@ -1939,12 +1988,13 @@ class setreportlist
     $rep_ot_application_report = '';
     $rep_leave_application_report = '';
 
-
+    $rep_ddr = "";
     $rep_leave_category = "";
     switch ($this->companysetup->getsystemtype($params)) {
       case 'ALL':
       case 'PAYROLL':
       case 'AIMSPAYROLL':
+      case 'AIMSHRISPAYROLL':
       case 'HRISPAYROLL':
       case 'PAYROLLPORTAL':
       case 'HRIS':
@@ -2019,6 +2069,7 @@ class setreportlist
         $rep_timekeeping_graph_report = "('','\\B07','','','',0,1,0,'Timekeeping Graph Report','\\B07015',5211,'0'," . $params['levelid'] . ")";
         $rep_timekeeping_monthly_report = "('','\\B07','','','',0,1,0,'Timekeeping Monthly Report','\\B07017',5212,'0'," . $params['levelid'] . ")";
         $rep_late_frequency_report = "('','\\B07','','','',0,1,0,'Late Frequency Report','\\B07018',5213,'0'," . $params['levelid'] . ")";
+        $rep_employee_evaluation_record  = "('','\\B07','','','',0,1,0,'Employee Evaluation Record','\\B07021',5813,'0'," . $params['levelid'] . ")";
         // DAILY TIME RECORD
         $rep_dtr_absent_report = "('','\\B07','','','',0,1,0,'Daily Time Record Absent Report','\\B0707',4901,'0'," . $params['levelid'] . ")";
         $rep_dtr_undertime_report = "('','\\B07','','','',0,1,0,'Daily Time Record Undertime Report','\\B0708',4902,'0'," . $params['levelid'] . ")";
@@ -2026,7 +2077,6 @@ class setreportlist
 
         $rep_attendance_summary_report = "('','\\B07','','','',0,1,0,'Attendance Summary Report','\\B07019',5578,'0'," . $params['levelid'] . ")";
         $rep_summary_of_absences_for_13th_report = "('','\\B07','','','',0,1,0,'Summary of Absences for 13th Report','\\B07020',5597,'0'," . $params['levelid'] . ")";
-        $rep_ddr = "";
 
         switch ($params['companyid']) {
           case 29: //sbc portal
@@ -2078,6 +2128,7 @@ class setreportlist
             $rep_dtr_undertime_report = "";
             $rep_dtr_late_report = "";
             $rep_attendance_summary_report = "";
+
             break;
           case 43: //mighty
             $rep_trip_incentive_detailed = "('','\\B06','','','',0,1,0,'Trip Incentive Report','\\B0604',4528,'0'," . $params['levelid'] . ")";
@@ -2089,6 +2140,11 @@ class setreportlist
           case 58: //cdohris
             $rep_leave_category = "('','\\B01','','','',0,1,0,'Leave Category Statistics Report','\\B0114',5028,'0'," . $params['levelid'] . ")";
             $rep_loan_report = "('','\\B08','','','',0,1,0,'Loan Reports','\\B0805',4897,'0'," . $params['levelid'] . ")";
+            break;
+          case 66: //md
+            $rep_ot_report = "('','\\B01','','','',0,1,0,'Overtime Report','\\B0115',5820,'0'," . $params['levelid'] . ")";
+            $rep_payroll_receiving = "('','\\B01','','','',0,1,0,'Payroll Receiving Report','\\B0116',5821,'0'," . $params['levelid'] . ")";
+            $rep_grosspay_rm = "('','\\B06','','','',0,1,0,'Grosspay By RM Report','\\B0610',5823,'0'," . $params['levelid'] . ")";
             break;
         }
 
@@ -2263,15 +2319,16 @@ class setreportlist
     //BMS
     $parent_brgy = '';
     $local_clearance_summary_report = '';
-    $rep_lc_clearance_summary = '';
     $rep_issued_id_summary_report = '';
     $rep_business_clearance_summary_report = '';
     $infrastructure_clearance_summary_report = '';
+    $working_clearance_summary_report = '';
 
     // BMS LISTING REPORTS
     $rep_business_clearance_list_report = '';
     $rep_local_clearance_list_report = '';
     $rep_working_clearance_list_report = '';
+    $infra_clearance_list_report = '';
 
     //QUEUING
     $parent_queuing = '';
@@ -2288,16 +2345,17 @@ class setreportlist
         // Barangay Reports
         $parent_brgy = "('','\\9','','','',0,0,0,'Barangay Reports','\\918',5602,'0'," . $params['levelid'] . ")";
         $local_clearance_summary_report = "('','\\918','','','',0,1,0,'Local Clearance Summary Report','\\91801',5603,'0'," . $params['levelid'] . ")";
-        $rep_lc_clearance_summary = "('','\\918','','','',0,1,0,'Local Clearance Summary Report','\\91806',5603,'0'," . $params['levelid'] . ")";
         $rep_issued_id_summary_report = "('','\\918','','','',0,1,0,'Issued ID Summary Report','\\91802',5604,'0'," . $params['levelid'] . ")";
         $rep_business_clearance_summary_report = "('','\\918','','','',0,1,0,'Business Clearance Summary Report','\\91807',5642,'0'," . $params['levelid'] . ")";
         $infrastructure_clearance_summary_report = "('','\\918','','','',0,1,0,'Infrastructure Clearance Summary Report','\\91808',5639,'0'," . $params['levelid'] . ")";
+        $working_clearance_summary_report = "('','\\918','','','',0,1,0,'Working Clearance Summary Report','\\91809',5640,'0'," . $params['levelid'] . ")";
 
         // Listing Reports
         $parent_transactionlist = "('','\\9','','','',0,0,0,'Transaction List','\\909',3056,'0'," . $params['levelid'] . ")";
         $rep_business_clearance_list_report = "('','\\909','','','',0,1,0,'Business Clearance List Report','\\90901',5609,'0'," . $params['levelid'] . ")";
         $rep_local_clearance_list_report = "('','\\909','','','',0,1,0,'Local Clearance List Report','\\90902',5608,'0'," . $params['levelid'] . ")";
         $rep_working_clearance_list_report = "('','\\909','','','',0,1,0,'Working Clearance List Report','\\90903',5622,'0'," . $params['levelid'] . ")";
+        $infra_clearance_list_report = "('','\\909','','','',0,1,0,'Infrastructure Clearance List Report','\\90918',5641,'0'," . $params['levelid'] . ")";
         break;
 
       case 'QUEUING':
@@ -2359,6 +2417,7 @@ class setreportlist
           $rep_physical_count_sheet_per_batch_report,
           $rep_inv_balanceperwh,
           $rep_item_sales_report,
+
 
           // CUSTOMER
           $parent_customers,
@@ -2470,6 +2529,7 @@ class setreportlist
           $isperbranch,
           $isperproject,
           $isperstatement,
+          $rep_invvssubsidiary,
 
           // CUSTOMER
           $parent_customers,
@@ -2489,6 +2549,7 @@ class setreportlist
           $rep_water_bill,
           $rep_notice_of_disconnection,
           $rep_homeowners_list,
+          $rep_receivables_report,
 
           // SUPPLIER
           $parent_supplier,
@@ -2585,6 +2646,7 @@ class setreportlist
           $rep_detailedPerAccountReport,
           $monthly_trial_balance,
           $rep_budgetreport,
+          $rep_invvssubsidiary,
 
           // ITEMS
           $parent_items,
@@ -2626,6 +2688,7 @@ class setreportlist
           $rep_ksi_reorder_report,
           $rep_inventoryreport,
           $rep_item_sales_report,
+          $rep_inventory_vs_receiving_report,
 
           // CUSTOMER
           $parent_customers,
@@ -2678,6 +2741,10 @@ class setreportlist
           $rep_brandsales_report,
           $rep_dsalessumm_report,
           $rep_brandsalespersize_report,
+          $rep_receivables_report,
+          $rep_daily_sales_collected_and_uncollected,
+          $rep_yearly_sales_collected_and_uncollected,
+          $rep_monthly_sales_collected_uncollected_report,
 
           // SUPPLIER
           $parent_supplier,
@@ -2804,6 +2871,7 @@ class setreportlist
           $rep_salesreportdetail,
           $rep_treceivedchecks,
           $rep_dx_depositslip,
+          $rep_call_monitoring,
 
           //CDO financing
           $subparent_cashier,
@@ -2901,6 +2969,7 @@ class setreportlist
           $rep_monthlyincomestatement,
           $monthly_trial_balance,
           $monthly_balancesheet,
+          $rep_invvssubsidiary,
 
 
           // ITEMS
@@ -2932,6 +3001,7 @@ class setreportlist
           $monthly_sum_ewt,
           $rep_schedulear,
           $rep_collection_report,
+          $rep_receivables_report,
 
           // SUPPLIER
           $parent_supplier,
@@ -3039,12 +3109,14 @@ class setreportlist
           $rep_late_frequency_report,
           $rep_timekeeping_monthly_report,
           $rep_separated_employee_stat,
+          $rep_annual_turnover,
           $rep_monthly_turnover_rate,
           $rep_separation_breakdown_report,
           $rep_employee_count,
           $rep_employee_movement,
           $rep_reason_leaving_company,
           $rep_COE,
+          $rep_applicant_status_report,
 
           //PAYROLL
           $subparent_other_report,
@@ -3085,6 +3157,7 @@ class setreportlist
           $rep_late_frequency_report,
           $rep_timekeeping_monthly_report,
           $rep_separated_employee_stat,
+          $rep_annual_turnover,
           $rep_monthly_turnover_rate,
           $rep_separation_breakdown_report,
           $rep_payroll_employee_listing,
@@ -3097,6 +3170,8 @@ class setreportlist
           $rep_recruitment_status_report,
           $rep_stayin_employee_report,
           $rep_wage_and_career_history_report,
+          $rep_end_of_contract_report,
+          $rep_applicant_status_report,
 
           // PAYROLL
           $subparent_other_report,
@@ -3152,6 +3227,7 @@ class setreportlist
           $rep_dtr_late_report,
           $rep_attendance_summary_report,
           $rep_summary_of_absences_for_13th_report,
+          $rep_employee_evaluation_record,
 
           // PAYROLL PORTAL REPORTS
           $subparent_payroll_portal_report,
@@ -3229,6 +3305,7 @@ class setreportlist
           $rep_employee_birthday_list,
           $rep_loan_reports,
           $rep_loan_summary_report,
+          $rep_ot_report,
 
           $subparent_payroll_portal_report,
           $rep_ot_application_report,
@@ -3242,6 +3319,8 @@ class setreportlist
           $rep_dtr_undertime_report,
           $rep_dtr_late_report,
           $rep_summary_of_absences_for_13th_report,
+          $rep_payroll_receiving,
+          $rep_grosspay_rm,
 
           //mighty-payroll
           $rep_trip_incentive_detailed,
@@ -3285,6 +3364,7 @@ class setreportlist
           $rep_monthlyincomestatement,
           $monthly_trial_balance,
           $monthly_balancesheet,
+          $rep_invvssubsidiary,
 
           // ITEMS
           $parent_items,
@@ -3331,6 +3411,7 @@ class setreportlist
           $rep_monthlysummary_outputtax,
           $monthly_sum_ewt,
           $rep_schedulear,
+          $rep_receivables_report,
 
 
           // SUPPLIER
@@ -3632,6 +3713,7 @@ class setreportlist
           $isperbranch,
           $isperproject,
           $isperstatement,
+          $rep_invvssubsidiary,
 
           // ITEMS
           $parent_items,
@@ -3658,6 +3740,7 @@ class setreportlist
           $rep_inv_movement,
           $rep_inv_balanceperwh,
           $rep_fixedassetlist,
+
 
           // CUSTOMER
           $parent_customers,
@@ -3693,6 +3776,7 @@ class setreportlist
           $rep_ar_vs_collection,
           $rep_lah_sales_collection_report,
           $rep_paid_accounts_report,
+          $rep_receivables_report,
 
 
 
@@ -3860,6 +3944,9 @@ class setreportlist
           $rep_summary_of_absences_for_13th_report,
           $rep_loan_summary_report,
 
+          // TIME AND ATTENDANCE REPORT
+          $rep_attendance_summary_report,
+
 
 
           // mighty- payroll rep
@@ -3871,6 +3958,308 @@ class setreportlist
           $rep_trip_detailed,
           $rep_trip_summary,
           $rep_staff_trip_summary
+        ];
+        break;
+
+      case 'AIMSHRISPAYROLL':
+        $report_sysmenu = [
+          //AIMS
+          $masterfile,
+          $rep_chartofaccounts,
+          $warehouse_list,
+          $employee_list,
+          $department_list,
+          $project_list,
+          // ACCOUNTING BOOKS
+          $parent_accountingbooks,
+          $rep_cashdisbursementbook,
+          $rep_cashreceiptbook,
+          $rep_journalvoucher,
+          $rep_purchasejournal,
+          $rep_salesjournal,
+          $rep_general_ledger,
+          // CHECK MONITORING REPORTS
+          $parent_checkmonitoringreports,
+          $rep_bouncedchecks,
+          $rep_issuedchecks,
+          $rep_receivedchecks,
+          $rep_undepositedchecks,
+          // FINANCIAL STATEMENTS
+          $parent_financialstatements,
+          $rep_balancesheet,
+          $rep_incomestatement,
+          $rep_subsidiaryledger,
+          $rep_trialbalance,
+          $rep_comparativeincomestatment,
+          $rep_comparativebalancesheet,
+          $rep_comparativetrialbalance,
+          $rep_monthlyincomestatement,
+          $isperdept,
+          $isperbranch,
+          $isperproject,
+          $isperstatement,
+          $rep_invvssubsidiary,
+          $rep_list_of_accounts_beyond_budget,
+          $rep_actual_vs_budget_comparison,
+
+          // ITEMS
+          $parent_items,
+          $rep_inventorybalance,
+          $rep_analyzeitempurchasemonthly,
+          $rep_analyzeitemsalesmonthly,
+          $rep_itemlist,
+          $rep_currentinventoryaging,
+          $rep_fastmovingitems,
+          $rep_analyzeitemsaleswithprofitmarkup,
+          $rep_slowmovingitems,
+          $rep_itempurchasereport,
+          $rep_salesperitempercustomer,
+          $rep_itemtoexpired,
+          $rep_itembalance_belowminimum,
+          $rep_itembalance_aboveminimum,
+          $rep_reorder,
+          $rep_top_performing_item,
+          $rep_inventory_balance_for_accounting,
+          $rep_item_group_performance_report,
+          $rep_inventory_per_wh_type,
+          $rep_sched_fifo,
+          $rep_salesreportitemhistory,
+          $rep_inv_movement,
+          $rep_inv_balanceperwh,
+          $rep_fixedassetlist,
+
+
+          // CUSTOMER
+          $parent_customers,
+          $rep_customerlist,
+          $rep_currentcustomerreceivable,
+          $rep_currentcustomerreceivableaging,
+          $rep_analyzecustomersalesmonthly,
+          $rep_customersalesreport,
+          $rep_pendingsalesorders,
+          $rep_customerperformancereport,
+          $rep_analyzecustomercollectionmonthly,
+          $rep_salespercustomerperitem,
+          $rep_salescomparison_graph,
+          $rep_monthlysalesreport_graphy,
+          $rep_monthlysummary_outputtax,
+          $monthly_sum_ewt,
+          $rep_sales_order_aftech,
+          $rep_sales_per_product,
+          $rep_sales_per_person,
+          $rep_forecast_report,
+          $rep_ar_per_collection_officers,
+          $rep_collection_report,
+          $rep_detailed_customer_ar,
+          $monthly_sum_cwt,
+          $rep_monthlysummary_zerorated,
+          $rep_sawt_monitoring_report,
+          $rep_summary_sales_report,
+          $rep_schedulear,
+          $rep_sales_report_with_markup,
+          $rep_customer_transaction_history,
+          $rep_pendingsomonitoring,
+          $rep_sales_vs_collection,
+          $rep_ar_vs_collection,
+          $rep_lah_sales_collection_report,
+          $rep_paid_accounts_report,
+          $rep_receivables_report,
+
+
+
+          // SUPPLIER
+          $parent_supplier,
+          $rep_supplierlist,
+          $rep_currentsupplierpayables,
+          $rep_currentsupplierpayablesaging,
+          $rep_analyzedsupplierpurchasesmonthly,
+          $rep_supplierpurchasereport,
+          $rep_pendingpurchaseorders,
+          $rep_supplierperformancereport,
+          $rep_purchasepersupp,
+          $rep_monthlypurchasesreport_graph,
+          $rep_purchasescomparison_graph,
+          $rep_withholdingtax,
+          $rep_item_received_per_supplier,
+
+          // SALES AGENT
+          $parent_salesagent,
+          $rep_salesagentlist,
+          $rep_analyzedagentsalesmonthly,
+
+          // OTHER REPORTS
+          $parent_otherreports,
+          $rep_statementofaccount,
+          $rep_expensesreport,
+          $rep_receivingconsignmentreport,
+          $user_access_report,
+          $rep_sales_report,
+          $rep_daily_sales_report,
+          $rep_soa_afti,
+          $rep_cashadvance,
+          $cost_adjustment_report,
+          $outsource_summary_report,
+          $rep_summary_of_invoices_report,
+          $rep_unncollected_creditable_withholding_tax,
+          $rep_detailed_quantity_sold,
+          $rep_total_consumption_per_supplier,
+          $rep_total_imported_goods,
+          $rep_monthly_supplier_consumption_per_agent,
+          $rep_customer_registration_report,
+          $rep_reseller_status_summary_report,
+          $rep_dailytask_report,
+          $rep_task_monitoring_report,
+          $rep_amortization,
+
+
+          // TRANSACTION LIST
+          $parent_transactionlist,
+          $subparent_purchases,
+          $rep_purchaserequisitionreport,
+          $rep_purchaseorderreport,
+          $rep_receivingreport,
+          $rep_purchasereturnreport,
+          $rep_canvass_sheet,
+          $rep_servicereceivingreport,
+          $rep_joborderreport,
+          $rep_jobcompletionreport,
+          $rep_outsourcereport,
+          $rep_outsource_per_RFQ_report,
+          $subparent_sales,
+          $rep_salesorderreport,
+          $rep_salesjournalreport,
+          $rep_salesreturnreport,
+          $rep_material_issuance_report,
+          $rep_material_request_report,
+          $rep_quotation,
+          $rep_salesorderafti,
+          $rep_voidsalesorderreport,
+          $rep_stockissuanceaftireport,
+          $rep_requestforreplacementreturn,
+          $rep_salesactivityreport,
+          $rep_servicesalesorderreport,
+          $rep_taskerrandreport,
+          $subparent_inventory,
+          $rep_inventorysetupreport,
+          $rep_physicalcountreport,
+          $rep_transferslipreport,
+          $rep_inventoryadjustmentreport,
+          $subparent_payables,
+          $rep_petty_cash,
+          $rep_petty_cash_request,
+          $rep_petty_cash_reconciliation,
+          $rep_apsetupreport,
+          $rep_apvoucherreport,
+          $rep_cashcheckvoucherreport,
+          $rep_encashmentreport,
+          $rep_onlineencashmentreport,
+          $subparent_receivables,
+          $rep_arsetupreport,
+          $rep_receivedpaymentreport,
+          $rep_counterreceiptreport,
+          $subparent_accounting,
+          $rep_generaljournalreport,
+          $rep_depositslipreport,
+          $subparent_crm,
+          $rep_Lead,
+          $rep_opportunity_module,
+          $rep_sjseriesreport,
+          $rep_salesreportdetail,
+          $rep_operatorhistory,
+
+          //HRIS
+          $subparent_applicant,
+          $rep_hris_applicant_listing,
+          $rep_personnel_req,
+          $rep_job_offer,
+          $rep_req_train_dev,
+          $rep_train_entry,
+          $rep_turn_over_items,
+          $rep_return_items,
+          $rep_emp_stat_entry_change,
+          $rep_incident_rep,
+          $rep_notice_explain,
+          $rep_notice_discip_action,
+          $rep_gender_statistic,
+          $rep_length_service,
+          $rep_workplace_generation,
+          $rep_timekeeping_graph_report,
+          $rep_late_frequency_report,
+          $rep_timekeeping_monthly_report,
+          $rep_separated_employee_stat,
+          $rep_annual_turnover,
+          $rep_monthly_turnover_rate,
+          $rep_separation_breakdown_report,
+          $rep_payroll_employee_listing,
+          $rep_employee_count,
+          $rep_employee_movement,
+          $rep_reason_leaving_company,
+          $rep_COE,
+          $rep_Employee_Infraction_report,
+          $rep_contract_monitoring,
+          $rep_recruitment_status_report,
+          $rep_stayin_employee_report,
+          $rep_wage_and_career_history_report,
+
+          // PAYROLL
+          $subparent_other_report,
+          $rep_month_pay_13th,
+          $rep_dep_advise,
+          $rep_emp_loan_balance,
+          $rep_emp_rate_,
+          $rep_emp_timein_out_logs,
+          $subparent_bir_tax_report,
+          $rep_payroll_tax_witheld,
+          $rep_bir_2316,
+          $subparent_pagibig_report,
+          $rep_payroll_pagibig_remittance,
+          $rep_payroll_pagibig_loan_payment,
+          $rep_payroll_pagibig_calamity_loan_report,
+          $subparent_philhealth_report,
+          $rep_payroll_philhealth_remittance,
+          $subparent_sss_report,
+          $rep_payroll_sss_remittance,
+          $rep_payroll_sss_loan_payment,
+          $subparent_payroll_report,
+          $rep_payslip,
+          $rep_payregister,
+          $rep_totalnet_pay,
+          $rep_payroll_voucher,
+          $rep_loan_deduction_report,
+          $rep_payroll_accounting_entry_report,
+          $rep_payroll_sss_calamity_loan_report,
+          $rep_employee_demography_report,
+          $rep_empallow,
+          $rep_employee_birthday_list,
+          $rep_remittance_report,
+          $rep_loan_reports,
+          $rep_loan_summary_report,
+
+          // TIME AND ATTENDANCE REPORT
+          $subparent_time_attendance_report,
+          $rep_dtr,
+          $rep_ddr,
+          $rep_alphalist,
+          $rep_earning_deduction_report,
+          $rep_earning_deduction_list_report,
+          $rep_employee_balances_report,
+          $rep_emp_adv_balance,
+          $rep_signature_sheet,
+          $rep_earning_and_deduction_transaction_history,
+          $rep_perfect_attendance_report,
+          $rep_leave_balance_report,
+          $rep_leave_details_report,
+          $rep_time_events_report,
+          $rep_dtr_absent_report,
+          $rep_dtr_undertime_report,
+          $rep_dtr_late_report,
+          $rep_attendance_summary_report,
+          $rep_summary_of_absences_for_13th_report,
+
+          // OTHER REPORTS
+          $login_attempt_report,
+          $rep_leave_category,
+          $rep_payroll_expense,
         ];
         break;
 
@@ -3901,6 +4290,7 @@ class setreportlist
           $rep_monthlysalesreport_graphy,
           $rep_sales_per_plan_type,
           $rep_eappsalesreport,
+          $rep_receivables_report,
 
 
           // SALES AGENT
@@ -3960,6 +4350,7 @@ class setreportlist
           $rep_monthlyincomestatement,
           $monthly_balancesheet,
           $monthly_trial_balance,
+          $rep_invvssubsidiary,
 
           // CUSTOMER
           $parent_customers,
@@ -3975,6 +4366,7 @@ class setreportlist
           $rep_collectionsummary,
           $rep_collection_report,
           $rep_collectibles_report,
+          $rep_receivables_report,
 
           // SUPPLIER
           $parent_supplier,
@@ -4028,16 +4420,17 @@ class setreportlist
           $parent_brgy,
           // barangay Reports
           $local_clearance_summary_report,
-          $rep_lc_clearance_summary,
           $rep_issued_id_summary_report,
           $rep_business_clearance_summary_report,
           $infrastructure_clearance_summary_report,
+          $working_clearance_summary_report,
 
           // BMS LISTING REPORTS
           $parent_transactionlist,
           $rep_business_clearance_list_report,
           $rep_working_clearance_list_report,
           $rep_local_clearance_list_report,
+          $infra_clearance_list_report,
         ];
         break;
 
@@ -4095,6 +4488,7 @@ class setreportlist
           $rep_monthlyincomestatement,
           $monthly_trial_balance,
           $monthly_balancesheet,
+          $rep_invvssubsidiary,
 
 
           // ITEMS
@@ -4159,6 +4553,7 @@ class setreportlist
           $rep_unservedstockreq,
           $rep_sales_vs_collection,
           $rep_ar_vs_collection,
+          $rep_receivables_report,
 
           // SUPPLIER
           $parent_supplier,

@@ -56,7 +56,7 @@ class on
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype','sotrno'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype', 'sotrno'];
   private $except = ['trno', 'dateid', 'due', 'creditinfo'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -134,7 +134,7 @@ class on
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
-  
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -236,7 +236,7 @@ class on
     data_set($col1, 'pickpo.confirmlabel', 'Proceed to pick DR?');
     data_set($col1, 'pickpo.addedparams', ['docno', 'selectprefix']);
 
-   
+
     $data = $this->coreFunctions->opentable("select '' as docno, '' as selectprefix");
 
     return ['status' => true, 'data' => $data[0], 'txtfield' => ['col1' => $col1]];
@@ -251,10 +251,10 @@ class on
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -322,11 +322,11 @@ class on
   {
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $viewacctg = $this->othersClass->checkAccess($config['params']['user'], 5528);
-  
 
-    if($viewacctg){
+
+    if ($viewacctg) {
       $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
-    }else{
+    } else {
       $headgridbtns = ['viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
 
@@ -369,7 +369,7 @@ class on
     $obj[0]['inventory']['columns'][$wh]['type'] = 'label';
     $obj[0]['inventory']['columns'][$ref]['type'] = 'label';
 
-    if($viewcost==0){
+    if ($viewcost == 0) {
       $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
     }
 
@@ -395,7 +395,7 @@ class on
     data_set($col1, 'client.required', false);
     data_set($col1, 'client.addedparams', []);
     data_set($col1, 'docno.label', 'Transaction#');
-    
+
     $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
 
     $col2 = $this->fieldClass->create($fields);
@@ -585,18 +585,22 @@ class on
         } //end if
       }
     }
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    if ($data['terms'] == '') {
+      $data['due'] = $data['dateid'];
+    } else {
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+    }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 
 
     if ($isupdate) {
-      $sotrno = $this->coreFunctions->getfieldvalue($this->head,"sotrno","trno=?",[$head['trno']]);
+      $sotrno = $this->coreFunctions->getfieldvalue($this->head, "sotrno", "trno=?", [$head['trno']]);
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->othersClass->getcreditinfo($config, $this->head);
-      
-      if($head['sotrno'] != $sotrno){
-        $this->coreFunctions->sbcupdate('cntnum', ['svnum' =>0], ['trno' => $sotrno]);
+
+      if ($head['sotrno'] != $sotrno) {
+        $this->coreFunctions->sbcupdate('cntnum', ['svnum' => 0], ['trno' => $sotrno]);
       }
       $this->coreFunctions->sbcupdate('cntnum', ['svnum' => $head['trno']], ['trno' => $data['sotrno']]);
     } else {
@@ -1034,7 +1038,7 @@ class on
     return ['status' => true, 'msg' => $cntnum[0]->docno . ' is ready to Download', 'name' => 'dr', 'data' => $data];
   }
 
-  
+
   public function updateperitem($config)
   {
     $config['params']['data'] = $config['params']['row'];
@@ -1169,7 +1173,7 @@ class on
     $palletid = isset($config['params']['data']['palletid']) ? $config['params']['data']['palletid'] : 0;
     $weight = isset($config['params']['data']['weight']) ? $config['params']['data']['weight'] : 0;
     $expiry = '';
-   
+
     $rebate = 0;
     $refx = 0;
     $linex = 0;
@@ -1679,7 +1683,7 @@ class on
     $status = true;
     $totalar = 0;
     $isvatexsales = $this->companysetup->getvatexsales($config['params']);
-    
+
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
     $qry = "select h.doc,h.dateid,client.client,h.tax,h.contra,h.cur,h.forex,stock.ext,wh.client as wh,ifnull(item.asset,'') as asset,ifnull(item.revenue,'') as revenue,
@@ -1872,6 +1876,4 @@ class on
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'reloadhead' => true];
   }
-
- 
 } //end class

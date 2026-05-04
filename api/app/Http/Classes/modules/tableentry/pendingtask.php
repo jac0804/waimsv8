@@ -159,9 +159,10 @@ class pendingtask
                 break;
         }
 
-        $qry = "select c.clientid as clid,c.clientname,e.clientid as request,e.clientname as requestorname,d.fcheckingdate as dateid2,
+        $qry = "select c.clientid as clid,if(h.reseller<>'',concat(c.clientname,' / ',h.reseller),c.clientname) as clientname,e.clientid as request,e.clientname as requestorname,d.fcheckingdate as dateid2,
                 d.userid,n.clientname as assignto,p.approver,h.trno, d.line $stat  as status, date(h.dateid) as dateid,
-                d.title,h.amount,m.modulename as doc, m.sbcpendingapp,'' as lblforapp, h.checkerid, h.requestby, e.email as requestbycode, d.taskcatid $addf
+                d.title,h.amount,m.modulename as doc, m.sbcpendingapp,'' as lblforapp, h.checkerid, h.requestby, e.email as requestbycode, d.taskcatid,
+                ifnull(h.reseller,'') as reseller $addf
             from pendingapp as p
             $pjoin
             left join tmhead as h on h.trno=d.trno
@@ -258,7 +259,8 @@ class pendingtask
                             'encodeddate' => $datenow,
                             'empid' => $checkerid,
                             'taskcatid' => $config['params']['row']['taskcatid'],
-                            'assignedid' => $config['params']['row']['userid']
+                            'assignedid' => $config['params']['row']['userid'],
+                            'reseller' => $config['params']['row']['reseller']
                         ];
 
                         $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
@@ -311,7 +313,8 @@ class pendingtask
                         'startchecker' => $datenow,
                         'empid' => $checkerid,
                         'taskcatid' => $config['params']['row']['taskcatid'],
-                        'assignedid' => $config['params']['row']['userid']
+                        'assignedid' => $config['params']['row']['userid'],
+                        'reseller' => $config['params']['row']['reseller']
                     ];
 
                     $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
@@ -368,7 +371,8 @@ class pendingtask
                     'ischecker' => 0,
                     'empid' => $checkerid,
                     'taskcatid' => $config['params']['row']['taskcatid'],
-                    'assignedid' => $config['params']['row']['userid']
+                    'assignedid' => $config['params']['row']['userid'],
+                    'reseller' => $config['params']['row']['reseller']
                 ];
 
                 if ($checkerid != 0) {

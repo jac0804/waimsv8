@@ -50,7 +50,7 @@ class payrollprocess
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 2481,
+      'view' => 2480,
       'edit' => 2484,
       'create' => 1359,
       'postinout' => 1360
@@ -378,6 +378,11 @@ class payrollprocess
 
       case 'dlexcelmbtctxtfile':
         $companyid = $config['params']['companyid'];
+
+        $check_access = $this->othersClass->checkAccess($config['params']['user'], 5817);
+        if (!$check_access) {
+          return ['status' => false, 'msg' => 'Invalid Access, Download MBTC Txtfile'];
+        }
         if ($config['params']['dataparams']['batchid'] == 0) {
           return ['status' => false, 'msg' => 'Please select valid batch'];
         }
@@ -509,10 +514,18 @@ class payrollprocess
         break;
 
       case 'payrollclosing':
+        $check_access = $this->othersClass->checkAccess($config['params']['user'], 2484);
+        if (!$check_access) {
+          return ['status' => false, 'msg' => 'Invalid Access, Payroll Closing'];
+        }
         return $this->payrollcommon->postPayroll($config);
         break;
 
       case 'payrollunclosing':
+        $check_access = $this->othersClass->checkAccess($config['params']['user'], 5816);
+        if (!$check_access) {
+          return ['status' => false, 'msg' => 'Invalid Access, Payroll Unclosing'];
+        }
         return $this->payrollcommon->postPayroll($config, 1);
         break;
 
@@ -532,6 +545,11 @@ class payrollprocess
     $empid = $config['params']['dataparams']['empid'];
     $empname = isset($config['params']['dataparams']['empname']) ? $config['params']['dataparams']['empname'] : '';
     $emplvl = $this->othersClass->checksecuritylevel($config);
+    $check_access = $this->othersClass->checkAccess($config['params']['user'], 2481);
+
+    if (!$check_access) {
+      return ['status' => false, 'msg' => 'Invalid Access, Create Schedule'];
+    }
     if ($all == "1") {
 
       $empdivid = $config['params']['dataparams']['empdivid'];
@@ -603,7 +621,7 @@ class payrollprocess
         where s.line=?";
       $shift = $this->coreFunctions->opentable($qry, [$shiftid]);
     } else {
-      $qry = "select s.line, time(s.tschedin) as timein, time(s.tschedout) as timeout
+      $qry = "select s.line, time(s.tschedin) as timein, time(s.tschedout) as timeout, e.paygroup
         from employee as e join tmshifts as s on s.line=e.shiftid
         where e.empid=?";
       $shift = $this->coreFunctions->opentable($qry, [$empid]);
@@ -620,6 +638,7 @@ class payrollprocess
         $data['empid'] = $empid;
         $data['dateid'] = $val->dateid;
         $data['shiftid'] = $shift[0]->line;
+        $data['pgline'] = ($shift[0]->paygroup == '') ? 0 : $shift[0]->paygroup;
 
         $timein = $this->getBreakSchedTime($timesched, $val->dayname);
         // $data['schedin'] = $val->dateid . " " . $shift[0]->timein;
@@ -777,6 +796,11 @@ class payrollprocess
     $start = $config['params']['dataparams']['startdate'];
     $end = $config['params']['dataparams']['enddate'];
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
+    $check_access = $this->othersClass->checkAccess($config['params']['user'], 2483);
+
+    if (!$check_access) {
+      return ['status' => false, 'msg' => 'Invalid Access, Compute Timecard'];
+    }
 
     $emplog = 'all employees';
 
@@ -2378,7 +2402,11 @@ class payrollprocess
     $batch = $config['params']['dataparams']['batch'];
     $paygroup = $config['params']['dataparams']['pgroup'];
     $epaygroup = $config['params']['dataparams']['paygroup'];
+    $check_access = $this->othersClass->checkAccess($config['params']['user'], 5814);
 
+    if (!$check_access) {
+      return ['status' => false, 'msg' => 'Invalid Access, Compute Timesheet'];
+    }
     if ($batch == '') {
       return ['status' => false, 'msg' => 'Please select valid Batch.', 'action' => 'load'];
     }
@@ -2500,6 +2528,12 @@ class payrollprocess
 
     $empdivid = $config['params']['dataparams']['empdivid'];
     $empbranchid = $config['params']['dataparams']['empbranchid'];
+
+    $check_access = $this->othersClass->checkAccess($config['params']['user'], 2482);
+
+    if (!$check_access) {
+      return ['status' => false, 'msg' => 'Invalid Access, Posting actual In/Out'];
+    }
 
     if ($companyid == 58 || $companyid == 62) { //cdo, onesky
       if ($empdivid == 0) {

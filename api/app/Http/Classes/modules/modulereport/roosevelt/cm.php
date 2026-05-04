@@ -74,10 +74,10 @@ class cm
   public function report_default_query($trno)
   {
 
-    $query = "select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,item.sizeid,
+    $query = "select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,stock.uom,
       date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms, head.rem,head.yourref,head.ourref,
       item.barcode,item.brand,
-      concat(stock.uom,' ',item.itemname) as itemdesc, stock.rrqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,ag.clientname as agname,
+      item.sizeid,item.itemname as itemdesc, stock.rrqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,ag.clientname as agname,
       ag.client as agcode,wh.client as whcode,wh.clientname as whname, stock.line
       from lahead as head
       left join lastock as stock on stock.trno=head.trno
@@ -88,10 +88,10 @@ class cm
       left join model_masterfile as m on m.model_id=item.model
       where head.doc='cm' and md5(head.trno)='" . md5($trno) . "'
       union all
-      select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,item.sizeid,
+      select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,stock.uom,
       date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms, head.rem,head.yourref,head.ourref,
       item.barcode,item.brand,
-      concat(stock.uom,' ',item.itemname) as itemdesc, stock.rrqty as qty, stock.isamt as amt, stock.disc, stock.ext, if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,ag.clientname as agname,
+      item.sizeid,item.itemname as itemdesc, stock.rrqty as qty, stock.isamt as amt, stock.disc, stock.ext, if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,ag.clientname as agname,
       ag.client as agcode,wh.client as whcode,wh.clientname as whname, stock.line
       from glhead as head left join glstock as stock on stock.trno=head.trno
       left join client on client.clientid=head.clientid
@@ -629,17 +629,20 @@ class cm
         $qty = number_format($data[$i]['qty'], 0);
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
+        $sizeid = $data[$i]['sizeid'];
 
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '60', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
+        $arr_sizeid = $this->reporter->fixcolumn([$sizeid], '13', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_amt, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_amt, $arr_ext, $arr_sizeid]);
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::SetXY($x, $y);
-          PDF::MultiCell(450, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(50, 15, ' ' . (isset($arr_sizeid[$r]) ? strtoupper($arr_sizeid[$r]) : ''), '', 'L', false, 0, $x,  $y, true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(400, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(75, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(115, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);

@@ -93,16 +93,11 @@ class ar
 
   public function createdoclisting($config)
   {
-    $action = 0;
-    $liststatus = 1;
-    $listdocument = 2;
-    $listdate = 3;
-    $listclientname = 4;
-    $yourref = 5;
-    $ourref = 6;
-    $postdate = 7;
-
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $companyid = $config['params']['companyid'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'amount', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
 
@@ -112,6 +107,14 @@ class ar
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
     $cols[$postdate]['label'] = 'Post Date';
+    if ($companyid != 60) { //transpower
+      $cols[$amount]['type'] = 'coldel';
+    } else {
+      $cols[$amount]['label'] = 'Total Amount';
+      $cols[$amount]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+      $cols[$amount]['type'] = 'label';
+    }
+    $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
 
@@ -163,16 +166,25 @@ class ar
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
       }
     }
+    $addf1 = "";
+    $addf2 = "";
+    if ($companyid == 60) { //transpower
+      $acno = 32;
+      $addf1 = ", (select format(sum(d.cr-d.db),2) as amt from ladetail as d 
+                   left join coa on coa.acnoid=d.acnoid  where d.trno=head.trno and  coa.acno='\\\\" . $acno . "') as amount";
+      $addf2 = ", (select format(sum(d.cr-d.db),2) as amt from gldetail as d 
+                   left join coa on coa.acnoid=d.acnoid  where d.trno=head.trno and coa.acno='\\\\" . $acno . "') as amount ";
+    }
 
     $qry = "select head.trno,head.docno,head.clientname,$dateid, 'DRAFT' as status,
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,
-      head.yourref, head.ourref        
+      head.yourref, head.ourref $addf1     
      from " . $this->head . " as head left join " . $this->tablenum . " as num 
      on num.trno=head.trno where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
      union all
      select head.trno,head.docno,head.clientname,$dateid,'POSTED' as status,
      head.createby,head.editby,head.viewby, num.postedby, date(num.postdate) as postdate,
-       head.yourref, head.ourref        
+       head.yourref, head.ourref   $addf2    
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num 
      on num.trno=head.trno where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
     $orderby $limit";
@@ -183,25 +195,17 @@ class ar
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new',  'save', 'delete', 'cancel', 'print',  'post',  'unpost',  'lock', 'unlock', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown', 'help', 'others');
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -1574,15 +1578,28 @@ class ar
   }
   public function reportsetup($config)
   {
-
-
     $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    $companyid = $config['params']['companyid'];
+    switch ($companyid) {
+      case 59: //roosevelt
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->othersClass->posttransacctg($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
+          }
+        }
+        break;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

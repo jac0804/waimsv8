@@ -121,7 +121,7 @@ class working_clearance_list_report
                 from glhead as head
                 left join client as c on c.clientid = head.clientid
                 left join cntnum as cnum on cnum.trno = head.trno
-                where cnum.doc = 'BD' and date(head.dateid) between '$start' and '$end' $filter 
+                where cnum.doc = 'WR' and c.isbrgywl = 1 and date(head.dateid) between '$start' and '$end' $filter 
 
                 union all
 
@@ -129,8 +129,9 @@ class working_clearance_list_report
                 from lahead  as head
                 left join client as c on c.client = head.client
                 left join cntnum as cnum on cnum.trno = head.trno
-                where cnum.doc = 'BD' and date(head.dateid) between '$start' and '$end' $filter;
+                where cnum.doc = 'WR' and c.isbrgywl = 1 and date(head.dateid) between '$start' and '$end' $filter;
                 ";
+        // var_dump($query);
         // $data = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         // return $data;
         return $this->coreFunctions->opentable($query);
@@ -257,10 +258,10 @@ class working_clearance_list_report
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '50', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col($data->clientname, '350', 30, true,  $rowBorder, 'B', 'LT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
-            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, '', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
+            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col($data->brgyid, '200', 30, true,  $rowBorder, 'B', 'CT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
-            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, '', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
-            $str .= $this->reporter->col($data->address, '350', 30, true,  $rowBorder, 'B', 'LT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
+            $str .= $this->reporter->col('', '10', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
+            $str .= $this->reporter->col($data->addr, '350', 30, true,  $rowBorder, 'B', 'LT', $font, $fontsize, '', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->col('', '50', 30, true,  $rowBorder, 'B', 'C', $font, $fontsize, 'B', '', '', '', '',  '', '', '', '#757575');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();

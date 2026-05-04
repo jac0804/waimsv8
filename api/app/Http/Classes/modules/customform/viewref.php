@@ -1367,6 +1367,33 @@ class viewref
                 left join item on item.itemid=s.itemid
                 where c.refx=' . $trno . ' and cntnum.postdate is null';
         break;
+      case 'DR':
+        $qry = "
+            select head.docno,date(head.dateid) as dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',stock.isqty) as CHAR) as rem,head.trno,head.doc,'' as url,'module' as moduletype from lahead as head left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc not in ('DM','CM','CV') and stock.refx=" . $trno . "
+            union all
+            select head.docno,date(head.dateid) as dateid,CAST(concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',stock.isqty) as CHAR) as rem,head.trno,head.doc,'' as url,'module' as moduletype from glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid = stock.itemid where head.doc not in ('DM','CM','CV') and stock.refx=" . $trno . "
+            ";
+        break;
+      case 'BD':
+      case 'BC':
+      case 'BT':
+      case 'BK':
+      case 'BI':
+      case 'WR':
+        $qry = "select docno,date(dateid) as dateid, rem,trno,doc,url,moduletype from (
+                select head.docno,head.dateid,concat('Applied Amount: ', format(sum(detail.db - detail.cr), 2)) as rem, head.trno ,head.doc,'' as url,'module' as moduletype
+                          from lahead as head
+                          left join ladetail as detail on detail.trno = head.trno
+                          where detail.refx = $trno and head.doc = 'CR'
+                          group by head.docno,head.dateid,head.trno ,head.doc
+                union all
+
+                select head.docno,head.dateid,concat('Applied Amount: ', format(sum(detail.db - detail.cr), 2)) as rem, head.trno ,head.doc,'' as url,'module' as moduletype
+                          from glhead as head
+                          left join gldetail as detail on detail.trno = head.trno
+                          where detail.refx = $trno and head.doc = 'CR'
+                          group by head.docno,head.dateid,head.trno ,head.doc) as a";
+        break;
     }
     $data = $this->coreFunctions->opentable($qry);
 

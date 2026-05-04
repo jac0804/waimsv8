@@ -181,6 +181,11 @@ class collection_report
         return $this->report_SBC_Layout($config);
         break;
 
+      case 63: //ericco
+        $this->reportParams['orientation'] = 'l';
+        return $this->report_Ericco_Layout($config);
+        break;
+
       default:
         return $this->reportDefaultLayout($config);
         break;
@@ -486,6 +491,8 @@ class collection_report
     return $this->coreFunctions->opentable($query);
   }
 
+  public function ericco_query($config) {}
+
   private function displayHeaderMaxiPro($config)
   {
     $result = $this->reportMaxiproQry($config);
@@ -788,9 +795,10 @@ class collection_report
             nextcr2:
           }
           break;
-          case 'UCD':
-            foreach ($data as $key => $v) {
-              $refx = $this->coreFunctions->opentable("
+        case 'UCD':
+          foreach ($data as $key => $v) {
+            $refx = $this->coreFunctions->opentable(
+              "
                 select c.alias, d.poref as ref ,abs(d.cr-d.db) as amt
                 from ladetail as d 
                 left join coa as c on c.acnoid = d.acnoid 
@@ -802,36 +810,36 @@ class collection_report
                 left join coa as c on c.acnoid = d.acnoid left join arledger as ar on ar.trno = d.trno and ar.line = d.line
                 left join transnum as t on t.trno = d.qttrno 
                 where d.trno = " . $data[$key]['trno'] . " and d.cr<>0 and ar.bal<>0"
-              );
-              if (!empty($refx)) {
-                foreach ($refx as $x => $y) {
-                  if ($refx[$x]->alias == 'AR5') {
-                    $reportdata[$i]['trno'] = $data[$key]['trno'];
-                    $reportdata[$i]['journalentry'] = $data[$key]['journalentry'];
-                    $reportdata[$i]['crdate'] = $data[$key]['crdate'];
-                    $reportdata[$i]['collectionreceipt'] = $data[$key]['collectionreceipt'];
-                    $reportdata[$i]['clientname'] = $data[$key]['clientname'];
-                    $reportdata[$i]['bankcharge'] = $data[$key]['bankcharge'];
-                    $reportdata[$i]['netamt'] = $refx[$x]->amt;
-                    $reportdata[$i]['paymentdetails'] = $data[$key]['paymentdetails'];
-                    $reportdata[$i]['banktransfer'] = $data[$key]['banktransfer'];
-                    $reportdata[$i]['datedeposited'] = $data[$key]['datedeposited'];
-                    $reportdata[$i]['remarks'] = $data[$key]['remarks'];
-                    $reportdata[$i]['cramt'] = $refx[$x]->amt;
-                    $reportdata[$i]['lessewt'] = $data[$key]['lessewt'];
-                    $reportdata[$i]['checkno'] = $data[$key]['checkno'];
-                    $reportdata[$i]['ref'] = $data[$key]['ref'];
-                    $reportdata[$i]['alias'] = $data[$key]['alias'];
-                    $reportdata[$i]['refx'] = $data[$key]['refx'];
-                    $reportdata[$i]['sinum'] = $refx[$x]->ref;
-                    $reportdata[$i]['fines'] = $data[$key]['fines'];
-                    $i += 1;
-                    goto nextcr3;
-                  }
+            );
+            if (!empty($refx)) {
+              foreach ($refx as $x => $y) {
+                if ($refx[$x]->alias == 'AR5') {
+                  $reportdata[$i]['trno'] = $data[$key]['trno'];
+                  $reportdata[$i]['journalentry'] = $data[$key]['journalentry'];
+                  $reportdata[$i]['crdate'] = $data[$key]['crdate'];
+                  $reportdata[$i]['collectionreceipt'] = $data[$key]['collectionreceipt'];
+                  $reportdata[$i]['clientname'] = $data[$key]['clientname'];
+                  $reportdata[$i]['bankcharge'] = $data[$key]['bankcharge'];
+                  $reportdata[$i]['netamt'] = $refx[$x]->amt;
+                  $reportdata[$i]['paymentdetails'] = $data[$key]['paymentdetails'];
+                  $reportdata[$i]['banktransfer'] = $data[$key]['banktransfer'];
+                  $reportdata[$i]['datedeposited'] = $data[$key]['datedeposited'];
+                  $reportdata[$i]['remarks'] = $data[$key]['remarks'];
+                  $reportdata[$i]['cramt'] = $refx[$x]->amt;
+                  $reportdata[$i]['lessewt'] = $data[$key]['lessewt'];
+                  $reportdata[$i]['checkno'] = $data[$key]['checkno'];
+                  $reportdata[$i]['ref'] = $data[$key]['ref'];
+                  $reportdata[$i]['alias'] = $data[$key]['alias'];
+                  $reportdata[$i]['refx'] = $data[$key]['refx'];
+                  $reportdata[$i]['sinum'] = $refx[$x]->ref;
+                  $reportdata[$i]['fines'] = $data[$key]['fines'];
+                  $i += 1;
+                  goto nextcr3;
                 }
               }
-              nextcr3:
             }
+            nextcr3:
+          }
           break;
         case 'PDC':
           $reportdata = $data;
@@ -1527,6 +1535,134 @@ class collection_report
     // $str .= $this->reporter->endtable();
 
 
+    $str .= $this->reporter->endreport();
+    return $str;
+  }
+
+
+  private function displayHeader_Ericco($config)
+  {
+    $result = $this->ericco_query($config);
+
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+    $client     = $config['params']['dataparams']['client'];
+    $start     = $config['params']['dataparams']['start'];
+    $end     = $config['params']['dataparams']['end'];
+
+    $str = '';
+    $layoutsize = '1500';
+    // $font = $this->companysetup->getrptfont($config['params']);
+    $font = 'Tahoma';
+    $fontsize = "9";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid ', '', '', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('LESS DEDUCTIONS', '963', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BARCODE', '535', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('(PORTAL)', '214', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BLR', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BRANCH', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '#e32f22', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', null, false, $border, 'LR', 'C', $font, $fontsize, 'B', '#e32f22', '');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('BRANCH CODE', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('DATE FOR NOW', '107', null, '#fffb00', $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('NET OF COMM', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '#e32f22', '5PX');
+    $str .= $this->reporter->col('EWT 1%', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('RENTALS UTILITIES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('ADDTL TAGS', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('OPENING SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('DISTRIBUTION CENTER-CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('STORE CONSIGNOR CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('SELLING AREA SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('B2B CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('AD MARKETING SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('TOTAL DEDUCTIONS', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('NET SALES REPORT', '107', null, false, $border, 'BLR', 'CT', $font, $fontsize, 'B', '#e32f22', '5PX');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '#e32f22', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '107', 10, false, $border, 'LBR', 'C', $font, $fontsize, 'B', '#e32f22', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+
+  public function report_Ericco_Layout($config)
+  {
+    $str = '';
+    $str .= $this->displayHeader_Ericco($config);
     $str .= $this->reporter->endreport();
     return $str;
   }

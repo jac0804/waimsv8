@@ -167,7 +167,7 @@ class sj
     $companyid = $config['params']['companyid'];
     $userid = $config['params']['adminid'];
     $dept = '';
-    
+
     if ($this->companysetup->linearapproval($config['params'])) {
       $this->showfilterlabel = [
         ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
@@ -179,12 +179,12 @@ class sj
       ];
     }
 
-    
+
 
     // if($companyid==60){ //transpower
     //   $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem','total', 'yourref', 'ourref',   'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     // }else{
-      $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname','rem','total', 'yourref', 'ourref',   'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem', 'total', 'yourref', 'ourref',   'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     // }
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -200,16 +200,16 @@ class sj
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
-   
+
     $cols[$total]['label'] = 'Amount';
     $cols[$listdate]['label'] = 'Trans. Date';
     $cols[$total]['align'] = 'text-left';
 
     $cols[$liststatus]['name'] = 'statuscolor';
 
-    if($companyid==60){//transpower
-    $cols[$rem]['type'] = 'label';
-    $cols[$rem]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
+    if ($companyid == 60) { //transpower
+      $cols[$rem]['type'] = 'label';
+      $cols[$rem]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
     }
 
     $cols = $this->tabClass->delcollisting($cols);
@@ -246,7 +246,7 @@ class sj
 
     $userid = $config['params']['adminid'];
     $dept = '';
-  
+
     if ($this->companysetup->linearapproval($config['params'])) {
       $itemfilter = isset($config['params']['doclistingparam']['typecode']) ? $config['params']['doclistingparam']['typecode'] : $itemfilter;
       $user = $config['params']['user'];
@@ -323,9 +323,9 @@ class sj
       }
     }
 
-    $addrem='';
-    if($companyid==60){//tranpower
-      $addrem=',head.rem';
+    $addrem = '';
+    if ($companyid == 60) { //tranpower
+      $addrem = ',head.rem';
     }
 
     $qry = "select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, $lstat as status, $lstatcolor as statuscolor,$rem
@@ -365,7 +365,7 @@ class sj
     $isshortcutso = $this->companysetup->getisshortcutso($config['params']);
 
     $fields = [];
-    
+
 
     if ($isshortcutso) {
       $allownew = $this->othersClass->checkAccess($config['params']['user'], 171);
@@ -421,10 +421,10 @@ class sj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -478,7 +478,7 @@ class sj
     $obj = $this->tabClass->createtab($tab, []);
 
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
-    
+
 
     if ($this->companysetup->getistodo($config['params'])) {
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycntnumtodo', 'label' => 'To Do', 'access' => 'view']];
@@ -508,9 +508,9 @@ class sj
     } else {
       $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
-    
-    $column = [ 'action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext','startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref' ];
-    $sortcolumn =[ 'action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext','startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref' ];
+
+    $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
+    $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
 
     $computefield = ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'];
 
@@ -537,7 +537,7 @@ class sj
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
-   
+
 
     if ($viewcost == '0') {
       $obj[0]['inventory']['columns'][$markup]['type'] = 'coldel';
@@ -547,15 +547,15 @@ class sj
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
     $obj[0]['inventory']['columns'][$barcode]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
     $obj[0]['inventory']['columns'][$disc]['style'] = 'text-align: left; width: 180px;whiteSpace: normal;min-width:180px;max-width:220px;';
-    
+
     $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
     $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
     $obj[0]['inventory']['columns'][$wh]['label'] = 'Warehouse Code';
     $obj[0]['inventory']['columns'][$cost]['label'] = 'Unit Cost';
     $obj[0][$this->gridname]['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
-    $obj[0][$this->gridname ]['columns'][$disc]['type'] = 'textarea';
-    $obj[0][$this->gridname ]['columns'][$rem]['label'] = 'Notes';
+    $obj[0][$this->gridname]['columns'][$disc]['type'] = 'textarea';
+    $obj[0][$this->gridname]['columns'][$rem]['label'] = 'Notes';
 
     $obj[0][$this->gridname]['descriptionrow'] = [];
 
@@ -566,7 +566,7 @@ class sj
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
 
-    $obj[0][$this->gridname]['addfieldtotal'] = [['field'=>'agentamt','fields'=>['isqty','*','agentamt'],'label'=>'Total Agent Amount:']];
+    $obj[0][$this->gridname]['addfieldtotal'] = [['field' => 'agentamt', 'fields' => ['isqty', '*', 'agentamt'], 'label' => 'Total Agent Amount:']];
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -595,7 +595,7 @@ class sj
       $obj[0]['lookupclass'] = 'sopallet';
       $obj[0]['action'] = 'sopallet';
     }
-    
+
     return $obj;
   }
 
@@ -605,18 +605,18 @@ class sj
     $inv = $this->companysetup->isinvonly($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
 
-    $fields = ['docno', 'client', 'clientname','address', 'dprojectname'];   
+    $fields = ['docno', 'client', 'clientname', 'address', 'dprojectname'];
 
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.lookupclass', 'customer');
 
     data_set($col1, 'docno.label', 'Transaction#');
-    
+
 
     if ($inv) {
       $fields = [['dateid', 'terms'], 'due', 'dwhname'];
     } else {
-      $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname','dewt'];
+      $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'dewt'];
     }
 
     $col2 = $this->fieldClass->create($fields);
@@ -627,16 +627,16 @@ class sj
     if ($inv) {
       $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dagentname'];
     } else {
-      $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname','cmdocno'];
+      $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', 'cmdocno'];
     }
 
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'yourref.label', 'PO#');
-    data_set($col3, 'cmdocno.addedparams', ['clientid','client']);
-   
+    data_set($col3, 'cmdocno.addedparams', ['clientid', 'client']);
+
 
     $fields = ['rem', 'creditinfo'];
-    
+
 
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
@@ -777,7 +777,7 @@ class sj
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
     $data[0]['wh'] = $this->companysetup->getwh($params);
-    
+
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
@@ -855,7 +855,7 @@ class sj
 
     $data[0]['commamt'] = 0.00;
     $data[0]['commvat'] = 0.00;
-    
+
     $data[0]['cmtrno'] = 0;
     $data[0]['cmdocno'] = 0;
     return $data;
@@ -996,7 +996,7 @@ class sj
         left join cntnum as cmref on cmref.trno=head.cmtrno
         where head.trno = ? and num.doc=? and num.center=? and left(num.bref,3) <> 'SJS' ";
 
-        $this->coreFunctions->LogConsole($qry);
+    $this->coreFunctions->LogConsole($qry);
 
     $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
@@ -1079,7 +1079,7 @@ class sj
     } else {
       $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     }
-    
+
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 
@@ -1087,7 +1087,6 @@ class sj
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->othersClass->getcreditinfo($config, $this->head);
       $this->recomputestock($head, $config);
-
     } else {
       $data['doc'] = $config['params']['doc'];
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -1120,7 +1119,7 @@ class sj
   {
     $trno = $config['params']['trno'];
     $companyid = $config['params']['companyid'];
-    
+
     $this->logger->sbcwritelog($trno, $config, 'POST', 'Start Posting');
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     if (!$this->othersClass->checkserialout($config)) {
@@ -1133,25 +1132,25 @@ class sj
     }
 
     $islocked = $this->othersClass->islocked($config);
-    if(!$islocked){
-      $stocks = $this->coreFunctions->datareader("select stock.line as value from ".$this->stock." as stock left join item on item.itemid=stock.itemid where stock.trno=? and stock.amt<item.namt6", [$trno], '', true);
+    if (!$islocked) {
+      $stocks = $this->coreFunctions->datareader("select stock.line as value from " . $this->stock . " as stock left join item on item.itemid=stock.itemid where stock.trno=? and stock.amt<item.namt6", [$trno], '', true);
       if ($stocks != 0) {
         return ['status' => false, 'msg' => 'Posting failed, amount less than lowest net amount.'];
       }
     }
-    
-    if (!$this->othersClass->checktotalext($trno,$this->stock)) {
-      $count = $this->coreFunctions->datareader("select count(line) as value from ".$this->stock." where trno =?",[$trno],'',true);
-      if($count !=0){
+
+    if (!$this->othersClass->checktotalext($trno, $this->stock)) {
+      $count = $this->coreFunctions->datareader("select count(line) as value from " . $this->stock . " where trno =?", [$trno], '', true);
+      if ($count != 0) {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Zero Amount, Not Allowed to Post.'];
-      }      
+      }
     }
 
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
       $checkacct = $this->othersClass->checkcoaacct(['AR1', 'IN1', 'SD1', 'TX2', 'CG1']);
-      
+
       if ($checkacct != '') {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
       }
@@ -1270,7 +1269,7 @@ class sj
   {
     $companyid = $config['params']['companyid'];
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
- 
+
     $sqlselect = $this->getstockselect($config);
 
     $qry = $sqlselect . "
@@ -1356,7 +1355,7 @@ class sj
   {
     $companyid = $config['params']['companyid'];
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
-   
+
     $sqlselect = $this->getstockselect($config);
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
@@ -2219,19 +2218,16 @@ class sj
         $line = 0;
       }
       $line = $line + 1;
-     
+
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
-
-      
     } elseif ($action == 'update') {
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
       $amt = $config['params']['data'][$this->damt];
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
-      
     }
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -2241,13 +2237,12 @@ class sj
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
     $isnoninv = 0;
-    $cost =0;
+    $cost = 0;
     if (!empty($item)) {
       $isnoninv = $item[0]->isnoninv;
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       $cost = $item[0]->namt4;
-      
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
@@ -2255,22 +2250,21 @@ class sj
     $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
 
-    if($disc!=""){
-      $discper ="";
+    if ($disc != "") {
+      $discper = "";
       if (!str_contains($disc, '%')) {
-        $d = explode("/",$disc);
+        $d = explode("/", $disc);
         foreach ($d as $k => $x) {
-          if($discper !=""){
-            $discper .="/";
+          if ($discper != "") {
+            $discper .= "/";
           }
 
-          $discper .= $x.'%';
-          
+          $discper .= $x . '%';
         }
         $disc = $discper;
       }
     }
-  
+
     if ($this->companysetup->getisdiscperqty($config['params'])) {
       $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, $cur, $kgs, 0, 1);
     } else {
@@ -2311,7 +2305,7 @@ class sj
 
     $data['porefx'] = $porefx;
     $data['polinex'] = $polinex;
-    $data['cost'] = $cost;        
+    $data['cost'] = $cost;
     $data['agentamt'] = $agentamt;
     if ($action == 'insert') {
       $wireitem = $this->coreFunctions->opentable("select startwire, endwire from item where itemid=? and iswireitem=1", [$data['itemid']]);
@@ -2327,7 +2321,7 @@ class sj
         }
       } else {
         // $data['agentamt'] = $data['startwire'] = $data['endwire'] = 0;
-          $data['startwire'] = $data['endwire'] = 0;
+        $data['startwire'] = $data['endwire'] = 0;
       }
     } else {
       $agentamt = isset($config['params']['data']['agentamt']) ? $config['params']['data']['agentamt'] : 0;
@@ -2381,8 +2375,8 @@ class sj
         $havestock = true;
         $msg = 'Item was successfully added.';
 
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' Cost'. $cost.' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');  
-        
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' Cost' . $cost . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+
         if ($isnoninv == 0) {
           if ($ispallet) {
             $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
@@ -2446,7 +2440,7 @@ class sj
       $msg = '';
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
 
-      
+
       if ($isnoninv == 0) {
         if ($ispallet) {
           $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
@@ -2513,7 +2507,7 @@ class sj
       }
     }
 
-    $data = $this->coreFunctions->opentable('select refx,linex,porefx,polinex from ' . $this->stock . ' where trno=? and refx<>0', [$trno]);
+    $data = $this->coreFunctions->opentable('select refx,linex,porefx,polinex from ' . $this->stock . ' where trno=? and (refx<>0 or porefx<>0)', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from stockinfo where trno=?', 'delete', [$trno]);
@@ -2632,7 +2626,7 @@ class sj
     union all
     select 'Wholesale Price' as pricegrp, amt2 as amt ,disc2 as disc, namt2 as netamt from item where barcode =?
     union all
-    select 'Base Price' as pricegrp,amt, disc, namt as netamt  from item where barcode =?",[$barcode,$barcode,$barcode,$barcode]);
+    select 'Base Price' as pricegrp,amt, disc, namt as netamt  from item where barcode =?", [$barcode, $barcode, $barcode, $barcode]);
 
     switch ($pricetype) {
       case 'Stockcard':
@@ -2641,20 +2635,20 @@ class sj
 
       case 'CustomerGroup':
       case 'CustomerGroupLatest':
-        
+
         $pricegrp = $this->coreFunctions->getfieldvalue("client", "class", "client=?", [$client]);
-       
+
         if ($pricegrp != '') {
           $pricefield = $this->othersClass->getamtfieldbygrp($pricegrp);
           $amtfield = "n" . $pricefield['amt'];
           $discfield = "'' as disc";
 
-          if($pricegrp == 'A'){
+          if ($pricegrp == 'A') {
             $amtfield = $pricefield['amt'];
-            $discfield = $pricefield['disc']." as disc";
+            $discfield = $pricefield['disc'] . " as disc";
           }
-//status,dateid,docno,clientname,qty,amt,disc,agentamt,yourref,ourref,rem
-            $qry = "select '" . $pricefield['label'] . "' as docno, left(now(),10) as dateid," . $amtfield." as amt," . $amtfield. " as defamt, $discfield, uom, itemid,
+          //status,dateid,docno,clientname,qty,amt,disc,agentamt,yourref,ourref,rem
+          $qry = "select '" . $pricefield['label'] . "' as docno, left(now(),10) as dateid," . $amtfield . " as amt," . $amtfield . " as defamt, $discfield, uom, itemid,
             '' as status,'' as clientname,'' as yourref,'' as ourref,'' as rem,0 as agentamt,0 as qty from item where barcode=? 
 
             union all
@@ -2683,7 +2677,7 @@ class sj
             and item.barcode = ? and client.client = ?
             and stock.isamt <> 0 and cntnum.trno <> ?
             order by dateid desc limit 10) as tbl order by dateid desc";
-            $data = $this->coreFunctions->opentable($qry, [$barcode,$barcode,  $client, $trno, $barcode, $client, $trno]);
+          $data = $this->coreFunctions->opentable($qry, [$barcode, $barcode,  $client, $trno, $barcode, $client, $trno]);
 
           if (!empty($data)) {
             goto setpricehere;
@@ -2726,8 +2720,8 @@ class sj
               and stock.isamt <> 0 and cntnum.trno <> ?
               order by dateid desc limit 5) as tbl order by dateid desc";
 
-            $data = $this->coreFunctions->opentable($qry, [$barcode,$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
-       
+        $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
+
         break;
     }
 
@@ -2735,8 +2729,8 @@ class sj
       return ['status' => true, 'msg' => 'Found the latest price...', 'data' => $data];
     } else {
       itempricehere:
-      
-        $qry = "select 'STOCKCARD'  as docno,left(now(),10) as dateid,amt,amt as defamt,disc,uom,'test' as rem from item where barcode=? 
+
+      $qry = "select 'STOCKCARD'  as docno,left(now(),10) as dateid,amt,amt as defamt,disc,uom,'test' as rem from item where barcode=? 
         union all
         select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as defamt,disc,uom,rem from(select head.docno,head.dateid,
         stock.isamt as amt,stock.uom,stock.disc,'test' as rem
@@ -2758,8 +2752,8 @@ class sj
         and item.barcode = ? and client.client = ?
         and stock.isamt <> 0 and cntnum.trno <> ?
         order by dateid desc limit 10) as tbl";
-        $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
-      
+      $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
+
 
       setpricehere:
       $usdprice = 0;
@@ -2800,23 +2794,14 @@ class sj
         }
       }
 
-      if (floatval($forex) <> 1) {
-        $usdprice = $this->coreFunctions->getfieldvalue('item', 'foramt', 'barcode=?', [$barcode]);
-        if ($cur == '$') {
-          $data[0]->amt = $usdprice;
-        } else {
-          $data[0]->amt = round($usdprice * $dollarrate, $this->companysetup->getdecimal('price', $config['params']));
-        }
-      }
-
       if (isset($data[0]->amt)) {
         if (floatval($data[0]->amt) == 0) {
-          return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data,'pricelevel'=>$data2];
+          return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data, 'pricelevel' => $data2];
         } else {
-          return ['status' => true, 'msg' => 'Found the latest price...', 'data' => $data, 'pricelevel'=>$data2];
+          return ['status' => true, 'msg' => 'Found the latest price...', 'data' => $data, 'pricelevel' => $data2];
         }
       } else {
-        return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data,'pricelevel'=>$data2];
+        return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data, 'pricelevel' => $data2];
       }
     }
   } // end function
@@ -2897,7 +2882,6 @@ class sj
           }
 
           $updatehead = $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
-          
         }
 
         foreach ($data as $key2 => $value) {
@@ -2932,7 +2916,7 @@ class sj
             $config['params']['data']['weight'] = $data[$key2]->weight;
             $config['params']['data']['itemdesc'] = $data[$key2]->itemdesc;
             $config['params']['data']['agentamt'] = $data[$key2]->agentamt;
-            
+
             $return = $this->additem('insert', $config);
 
             if ($msg = '') {
@@ -3194,7 +3178,7 @@ class sj
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       if (!empty($data)) {
         $updatehead = 0;
-        
+
         foreach ($data as $key2 => $value) {
 
           if ($updatehead == 0) {
@@ -3290,7 +3274,7 @@ class sj
     }
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
     $fields = '';
-    
+
     $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
       item.expense,stock.isamt,stock.disc,stock.isqty,stock.cost,stock.iss,stock.fcost,head.projectid,client.rev,stock.rebate,head.taxdef,head.deldate,head.ewt,head.ewtrate
       ' . $fields . '
@@ -3373,7 +3357,7 @@ class sj
       }
     }
 
-    
+
     // if ($delcharge != 0) {
     //   $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['DC1']);
     //   $entry = ['acnoid' => $acnoid, 'client' => $d[0]->client, 'db' => 0, 'cr' => $delcharge * $d[0]->forex, 'postdate' => $d[0]->dateid, 'cur' => $d[0]->cur, 'forex' => $d[0]->forex, 'fcr' => floatval($d[0]->forex) == 1 ? 0 : $delcharge, 'fdb' => 0];
@@ -3381,7 +3365,7 @@ class sj
 
     //   $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
     //   $entry = ['acnoid' => $acnoid, 'client' => $d[0]->client, 'db' => ($delcharge * $d[0]->forex), 'cr' => 0, 'postdate' => $d[0]->dateid, 'cur' => $d[0]->cur, 'forex' => $d[0]->forex, 'fdb' => floatval($d[0]->forex) == 1 ? 0 : $d[0]->dateid, 'fcr' => 0];
-      
+
     //   $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     // }
 
@@ -3454,16 +3438,16 @@ class sj
     if (floatval($params['ar']) != 0) {
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
       $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'db' => (($params['ar'] - $ewtamt) * $forex), 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => floatval($forex) == 1 ? 0 : ($params['ar'] - $ewtamt), 'fcr' => 0, 'projectid' => $params['projectid']];
-      
+
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
 
     //disc
     if (floatval($params['discamt']) != 0) {
       $input = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['SD1']);
-      if($params['discamt']<0){
+      if ($params['discamt'] < 0) {
         $entry = ['acnoid' => $input, 'client' => $params['client'], 'db' => 0, 'cr' => abs($params['discamt'] * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['discamt']), 'projectid' => $params['projectid']];
-      }else{
+      } else {
         $entry = ['acnoid' => $input, 'client' => $params['client'], 'db' => ($params['discamt'] * $forex), 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['discamt']), 'projectid' => $params['projectid']];
       }
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
@@ -3474,7 +3458,7 @@ class sj
       if (floatval($params['cost']) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => 0, 'cr' => $params['cost'], 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => floatval($forex) == 1 ? 0 : $params['fcost'], 'fdb' => 0, 'projectid' => $params['projectid']];
-        
+
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
         //cogs
@@ -3484,7 +3468,7 @@ class sj
           $cogs =  $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['expense']]);
         }
         $entry = ['acnoid' => $cogs, 'client' => $params['wh'], 'db' => $params['cost'], 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : $params['fcost'], 'projectid' => $params['projectid']];
-        
+
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }
@@ -3525,7 +3509,7 @@ class sj
       if (floatval($sales) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['revenue']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'cr' => ($sales * $forex), 'db' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => floatval($forex) == 1 ? 0 : $sales, 'fdb' => 0, 'projectid' => $params['projectid']];
-        
+
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }
@@ -3563,19 +3547,18 @@ class sj
     $stocks = 0;
     $tbl = 'lastock';
     if ($isposted) $tbl = 'glstock';
-    if(!$islocked){
+    if (!$islocked) {
       $stocks = $this->coreFunctions->datareader("select stock.line as value from " . $tbl . " as stock left join item on item.itemid=stock.itemid where stock.trno=? and stock.amt<item.namt6", [$config['params']['trno']], '', true);
 
       if ($stocks != 0) {
         return ['status' => false, 'msg' => 'Print failed, amount less than lowest net amount.'];
-      }else{
+      } else {
         $this->posttrans($config);
       }
-    }else{
-      if(!$isposted){
+    } else {
+      if (!$isposted) {
         $this->posttrans($config);
       }
-      
     }
 
     $style = 'width:500px;max-width:500px;';
@@ -3675,14 +3658,14 @@ class sj
           $config['params']['data']['amt'] = $iamt;
 
           $pricegrp = $this->coreFunctions->getfieldvalue("client", "class", "client=?", [$cl]);
-          
-          if ($pricegrp !=""){
+
+          if ($pricegrp != "") {
             $pricefield = $this->othersClass->getamtfieldbygrp($pricegrp);
-            $iamt = $this->coreFunctions->opentable("select " . $pricefield['amt'] . " as amt, " . $pricefield['disc'] . " as disc, uom, itemid from item where itemid=?",[$data[$key2]->itemid]);
-            if(!empty($iamt)){
+            $iamt = $this->coreFunctions->opentable("select " . $pricefield['amt'] . " as amt, " . $pricefield['disc'] . " as disc, uom, itemid from item where itemid=?", [$data[$key2]->itemid]);
+            if (!empty($iamt)) {
               $config['params']['data']['amt'] = $iamt[0]->amt;
               $config['params']['data']['disc'] = $iamt[0]->disc;
-            }            
+            }
           }
           $config['params']['data']['stageid'] = $data[$key2]->stageid;
           $return = $this->additem('insert', $config);
@@ -3713,7 +3696,7 @@ class sj
     $config['params']['client'] = $this->coreFunctions->getfieldvalue("lahead", "client", "trno=?", [$trno]);
     $cl = $this->coreFunctions->getfieldvalue("lahead", "client", "trno=?", [$trno]);
     $systype = $this->companysetup->getsystemtype($config['params']);
-    $msg='';
+    $msg = '';
 
     $rows = [];
     foreach ($config['params']['rows'] as $key => $value) {
@@ -3751,16 +3734,16 @@ class sj
           $config['params']['barcode'] = $data[$key2]->barcode;
           $iamt = $this->coreFunctions->getfieldvalue("item", "amt", "itemid=?", [$data[$key2]->itemid], '', true);
           $config['params']['data']['amt'] = $iamt;
-          
+
           $pricegrp = $this->coreFunctions->getfieldvalue("client", "class", "client=?", [$cl]);
-          
-          if ($pricegrp !=""){
+
+          if ($pricegrp != "") {
             $pricefield = $this->othersClass->getamtfieldbygrp($pricegrp);
-            $iamt = $this->coreFunctions->opentable("select " . $pricefield['amt'] . " as amt, " . $pricefield['disc'] . " as disc, uom, itemid from item where itemid=?",[$data[$key2]->itemid]);
-            if(!empty($iamt)){
+            $iamt = $this->coreFunctions->opentable("select " . $pricefield['amt'] . " as amt, " . $pricefield['disc'] . " as disc, uom, itemid from item where itemid=?", [$data[$key2]->itemid]);
+            if (!empty($iamt)) {
               $config['params']['data']['amt'] = $iamt[0]->amt;
               $config['params']['data']['disc'] = $iamt[0]->disc;
-            }            
+            }
           }
           $config['params']['data']['stageid'] = $data[$key2]->stageid;
           $return = $this->additem('insert', $config);
@@ -3783,8 +3766,8 @@ class sj
     return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
   } //end function
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     return $this->sbcscript->loaditembal($config);
   }
-
 } //end class

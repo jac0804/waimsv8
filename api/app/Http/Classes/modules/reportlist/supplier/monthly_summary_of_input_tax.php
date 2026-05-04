@@ -277,7 +277,7 @@ class monthly_summary_of_input_tax
     switch ($printtype) {
       case 'default':
       case 'excel':
-        $query = "select date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,
+        $query = "select head.trno,date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,client.clientid,
           head.docno ,sum(stock.ext) as 'db' $crnet
           from glhead AS head
           left join glstock as stock on stock.trno = head.trno
@@ -286,10 +286,10 @@ class monthly_summary_of_input_tax
           where head.doc in ('GJ', 'CV', 'AC') and head.vattype = 'VATABLE' and
           date(head.dateid) between '" . $start . "' and '" . $end . "' AND ( (SELECT SUM(d.db-d.cr) AS cr FROM gldetail AS d
           LEFT JOIN coa AS c ON c.acnoid=d.acnoid
-          WHERE d.trno= head.trno AND c.alias='TX1') IS NOT NULL OR stock.ext IS NOT NULL)  $filter
-          group by head.dateid, clientname, tin, addr, docno, head.trno,client.client
+          WHERE d.trno= head.trno AND c.alias='TX1') IS NOT NULL OR stock.ext IS NOT NULL)  $filter 
+          group by head.trno,head.dateid, clientname, tin, addr, docno, head.trno,client.client,client.clientid
           union all
-          select date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,
+          select head.trno,date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,client.clientid,
           head.docno , sum(detail.db-detail.cr) as 'db' " . $crnet2 . "
           from glhead AS head
           left join gldetail as detail on detail.trno = head.trno
@@ -298,12 +298,12 @@ class monthly_summary_of_input_tax
           left join cntnum on cntnum.trno = head.trno
           where head.doc = 'PV' and detail.isvat = 1 and
           date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
-          group by head.dateid, clientname, tin, addr, docno, head.trno,client.client
+          group by head.trno,head.dateid, clientname, tin, addr, docno, head.trno,client.client,client.clientid
         
           union all
 
-            select date_format(head.dateid,'%m-%d-%Y') as dateid,
-            client.clientname, client.tin, client.addr,  client.client,head.docno ,
+            select head.trno,date_format(head.dateid,'%m-%d-%Y') as dateid,
+            client.clientname, client.tin, client.addr,  client.client,client.clientid,head.docno ,
             sum((detail.db-detail.cr)*-1) as db
             " . $crnet3 . "
             from glhead AS head
@@ -313,12 +313,12 @@ class monthly_summary_of_input_tax
             left join coa as c on c.acnoid=detail.acnoid
             where left(cntnum.bref,3) in ('sjs','srs') and c.alias in ('AP1','AP2')  and
             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
-            group by head.dateid, clientname, tin, addr, docno, head.trno,client.client
+            group by head.trno,head.dateid, clientname, tin, addr, docno, head.trno,client.client,client.clientid
             order by dateid,docno";
         break;
       case 'CSV':
-        $query = "select  branchname as `BRANCHNAME`, dateid as `DATE`, client as `CODE`,clientname as `SUPPLIER`,tin as `TIN`,addr as `ADDRESS`,docno as `DOCNO`,db as `PURCHASES`,cr as `VATAMT`,net as `NETPURCHASE` 
-          from (select if(center.name !='',center.name, br.clientname) as branchname, date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,
+        $query = "select trno, branchname as `BRANCHNAME`, dateid as `DATE`, client as `CODE`,clientname as `SUPPLIER`,tin as `TIN`,addr as `ADDRESS`,docno as `DOCNO`,db as `PURCHASES`,cr as `VATAMT`,net as `NETPURCHASE`,clientid
+          from (select head.trno,if(center.name !='',center.name, br.clientname) as branchname, date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,client.clientid,
           head.docno ,sum(stock.ext) as 'db' $crnet
           from glhead AS head
           left join glstock as stock on stock.trno = head.trno
@@ -330,9 +330,9 @@ class monthly_summary_of_input_tax
           date(head.dateid) between '" . $start . "' and '" . $end . "' AND ( (SELECT SUM(d.db-d.cr) AS cr FROM gldetail AS d
           LEFT JOIN coa AS c ON c.acnoid=d.acnoid
           WHERE d.trno= head.trno AND c.alias='TX1') IS NOT NULL OR stock.ext IS NOT NULL)  $filter
-          group by head.dateid, client.clientname, tin, addr, docno, head.trno,client.client, center.name,br.clientname
+          group by head.trno,head.dateid, client.clientname, tin, addr, docno, head.trno,client.client,client.clientid, center.name,br.clientname
           union all
-          select if(center.name !='',center.name, br.clientname) as branchname, date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,
+          select head.trno, if(center.name !='',center.name, br.clientname) as branchname, date_format(dateid,'%m-%d-%Y') as dateid, client.clientname, client.tin, client.addr,client.client,client.clientid,
           head.docno , sum(detail.db-detail.cr) as 'db' " . $crnet2 . "
           from glhead AS head
           left join gldetail as detail on detail.trno = head.trno
@@ -343,12 +343,12 @@ class monthly_summary_of_input_tax
           left join client as br on br.clientid=head.branch and center.branchid
           where head.doc = 'PV' and detail.isvat = 1 and
           date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
-          group by head.dateid, client.clientname, tin, addr, docno, head.trno,client.client, center.name,br.clientname
+          group by head.trno, head.dateid, client.clientname, tin, addr, docno, head.trno,client.client,client.clientid, center.name,br.clientname
         
           union all
 
-            select if(center.name !='',center.name, br.clientname) as branchname, date_format(head.dateid,'%m-%d-%Y') as dateid,
-            client.clientname, client.tin, client.addr,  client.client,head.docno ,
+            select head.trno,if(center.name !='',center.name, br.clientname) as branchname, date_format(head.dateid,'%m-%d-%Y') as dateid,
+            client.clientname, client.tin, client.addr,  client.client,client.clientid,head.docno ,
             sum((detail.db-detail.cr)*-1) as db
             " . $crnet3 . "
             from glhead AS head
@@ -360,14 +360,13 @@ class monthly_summary_of_input_tax
             left join client as br on br.clientid=head.branch and center.branchid
             where left(cntnum.bref,3) in ('sjs','srs') and c.alias in ('AP1','AP2')  and
             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
-            group by head.dateid, client.clientname, tin, addr, docno, head.trno,client.client, center.name,br.clientname) as a 
+            group by head.trno,head.dateid, client.clientname, tin, addr, docno, head.trno,client.client,client.clientid, center.name,br.clientname) as a 
             order by dateid,docno";
-
         break;
     }
 
 
-    // var_dump($query); // sum(if(left(cntnum.bref,3) = 'SJS', detail.db-detail.cr, (detail.db-detail.cr * -1))) as 'db',
+    // sum(if(left(cntnum.bref,3) = 'SJS', detail.db-detail.cr, (detail.db-detail.cr * -1))) as 'db',
     $data = $this->coreFunctions->opentable($query);
     return $data;
   }
@@ -453,9 +452,7 @@ class monthly_summary_of_input_tax
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable('1000');
     $str .= $this->reporter->startrow();
-    // $str .= $this->reporter->col('Date', '100', '', false, $border, 'TB', 'L',  $font, '12',  'b', '', '', '', '');
-    // $str .= $this->reporter->col('Supplier', '175', '', false, $border, 'TB', 'L',  $font, '12',  'b', '', '', '', '');
-    // $str .= $this->reporter->col('Tax ID No.', '125', '', false, $border, 'TB', 'L',  $font, '12',  'b', '', '', '', '');
+    
     switch ($companyid) {
       case 10:
       case 12:
@@ -539,9 +536,7 @@ class monthly_summary_of_input_tax
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      // $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'L',  $font, $fontsize,  '', '', '', '', '');
-      // $str .= $this->reporter->col($data_->clientname, '175', '', false, $border, '', 'L',  $font, $fontsize,  '', '', '', '', '');
-      // $str .= $this->reporter->col($data_->tin, '125', '', false, $border, '', 'L',  $font, $fontsize,  '', '', '', '', '');
+      
       switch ($companyid) {
         case 10:
         case 12:
@@ -552,16 +547,57 @@ class monthly_summary_of_input_tax
           $str .= $this->reporter->col(number_format($data_->net, $decimal_currency), '100', '', false, $border, '', 'R',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col(number_format($data_->cr, $decimal_currency), '100', '', false, $border, $fontsize, 'R',  $font, $fontsize,  '', '', '', '', '');
           break;
-        case 56: //homewrek
+        case 56: //homeworks
+          
+          $vat = $this->coreFunctions->datareader("select sum(d.db-d.cr) as value 
+            from gldetail as d 
+            left join coa as c on c.acnoid=d.acnoid
+            where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$data_->trno,$data_->clientid]);
           $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->client, '100', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->clientname, '150', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->tin, '125', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->addr, '140', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->docno, '115', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
-          $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
-          $str .= $this->reporter->col(number_format($data_->cr, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
-          $str .= $this->reporter->col(number_format($data_->net, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+          if(str_contains($data_->docno,'SJS')){
+            $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($data_->db-$vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+
+            #a
+            $data_->db=$data_->db;
+            #b
+            $data_->cr=$vat;
+            
+            #c
+            $data_->net=$data_->db-$vat;
+            
+          }elseif(str_contains($data_->docno,'SRS')){
+            $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format(($data_->db-$vat), $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+
+            #a
+            $data_->db=$data_->db;
+            #b
+            $data_->cr=$vat;
+            
+            #c
+            $data_->net=($data_->db-$vat);
+            
+          }else{
+            $str .= $this->reporter->col(number_format($data_->db+$vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+
+            #c
+            $data_->net=$data_->db;
+            #a
+            $data_->db=$data_->db+$vat;
+            #b
+            $data_->cr=$vat;
+          }
+          
           break;
         default:
           $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'L',  $font, $fontsize,  '', '', '', '', '');
@@ -605,9 +641,7 @@ class monthly_summary_of_input_tax
     }
 
     $str .= $this->reporter->startrow();
-    // $str .= $this->reporter->col('TOTAL', '100', '', false, $border, 'T', 'L',  $font, $fontsize,  'B', '', '', '');
-    // $str .= $this->reporter->col('', '175', '', false, $border, 'T', 'C',  $font, $fontsize,  'B', '', '', '', 0);
-    // $str .= $this->reporter->col('', '125', '', false, $border, 'T', 'C',  $font, $fontsize,  'B', '', '', '', 0);
+    
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
@@ -751,10 +785,22 @@ class monthly_summary_of_input_tax
       $total_total += $value->PURCHASES;
       $total_tax += $value->VATAMT;
       $total_net += $value->NETPURCHASE;
-
-      $value->PURCHASES = number_format($value->PURCHASES, 2);
-      $value->VATAMT = number_format($value->VATAMT, 2);
-      $value->NETPURCHASE = number_format($value->NETPURCHASE, 2);
+      
+      $vat = $this->coreFunctions->datareader("select sum(d.db-d.cr) as value 
+          from gldetail as d 
+          left join coa as c on c.acnoid=d.acnoid
+          where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$value->trno,$value->clientid]);
+        
+          if(str_contains($value->DOCNO,'SJS')){
+            $value->NETPURCHASE = number_format($value->PURCHASES-$vat, 2);
+            $value->PURCHASES = number_format($value->PURCHASES, 2);
+            $value->VATAMT = number_format($vat, 2);
+          }else{
+            $value->NETPURCHASE = number_format($value->PURCHASES, 2);
+            $value->PURCHASES = number_format($value->PURCHASES+$vat, 2);
+            $value->VATAMT = number_format($vat, 2);
+          }
+      
     }
 
     // gumawa ng total row

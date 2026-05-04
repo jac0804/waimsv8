@@ -49,7 +49,7 @@ class customer
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-        
+            ['label' => 'Excel', 'value' => 'excel', 'color' => 'red']
         ]);
         
         return array('col1' => $col1);
@@ -108,7 +108,7 @@ class customer
         $data = $this->generateResult($config);
         $reporttype = $config['params']['dataparams']['reporttype'];
 
-        if ($config['params']['dataparams']['print'] == "default") {
+        if ($config['params']['dataparams']['print'] == "excel") {
             switch ($reporttype) {
                 case 'ar':
                     $str = $this->reportdefaultAR($config, $data);
@@ -1356,41 +1356,72 @@ class customer
         foreach ($data as $key => $data2) {
             $totalcredit = $totalcredit +  $data2->cr;
         }
+        //     case 15://NATHINA
 
-        switch ($companyid) {
-            case 15://NATHINA
-            
-                $qry = "select sum(ar.bal) as balance from arledger as ar
-                left join cntnum as cnt on cnt.trno=ar.trno
-                where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "'
-                ";
+        //         $qry = "select sum(ar.bal) as balance from arledger as ar
+        //         left join cntnum as cnt on cnt.trno=ar.trno
+        //         where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "'
+        //         ";
 
-                $totalar = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
-                if (isset($data[0]->crlimit)) {
-                    $creditlimit = $data[0]->crlimit - $totalar[0]['balance'];
-                } else {
-                    $creditlimit = 0;
-                }
+        //         $totalar = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
+        //         if (isset($data[0]->crlimit)) {
+        //             $creditlimit = $data[0]->crlimit - $totalar[0]['balance'];
+        //         } else {
+        //             $creditlimit = 0;
+        //         }
 
-                $qry = "select sum(ar.bal) as balance from arledger as ar
-                left join cntnum as cnt on cnt.trno=ar.trno
-                left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line
-                left join glhead as head on head.trno = cnt.trno
-                where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "' and head.due<=date(now())";
-                $overdue = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
+        //         $qry = "select sum(ar.bal) as balance from arledger as ar
+        //         left join cntnum as cnt on cnt.trno=ar.trno
+        //         left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line
+        //         left join glhead as head on head.trno = cnt.trno
+        //         where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "' and head.due<=date(now())";
+        //         $overdue = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
-                PDF::SetFont($font, '', 11);
-                PDF::MultiCell(100, 20, "OVERDUE:", '', 'L', false, 0);
-                PDF::SetFont($fontbold, '', 11);
-                PDF::MultiCell(280, 20, number_format($overdue[0]['balance'], 2), '', 'L', false);
-                break;
+        //         PDF::SetFont($font, '', 11);
+        //         PDF::MultiCell(100, 20, "OVERDUE:", '', 'L', false, 0);
+        //         PDF::SetFont($fontbold, '', 11);
+        //         PDF::MultiCell(280, 20, number_format($overdue[0]['balance'], 2), '', 'L', false);
+        //         break;
 
+        // }
+
+
+        if (empty($data) || !isset($data[0]->clientid)) {
+            $creditlimit = 0;
+        } else {
+            switch ($companyid) {
+                case 15:
+                    $qry = "select sum(ar.bal) as balance from arledger as ar
+                    left join cntnum as cnt on cnt.trno=ar.trno
+                    where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "'";
+
+                    $totalar = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
+
+                    if (!empty($totalar) && isset($data[0]->crlimit)) {
+                        $totalarBalance = isset($totalar[0]['balance']) ? $totalar[0]['balance'] : 0;
+                        $creditlimit = $data[0]->crlimit - $totalarBalance;
+                    } else {
+                        $creditlimit = 0;
+                    }
+
+                    $qry = "select sum(ar.bal) as balance from arledger as ar
+                    left join cntnum as cnt on cnt.trno=ar.trno
+                    left join gldetail as detail on detail.trno = ar.trno and detail.line = ar.line
+                    left join glhead as head on head.trno = cnt.trno
+                    where ar.clientid='" . $data[0]->clientid . "' and ar.dateid<='" . $end . "' and cnt.center='" . $center . "' and head.due<=date(now())";
+
+                    $overdue = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
+
+                    if (!empty($overdue)) {
+                        $overdueBalance = isset($overdue[0]['balance']) ? $overdue[0]['balance'] : 0;
+                        PDF::SetFont($font, '', 11);
+                        PDF::MultiCell(100, 20, "OVERDUE:", '', 'L', false, 0);
+                        PDF::SetFont($fontbold, '', 11);
+                        PDF::MultiCell(280, 20, number_format($overdueBalance, 2), '', 'L', false);
+                    }
+                    break;
+            }
         }
-
-
-
-
-
 
 
         PDF::MultiCell(130, 20, "AVAILABLE CREDIT: ", '', 'L', false, 0);
@@ -1408,12 +1439,12 @@ class customer
         PDF::MultiCell(110, 10, "Document #", '', 'C', false, 0);
         PDF::MultiCell(70, 10, "Date", '', 'C', false, 0);
         PDF::MultiCell(110, 10, "Agent", '', 'C', false, 0);
-        PDF::MultiCell(100, 10, "Notes", '', 'C', false, 0);
+        PDF::MultiCell(115, 10, "Notes", '', 'C', false, 0);
         PDF::MultiCell(90, 10, "Debit", '', 'R', false, 0);
         PDF::MultiCell(90, 10, "Credit", '', 'R', false, 0);
         PDF::MultiCell(90, 10, "Balance", '', 'R', false, 0);
         PDF::MultiCell(5, 10, "", '', 'R', false, 0);
-        PDF::MultiCell(95, 10, "Reference", '', 'C', false);
+        PDF::MultiCell(80, 10, "Reference", '', 'C', false);
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'B', 'L', false, 0);
@@ -1472,21 +1503,20 @@ class customer
             $begbal = 0;
         }
 
-        foreach ($data as $key => $data) {
-            $credit = number_format($data->cr, 2);
+
+        foreach ($data as $key => $row) {
+            $credit = number_format($row->cr, 2);
             $credit = $credit < 0 ? '-' : $credit;
-            $debit = number_format($data->db, 2);
+            $debit = number_format($row->db, 2);
             $debit = $debit < 0 ? '-' : $debit;
 
-            if ($data->cr != 0) {
-                if ($data->bal != 0) {
-                    $data->bal = $data->bal * -1;
-                } //end if
-            } //end if
+            if ($row->cr != 0) {
+                if ($row->bal != 0) {
+                    $row->bal = $row->bal * -1;
+                }
+            }
 
-            $rbalance += $data->bal;
-            
-            
+            $rbalance += $row->bal;
 
             if ($rbalance == 0) {
                 $balance = '-';
@@ -1494,21 +1524,42 @@ class customer
                 $balance = number_format($rbalance, 2);
             }
 
-            PDF::SetFont($font, '', $fontsize);
-            
-            PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(110, 15, $data->agentname, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 15, $data->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $debit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $credit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $balance, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(95, 15, $data->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
+            $arr_docno     = $this->reporter->fixcolumn([$row->docno],     '25', 0);
+            $arr_dateid    = $this->reporter->fixcolumn([$row->dateid],    '15', 0);
+            $arr_agentname = $this->reporter->fixcolumn([$row->agentname], '25', 0);
+            $arr_rem       = $this->reporter->fixcolumn([$row->rem],       '15', 0);
+            $arr_debit     = $this->reporter->fixcolumn([$debit],          '20', 0);
+            $arr_credit    = $this->reporter->fixcolumn([$credit],         '20', 0);
+            $arr_balance   = $this->reporter->fixcolumn([$balance],        '20', 0);
+            $arr_ref       = $this->reporter->fixcolumn([$row->ref],       '20', 0);
 
-            $totaldb = $totaldb + $data->db;
-            $totalcr = $totalcr + $data->cr;
-            $totalbal = $totalbal + $data->bal;
+            $maxrow = $this->othersClass->getmaxcolumn([
+                $arr_docno,
+                $arr_dateid,
+                $arr_agentname,
+                $arr_rem,
+                $arr_debit,
+                $arr_credit,
+                $arr_balance,
+                $arr_ref
+            ]);
+
+            for ($i = 0; $i < $maxrow; $i++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 15, isset($arr_docno[$i])     ? $arr_docno[$i]     : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70,  15, isset($arr_dateid[$i])    ? $arr_dateid[$i]    : '', '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 15, isset($arr_agentname[$i]) ? $arr_agentname[$i] : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(115, 15, isset($arr_rem[$i])       ? $arr_rem[$i]       : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90,  15, isset($arr_debit[$i])     ? $arr_debit[$i]     : '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90,  15, isset($arr_credit[$i])    ? $arr_credit[$i]    : '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90,  15, isset($arr_balance[$i])   ? $arr_balance[$i]   : '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(5,   15, '',                                                  '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80,  15, isset($arr_ref[$i])       ? $arr_ref[$i]       : '', '', 'L', 0, 1, '', '', true, 0, false, false);
+            }
+
+            $totaldb  = $totaldb  + $row->db;
+            $totalcr  = $totalcr  + $row->cr;
+            $totalbal = $totalbal + $row->bal;
         }
 
         PDF::SetFont($font, '', 5);
@@ -1671,29 +1722,45 @@ class customer
         $totaldb = 0;
         $totalcr = 0;
         $totalbal = 0;
-        foreach ($data as $key => $data) {
-            $credit = number_format($data->cr, 2);
-            $credit = $credit < 0 ? '-' : $credit;
-            $debit = number_format($data->db, 2);
-            $debit = $debit < 0 ? '-' : $debit;
-            $balance = number_format($data->bal, 2);
+
+            foreach ($data as $key => $row) {
+            $credit  = number_format($row->cr, 2);
+            $credit  = $credit < 0 ? '-' : $credit;
+            $debit   = number_format($row->db, 2);
+            $debit   = $debit < 0 ? '-' : $debit;
+            $balance = number_format($row->bal, 2);
             $balance = $balance < 0 ? '-' : $balance;
 
-            PDF::SetFont($font, '', $fontsize);
-            
-            PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(110, 15, $data->agent, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 15, $data->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $debit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $credit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $balance, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(95, 15, $data->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
+            $arr_docno   = $this->reporter->fixcolumn([$row->docno],   '25', 0);
+            $arr_dateid  = $this->reporter->fixcolumn([$row->dateid],  '15', 0);
+            $arr_agent   = $this->reporter->fixcolumn([$row->agent],   '25', 0);
+            $arr_rem     = $this->reporter->fixcolumn([$row->rem],     '15', 0);
+            $arr_debit   = $this->reporter->fixcolumn([$debit],        '20', 0);
+            $arr_credit  = $this->reporter->fixcolumn([$credit],       '20', 0);
+            $arr_balance = $this->reporter->fixcolumn([$balance],      '20', 0);
+            $arr_ref     = $this->reporter->fixcolumn([$row->ref],     '20', 0);
 
-            $totaldb = $totaldb + $data->db;
-            $totalcr = $totalcr + $data->cr;
-            $totalbal = $totalbal + $data->bal;
+            $maxrow = $this->othersClass->getmaxcolumn([
+                $arr_docno, $arr_dateid, $arr_agent, $arr_rem,
+                $arr_debit, $arr_credit, $arr_balance, $arr_ref
+            ]);
+
+            for ($i = 0; $i < $maxrow; $i++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 15, isset($arr_docno[$i])   ? $arr_docno[$i]   : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(70,  15, isset($arr_dateid[$i])  ? $arr_dateid[$i]  : '', '', 'C', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(110, 15, isset($arr_agent[$i])   ? $arr_agent[$i]   : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(100, 15, isset($arr_rem[$i])     ? $arr_rem[$i]     : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_debit[$i])   ? $arr_debit[$i]   : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_credit[$i])  ? $arr_credit[$i]  : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_balance[$i]) ? $arr_balance[$i] : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(5,   15, '',                                              '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(95,  15, isset($arr_ref[$i])     ? $arr_ref[$i]     : '', '', 'L', 0, 1, '', '', true, 0, false, false);
+            }
+
+            $totaldb  = $totaldb  + $row->db;
+            $totalcr  = $totalcr  + $row->cr;
+            $totalbal = $totalbal + $row->bal;
         }
 
         PDF::SetFont($font, '', 5);
@@ -1857,25 +1924,41 @@ class customer
         $totaldb = 0;
         $totalcr = 0;
         $totalbal = 0;
-        foreach ($data as $key => $data1) {
-            $credit = number_format($data1->cr, 2);
-            $credit = $credit < 0 ? '-' : $credit;
-            $debit = number_format($data1->db, 2);
-            $debit = $debit < 0 ? '-' : $debit;
-
-            PDF::SetFont($font, '', $fontsize);
-            
-            PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(70, 15, date('Y-m-d', strtotime($data1->checkdate)), '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(110, 15, $data1->agentname, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 15, $data1->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $debit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $credit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(185, 15, $data1->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
-
-            $totaldb += $data1->db;
-            $totalcr += $data1->cr;
+        
+        foreach ($data as $key => $row) {
+            $credit    = number_format($row->cr, 2);
+            $credit    = $credit < 0 ? '-' : $credit;
+            $debit     = number_format($row->db, 2);
+            $debit     = $debit < 0 ? '-' : $debit;
+            $checkdate = date('Y-m-d', strtotime($row->checkdate));
+                        
+            $arr_docno     = $this->reporter->fixcolumn([$row->docno],     '25', 0);
+            $arr_checkdate = $this->reporter->fixcolumn([$checkdate],      '15', 0);
+            $arr_agentname = $this->reporter->fixcolumn([$row->agentname], '25', 0);
+            $arr_rem       = $this->reporter->fixcolumn([$row->rem],       '15', 0);
+            $arr_debit     = $this->reporter->fixcolumn([$debit],          '20', 0);
+            $arr_credit    = $this->reporter->fixcolumn([$credit],         '20', 0);
+            $arr_ref       = $this->reporter->fixcolumn([$row->ref],       '20', 0);
+                        
+            $maxrow = $this->othersClass->getmaxcolumn([
+                $arr_docno, $arr_checkdate, $arr_agentname, $arr_rem,
+                $arr_debit, $arr_credit, $arr_ref
+            ]);
+                        
+            for ($i = 0; $i < $maxrow; $i++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 15, isset($arr_docno[$i])     ? $arr_docno[$i]     : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(70,  15, isset($arr_checkdate[$i]) ? $arr_checkdate[$i] : '', '', 'C', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(110, 15, isset($arr_agentname[$i]) ? $arr_agentname[$i] : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(100, 15, isset($arr_rem[$i])       ? $arr_rem[$i]       : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_debit[$i])     ? $arr_debit[$i]     : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_credit[$i])    ? $arr_credit[$i]    : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(5,   15, '',                                                  '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(185, 15, isset($arr_ref[$i])       ? $arr_ref[$i]       : '', '', 'L', 0, 1, '', '', true, 0, false, false);
+            }
+                        
+            $totaldb  += $row->db;
+            $totalcr  += $row->cr;
             $totalbal += $totaldb - $totalcr;
         }
 
@@ -2039,28 +2122,44 @@ class customer
         $totaldb = 0;
         $totalcr = 0;
         $totalbal = 0;
-        foreach ($data as $key => $data) {
-            $credit = number_format($data->cr, 2);
-            $credit = $credit < 0 ? '-' : $credit;
-            $debit = number_format($data->db, 2);
-            $debit = $debit < 0 ? '-' : $debit;
-            $balance = number_format($data->bal, 2);
+        foreach ($data as $key => $row) {
+            $credit  = number_format($row->cr, 2);
+            $credit  = $credit < 0 ? '-' : $credit;
+            $debit   = number_format($row->db, 2);
+            $debit   = $debit < 0 ? '-' : $debit;
+            $balance = number_format($row->bal, 2);
             $balance = $balance < 0 ? '-' : $balance;
-            PDF::SetFont($font, '', $fontsize);
-            
-            PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(110, 15, $data->agent, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 15, $data->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $debit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $credit, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(90, 15, $balance, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(95, 15, $data->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
 
-            $totaldb = $totaldb + $data->db;
-            $totalcr = $totalcr + $data->cr;
-            $totalbal = $totalbal + $data->bal;
+            $arr_docno   = $this->reporter->fixcolumn([$row->docno],  '25', 0);
+            $arr_dateid  = $this->reporter->fixcolumn([$row->dateid], '15', 0);
+            $arr_agent   = $this->reporter->fixcolumn([$row->agent],  '25', 0);
+            $arr_rem     = $this->reporter->fixcolumn([$row->rem],    '15', 0);
+            $arr_debit   = $this->reporter->fixcolumn([$debit],       '20', 0);
+            $arr_credit  = $this->reporter->fixcolumn([$credit],      '20', 0);
+            $arr_balance = $this->reporter->fixcolumn([$balance],     '20', 0);
+            $arr_ref     = $this->reporter->fixcolumn([$row->ref],    '20', 0);
+
+            $maxrow = $this->othersClass->getmaxcolumn([
+                $arr_docno, $arr_dateid, $arr_agent, $arr_rem,
+                $arr_debit, $arr_credit, $arr_balance, $arr_ref
+            ]);
+
+            for ($i = 0; $i < $maxrow; $i++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 15, isset($arr_docno[$i])   ? $arr_docno[$i]   : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(70,  15, isset($arr_dateid[$i])  ? $arr_dateid[$i]  : '', '', 'C', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(110, 15, isset($arr_agent[$i])   ? $arr_agent[$i]   : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(100, 15, isset($arr_rem[$i])     ? $arr_rem[$i]     : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_debit[$i])   ? $arr_debit[$i]   : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_credit[$i])  ? $arr_credit[$i]  : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(90,  15, isset($arr_balance[$i]) ? $arr_balance[$i] : '', '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(5,   15, '',                                              '', 'R', 0, 0, '', '', true, 0, true,  false);
+                PDF::MultiCell(95,  15, isset($arr_ref[$i])     ? $arr_ref[$i]     : '', '', 'L', 0, 1, '', '', true, 0, false, false);
+            }
+
+            $totaldb  = $totaldb  + $row->db;
+            $totalcr  = $totalcr  + $row->cr;
+            $totalbal = $totalbal + $row->bal;
             $str .= $this->reporter->endrow();
         }
 
@@ -2225,6 +2324,7 @@ class customer
         $totaldb = 0;
         $totalcr = 0;
         $totalbal = 0;
+
         foreach ($data as $key => $data1) {
             $cost = number_format($data1->cost, 2);
             $cost = $cost < 0 ? '-' : $cost;
@@ -2232,18 +2332,37 @@ class customer
             $rrqty = $rrqty < 0 ? '-' : $rrqty;
             $isqty = number_format($data1->isqty, 2);
             $isqty = $isqty < 0 ? '-' : $isqty;
+            $itemname = $data1->itemname;
+            $docno = $data1->docno;
+            $dateid = date('Y-m-d', strtotime($data1->dateid));
+            $barcode = $data1->barcode;
+            $uom = $data1->uom;
+            $disc = $data1->disc;
 
-            PDF::SetFont($font, '', $fontsize);
-            
-            PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(70, 15, date('Y-m-d', strtotime($data1->dateid)), '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(110, 15, $data1->barcode, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(160, 15, $data1->itemname, '', 'L', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(50, 15, $data1->uom, '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(60, 15, $data1->disc, '', 'C', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(80, 15, $cost, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(60, 15, $rrqty, '', 'R', 0, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(60, 15, $isqty, '', 'R', 0, 1, '', '', true, 0, false, false);
+            $arr_itemname = $this->reporter->fixcolumn([$itemname], '20', 0);
+            $arr_docno    = $this->reporter->fixcolumn([$docno], '25', 0);
+            $arr_dateid   = $this->reporter->fixcolumn([$dateid], '15', 0);
+            $arr_barcode  = $this->reporter->fixcolumn([$barcode], '15', 0);
+            $arr_uom      = $this->reporter->fixcolumn([$uom], '10', 0);
+            $arr_disc     = $this->reporter->fixcolumn([$disc], '10', 0);
+            $arr_cost     = $this->reporter->fixcolumn([$cost], '15', 0);
+            $arr_rrqty    = $this->reporter->fixcolumn([$rrqty], '15', 0);
+            $arr_isqty    = $this->reporter->fixcolumn([$isqty], '15', 0);
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_barcode, $arr_itemname, $arr_uom, $arr_disc, $arr_cost, $arr_rrqty, $arr_isqty]);
+
+            for ($i = 0; $i < $maxrow; $i++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 15, isset($arr_docno[$i])    ? $arr_docno[$i]    : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70,  15, isset($arr_dateid[$i])   ? $arr_dateid[$i]   : '', '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 15, isset($arr_barcode[$i])  ? $arr_barcode[$i]  : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(160, 15, isset($arr_itemname[$i]) ? $arr_itemname[$i] : '', '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(50,  15, isset($arr_uom[$i])      ? $arr_uom[$i]      : '', '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(60,  15, isset($arr_disc[$i])     ? $arr_disc[$i]     : '', '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80,  15, isset($arr_cost[$i])     ? $arr_cost[$i]     : '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(60,  15, isset($arr_rrqty[$i])    ? $arr_rrqty[$i]    : '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(60,  15, isset($arr_isqty[$i])    ? $arr_isqty[$i]    : '', '', 'R', 0, 1, '', '', true, 0, false, false);
+            }
         }
 
         PDF::SetFont($font, '', 5);

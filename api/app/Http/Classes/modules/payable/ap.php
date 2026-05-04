@@ -190,25 +190,17 @@ class ap
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new', 'save',  'delete', 'cancel', 'print', 'post', 'unpost', 'lock', 'unlock',  'logs', 'edit', 'backlisting', 'toggleup', 'toggledown',   'help', 'others');
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'supplier', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'supplier', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -1556,24 +1548,26 @@ class ap
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
     $modulename = $this->modulename;
     $data = [];
-
+    $isreload = false;
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
       case 27: //nte
       case 36: //rozlab
+      case 59: //roosevelt
         $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
         if (!$isposted) {
-
           $result = $this->othersClass->posttransacctg($config);
           if (!$result['status']) {
             return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
           }
         }
         break;
     }
 
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

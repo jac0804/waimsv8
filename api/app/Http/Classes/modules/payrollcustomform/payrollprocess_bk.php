@@ -48,8 +48,7 @@ class payrollprocess_bk
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 2481,
-      'edit' => 2484,
+      'view' => 2480,
       'create' => 1359,
       'postinout' => 1360
     );

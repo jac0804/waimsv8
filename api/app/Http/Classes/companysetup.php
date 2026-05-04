@@ -128,6 +128,7 @@ class companysetup
   public $socketnotify = false;
   public $lookupclientpermodule = true;
   public $ispayrollportal = false;
+  public $isnavigation = false;
 
 
   public function __construct()
@@ -224,10 +225,106 @@ class companysetup
     $this->socketnotify = false;
     $this->lookupclientpermodule = true;
     $this->ispayrollportal = false;
+    $this->isnavigation = false;
 
     switch ($params['companyid']) {
+      case 68: //JDA
+        $this->clientlength = 15;
+        $this->documentlength = 15;
+        $this->barcodelength = 15;
+        $this->tax = 12;
+        $this->serial = false;
+        $this->multibranch = false;
+        $this->branchaccess = 0;
+        $this->companyname = 'JDA';
+        $this->systemtype = 'AIMSHRISPAYROLL';
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->ispricescheme = false;
+        $this->isconsign = false;
+        $this->isshortcutpo = false;
+        $this->iscrm = false;
+        $this->ispos = false;
+        $this->isshortcutjo = false;
+        $this->istodo = true;
+        $this->restrictip = false;
+        $this->periodic = true;
+        $this->ispurchasedisc = true;
+        $this->itembatch = 0;
+        $this->reportpath = "\Http\Classes\modules\modulereport\jda\\";
+        $this->logopath = "public/images/jda/";
+        $this->ismysql8 = true;
+        break;
+      case 67:  //yulick - aims
+        $this->clientlength = 10;
+        $this->documentlength = 15;
+        $this->barcodelength = 10;
+        $this->tax = 12;
+        $this->serial = false;
+        $this->companyname = 'YULICK';
+        $this->systemtype = 'AIMS';
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->payroll_bonusmax = 0;
+        $this->payroll_daysInMonth = 0;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->masterlimit = 500;
+        $this->isglc = true;
+        $this->branchaccess = 1;
+        $this->multibranch = true;
+        $this->reportpath = "\Http\Classes\modules\modulereport\\yulick\\";
+        $this->logopath = "public/images/yulick/";
+        $this->ismysql8 = true;
+        break;
+      case 66:  //metro dragon - payroll
+        $this->clientlength = 0;
+        $this->documentlength = 15;
+        $this->barcodelength = 0;
+        $this->tax = 12;
+        $this->serial = false;
+        $this->companyname = 'METRO DRAGON';
+        $this->systemtype = 'PAYROLL';
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->payroll_bonusmax = 0;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->masterlimit = 500;
+        $this->isglc = true;
+        $this->branchaccess = 0;
+        $this->multibranch = false;
+        $this->reportpath = "\Http\Classes\modules\modulereport\\mdpay\\";
+        $this->logopath = "public/images/mdpay/";
+        $this->ismysql8 = true;
+        break;
+      case 65:  //metro dragon - aims
+        $this->clientlength = 10;
+        $this->documentlength = 15;
+        $this->barcodelength = 15;
+        $this->tax = 12;
+        $this->serial = false;
+        $this->companyname = 'METRO DRAGON';
+        $this->systemtype = 'AIMS';
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->ispr = true;
+        $this->payroll_bonusmax = 0;
+        $this->payroll_daysInMonth = 0;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->masterlimit = 500;
+        $this->isglc = true;
+        $this->branchaccess = 0;
+        $this->multibranch = false;
+        $this->reportpath = "\Http\Classes\modules\modulereport\\md\\";
+        $this->logopath = "public/images/md/";
+        $this->ismysql8 = true;
+        break;
       case 64:  //excilin
-        $this->clientlength = 8;
+        $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 0;
         $this->tax = 12;
@@ -369,6 +466,7 @@ class companysetup
         $this->logopath = "public/images/roosevelt/";
         $this->ismysql8 = true;
         $this->socketserver = ''; //http://localhost:3000 ; http://nodejs.sbc.ph:25384
+        $this->sjitemlimit = 15;
         break;
       case 58: //cdocycles hrispayroll 'portal email pword: @CDOportal2025
         $this->clientlength = 15;
@@ -1036,8 +1134,8 @@ class companysetup
         $this->itembatch = 0;
         $this->reportpath = "\Http\Classes\modules\modulereport\sbc\\";
         $this->logopath = "public/images/sbc/";
-        $this->socketserver = 'https://op.sbc.ph:25384'; //http://localhost:3000 ; http://nodejs.sbc.ph:25384
-        $this->socketnotify = true;
+        $this->socketserver = ''; //http://localhost:3000 ; http://nodejs.sbc.ph:25384
+        // $this->socketnotify = true;
         $this->ispayrollportal = true;
         break;
       case 28: //XCOMP
@@ -1859,6 +1957,9 @@ class companysetup
       case 58: //cdo
         $modulelist = ['payrollportal', 'recruitment', 'employment', 'contractmonitoring', 'discipline', 'timekeeping', 'payrolltransaction', 'benefits', 'monitoring', 'trainingdev', 'dashboard', 'announcement', 'transactionutilities', 'accountutilities', 'masterfilerecruitment', 'masterfileemployment', 'masterfiletimekeeping', 'masterfilepayroll'];
         break;
+      case 68: //jda
+        $modulelist = ['masterfile', 'itemmaster', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'payrollsetup', 'payrolltransaction', 'hrissetup', 'hris', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
+        break;
       default:
         switch ($systemtype) {
           case 'QUEUING':
@@ -1868,7 +1969,7 @@ class companysetup
             $modulelist = ['masterfile', 'lending', 'payable', 'receivable', 'accounting', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'BMS':
-            $modulelist = ['masterfile', 'itemmaster', 'barangaysetup', 'barangayoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
+            $modulelist = ['masterfile', 'itemmaster', 'barangaysetup', 'barangayoperation', 'barangayjudiciary', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'EAPPLICATION':
             $modulelist = ['operation', 'receivable', 'reportlist', 'masterfile', 'announcement', 'dashboard'];
@@ -1891,10 +1992,13 @@ class companysetup
 
           case 'PAYROLL':
             $modulelist = ['payrollportal', 'payrollsetup', 'payrolltransaction', 'dashboard', 'announcement', 'transactionutilities', 'accountutilities'];
-            if ($params['companyid'] == 30) { //RT
-              if (($key = array_search('payrollportal', $modulelist)) !== false) {
-                unset($modulelist[$key]);
-              }
+            switch ($params['companyid']) {
+              case 30: //rt
+              case 66: //metrodragon
+                if (($key = array_search('payrollportal', $modulelist)) !== false) {
+                  unset($modulelist[$key]);
+                }
+                break;
             }
             break;
 
@@ -2843,5 +2947,11 @@ class companysetup
   {
     $this->companylist($params);
     return $this->lookupclientpermodule;
+  }
+
+  public function getisnavigation($params)
+  {
+    $this->companylist($params);
+    return $this->isnavigation;
   }
 }

@@ -96,8 +96,17 @@ class rp
   {
     $postdate = 6;
     $getcols = [
-      'action', 'lblstatus', 'listdocument', 'listdate', 'shipmentno', 'lockdate',
-      'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+      'action',
+      'lblstatus',
+      'listdocument',
+      'listdate',
+      'shipmentno',
+      'lockdate',
+      'postdate',
+      'listpostedby',
+      'listcreateby',
+      'listeditby',
+      'listviewby'
     ];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -174,10 +183,10 @@ class rp
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -1503,8 +1512,18 @@ class rp
     if (floatval($params['ext']) != 0) {
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
       $entry = [
-        'acnoid' => $acnoid, 'client' => $params['client'], 'db' => 0, 'cr' => ($params['ext'] * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex,
-        'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : $params['ext'], 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']
+        'acnoid' => $acnoid,
+        'client' => $params['client'],
+        'db' => 0,
+        'cr' => ($params['ext'] * $forex),
+        'postdate' => $params['date'],
+        'cur' => $cur,
+        'forex' => $forex,
+        'fdb' => 0,
+        'fcr' => floatval($forex) == 1 ? 0 : $params['ext'],
+        'projectid' => $params['projectid'],
+        'subproject' => $params['subproject'],
+        'stageid' => $params['stageid']
       ];
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
@@ -1513,8 +1532,18 @@ class rp
     if (floatval($params['discamt']) != 0) {
       $inputid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['PD1']);
       $entry = [
-        'acnoid' => $inputid, 'client' => $params['client'], 'cr' => ($params['discamt'] * $forex), 'db' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex,
-        'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : ($params['discamt']), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']
+        'acnoid' => $inputid,
+        'client' => $params['client'],
+        'cr' => ($params['discamt'] * $forex),
+        'db' => 0,
+        'postdate' => $params['date'],
+        'cur' => $cur,
+        'forex' => $forex,
+        'fdb' => 0,
+        'fcr' => floatval($forex) == 1 ? 0 : ($params['discamt']),
+        'projectid' => $params['projectid'],
+        'subproject' => $params['subproject'],
+        'stageid' => $params['stageid']
       ];
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
@@ -1527,8 +1556,18 @@ class rp
       }
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
       $entry = [
-        'acnoid' => $acnoid, 'client' => $params['wh'], 'db' => ($invamt), 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex,
-        'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']
+        'acnoid' => $acnoid,
+        'client' => $params['wh'],
+        'db' => ($invamt),
+        'cr' => 0,
+        'postdate' => $params['date'],
+        'cur' => $cur,
+        'forex' => $forex,
+        'fcr' => 0,
+        'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex),
+        'projectid' => $params['projectid'],
+        'subproject' => $params['subproject'],
+        'stageid' => $params['stageid']
       ];
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
@@ -1537,8 +1576,18 @@ class rp
       // input tax
       $input = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX1']);
       $entry = [
-        'acnoid' => $input, 'client' => $params['client'], 'cr' => 0, 'db' => ($params['tax'] * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex,
-        'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['tax']), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']
+        'acnoid' => $input,
+        'client' => $params['client'],
+        'cr' => 0,
+        'db' => ($params['tax'] * $forex),
+        'postdate' => $params['date'],
+        'cur' => $cur,
+        'forex' => $forex,
+        'fcr' => 0,
+        'fdb' => floatval($forex) == 1 ? 0 : ($params['tax']),
+        'projectid' => $params['projectid'],
+        'subproject' => $params['subproject'],
+        'stageid' => $params['stageid']
       ];
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }

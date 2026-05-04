@@ -46,7 +46,6 @@ class viewtaskcomment
 
   public function createTab($config)
   {
-
     $tab = [
       $this->gridname => ['action' => 'tableentry', 'lookupclass' => 'entrytaskcomment', 'label' => 'COMMENTS']
     ];
@@ -72,10 +71,10 @@ class viewtaskcomment
     $companyid = $config['params']['companyid'];
     $userid = $config['params']['adminid'];
     $doc = $config['params']['doc'];
-    $fields = ['rem'];
+    $fields = ['clientname', 'remarks', 'rem'];
     $col1 = $this->fieldClass->create($fields);
-
     data_set($col1, 'rem.readonly', false);
+    data_set($col1, 'remarks.type', 'input');
     $fields = ['update'];
 
     if ($doc == 'TK') {
@@ -110,6 +109,7 @@ class viewtaskcomment
 
   public function getheaddata($config)
   {
+ 
     // if($config['params']['moduletype']=='dashboard'){
     //   $doc='TM';
     // }else{
@@ -124,7 +124,8 @@ class viewtaskcomment
     // // $trno = $config['params']['row']['trno'];
     $trno = isset($config['params']['row']['tasktrno']) ? $config['params']['row']['tasktrno'] : (isset($config['params']['row']['trno']) ? $config['params']['row']['trno'] : 0);
     $line = isset($config['params']['row']['taskline']) ? $config['params']['row']['taskline'] : (isset($config['params']['row']['line']) ? $config['params']['row']['line'] : 0);
-
+    $clientname = isset($config['params']['row']['clientname']) ? $config['params']['row']['clientname'] : '';
+    $remarks = isset($config['params']['row']['rem']) ? $config['params']['row']['rem'] : '';
 
     $otherTrnoField = '';
     $otherTrnoVal = 0;
@@ -145,7 +146,8 @@ class viewtaskcomment
     // //     break;
     //   case 'TM':
     //   case 'TK':
-    $qry = "select '$trno' as tmtrno,'$line' as tmline,'' as createby,'' as createdate,'' as rem, '" . $otherTrnoField . "' as othertrnofield, " . $otherTrnoVal . " as othertrnoval";
+    $qry = "select '$trno' as tmtrno,'$line' as tmline,'' as createby,'' as createdate,'' as rem, '" . $otherTrnoField . "' as othertrnofield, " . $otherTrnoVal . " as othertrnoval,
+           '" . $clientname . "' as clientname,'" . $remarks . "' as remarks ";
     //   break;
 
     // default:
@@ -163,8 +165,6 @@ class viewtaskcomment
 
   public function loaddata($config)
   {
-    // var_dump($config['params']);
-    // break;
     $adminid = $config['params']['adminid'];
     $dstatus = 0;
     if ($config['params']['moduletype'] == 'dashboard') {
@@ -173,8 +173,6 @@ class viewtaskcomment
     } else {
       $doc = $config['params']['doc'];
     }
-    // var_dump($config['params']['dataparams']);
-    // break;
     switch ($doc) {
       case 'TM':
       case 'TK':
@@ -252,7 +250,7 @@ class viewtaskcomment
                 if ($assignedid != 0) {
                   $assigned = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$assignedid]);
                 }
-                Logger('assignedid: ' . $assignedid);
+                // Logger('assignedid: ' . $assignedid);
               } else {
                 return ['status' => false, 'msg' => 'No task found to add comment.', 'data' => [], 'txtdata' => []];
               }
@@ -310,11 +308,11 @@ class viewtaskcomment
                 }
               } else {
 
-                Logger('otherTrnoVal: ' . $otherTrnoVal);
+                // Logger('otherTrnoVal: ' . $otherTrnoVal);
 
                 $origTrno = $this->coreFunctions->datareader("select refx as value from dailytask where trno=" . $otherTrnoVal, [], '', true);
 
-                Logger('refx: ' . $origTrno);
+                // Logger('refx: ' . $origTrno);
 
                 if ($origTrno != 0) { //checker na ibabalik kay user
                   $taskstat = $this->coreFunctions->datareader("select statid as value from dailytask where trno =" . $otherTrnoVal, [], '', true);

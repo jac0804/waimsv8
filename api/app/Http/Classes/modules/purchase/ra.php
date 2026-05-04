@@ -222,10 +222,10 @@ class ra
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -303,15 +303,51 @@ class ra
     $boxcount = 20;
 
     $column = [
-      'action', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh',
-      'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname',
-      'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'
+      'action',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'ref',
+      'poref',
+      'rem',
+      'loc',
+      'expiry',
+      'stage',
+      'pallet',
+      'location',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount'
     ];
 
     $sortcolumn =  [
-      'action', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh',
-      'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname',
-      'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'
+      'action',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'ref',
+      'poref',
+      'rem',
+      'loc',
+      'expiry',
+      'stage',
+      'pallet',
+      'location',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount'
     ];
 
     $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram'];
@@ -322,7 +358,8 @@ class ra
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ]
@@ -683,8 +720,15 @@ class ra
       $hideheadergridbtns = ['tagreceived' => !$lblreceived_stat, 'untagreceived' => $lblreceived_stat];
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted,
-        'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj, 'hideheadgridbtns' => $hideheadergridbtns
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj,
+        'hideheadgridbtns' => $hideheadergridbtns
       ];
     } else {
       $head[0]['trno'] = 0;

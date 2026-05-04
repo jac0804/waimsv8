@@ -257,6 +257,7 @@ class loanapplicationportal
             $uniforms = $value->uniforms;
             $otherchgloan = $value->otherchgloan;
             $sssploan = $value->sssploan;
+            $remarks = $value->remarks;
 
             $total_loans += ($value->cashadv + $value->saldedpurchase + $value->chgduelosses + $value->uniforms + $value->otherchgloan + $value->sssploan);
         }
@@ -332,6 +333,7 @@ class loanapplicationportal
         $checkPurchase = "D";
         $checkRepairs = "D";
         $checkFinancial = "D";
+        $checkothers = "D";
 
         switch ($purpose) {
             case "Tuition fee of employee`s child":
@@ -353,6 +355,9 @@ class loanapplicationportal
             case "Financial assistance in cases of calamity":
                 $checkFinancial = 'FD';
                 break;
+            case "Others":
+                $checkothers = 'FD';
+                break;
         }
         // PDF::Rect(20, 50, 6, 6, 'D'); Empty checkbox
         // PDF::Rect(20, 50, 6, 6, 'FD');Filled checkbox:
@@ -370,6 +375,8 @@ class loanapplicationportal
 
         PDF::Rect(105, 306, 6, 6, $checkRepairs); //line 3
         PDF::Rect(395, 306, 6, 6, $checkFinancial); //line 3
+
+        PDF::Rect(105, 320, 6, 6, $checkothers); //line 4
 
         PDF::SetLineWidth(0.5);
         PDF::SetFont($font, '', $fontsize);
@@ -392,6 +399,14 @@ class loanapplicationportal
         PDF::MultiCell(10, 10, "", '', 'L', false, 0);
         PDF::MultiCell(300, 10, "Financial assistance in cases of calamity", '', '', false, 0);
         PDF::MultiCell(10, 10, "", 'R', 'R', false);
+
+
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(40, 10, "", 'L', 'L', false, 0);
+        PDF::MultiCell(590, 10, "Others " . ($checkothers == 'FD' ? '/' . $remarks : ''), '', 'L', false, 0);
+        PDF::MultiCell(10, 10, "", 'R', 'R', false);
+
+        $this->coreFunctions->LogConsole(strlen($remarks));
 
 
         PDF::SetFont($font, '', $fontsize);
@@ -1155,7 +1170,7 @@ class loanapplicationportal
         $irisposition = '';
 
         $fixapp = $this->coreFunctions->opentable("
-        select client.clientname,client.email,jt.jobtitle from employee as emp 
+        select client.clientname,client.email,jt.jobtitle,emp.empid from employee as emp 
         left join client on client.clientid = emp.empid
         left join jobthead as jt on jt.line = emp.jobid 
         where emp.empid in (259,260)");

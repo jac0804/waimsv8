@@ -1894,11 +1894,15 @@ class monthly_income_statement
   private function INCOME_STATEMENT_INNER_QUERY($cat, $acno, $year, $year2, $center, $cc, $filter, $company, $defaultfield_filter = '')
   {
     $field = '';
-
+    $innerfilter = '';
     if ($defaultfield_filter == '') {
       $filters = " where coa.parent='$acno' and coa.cat='$cat' "; // default filters
     } else {
       $filters = " where coa." . $defaultfield_filter . "='$acno' and coa.cat='$cat' "; // default filters
+    }
+
+    if ($center != "") {
+      $innerfilter .= " and cntnum.center = '" . $center . "' "; // branch filter
     }
 
     switch ($cat) {
@@ -1948,7 +1952,7 @@ class monthly_income_statement
           from glhead as head
           left join gldetail as detail on detail.trno=head.trno
           left join cntnum on cntnum.trno=head.trno 
-          where year(head.dateid) = '$year' 
+          where year(head.dateid) = '$year' $innerfilter
           ) as iq on iq.acnoid=coa.acnoid
           " . $filters . " 
           group by iq.yr, iq.mon,
@@ -1968,7 +1972,7 @@ class monthly_income_statement
           from lahead as head
           left join ladetail as detail on detail.trno=head.trno
           left join cntnum on cntnum.trno=head.trno 
-          where year(head.dateid) = '$year' 
+          where year(head.dateid) = '$year' $innerfilter
           ) as iq on iq.acnoid=coa.acnoid
           " . $filters . " 
           group by iq.yr, iq.mon,
@@ -1992,10 +1996,14 @@ class monthly_income_statement
         if ($center != "") {
           $filters .= " and detail.branch = '" . $center . "' "; // branch filter
         }
+        
         break;
 
       case 40:
-        # code...
+        
+        if ($center != "") {
+          $filters .= " and cntnum.center = '" . $center . "' "; // branch filter
+        }
         break;
       default:
         if ($filter != 0) {
@@ -2055,6 +2063,9 @@ class monthly_income_statement
     }
 
     $query2 = $this->INCOME_STATEMENT_INNER_QUERY($cat, $acno, $year, $year2, $center, $cc, $filter, $company, $defaultfield_filter);
+
+    // var_dump('THIS IS Z: '.$z);
+    // var_dump($query2);
 
     $result2 = $this->coreFunctions->opentable($query2);
 

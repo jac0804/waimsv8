@@ -22,7 +22,7 @@ class viewposition
     private $fieldClass;
     private $tabClass;
     private $logger;
-    public $modulename = 'LIST OF DEPARTMENT';
+    public $modulename = 'POSITION LIST';
     public $gridname = 'inventory';
     private $companysetup;
     private $coreFunctions;
@@ -56,7 +56,7 @@ class viewposition
     }
     public function createTab($config)
     {
-        $colums = ['action', 'position', 'counts'];
+        $colums = ['action', 'position', 'oqty', 'itemname', 'counts', 'clientquota'];
 
         foreach ($colums as $key => $value) {
             $$value = $key;
@@ -65,14 +65,25 @@ class viewposition
         $tab = [$this->gridname => ['gridcolumns' => $colums]];
         $stockbuttons = ['viewemployee'];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        $obj[0][$this->gridname]['columns'][$action]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+        $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$position]['type'] = "label";
-        $obj[0][$this->gridname]['columns'][$position]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
+        $obj[0][$this->gridname]['columns'][$position]['style'] = "width:350px;whiteSpace: normal;min-width:350px;";
 
         $obj[0][$this->gridname]['columns'][$counts]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$counts]['label'] = "Existing";
-        $obj[0][$this->gridname]['columns'][$counts]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-        $this->modulename .= ' - ' . $config['params']['row']['department'];
+        $obj[0][$this->gridname]['columns'][$counts]['style'] = "text-align:left;width:100px;whiteSpace: normal;min-width:100px;";
+
+        $obj[0][$this->gridname]['columns'][$oqty]['label'] = "Allocation";
+        $obj[0][$this->gridname]['columns'][$oqty]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$oqty]['style'] = "text-align:right;width:175px;whiteSpace: normal;min-width:175px;";
+
+        $obj[0][$this->gridname]['columns'][$clientquota]['label'] = "Lacking";
+        $obj[0][$this->gridname]['columns'][$clientquota]['style'] = "text-align:right;width:125px;whiteSpace: normal;min-width:125px;";
+        $obj[0][$this->gridname]['columns'][$itemname]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
+
+
+        $this->modulename .= ' (' . $config['params']['row']['company'] . ' - ' . $config['params']['row']['sectname'] . ' - ' .
+            $config['params']['row']['area'] . ' - ' . $config['params']['row']['branch'] . ' - ' . $config['params']['row']['department'] . ')';
         return $obj;
     }
 
@@ -96,11 +107,32 @@ class viewposition
         $divid = $config['params']['row']['divid'];
         $branchid = $config['params']['row']['branchid'];
         $deptid = $config['params']['row']['deptid'];
-        $qry = "select count(emp.empid) as counts, jt.jobtitle as position,emp.branchid,emp.divid,emp.sectid,emp.deptid,emp.jobid from employee as emp
-        		left join client as dept on dept.clientid = emp.deptid
-                left join jobthead as jt on jt.line = emp.jobid
-                where emp.isactive = 1 and emp.branchid = $branchid and emp.divid = $divid and emp.sectid = $sectid and emp.deptid = $deptid
-                group by jt.jobtitle,emp.branchid,emp.divid,emp.sectid,emp.deptid,emp.jobid ";
-        return $this->coreFunctions->opentable($qry);
+        $area = $config['params']['row']['area'];
+
+        $area = $config['params']['row']['area'];
+        $sectname = $config['params']['row']['sectname'];
+        $company = $config['params']['row']['company'];
+        $department = $config['params']['row']['department'];
+        $branch = $config['params']['row']['branch'];
+
+        $qry = "select jt.jobtitle as position,jobs.qty as oqty,$sectid as sectid, $divid as divid, $branchid as branchid, $deptid as deptid,'$area' as area,
+                '$sectname' as sectname,'$company' as company,'$branch' as branch,'$department' as department,jobs.jobid,
+				(select count(emp.empid) as empid from employee as emp
+				left join client as b on b.clientid = emp.branchid  and b.area = '$area'
+				where jobs.jobid = emp.jobid and emp.isactive = 1 and emp.divid = $divid and emp.sectid = $sectid and emp.branchid = $branchid and emp.deptid = $deptid and b.area = '$area') as counts, 0 as clientquota
+				from client as bran
+				left join cljobs as jobs on jobs.clientid = bran.clientid
+				left join jobthead as jt on jt.line = jobs.jobid
+				where bran.clientid = $branchid and bran.area = '$area' and jobs.deptid = $deptid
+				group by jt.jobtitle,jobs.qty,jobs.jobid";
+        $data = $this->coreFunctions->opentable($qry);
+
+        if (!empty($data)) {
+            foreach ($data as $key => $value) {
+                $value->clientquota = $value->oqty - $value->counts;
+            }
+        }
+
+        return $data;
     }
 } //end class

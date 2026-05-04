@@ -145,10 +145,10 @@ class et
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -166,8 +166,24 @@ class et
 
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'action', 'levels', 'deptcode', 'coursecode', 'year', 'term', 'section', 'subjectcode', 'sex', 'feescode', 'scheme',
-        'rate', 'isnew', 'isforeign', 'istransferee', 'islateenrollee', 'iscrossenrollee', 'isadddrop'
+        'action',
+        'levels',
+        'deptcode',
+        'coursecode',
+        'year',
+        'term',
+        'section',
+        'subjectcode',
+        'sex',
+        'feescode',
+        'scheme',
+        'rate',
+        'isnew',
+        'isforeign',
+        'istransferee',
+        'islateenrollee',
+        'iscrossenrollee',
+        'isadddrop'
       ],
     ]];
     $stockbuttons = ['save', 'delete'];

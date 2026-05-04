@@ -225,10 +225,10 @@ class dp
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -317,7 +317,8 @@ class dp
     }
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'headgridbtns' => $headgridbtns
       ]
 
@@ -457,8 +458,14 @@ class dp
 
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -970,14 +977,10 @@ class dp
     return ['inventory' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
   } //end function
 
-  public function quickadd($config)
-  {
-  }
+  public function quickadd($config) {}
 
   // insert and update item
-  public function additem($action, $config, $setlog = false)
-  {
-  } // end function
+  public function additem($action, $config, $setlog = false) {} // end function
 
 
 

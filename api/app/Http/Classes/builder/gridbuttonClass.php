@@ -31,6 +31,7 @@ class gridbuttonClass
     //head grid buttons
     //viewacctg - lookupclass
     //viewdistribution - ledgerclass
+    //icon - google icon
     $this->headgridbuttons = [
       'viewacctg' => [
         'label' => 'View Accounting Entry',
@@ -465,6 +466,7 @@ class gridbuttonClass
       'download' => [
         'name' => 'download',
         'icon' => 'cloud_download',
+        'label' => 'download',
         'action' => 'download',
         'class' => 'btnstockdownload',
         'access' => 'edititem',
@@ -477,7 +479,6 @@ class gridbuttonClass
         'action' => 'deleteitem',
         'access' => 'deleteitem',
         'color' => 'red',
-        'label' => 'Delete item'
       ],
       'stockinfo' => [
         'name' => 'stockinfo',
@@ -2137,6 +2138,16 @@ class gridbuttonClass
         'visible' => true,
         'color' => 'primary'
       ],
+      'viewarea' => [
+        'name' => 'multigrid',
+        'icon' => 'web_stories',
+        'action' => 'hrisentry',
+        'class' => 'btnviewarea',
+        'lookupclass' => 'viewarea',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
+      ],
       'viewbranch' => [
         'name' => 'multigrid',
         'icon' => 'web_stories',
@@ -2187,6 +2198,28 @@ class gridbuttonClass
         'access' => 'edititem',
         'color' => 'red',
         'visible' => true
+      ],
+      'viewear' => [
+        'name' => 'tableentry',
+        'label' => 'Update info',
+        'icon' => 'edit_document',
+        'action' => 'customformdialog',
+        'class' => 'btnviewear',
+        'lookupclass' => 'viewear',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'black'
+      ],
+      'viewreimbursement' => [
+        'name' => 'multigrid',
+        'label' => 'Reimbursement Details',
+        'icon' => 'arrow_circle_right',
+        'action' => 'payrollentry',
+        'class' => 'btnviewreimbursement',
+        'lookupclass' => 'viewreimbursement',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
       ],
 
     ];

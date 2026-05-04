@@ -132,11 +132,12 @@ class employee
     'callsign',
     'approver1',
     'empstatus',
-    'is13th'
+    'is13th',
+    'bank'
   ];
 
   private $contactfields = ['contact1', 'relation1', 'addr1', 'homeno1', 'mobileno1', 'officeno1', 'ext1', 'notes1', 'contact2', 'relation2', 'addr2', 'homeno2', 'mobileno2', 'officeno2', 'ext2', 'notes2'];
-  private $except = ['empid', 'age', 'clientid', 'mapp', 'aplcode', 'jgrade', 'emprank', 'emploc', 'emptype', 'paymode', 'division', 'dept', 'orgsection','floor'];
+  private $except = ['empid', 'age', 'clientid', 'mapp', 'aplcode', 'jgrade', 'emprank', 'emploc', 'emptype', 'paymode', 'division', 'dept', 'orgsection', 'floor'];
   private $blnfields = ['isemployee', 'isactive', 'atm', 'chksss', 'chktin', 'chkphealth', 'chkpibig', 'isapprover', 'issupervisor', 'iscustomer', 'isagent', 'isemployee', 'isdepartment', 'issupplier', 'iswarehouse', 'isinactive', 'is13th'];
   private $acctg = [];
   public $showfilteroption = false;
@@ -602,6 +603,10 @@ class employee
     $tab = ['tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'noticeofdisciplinary', 'label' => 'NOTICE OF DISCIPLINARY ACTION']];
     $notice = $this->tabClass->createtab($tab, []);
 
+
+    $tab = ['tableentry' => ['action' => 'hrisentry', 'lookupclass' => 'entryappreq', 'label' => 'REQUIREMENTS']];
+    $requirements = $this->tabClass->createtab($tab, []);
+
     $return = [];
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $attach];
     $return['DEPENDENTS'] = ['icon' => 'fa fa-envelope', 'tab' => $dependants];
@@ -633,6 +638,9 @@ class employee
       case 51: //ulitc
       case 53: //camera
         unset($return['Attachment']);
+        break;
+      case 68: //JDA
+        $return['REQUIREMENTS'] = ['icon' => 'fa fa-paste', 'tab' => $requirements]; 
         break;
     }
 
@@ -694,18 +702,15 @@ class employee
       data_set($col1, 'floor.lookupclass', 'lookupfloor');
       data_set($col1, 'floor.required', false);
     }
-    $fields = [
-      'maidname',
-      ['mstatus', 'child'],
-      'bday',
-      ['age', 'gender'],
-      'alias',
-      'supervisorcode',
-      'supervisor',
-      'email',
-      'lblTaxStatus',
-      ['radioteu', 'nodeps']
-    ];
+   
+
+    if($companyid==68){//JDA
+      $fields = ['maidname',['mstatus', 'child'], 'bday', ['age', 'gender'],['alias','bank'],
+    'supervisorcode', 'supervisor', 'email', 'lblTaxStatus', ['radioteu', 'nodeps']];
+    }else{
+        $fields = ['maidname',['mstatus', 'child'], 'bday', ['age', 'gender'],'alias',
+    'supervisorcode', 'supervisor', 'email', 'lblTaxStatus', ['radioteu', 'nodeps']];
+    }
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'citizenship.type', 'cinput');
@@ -722,6 +727,13 @@ class employee
     data_set($col2, 'child.name', 'nochild');
     data_set($col2, 'radioteu.label', 'Tax Status');
     data_set($col2, 'nodeps.type', 'cinput');
+    
+  if($companyid==68){//JDA
+      data_set($col2, 'bank.type', 'lookup');
+      data_set($col2, 'bank.action', 'lookuppbank');
+      data_set($col2, 'bank.lookupclass', 'lookupbanktype');
+      data_set($col2, 'bank.class', 'csbank sbccsreadonly');
+  }
 
     $fields = ['paymode', 'classrate', ['level', 'hired'], ['idbarcode', 'isactive']];
 
@@ -954,7 +966,7 @@ class employee
     // $data[0]['appprovername1'] = '';
     // $data[0]['appprovername2'] = '';
 
-
+    $data[0]['bank'] = '';
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -1023,7 +1035,8 @@ class employee
                biometric.terminal as biometric,project.name as project,item.itemname as ditemname,
                obapp1.clientname as obapp1,obapp2.clientname as obapp2,employee.isbank as radiobank,employee.is13th as is13,
                ifnull(branch.clientname,'') as branchname,ifnull(branch.client,'') as branchcode, 
-               " . $this->headOther . ".branchid,ifnull(app.clientname,'') as approver,ifnull(app.client,'') as approvercode";
+               " . $this->headOther . ".branchid,ifnull(app.clientname,'') as approver,ifnull(app.client,'') as approvercode,
+               " . $this->headOther . ".bank";
 
     foreach ($this->fields as $key => $value) {
       $fields = $fields . ',' . $this->head . '.' . $value;
@@ -1040,7 +1053,7 @@ class employee
     $qryselect = "select " . $fields;
 
     $qry = $qryselect . " from " . $this->head . " 
-    left join " . $this->headOther . " on " . $this->headOther . ".empid = " . $this->head . ".clientid 
+     join " . $this->headOther . " on " . $this->headOther . ".empid = " . $this->head . ".clientid 
     left join " . $this->contact . " on " . $this->contact . ".empid=" . $this->head . ".clientid 
     left join client as dept on dept.clientid = " . $this->headOther . ".deptid 
     left join division as `div` on `div`.divid = " . $this->headOther . ".divid 
@@ -1075,8 +1088,7 @@ class employee
     issupplier,iswarehouse,isinactive,rolename, roleid, nochild,
     trainee,biometricid,biometric.terminal,projectid,project.name,employee.itemid,item.itemname, obapp1.clientname,obapp2.clientname,
     branch.clientname,isbank,branch.client,employee.branchid, empnoref, callsign,app.client,
-    app.clientname,otsupervisorid,employee.empstatus,approver1,is13th,mealdeduc,client.floor, $groupbypaygroup";
-
+    app.clientname,otsupervisorid,employee.empstatus,approver1,is13th,mealdeduc,client.floor,employee.bank, $groupbypaygroup";
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
     if (!empty($head)) {
       foreach ($this->blnfields as $key => $value) {

@@ -225,8 +225,8 @@ class sj
     $cols[$ar]['type'] = 'input';
     $cols[$ar]['label'] = 'Balance';
     if ($dept != 'ACCTG') {
-    $cols[$ar]['type'] = 'coldel';
-    $cols[$liststatus]['name'] = 'status';
+      $cols[$ar]['type'] = 'coldel';
+      $cols[$liststatus]['name'] = 'status';
     }
 
 
@@ -594,10 +594,10 @@ class sj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -661,8 +661,8 @@ class sj
 
     $billshipdefault = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewbillingshipping']];
     $deliverystatus = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewdeliverystatus']];
-    $instructiontab = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewinstructiontab']];    
-    
+    $instructiontab = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewinstructiontab']];
+
 
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entrycntnumpicture', 'label' => 'Attachment', 'access' => 'view']];
     $obj = $this->tabClass->createtab($tab, []);
@@ -673,12 +673,12 @@ class sj
         $return['INSTRUCTION'] = ['icon' => 'fa fa-info', 'customform' => $instructiontab];
         $return['SHIPPING/BILLING ADDRESS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $billshipdefault];
         $return['DELIVERY STATUS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $deliverystatus];
-        if($viewexp){
-            $expenses = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrypcfexpenses', 'label' => 'Expenses', 'access' => 'view']];
-            $expensestab = $this->tabClass->createtab($expenses, []);
-            $return['EXPENSES'] = ['icon' => 'fa fa-envelope', 'tab' => $expensestab];    
+        if ($viewexp) {
+          $expenses = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrypcfexpenses', 'label' => 'Expenses', 'access' => 'view']];
+          $expensestab = $this->tabClass->createtab($expenses, []);
+          $return['EXPENSES'] = ['icon' => 'fa fa-envelope', 'tab' => $expensestab];
         }
-        
+
         break;
     }
 

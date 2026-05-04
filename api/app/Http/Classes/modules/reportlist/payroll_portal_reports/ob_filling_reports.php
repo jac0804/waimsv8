@@ -122,11 +122,10 @@ class ob_filling_reports
                 if ($reporttype != 0) {
                     $result = $this->report_detailed_Layout_ob($config);
                 } else {
-                    goto def;
+                    $result = $this->report_ulitc_layout_ob($config);
                 }
                 break;
             default:
-                def:
                 $result = $this->reportDefaultLayout_ob($config);
                 break;
         }
@@ -244,7 +243,7 @@ class ob_filling_reports
       end as status,
       date(ob.createdate) as createdate,
       ifnull(approver.clientname,appdis.clientname) as approvedby,ifnull(approver2.clientname,appdis2.clientname) as approvedby2,
-      ob.approverem,date(ob.approvedate) as appdate,date(ob.approvedate2) as appdate2,ob.disapproved_remarks2 as reason2,ob.location
+      ob.approverem,ob.approvedate as appdate,ob.approvedate2 as appdate2,ob.disapproved_remarks2 as reason2,ob.location
       
       $addfields
       from obapplication as ob
@@ -262,7 +261,7 @@ class ob_filling_reports
       left join client as iniapp on iniapp.email = ob.initialapprovedby and iniapp.email <> ''
       left join client as iniapp2 on iniapp2.email = ob.initialapprovedby2 and iniapp2.email <> ''
       $leftjoin
-      where  $status date(ob.dateid) between '" . $start . "' and '" . $end . "' $filter $filteremp ";
+      where  $status date(ob.dateid) between '" . $start . "' and '" . $end . "' $filter $filteremp order by cl.clientname, date(dateid) asc";
         return $query;
     }
     public function ob_detailed($config, $line)
@@ -413,9 +412,10 @@ class ob_filling_reports
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->header_DEFAULT($config, $seqcount);
         $str .= $this->tableheader($layoutsize, $config, $seqcount);
-
+        $i = 0;
         if (!empty($result)) {
             foreach ($result as $key => $data) {
+                $i++;
                 $str .= $this->reporter->addline();
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
@@ -441,6 +441,14 @@ class ob_filling_reports
 
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
+
+
+                if ($i == 17) {
+                    $str .= $this->reporter->page_break();
+                    $str .= $this->header_DEFAULT($config, $seqcount);
+                    $str .= $this->tableheader($layoutsize, $config, $seqcount);
+                    $i = 0;
+                }
             }
         }
         $str .= $this->reporter->begintable($layoutsize);
@@ -756,8 +764,8 @@ class ob_filling_reports
                     // $remarks = strlen($data->remarks);
                     $str .= $this->reporter->begintable($layoutsize);
                     $str .= $this->reporter->startrow();
-                    $str .= $this->reporter->col('Remarks: ', '40', 30, false, $border, 'LB', '', $font, $fontsize, 'B', '', '');
-                    $str .= $this->reporter->col($data->remarks, '960', 30, false, $border, 'RB', '', $font, $fontsize, '', '', '');
+                    $str .= $this->reporter->col('Remarks: ', '50', 30, false, $border, 'LB', '', $font, $fontsize, 'B', '', '');
+                    $str .= $this->reporter->col($data->remarks, '950', 30, false, $border, 'RB', '', $font, $fontsize, '', '', '');
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();
                 } else {
@@ -853,5 +861,91 @@ class ob_filling_reports
             $str .= $this->reporter->endtable();
         }
         return  $str;
+    }
+    public function report_ulitc_layout_ob($config)
+    {
+        $result = $this->reportDefault($config);
+        $companyid = $config['params']['companyid'];
+        $decimal = $this->companysetup->getdecimal('currency', $config['params']);
+        $count = 45;
+        $page = 40;
+        $this->reporter->linecounter = 0;
+        $str = '';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $fontsize = "9";
+        $border = "1px solid ";
+        $stime = '';
+
+        $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='OB'");
+        $url = 'App\Http\Classes\modules\payroll\\' . 'obapplication';
+        $both = false;
+        if ($approversetup == '') {
+            $approversetup = app($url)->approvers($config['params']);
+        } else {
+            if (str_contains($approversetup, ' or ')) {
+                $approversetup = explode(' or ', $approversetup);
+                $both = true;
+            } else {
+                $approversetup = explode(',', $approversetup);
+            }
+        }
+        $layoutsize = '1500';
+        $seqcount = count($approversetup);
+        if ($seqcount == 1 || $both) {
+            $seqcount = 1;
+            $layoutsize = '1100';
+        }
+        if (empty($result)) {
+            return $this->othersClass->emptydata($config);
+        }
+        $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->header_DEFAULT($config, $seqcount);
+        $str .= $this->tableheader($layoutsize, $config, $seqcount);
+        $i = 0;
+        if (!empty($result)) {
+            foreach ($result as $key => $data) {
+                $i++;
+                $str .= $this->reporter->addline();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+
+                $str .= $this->reporter->col($data->client, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->clientname, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->createdate, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->dateid, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                // $str .= $this->reporter->col($data->status, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->time, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->type, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+
+                if ($seqcount > 1) {
+                    $str .= $this->reporter->col($data->status2, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+                    $str .= $this->reporter->col($data->appdate2, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+                    $str .= $this->reporter->col($data->approvedby2, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                    $str .= $this->reporter->col($data->reason2, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                }
+                $str .= $this->reporter->col($data->status, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->appdate, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->approvedby, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->approverem, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+            }
+        }
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, 'B', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->endreport();
+
+        return $str;
     }
 }//end class

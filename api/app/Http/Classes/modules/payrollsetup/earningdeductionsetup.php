@@ -36,10 +36,10 @@ class earningdeductionsetup
   public $tablelogs_del = '';
   private $stockselect;
 
-  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate'];
+  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate', 'isdeductible'];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
-  private $blnfields = ['w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'w13'];
+  private $blnfields = ['w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'w13', 'isdeductible'];
   public $showfilteroption = true;
   public $showfilter = false;
   public $showcreatebtn = true;
@@ -215,8 +215,13 @@ class earningdeductionsetup
     data_set($col3, 'bal.type', 'cinput');
 
     $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], 'halt'];
+    if ($config['params']['companyid'] == 68) { //JDA
+      $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], ['halt', 'isdeductible']];
+    }
     $col4 = $this->fieldClass->create($fields);
-
+    if ($config['params']['companyid'] == 68) { //JDA
+      data_set($col4, 'isdeductible.label', 'Deduct always w/out checking balance');
+    }
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
@@ -253,6 +258,7 @@ class earningdeductionsetup
     $data[0]['w5'] = '0';
     $data[0]['halt'] = '0';
     $data[0]['w13'] = '0';
+    $data[0]['isdeductible'] = '0';
 
     return $data;
   }
@@ -268,7 +274,7 @@ class earningdeductionsetup
     $qryselect = "select s.trno as clientid, s.docno as client, s.docno, s.dateid, s.empid, s.remarks, pac.code as acno, s.amt, s.paymode,
                     w1,w2,w3,w4,w5,w13,halt,s.priority, s.earnded, s.amortization, s.effdate,s.payment,
                     concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname, pac.codename as acnoname, client.client as empcode,
-                    balance, s.acnoid, pac.qty, s.startdate
+                    balance, s.acnoid, pac.qty, s.startdate,isdeductible
                     ";
 
     $qry = $qryselect . " from standardsetup as s

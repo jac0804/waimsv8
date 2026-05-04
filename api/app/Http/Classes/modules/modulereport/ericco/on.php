@@ -1538,6 +1538,7 @@ class on
             $maxrow = 1;
             $uom = $data[$i]['uom'];
             $itemname = $data[$i]['itemname'];
+            $sku = $data[$i]['partno'];
             $qty = number_format($data[$i]['qty'], 0);
             $srem = $data[$i]['srem'];
             $amt = number_format($data[$i]['amt'], 2);
@@ -1545,6 +1546,7 @@ class on
             $ext = number_format($data[$i]['ext'], 2);
 
             $arr_uom = $this->reporter->fixcolumn([$uom], '15', 0);
+            $arr_sku = $this->reporter->fixcolumn([$sku], '15', 0);
             $arr_itemname = $this->reporter->fixcolumn([$itemname], '38', 0);
             $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
             $arr_srem = $this->reporter->fixcolumn([$srem], '13', 0);
@@ -1552,7 +1554,7 @@ class on
             $arr_disc = $this->reporter->fixcolumn([$disc], '3', 0);
             $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
-            $maxrow = $this->othersClass->getmaxcolumn([ $arr_itemname, $arr_qty, $arr_amt, $arr_ext,$arr_disc,$arr_uom]);
+            $maxrow = $this->othersClass->getmaxcolumn([ $arr_itemname, $arr_qty, $arr_amt, $arr_ext,$arr_disc,$arr_uom,$arr_sku]);
             for ($r = 0; $r < $maxrow; $r++) {
             PDF::SetFont($font, '', $fontsize);
             PDF::MultiCell(5, 15, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -1560,10 +1562,11 @@ class on
             PDF::MultiCell(70, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(5, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(303, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(41, 15, ' ' . (isset($arr_sku[$r]) ? $arr_sku[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(3, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(30, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(68, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(141, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(16, 15, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
             $rowCount++;  
             }

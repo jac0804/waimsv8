@@ -115,17 +115,17 @@ class service_served_per_user_report
         }
 
 
-        $query = "select cs.users,rc.code as description, count(cs.isdone) as total  from currentservice as cs
-        left join reqcategory as rc on rc.line = cs.serviceline
+        $query = "select users,description,sum(total) as total from (select cs.users,rc.code as description, count(cs.isdone) as total  from currentservice as cs
+        left join reqcategory as rc on rc.line = cs.serviceline and rc.isservice = 1
         where cs.isdone = 1 and date(cs.dateid) between '$start' and '$end'  $filter
         group by cs.users, rc.code
 
         union all
 
         select cs.users,rc.code as description, count(cs.isdone) as total  from hcurrentservice as cs
-        left join reqcategory as rc on rc.line = cs.serviceline
+        left join reqcategory as rc on rc.line = cs.serviceline and rc.isservice = 1
         where cs.isdone = 1 and date(cs.dateid) between '$start' and '$end'  $filter
-        group by cs.users, rc.code
+        group by cs.users, rc.code) as a group by users,description
         order by users, description
         ";
         // var_dump($query);

@@ -787,6 +787,7 @@ class sj
 
                 if ($datastock[0]['vattype'] == 'VATABLE') {
                     $vatsales = $vatsales + $linetotal;
+                    $totalext = $totalext + $linetotal;
                 } else {
                     $vatsales = 0;
                     $totalext = $totalext + $linetotal;
@@ -794,6 +795,9 @@ class sj
 
             }
         }
+
+        $ewt = 0;
+        $tamtdue = $totalext;
 
     
         if(!empty($datastock)){
@@ -814,6 +818,8 @@ class sj
                 $vat = 0;
             }
 
+            
+
             $cur = $data[0]['cur'];
             $nonvat = '0.00';
             if ($datastock[0]['vattype'] != 'VATABLE') {
@@ -830,11 +836,6 @@ class sj
             $cur = $data[0]['cur'];
             $nonvat = '0.00';
         }
-       
-
-        $tamtdue = $totalext;
-
-       
 
         if (PDF::getY() > 620) {
             $this->addrowsj('LRB');

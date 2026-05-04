@@ -215,6 +215,7 @@ class warehouse
     switch ($config['params']['companyid']) {
       case 3: //conti
       case 43: //mighty
+      case 68: //jda
         $tab = [
           'tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrywhdocuments', 'label' => 'DOCUMENTS'],
           'jobdesctab' => ['action' => 'tableentry', 'lookupclass' => 'entrywhnods', 'label' => 'NODS'],

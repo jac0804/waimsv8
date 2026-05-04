@@ -35,7 +35,14 @@ class hr
   private $hrislookup;
 
   private $fields = [
-    'trno', 'docno', 'empid', 'deptid', 'dateid', 'jobtitle', 'rem', 'dept'
+    'trno',
+    'docno',
+    'empid',
+    'deptid',
+    'dateid',
+    'jobtitle',
+    'rem',
+    'dept'
   ];
   private $except = ['trno'];
   public $showfilteroption = true;
@@ -148,10 +155,10 @@ class hr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

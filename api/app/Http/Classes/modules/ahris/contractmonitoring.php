@@ -165,19 +165,28 @@ class contractmonitoring
                 if ($accessview == 0) return [];
 
                 $this->gridname = 'editgrid';
-                $tab = [$this->gridname => ['gridcolumns' => ['action', 'name', 'dateid']]];
+
+                $columns = ['action', 'name', 'createdate', 'dateid'];
+                foreach ($columns as $key => $value) {
+                    $$value = $key;
+                }
+
+                $tab = [$this->gridname => ['gridcolumns' => $columns]];
                 $stockbuttons = ['delete'];
                 $access = $this->othersClass->checkAccess($config['params']['user'], 5467);
                 if ($access == 0) $stockbuttons = [];
                 $obj = $this->tabClass->createtab($tab, $stockbuttons);
-                $obj[0][$this->gridname]['columns'][1]['type'] = 'label';
-                $obj[0][$this->gridname]['columns'][1]['label'] = 'Evaluator';
-                $obj[0][$this->gridname]['columns'][1]['align'] = 'left';
-                $obj[0][$this->gridname]['columns'][0]['style'] = 'width:150px;max-width:150px;min-width:150px;white-space:normal;';
-                $obj[0][$this->gridname]['columns'][1]['style'] = 'width:500px;max-width:500px;';
-                $obj[0][$this->gridname]['columns'][2]['type'] = 'label';
-                $obj[0][$this->gridname]['columns'][2]['label'] = 'Date Evaluated';
-                $obj[0][$this->gridname]['columns'][2]['style'] = 'width:150px;max-width:150px;';
+                $obj[0][$this->gridname]['columns'][$name]['type'] = 'label';
+                $obj[0][$this->gridname]['columns'][$name]['label'] = 'Evaluator';
+                $obj[0][$this->gridname]['columns'][$name]['align'] = 'left';
+                $obj[0][$this->gridname]['columns'][$createdate]['type'] = 'label';
+                $obj[0][$this->gridname]['columns'][$action]['style'] = 'width:150px;max-width:150px;min-width:150px;white-space:normal;';
+                $obj[0][$this->gridname]['columns'][$name]['style'] = 'width:500px;max-width:500px;';
+                $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label';
+                $obj[0][$this->gridname]['columns'][$createdate]['label'] = 'Assigned Date';
+                $obj[0][$this->gridname]['columns'][$dateid]['label'] = 'Date Evaluated';
+                $obj[0][$this->gridname]['columns'][$dateid]['style'] = 'width:150px;max-width:150px;';
+                $obj[0][$this->gridname]['columns'][$createdate]['style'] = 'width:150px;max-width:150px;';
                 $obj[0][$this->gridname]['descriptionrow'] = null;
                 return $obj;
                 break;
@@ -315,7 +324,7 @@ class contractmonitoring
         $access = $this->othersClass->checkAccess($config['params']['user'], 5466);
         if ($access) {
             $regline = $config['params']['classid']['regline'];
-            $qry = "select e.empid, e.trno as line, concat(emp.empfirst, ' ', emp.emplast) as name, e.dateevaluated as dateid, '' as bgcolor from cmevaluate as e left join employee as emp on emp.empid=e.empid where e.trno=" . $regline;
+            $qry = "select e.empid, e.trno as line, concat(emp.empfirst, ' ', emp.emplast) as name, e.dateevaluated as dateid, e.createdate, '' as bgcolor from cmevaluate as e left join employee as emp on emp.empid=e.empid where e.trno=" . $regline;
             return $this->coreFunctions->opentable($qry);
         }
         return [];

@@ -167,7 +167,7 @@ class undertime
                 $filteroption = " and under.empid=" . $id . " and under.status='E' and under.submitdate is null";
                 break;
             case 'forapproval':
-                $filteroption = " and under.empid=" . $id . " and under.status='E' and under.status2='E'  and under.submitdate is not null";
+                $filteroption = " and under.empid=" . $id . " and (under.status='E' and under.status2='E' or under.status='E' and under.status2 = 'A') and under.submitdate is not null";
                 break;
             case 'approved':
                 $sortby = 'under.dateid desc';
@@ -618,26 +618,26 @@ class undertime
         $res = $this->approved_dis($config);
         if ($res['status']) {
             $msg = 'Cannot update; already approved.';
-            if ($res['istatus'] == 2) {
+            if ($res['istatus'] == 'D') {
                 $msg = 'Cannot update; already disapproved.';
             }
             return ['status' => false, 'msg' => $msg, 'clientid' => $clientid];
+            
         }
 
-
-        $qry = "select line as value from undertime where line = '$clientid' and status != 'E'";
-        $count = $this->coreFunctions->datareader($qry);
-
-        if ($count != "") {
-            return ['clientid' => '0', 'status' => false, 'msg' => "Transaction cannot be deleted."];
+        $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where line = ? and doc = 'UNDERTIME'", [$clientid]);
+        if ($appdoc != "") {
+            return ['clientid' => '0', 'status' => false, 'msg' => "This application can’t be deleted because it’s already in the Pending Application"];
         }
 
         $submitdate = $this->coreFunctions->datareader("select submitdate as value from undertime where line=? and submitdate is not null", [$clientid]);
         if ($submitdate) {
-            return ['status' => false, 'msg' => 'Cannot delete; already For approval.', 'clientid' => $clientid];
+            return ['status' => false, 'msg' => 'The application cannot be deleted, as it is already for approval.', 'clientid' => $clientid];
         }
 
         $this->coreFunctions->execqry('delete from undertime where line=?', 'delete', [$clientid]);
+        $this->coreFunctions->execqry("delete from pendingapp where line=? and doc='UNDERTIME'", 'delete', [$clientid]);
+        $this->logger->sbcmasterlog($clientid, $config, "DELETED " . $this->modulename);
         return ['clientid' => $clientid, 'status' => true, 'msg' => 'Successfully deleted.', 'action' => 'backlisting'];
     } //end function
 

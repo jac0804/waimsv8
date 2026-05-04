@@ -48,8 +48,26 @@ class jo
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'start', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'wh', 'address', 'projectid', 'subproject', 'stageid', 'workloc', 'workdesc',
-    'revision', 'jrtrno'
+    'trno',
+    'docno',
+    'dateid',
+    'start',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'stageid',
+    'workloc',
+    'workdesc',
+    'revision',
+    'jrtrno'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -199,10 +217,10 @@ class jo
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

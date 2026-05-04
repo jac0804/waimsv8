@@ -35,7 +35,7 @@ class cc
   public $hstock = 'hcsscomment';
   public $tablelogs = 'transnum_log';
   public $tablelogs_del = 'del_transnum_log';
-  public $htablelogs = 'htransnum_log'; 
+  public $htablelogs = 'htransnum_log';
   private $stockselect;
   public $dqty = 'rrqty';
   public $hqty = 'qty';
@@ -131,10 +131,10 @@ class cc
   {
     $btns = array(
       'load',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'backlisting',
       'toggleup',
@@ -310,9 +310,7 @@ class cc
 
 
 
-  public function deletetrans($config)
-  {
-  } //end function
+  public function deletetrans($config) {} //end function
 
 
   public function posttrans($config)

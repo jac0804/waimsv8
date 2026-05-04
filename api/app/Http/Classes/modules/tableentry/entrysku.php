@@ -64,41 +64,43 @@ class entrysku
 
     switch (strtoupper($doc)) {
       case 'STOCKCARD':
-         if($companyid==63){//ericco
-           $this->modulename='BARCODE LIST';
-         }
+        if ($companyid == 63) { //ericco
+          $this->modulename = 'BARCODE LIST';
+        }
         $item = $this->othersClass->getitemname($tableid);
         $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
         break;
 
       default:
-       if($companyid==63){//ericco
-         switch($doc){
-          case 'SUPPLIER':
-             $this->modulename='ITEM LIST';
-            break;
-         }}
+        if ($companyid == 63) { //ericco
+          switch ($doc) {
+            case 'SUPPLIER':
+              $this->modulename = 'ITEM LIST';
+              break;
+          }
+        }
         $customername = $this->coreFunctions->datareader("select clientname as value from client where clientid = ? ", [$tableid]);
         $this->modulename = $this->modulename . ' - ' . $customername;
         break;
     }
 
-  
+
     switch (strtoupper($config['params']['doc'])) {
       case 'STOCKCARD':
-        $tab = [$this->gridname => [ 'gridcolumns' => ['action', 'client', 'shipto', 'sku', 'amt', 'disc'] ] ];
-        if($config['params']['companyid']==63){//ericco
-         $tab = [$this->gridname => ['gridcolumns' => ['action', 'wh', 'sku', 'amt', 'disc','uom2','itemdesc']]]; } 
-         break;
+        $tab = [$this->gridname => ['gridcolumns' => ['action', 'client', 'shipto', 'sku', 'amt', 'disc']]];
+        if ($config['params']['companyid'] == 63) { //ericco
+          $tab = [$this->gridname => ['gridcolumns' => ['action', 'wh', 'sku', 'amt', 'disc', 'uom2', 'itemdesc']]];
+        }
+        break;
 
       case 'CUSTOMER':
       case 'FINANCINGPARTNER':
         $tab = [$this->gridname => ['gridcolumns' => ['action', 'wh', 'sku', 'amt', 'disc']]];
         break;
       case 'SUPPLIER': //
-       if($config['params']['companyid']==63){//ericco
-         $tab = [$this->gridname => ['gridcolumns' => ['action','wh', 'sku','uom2', 'amt', 'disc','netamt']]]; 
-       }
+        if ($config['params']['companyid'] == 63) { //ericco
+          $tab = [$this->gridname => ['gridcolumns' => ['action', 'wh', 'sku', 'uom2', 'amt', 'disc', 'netamt']]];
+        }
         break;
     }
 
@@ -110,7 +112,7 @@ class entrysku
       }
     }
 
-    
+
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
@@ -126,45 +128,48 @@ class entrysku
         $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupclient";
         $obj[0][$this->gridname]['columns'][1]['label'] = "Customer";
 
-        if ($companyid != 22 && $companyid !=63) { //not eipi and not ericco
+        if ($companyid != 22 && $companyid != 63) { //not eipi and not ericco
           $obj[0][$this->gridname]['columns'][2]['type'] = "coldel";
           $obj[0][$this->gridname]['columns'][2]['label'] = "";
         }
-    
-        if($config['params']['companyid']==63){//ericco
-              $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupgroup";
-              // $obj[0][$this->gridname]['columns'][5]['type'] = "lookup";
-              // $obj[0][$this->gridname]['columns'][5]['lookupclass'] = "lookupstock";
-              $obj[0][$this->gridname]['columns'][7]['type'] = "label";
-              // $obj[0][$this->gridname]['columns'][5]['action'] = "lookupsetup";
-              $obj[0][$this->gridname]['columns'][7]['label'] = "Name";
-              $obj[0][$this->gridname]['columns'][1]['label'] = "Outlet";
-              $obj[0][$this->gridname]['columns'][3]['label'] = "Price";
-              $obj[0][$this->gridname]['columns'][4]['label'] = "Discount";
-              $obj[0][$this->gridname]['columns'][5]['type'] = 'lookup';
-              $obj[0][$this->gridname]['columns'][5]['lookupclass'] = 'lookupuom';
-              $obj[0][$this->gridname]['columns'][5]['action'] = 'lookupsetup';
-              $obj[0][$this->gridname]['columns'][5]['label'] = "Uom";
+
+        if ($config['params']['companyid'] == 63) { //ericco
+          $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupgroup";
+          // $obj[0][$this->gridname]['columns'][5]['type'] = "lookup";
+          // $obj[0][$this->gridname]['columns'][5]['lookupclass'] = "lookupstock";
+          $obj[0][$this->gridname]['columns'][7]['type'] = "label";
+          // $obj[0][$this->gridname]['columns'][5]['action'] = "lookupsetup";
+          $obj[0][$this->gridname]['columns'][7]['label'] = "Name";
+          $obj[0][$this->gridname]['columns'][1]['label'] = "Outlet";
+          $obj[0][$this->gridname]['columns'][3]['label'] = "Price";
+          $obj[0][$this->gridname]['columns'][4]['label'] = "Discount";
+          $obj[0][$this->gridname]['columns'][5]['type'] = 'lookup';
+          $obj[0][$this->gridname]['columns'][5]['lookupclass'] = 'lookupuom';
+          $obj[0][$this->gridname]['columns'][5]['action'] = 'lookupsetup';
+          $obj[0][$this->gridname]['columns'][5]['label'] = "Uom";
+          $obj[0][$this->gridname]['columns'][6]['type'] = "input";
+          $obj[0][$this->gridname]['columns'][6]['readonly'] = "false";
+          $obj[0][$this->gridname]['columns'][6]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";
         }
         break;
 
       case 'CUSTOMER':
       case 'FINANCINGPARTNER':
-             $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupstock";
-             $obj[0][$this->gridname]['columns'][1]['label'] = "Item";
+        $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupstock";
+        $obj[0][$this->gridname]['columns'][1]['label'] = "Item";
         break;
-       case 'SUPPLIER':
-              $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupstock";
-              $obj[0][$this->gridname]['columns'][1]['label'] = "Itemname";
-              $obj[0][$this->gridname]['columns'][2]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
-              $obj[0][$this->gridname]['columns'][1]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
-              $obj[0][$this->gridname]['columns'][5]['style'] = "width:100px;whiteSpace: normal;min-width:100px;text-align:right;";
-              $obj[0][$this->gridname]['columns'][2]['label'] = "Sku";
-              $obj[0][$this->gridname]['columns'][6]['type'] = "label";
-              $obj[0][$this->gridname]['columns'][3]['type'] = 'lookup';
-              $obj[0][$this->gridname]['columns'][3]['lookupclass'] = 'lookupuom';
-              $obj[0][$this->gridname]['columns'][3]['action'] = 'lookupsetup';
-              $obj[0][$this->gridname]['columns'][3]['label'] = "Uom";
+      case 'SUPPLIER':
+        $obj[0][$this->gridname]['columns'][1]['lookupclass'] = "lookupstock";
+        $obj[0][$this->gridname]['columns'][1]['label'] = "Itemname";
+        $obj[0][$this->gridname]['columns'][2]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+        $obj[0][$this->gridname]['columns'][1]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+        $obj[0][$this->gridname]['columns'][5]['style'] = "width:100px;whiteSpace: normal;min-width:100px;text-align:right;";
+        $obj[0][$this->gridname]['columns'][2]['label'] = "Sku";
+        $obj[0][$this->gridname]['columns'][6]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][3]['type'] = 'lookup';
+        $obj[0][$this->gridname]['columns'][3]['lookupclass'] = 'lookupuom';
+        $obj[0][$this->gridname]['columns'][3]['action'] = 'lookupsetup';
+        $obj[0][$this->gridname]['columns'][3]['label'] = "Uom";
         break;
     }
 
@@ -201,11 +206,13 @@ class entrysku
       case 'STOCKCARD':
         $data['itemid'] = $config['params']['tableid'];
         $data['clientid'] = 0;
-         if($config['params']['companyid']==63){//ericco
-            $data['issku'] = 1;
-            $data['itemdesc'] = '';
-            $data['groupid'] = '';
-            $data['uom2'] = ''; }
+        if ($config['params']['companyid'] == 63) { //ericco
+          $itemdesc = $config['params']['data'][0]['itemdesc'];
+          $data['issku'] = 1;
+          $data['itemdesc'] = $itemdesc;
+          $data['groupid'] = '';
+          $data['uom2'] = '';
+        }
         break;
 
       case 'CUSTOMER':
@@ -233,52 +240,56 @@ class entrysku
   {
     $data = $config['params']['data'];
     $tableid = $config['params']['tableid'];
-    $doc=$config['params']['doc'];
+    $doc = $config['params']['doc'];
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
         }
-         
-       if($config['params']['companyid']==63){//ericco
-        switch ($doc){
-             case 'STOCKCARD';
+
+        if ($config['params']['companyid'] == 63) { //ericco
+          switch ($doc) {
+            case 'STOCKCARD';
               $data2['groupid'] = $data[$key]['groupid'];
               $data2['issku'] = $data[$key]['issku'];
               $data2['uom2'] = $data[$key]['uom2'];
-
-               if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
+              $data2['itemname'] = $data[$key]['itemdesc'];         
+              
               $qry = "select sku.groupid as outlet from sku where sku.itemid = '" .  $data[$key]['itemid'] . "' and sku.groupid=  '" .  $data[$key]['groupid'] . "'  and sku.issku=1 limit 1";
               $opendata = $this->coreFunctions->opentable($qry);
               $resultdata =  json_decode(json_encode($opendata), true);
-              if (!empty($resultdata[0]['outlet'])) {
-                        if (trim($resultdata[0]['outlet']) == trim($data[$key]['wh'])) {
-                            return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                        }
-                    }
-                
-               }
-               
-             break;
-             case 'SUPPLIER':
+              if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {                
+                if (!empty($resultdata[0]['outlet'])) {
+                  if (trim($resultdata[0]['outlet']) == trim($data[$key]['wh'])) {
+                    return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+                  }
+                }                
+              }
+
+              if($data[$key]['uom2'] ==''){
+                return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
+              }
+
+              break;
+            case 'SUPPLIER':
               $data2['issupplier'] = $data[$key]['issupplier'];
               $data2['uom2'] = $data[$key]['uom2'];
-              
-               if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
-              $qry = "select i.itemname from sku
+
+              if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
+                $qry = "select i.itemname from sku
                       left join item  as i on i.itemid=sku.itemid where sku.itemid = '" . $data[$key]['itemid'] . "' and sku.clientid=  '" . $data[$key]['clientid'] . "'  and sku.issupplier=1 limit 1";
-              $opendata = $this->coreFunctions->opentable($qry);
-              $resultdata =  json_decode(json_encode($opendata), true);
-              if (!empty($resultdata[0]['itemname'])) {
-                        if (trim($resultdata[0]['itemname']) == trim($data[$key]['wh'])) {
-                            return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                        }
-                    }
-                
-               }
-             break;
-        }  }
+                $opendata = $this->coreFunctions->opentable($qry);
+                $resultdata =  json_decode(json_encode($opendata), true);
+                if (!empty($resultdata[0]['itemname'])) {
+                  if (trim($resultdata[0]['itemname']) == trim($data[$key]['wh'])) {
+                    return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+                  }
+                }
+              }
+              break;
+          }
+        }
 
 
         if ($data[$key]['line'] == 0) {
@@ -296,57 +307,57 @@ class entrysku
               . ', DISCOUNT: ' . $data[$key]['disc']
           );
         } else {
-        
-          if($config['params']['companyid']==63){//ericco
-             switch ($doc){
+
+          if ($config['params']['companyid'] == 63) { //ericco
+            switch ($doc) {
               case 'SUPPLIER':
-                   if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
-              $qry = "select i.itemname,sku.line from sku
+                if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
+                  $qry = "select i.itemname,sku.line from sku
                       left join item  as i on i.itemid=sku.itemid where sku.itemid = '" . $data[$key]['itemid'] . "' and sku.clientid=  '" . $data[$key]['clientid'] . "'  and sku.issupplier=1  limit 1";
-              $opendata = $this->coreFunctions->opentable($qry);
-              $resultdata =  json_decode(json_encode($opendata), true);
-              if (!empty($resultdata[0]['itemname'])) {
-                            if (trim($resultdata[0]['itemname']) == trim($data[$key]['wh'])) {
-                                if ($data[$key]['line'] == $resultdata[0]['line']) {
-                                    goto update;
-                                }
-                                return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
-                            } else {
-                              goto  update;
-                            }
-                        } else {
-                            goto update;
-                        }
-
+                  $opendata = $this->coreFunctions->opentable($qry);
+                  $resultdata =  json_decode(json_encode($opendata), true);
+                  if (!empty($resultdata[0]['itemname'])) {
+                    if (trim($resultdata[0]['itemname']) == trim($data[$key]['wh'])) {
+                      if ($data[$key]['line'] == $resultdata[0]['line']) {
+                        goto update;
                       }
-                      break;
-            case 'STOCKCARD':
+                      return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
+                    } else {
+                      goto  update;
+                    }
+                  } else {
+                    goto update;
+                  }
+                }
+                break;
+              case 'STOCKCARD':
 
-              if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
-              $qry = "select sku.groupid as outlet,sku.line from sku where sku.itemid = '" . $data[$key]['itemid'] . "' and sku.groupid=  '" . $data[$key]['groupid'] . "'  and sku.issku=1 limit 1";
-              $opendata = $this->coreFunctions->opentable($qry);
-              $resultdata =  json_decode(json_encode($opendata), true);
-              if (!empty($resultdata[0]['outlet'])) {
-                            if (trim($resultdata[0]['outlet']) == trim($data[$key]['wh'])) {
-                                if ($data[$key]['line'] == $resultdata[0]['line']) {
-                                    goto update;
-                                }
-                                return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
-                            } else {
-                              goto  update;
-                            }
-                        } else {
-                            goto update;
-                        }
-
+                if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
+                  $qry = "select sku.groupid as outlet,sku.line from sku where sku.itemid = '" . $data[$key]['itemid'] . "' and sku.groupid=  '" . $data[$key]['groupid'] . "'  and sku.issku=1 limit 1";
+                  $opendata = $this->coreFunctions->opentable($qry);
+                  $resultdata =  json_decode(json_encode($opendata), true);
+                  if (!empty($resultdata[0]['outlet'])) {
+                    if (trim($resultdata[0]['outlet']) == trim($data[$key]['wh'])) {
+                      if ($data[$key]['line'] == $resultdata[0]['line']) {
+                        goto update;
                       }
-              break;          
+                      return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
+                    } else {
+                      goto  update;
+                    }
+                  } else {
+                    goto update;
+                  }
 
-                
+                  if($data[$key]['uom2'] ==''){
+                    return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
+                  }
+                }
+                break;
+            }
           }
-        }
-          
-        
+
+
           update:
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
@@ -365,49 +376,55 @@ class entrysku
     $row = $config['params']['row'];
     // var_dump($row);
     $tableid = $config['params']['tableid'];
-    $doc=$config['params']['doc'];
+    $doc = $config['params']['doc'];
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
     }
 
-     if($config['params']['companyid']==63){//ericco
-        switch($doc){
-          case 'STOCKCARD';
-           $data['groupid'] = $row['groupid'];
-           $data['issku'] = $row['issku'];
-           $data['uom2'] = $row['uom2'];
-    
+    if ($config['params']['companyid'] == 63) { //ericco
+      switch ($doc) {
+        case 'STOCKCARD';
+          $data['groupid'] = $row['groupid'];
+          $data['issku'] = $row['issku'];
+          $data['uom2'] = $row['uom2'];
+          $data['itemname'] = $row['itemdesc'];
+          $opendata = $this->coreFunctions->opentable($qry);
+          $resultdata =  json_decode(json_encode($opendata), true);
 
-            if ($row['line'] == 0 && $row['wh'] != '') {
-            $qry = "select sku.groupid as outlet from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";
-            $opendata = $this->coreFunctions->opentable($qry);
-            $resultdata =  json_decode(json_encode($opendata), true);
+          if ($row['line'] == 0 && $row['wh'] != '') {
+            $qry = "select sku.groupid as outlet from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";            
             if (!empty($resultdata[0]['outlet'])) {
-                if (trim($resultdata[0]['outlet']) == trim($row['wh'])) {
-                    return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                }
-            }
+              if (trim($resultdata[0]['outlet']) == trim($row['wh'])) {
+                return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+              }
+            }           
+          }
+
+          if($row['uom2'] ==''){
+            return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
           }
 
           break;
-          case 'SUPPLIER':
-           $data['issupplier'] = $row['issupplier'];
-           $data['uom2'] = $row['uom2'];
+        case 'SUPPLIER':
+          $data['issupplier'] = $row['issupplier'];
+          $data['uom2'] = $row['uom2'];
           if ($row['line'] == 0 && $row['wh'] != '') {
             $qry = "select  i.itemname from sku
                     left join item  as i on i.itemid=sku.itemid where sku.itemid = '" . $row['itemid'] . "' and sku.clientid=  '" . $row['clientid'] . "'  and sku.issupplier=1 limit 1";
             $opendata = $this->coreFunctions->opentable($qry);
             $resultdata =  json_decode(json_encode($opendata), true);
             if (!empty($resultdata[0]['itemname'])) {
-                if (trim($resultdata[0]['itemname']) == trim($row['wh'])) {
-                    return ['status' => false, 'msg' => 'Itemname ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                }
+              if (trim($resultdata[0]['itemname']) == trim($row['wh'])) {
+                return ['status' => false, 'msg' => 'Itemname ( ' . $resultdata[0]['itemname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+              }
             }
           }
           break;
-        }}
-  
+      }
+    }
+
     if ($row['line'] == 0) {
+      // var_dump($data);
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
         $returnrow = $this->loaddataperrecord($config, $line);
@@ -428,53 +445,58 @@ class entrysku
         return ['status' => false, 'msg' => 'Saving failed.'];
       }
     } else {
-     
-      if($config['params']['companyid']==63){//ericco
-           switch($doc){
-            case 'SUPPLIER':
-         if ($row['line'] != 0 && $row['wh'] != '') {
-                $qry = "select i.itemname,sku.line from sku
+
+      if ($config['params']['companyid'] == 63) { //ericco
+        switch ($doc) {
+          case 'SUPPLIER':
+            if ($row['line'] != 0 && $row['wh'] != '') {
+              $qry = "select i.itemname,sku.line from sku
                         left join item  as i on i.itemid=sku.itemid where sku.itemid = '" . $row['itemid'] . "' and sku.clientid=  '" . $row['clientid'] . "'  and sku.issupplier=1 limit 1";
-                $opendata = $this->coreFunctions->opentable($qry);
-                $resultdata =  json_decode(json_encode($opendata), true);
-                if (!empty($resultdata[0]['itemname'])) {
-                    if (trim($resultdata[0]['itemname']) == trim($row['wh'])) {
-                        if ($row['line'] == $resultdata[0]['line']) {
-                            goto update;
-                        }
-                        return ['status' => false, 'msg' => 'Itemname ( ' . $resultdata[0]['itemname'] . ' )' . 'already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
-                    } else {
-                       goto update;
-                    }
-                } else {
+              $opendata = $this->coreFunctions->opentable($qry);
+              $resultdata =  json_decode(json_encode($opendata), true);
+              if (!empty($resultdata[0]['itemname'])) {
+                if (trim($resultdata[0]['itemname']) == trim($row['wh'])) {
+                  if ($row['line'] == $resultdata[0]['line']) {
                     goto update;
+                  }
+                  return ['status' => false, 'msg' => 'Itemname ( ' . $resultdata[0]['itemname'] . ' )' . 'already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
+                } else {
+                  goto update;
                 }
+              } else {
+                goto update;
+              }
+
+              
             }
-          
-          break;
+
+            break;
           case 'STOCKCARD':
             if ($row['line'] != 0 && $row['wh'] != '') {
-               $qry = "select sku.groupid as outlet,sku.line from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";
-                $opendata = $this->coreFunctions->opentable($qry);
-                $resultdata =  json_decode(json_encode($opendata), true);
-                if (!empty($resultdata[0]['outlet'])) {
-                    if (trim($resultdata[0]['outlet']) == trim($row['wh'])) {
-                        if ($row['line'] == $resultdata[0]['line']) {
-                            goto update;
-                        }
-                        return ['status' => false, 'msg' => 'Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
-                    } else {
-                       goto update;
-                    }
-                } else {
+              $qry = "select sku.groupid as outlet,sku.line from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";
+              $opendata = $this->coreFunctions->opentable($qry);
+              $resultdata =  json_decode(json_encode($opendata), true);
+              if (!empty($resultdata[0]['outlet'])) {
+                if (trim($resultdata[0]['outlet']) == trim($row['wh'])) {
+                  if ($row['line'] == $resultdata[0]['line']) {
                     goto update;
+                  }
+                  return ['status' => false, 'msg' => 'Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
+                } else {
+                  goto update;
                 }
+              } else {
+                goto update;
+              }
+
+              if($row['uom2'] ==''){
+                return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
+              }
             }
             break;
-          }
-
+        }
       }
-    
+
       update:
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
@@ -515,33 +537,33 @@ class entrysku
   {
 
     $tableid = $config['params']['tableid'];
-    $doc=strtoupper($config['params']['doc']);
-    $addfilter='';
-    $addf=", item.itemname as wh";
-    $grp="";
-    $orderby="order by line";
+    $doc = strtoupper($config['params']['doc']);
+    $addfilter = '';
+    $addf = ", item.itemname as wh";
+    $grp = "";
+    $orderby = "order by line";
     switch ($doc) {
       case 'STOCKCARD':
         $colfield = 'itemid';
-          if($config['params']['companyid']==63){//ericco
-           $addfilter=' and sku.issku=1';
-           $addf=", sku.groupid as wh, item.itemname as itemdesc,sku.issku,sku.groupid,sku.uom2,sku.uom3,item.itemid"; }
+        if ($config['params']['companyid'] == 63) { //ericco
+          $addfilter = ' and sku.issku=1';
+          $addf = ", sku.groupid as wh, if(sku.itemname !='',sku.itemname, item.itemname) as itemdesc,sku.issku,sku.groupid,sku.uom2,sku.uom3,item.itemid";
+        }
         break;
       case 'CUSTOMER':
       case 'FINANCINGPARTNER':
         $colfield = 'clientid';
         break;
       case 'SUPPLIER':
-          $colfield = 'clientid';
-         if($config['params']['companyid']==63){//ericco
-          $addfilter=' and sku.issupplier=1';
-          $addf=", item.itemname as wh, sku.issupplier, format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
+        $colfield = 'clientid';
+        if ($config['params']['companyid'] == 63) { //ericco
+          $addfilter = ' and sku.issupplier=1';
+          $addf = ", item.itemname as wh, sku.issupplier, format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
                    when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.uom2 ";
-          $grp=" group by  sku.line, sku.itemid, sku.clientid, sku.sku, sku.disc, client.clientname, item.itemname, sku.issupplier,sku.amt,client.addr2,sku.uom2";   
-          $orderby="order by sku.line";      
-         }
+          $grp = " group by  sku.line, sku.itemid, sku.clientid, sku.sku, sku.disc, client.clientname, item.itemname, sku.issupplier,sku.amt,client.addr2,sku.uom2";
+          $orderby = "order by sku.line";
+        }
         break;
-
     }
 
     $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sku.amt,2) as amt, sku.disc, 
@@ -558,33 +580,34 @@ class entrysku
   public function loaddata($config)
   {
     $tableid = $config['params']['tableid'];
-    $addfilter='';
-    $addf=", item.itemname as wh";
-    $grp="";
-    $orderby="order by line";
-    
-    $doc=strtoupper($config['params']['doc']);
+    $addfilter = '';
+    $addf = ", item.itemname as wh";
+    $grp = "";
+    $orderby = "order by line";
+
+    $doc = strtoupper($config['params']['doc']);
     switch ($doc) {
       case 'STOCKCARD':
         $colfield = 'itemid';
-        if($config['params']['companyid']==63){//ericco
-        $addfilter=' and sku.issku=1';
-        $addf=", sku.groupid as wh, item.itemname as itemdesc,sku.issku,sku.groupid,sku.uom2,sku.uom3,item.itemid";}
+        if ($config['params']['companyid'] == 63) { //ericco
+          $addfilter = ' and sku.issku=1';
+          $addf = ", sku.groupid as wh, if(sku.itemname !='',sku.itemname, item.itemname) as itemdesc,sku.issku,sku.groupid,sku.uom2,sku.uom3,item.itemid";
+        }
         break;
       case 'CUSTOMER':
       case 'FINANCINGPARTNER':
         $colfield = 'clientid';
         break;
-    case 'SUPPLIER':
-          $colfield = 'clientid';
-         if($config['params']['companyid']==63){//ericco
-          $addfilter=' and sku.issupplier=1';
-          $addf=", item.itemname as wh, sku.issupplier, format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
+      case 'SUPPLIER':
+        $colfield = 'clientid';
+        if ($config['params']['companyid'] == 63) { //ericco
+          $addfilter = ' and sku.issupplier=1';
+          $addf = ", item.itemname as wh, sku.issupplier, format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
                    when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.uom2  ";
-          $grp=" group by  sku.line, sku.itemid, sku.clientid, sku.sku, sku.disc, client.clientname, item.itemname, sku.issupplier,sku.amt,client.addr2,sku.uom2";   
-          $orderby="order by sku.line";  
-         }
-       break;
+          $grp = " group by  sku.line, sku.itemid, sku.clientid, sku.sku, sku.disc, client.clientname, item.itemname, sku.issupplier,sku.amt,client.addr2,sku.uom2";
+          $orderby = "order by sku.line";
+        }
+        break;
     }
 
     $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sku.amt,2) as amt, sku.disc, 
@@ -608,17 +631,17 @@ class entrysku
       case 'lookuplogs':
         return $this->lookuplogs($config);
         break;
-           
-     case 'lookupgroup':
+
+      case 'lookupgroup':
         return $this->lookupgroup($config);
         break;
 
       case 'lookupstock':
         return $this->lookupstock($config);  // to be follow
         break;
-       case 'lookupuom':
+      case 'lookupuom':
         return $this->lookupuom($config);
-        break;  
+        break;
 
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup'];
@@ -626,7 +649,7 @@ class entrysku
     }
   }
 
-    public function lookupuom($config)
+  public function lookupuom($config)
   {
     $itemid = $config['params']['row']['itemid'];
     $lookupsetup = array(
@@ -636,7 +659,7 @@ class entrysku
     );
     $plotsetup = array(
       'plottype' => 'plotgrid',
-      'plotting' => ['uom2' => 'uom','uom3'=>'uom']
+      'plotting' => ['uom2' => 'uom', 'uom3' => 'uom']
     );
     $cols = [['name' => 'uom', 'label' => 'Unit of Measurement', 'align' => 'left', 'field' => 'uom', 'sortable' => true, 'style' => 'font-size:16px;']];
     $qry = "select uom from uom where itemid=? and isinactive = 0";
@@ -667,7 +690,7 @@ class entrysku
 
     $trno = $config['params']['tableid'];
 
-    if ($main_doc == "CUSTOMER" || $main_doc == "FINANCINGPARTNER" || $main_doc == "SUPPLIER" ) {
+    if ($main_doc == "CUSTOMER" || $main_doc == "FINANCINGPARTNER" || $main_doc == "SUPPLIER") {
       $qry = "
       select trno, doc, task, log.user, dateid, 
       if(pic='','blank_user.png',pic) as pic
@@ -743,12 +766,13 @@ class entrysku
       'style' => 'width:900px;max-width:900px;'
     );
 
-    $wh='wh';
-    if($config['params']['companyid']==63){//ericco
-    if($config['params']['doc']=='CUSTOMER'){
-       $wh='itemdesc';
-    }}
-   
+    $wh = 'wh';
+    if ($config['params']['companyid'] == 63) { //ericco
+      if ($config['params']['doc'] == 'CUSTOMER') {
+        $wh = 'itemdesc';
+      }
+    }
+
     $plotsetup = array(
       'plottype' => 'plotgrid',
       'plotting' => ['itemid' => 'itemid', $wh => 'itemname']
@@ -767,25 +791,25 @@ class entrysku
   }
 
 
-   public function lookupgroup($config)
+  public function lookupgroup($config)
   {
     $rowindex = $config['params']['index'];
     $lookupclass2 = $config['params']['lookupclass2'];
 
 
-     $lookupsetup = array(
+    $lookupsetup = array(
       'type' => 'single',
       'title' => 'List of Group',
       'style' => 'width:900px;max-width:900px;'
     );
 
     $plotsetup = array(
-          'plottype' => 'plotgrid',
-          'plotting' => ['groupid' => 'groupid','wh' => 'groupid']
-        );
+      'plottype' => 'plotgrid',
+      'plotting' => ['groupid' => 'groupid', 'wh' => 'groupid']
+    );
 
     // lookup columns
-    $cols = [ ['name' => 'groupid', 'label' => 'Group', 'align' => 'left', 'field' => 'groupid', 'sortable' => true, 'style' => 'font-size:16px;']];
+    $cols = [['name' => 'groupid', 'label' => 'Group', 'align' => 'left', 'field' => 'groupid', 'sortable' => true, 'style' => 'font-size:16px;']];
     $qry = "select '' as groupid union all select distinct groupid from client where groupid<>'' order by groupid";
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex];

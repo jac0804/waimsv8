@@ -479,7 +479,6 @@ class waims2
     $this->coreFunctions->sbcaddcolumn("hpostock", "paid", "decimal(18,4) NOT NULL DEFAULT '0.00'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["hpostock"], ["rramt", "diqa", "voidqty"], "DECIMAL (18,6) NOT NULL DEFAULT '0.000000'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["postock", "hpostock"], ["rem"], "VARCHAR(500) NOT NULL DEFAULT ''", 1);
-    $this->coreFunctions->sbcaddcolumngrp(["postock", "hpostock"], ['sjrefx', 'sjlinex'], "INT(10) NOT NULL DEFAULT '0'", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["uom"], ["isdefault2", "issales", "issalesdef"], "tinyint(1) NOT NULL DEFAULT '0'");
     $this->coreFunctions->sbcaddcolumngrp(["uom"], ["amt2", "famt"], "DECIMAL(18,6) NOT NULL DEFAULT '0.000000'"); // prices based on uom price group
@@ -1692,6 +1691,7 @@ class waims2
 
     $this->coreFunctions->sbcaddcolumn("tacrf", "seq", "INT(10) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["center"], ["project", "clprefix"], "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["postock", "hpostock"], ['sjrefx', 'sjlinex'], "INT(10) NOT NULL DEFAULT '0'", 0);
 
     $this->coreFunctions->sbcaddcolumn("transnum", "sitagging", "INT(11) NOT NULL DEFAULT '0'", 0);
 
@@ -4230,5 +4230,66 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["billingaddr"], ["contactno2"], "varchar(25) NOT NULL DEFAULT ''", 0);
     $this->coreFunctions->sbcaddcolumngrp(["contacts"], ["isownermember", "ishouseholdmm"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["dailytask", "hdailytask"], ["assignedid"], "int(10) unsigned NOT NULL", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['client'], "varchar(30) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['clientname'], "varchar(150) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['address'], "varchar(300) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["reqcategory"], ["jutrno"], "int(11) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['waybill'], "varchar(50) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['shipto'], "varchar(150) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["plhead", "hplhead"], ['amount'], "decimal(18,2) NOT NULL DEFAULT '0.000000'", 0);
+
+    $qry = "CREATE TABLE `userdisplay` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `userid` int(11) unsigned NOT NULL DEFAULT '0',
+      `usergrp` varchar(50)  NOT NULL DEFAULT '',
+      `editby` varchar(100) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      `encodeddate` datetime DEFAULT NULL,
+      `encodedby` varchar(100) NOT NULL DEFAULT '',
+      PRIMARY KEY (`line`),
+      KEY `Index_userdisplay` (`userid`,`usergrp`) USING BTREE
+    )";
+    $this->coreFunctions->sbccreatetable("userdisplay", $qry);
+
+
+    $this->coreFunctions->sbcaddcolumn("drstock", "itemid", "int(11) NOT NULL DEFAULT '0'", 0);
+    $qry = "CREATE TABLE  `hdrhead` LIKE `drhead` ";
+    $this->coreFunctions->sbccreatetable("hdrhead", $qry);
+    $qry = "CREATE TABLE  `hdrstock` LIKE `drstock` ";
+    $this->coreFunctions->sbccreatetable("hdrstock", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["drhead", "hdrhead"], ['lockdate', 'editdate', 'createdate', 'viewdate'], " datetime DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['drhead', 'hdrhead'], ['lockuser', 'editby', 'createby', 'viewby'], "varchar(50) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['drhead', 'hdrhead'], ['projectid'], "int(11) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(['drstock', 'hdrstock'], ['whid'], "int(11) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['drstock', 'hdrstock'], ['encodedby'], "varchar(20) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["drstock", "hdrstock"], ['editdate'], " datetime DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['drstock', 'hdrstock'], ['editby', 'ref'], "varchar(50) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['hdrstock'], ['qa'], "DECIMAL(18,6) NOT NULL DEFAULT '0.000000'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["reqcategory"], ["isprrem"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(['lastock', 'glstock'], ['drrefx', 'drlinex'], "int(11) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["employee"], ["maxsjamt"], "DECIMAL(18,2) NOT NULL DEFAULT '0'", 0);
+
+    $qry = "CREATE TABLE `carton` (
+            `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `brandid` int(11) NOT NULL DEFAULT '0',
+            `sizeid` varchar(500) NOT NULL DEFAULT '',
+            `carton` decimal(18,2) NOT NULL DEFAULT '0.00',
+            `qty` decimal(18,2) NOT NULL DEFAULT '0.00',
+            `editby` varchar(100) NOT NULL DEFAULT '',
+            `editdate` datetime DEFAULT NULL,
+            `encodedby` varchar(100) NOT NULL DEFAULT '',
+            `encodeddate` datetime DEFAULT NULL,
+            PRIMARY KEY (`line`), 
+            KEY `IndexLine` (`line`))
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("carton", $qry);
+    $this->coreFunctions->sbcaddcolumngrp(["tmhead"], ["reseller"], "varchar(100) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['sku'], ["itemname"], "VARCHAR(500) NOT NULL DEFAULT ''", 0);
   }
 }

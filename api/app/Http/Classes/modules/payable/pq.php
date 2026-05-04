@@ -174,10 +174,10 @@ class pq
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -231,7 +231,11 @@ class pq
     $project = 4;
 
     $column = [
-      'action', 'amt', 'postdate', 'rem', 'project'
+      'action',
+      'amt',
+      'postdate',
+      'rem',
+      'project'
     ];
 
     $headgridbtns = ['viewref', 'viewdiagram'];
@@ -397,8 +401,14 @@ class pq
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $detail], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $detail],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;

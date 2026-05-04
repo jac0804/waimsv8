@@ -54,7 +54,8 @@ class stockcard
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'start.required', true);
     data_set($col1, 'start.required', true);
-    data_set($col1, 'wh.lookupclass', 'whs');
+    data_set($col1, 'wh.lookupclass', 'lookupwhfilter');
+    data_set($col1, 'wh.action', 'lookupwhfilter');
     data_set($col1, 'wh.required', true);
     data_set($col1, 'luom.lookupclass', 'uoms');
     data_set($col1, 'luom.required', true);
@@ -158,6 +159,7 @@ class stockcard
         break;
     }
 
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -170,11 +172,11 @@ class stockcard
 
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $reporttype = $config['params']['dataparams']['typeofreport'];
-    $whby       = $config['params']['dataparams']['wh'];
-    $whid       = $config['params']['dataparams']['whid'];
-    $uom       = $config['params']['dataparams']['uom'];
-    $location   = $config['params']['dataparams']['loc'];
+    $reporttype = isset($config['params']['dataparams']['typeofreport']) ? $config['params']['dataparams']['typeofreport'] : '';
+    $whby       = isset($config['params']['dataparams']['wh']) ? $config['params']['dataparams']['wh'] : '';
+    $whid       = isset($config['params']['dataparams']['whid']) ? $config['params']['dataparams']['whid'] : '0';
+    $uom       =  isset($config['params']['dataparams']['uom']) ? $config['params']['dataparams']['uom'] : '';
+    $location   = isset($config['params']['dataparams']['loc']) ? $config['params']['dataparams']['loc'] : '';
 
     $whbyfield = '';
     if ($whby != '') $whbyfield = " and stock.whid=" . $whid;
@@ -1956,6 +1958,56 @@ class stockcard
             PDF::MultiCell(70, 0, $iss == 0 ? '-' : ltrim(number_format($iss, $qtydec), '0'), '', 'R', false, 0);
             PDF::MultiCell(70, 0, ltrim(number_format($tobal, $qtydec), '0'), '', 'R', false, 0);
             PDF::MultiCell(70, 0, $value->rem, '', 'R', false);
+            break;
+          case '56': //HOMEWORKS
+            $maxrow = 1;
+            $dateid = $value->dateid;
+            $clientname = $value->clientname;
+            $expiry = $value->expiry;
+            $docno = $value->docno;
+            $qty = number_format($qty, $qtydec);
+            $iss = number_format($iss, $qtydec);
+            $balance = number_format($tobal, $qtydec);
+            $qty = $qty < 0 ? '-' : $qty;
+            $iss = $iss < 0 ? '-' : $iss;
+            // if ($data->cr != 0) {
+            //     $balance = $balance < 0 ? '-' : $balance * -1;
+            // }
+            $rem = $value->rem;
+
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '15', 0);
+            $arr_clientname = $this->reporter->fixcolumn([$clientname], '16', 0);
+            $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
+            $arr_docno = $this->reporter->fixcolumn([$docno], '16', 0);
+            $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+            $arr_iss = $this->reporter->fixcolumn([$iss], '13', 0);
+            $arr_balance = $this->reporter->fixcolumn([$balance], '13', 0);
+            $arr_rem = $this->reporter->fixcolumn([$rem], '13', 0);
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_balance, $arr_rem]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                // PDF::MultiCell(110, 15, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(70, 15, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(110, 15, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(100, 15, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(90, 15, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(90, 15, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(90, 15, (isset($arr_balance[$r]) ? $arr_balance[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
+                // PDF::MultiCell(95, 15, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', 0, 1, '', '', true, 0, false, false);
+
+                // PDF::SetFont($font, '', 11);
+                PDF::MultiCell(75, 0, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0);
+                PDF::MultiCell(200, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
+                PDF::MultiCell(65, 0, (isset($arr_expiry[$r]) ? $arr_expiry[$r] : ''), '', 'C', false, 0);
+                PDF::MultiCell(100, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'C', false, 0);
+                PDF::MultiCell(70, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : '-'), '', 'R', false, 0);
+                PDF::MultiCell(70, 0, (isset($arr_iss[$r]) ? $arr_iss[$r] : '-'), '', 'R', false, 0);
+                PDF::MultiCell(70, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
+                PDF::MultiCell(70, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'R', false);
+            }
             break;
           default:
             PDF::SetFont($font, '', 11);

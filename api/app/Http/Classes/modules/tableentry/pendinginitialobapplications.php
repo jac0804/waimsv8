@@ -80,7 +80,7 @@ class pendinginitialobapplications
                 }
             }
         }
-        $cols = ['action', 'lblforapp', 'clientname', 'dateid', 'dateid2', 'type', 'rem', 'rem2',  'contact', 'remarkslast'];
+        $cols = ['action', 'lblforapp', 'clientname', 'dateid', 'dateid2', 'type', 'rem', 'rem2', 'location',  'contact', 'remarkslast'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
@@ -107,7 +107,8 @@ class pendinginitialobapplications
         $obj[0][$this->gridname]['columns'][$dateid2]['label'] = 'Time Out';
         $obj[0][$this->gridname]['columns'][$dateid2]['style'] = 'width:150px;min-width:150px;';
         $obj[0][$this->gridname]['columns'][$dateid]['label'] = 'Time In';
-
+        $obj[0][$this->gridname]['columns'][$location]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$location]['label'] = 'Location/Destination';
         if (count($approversetup) == 1 || $both) {
             $obj[0][$this->gridname]['columns'][$contact]['type'] = 'coldel';
             if ($both) {
@@ -428,7 +429,7 @@ class pendinginitialobapplications
                                     $params['appname2'] = $appname2 != "" ? $appname2 : '';
                                 }
                                 // $result = $this->linkemail->createOBInitialEmail($params);
-                                $result = $this->linkemail->weblink($params,$config);
+                                $result = $this->linkemail->weblink($params, $config);
                                 if (!$result['status']) {
                                     return ['status' => false, 'msg' => '' . $result['msg']];
                                 }

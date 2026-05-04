@@ -49,7 +49,14 @@ class payrollappClass
                 case md5('extractfile'):
                     $msg = '';
 
-                    $files = Storage::disk('ftp')->files('upload');
+                    // $files = Storage::disk('ftp')->files('upload');
+
+                    $files = collect(Storage::disk('ftp')->files('upload'))
+                        ->sortBy(function ($file) {
+                            return Storage::disk('ftp')->lastModified($file);
+                        })
+                        ->values()
+                        ->toArray();
 
                     // used for sorting
                     $keywords = ['tmshifts', 'shiftdetail', 'batch', 'department', 'jobthead', 'employee'];
@@ -93,6 +100,7 @@ class payrollappClass
                             if (is_array($arrline)) {
 
                                 $this->coreFunctions->LogConsole('Extracting ' . $filename);
+                                // $this->coreFunctions->sbclogger('extractcsv - ' . $filename, "DLOCK");
 
                                 $a = explode('/', $filename);
                                 $b =  explode('~', $a[1]);
@@ -773,6 +781,13 @@ class payrollappClass
                         $row = [];
 
                         foreach ($value as $valindex => $val) {
+                            if (isset($value['currentbatch'])) {
+                                if ($value['currentbatch'] != '') {
+                                    $currentbatchid = $this->coreFunctions->getfieldvalue("batch", "line", "batch=?", [$value['currentbatch']], '', true);
+                                    if ($currentbatchid != 0)  $this->coreFunctions->execqry("delete from standardtrans where trno=" . $value['trno'] . " and batchid=" . $currentbatchid);
+                                }
+                            }
+
                             switch ($valindex) {
                                 case 'empcode':
                                     $row['empid'] = $this->getfieldid('empid', "client",  $value['empcode']);
@@ -784,6 +799,8 @@ class payrollappClass
                                     $row[$valindex] = $value[$valindex];
                                     break;
                             }
+
+                            unset($row['currentbatch']);
                         }
                         break;
 

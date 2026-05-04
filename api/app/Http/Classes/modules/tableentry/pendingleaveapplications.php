@@ -629,6 +629,7 @@ class pendingleaveapplications
                     }
                 }
             } else {
+                $this->coreFunctions->execqry("delete from pendingapp where doc='LEAVE' and trno=" . $row['trno'] . " and line=" . $row['line'], 'delete');
                 return ['status' => false, 'msg' => 'Already ' . $label . '.', 'data' => []];
             }
         }

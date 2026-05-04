@@ -493,6 +493,15 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+            'dlock' => array(
+                'name' => 'dlock',
+                'type' => 'date',
+                'label' => 'Dlock',
+                'class' => 'csdlock',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
             'dateid' => array(
                 'name' => 'dateid',
                 'type' => 'date',
@@ -2640,6 +2649,18 @@ class txtfieldClass
                 'class' => 'csupdate',
                 'action' => 'downloadsupplieritemexcel',
                 'lookupclass' => 'downloadsupplieritemexcel',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'access' => 'view'
+            ),
+            'downloadbarcodelist' => array(
+                'name' => 'downloadexcel',
+                'type' => 'actionbtn',
+                'label' => 'Download Barcode List Template',
+                'class' => 'csupdate',
+                'action' => 'downloadbarcodelist',
+                'lookupclass' => 'downloadbarcodelist',
                 'readonly' => true,
                 'style' => $this->style,
                 'required' => false,
@@ -20510,6 +20531,76 @@ class txtfieldClass
                 'type' => 'ctextarea',
                 'label' => 'BULLET 7',
                 'class' => 'csbullet7',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'mtsofh' => array(
+                'name' => 'mtsofh',
+                'type' => 'textarea',
+                'label' => 'Minutes of Hearing',
+                'class' => 'csmtsofh',
+                'readonly' => false,
+                'style' => 'height:15em;',
+                'required' => false
+            ),
+
+            'voyage' => array(
+                'name' => 'voyage',
+                'type' => 'input',
+                'label' => 'Voyage No.:',
+                'class' => 'csvoyages',
+                'style' => $this->style,
+                'readonly' => false
+            ),
+
+            'ar' => array(
+                'name' => 'ar',
+                'type' => 'input',
+                'label' => 'Balance',
+                'class' => 'csarbal sbccsreadonly',
+                'style' => $this->style,
+                'readonly' => true
+            ),
+            'maxsjamt' => array(
+                'name' => 'maxsjamt',
+                'type' => 'input',
+                'label' => 'Amount Limit',
+                'class' => 'csmaxsjamt',
+                'style' => $this->style,
+                'readonly' => false
+            ),
+
+            'annualtax' => array(
+                'name' => 'annualtax',
+                'type' => 'checkbox',
+                'label' => 'Annual Tax',
+                'class' => 'csannualtax',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+            'updatetaskinfo' => array(
+                'name' => 'updatetaskinfo',
+                'access' => 'view',
+                'type' => 'actionbtn',
+                'label' => 'Update Notes',
+                'class' => 'csupdatetaskinfo',
+                'action' => 'customform',
+                'lookupclass' => 'updatetaskinfo',
+                'readonly' => false,
+                'style' => 'height:100%',
+                'required' => false
+            ),
+
+            'calltype' => array(
+                'name' => 'calltype',
+                'type' => 'lookup',
+                'label' => 'Call Type',
+                'class' => 'cscalltype sbccsreadonly',
+                'lookupclass' => 'lookupcalltype',
+                'action' => 'lookupcalltype',
                 'readonly' => true,
                 'style' => $this->style,
                 'required' => false

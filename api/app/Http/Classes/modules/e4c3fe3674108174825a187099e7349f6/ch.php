@@ -224,10 +224,10 @@ class ch
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -291,16 +291,16 @@ class ch
   {
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $viewacctg = $this->othersClass->checkAccess($config['params']['user'], 5528);
-  
-    if($viewacctg){
+
+    if ($viewacctg) {
       $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
-    }else{
+    } else {
       $headgridbtns = ['viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
-    
 
-    $column = ['action', 'itemdescription',  'isqty', 'uom',  'isamt',  'ext',  'wh', 'whname',  'rem', 'itemname', 'barcode'];
-    $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom',  'isamt',  'ext',   'wh', 'whname', 'rem', 'itemname', 'barcode'];
+
+    $column = ['action', 'itemdescription',  'isqty', 'uom', 'rem',  'isamt',  'ext',  'wh', 'whname',  'itemname', 'barcode'];
+    $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'rem', 'isamt',  'ext',   'wh', 'whname',  'itemname', 'barcode'];
 
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -317,8 +317,8 @@ class ch
       ]
     ];
 
-    $stockbuttons = ['save','delete','showbalance'];
-    
+    $stockbuttons = ['save', 'delete', 'showbalance'];
+
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
     }
@@ -357,12 +357,12 @@ class ch
   {
     $inv = $this->companysetup->isinvonly($config['params']);
 
-    $fields = ['docno', 'client', 'clientname','address'];
+    $fields = ['docno', 'client', 'clientname', 'address'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.lookupclass', 'customer');
     data_set($col1, 'client.required', false);
     data_set($col1, 'docno.label', 'Transaction#');
-    
+
     $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
 
 
@@ -374,7 +374,7 @@ class ch
 
     $col3 = $this->fieldClass->create($fields);
 
-    $fields = ['amount','rem'];
+    $fields = ['amount', 'rem'];
 
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
@@ -552,7 +552,11 @@ class ch
         } //end if
       }
     }
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    if ($data['terms'] == '') {
+      $data['due'] = $data['dateid'];
+    } else {
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+    }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 
@@ -591,18 +595,18 @@ class ch
   public function posttrans($config)
   {
     $trno = $config['params']['trno'];
-   
-    $checkacct = $this->othersClass->checkcoaacct(['AR1', 'SD1', 'TX2',]);
-      if ($checkacct != '') {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
-      }
 
-      if (!$this->createdistribution($config)) {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Problems in creating accounting entries.'];
-      } else {
-        $return = $this->othersClass->posttranstock($config);
-        return $return;
-      }
+    $checkacct = $this->othersClass->checkcoaacct(['AR1', 'SD1', 'TX2',]);
+    if ($checkacct != '') {
+      return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
+    }
+
+    if (!$this->createdistribution($config)) {
+      return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Problems in creating accounting entries.'];
+    } else {
+      $return = $this->othersClass->posttranstock($config);
+      return $return;
+    }
 
     if ($this->othersClass->postcntnuminfo($config, true)) {
       $this->coreFunctions->execqry('delete from cntnuminfo where trno=?', 'delete', [$trno]);
@@ -618,7 +622,7 @@ class ch
   private function getstockselect($config)
   {
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
-    
+
     $sqlselect = "select 
     item.itemid,
     stock.trno,
@@ -668,7 +672,7 @@ class ch
     group by item.itemid,stock.trno,stock.line,stock.sortline,
     item.barcode,item.itemname, stock.uom,stock.isqty,
     stock." . $this->hamt . ",stock." . $this->hqty . ",
-    stock." . $this->damt .",
+    stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
     warehouse.clientname,stock.rem,stock.noprint
@@ -684,7 +688,7 @@ class ch
     group by item.itemid,stock.trno,stock.line,stock.sortline,
     item.barcode,item.itemname, stock.uom,stock.isqty,
     stock." . $this->hamt . ",stock." . $this->hqty . ",
-    stock." . $this->damt .",
+    stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
     warehouse.clientname,stock.rem,stock.noprint order by sortline, line";
@@ -713,7 +717,7 @@ class ch
     group by item.itemid,stock.trno,stock.line,stock.sortline,
     item.barcode,item.itemname, stock.uom,stock.isqty,
     stock." . $this->hamt . ",stock." . $this->hqty . ",
-    stock." . $this->damt .",
+    stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
     warehouse.clientname,stock.rem,stock.noprint";
@@ -991,7 +995,6 @@ class ch
       } else {
         $msg = $row['msg'];
       }
-
     }
 
     $data = $this->openstock($config['params']['trno'], $config);
@@ -1047,7 +1050,7 @@ class ch
     $wh = $config['params']['data']['wh'];
     // $noprint = 'false';
     $rem = '';
-    $amt =0;
+    $amt = 0;
 
     // if (isset($config['params']['data']['noprint'])) {
     //   $noprint = $config['params']['data']['noprint'];
@@ -1068,9 +1071,8 @@ class ch
       $line = $line + 1;
       $config['params']['line'] = $line;
 
-      $ext = $config['params']['data']['amt'];//total amt ung input nila
-      $qty = $config['params']['data']['qty'];    
-
+      $ext = $config['params']['data']['amt']; //total amt ung input nila
+      $qty = $config['params']['data']['qty'];
     } elseif ($action == 'update') {
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
@@ -1095,11 +1097,11 @@ class ch
     $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
 
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
-    $computedata = $this->othersClass->computestock($amt,'',$qty,$factor);
-   
+    $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);
+
     //compute reverse
-    $amt = $ext/$qty;    
-    $hamt = $amt/$factor;
+    $amt = $ext / $qty;
+    $hamt = $amt / $factor;
 
     $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
@@ -1166,7 +1168,7 @@ class ch
         $havestock = true;
         $msg = 'Item was successfully added.';
 
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Uom:' . $uom . ' Qty' . $qty . ' Amt:' . $amt .' wh:' . $wh . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Uom:' . $uom . ' Qty' . $qty . ' Amt:' . $amt . ' wh:' . $wh . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         $row = $this->openstockline($config);
         return ['row' => $row, 'status' => true, 'msg' => $msg];
       } else {
@@ -1198,7 +1200,7 @@ class ch
 
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
-    
+
     $qry = "delete from " . $this->stock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' barcode:' . $data[0]->barcode . ' Qty:' . $data[0]->isqty . ' Amt:' . $data[0]->isamt . ' Disc:' . $data[0]->disc . ' wh:' . $data[0]->wh . ' ext:' . $data[0]->ext);
@@ -1235,7 +1237,7 @@ class ch
           and stock.isamt <> 0 and cntnum.trno <> ?
           order by dateid desc limit 5) as tbl order by dateid desc";
 
-        $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
+    $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
 
     if (!empty($data)) {
       return ['status' => true, 'msg' => 'Found the latest price...', 'data' => $data[0]];
@@ -1251,8 +1253,8 @@ class ch
     $status = true;
     $totalar = 0;
     $isvatexsales = $this->companysetup->getvatexsales($config['params']);
-    $amount = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno],'',true);
-    
+    $amount = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno], '', true);
+
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
     if ($amount == 0) {
@@ -1260,7 +1262,7 @@ class ch
       item.expense,stock.isamt,stock.disc,stock.isqty,stock.iss,head.projectid,client.rev,head.amount
           from ' . $this->head . ' as head left join ' . $this->stock . ' as stock on stock.trno=head.trno
           left join item on item.itemid=stock.itemid left join client on client.client = head.client left join client as wh on wh.clientid = stock.whid where head.trno=?';
-  
+
       $this->coreFunctions->LogConsole($qry);
       $stock = $this->coreFunctions->opentable($qry, [$trno]);
       $tax = 0;
@@ -1276,13 +1278,13 @@ class ch
         $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
         foreach ($stock as $key => $value) {
           $params = [];
-  
+
           if ($vat != 0) {
             $tax = number_format(($stock[$key]->ext / $tax1), 2, '.', '');
             $tax = number_format($stock[$key]->ext - $tax, 2, '.', '');
             $totalar = $totalar + number_format($stock[$key]->ext, 2, '.', '');
           }
-  
+
           if ($stock[$key]->revenue != '') {
             $revacct = $stock[$key]->revenue;
           } else {
@@ -1290,9 +1292,9 @@ class ch
               $revacct = $stock[$key]->rev;
             }
           }
-  
+
           $expense = isset($stock[$key]->expense) ? $stock[$key]->expense : '';
-  
+
           $params = [
             'client' => $stock[$key]->client,
             'acno' => $stock[$key]->contra,
@@ -1308,19 +1310,20 @@ class ch
             'forex' => $stock[$key]->forex,
             'projectid' => 0
           ];
-  
+
           $this->distribution($params, $config);
         }
       }
-    }else{//amount
+    } else { //amount
       $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,client.rev,head.amount
           from ' . $this->head . ' as head  left join client on client.client = head.client where head.trno=?';
-  
+
       $this->coreFunctions->LogConsole($qry);
       $stock = $this->coreFunctions->opentable($qry, [$trno]);
       if (!empty($stock)) {
         $revacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['SA1']);
         $vat = floatval($stock[0]->tax);
+        $tax =0;
         $tax1 = 0;
         $tax2 = 0;
         if ($vat !== 0) {
@@ -1330,17 +1333,17 @@ class ch
         $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
         foreach ($stock as $key => $value) {
           $params = [];
-  
+
           if ($vat != 0) {
             $tax = number_format(($stock[$key]->amount / $tax1), 2, '.', '');
             $tax = number_format($stock[$key]->amount - $tax, 2, '.', '');
             $totalar = $totalar + number_format($stock[$key]->amount, 2, '.', '');
           }
-  
+
           if ($stock[$key]->rev != '' && $stock[$key]->rev != '\\') {
             $revacct = $stock[$key]->rev;
           }
-  
+
           $params = [
             'client' => $stock[$key]->client,
             'acno' => $stock[$key]->contra,
@@ -1354,11 +1357,10 @@ class ch
             'forex' => $stock[$key]->forex,
             'projectid' => 0
           ];
-  
+
           $this->distribution($params, $config);
         }
       }
-
     }
 
     if (!empty($this->acctg)) {

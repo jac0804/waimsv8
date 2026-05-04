@@ -60,7 +60,8 @@ class branch
     'isbranch',
     'isallitem',
     'issynced',
-    'prefix'
+    'prefix',
+    'area'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isconsign', 'isbranch', 'isallitem', 'issynced'];
@@ -231,7 +232,7 @@ class branch
         $fields = ['client', 'clientname', 'addr', 'start', 'dparentcodewh', 'prefix'];
         break;
       default:
-        $fields = ['client', 'clientname', 'addr', 'start', 'dparentcodewh'];
+        $fields = ['client', 'clientname', 'addr', 'start', 'dparentcodewh', 'area'];
         break;
     }
 
@@ -243,6 +244,7 @@ class branch
     data_set($col1, 'client.action', 'lookupledgerclient');
     data_set($col1, 'clientname.type', 'cinput');
     data_set($col1, 'addr.type', 'cinput');
+    data_set($col1, 'area.addedparams', ['clientid']);
     if ($companyid == 56) { //homeworks
       data_set($col1, 'prefix.maxlength', 2);
     }
@@ -292,6 +294,7 @@ class branch
     $data[0]['clientname'] = '';
     $data[0]['addr'] = '';
     $data[0]['contact'] = '';
+    $data[0]['area'] = '';
     $data[0]['tel2'] = '';
     $data[0]['type'] = '';
     $data[0]['rem'] = '';

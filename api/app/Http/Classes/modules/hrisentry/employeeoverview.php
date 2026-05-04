@@ -70,15 +70,10 @@ class employeeoverview
         );
         return $attrib;
     }
-    public function load($config)
-    {
-        $qry = "select divcode,divname as divisionname,divid,picture from division";
-        return $this->coreFunctions->opentable($qry);
-    }
     public function createTab($config)
     {
 
-        $column = ['action', 'picture', 'company', 'counts'];
+        $column = ['action', 'picture', 'company', 'oqty', 'counts', 'clientquota'];
 
         foreach ($column as $key => $value) {
             $$value = $key;
@@ -91,7 +86,16 @@ class employeeoverview
 
         $obj[0][$this->gridname]['columns'][$counts]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$counts]['label'] = "Existing";
-        $obj[0][$this->gridname]['columns'][$counts]['style'] = "width:100%;whiteSpace: normal;min-width:100%;";
+        $obj[0][$this->gridname]['columns'][$counts]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
+
+        $obj[0][$this->gridname]['columns'][$oqty]['label'] = "Allocation";
+        $obj[0][$this->gridname]['columns'][$oqty]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$oqty]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
+
+        $obj[0][$this->gridname]['columns'][$clientquota]['label'] = "Lacking";
+        $obj[0][$this->gridname]['columns'][$clientquota]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
+
+        // $obj[0][$this->gridname]['columns'][$itemname]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
         return $obj;
     }
     public function createtabbutton($config)
@@ -104,12 +108,40 @@ class employeeoverview
     public function loaddata($config)
     {
         $qry = "
-        select count(emp.empid) as counts,v.company,v.divid,v.picture from (
+        select count(emp.empid) as counts,v.company,v.divid,v.picture,0 as oqty,0 as clientquota from (
 		  select divi.divname as company,divi.divid,divi.picture 
         from division as divi
 		 ) as v
-		 left join employee as emp on emp.divid = v.divid and emp.isactive = 1  
+		 left join employee as emp on emp.divid = v.divid and emp.isactive = 1
 		group by v.company,v.divid,v.picture";
-        return $this->coreFunctions->opentable($qry);
+        $data = $this->coreFunctions->opentable($qry);
+
+
+        foreach ($data as $key => $value) {
+            $jobcount =  $this->checkjob($value->divid);
+            if ($jobcount != 0) {
+                $value->oqty = $jobcount;
+            }
+            $value->clientquota = $value->oqty - $value->counts;
+        }
+
+        return $data;
+    }
+    public function checkjob($divid)
+    {
+
+        $job = $this->coreFunctions->opentable("select emp.jobid,emp.branchid from employee as emp 
+            where emp.divid = $divid and (emp.jobid <> 0 and emp.branchid <> 0) and emp.isactive = 1
+            group by emp.branchid,emp.jobid");
+
+        $qty = 0;
+        foreach ($job as $key => $value) {
+            $oqty = $this->coreFunctions->datareader("select ifnull(sum(jobs.qty),0) as value from cljobs as jobs 
+                where jobs.jobid = $value->jobid and jobs.clientid = $value->branchid ", [], '', true);
+            if ($oqty != 0) {
+                $qty += $oqty;
+            }
+        }
+        return $qty;
     }
 }

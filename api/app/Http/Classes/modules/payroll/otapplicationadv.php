@@ -819,13 +819,20 @@ class otapplicationadv
             }
             return ['status' => false, 'msg' => $msg, 'clientid' => $clientid];
         } else {
+
+            $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where line = ? and doc = 'OT'", [$clientid]);
+            if ($appdoc != "") {
+                return ['clientid' => '0', 'status' => false, 'msg' => "This application can’t be deleted because it’s already in the Pending Application"];
+            }
+
             $submitdate = $this->coreFunctions->datareader("select submitdate as value from $this->head where line=? and submitdate is not null", [$clientid]);
             if ($submitdate) {
-                return ['status' => false, 'msg' => 'Cannot delete; already For approval.', 'clientid' => $clientid];
+                return ['status' => false, 'msg' => 'The application cannot be deleted, as it is already for approval.', 'clientid' => $clientid];
             }
             $this->coreFunctions->execqry('delete from otapplication where line=?', 'delete', [$clientid]);
             $this->coreFunctions->execqry("delete from pendingapp where line=? and doc='OT'", 'delete', [$clientid]);
-            $this->logger->sbcdel_log($clientid, $config, $this->modulename);
+
+            $this->logger->sbcmasterlog($clientid, $config, "DELETED " . $this->modulename);
             return ['clientid' => $clientid, 'status' => true, 'msg' => 'Successfully deleted.'];
         }
     }
@@ -970,6 +977,10 @@ class otapplicationadv
             // }
 
             $tempOT =  $ottimein->diff($ottimeout);
+            if ($tempOT->days > 0) {
+                $tempOT->h = ($tempOT->days * 24) + $tempOT->h;
+            }
+
             $this->othersClass->logConsole('ndiff hours: ' . $ndiffhrs);
 
             $othrs = $tempOT->h;

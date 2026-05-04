@@ -260,7 +260,7 @@ class loan_reports
         $case ,date(loan.effdate) as scheddate,loan.balance,divi.divname as division,loan.licenseno,loan.licensetype,loan.remarks,
         loan.cashadv,loan.saldedpurchase,loan.chgduelosses,loan.uniforms,loan.otherchgloan,loan.sssploan,approver2.clientname as appname2,approver2.email as appemail2,
         date_format(loan.termfrom, '%m-%d-%y') as termfrom,date_format(loan.termto, '%m-%d-%y') as termto,date_format(loan.payrolldate, '%m-%d-%y') as payrolldate,loan.amortization,loan.apamortization,
-        date(date_approved_disapproved) as appdate,date(loan.date_approved_disapproved2) as appdate2,loan.disapproved_remarks as reason,loan.disapproved_remarks2 as reason2 ,$jobtitle
+        loan.date_approved_disapproved as appdate,loan.date_approved_disapproved2 as appdate2,loan.disapproved_remarks as reason,loan.disapproved_remarks2 as reason2 ,$jobtitle
         from loanapplication as loan
         left join employee as e on e.empid=loan.empid
         left join paccount as p on p.line=loan.acnoid
@@ -733,6 +733,7 @@ class loan_reports
                 $checkpur = '';
                 $checkrep = '';
                 $checkfin = '';
+                $checkothers = '';
                 $style = 'style=""';
                 $disable1 = 'disabled';
                 $disable2 = 'disabled';
@@ -740,6 +741,7 @@ class loan_reports
                 $disable4 = 'disabled';
                 $disable5 = 'disabled';
                 $disable6 = 'disabled';
+                $disable7 = 'disabled';
 
                 switch ($data->purpose) {
                     case "Tuition fee of employee`s child":
@@ -773,6 +775,11 @@ class loan_reports
                         $style = 'style="accent-color: black; pointer-events: none;"';
                         $disable6 = '';
                         break;
+                    case "Others":
+                        $checkothers = 'checked="checked"';
+                        $style = 'style="accent-color: black; pointer-events: none;"';
+                        $disable7 = '';
+                        break;
                 }
 
                 $tuition = '<input type="checkbox" name="agree1" value="1" readonly="true" ' . $checktui . ' ' . $style . $disable1 . '  />';
@@ -781,6 +788,8 @@ class loan_reports
                 $purchase = '<input type="checkbox" name="agree1" value="1" readonly="true" ' . $checkpur . ' ' . $style . $disable4 . '  />';
                 $repairs = '<input type="checkbox" name="agree1" value="1" readonly="true" ' . $checkrep . ' ' . $style . $disable5 . '  />';
                 $financial = '<input type="checkbox" name="agree1" value="1" readonly="true" ' . $checkfin . ' ' . $style . $disable6 . '  />';
+
+                $others = '<input type="checkbox" name="agree1" value="1" readonly="true" ' . $checkothers . ' ' . $style . $disable7 . '  />';
 
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col($tuition, '50', 15, false, $border, 'L', 'C', $font, $fontsize, '', '', '', '-10px');
@@ -800,6 +809,41 @@ class loan_reports
                 $str .= $this->reporter->col($financial, '50', 15, false, $border, '', 'C', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col('Financial assistance in cases of calamity', '400', 15, false, $border, 'R', 'L', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+
+                $arr_remarks = $this->reporter->fixcolumn([$data->remarks], '130', 0);
+                $maxrow = $this->othersClass->getmaxcolumn([$arr_remarks]);
+
+                $line1 = "";
+                $line2 = "";
+
+                $remarks1 = "";
+                $remarks2 = "";
+                for ($r = 0; $r < $maxrow; $r++) {
+                    if ($r == 0) {
+                        $remarks1 = (isset($arr_remarks[$r]) ? $arr_remarks[$r] : '');
+                    }
+                    if ($r == 1) {
+                        $remarks2 = (isset($arr_remarks[$r]) ? $arr_remarks[$r] : '');
+                    }
+                }
+
+                $str .= $this->reporter->begintable($layoutsize);
+
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col($others, '50', 15, false, $border, 'L', 'C', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('Other' . ($data->purpose == 'Others' ? '/' . $remarks1 : ''), '800', 15, false, $border, '', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('', '50', 15, false, $border, 'R', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->endrow();
+
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', '50', 15, false, $border, 'L', 'C', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col(($data->purpose == 'Others' ? '' . $remarks2 : ''), '800', 15, false, $border, '', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('', '50', 15, false, $border, 'R', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+
+                $str .= $this->reporter->begintable($layoutsize);
 
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('', '50', 15, false, $border, 'LB', 'C', $font, $fontsize, '', '', '');
@@ -1149,7 +1193,7 @@ class loan_reports
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
-                if (count($result) != ($j + 1)) {
+                if ((count($result) - 1) != $j) {
                     $str .= $this->reporter->page_break();
                     $str .= $this->header_multi_loan($config);
                 }
@@ -1513,7 +1557,7 @@ class loan_reports
                 $irisposition = '';
 
                 $fixapp = $this->coreFunctions->opentable("
-                 select client.clientname,client.email,jt.jobtitle from employee as emp 
+                 select client.clientname,client.email,jt.jobtitle,emp.empid from employee as emp 
                  left join client on client.clientid = emp.empid
                  left join jobthead as jt on jt.line = emp.jobid 
                  where emp.empid in (259,260)");

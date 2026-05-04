@@ -25,7 +25,7 @@ class tl
     private $btnClass;
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'T.R.U Ledger';
+    public $modulename = 'T.R.U LEDGER';
     public $gridname = 'accounting';
     private $companysetup;
     private $coreFunctions;
@@ -153,6 +153,7 @@ class tl
     {
         $tab = [];
         $stockbuttons = [];
+        $tab['tableentry2'] = ['action' => 'tableentry', 'lookupclass' => 'issuedclearance', 'label' => 'CLEARANCE ISSUED'];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         return $obj;
     }

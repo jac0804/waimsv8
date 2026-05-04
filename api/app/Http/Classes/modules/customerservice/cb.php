@@ -124,10 +124,10 @@ class cb
   {
     $btns = array(
       'load',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'backlisting',
       'toggleup',
@@ -156,7 +156,8 @@ class cb
           'visible' => true,
           'tooltip' => 'Add Comment'
         ]],
-        'label' => 'COMMENT', 'visible' => true
+        'label' => 'COMMENT',
+        'visible' => true
       ]
 
     ];
@@ -307,9 +308,7 @@ class cb
 
 
 
-  public function deletetrans($config)
-  {
-  } //end function
+  public function deletetrans($config) {} //end function
 
 
   public function posttrans($config)

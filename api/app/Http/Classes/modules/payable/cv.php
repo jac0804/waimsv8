@@ -44,7 +44,7 @@ class cv
   private $stockselect;
   public $defaultContra = 'PC1';
 
-  private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'tax', 'vattype', 'projectid', 'ewt', 'ewtrate', 'brtrno', 'contra', 'isencashment', 'isonlineencashment', 'paymode', 'hacno', 'hacnoname', 'costcodeid', 'empid', 'deptid', 'phaseid', 'modelid', 'blklotid', 'amenityid', 'subamenityid'];
+  private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'tax', 'vattype', 'projectid', 'ewt', 'ewtrate', 'brtrno', 'contra', 'isencashment', 'isonlineencashment', 'paymode', 'hacno', 'hacnoname', 'costcodeid', 'empid', 'deptid', 'phaseid', 'modelid', 'blklotid', 'amenityid', 'subamenityid', 'orderno'];
   private $except = ['trno', 'dateid'];
   private $blnfields = ['isencashment', 'isonlineencashment'];
   private $acctg = [];
@@ -118,15 +118,15 @@ class cv
     //   $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'cr', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     // }
 
-    switch($companyid){
-      case 56://homeworks
-           $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'client', 'listclientname', 'yourref', 'ourref', 'cr', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    switch ($companyid) {
+      case 56: //homeworks
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'client', 'listclientname', 'yourref', 'ourref', 'cr', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         break;
-      case 29://SBC
-           $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem', 'yourref', 'ourref', 'cr', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
-        break;  
+      case 29: //SBC
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem', 'yourref', 'ourref', 'cr', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+        break;
       default:
-           $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'cr', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'cr', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         break;
     }
 
@@ -161,10 +161,10 @@ class cv
         $cols[$client]['type'] = 'label';
         $cols[$client]['label'] = 'Code';
         break;
-        case 60://Transpower
+      case 60: //Transpower
         $cols[$listdocument]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
         break;
-        case 29://sbc
+      case 29: //sbc
         $cols[$rem]['style'] = 'width:320px;whiteSpace: normal;min-width:320px;';
         break;
       default:
@@ -434,12 +434,12 @@ class cv
     // $acnoname = 19;
     // $b = 20;
 
-    if($companyid==29){//sbc
-    $column = ['action', 'db', 'cr', 'postdate', 'checkno', 'client', 'rem', 'ref', 'project', 'subprojectname',  'void', 'acnoname'];
-    }else{
-     $column = ['action', 'isewt', 'isvat', 'isvewt', 'ewtcode', 'db', 'cr', 'postdate', 'checkno', 'rem', 'project', 'subprojectname', 'client', 'clientname', 'ref', 'dept',  'invoiceno', 'invoicedate', 'void', 'acnoname'];
+    if ($companyid == 29) { //sbc
+      $column = ['action', 'db', 'cr', 'postdate', 'checkno', 'client', 'rem', 'ref', 'project', 'subprojectname',  'void', 'acnoname'];
+    } else {
+      $column = ['action', 'isewt', 'isvat', 'isvewt', 'ewtcode', 'db', 'cr', 'postdate', 'checkno', 'rem', 'project', 'subprojectname', 'client', 'clientname', 'ref', 'dept',  'invoiceno', 'invoicedate', 'void', 'acnoname'];
     }
-   
+
 
     switch ($systype) {
       case 'REALESTATE':
@@ -454,10 +454,10 @@ class cv
 
         break;
     }
-     
+
     foreach ($column as $key => $value) {
-        $$value = $key;
-      }
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
@@ -574,9 +574,9 @@ class cv
         $obj[0]['accounting']['columns'][$dept]['type'] = 'coldel';
         $obj[0]['accounting']['columns'][$clientname]['type'] = 'coldel';
         break;
-    case 29://sbc
+      case 29: //sbc
         $obj[0]['accounting']['columns'][$rem]['type'] = 'input';
-        break;  
+        break;
       default:
         $obj[0]['accounting']['columns'][$invoiceno]['type'] = 'coldel';
         $obj[0]['accounting']['columns'][$invoicedate]['type'] = 'coldel';
@@ -615,18 +615,21 @@ class cv
     $companyid = $config['params']['companyid'];
 
     $index = 0;
-    switch($companyid){
+    switch ($companyid) {
       case 10: //afti
         $tbuttons = ['unpaid', 'additem', 'saveitem', 'deleteallitem', 'pendingca', 'pendingca', 'generateewt'];
         break;
       case 26: //bee healthy
         $tbuttons = ['unpaid', 'saveitem', 'deleteallitem', 'generateewt'];
         break;
-      case 28://XCOMP
-      case 15://NATHINA
-      case 29://sbc  
+      case 28: //XCOMP
+      case 15: //NATHINA
+      case 29: //sbc  
         $tbuttons = ['unpaidall', 'unpaid', 'additem', 'saveitem', 'deleteallitem', 'generateewt', 'pendingpcv'];
         $index = 1;
+        break;
+      case 65: //metro dragon aims
+        $tbuttons = ['unpaid', 'additem', 'saveitem', 'deleteallitem', 'generateewt'];
         break;
       default:
         $tbuttons = ['unpaid', 'additem', 'saveitem', 'deleteallitem', 'generateewt', 'pendingpcv'];
@@ -780,6 +783,9 @@ class cv
       case 39:
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'brdocno'];
         break;
+      case 65: //metrodragon
+        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'orderno'];
+        break;
       default:
         $fields = [['yourref', 'ourref'], ['cur', 'forex']];
         if ($systype == 'REALESTATE') {
@@ -799,8 +805,13 @@ class cv
       data_set($col3, 'paymode.action', 'lookupcvpaymode');
     }
 
+    if ($companyid == 65) { //metrodragon
+      data_set($col3, 'orderno.label', 'LC No.');
+      data_set($col3, 'orderno.class', 'csorderno');
+    }
 
-    if($companyid == 60){//transpower
+
+    if ($companyid == 60) { //transpower
       data_set($col3, 'yourref.label', 'SI#/CR#');
       data_set($col3, 'ourref.label', 'PO#');
     }
@@ -818,10 +829,10 @@ class cv
       data_set($col3, 'ourref.label', 'Our Ref.');
     }
 
-      if ($companyid == 60) {//transpower
-       data_set($col3, 'yourref.label', 'SI# / CR #');
-       data_set($col3, 'ourref.label', 'PO#');
-      }
+    if ($companyid == 60) { //transpower
+      data_set($col3, 'yourref.label', 'SI# / CR #');
+      data_set($col3, 'ourref.label', 'PO#');
+    }
 
 
     $fields = ['rem'];
@@ -909,6 +920,7 @@ class cv
 
     $data[0]['subamenityid'] = 0;
     $data[0]['subamenityname'] = '';
+    $data[0]['orderno'] = '';
     return $data;
   }
 
@@ -997,7 +1009,7 @@ class cv
     amh.line as amenityid,
     amh.description as amenityname,
     subamh.line as subamenityid,
-    subamh.description as subamenityname
+    subamh.description as subamenityname,ifnull(head.orderno,'') as orderno
     ";
 
     $qry = $qryselect . " from $table as head
@@ -1198,8 +1210,8 @@ class cv
     $trno = $config['params']['trno'];
     $companyid = $config['params']['companyid'];
     if ($companyid == 60) { //transpower
-       $ourref = $this->coreFunctions->datareader("select ourref as value from lahead where trno=?", [$trno]);
-       if ($ourref == '') {
+      $ourref = $this->coreFunctions->datareader("select ourref as value from lahead where trno=?", [$trno]);
+      if ($ourref == '') {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. PO # cannot be blank.'];
       }
       $yourref = $this->coreFunctions->datareader("select yourref as value from lahead where trno=?", [$trno]);
@@ -2268,13 +2280,13 @@ class cv
     $chks = $this->coreFunctions->opentable('select trno from checksetup');
     $detail = $this->opendetail($trno, $config);
     $search = "online";
-    if(!empty($chks)){
+    if (!empty($chks)) {
       foreach ($detail as $key => $value) {
         $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno=?", [$detail[$key]->acno]);
-        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid],'',true);
-        if($exist !=0 || $exist !=""){
+        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid], '', true);
+        if ($exist != 0 || $exist != "") {
           if (preg_match("/{$search}/i", $detail[$key]->checkno)) {
-          } else {      
+          } else {
             $alias = $this->coreFunctions->getfieldvalue("coa", "left(alias,2)", "acnoid=?", [$acnoid]);
             if ($alias == 'CB') {
               if ($exist != 0) {
@@ -2290,7 +2302,7 @@ class cv
         }
       }
     }
-    
+
 
 
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -2337,7 +2349,7 @@ class cv
     if (preg_match("/{$search}/i", $data[0]->checkno)) {
     } else {
       if ($alias == 'CB') {
-        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid],'',true);
+        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid], '', true);
         if ($exist != 0) {
           $current = $this->coreFunctions->getfieldvalue("checksetup", "current", "acnoid=? and " . $data[0]->checkno . " between `start` and `end`", [$acnoid]);
           if ($current == $data[0]->checkno) {
@@ -2441,6 +2453,9 @@ class cv
           } else {
             $this->coreFunctions->sbcupdate($this->head, ['rem' => $hremm], ['trno' => $trno]);
           }
+        }
+        if ($companyid == 65) { //METRODRAGON
+          $this->coreFunctions->sbcupdate($this->head, ['orderno' => $data[$key]['orderno']], ['trno' => $trno]);
         }
         array_push($rows, $return['row'][0]);
       } else {

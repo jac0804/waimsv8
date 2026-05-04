@@ -128,6 +128,8 @@ class pc
   public function default_query($filters)
   {
     $trno = md5($filters['params']['dataid']);
+    $companyid = $filters['params']['companyid'];
+
     $query = "
     select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, 
     head.terms,head.rem, item.barcode,
@@ -148,6 +150,10 @@ class pc
     left join client on client.client=head.wh
     left join item on item.itemid = stock.itemid
     where head.doc='pc' and md5(head.trno)='$trno'";
+
+    if ($companyid == 68) { // jda company
+      $query .= "order by itemname";
+    }
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 

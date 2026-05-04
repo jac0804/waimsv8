@@ -177,10 +177,10 @@ class pw
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -267,7 +267,8 @@ class pw
     $tab = [
       $this->gridname => [
         'gridcolumns' => $column,
-        'computefield' => $computefield, 'headgridbtns' => $headgridbtns
+        'computefield' => $computefield,
+        'headgridbtns' => $headgridbtns
       ]
     ];
 
@@ -418,8 +419,14 @@ class pw
       $hideobj = [];
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -1207,14 +1214,10 @@ class pw
 
 
 
-  public function deleteallitem($config)
-  {
-  }
+  public function deleteallitem($config) {}
 
 
-  public function deleteitem($config)
-  {
-  } // end function
+  public function deleteitem($config) {} // end function
 
   public function getlatestprice($config)
   {

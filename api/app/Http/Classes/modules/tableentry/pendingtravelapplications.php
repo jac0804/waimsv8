@@ -77,11 +77,11 @@ class pendingtravelapplications
                 }
             }
         }
-        $cols = ['action', 'clientname', 'dateid', 'startdate', 'enddate', 'remarks', 'rem1'];
+        $cols = ['action', 'clientname', 'dateid', 'startdate', 'enddate', 'area', 'remarks', 'rem1'];
 
         if ($config['params']['companyid'] == 58) { //cdo
             if ($config['params']['row']['approver'] == "isbudgetapprover") {
-                $cols = ['action', 'clientname', 'dateid', 'startdate', 'enddate', 'amt4', 'amt5', 'amt6', 'amt7', 'ext'];
+                $cols = ['action', 'clientname', 'dateid', 'startdate', 'enddate', 'area', 'amt4', 'amt5', 'amt6', 'amt7', 'ext'];
             }
         }
 
@@ -116,6 +116,9 @@ class pendingtravelapplications
             $obj[0][$this->gridname]['columns'][$dateid]['style'] = 'width:150px;min-width:150px;';
             $obj[0][$this->gridname]['columns'][$startdate]['style'] = 'width:150px;min-width:150px;';
             $obj[0][$this->gridname]['columns'][$enddate]['style'] = 'width:150px;min-width:150px;';
+            $obj[0][$this->gridname]['columns'][$area]['style'] = 'width:150px;min-width:150px;';
+            $obj[0][$this->gridname]['columns'][$area]['type'] = 'label';
+            $obj[0][$this->gridname]['columns'][$area]['label'] = 'Area of Travel';
 
             if ($config['params']['row']['approver'] == "isbudgetapprover") {
                 $obj[0][$this->gridname]['columns'][$ext]['style'] = 'width:100px;min-width:100px;';
@@ -138,9 +141,11 @@ class pendingtravelapplications
                 $obj[0][$this->gridname]['columns'][$amt5]['align'] = 'text-left';
                 $obj[0][$this->gridname]['columns'][$amt6]['align'] = 'text-left';
                 $obj[0][$this->gridname]['columns'][$amt7]['align'] = 'text-left';
+
+                $obj[0][$this->gridname]['columns'][$area]['type'] = 'coldel';
             }
         }
-
+        $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
 
@@ -184,7 +189,7 @@ class pendingtravelapplications
                         m.sbcpendingapp, m.modulename as doc, p.approver, it.approvedrem as rem1,
                         case when p.approver = 'isapprover' then 'FOR APPROVER' else 'FOR SUPERVISOR' end as lblforapp, 
                         (it.mealamt * it.mealnum) as amt4 , (case when it.expensetype='Gasoline ' then 0 else it.texpense end) as amt5 ,
-                        (it.lodgeexp * it.lengthstay) as amt6 ,it.misc as amt7 , it.ext
+                        (it.lodgeexp * it.lengthstay) as amt6 ,it.misc as amt7 , it.ext,it.area
             from itinerary as it
             left join client on client.clientid=it.empid
             left join employee as emp on emp.empid = it.empid
@@ -193,19 +198,19 @@ class pendingtravelapplications
             where submitdate is not null and it.status in ('E','A') and p.clientid=" . $config['params']['adminid'] . " and p.approver = 'isbudgetapprover'
             group by it.trno, client.clientname,it.dateid, emp.empid,it.startdate,it.enddate,it.remarks,
                     m.sbcpendingapp, m.modulename, p.approver, it.approvedrem,it.mealamt,it.mealnum,it.texpense,
-                    it.gas,it.lengthstay,it.lodgeexp,it.misc,it.expensetype,it.ext
+                    it.gas,it.lengthstay,it.lodgeexp,it.misc,it.expensetype,it.ext,it.area
             order by it.dateid, client.clientname";
         } else {
             if ($config['params']['companyid'] == 58) { //cdo
                 $amt = ',(it.mealamt * it.mealnum) as amt4';
                 $transpo = ', (case when it.expensetype="Gasoline" then 0 else it.texpense end) as amt5';
                 $lodge = ',(it.lodgeexp * it.lengthstay) as amt6';
-                $misc = ',it.misc as amt7';
+                $misc = ',it.misc as amt7,it.area';
 
                 $total = ",  it.ext";
                 $groupby = 'group by it.trno, client.clientname,it.dateid, emp.empid,it.startdate,it.enddate,it.remarks,
                              m.sbcpendingapp, m.modulename, p.approver, it.approvedrem,it.mealamt,it.mealnum,it.texpense,it.gas,it.lengthstay,
-                             it.lodgeexp,it.misc,it.expensetype,it.ext';
+                             it.lodgeexp,it.misc,it.expensetype,it.ext,it.area';
                 $condition = " and p.approver <> 'isbudgetapprover'";
             }
             $qry = "select it.trno, client.clientname,date(it.dateid) as dateid, emp.empid,
@@ -246,6 +251,7 @@ class pendingtravelapplications
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $admin = $config['params']['adminid'];
+        $user = $config['params']['user'];
         $companyid = $config['params']['companyid'];
         $isapp = $row['approver'];
         if ($isapp == 'LATE FILLING') { //cdo
@@ -271,6 +277,7 @@ class pendingtravelapplications
         }
         $trno = $row['trno'];
         $tstatus = $status;
+        $approvername = $this->coreFunctions->getfieldvalue("client", "clientname", "email='$user'");
 
         if ($isapp == 'isbudgetapprover') {
             if ($status == 'A') {
@@ -290,7 +297,7 @@ class pendingtravelapplications
                 $update = $this->coreFunctions->sbcupdate('itinerary', $data, ['trno' => $trno]);
 
                 $config['params']['doc'] = 'ITINERARY';
-                $this->logger->sbcmasterlog($trno, $config, $label . ' Budget : (' . $row['clientname'] . ') - ' . $row['dateid']);
+                $this->logger->sbcmasterlog($trno, $config,  ' Budget ' . $label . ' by:  (' . $approvername . ') - ' . $row['dateid']);
                 return ['status' => true, 'msg' => 'Successfully ' . $label, 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
             }
         } else {
@@ -416,7 +423,7 @@ class pendingtravelapplications
                         }
 
                         $config['params']['doc'] = 'ITINERARY';
-                        $this->logger->sbcmasterlog($trno, $config, $label . ' (' . $row['clientname'] . ') - ' . $row['startdate'] . ' to ' . $row['enddate']);
+                        $this->logger->sbcmasterlog($trno, $config, $label . ' by (' . $approvername . ') - ' . $row['startdate'] . ' to ' . $row['enddate']);
                         return ['status' => true, 'msg' => 'Successfully ' . $label, 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
                     } else {
                         // reinsertpendingapp:
@@ -460,9 +467,19 @@ class pendingtravelapplications
             foreach ($period as $date) {
                 if ($notimecard) {
                     $dayname = strtolower($date->format('D'));
-                    // $this->coreFunctions->LogConsole($date->format('Y-m-d') . ' ' .  $dayname);
-                    if ($dayname != 'sat' && $dayname != 'sun') {
-                        array_push($dates, $date->format('Y-m-d') . ' ' . $defsched[0]->timein . '~' . $date->format('Y-m-d') . ' ' . $defsched[0]->timeout);
+                    switch ($dayname) {
+                        case 'sat':
+                            $schedhr = $this->coreFunctions->datareader("select sd.tothrs as value from employee as emp  join tmshifts as tm on tm.line=emp.shiftid join shiftdetail as sd on sd.shiftsid=emp.shiftid where emp.empid=" . $empid . " and sd.dayn=6", [], '', true);
+                            if ($schedhr != 0) goto adddatehere;
+                            break;
+                        case 'sun':
+                            $schedhr = $this->coreFunctions->datareader("select sd.tothrs as value from employee as emp  join tmshifts as tm on tm.line=emp.shiftid join shiftdetail as sd on sd.shiftsid=emp.shiftid where emp.empid=" . $empid . " and sd.dayn=7", [], '', true);
+                            if ($schedhr != 0) goto adddatehere;
+                            break;
+                        default:
+                            adddatehere:
+                            array_push($dates, $date->format('Y-m-d') . ' ' . $defsched[0]->timein . '~' . $date->format('Y-m-d') . ' ' . $defsched[0]->timeout);
+                            break;
                     }
                 } else {
                     $query = "select time(schedin) as value,schedout,daytype from timecard where empid = $empid and dateid = '" . $date->format('Y-m-d') . "' and daytype = 'WORKING'";

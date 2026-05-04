@@ -248,6 +248,7 @@ class be
 
     public function createHeadbutton($config)
     {
+        $companyid = $config['params']['companyid'];
         $btns = array(
             'load',
             'new',
@@ -267,6 +268,16 @@ class be
             'help',
             'others'
         );
+
+        if ($companyid == 59) { //roosevelt
+            if (($key = array_search('lock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            if (($key = array_search('unlock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            $btns = array_values($btns); //i-reindex
+        }
 
         $buttons = $this->btnClass->create($btns);
         $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'terms', 'cswhname', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -350,6 +361,9 @@ class be
         $obj[0][$this->gridname]['columns'][$clientname]['lookupclass'] = 'beclient';
         $obj[0][$this->gridname]['columns'][$clientname]['action'] = 'lookupclient';
         $obj[0][$this->gridname]['columns'][$branch]['readonly'] = 'false';
+
+        $obj[0][$this->gridname]['columns'][$checkdate]['placeholder'] = 'MM-DD-YYYY';
+        $obj[0][$this->gridname]['columns'][$checkdate]['format'] = 'MM-DD-YYYY';
 
         $obj[0][$this->gridname]['descriptionrow'] = [];
         $obj[0]['inventory']['totalfield'] = 'amount';
@@ -637,8 +651,8 @@ class be
 
     private function getstockselect($config)
     {
-        $sqlselect = "select stock.trno,stock.line,stock.bank,stock.branch,date(stock.checkdate) as checkdate,
-                            stock.checkno,stock.clientid,stock.amount,c.clientname,'' as bgcolor,'' as errcolor ";
+        $sqlselect = "select stock.trno,stock.line,stock.bank,stock.branch,date_format(stock.checkdate, '%m-%d-%Y') as checkdate,
+                            stock.checkno,stock.clientid,format(stock.amount,2) as amount,c.clientname,'' as bgcolor,'' as errcolor ";
 
         return $sqlselect;
     }
@@ -1007,7 +1021,7 @@ class be
             'line' => $line,
             'checkno' => $checkno,
             'amount' => $amount,
-            'checkdate' => $checkdate,
+            'checkdate' => str_replace('-', '/', $checkdate),
             'bank' => $bank,
             'clientid' => $clientid
         ];
@@ -1172,9 +1186,14 @@ class be
 
         $modulename = $this->modulename;
         $data = [];
+        $isreload = false;
+        if ($config['params']['companyid'] == 59) { //rooosevelt
+            $this->posttrans($config);
+            $isreload = true;
+        }
 
         $style = 'width:500px;max-width:500px;';
-        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => true];
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => true, 'reloadhead' => $isreload];
     }
 
     public function reportdata($config)

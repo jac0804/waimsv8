@@ -86,8 +86,18 @@ class pl
     $yourref = 6;
     $postdate = 7;
     $getcols = [
-      'action', 'liststatus', 'listdocument', 'listdate', 'plno', 'shipmentno', 'yourref',
-      'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+      'action',
+      'liststatus',
+      'listdocument',
+      'listdate',
+      'plno',
+      'shipmentno',
+      'yourref',
+      'postdate',
+      'listpostedby',
+      'listcreateby',
+      'listeditby',
+      'listviewby'
     ];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -159,10 +169,10 @@ class pl
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

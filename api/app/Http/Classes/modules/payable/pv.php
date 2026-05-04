@@ -168,6 +168,15 @@ class pv
         break;
     }
 
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -302,26 +311,17 @@ class pv
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'lock',
-      'unlock',
-      'post',
-      'unpost',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
-
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new',  'save', 'delete', 'cancel', 'print',  'lock', 'unlock',   'post',  'unpost', 'logs',  'edit', 'backlisting', 'toggleup', 'toggledown', 'help', 'others');
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'supplier', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'supplier', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -422,25 +422,7 @@ class pv
     $rem = 15;
     $acnoname = 16;
 
-    $columns = [
-      'action',
-      'isewt',
-      'isvat',
-      'isvewt',
-      'ewtcode',
-      'db',
-      'cr',
-      'postdate',
-      'client',
-      'project',
-      'subprojectname',
-      'stock_projectname',
-      'ref',
-      'dept',
-      'type',
-      'rem',
-      'acnoname'
-    ];
+    $columns = ['action', 'isewt', 'isvat', 'isvewt', 'ewtcode', 'db', 'cr',  'postdate', 'client', 'project', 'subprojectname', 'stock_projectname', 'ref', 'dept', 'type', 'rem',  'acnoname'];
 
     switch ($systype) {
       case 'REALESTATE':
@@ -458,12 +440,13 @@ class pv
 
 
     $tab = [
-      $this->gridname => [
-        'gridcolumns' => $columns,
-        'headgridbtns' => $headgridbtns,
-      ],
+      $this->gridname => ['gridcolumns' => $columns, 'headgridbtns' => $headgridbtns],
       //'adddocument'=>['event'=>['lookupclass' => 'entrycntnumpicture','action' => 'documententry','access' => 'view']] 
     ];
+    if ($companyid == 68) { //JDA
+      $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'pvbudget', 'label' => 'BUDGET'];
+    }
+
 
     $stockbuttons = ['save', 'delete'];
     array_push($stockbuttons, 'detailinfo');
@@ -1036,6 +1019,41 @@ class pv
 
   public function posttrans($config)
   {
+    $trno = $config['params']['trno'];
+
+    //JDA
+    $budgetaccess = $this->othersClass->checkAccess($config['params']['user'], 5826);
+    if (!$budgetaccess) {
+      $qry = "select head.dateid,c.acnoid,head.projectid,detail.db from lahead as head
+                left join ladetail as detail on detail.trno=head.trno
+                left join coa as c on c.acnoid=detail.acnoid
+                where head.trno=$trno and head.doc='PV'";
+      $resmain = $this->coreFunctions->opentable($qry);
+      foreach ($resmain as $row) {
+        $dateid = isset($row->dateid) ? $row->dateid : '';
+        $projectid = isset($row->projectid) ? $row->projectid : 0;
+        $acnoid = isset($row->acnoid) ? $row->acnoid : 0;
+        $db = isset($row->db) ? $row->db : 0;
+
+        $month = (int) date('m', strtotime($dateid));
+        $year  = date('Y', strtotime($dateid));
+
+        $qry = "select amt" . $month . " as  budget, $acnoid as acnoid, $projectid as projectid,$db as db  from budget as b
+                where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
+
+        $data = $this->coreFunctions->opentable($qry);
+        $budget = isset($data[0]->budget) ? (float)$data[0]->budget : 0;
+
+        if ($db > $budget) {
+          return [
+            'trno' => $trno,
+            'status' => false,
+            'msg' => "Posting failed. Month total of " . number_format($db, 2) .
+              " exceeds month budget of  " . number_format($budget, 2)
+          ];
+        }
+      }
+    }
     return $this->othersClass->posttransacctg($config);
   } //end function
 
@@ -2627,8 +2645,23 @@ class pv
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    $companyid = $config['params']['companyid'];
+    switch ($companyid) {
+      case 59: //roosevelt
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->othersClass->posttransacctg($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
+          }
+        }
+        break;
+    }
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

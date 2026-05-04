@@ -37,19 +37,93 @@ class stockcard
   private $stockselect;
 
   private $fields = [
-    'barcode', 'picture', 'itemname', 'uom', 'cost', 'itemrem',
-    'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder',
-    'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue', 'expense',
-    'isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool',
-    'amt', 'amt2', 'famt', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9',
-    'disc', 'disc2', 'disc3', 'disc4', 'disc5', 'disc6', 'disc7', 'disc8', 'disc9', 'foramt',
-    'supplier', 'partno', 'packaging', 'loa', 'dateid', 'warranty', 'subcode', 'depre', 'saleprice', 'isnsi', 'othcode'
+    'barcode',
+    'picture',
+    'itemname',
+    'uom',
+    'cost',
+    'itemrem',
+    'part',
+    'model',
+    'class',
+    'brand',
+    'groupid',
+    'critical',
+    'reorder',
+    'category',
+    'subcat',
+    'body',
+    'sizeid',
+    'color',
+    'asset',
+    'liability',
+    'revenue',
+    'expense',
+    'isinactive',
+    'isvat',
+    'isimport',
+    'fg_isfinishedgood',
+    'fg_isequipmenttool',
+    'amt',
+    'amt2',
+    'famt',
+    'amt4',
+    'amt5',
+    'amt6',
+    'amt7',
+    'amt8',
+    'amt9',
+    'disc',
+    'disc2',
+    'disc3',
+    'disc4',
+    'disc5',
+    'disc6',
+    'disc7',
+    'disc8',
+    'disc9',
+    'foramt',
+    'supplier',
+    'partno',
+    'packaging',
+    'loa',
+    'dateid',
+    'warranty',
+    'subcode',
+    'depre',
+    'saleprice',
+    'isnsi',
+    'othcode'
   ];
 
   private $iteminfo = [
-    'subgroup', 'company', 'serialno', 'icondition', 'disposaldate', 'disposaldays', 'insurance', 'startinsured', 'endinsured', 'dateacquired', 'dateacquireddays',
-    'purchaserid', 'invoiceno', 'invoicedate', 'pono', 'podate', 'leasedate', 'warrantydays', 'leasedays', 'depreyrs',
-    'plateno', 'vinno', 'manufacturer', 'fyear', 'fueltype', 'engine'
+    'subgroup',
+    'company',
+    'serialno',
+    'icondition',
+    'disposaldate',
+    'disposaldays',
+    'insurance',
+    'startinsured',
+    'endinsured',
+    'dateacquired',
+    'dateacquireddays',
+    'purchaserid',
+    'invoiceno',
+    'invoicedate',
+    'pono',
+    'podate',
+    'leasedate',
+    'warrantydays',
+    'leasedays',
+    'depreyrs',
+    'plateno',
+    'vinno',
+    'manufacturer',
+    'fyear',
+    'fueltype',
+    'engine',
+    'locid'
   ];
 
   private $except = ['itemid', 'disposaldays', 'dateacquireddays', 'warrantydays', 'leasedays', 'othcode'];
@@ -231,8 +305,20 @@ class stockcard
     $systemtype = $this->companysetup->getsystemtype($config['params']);
 
     $fields = [
-      'barcode', 'subcode', 'itemname', 'uom', 'othcode', 'stockgrp', 'subgroup',
-      'company', 'lbllocation', 'loc', 'empname', 'building', ['floor', 'room'], 'region'
+      'barcode',
+      'subcode',
+      'itemname',
+      'uom',
+      'othcode',
+      'stockgrp',
+      'subgroup',
+      'company',
+      'lbllocation',
+      'loc',
+      'empname',
+      'building',
+      ['floor', 'room'],
+      'region'
     ]; // 'amt', 'loa', 'dateid', 'warranty'
 
     $col1 = $this->fieldClass->create($fields);
@@ -253,7 +339,15 @@ class stockcard
     // data_set($col1, 'amt.label', 'Amount');
     // data_set($col1, 'loa.required', true);
 
-    data_set($col1, 'loc.type', 'input');
+
+    if ($companyid == 16) { //ATI
+      data_set($col1, 'loc.type', 'lookup');
+      data_set($col1, 'loc.action', 'lookupfalocation');
+      data_set($col1, 'loc.lookupclass', 'lookupfalocation');
+    } else {
+      data_set($col1, 'loc.type', 'input');
+    }
+
     data_set($col1, 'region.type', 'input');
     data_set($col1, 'stockgrp.type', 'input');
     data_set($col1, 'subgroup.type', 'input');
@@ -467,6 +561,8 @@ class stockcard
     $data[0]['subcat'] = '';
     $data[0]['color'] = '';
     $data[0]['othcode'] = '';
+
+    $data[0]['locid'] = 0;
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }

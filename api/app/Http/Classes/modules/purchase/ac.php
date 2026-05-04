@@ -315,10 +315,10 @@ class ac
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -403,15 +403,43 @@ class ac
     $stock_projectname = 16;
 
     $column = [
-      'action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname',
-      'ref', 'poref', 'loc', 'expiry', 'itemname',
-      'barcode', 'stock_projectname'
+      'action',
+      'itemdescription',
+      'serialno',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'ref',
+      'poref',
+      'loc',
+      'expiry',
+      'itemname',
+      'barcode',
+      'stock_projectname'
     ];
 
     $sortcolumn =  [
-      'action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname',
-      'ref', 'poref', 'loc', 'expiry', 'itemname',
-      'barcode', 'stock_projectname'
+      'action',
+      'itemdescription',
+      'serialno',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'ref',
+      'poref',
+      'loc',
+      'expiry',
+      'itemname',
+      'barcode',
+      'stock_projectname'
     ];
 
     $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram'];
@@ -422,7 +450,8 @@ class ac
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ]
@@ -1458,7 +1487,7 @@ class ac
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);

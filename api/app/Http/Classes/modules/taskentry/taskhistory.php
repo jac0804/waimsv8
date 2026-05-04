@@ -107,51 +107,43 @@ class taskhistory
     //aa
     public function loaddata($config)
     {
-        // var_dump($config['params']['row']['tmtrno']);
-        // break;
+
+        $currenttrno = $config['params']['row']['checkertrno'];
+        $projecthead = $this->coreFunctions->getfieldvalue("client", "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$config['params']['row']['currentuserid']], '', true);
+        $addf = "";
+        if ($projecthead != 0) {
+            $addf = " and dt.trno <> $currenttrno ";
+        }
+
         $trno = isset($config['params']['row']['tmtrno']) ? $config['params']['row']['tmtrno'] : (isset($config['params']['row']['tasktrno']) ? $config['params']['row']['tasktrno'] : 0);
         $line = isset($config['params']['row']['tmline']) ? $config['params']['row']['tmline'] : (isset($config['params']['row']['taskline']) ? $config['params']['row']['taskline'] : 0);
 
         // $trno = $config['params']['row']['tmtrno'];
         // $line = $config['params']['row']['tmline'];
-        $filter = " where dt.tasktrno=$trno and dt.taskline=$line";
+        $filter = " where dt.tasktrno=$trno and dt.taskline=$line $addf ";
+        //sa task monitoring
+        $remfield = ",dt.rem1 ";
 
+        //no tasktrno and taskline
         if ($trno == 0 && $line == 0) {
             $dytrno = isset($config['params']['row']['refx']) ? $config['params']['row']['refx'] :  0;
-            $filter = " where dt.trno=$dytrno";
+            $filter = " where (dt.trno = '$dytrno' or dt.refx= '$dytrno') $addf ";
         }
 
-
-
-        $qry = "  select c.clientname as customer, dt.createdate as dateid, userr.clientname as username,dt.userid, dt.rem, dt.donedate,
-        round(timestampdiff(second, dt.createdate, dt.donedate) / 3600, 2) as hours,
-        dt.ischecker,dt.statid,dt.rem1, dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,
-        round(timestampdiff(second,dt.createdate,if(dt.donedate is null, current_timestamp, dt.donedate)) / 3600,2) as tothrs,
-        case when dt.statid='0' and dt.isprev=1 then 'on-going (continuation)' when dt.statid='0' then 'on-going' when dt.statid='1' then 'completed' when dt.statid='2' then 'undone' when dt.statid='4' then 'neglect' when dt.statid='5' then 'cancelled' when dt.statid='6' then 'return' end as status,
-        case dt.ischecker when '1' then 'Checker' when '0' then 'User' end as usertype,dt.rem1, date_format(dt.createdate, '%m/%d/%Y') as dateid2
-        from dailytask as dt
-        left join client as c on c.clientid = dt.clientid
-        left join client as userr on userr.clientid=dt.userid
-        $filter
-        group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate,  dt.ischecker,
-        dt.statid,dt.rem1,dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,dt.userid,dt.isprev,dt.rem1
-
-        union all
-
+        $qry = " 
         select c.clientname as customer, dt.createdate as dateid, userr.clientname as username,dt.userid, dt.rem, dt.donedate,
         round(timestampdiff(second, dt.createdate, dt.donedate) / 3600, 2) as hours,
-        ischecker, dt.statid,dt.rem1,dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,
+        ischecker, dt.statid,dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,
         round(timestampdiff(second,dt.createdate,if(dt.donedate is null, current_timestamp, dt.donedate)) / 3600,2) as tothrs,
         case when dt.statid='0' and dt.isprev=1 then 'on-going (continuation)' when dt.statid='0' then 'on-going' when dt.statid='1' then 'completed' when dt.statid='2' then 'undone' when dt.statid='4' then 'neglect' when dt.statid='5' then 'cancelled' when dt.statid='6' then 'return' end as status,
-        case dt.ischecker when '1' then 'Checker' when '0' then 'User' end as usertype,dt.rem1, date_format(dt.createdate, '%m/%d/%Y') as dateid2
+        case dt.ischecker when '1' then 'Checker' when '0' then 'User' end as usertype, date_format(dt.createdate, '%m/%d/%Y') as dateid2 $remfield
         from hdailytask as dt
         left join client as c on c.clientid = dt.clientid
         left join client as userr on userr.clientid=dt.userid
         $filter
         group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate,  dt.ischecker,
-        dt.statid,dt.rem1,dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,dt.userid,dt.isprev,dt.rem1
+        dt.statid,dt.rem1,dt.trno,dt.refx,dt.origtrno,dt.tasktrno, dt.taskline,dt.userid,dt.isprev 
         order by dateid asc";
-        // var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }

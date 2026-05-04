@@ -275,27 +275,20 @@ class is
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new', 'save', 'delete', 'cancel',  'print', 'post',  'unpost',  'lock', 'unlock',  'logs',   'edit', 'backlisting',  'toggleup',  'toggledown', 'help', 'others');
 
-    switch ($config['params']['companyid']) {
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
+
+    switch ($companyid) {
       case 10: //afti
       case 14: //majesty
       case 17: //unihome
@@ -357,7 +350,7 @@ class is
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
 
-     if ($config['params']['companyid'] == 60) { //transpower      
+    if ($config['params']['companyid'] == 60) { //transpower      
       $changecode = $this->othersClass->checkAccess($config['params']['user'], 5497);
       if ($changecode) {
         $changecode = ['customform' => ['action' => 'customform', 'lookupclass' => 'changebarcode']];
@@ -524,12 +517,18 @@ class is
           default: //main
             array_push($stockbuttons, 'stockinfo');
             break;
-          
         }
         break;
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
 
     if ($viewcost == '0') {
       $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
@@ -2017,9 +2016,14 @@ class is
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

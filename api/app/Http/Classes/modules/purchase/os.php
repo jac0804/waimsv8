@@ -304,10 +304,10 @@ class os
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -390,18 +390,55 @@ class os
     $boxcount = 19;
 
     $column = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname', 'qa',
-      'ref', 'pono', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'qa',
+      'ref',
+      'pono',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount'
     ];
 
     $sortcolumn = [
-      'action', 'itemdescription', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'whname', 'qa',
-      'ref', 'pono', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'
+      'action',
+      'itemdescription',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'whname',
+      'qa',
+      'ref',
+      'pono',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount'
     ];
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => ['itemvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram']
       ]
@@ -711,8 +748,16 @@ class os
       $hidetabbtn = ['btndeleteallitem' => false];
       $clickobj = ['button.btnadditem'];
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'hideobj' => $hideobj, 'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -737,7 +782,7 @@ class os
         } //end if
       }
     }
-//    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    //    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -1530,7 +1575,7 @@ class os
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
 
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);

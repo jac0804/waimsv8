@@ -70,9 +70,9 @@ class dm
 
   public function report_default_query($trno)
   {
-    $query = "select m.model_name as model,item.sizeid,date(head.dateid) as dateid, head.docno,head.wh, client.client, client.clientname,
+    $query = "select m.model_name as model,stock.uom,date(head.dateid) as dateid, head.docno,head.wh, client.client, client.clientname,
   head.address, head.terms,head.rem, item.barcode,head.vattype,
-  concat(stock.uom,' ',item.itemname) as itemdesc, stock.isqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,date(stock.expiry) as expiry
+  item.sizeid,item.itemname as itemdesc, stock.isqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,date(stock.expiry) as expiry
   from lahead as head
   left join lastock as stock on stock.trno=head.trno
   left join client on client.client=head.client
@@ -80,10 +80,10 @@ class dm
   left join model_masterfile as m on m.model_id = item.model
   where head.doc='dm' and head.trno ='$trno'
   union all
-  select m.model_name as model,item.sizeid,
+  select m.model_name as model,stock.uom,
   date(head.dateid) as dateid, head.docno, wh.client as wh,client.client, client.clientname,
   head.address, head.terms,head.rem, item.barcode,head.vattype,
-  concat(stock.uom,' ',item.itemname) as itemdesc, stock.isqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,date(stock.expiry) as expiry
+  item.sizeid,item.itemname as itemdesc, stock.isqty as qty, stock.isamt as amt, stock.disc, stock.ext,if(stock.ref != '', concat(left(stock.ref,2), right(stock.ref,5)), '') as ref,date(stock.expiry) as expiry
   from glhead as head
   left join glstock as stock on stock.trno=head.trno
   left join client as wh on wh.clientid=head.whid
@@ -572,12 +572,12 @@ class dm
     PDF::MultiCell(0, 0, "\n");
     PDF::SetCellPaddings(4, 4, 4, 4);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(290, 0, 'DESCRIPTION', 'TB', 'L', false, 0);
-    PDF::MultiCell(75, 0, 'QTY', 'TB', 'C', false, 0);
+    PDF::MultiCell(320, 0, 'DESCRIPTION', 'TB', 'L', false, 0);
+    PDF::MultiCell(70, 0, 'QTY', 'TB', 'C', false, 0);
     PDF::MultiCell(80, 0, 'PRICE', 'TB', 'R', false, 0);
-    PDF::MultiCell(80, 0, 'DISC', 'TB', 'C', false, 0);
+    PDF::MultiCell(70, 0, 'DISC', 'TB', 'C', false, 0);
     PDF::MultiCell(80, 0, 'DISC. AMT', 'TB', 'C', false, 0);
-    PDF::MultiCell(115, 0, 'AMOUNT', 'TB', 'R', false, 1);
+    PDF::MultiCell(100, 0, 'AMOUNT', 'TB', 'R', false, 1);
 
     PDF::SetCellPaddings(0, 0, 0, 0);
   }
@@ -622,6 +622,7 @@ class dm
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
         $disc = $data[$i]['disc'];
+        $sizeid = $data[$i]['sizeid'];
         $discamt = 0;
 
         if ($disc != 0) {
@@ -652,24 +653,26 @@ class dm
         $damt = number_format($discamt, 2);
         $discamt = number_format($discamt, 2);
 
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '44', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
         $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
         $arr_discamt = $this->reporter->fixcolumn([$discamt], '13', 0);
+        $arr_sizeid = $this->reporter->fixcolumn([$sizeid], '13', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_amt, $arr_disc, $arr_discamt, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_amt, $arr_disc, $arr_discamt, $arr_ext, $arr_sizeid]);
         for ($r = 0; $r < $maxrow; $r++) {
           $discamt = isset($arr_discamt[$r]) ? $arr_discamt[$r] : 0;
           PDF::SetFont($font, '', $fontsize);
           PDF::SetXY($x, $y);
-          PDF::MultiCell(290, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(75, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(50, 15, ' ' . (isset($arr_sizeid[$r]) ? strtoupper($arr_sizeid[$r]) : ''), '', 'L', false, 0, $x,  $y, true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(270, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(70, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(80, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(70, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ($discamt == 0) ? '' : $discamt, '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(115, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           $y = PDF::getY();
           $rowCount++;
           if ($rowCount >= $page && $i < count($data) - 1) {

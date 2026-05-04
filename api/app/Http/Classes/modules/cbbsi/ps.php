@@ -169,10 +169,10 @@ class ps
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -232,7 +232,19 @@ class ps
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'yourref', 'ourref', 'amt', 'checkdate', 'cvno', 'checkdetails', 'releasetoap', 'releasetosupp', 'cleardate', 'rem', 'plno', 'pldate'
+          'action',
+          'yourref',
+          'ourref',
+          'amt',
+          'checkdate',
+          'cvno',
+          'checkdetails',
+          'releasetoap',
+          'releasetosupp',
+          'cleardate',
+          'rem',
+          'plno',
+          'pldate'
         ]
       ]
     ];

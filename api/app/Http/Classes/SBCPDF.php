@@ -70,7 +70,7 @@ class SBCPDF
     function begintable($w = null, $h = null, $bg = false,  $b = false, $al = '',  $f = '', $fs = '', $fw = '', $fc = '', $pad = '', $m = '')
     {
         $style = $this->styler($w, $h, $bg, $b, $al, $f, $fs, $fw, $fc, $pad, $m);
-        return  $d = '<table style="border-collapse: collapse;clear: both;' . $style . '">';
+        return  $d = '<table style="table-layout: fixed;word-wrap: break-word;border-collapse: collapse;clear: both;' . $style . '">';
     } //end fn
 
     function endtable()
@@ -332,7 +332,7 @@ class SBCPDF
                                 }
                                 break;
                             default:
-                                if(isset($config['params']['dataparams']['divrep'])){
+                                if (isset($config['params']['dataparams']['divrep'])) {
                                     if ($config['params']['dataparams']['divrep'] != '') {
                                         $str .= "<div style='position:absolute; margin:-150px 0 0 0'>";
                                         $str .= $this->startrow();
@@ -342,7 +342,7 @@ class SBCPDF
                                     } else {
                                         goto defaultHeader;
                                     }
-                                }else {
+                                } else {
                                     goto defaultHeader;
                                 }
 

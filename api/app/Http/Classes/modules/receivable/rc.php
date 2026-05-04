@@ -47,8 +47,21 @@ class rc
   public $defaultContra = 'CR1';
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'client', 'clientname', 'address', 'dateid', 'yourref', 'ourref', 'phaseid', 'modelid', 'blklotid',
-    'agent',  'rem', 'projectid'
+    'trno',
+    'docno',
+    'dateid',
+    'client',
+    'clientname',
+    'address',
+    'dateid',
+    'yourref',
+    'ourref',
+    'phaseid',
+    'modelid',
+    'blklotid',
+    'agent',
+    'rem',
+    'projectid'
   ];
   private $except = ['trno', 'dateid'];
   private $acctg = [];
@@ -123,6 +136,15 @@ class rc
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
     $cols[$postdate]['label'] = 'Post Date';
+
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
 
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -207,26 +229,17 @@ class rc
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
-
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new', 'save', 'delete', 'cancel',  'print',  'post', 'unpost',  'lock', 'unlock',  'logs', 'edit', 'backlisting',  'toggleup', 'toggledown', 'help',  'others');
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -1149,9 +1162,14 @@ class rc
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)
@@ -1165,9 +1183,9 @@ class rc
 
   public function sbcscript($config)
   {
-    if ($config['params']['companyid'] == 59) {//roosevelt
+    if ($config['params']['companyid'] == 59) { //roosevelt
       return $this->sbcscript->rc($config);
-    }else{
+    } else {
       return true;
     }
   }

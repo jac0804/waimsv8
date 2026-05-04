@@ -1079,6 +1079,25 @@ class hrislookup
   public function lookupempdivision($config)
   {
     //default
+    $divid = 0;
+    if (isset($config['params']['addedparams'][0])) {
+      if (!empty($config['params']['addedparams'][0])) {
+        $batchid =  $config['params']['addedparams'][0];
+        $query = "
+        select emp.divid from paytrancurrent as pt
+        left join employee as emp on emp.empid = pt.empid
+        where pt.batchid = $batchid group by emp.divid
+        union all
+        select emp.divid from paytranhistory as pt
+        left join employee as emp on emp.empid = pt.empid 
+        where pt.batchid = $batchid group by emp.divid";
+
+        $empdivid = $this->coreFunctions->opentable($query);
+        $divid = implode(",", array_map(function ($e) {
+          return $e->divid;
+        }, $empdivid));
+      }
+    }
     switch ($config['params']['lookupclass']) {
       case 'lookup_jodiv':
         $plotting = array(
@@ -1119,9 +1138,11 @@ class hrislookup
     $cols = array();
     array_push($cols, array('name' => 'divcode', 'label' => 'Code', 'align' => 'left', 'field' => 'divcode', 'sortable' => true, 'style' => 'font-size:16px;'));
     array_push($cols, array('name' => 'divname', 'label' => 'Name', 'align' => 'left', 'field' => 'divname', 'sortable' => true, 'style' => 'font-size:16px;'));
-
-
-    $qry = "select divid, divcode,divname from division order by divcode";
+    $fitler = '';
+    if ($divid != 0) {
+      $fitler = " where divid in ($divid) ";
+    }
+    $qry = "select divid, divcode,divname from division $fitler order by divcode";
 
     $data = $this->coreFunctions->opentable($qry);
     $btnadd = $this->sqlquery->checksecurity($config, 1410, '/tableentries/payrollsetup/division');
@@ -1144,6 +1165,13 @@ class hrislookup
         $plotting = array(
           'batchid' => 'line',
           'batch' => 'batch',
+        );
+        break;
+      case 'lookupbatchulitc':
+        $plotting = array(
+          'batchid' => 'line',
+          'batch' => 'batch',
+          'ispickupdate' => 'ispickupdate'
         );
         break;
       default:
@@ -1253,10 +1281,35 @@ class hrislookup
         break;
 
       default:
+        if (isset($config['params']['addedparams']) && !empty($config['params']['addedparams'])) {
+          $empid = $config['params']['addedparams'][0] != "" ? $config['params']['addedparams'][0] : 0;
+          if ($empid != 0) {
+            $query = "
+            select pt.batchid from paytrancurrent as pt
+            left join employee as emp on emp.empid = pt.empid
+            where pt.empid = $empid group by pt.batchid
+            union all
+            select pt.batchid from paytranhistory as pt
+            left join employee as emp on emp.empid = pt.empid 
+            where pt.empid = $empid group by pt.batchid";
+
+            $empbatch = $this->coreFunctions->opentable($query);
+
+            if (!empty($empbatch)) {
+              $batchid = implode(",", array_map(function ($e) {
+                return $e->batchid;
+              }, $empbatch));
+              $filter .= " where line in ($batchid) ";
+            }
+          }
+        }
+
         $qry = "select line, batch, date_format(startdate,'%m-%d-%Y') as startdate, 
                      date_format(enddate,'%m-%d-%Y') as enddate,
                      concat(date_format(startdate,'%m-%d-%Y'),' - ',date_format(enddate,'%m-%d-%Y')) as ispickupdate, 
                      paymode,divid, enddate as sortdate from batch $filter order by sortdate desc";
+
+        $this->coreFunctions->LogConsole($qry);
         break;
     }
 
@@ -3092,6 +3145,20 @@ class hrislookup
       select 'APPROVED' as status
       union all
       select 'ENTRY' as status";
+    }
+
+    if ($config['params']['companyid'] == 29 && $config['params']['doc'] == 'LEAVEAPPLICATIONPORTALAPPROVAL') { //sbc
+      $qry = "
+      select 'APPROVED' as status
+      union all
+      select 'ENTRY' as status
+      union all
+      select 'ON-HOLD' as status
+      union all
+      select 'PROCESSED' as status
+      union all
+      select 'DISAPPROVED' as status
+    ";
     }
 
 

@@ -43,14 +43,69 @@ class af
   public $htablelogs = 'htransnum_log';
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'client', 'fname', 'mname', 'lname', 'ext', 'clientname', 'address', 'addressno', 'street',
-    'subdistown', 'city', 'country', 'zipcode', 'terms', 'otherterms', 'rem', 'voiddate', 'agent', 'yourref', 'ourref',
-    'contactno', 'contactno2', 'email', 'vattype', 'planid', 'tax', 'plangrpid', 'province', 'brgy'
+    'trno',
+    'docno',
+    'dateid',
+    'client',
+    'fname',
+    'mname',
+    'lname',
+    'ext',
+    'clientname',
+    'address',
+    'addressno',
+    'street',
+    'subdistown',
+    'city',
+    'country',
+    'zipcode',
+    'terms',
+    'otherterms',
+    'rem',
+    'voiddate',
+    'agent',
+    'yourref',
+    'ourref',
+    'contactno',
+    'contactno2',
+    'email',
+    'vattype',
+    'planid',
+    'tax',
+    'plangrpid',
+    'province',
+    'brgy'
   ];
 
   private $blnfields = [
-    'isplanholder', 'ispassport', 'isdriverlisc', 'isprc', 'isseniorid', 'isotherid', 'isemployment', 'isbusiness', 'isinvestment', 'isothersource', 'isemployed', 'isselfemployed', 'isbene', 'issenior',
-    'isofw', 'isretired', 'iswife', 'isnotemployed', 'lessten', 'tenthirty', 'thirtyfifty', 'fiftyhundred', 'hundredtwofifty', 'twofiftyfivehundred', 'fivehundredup', 'issameadd', 'isdp', 'ispf'
+    'isplanholder',
+    'ispassport',
+    'isdriverlisc',
+    'isprc',
+    'isseniorid',
+    'isotherid',
+    'isemployment',
+    'isbusiness',
+    'isinvestment',
+    'isothersource',
+    'isemployed',
+    'isselfemployed',
+    'isbene',
+    'issenior',
+    'isofw',
+    'isretired',
+    'iswife',
+    'isnotemployed',
+    'lessten',
+    'tenthirty',
+    'thirtyfifty',
+    'fiftyhundred',
+    'hundredtwofifty',
+    'twofiftyfivehundred',
+    'fivehundredup',
+    'issameadd',
+    'isdp',
+    'ispf'
   ];
 
   private $except = ['trno', 'dateid', 'voiddate'];
@@ -228,10 +283,10 @@ class af
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -393,8 +448,25 @@ class af
     $nosearch = $this->othersClass->checkAccess($config['params']['user'], 4098);
 
     $fields = [
-      'docno', 'bclient', 'lname2', 'fname2', 'mname2', 'ext2', 'lblshipping', ['ispassport', 'isprc'], ['isdriverlisc', 'isotherid'], 'isseniorid', ['idno', 'expiration'], 'passbook',
-      'lessten', 'tenthirty', 'thirtyfifty', 'fiftyhundred', 'hundredtwofifty', 'twofiftyfivehundred', 'fivehundredup'
+      'docno',
+      'bclient',
+      'lname2',
+      'fname2',
+      'mname2',
+      'ext2',
+      'lblshipping',
+      ['ispassport', 'isprc'],
+      ['isdriverlisc', 'isotherid'],
+      'isseniorid',
+      ['idno', 'expiration'],
+      'passbook',
+      'lessten',
+      'tenthirty',
+      'thirtyfifty',
+      'fiftyhundred',
+      'hundredtwofifty',
+      'twofiftyfivehundred',
+      'fivehundredup'
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'docno.label', 'Application #');
@@ -415,8 +487,23 @@ class af
     }
 
     $fields = [
-      'plantype', 'amount', 'dagentname', 'gender', 'civilstatus', ['bday', 'nationality'], 'pob', ['lblbilling'], ['isemployment', 'isinvestment'], ['isbusiness', 'isothersource'], 'othersource', 'lblacquisition',
-      ['isemployed', 'isselfemployed'], 'isofw', 'isretired', 'iswife', 'isnotemployed'
+      'plantype',
+      'amount',
+      'dagentname',
+      'gender',
+      'civilstatus',
+      ['bday', 'nationality'],
+      'pob',
+      ['lblbilling'],
+      ['isemployment', 'isinvestment'],
+      ['isbusiness', 'isothersource'],
+      'othersource',
+      'lblacquisition',
+      ['isemployed', 'isselfemployed'],
+      'isofw',
+      'isretired',
+      'iswife',
+      'isnotemployed'
     ];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'lblbilling.label', 'Source of Income');
@@ -995,13 +1082,12 @@ class af
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       // for info table
       $exist = $this->coreFunctions->getfieldvalue($this->info, "trno", "trno=?", [$head['trno']]);
-        if (floatval($exist) <> 0) {
-          $this->coreFunctions->sbcupdate($this->info, $info, ['trno' => $head['trno']]);
-        } else {
-          //$info['trno'] = $head['trno'];
-          $this->coreFunctions->sbcinsert($this->info, $info);
-        }
-      
+      if (floatval($exist) <> 0) {
+        $this->coreFunctions->sbcupdate($this->info, $info, ['trno' => $head['trno']]);
+      } else {
+        //$info['trno'] = $head['trno'];
+        $this->coreFunctions->sbcinsert($this->info, $info);
+      }
     } else {
       $data['doc'] = $config['params']['doc'];
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();

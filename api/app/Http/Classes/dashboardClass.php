@@ -2411,7 +2411,15 @@ class dashboardClass
            p.approver ,'' as lblforapp, (case when p.approver in ('RETURN','FOR CHECKING','COMMENT') then p.approver else 'PENDING DAILY TASK' end) as description
 						from pendingapp as p 
             left join moduleapproval as m on m.modulename=p.doc  
-						where m.modulename <> '' and p.clientid= " . $adminid . " and p.doc='DY'
+						where m.modulename <> '' and p.clientid= " . $adminid . " and p.doc='DY' and p.approver <> 'REIMBURSEMENT'
+            group by  m.labelname,p.approver
+                union all
+
+            select count(p.line) as appcount, m.labelname as modulename, 'DY' as doc, 'pendingreimbursement' as sbcpendingapp,	
+            p.approver ,'' as lblforapp, (case when p.approver in ('RETURN','FOR CHECKING','COMMENT') then p.approver else 'REIMBURSEMENT' end) as description
+						from pendingapp as p 
+            left join moduleapproval as m on m.modulename=p.doc  
+						where m.modulename <> '' and p.clientid= " . $adminid . " and p.doc='DY' and p.approver = 'REIMBURSEMENT'
             group by  m.labelname,p.approver";
     }
 
@@ -4935,7 +4943,18 @@ class dashboardClass
     if (count($getDefault) > 0) {
       $this->config['return'] = ['status' => true, 'data' => $getDefault];
     } else {
-      $this->coreFunctions->execqry("insert into profile(doc, psection, pvalue, puser) values(?, ?, ?, ?)", 'insert', ['theme', 'default', '#1d6920,#00a300,#064a22', $this->config['params']['user']]);
+      $resellerid = $this->config['params']['resellerid'];
+      switch ($resellerid) {
+        case 1:
+          $this->coreFunctions->execqry("insert into profile(doc, psection, pvalue, puser) values(?, ?, ?, ?)", 'insert', ['theme', 'default', '#a30000,#d60000,#5A0605', $this->config['params']['user']]);
+          break;
+        case 2:
+          $this->coreFunctions->execqry("insert into profile(doc, psection, pvalue, puser) values(?, ?, ?, ?)", 'insert', ['theme', 'default', '#1b69ad,#006cd6,#002e5c', $this->config['params']['user']]);
+          break;
+        default:
+          $this->coreFunctions->execqry("insert into profile(doc, psection, pvalue, puser) values(?, ?, ?, ?)", 'insert', ['theme', 'default', '#1d6920,#00a300,#064a22', $this->config['params']['user']]);
+          break;
+      }
       $getDefault = $this->coreFunctions->opentable("select pvalue from profile where puser='{$this->config['params']['user']}' and doc='theme' and psection='default'");
       $this->config['return'] = ['status' => false, 'data' => $getDefault];
     }
@@ -5343,6 +5362,11 @@ class dashboardClass
     if ($this->config['params']['companyid'] == 53 || $this->config['params']['companyid'] == 51) { //camera / ulitc
       $blnprivacy = true;
     }
+    $filterlevel = "";
+    $emplvl = $this->othersClass->checksecuritylevel($this->config);
+    if ($this->config['params']['companyid'] == 62) { //one sky
+      $filterlevel = " and emp.level in $emplvl ";
+    }
 
     $curdate = $this->othersClass->getCurrentDate();
 
@@ -5358,7 +5382,7 @@ class dashboardClass
                   END
               ) AS age, client.picture, ifnull(job.jobtitle,'') AS job
           FROM employee AS emp LEFT JOIN client ON client.clientid=emp.empid LEFT JOIN jobthead AS job ON job.line=emp.jobid
-          WHERE emp.isactive=1 AND emp.bday IS NOT NULL AND DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.bday,'%m-%d')), '" . $curdate . "') BETWEEN 0 AND 30 
+          WHERE emp.isactive=1 $filterlevel AND emp.bday IS NOT NULL AND DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.bday,'%m-%d')), '" . $curdate . "') BETWEEN 0 AND 30 
           ORDER BY DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.bday,'%m-%d')), '" . $curdate . "')");
 
     $data = [];
@@ -5426,7 +5450,7 @@ class dashboardClass
           DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.hired,'%m-%d')), '" . $curdate . "') AS annivcount,
           client.picture, ifnull(job.jobtitle,'') AS job, DATE_FORMAT(emp.hired, '%M %d, %Y') as hiredname
           FROM employee AS emp LEFT JOIN client ON client.clientid=emp.empid LEFT JOIN jobthead AS job ON job.line=emp.jobid
-          WHERE emp.isactive=1 AND emp.hired IS NOT NULL AND DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.hired,'%m-%d')), '" . $curdate . "') BETWEEN 0 AND 30
+          WHERE emp.isactive=1 $filterlevel AND emp.hired IS NOT NULL AND DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.hired,'%m-%d')), '" . $curdate . "') BETWEEN 0 AND 30
           ORDER BY DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.hired,'%m-%d')), '" . $curdate . "'), emp.hired");
 
     $data2 = [];
@@ -5483,9 +5507,24 @@ class dashboardClass
       ], 'data' => $row3]);
     }
 
-    $this->config['dailynotif']['birthdays'] = ['data' => $data, 'title' => ['text' => 'BIRTHDAY ANNOUNCEMENT', 'icon' => 'notifications', 'bgcolor' => 'red', 'textcolor' => 'white']];
-    if ($this->config['params']['companyid'] != 53) { //camera
-      $this->config['dailynotif']['anniversaries'] = ['data' => $data2, 'title' => ['text' => 'MILESTONE', 'icon' => 'notifications', 'bgcolor' => 'blue', 'textcolor' => 'white']];
+    switch ($this->config['params']['companyid']) {
+      case 62: //one sky
+        if ($this->checksecurity(5647)) {
+          $this->config['dailynotif']['birthdays'] = ['data' => $data, 'title' => ['text' => 'BIRTHDAY ANNOUNCEMENT', 'icon' => 'notifications', 'bgcolor' => 'red', 'textcolor' => 'white']];
+        }
+        if ($this->checksecurity(5648)) {
+          $this->config['dailynotif']['anniversaries'] = ['data' => $data2, 'title' => ['text' => 'MILESTONE', 'icon' => 'notifications', 'bgcolor' => 'blue', 'textcolor' => 'white']];
+        }
+        break;
+
+      case 53: //camera
+        $this->config['dailynotif']['birthdays'] = ['data' => $data, 'title' => ['text' => 'BIRTHDAY ANNOUNCEMENT', 'icon' => 'notifications', 'bgcolor' => 'red', 'textcolor' => 'white']];
+        break;
+
+      default:
+        $this->config['dailynotif']['birthdays'] = ['data' => $data, 'title' => ['text' => 'BIRTHDAY ANNOUNCEMENT', 'icon' => 'notifications', 'bgcolor' => 'red', 'textcolor' => 'white']];
+        $this->config['dailynotif']['anniversaries'] = ['data' => $data2, 'title' => ['text' => 'MILESTONE', 'icon' => 'notifications', 'bgcolor' => 'blue', 'textcolor' => 'white']];
+        break;
     }
   }
 
@@ -5628,7 +5667,7 @@ class dashboardClass
     $currentdate = date('Y-m-d', strtotime($this->othersClass->getCurrentTimeStamp()));
     $qry = "select dt.trno as clientid,dt.trno, if(dt.reseller<>'',concat(c.clientname,'/ ',dt.reseller),c.clientname) as clientname,date(dt.dateid) as dateid, dt.amt,dt.rem,dt.statid,
               (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when 4 then 'Neglect' when '5' then 'Cancelled'  when '6' then 'Returned' end) as statname,
-              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker
+              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid 
               from dailytask as dt
               left join client as c on c.clientid = dt.clientid
               where dt.userid =" . $adminid . " and dt.reftrno=0  and dt.statid not in (2,4) and date(dt.dateid) ='" . $currentdate . "'
@@ -5636,7 +5675,7 @@ class dashboardClass
               
               select dt.trno as clientid,dt.trno, if(dt.reseller<>'',concat(c.clientname,'/ ',dt.reseller),c.clientname) as clientname,date(dt.dateid) as dateid, dt.amt,dt.rem,dt.statid,
               (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when 4 then 'Neglect' when '5' then 'Cancelled' when '6' then 'Returned' end) as statname,
-              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker
+              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid 
               from hdailytask as dt
               left join client as c on c.clientid = dt.clientid
               where dt.userid =" . $adminid . " and dt.reftrno=0  and dt.statid not in (2,4)   and date(dt.dateid) ='" . $currentdate . "'

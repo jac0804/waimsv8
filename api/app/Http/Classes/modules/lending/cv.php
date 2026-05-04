@@ -44,7 +44,7 @@ class cv
   private $stockselect;
   public $defaultContra = 'PC1';
 
-  private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'tax', 'vattype', 'projectid', 'ewt', 'ewtrate',  'contra', 'isencashment', 'isonlineencashment', 'paymode', 'hacno', 'hacnoname', 'costcodeid', 'empid', 'deptid', 'amount', 'checkno', 'checkdate','acctname'];
+  private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'tax', 'vattype', 'projectid', 'ewt', 'ewtrate',  'contra', 'isencashment', 'isonlineencashment', 'paymode', 'hacno', 'hacnoname', 'costcodeid', 'empid', 'deptid', 'amount', 'checkno', 'checkdate', 'acctname'];
   private $except = ['trno', 'dateid'];
   private $blnfields = ['isencashment', 'isonlineencashment'];
   private $acctg = [];
@@ -113,7 +113,7 @@ class cv
     $rem = 8;
     $postdate = 9;
 
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref','amt', 'ourref', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'amt', 'ourref', 'rem', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -202,7 +202,7 @@ class cv
     }
 
     $qry = "select head.trno,head.docno,head.clientname,$dateid $lacr , case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end as status,
-    head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,(select format(sum(d.cr),2) from ".$this->detail." as d left join coa on coa.acnoid = d.acnoid where left(coa.alias,2)='CB' and d.trno = head.trno) as amt,
+    head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,(select format(sum(d.cr),2) from " . $this->detail . " as d left join coa on coa.acnoid = d.acnoid where left(coa.alias,2)='CB' and d.trno = head.trno) as amt,
     head.yourref, head.ourref,head.rem, case ifnull(head.lockdate,'') when '' then 'red' else 'green' end as statuscolor           
     from " . $this->head . " as head 
     left join " . $this->tablenum . " as num on num.trno=head.trno " . $laleftjoin . "
@@ -211,7 +211,7 @@ class cv
     " . $grpby . " 
     union all
     select head.trno,head.docno,head.clientname,$dateid $glcr,'POSTED' as status,
-    head.createby,head.editby,head.viewby, num.postedby, date(num.postdate) as postdate,(select format(sum(d.cr),2) from ".$this->hdetail." as d left join coa on coa.acnoid = d.acnoid where left(coa.alias,2)='CB' and d.trno = head.trno) as amt,
+    head.createby,head.editby,head.viewby, num.postedby, date(num.postdate) as postdate,(select format(sum(d.cr),2) from " . $this->hdetail . " as d left join coa on coa.acnoid = d.acnoid where left(coa.alias,2)='CB' and d.trno = head.trno) as amt,
     head.yourref, head.ourref,head.rem,'grey' as statuscolor           
     from " . $this->hhead . " as head 
     left join " . $this->tablenum . " as num on num.trno=head.trno " . $glleftjoin . "
@@ -233,10 +233,10 @@ class cv
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -397,7 +397,7 @@ class cv
     $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4853);
     $systype = $this->companysetup->getsystemtype($config['params']);
     //$doclength = $this->companysetup->getdocumentlength($config['params']);
-    $fields = ['docno', 'client', 'clientname','acctname'];
+    $fields = ['docno', 'client', 'clientname', 'acctname'];
 
     $col1 = $this->fieldClass->create($fields);
 
@@ -651,32 +651,32 @@ class cv
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-      if($head['dptrno']!=0){
-        $entry = $this->coreFunctions->datareader("select trno  as value from ".$this->detail." where trno=?",[$head['trno']]);
+      if ($head['dptrno'] != 0) {
+        $entry = $this->coreFunctions->datareader("select trno  as value from " . $this->detail . " where trno=?", [$head['trno']]);
         $this->coreFunctions->sbcupdate('cntnum', ['dptrno' => $head['dptrno']], ['trno' => $head['trno']]);
-        if(empty($entry)){
-          $this->distributecvloan($config,$head['dptrno']);
-        }                
+        if (empty($entry)) {
+          $this->distributecvloan($config, $head['dptrno']);
+        }
       }
     } else {
       $data['doc'] = $config['params']['doc'];
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['createby'] = $config['params']['user'];
       $this->coreFunctions->sbcinsert($this->head, $data);
-      if($head['dptrno']!=0){
-        $entry = $this->coreFunctions->datareader("select trno as value from ".$this->detail." where trno=?",[$head['trno']]);
+      if ($head['dptrno'] != 0) {
+        $entry = $this->coreFunctions->datareader("select trno as value from " . $this->detail . " where trno=?", [$head['trno']]);
         $this->coreFunctions->sbcupdate('cntnum', ['dptrno' => $head['dptrno']], ['trno' => $head['trno']]);
-        if(empty($entry)){
-          $this->distributecvloan($config,$head['dptrno']);
-        }        
-        
+        if (empty($entry)) {
+          $this->distributecvloan($config, $head['dptrno']);
+        }
       }
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
     $this->autoentry($config);
   } // end function
 
-  private function distributecvloan($config,$loantrno){
+  private function distributecvloan($config, $loantrno)
+  {
     $trno = $config['params']['trno'];
     $data2 = $this->othersClass->distributeloanentry($config, $loantrno, $trno);
     $this->logger->sbcwritelog($trno, $config, 'AUTO ENTRY', 'AUTO LOAN ENTRY', $this->tablelogs);
@@ -695,7 +695,7 @@ class cv
       $config['params']['data']['ref'] =  $data2[$key2]['ref'];
       $config['params']['data']['rem'] = $data2[$key2]['rem'];
 
-      $return =$this->additem('insert', $config, true);
+      $return = $this->additem('insert', $config, true);
       if ($return['status']) {
         $this->coreFunctions->sbcupdate('transnum', ['cvtrno' => $trno], ['trno' => $loantrno]);
         //$this->coreFunctions->sbcupdate('cntnum', ['dptrno' => $loantrno], ['trno' => $trno]);
@@ -722,7 +722,7 @@ class cv
     //$dbval = $this->coreFunctions->getfieldvalue($this->detail, '(case when sum(db-cr) < 0 then sum(db-cr) else (sum(db-cr) * -1) end)', 'trno=?', [$trno]);
     //$dbval = $this->coreFunctions->getfieldvalue($this->detail, 'sum(db-cr)', 'trno=?', [$trno]);
     $dbval = $this->coreFunctions->getfieldvalue($this->head, 'amount', 'trno=?', [$trno]);
-    $this->coreFunctions->LogConsole($dbval."discrepancy");
+    $this->coreFunctions->LogConsole($dbval . "discrepancy");
     if ($dbval != 0) {
       $config['params']['data']['acno'] = $contra;
       $config['params']['data']['acnoname'] = $contraname;
@@ -1582,7 +1582,7 @@ class cv
       }
     }
 
-    if($db !=0 && $cr !=0){
+    if ($db != 0 && $cr != 0) {
       return ['status' => false, 'msg' => "Debit and Credit amount should not be same in one entry."];
     }
 
@@ -1799,10 +1799,10 @@ class cv
     $rows = [];
     $alias = '';
     $int = 0;
-    $othrs =0;
+    $othrs = 0;
     $data = $config['params']['rows'];
     foreach ($data as $key => $value) {
-      $alias = $this->coreFunctions->getfieldvalue("coa","alias","acnoid = ?",[$data[$key]['acnoid']]);
+      $alias = $this->coreFunctions->getfieldvalue("coa", "alias", "acnoid = ?", [$data[$key]['acnoid']]);
 
       $config['params']['data']['acno'] = $data[$key]['acno'];
       $config['params']['data']['acnoname'] = $data[$key]['acnoname'];
@@ -1818,11 +1818,11 @@ class cv
         $config['params']['data']['fcr'] = 0;
       }
 
-      if($alias == 'AR2'){//interest
+      if ($alias == 'AR2') { //interest
         $int = $int + $data[$key]['bal'];
       }
 
-      if($alias == 'AR3'){//pfnf
+      if ($alias == 'AR3') { //pfnf
         $othrs = $othrs + $data[$key]['bal'];
       }
 
@@ -1844,11 +1844,11 @@ class cv
     } //end foreach
 
     //insert reversal for unearned
-    $cvdate = $this->coreFunctions->getfieldvalue($this->head,"dateid","trno=?",[$trno]);
-    $client = $this->coreFunctions->getfieldvalue($this->head,"client","trno=?",[$trno]);
-    if($int!=0){
-      $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE1'");
-      $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE1'");
+    $cvdate = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
+    $client = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
+    if ($int != 0) {
+      $intacno = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'UE1'");
+      $intacnoname = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'UE1'");
 
       $config['params']['data']['acno'] = $intacno;
       $config['params']['data']['acnoname'] = $intacnoname;
@@ -1872,8 +1872,8 @@ class cv
         array_push($rows, $return['row'][0]);
       }
 
-      $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA2'");
-      $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA2'");
+      $intacno = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'SA2'");
+      $intacnoname = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'SA2'");
 
       $config['params']['data']['acno'] = $intacno;
       $config['params']['data']['acnoname'] = $intacnoname;
@@ -1898,9 +1898,9 @@ class cv
       }
     }
 
-    if($othrs!=0){
-      $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE2'");
-      $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'UE2'");
+    if ($othrs != 0) {
+      $intacno = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'UE2'");
+      $intacnoname = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'UE2'");
 
       $config['params']['data']['acno'] = $intacno;
       $config['params']['data']['acnoname'] = $intacnoname;
@@ -1924,8 +1924,8 @@ class cv
         array_push($rows, $return['row'][0]);
       }
 
-      $intacno = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA3'");
-      $intacnoname = $this->coreFunctions->getfieldvalue("coa","acno","alias = 'SA3'");
+      $intacno = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'SA3'");
+      $intacnoname = $this->coreFunctions->getfieldvalue("coa", "acno", "alias = 'SA3'");
 
       $config['params']['data']['acno'] = $intacno;
       $config['params']['data']['acnoname'] = $intacnoname;
@@ -1949,7 +1949,7 @@ class cv
         array_push($rows, $return['row'][0]);
       }
     }
-    
+
 
     return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
   } //end function

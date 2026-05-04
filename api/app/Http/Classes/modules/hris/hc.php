@@ -54,7 +54,9 @@ class hc
     'deduction',
     'witness',
     'witness2',
-    'status'
+    'status',
+    'cleardate',
+    'rem'
   ];
   private $except = ['trno'];
   private $acctg = [];
@@ -145,7 +147,7 @@ class hc
         break;
     }
     $qry = "select h.trno, h.docno, date(h.dateid) as dateid, 
-    c.client as empcode, c.clientname as empname, 'DRAFT' as status
+    c.client as empcode, c.clientname as empname, if(h.lockdate is not null,'LOCKED','DRAFT') as status
     from " . $this->head . " as h left join client as c on c.clientid=h.empid 
     left join " . $this->tablenum . " as num on num.trno=h.trno
     where h.doc=? and num.center = ? and 
@@ -189,7 +191,14 @@ class hc
 
   public function createTab($access, $config)
   {
+    $companyid = $config['params']['companyid'];
+
     $tab = [];
+
+    if ($companyid == 58) { //cdohris
+      $tab['tableentry'] = ['action' => 'hrisentry', 'lookupclass' => 'viewsignatories', 'label' => 'SIGNATORIES'];
+    }
+
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
@@ -227,6 +236,10 @@ class hc
 
     $fields = ['emphead', 'empheadname', 'cause', 'resignedtype'];
 
+    if ($companyid == 58) { //cdohris
+      array_push($fields, ['status', 'cleardate'], 'rem');
+    }
+
     $col3 = $this->fieldClass->create($fields);
 
 
@@ -237,6 +250,15 @@ class hc
 
     if ($companyid == 58) { //cdohris
       data_set($col3, 'resignedtype.lookupclass', 'lookupresignedHC');
+      data_set($col3, 'status.label', 'Clearance Status');
+      data_set($col3, 'status.reaonly', true);
+      data_set($col3, 'cleardate.reaonly', true);
+      data_set($col3, 'cleardate.type', 'input');
+      data_set($col3, 'cleardate.class', 'csresigned sbccsreadonly');
+      data_set($col3, 'rem.reaonly', true);
+      data_set($col3, 'rem.class', 'csresigned sbccsreadonly');
+      data_set($col3, 'rem.label', 'Immediated Head Remarks');
+
       $fields = ['amount', 'deduction', 'witnessname', 'witnessname2'];
     } else {
       $fields = [];
@@ -277,6 +299,11 @@ class hc
     $data[0]['deduction'] = 0;
     $data[0]['witness'] = 0;
     $data[0]['witness2'] = 0;
+
+    $data[0]['rem'] = '';
+    $data[0]['status'] = '';
+    $data[0]['cleardate'] = null;
+    $data[0]['approvedate'] = null;
     return $data;
   }
 
@@ -319,7 +346,7 @@ class hc
         cl.clientname as empheadname, 
         head.cause,head.resignedtype,
         head.lastdate,head.amount,head.deduction,
-        head.witness,head.witness2, witness.clientname as witnessname,witness2.clientname as witnessname2
+        head.witness,head.witness2, witness.clientname as witnessname,witness2.clientname as witnessname2,head.status,head.cleardate,head.rem
     ";
     $qry = $qryselect . " from " . $table . " as head
     left join client as cl on cl.clientid=head.empheadid   
@@ -424,9 +451,9 @@ class hc
 
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
     $msg = '';
-    $qry = "insert into hclearance (trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2)
+    $qry = "insert into hclearance (trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2,status,cleardate,rem,approvedate)
     select trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, 
-    editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2 from clearance where trno=?";
+    editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2,status,cleardate,rem,approvedate from clearance where trno=?";
     $result = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
     if ($result === 1) {
       $query = "select empid,resignedtype from hclearance where trno = $trno ";
@@ -469,9 +496,9 @@ class hc
 
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
 
-    $qry = "insert into clearance (trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2)
+    $qry = "insert into clearance (trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2,status,cleardate,rem,approvedate)
     select trno, docno, dateid, jobtitle, hired, lastdate, cause, doc, lockdate, empid, empheadid, createdate, editdate, createby, 
-    editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2 from hclearance where trno=?";
+    editby, deptid, lockuser,resignedtype,amount,deduction,witness,witness2,status,cleardate,rem,approvedate from hclearance where trno=?";
     $result = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
 
     if ($result === 1) {

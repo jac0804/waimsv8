@@ -1060,9 +1060,10 @@ class hris
     $this->coreFunctions->sbcaddcolumn("hclearance", "doc", "VARCHAR(2) NOT NULL DEFAULT ''",  0);
 
     $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["createby", "editby", "lockuser", "lockby"], "VARCHAR(100) NOT NULL DEFAULT ''");
-    $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["createdate", "lockdate", "editdate", "resigned", "hired"], "DATETIME DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["createdate", "lockdate", "editdate", "resigned", "hired", "cleardate", "approvedate"], "DATETIME DEFAULT NULL", 0);
     $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["empid", "empheadid", "deptid"], "INT(11) NOT NULL DEFAULT '0'",  0);
     $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["status"], "VARCHAR(45) NOT NULL DEFAULT ''");
+    $this->coreFunctions->sbcaddcolumngrp(["clearance", "hclearance"], ["rem"], "VARCHAR(1000) NOT NULL DEFAULT ''");
 
     $this->coreFunctions->sbcdropcolumn("hclearance", "empcode");
     $this->coreFunctions->sbcdropcolumn("hclearance", "empname");
@@ -1785,7 +1786,8 @@ class hris
 
     $this->coreFunctions->sbccreatetable("regprocess", $qry);
 
-    $this->coreFunctions->sbcaddcolumn("regprocess", "reaccess", "DATETIME DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["regprocess"], ["reaccess", "resigned"], "DATETIME DEFAULT NULL", 0);
+
 
     $qry = "CREATE TABLE `generation` (
       `line` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -1910,9 +1912,14 @@ class hris
       `trno` int(10) unsigned NOT NULL,
       `empid` int(10) unsigned NOT NULL DEFAULT '0',
       `dateevaluated` DATETIME DEFAULT NULL,
+      `createdate` DATETIME DEFAULT NULL,
+      `createby` varchar(100) DEFAULT '',
       PRIMARY KEY (`trno`,`empid`)
     ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
     $this->coreFunctions->sbccreatetable("cmevaluate", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["cmevaluate"], ["createdate"], "DATETIME DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["cmevaluate"], ["createby"], "VARCHAR(100) NOT NULL DEFAULT ''", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["regularization"], ["isevaluator"], "TINYINT(1) NOT NULL DEFAULT '0'", 0);
 
@@ -1966,6 +1973,28 @@ class hris
 
     $this->coreFunctions->sbcaddcolumn("allowsetup", "editdate", "DATETIME DEFAULT NULL", 0);
     $this->coreFunctions->sbcaddcolumn("allowsetup", "editby", "VARCHAR(100) NOT NULL DEFAULT ''", 0);
+
+    $qry = "CREATE TABLE  `hrissig` (
+	  `trno` int(10) NOT NULL DEFAULT 0,
+	  `clientid` int(10) NOT NULL DEFAULT 0,
+    `donedate` DATETIME DEFAULT NULL,
+    `rem` VARCHAR(1000) NOT NULL DEFAULT '',
+    KEY `Index_Trno` (`trno`),
+	  KEY `Index_ClientID` (`clientid`)
+	) ENGINE=MyISAM;";
+    $this->coreFunctions->sbccreatetable("hrissig", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["approvers"], ["seq"], "INT(10) NOT NULL DEFAULT '0'", 1);
+
+    $this->coreFunctions->sbcaddcolumngrp(["masterfile_log", "payroll_log"], ["task"], " text NOT NULL");
+    $this->coreFunctions->sbcaddcolumngrp(["codedetail"], ["description", "d1a", "d2a", "d3a", "d4a", "d5a"], " text NOT NULL");
+
+    $qry = "CREATE TABLE erequire like arequire";
+    $this->coreFunctions->sbccreatetable("erequire", $qry);
+
+    $this->coreFunctions->sbcdropcolumngrp(["erequire", "arequire"], ["expirydate"]);
+    $this->coreFunctions->sbcaddcolumngrp(["arequire", "erequire"], ["expiry"], "DATETIME DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumn("cljobs", "deptid", "INT(10) NOT NULL DEFAULT '0'", 0);
   } //end function
 
 } // end class

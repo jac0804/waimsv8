@@ -25,7 +25,7 @@ class bg
     private $btnClass;
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'Barangay Ledger';
+    public $modulename = 'BARANGAY LEDGER';
     public $gridname = 'accounting';
     private $companysetup;
     private $coreFunctions;
@@ -33,7 +33,6 @@ class bg
     private $logger;
     private $sqlquery;
     public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => true];
-    public $tablenum = 'transnum';
     public $head = 'client';
     public $tablelogs = 'client_log';
     public $tablelogs_del = 'del_client_log';
@@ -214,6 +213,12 @@ class bg
         data_set($col1, 'province.label', 'Provincial Address');
         data_set($col1, 'province.type', 'input');
         data_set($col1, 'year.label', 'Yrs. of residency in this brgy');
+        data_set($col1, 'street.type', 'lookup');
+        data_set($col1, 'street.action', 'lookupstreet');
+        data_set($col1, 'street.class', 'sbccsreadonly');
+        data_set($col1, 'street.label', 'Street');
+        data_set($col1, 'street.readonly', true);
+        data_set($col1, 'addr.class', 'csaddr sbccsreadonly');
         $fields = ['attainment1', 'occupation1', 'skill1', 'employer', 'rvoter', 'precintno', 'tin', 'sssgsis'];
         $col2 = $this->fieldClass->create($fields);
 
@@ -368,7 +373,10 @@ class bg
                     right(client.client,4) as num,date(client.start) as start, 
                     client.religion,info.mname,info.civilstatus,info.height,info.weight,
                     case when info.isdp=0 then '0' else '1' end as isdp,client.picture,
-                    ifnull(info.addressno,'') as addressno,ifnull(client.addr,'') as addr,ifnull(client.mobile,'') as mobile,
+                    ifnull(info.addressno,'') as addressno,
+                    if(info.addressno <> '',  concat(info.addressno, ' ', ifnull(client.addr, '')), 
+                    ifnull(client.addr, '') ) as addr,
+                    ifnull(client.mobile,'') as mobile,
                     ifnull(info.attainment1,'') as attainment1,ifnull(info.employer,'') as employer,
                     ifnull(info.sname,'') as sname, ifnull(info.attainment2,'') as attainment2,
                     ifnull(client.rem,'') as rem, ifnull(client.province,'') as province,

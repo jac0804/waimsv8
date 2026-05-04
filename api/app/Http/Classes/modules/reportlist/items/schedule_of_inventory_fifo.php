@@ -117,7 +117,11 @@ class schedule_of_inventory_fifo
   // LAYOUT OF REPORT
   public function reportplotting($config)
   {
-    $result = $this->reportDefaultLayout_DETAILED($config);
+    if ($config['params']['companyid'] == 68) {
+      $result = $this->reportDefaultLayout_JDA($config);
+    } else {
+      $result = $this->reportDefaultLayout_DETAILED($config);
+    }
     return $result;
   }
 
@@ -167,7 +171,7 @@ class schedule_of_inventory_fifo
     rrstatus.docno,left(rrstatus.dateid,10) as dateid,
     rrstatus.expiry,rrstatus.loc,(rrstatus.bal / uom2.factor) as qty,uom.factor,
     rrstatus.disc,glstock.rrcost,rrstatus.cost,
-    ifnull(class.cl_name,'') as classname 
+    ifnull(class.cl_name,'') as classname, item.itemrem as rem 
     from rrstatus
     left join glstock on glstock.trno = rrstatus.trno and 
     glstock.itemid = rrstatus.itemid and 
@@ -506,6 +510,261 @@ class schedule_of_inventory_fifo
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+
+    $str .= $this->reporter->endreport();
+    return $str;
+  }
+
+  public function default_displayHeader_JDA($config)
+  {
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid  = $config['params']['companyid'];
+
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $whname     = $config['params']['dataparams']['whname'];
+    $stockgrp   = $config['params']['dataparams']['stockgrp'];
+    $classname  = $config['params']['dataparams']['classic'];
+
+    $str        = '';
+    $layoutsize = '1200';
+    $font       = $this->companysetup->getrptfont($config['params']);
+    $fontsize   = "10";
+    $border     = "1px solid ";
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+    $str .= $this->reporter->col('SCHEDULE OF INVENTORY (FIFO)', null, null, false, $border, '', 'C', $font, '18', 'B', '', '') . '<br/>';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable('1200');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('BALANCE AS OF : ' . $start, '600', null, false, $border, '', '', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    if ($whname == "") {
+      $str .= $this->reporter->col('WAREHOUSE : ALL', '600', null, false, $border, '', '', $font, $fontsize, '', '', '');
+    } else {
+      $str .= $this->reporter->col('WAREHOUSE : ' . $whname, '600', null, false, $border, '', '', $font, $fontsize, '', '', '');
+    }
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    if ($stockgrp == "") {
+      $str .= $this->reporter->col('GROUP : ALL', '600', null, false, $border, 'B', '', $font, $fontsize, '', '', '');
+    } else {
+      $str .= $this->reporter->col('GROUP :' . $stockgrp, '600', null, false, $border, 'B', '', $font, $fontsize, '', '', '');
+    }
+
+    if ($classname == "") {
+      $str .= $this->reporter->col('CLASS : ALL', '600', null, false, $border, 'B', '', $font, $fontsize, '', '', '');
+    } else {
+      $str .= $this->reporter->col('CLASS :' . $classname, '600', null, false, $border, 'B', '', $font, $fontsize, '', '', '');
+    }
+
+    $str .= $this->reporter->pagenumber('Page', null, null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1200');
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('BARCODE',     '120', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('DESCRIPTION', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('UNIT',        '50',  null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('REMARKS',     '130', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('DOC NO',      '130', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('DATE',        '75',  null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('LOC',         '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('EXPIRY',      '75',  null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('COST',        '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('QUANTITY',    '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('INV COST',    '80',  null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '4px');
+
+    return $str;
+  }
+
+
+  public function reportDefaultLayout_JDA($config)
+  {
+    $result    = $this->reportDefault($config);
+    $companyid = $config['params']['companyid'];
+
+    $count    = 48;
+    $page     = 50;
+    $str      = '';
+    $font     = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border   = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport('1000');
+    $str .= $this->default_displayHeader_JDA($config);
+
+    $totalcost = 0;
+    $name      = "";
+    $code      = "";
+    $subtotal  = 0;
+    $subqty    = 0;
+    $iitem     = "";
+
+    $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
+
+    foreach ($result as $key => $data) {
+
+      $rrcostcomputed = $data->cost;
+      $invcost        = $rrcostcomputed * $data->qty;
+      if ($data->factor != 0) $invcost = $invcost / $data->factor;
+
+      if ($viewcost == '0') {
+        $rrcostcomputed = 0;
+        $invcost        = 0;
+      }
+
+
+      if ($name == "") {
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data->barcode,  '120', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($data->itemname, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($data->uom,      '50',  null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('',              '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // remarks
+        $str .= $this->reporter->col('',              '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // doc no 
+        $str .= $this->reporter->col('',              '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // date
+        $str .= $this->reporter->col('',              '100', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // loc
+        $str .= $this->reporter->col('',              '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // expiry
+        $str .= $this->reporter->col('',              '100', null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // cost
+        $str .= $this->reporter->col('',              '100', null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // qty
+        $str .= $this->reporter->col('',              '80',  null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // inv cost 
+        $str .= $this->reporter->endrow();
+      }
+
+
+      if (strtoupper($name) == strtoupper($data->itemname)) {
+        $name = "";
+      } else {
+        if ($name != '') {
+          // subtotal row for previous item
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $fontsize, '',  '', '');
+          $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $fontsize, '',  '', '');
+          $str .= $this->reporter->col('', '50',  null, false, $border, '', 'C', $font, $fontsize, '',  '', '');
+          $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // remarks
+          $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // doc no 
+          $str .= $this->reporter->col('', '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // date
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // loc
+          $str .= $this->reporter->col('', '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // expiry
+          $str .= $this->reporter->col('SUB-TOTAL :',               '100', null, false, $border,      '',  'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($subqty, 2),   '100', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'b', '', '');
+          $str .= $this->reporter->col(number_format($subtotal, 2), '80',  null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'b', '', '');
+          $str .= $this->reporter->endrow();
+        }
+
+        // new item header row
+        if ($name != '') {
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col($data->barcode,  '120', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col($data->itemname, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col($data->uom,      '50',  null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('',              '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // remarks
+          $str .= $this->reporter->col('',              '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // doc no 
+          $str .= $this->reporter->col('',              '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // date
+          $str .= $this->reporter->col('',              '100', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // loc
+          $str .= $this->reporter->col('',              '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // expiry
+          $str .= $this->reporter->col('',              '100', null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // cost
+          $str .= $this->reporter->col('',              '100', null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // qty
+          $str .= $this->reporter->col('',              '80',  null, false, $border, '', 'R', $font, $fontsize, '',  '', ''); // inv cost 
+          $str .= $this->reporter->endrow();
+        }
+
+        $subtotal = 0;
+        $subqty   = 0;
+        $code     = $data->itemname;
+
+        if (strtoupper($code) == strtoupper($data->itemname)) {
+          $code = "";
+        } else {
+          $code = strtoupper($data->itemname);
+        }
+      }
+
+      if ($iitem == $data->itemname) {
+        $iitem = "";
+      } else {
+        $iitem = $data->itemname;
+      }
+
+      // ── Data row ──────────────────────────────────────────────────
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+
+      $str .= $this->reporter->col('',                                '120', null, false, $border, '', 'L',  $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('',                                '250', null, false, $border, '', 'L',  $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('',                                '50',  null, false, $border, '', 'C',  $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->rem,                        '130', null, false, $border, '', 'L',  $font, $fontsize, '', '', ''); // remarks
+      $str .= $this->reporter->col($data->docno,                      '130', null, false, $border, '', 'L',  $font, $fontsize, '', '', ''); // doc no 
+      $str .= $this->reporter->col($data->dateid,                     '75',  null, false, $border, '', 'CT', $font, $fontsize, '', '', ''); // date
+      $str .= $this->reporter->col($data->loc,                        '100', null, false, $border, '', 'L',  $font, $fontsize, '', '', ''); // loc
+      $str .= $this->reporter->col($data->expiry,                     '75',  null, false, $border, '', 'C',  $font, $fontsize, '', '', ''); // expiry
+      $str .= $this->reporter->col(number_format($rrcostcomputed, 2), '100', null, false, $border, '', 'RT',  $font, $fontsize, '', '', ''); // cost
+      $str .= $this->reporter->col(number_format($data->qty, 2),      '100', null, false, $border, '', 'RT',  $font, $fontsize, '', '', ''); // qty
+      $str .= $this->reporter->col(number_format($invcost, 2),        '80',  null, false, $border, '', 'RT',  $font, $fontsize, '', '', '');
+
+      $str .= $this->reporter->endrow();
+
+      $totalcost = $totalcost + $invcost;
+      $subtotal  = $subtotal  + $invcost;
+      $subqty    = $subqty    + $data->qty;
+      $name      = strtoupper($data->itemname);
+      $code      = $data->itemname;
+      $iitem     = $data->itemname;
+
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->page_break();
+        $str .= $this->default_displayHeader_JDA($config);
+        $str .= $this->reporter->endrow();
+        $page = $page + $count;
+      }
+    }
+
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $fontsize, '',  '', '');
+    $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $fontsize, '',  '', '');
+    $str .= $this->reporter->col('', '50',  null, false, $border, '', 'C', $font, $fontsize, '',  '', '');
+    $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // remarks
+    $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // doc no changed 100 -> 130
+    $str .= $this->reporter->col('', '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // date
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // loc
+    $str .= $this->reporter->col('', '75',  null, false, $border, '', 'C', $font, $fontsize, '',  '', ''); // expiry
+    $str .= $this->reporter->col('SUB-TOTAL :',               '100', null, false, $border,      '',  'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($subqty, 2),   '100', null, false, '1px dotted', 'T', 'RT', $font, $fontsize, 'b', '', '');
+    $str .= $this->reporter->col(number_format($subtotal, 2), '80',  null, false, '1px dotted', 'T', 'RT', $font, $fontsize, 'b', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+
+    $str .= $this->reporter->begintable('1200');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('GRAND TOTAL',                '300', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('',                           '400', null, false, $border, 'T', 'R', $font, $fontsize, '',  '', '');
+    $str .= $this->reporter->col('',                           '400', null, false, $border, 'T', 'R', $font, $fontsize, '',  '', '');
+    $str .= $this->reporter->col(number_format($totalcost, 2), '100',  null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->endreport();
     return $str;

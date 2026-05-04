@@ -201,10 +201,10 @@ class so
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -938,7 +938,7 @@ class so
               if (!empty($item)) {
                 $barcode = $item[0]->barcode;
                 $item[0]->factor = $this->othersClass->val($item[0]->factor);
-                if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+                if ($item[0]->factor !== 0) $factor = $item[0]->factor;
               }
               $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
               $computed = $this->othersClass->computestock($amt, $value->disc, $qty, $factor);
@@ -1060,7 +1060,7 @@ class so
               if (!empty($item)) {
                 $barcode = $item[0]->barcode;
                 $item[0]->factor = $this->othersClass->val($item[0]->factor);
-                if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+                if ($item[0]->factor !== 0) $factor = $item[0]->factor;
               }
               $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
               $computed = $this->othersClass->computestock($amt, $value->disc, $qty, $factor);
@@ -1404,7 +1404,7 @@ class so
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
 
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);

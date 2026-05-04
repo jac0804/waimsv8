@@ -304,12 +304,14 @@ class leaveapplicationportalapproval
           when lt.status2 = 'E' then 'ENTRY'
           when lt.status2 = 'O' then 'ON-HOLD'
           when lt.status2 = 'P' then 'PROCESSED'
+          when lt.status2 = 'D' then 'DISAPPROVED'
         end as supervisorstatus, ";
     $status = " case
           when lt.status = 'A' then 'APPROVED'
           when lt.status = 'E' then 'ENTRY'
           when lt.status = 'O' then 'ON-HOLD'
           when lt.status = 'P' then 'PROCESSED'
+          when lt.status = 'D' then 'DISAPPROVED'
         end as status, ";
     switch ($companyid) {
       case 44: //stonepro
@@ -362,6 +364,7 @@ class leaveapplicationportalapproval
           when lt.status = 'E' then 'false'
           when lt.status = 'O' then 'false'
           when lt.status = 'P' then 'false'
+          when lt.status = 'D' then 'false'
         end as statusapproved, $status $status2
         lt.remarks,
         lt.adays, left(lt.effectivity, 10) as effectivity, ifnull(b.batch,'') as batch,
@@ -455,6 +458,9 @@ class leaveapplicationportalapproval
 
         $oldstatus = $this->coreFunctions->getfieldvalue("leavetrans", "status", "trno=? and line=?", [$val['trno'], $val['line']]);
         // Logger('oldstatus : ' . $oldstatus);
+
+        $data['editby'] = $user;
+        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
 
         if ($this->coreFunctions->sbcupdate("leavetrans", $data, ['trno' => $val['trno'], 'line' => $val['line']])) {
           $this->coreFunctions->execqry("delete from pendingapp where trno=" . $val['trno'] . " and line=" . $val['line'], 'delete');

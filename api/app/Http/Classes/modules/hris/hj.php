@@ -168,10 +168,10 @@ class hj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -585,6 +585,10 @@ class hj
 
             $ins6 = "insert into ratesetup (dateid,dateeffect, dateend, empid, remarks, basicrate, type, hjtrno) values ( '" . $dateid . "','" . $effectdate . "','9999-12-31'," . $clientid . ",'" . $data[0]->docno . "'," . $rate . ",'" . $classrate . "'," . $trno . ")";
             $this->coreFunctions->execqry($ins6, 'insert', [$empid]);
+
+            $ins7 = "insert into erequire (empid,reqs,submitdate,notes,issubmitted,pin,reqid,editby,editdate,expiry,empcode)
+             select '" . $clientid . "' as empid, reqs, submitdate, notes, issubmitted, pin, reqid, editby, editdate, expiry, empcode from arequire where empid = ? ";
+            $this->coreFunctions->execqry($ins7, 'insert', [$empid]);
 
             $upd = "update app set ishired=1, idno='" . $client . "',hired='" . $effectdate . "' where empid = ? ";
             $this->coreFunctions->execqry($upd, "update", [$empid]);

@@ -281,13 +281,15 @@ class inventory_per_wh_type
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        $str .= '<br/><br/>';
+        // $str .= '<br/>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-        $str .= $this->reporter->col('INVENTORY PER WAREHOUSE TYPE', null, null, false, '1px solid ', '', '', $font, '18', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col('INVENTORY PER WAREHOUSE TYPE', null, null, false, '1px solid ', '', '', $font, '18', 'B', '', '') . '<br/>';
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Balance as of : ' . $asof, '300', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '', '');
         if ($barcode == '') {
@@ -329,8 +331,8 @@ class inventory_per_wh_type
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-        $str .= $this->reporter->col('ITEM CODE', '100', null, false, '1px solid ', 'B', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('ITEM DESCRIPTION', '450', null, false, '1px solid ', 'B', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('ITEM CODE', '120', null, false, '1px solid ', 'B', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('ITEM DESCRIPTION', '430', null, false, '1px solid ', 'B', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('UOM', '75', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('WH Type 1 ' . $whtype1, '90', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('WH Type 2 ' . $whtype2, '90', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '');
@@ -420,8 +422,8 @@ class inventory_per_wh_type
             $totalext = $data->whbal1 + $data->whbal2 + $data->whbal3;
 
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data->barcode, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->itemname, '450', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->barcode, '120', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->itemname, '430', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->uom, '75', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->whbal1 == 0 ? '-' . '&nbsp&nbsp&nbsp' : number_format($data->whbal1, 2) . '&nbsp&nbsp&nbsp', '90', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->whbal2 == 0 ? '-' . '&nbsp&nbsp&nbsp' : number_format($data->whbal2, 2) . '&nbsp&nbsp&nbsp', '90', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
@@ -440,6 +442,7 @@ class inventory_per_wh_type
                 $page = $page + $count;
             }
         }
+        $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= '<br/>';
@@ -453,8 +456,6 @@ class inventory_per_wh_type
         $str .= $this->reporter->col(number_format($grandtotal, 2), '105', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '');
 
         $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->endtable();

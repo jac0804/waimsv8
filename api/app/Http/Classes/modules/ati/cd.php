@@ -312,10 +312,10 @@ class cd
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -398,10 +398,49 @@ class cd
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'ctrlno', 'rrqty2', 'unit', 'rrqty', 'uom', 'uom2', 'rrcost', 'disc', 'cost', 'ext', 'rqcd', 'basepending', 'uom3',
-          'qa', 'waivedqty', 'isprefer', 'canvasstatus', 'wh', 'requestorname', 'purpose', 'dateneeded', 'barcode', 'partno', 'itemdesc', 'itemdesc2',
-          'specs', 'specs2', 'rem1', 'clientname', 'duration', 'sanodesc', 'sono', 'department', 'category',
-          'rem', 'carem', 'amt1', 'amt2', 'ref', 'ismanual', 'void', 'itemname'
+          'action',
+          'ctrlno',
+          'rrqty2',
+          'unit',
+          'rrqty',
+          'uom',
+          'uom2',
+          'rrcost',
+          'disc',
+          'cost',
+          'ext',
+          'rqcd',
+          'basepending',
+          'uom3',
+          'qa',
+          'waivedqty',
+          'isprefer',
+          'canvasstatus',
+          'wh',
+          'requestorname',
+          'purpose',
+          'dateneeded',
+          'barcode',
+          'partno',
+          'itemdesc',
+          'itemdesc2',
+          'specs',
+          'specs2',
+          'rem1',
+          'clientname',
+          'duration',
+          'sanodesc',
+          'sono',
+          'department',
+          'category',
+          'rem',
+          'carem',
+          'amt1',
+          'amt2',
+          'ref',
+          'ismanual',
+          'void',
+          'itemname'
         ],
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
@@ -2161,7 +2200,7 @@ class cd
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($data[$i]['barcode'], '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
-      $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'] )), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'])), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['uom'], '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['itemname'], '475', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col(number_format($data[$i]['netamt'], $this->companysetup->getdecimal('price',  $params['params'])), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');

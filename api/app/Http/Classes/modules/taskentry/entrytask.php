@@ -338,6 +338,7 @@ class entrytask
       }
 
       $line = $this->coreFunctions->datareader("select max(line) as value from $tbl where trno = ?", [$trno]);
+
       if ($line == '') {
         $line = 0;
       }
@@ -367,7 +368,40 @@ class entrytask
         return ['status' => false, 'msg' => 'Saving failed.'];
       }
     } else {
+
       if ($void) {
+        //check dailytask statid
+        $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno . " and line=" . $row['line'], 'delete');
+        $daily = $this->coreFunctions->datareader("select statid as value from dailytask where tasktrno=? and taskline=?  ", [$trno, $row['line']], '', true);
+        $dailytrno = $this->coreFunctions->datareader("select trno as value from dailytask where tasktrno=? and taskline=?  ", [$trno, $row['line']], '', true);
+
+        if ($daily == 0) {
+          if ($dailytrno != 0) {
+            return ['status' => false, 'msg' => 'The task is still in progress. Please undone it first.'];
+          } else {
+            $hdaily = $this->coreFunctions->getfieldvalue("hdailytask", "statid", "tasktrno=? and taskline=?", [$trno, $row['line']]);
+            if ($hdaily == 1) {
+              return ['status' => false, 'msg' => 'The task is already tagged as for checking.'];
+            }
+          }
+        } else { //undone
+
+          $hdaily = $this->coreFunctions->getfieldvalue("hdailytask", "statid", "tasktrno=? and taskline=?", [$trno, $row['line']]); //additional checking, kapag di nag refresh yung mag aasign
+          if ($hdaily == 1) {
+            return ['status' => false, 'msg' => 'The task is already tagged as for checking.'];
+          }
+
+          if ($daily == 2) {
+            $urlHistory = 'App\Http\Classes\modules\tableentry\\' . 'pdailytask';
+            $inserthistory = $this->coreFunctions->execqry(app($urlHistory)->transferhistoryquery(), 'insert', [$dailytrno]);
+            if ($inserthistory) {
+              $this->coreFunctions->execqry("delete from dailytask where  trno=" . $dailytrno, 'delete');
+              $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $dailytrno, 'delete'); //DY
+            }
+          }
+        }
+
+
         if (!empty($row['fcheckingdate'])) {
           return ['status' => false, 'msg' => 'Already tagged as for checking'];
         }
@@ -446,7 +480,6 @@ class entrytask
       return ['status' => false, 'msg' => 'Delete Failed. This task has already been started.'];
     }
   }
-
 
   private function loaddataperrecord($trno, $line)
   {
@@ -572,7 +605,7 @@ class entrytask
     $lookupsetup = array(
       'type' => 'show',
       'title' => 'Task Master Logs',
-      'style' => 'width:1000px;max-width:1000px;'
+      'style' => 'width:100%;max-width:90%;height:50%;'
     );
 
     // lookup columns

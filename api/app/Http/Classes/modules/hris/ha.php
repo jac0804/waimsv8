@@ -39,9 +39,19 @@ class ha
   public $defaultContra = 'IS1';
 
   private $fields = [
-    'trno', 'docno', 'empid', 'dateid',
-    'jobtitle', 'type', 'title',
-    'venue', 'date1', 'date2', 'purpose', 'budget', 'deptid'
+    'trno',
+    'docno',
+    'empid',
+    'dateid',
+    'jobtitle',
+    'type',
+    'title',
+    'venue',
+    'date1',
+    'date2',
+    'purpose',
+    'budget',
+    'deptid'
   ];
   private $except = ['trno'];
   private $acctg = [];
@@ -159,10 +169,10 @@ class ha
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',

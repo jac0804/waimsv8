@@ -95,9 +95,9 @@ class entrybranchstation
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addrecord', 'saveallentry'];
+    $tbuttons = ['addrecord', 'saveallentry', 'syncall'];
     $obj = $this->tabClass->createtabbutton($tbuttons);
-
+    $obj[2]['label'] = 'UPDATE DLOCK';
     return $obj;
   }
 
@@ -245,6 +245,13 @@ class entrybranchstation
         $this->posClass->ftpcreatefolder($branchcode, $station, 'upload');
 
         return ['status' => true, 'msg' => 'File created...'];
+        break;
+      case 'syncallentry':
+        $now = $this->othersClass->getCurrentTimeStamp();
+        $this->coreFunctions->execqry("update client set dlock='" . $now . "'");
+        $this->coreFunctions->execqry("update item set dlock='" . $now . "'");
+        $returndata = $this->loaddata($config);
+        return ['status' => true, 'msg' => 'Dlock updated', 'data' => $returndata];
         break;
     }
   } //end function

@@ -225,10 +225,10 @@ class ts
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -1589,7 +1589,7 @@ class ts
           $rrref = $this->coreFunctions->datareader("select group_concat(sline separator ',') as value from serialin as sj  where sj.outline in (" . $soutline . ")");
           $this->coreFunctions->LogConsole('else serialize ' . $rrref);
           if ($rrref != '') {
-            $cost = $this->othersClass->computecostingserial($data['itemid'], $data['whid'], $trno, $line, $data['iss'], $config['params']['doc'], '', $rrref,$loc);
+            $cost = $this->othersClass->computecostingserial($data['itemid'], $data['whid'], $trno, $line, $data['iss'], $config['params']['doc'], '', $rrref, $loc);
             if ($cost == -1) {
               $msg = "Please select sufficient Engine #";
             }
@@ -1929,7 +1929,7 @@ class ts
       //computecosting
       $this->coreFunctions->LogConsole(($eline));
       if ($eline <> '') {
-        $cost = $this->othersClass->computecostingserial($item[0]->itemid, $item[0]->whid, $trno, $line, $qty, $doc, '', $eline,$loc);
+        $cost = $this->othersClass->computecostingserial($item[0]->itemid, $item[0]->whid, $trno, $line, $qty, $doc, '', $eline, $loc);
         if ($cost != -1) {
           $cost2 = $cost / $item[0]->uomfactor;
           $damt = $this->othersClass->sanitizekeyfield('amt', $cost2);

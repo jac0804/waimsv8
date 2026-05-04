@@ -117,6 +117,8 @@ class pc
     } else {
       $cols[$rem]['type'] = 'coldel';
     }
+
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -258,25 +260,19 @@ class pc
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load',  'new', 'save', 'delete',  'cancel', 'print', 'post', 'unpost',  'lock', 'unlock', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown', 'help', 'others');
+
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
+
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'cswhname', 'dateid', 'yourref', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'cswhname', 'dateid', 'yourref', 'csrem', 'btnsave']);
@@ -305,7 +301,7 @@ class pc
       case 14: //majesty
       case 47: //kstar
       case 56: //homeworks
-      case 60://transpower
+      case 60: //transpower
         $buttons['others']['items']['uploadexcel'] = ['label' => 'Upload Items', 'todo' => ['type' => 'uploadexcel', 'action' => 'uploadexcel', 'lookupclass' => 'uploadexcel', 'access' => 'view']];
         $buttons['others']['items']['downloadexcel'] = ['label' => 'Download PC Template', 'todo' => ['type' => 'downloadexcel', 'action' => 'downloadexcel', 'lookupclass' => 'downloadexcel', 'access' => 'view']];
         break;
@@ -427,7 +423,7 @@ class pc
         'headgridbtns' => $headgridbtns
       ],
     ];
-    
+
 
     switch ($companyid) {
       case 21: //kinggeorge
@@ -463,6 +459,12 @@ class pc
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
     // 7 - ref
     $obj[0]['inventory']['columns'][$rrcost]['label'] = 'Unit Cost';
     // if ($companyid == 42) { //pdpi mis
@@ -1915,16 +1917,21 @@ class pc
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)
   {
     $companyid = $config['params']['companyid'];
 
-    if ($companyid == 40) { // cdo
+    if ($companyid == 40 || $companyid == 68) { // cdo
       $dataparams = $config['params']['dataparams'];
       if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
       if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);

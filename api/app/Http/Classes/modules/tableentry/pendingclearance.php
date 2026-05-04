@@ -63,13 +63,21 @@ class pendingclearance
             $$value = $key;
         }
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
-        $stockbuttons = ['jumpmodule', 'approve', 'disapprove', 'undone'];
+
+        if ($config['params']['row']['approver'] == 'HEAD') {
+            $stockbuttons = ['jumpmodule', 'approve', 'disapprove', 'undone'];
+        } else {
+            $stockbuttons = ['jumpmodule', 'approve'];
+        }
+
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
         $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['label'] = 'Cleared';
-        $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['label'] = 'Not Cleared';
-        $obj[0][$this->gridname]['columns'][$action]['btns']['undone']['label'] = 'Pending';
+        if ($config['params']['row']['approver'] == 'HEAD') {
+            $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['label'] = 'Not Cleared';
+            $obj[0][$this->gridname]['columns'][$action]['btns']['undone']['label'] = 'Pending';
+        }
 
         $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
@@ -123,7 +131,7 @@ class pendingclearance
         $row = $config['params']['row'];
 
         $qry = " select cl.trno, cl.docno, date(cl.dateid) as dateid, client.clientname, '' as rem, dept.clientname as deptname, date(cl.hired) as hired, date(cl.lastdate) as dateid2, cl.jobtitle, 
-        cl.cause as rem2, m.sbcpendingapp, 'HC' as doc, 'module/hris/' as url, '' as bgcolor
+        cl.cause as rem2, m.sbcpendingapp, 'HC' as doc, 'module/hris/' as url, '' as bgcolor,app.approver
             from pendingapp as app left join clearance as cl on cl.trno=app.trno 
             left join client on client.clientid=cl.empid
             left join client as dept on dept.clientid=cl.deptid
@@ -135,6 +143,7 @@ class pendingclearance
 
     public function updateapp($config, $status)
     {
+        $adminid = $config['params']['adminid'];
         $row = $config['params']['row'];
 
         $data = [];
@@ -150,10 +159,56 @@ class pendingclearance
                 break;
         }
 
-        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['editby'] = $config['params']['user'];
-        if ($this->coreFunctions->sbcupdate("clearance", $data, ['trno' => $row['trno']])) {
-            return ['status' => true, 'msg' => 'Successfully ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
+        $row['rem'] = $this->othersClass->sanitizekeyfield("rem", $row['rem']);
+
+        if ($row['approver'] == 'HEAD') {
+            $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['editby'] = $config['params']['user'];
+            $data['cleardate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['rem'] = $row['rem'];
+            $updatecl = $this->coreFunctions->sbcupdate("clearance", $data, ['trno' => $row['trno']]);
+        } else {
+            $data2 = ['trno' => $row['trno'], 'clientid' => $adminid, 'donedate' => $this->othersClass->getCurrentTimeStamp(), 'rem' => $row['rem']];
+            $updatecl = $this->coreFunctions->sbcinsert("hrissig",  $data2);
+        }
+
+        if ($updatecl) {
+            $pendingdata = $this->coreFunctions->opentable("select * from pendingapp where trno=" . $row['trno'] . " and doc='HC' and approver='" . $row['approver'] . "' and clientid=" . $adminid);
+
+            if ($this->coreFunctions->execqry("delete from pendingapp where trno=" . $row['trno'] . " and doc='HC' and approver='" . $row['approver'] . "' and clientid=" . $adminid, 'delete')) {
+                $addonfilter = '';
+                if ($row['approver'] != 'HEAD') {
+                    $currentseq = $this->coreFunctions->datareader("select app.seq as value from moduleapproval as m  left join approvers as app on app.trno=m.line where m.modulename='HC' and app.clientid=" . $adminid . " order by app.seq limit 1", [], '', true);
+                    $addonfilter = ' and app.seq>' . $currentseq;
+                }
+                $qrynextsig = "select app.clientid as value from moduleapproval as m left join approvers as app on app.trno=m.line where m.modulename='HC' " . $addonfilter . " order by app.seq limit 1";
+                $nextsigid = $this->coreFunctions->datareader($qrynextsig, [], '', true);
+                $url = 'App\Http\Classes\modules\hris\\' . 'hc';
+                if ($nextsigid != 0) {
+                    $appstatus = $this->othersClass->insertUpdatePendingapp($row['trno'], 0, 'HC', [], $url, $config, $nextsigid);
+                    if (!$appstatus['status']) {
+                        if (!empty($pendingdata)) {
+                            foreach ($pendingdata as $pd) {
+                                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid,approver) values(?, ?, ?, ?,?)", 'insert', [$pd->trno, $pd->line, $pd->doc, $pd->clientid, $pd->approver]);
+                            }
+                        }
+                        return ['status' => false, 'msg' => $appstatus['msg'], 'data' => []];
+                    }
+                } else {
+                    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+                    $data['editby'] = $config['params']['user'];
+                    $data['approvedate'] = $this->othersClass->getCurrentTimeStamp();
+                    $updatecl = $this->coreFunctions->sbcupdate("clearance", $data, ['trno' => $row['trno']]);
+                }
+
+                $headname = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$adminid]);
+                $this->logger->sbcwritelog($row['trno'], $config, 'HEAD', 'Cleared by Head Department ' . $headname);
+
+
+                return ['status' => true, 'msg' => 'Successfully ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
+            } else {
+                return ['status' => false, 'msg' => 'Failed to delete pending app.', 'data' => []];
+            }
         } else {
             return ['status' => false, 'msg' => 'Failed to update clearance.', 'data' => []];
         }

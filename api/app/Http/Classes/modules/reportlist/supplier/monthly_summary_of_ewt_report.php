@@ -149,7 +149,7 @@ class monthly_summary_of_ewt_report
     $qry = "
       select * $wt1 from (
         select h.trno,h.docno, date(h.dateid) as dateid, c.clientname as supplier, c.client, c.tin, c.addr, sum(d.db-d.cr) as purchases, d.ewtrate  as rate, ewt.code,
-        cent.name 
+        cent.name,(case when d.isvewt=1 then 1 else 0 end) as ewttag,sum(d.db-d.cr)/1.12 as less
         from lahead as h
         left join ladetail as d on h.trno=d.trno
         left join client as c on c.client=h.client
@@ -160,13 +160,13 @@ class monthly_summary_of_ewt_report
         where date(h.dateid) between '$startdate' and '$enddate' $filter $filter1 
         and cnt.doc in ('GJ','CV','PV','RR','AC') 
         and (d.isvewt = 1 or d.isewt = 1) 
-        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.ewtrate 
+        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.ewtrate,d.isewt, d.isvat, d.isvewt
       ) as tbl1
       
         union all 
       select * $wt2 from (
         select h.trno,h.docno, date(h.dateid) as dateid, c.clientname as supplier, c.client, c.tin, c.addr, sum(d.db-d.cr) as purchases, d.ewtrate as rate, ewt.code,
-        cent.name 
+        cent.name,(case when d.isvewt=1 then 1 else 0 end) as ewttag,sum(d.db-d.cr)/1.12 as less
         from glhead as h
         left join gldetail as d on h.trno=d.trno
         left join client as c on c.clientid=h.clientid
@@ -177,9 +177,10 @@ class monthly_summary_of_ewt_report
         where date(h.dateid) between '$startdate' and '$enddate' $filter $filter1 
         and cnt.doc in ('GJ','CV','PV','RR','AC') 
         and (d.isvewt = 1 or d.isewt = 1)  
-        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.ewtrate  
+        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.ewtrate,d.isewt, d.isvat, d.isvewt
       ) as tbl2
       order by dateid, code, client, docno";
+    
     $data = $this->coreFunctions->opentable($qry);
     
     return $data;
@@ -1028,7 +1029,7 @@ class monthly_summary_of_ewt_report
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col('', '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
+      $str .= $this->reporter->col($data_->ewttag.' - '.$data_->purchases.' - '.$data_->less, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       // if ($center == '') {
       $str .= $this->reporter->col($data_->client, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       // }
@@ -1037,7 +1038,16 @@ class monthly_summary_of_ewt_report
 
       $str .= $this->reporter->col($data_->addr, '175', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       $str .= $this->reporter->col($data_->docno, '125', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
-      $str .= $this->reporter->col(number_format($data_->purchases, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
+      if($data_->ewttag==1){
+        $str .= $this->reporter->col(number_format($data_->less, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');  
+        $a += $data_->less;
+        $totala = $totala + $data_->less;
+      }else{
+        $str .= $this->reporter->col(number_format($data_->purchases, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
+        $a += $data_->purchases;
+        $totala = $totala + $data_->purchases;
+
+      }
       $str .= $this->reporter->col($data_->rate . '%', '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
 
 
@@ -1048,10 +1058,10 @@ class monthly_summary_of_ewt_report
       $str .= $this->reporter->endrow();
 
       $date = $data_->dateid;
-      $a += $data_->purchases;
+      
       $b += $data_->rate;
       $c += $data_->wt;
-      $totala = $totala + $data_->purchases;
+      
       $totalb = $totalb + $data_->rate;
       $totalc = $totalc + $data_->wt;
 
@@ -1177,7 +1187,8 @@ class monthly_summary_of_ewt_report
       select $fields1 $wt1 from (
         select  h.trno,date(h.dateid) as `DATE`, cent.name as `BRANCH`,   c.clientname as `SUPPLIER`,
                 c.tin as `TIN`, c.addr as `ADDRESS`, h.docno as `DOCNO`, 
-                sum(d.db-d.cr) as `PURCHASES`, ewt.rate as `EWTRATE`, ewt.code as `EWT`, c.client
+                (case when d.isvewt=1 then sum(d.db-d.cr)/1.12 else sum(d.db-d.cr) end) as `PURCHASES`,
+                ewt.rate as `EWTRATE`, ewt.code as `EWT`, c.client
         
         from lahead as h
         left join ladetail as d on h.trno=d.trno
@@ -1189,13 +1200,14 @@ class monthly_summary_of_ewt_report
         where date(h.dateid) between '$startdate' and '$enddate' $filter $filter1 
         and cnt.doc in ('GJ','CV','PV','RR','AC') 
         and (d.isvewt = 1 or d.isewt = 1) 
-        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name
+        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.isvewt
         ) as tbl1
         union all 
         select $fields2 $wt2 from (
         select h.trno,date(h.dateid) as `DATE`, cent.name as `BRANCH`,   c.clientname as `SUPPLIER`,
                 c.tin as `TIN`, c.addr as `ADDRESS`, h.docno as `DOCNO`, 
-                sum(d.db-d.cr) as `PURCHASES`, ewt.rate as `EWTRATE`, ewt.code as `EWT`, c.client
+                (case when d.isvewt=1 then sum(d.db-d.cr)/1.12 else sum(d.db-d.cr) end) as `PURCHASES`,
+                ewt.rate as `EWTRATE`, ewt.code as `EWT`, c.client
         from glhead as h
         left join gldetail as d on h.trno=d.trno
         left join client as c on c.clientid=h.clientid
@@ -1206,7 +1218,7 @@ class monthly_summary_of_ewt_report
         where date(h.dateid) between '$startdate' and '$enddate' $filter $filter1 
         and cnt.doc in ('GJ','CV','PV','RR','AC') 
         and (d.isvewt = 1 or d.isewt = 1)  
-        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name 
+        group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.isvewt
         ) as tbl2
       order by DATE, EWT, client, DOCNO";
       

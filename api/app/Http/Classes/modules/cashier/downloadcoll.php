@@ -260,6 +260,8 @@ class downloadcoll
         $d['drno']= $data[$k]['drno'];
         $d['dstrno']= $data[$k]['dstrno'];
         $d['bank']= $data[$k]['bank'];
+        $d['dlby'] = $config['params']['users'];
+        $d['dldate'] =  $this->othersClass->getCurrentTimeStamp();
         $d['mpid'] =  ($data[$k]['mpid'] == 0) ? $this->coreFunctions->getfieldvalue("reqcategory","line","category = '". $data[$k]['modeofpayment']."' and ispaymode =1") : $data[$k]['mpid'];
         
         // if($data[$k]['dstrno']!=0){
@@ -372,6 +374,16 @@ class downloadcoll
       
       
     }
+    
+    $this->coreFunctions->execqry("delete from coa","delete");
+    $dlcoa = $this->coreFunctions->opentable("select acnoid,acno,acnoname,levelid,alias,cat,parent,detail from coa",[],'mysql2');
+    $dlcoa = json_decode(json_encode($dlcoa), true);
+    foreach($dlcoa as $c => $x){
+      $this->coreFunctions->execqry("insert into coa (acnoid,acno,acnoname,levelid,alias,cat,parent,detail) values 
+      (".$dlcoa[$c]['acnoid'].",'".$dlcoa[$c]['acno']."','".$dlcoa[$c]['acnoname']."',".$dlcoa[$c]['levelid'].",'".$dlcoa[$c]['alias']."','".$dlcoa[$c]['cat']."','".$dlcoa[$c]['parent']."',".$dlcoa[$c]['detail'].")","insert");
+    }
+    
+
     return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
 
   }

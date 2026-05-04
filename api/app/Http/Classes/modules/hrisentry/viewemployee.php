@@ -22,7 +22,7 @@ class viewemployee
     private $fieldClass;
     private $tabClass;
     private $logger;
-    public $modulename = 'LIST OF EMPLOYEE';
+    public $modulename = 'EMPLOYEE LIST';
     public $gridname = 'inventory';
     private $companysetup;
     private $coreFunctions;
@@ -68,7 +68,9 @@ class viewemployee
         $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Employee Name";
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:330px;whiteSpace: normal;min-width:330px;";
-        $this->modulename .= ' - ' . $config['params']['row']['position'];
+
+        $this->modulename .= ' (' . $config['params']['row']['company'] . ' - ' . $config['params']['row']['sectname'] . ' - ' .
+            $config['params']['row']['area'] . ' - ' . $config['params']['row']['branch'] . ' - ' . $config['params']['row']['department'] . ' - ' . $config['params']['row']['position'] . ')';
         return $obj;
     }
 

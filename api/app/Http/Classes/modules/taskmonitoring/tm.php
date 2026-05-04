@@ -49,7 +49,8 @@ class tm
     'requestby',
     'rem',
     'amount',
-    'checkerid'
+    'checkerid',
+    'reseller'
   ];
   private $except = ['systype', 'tasktype', 'requestby'];
   public $showfilteroption = true;
@@ -207,9 +208,9 @@ class tm
   {
     $viewrate = $this->othersClass->checkAccess($config['params']['user'], 5480);
 
-    $fields = ['client', 'clientname', 'systype', 'tasktype'];
+    $fields = ['client', 'clientname', 'reseller', 'systype', 'tasktype'];
     if ($viewrate != '0') {
-      $fields = ['client', 'clientname', 'systype', 'tasktype', 'rate'];
+      $fields = ['client', 'clientname', 'reseller', 'systype', 'tasktype', 'rate'];
     }
 
     $col1 = $this->fieldClass->create($fields);
@@ -223,6 +224,7 @@ class tm
     data_set($col1, 'tasktype.action', 'lookupreqcategory');
     data_set($col1, 'tasktype.readonly', true);
     data_set($col1, 'tasktype.required', true);
+    data_set($col1, 'reseller.label', 'Reseller');
 
     $fields = ['dateid', 'empname', 'rem'];
     $col2 = $this->fieldClass->create($fields);
@@ -296,6 +298,8 @@ class tm
 
     $data[0]['checker'] = '';
     $data[0]['checkerid'] = 0;
+    $data[0]['reseller'] = '';
+
 
     return $data;
   }
@@ -307,7 +311,7 @@ class tm
     $trno = $config['params']['clientid'];
     $qry = "select h.trno as clientid,h.trno,c.client,c.clientname,h.dateid,ifnull(e.clientname,'') as empname,
     h.rem,i.itemid as sysid,i.itemname as systype,r.line as taskid,
-    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker
+    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker,ifnull(h.reseller,'') as reseller
     from tmhead as h 
     left join client as c on c.clientid = h.clientid 
     left join client as e on e.clientid = h.requestby
@@ -397,15 +401,14 @@ class tm
 
 
     if ($isupdate) {
-      if($data['requestby'] !=$data['checkerid']){
+      if ($data['requestby'] != $data['checkerid']) {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
         $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
         return ['status' => true, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno, 'reloadtableentry' => true];
-      }else{
+      } else {
         return ['status' => false, 'msg' => 'The project head cannot be the same as the checker.', 'trno' => $trno, 'clientid' => $trno, 'reloadtableentry' => true];
       }
-    
     } else {
       if ($head['clientid'] != 0) {
         if ($head['empid'] != $head['checkerid']) {

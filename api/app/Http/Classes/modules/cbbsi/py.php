@@ -174,10 +174,10 @@ class py
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -237,7 +237,12 @@ class py
     $tab = [
       $this->gridname => ['gridcolumns' => [
         'action',
-        'db', 'cr', 'postdate', 'rem', 'client', 'ref'
+        'db',
+        'cr',
+        'postdate',
+        'rem',
+        'client',
+        'ref'
       ]]
     ];
 

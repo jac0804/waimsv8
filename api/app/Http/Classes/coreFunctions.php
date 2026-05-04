@@ -29,14 +29,14 @@ class coreFunctions
 			} //end if
 			return $qry;
 		} catch (PDOException $e) {
-			$this->create_Elog($qry . ' --- ' . substr($e->getMessage(), 0, 500));
+			$this->create_Elog($qry . ' --- ' . substr($e->getMessage(), 0, 1500));
 			//throw new $e->getMessage;
 			echo substr($e, 0, 500);
 			// abort(401,$qry);
 
 			$this->logFuncCallers();
 
-			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 500), 'qry' => $qry];
+			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 1500), 'qry' => $qry];
 		}
 	} //end fn
 
@@ -56,11 +56,11 @@ class coreFunctions
 				return DB::connection($connection)->select($qry, $params);
 			} //end if
 		} catch (PDOException $e) {
-			$this->create_Elog($qry . ' --- ' . substr($e->getMessage(), 0, 500));
+			$this->create_Elog($qry . ' --- ' . substr($e->getMessage(), 0, 1500));
 
 			$this->logFuncCallers();
 
-			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 500)];
+			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 1500)];
 		}
 	} //end fn
 
@@ -75,11 +75,11 @@ class coreFunctions
 			} //end if
 			return ['status' => true, 'data' => $data];
 		} catch (PDOException $e) {
-			$this->create_Elog(substr($e->getMessage(), 0, 500));
+			$this->create_Elog($qry . '---' . substr($e->getMessage(), 0, 1500));
 
 			$this->logFuncCallers();
 
-			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 500), 'qry' => $qry];
+			return ['status' => false, 'msg' => substr($e->getMessage(), 0, 1500), 'qry' => $qry];
 		}
 	}
 
@@ -119,7 +119,7 @@ class coreFunctions
 				return '';
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog($qry . '---' . substr($e->getMessage(), 0, 500));
+			$this->create_Elog($qry . '---' . substr($e->getMessage(), 0, 1500));
 
 			$this->logFuncCallers();
 
@@ -135,7 +135,7 @@ class coreFunctions
 			DB::table($table)->where($condition)->update($columns);
 			return 1;
 		} catch (PDOException $e) {
-			$this->create_Elog($table . ' - ' . substr($e->getMessage(), 0, 10000));
+			$this->create_Elog($table . ' - cols: ' . json_encode($columns) . ' - filters: ' . json_encode($condition) . ' - ' . substr($e->getMessage(), 0, 1500));
 
 			$this->logFuncCallers();
 
@@ -152,7 +152,7 @@ class coreFunctions
 			DB::table($table)->insert($columns);
 			return 1;
 		} catch (PDOException $e) {
-			$this->create_Elog($table . ' - ' . substr($e->getMessage(), 0, 10000));
+			$this->create_Elog($table . ' - ' . json_encode($columns)  . ' - ' . substr($e->getMessage(), 0, 1500));
 
 
 			// $this->errmsg = substr($e->getMessage(), 0, 500);
@@ -184,7 +184,7 @@ class coreFunctions
 			}
 			return 1;
 		} catch (PDOException $e) {
-			$this->create_Elog(substr($e->getMessage(), 0, 500));
+			$this->create_Elog(substr($e->getMessage(), 0, 1500));
 			$this->logFuncCallers();
 			return 0;
 		} //end catch
@@ -204,7 +204,7 @@ class coreFunctions
 					} //end if
 					return 1;
 				} catch (PDOException $e) {
-					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 1500));
 					$this->logFuncCallers();
 					return 0;
 				} //end catch
@@ -219,7 +219,7 @@ class coreFunctions
 					} //end if
 					return 1;
 				} catch (PDOException $e) {
-					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 1500));
 					$this->logFuncCallers();
 					return 0;
 				} //end error
@@ -234,7 +234,7 @@ class coreFunctions
 					} //end if
 					return 1;
 				} catch (PDOException $e) {
-					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 1500));
 					$this->logFuncCallers();
 					return 0;
 				}
@@ -250,7 +250,7 @@ class coreFunctions
 					}
 					return 1;
 				} catch (PDOException $e) {
-					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 1500));
 					$this->logFuncCallers();
 					return 0;
 				}
@@ -265,8 +265,8 @@ class coreFunctions
 					}
 					return 1;
 				} catch (PDOException $e) {
-					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 500));
-					$this->errmsg = substr($e->getMessage(), 0, 500);
+					$this->create_Elog($qry . ' - ' . substr($e->getMessage(), 0, 1500));
+					$this->errmsg = substr($e->getMessage(), 0, 1500);
 					$this->logFuncCallers();
 					return 0;
 				}
@@ -309,9 +309,9 @@ class coreFunctions
 			return $key;
 		} catch (PDOException $e) {
 
-			$this->create_Elog(substr($e->getMessage(), 0, 500));
+			$this->create_Elog($table . ' - ' . substr($e->getMessage(), 0, 1500));
 
-			$this->errmsg = substr_replace(substr($e->getMessage(), 0, 500), "", 127 - 1, 500);
+			$this->errmsg = substr_replace(substr($e->getMessage(), 0, 500), "", 127 - 1, 1500);
 			$this->logFuncCallers();
 			return 0;
 		} //end try
@@ -386,7 +386,7 @@ class coreFunctions
 				$this->create_Elog("Table - " . $table . " doesn't exist - Field - " . $column);
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 500));
+			$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 1500));
 		}
 	} //end fn
 
@@ -411,7 +411,7 @@ class coreFunctions
 						$this->create_Elog("Table - " . $table . " doesn't exist - Field - " . $column);
 					}
 				} catch (PDOException $e) {
-					$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 1500));
 				}
 			}
 		}
@@ -432,7 +432,7 @@ class coreFunctions
 						$this->create_Elog("Table - " . $table . " doesn't exist - Field - " . $column);
 					}
 				} catch (PDOException $e) {
-					$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 500));
+					$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . ' - ' . substr($e->getMessage(), 0, 1500));
 				}
 			}
 		}
@@ -449,7 +449,7 @@ class coreFunctions
 				}
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . " - " . substr($e->getMessage(), 0, 500));
+			$this->create_Elog("Table - " . $table . " - Field - " . $column . " - " . $stat . " - " . substr($e->getMessage(), 0, 1500));
 		}
 	}
 
@@ -462,7 +462,7 @@ class coreFunctions
 				$this->execqry("ALTER TABLE " . $table . " DROP PRIMARY KEY");
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog("Table - " . $table . ' - ' .  substr($e->getMessage(), 0, 500));
+			$this->create_Elog("Table - " . $table . ' - ' .  substr($e->getMessage(), 0, 1500));
 		}
 	}
 
@@ -490,7 +490,7 @@ class coreFunctions
 			} else {
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog($qry . ' => ' . substr($e->getMessage(), 0, 500));
+			$this->create_Elog($qry . ' => ' . substr($e->getMessage(), 0, 1500));
 			return 0;
 		}
 	} //end function
@@ -505,7 +505,7 @@ class coreFunctions
 				}
 			}
 		} catch (PDOException $e) {
-			$this->create_Elog($qry . ' => ' . substr($e, 0, 500));
+			$this->create_Elog($qry . ' => ' . substr($e, 0, 1500));
 			return 0;
 		}
 	} //end function
@@ -516,7 +516,7 @@ class coreFunctions
 		try {
 			DB::unprepared('DROP TRIGGER IF EXISTS `' . $table . '`');
 		} catch (PDOException $e) {
-			$this->create_Elog("Drop Trigger - " . $table . " - Failed -    " . substr($e, 0, 500));
+			$this->create_Elog("Drop Trigger - " . $table . " - Failed -    " . substr($e, 0, 1500));
 		}
 	} //end fn
 

@@ -33,7 +33,13 @@ class ho
   public $tablelogs_del = 'del_hrisnum_log';
 
   private $fields = [
-    'trno', 'docno', 'empid', 'deptid', 'dateid', 'jobtitle', 'rem'
+    'trno',
+    'docno',
+    'empid',
+    'deptid',
+    'dateid',
+    'jobtitle',
+    'rem'
   ];
   private $except = ['trno'];
   public $showfilteroption = true;
@@ -145,10 +151,10 @@ class ho
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -170,12 +176,19 @@ class ho
     if (strtolower($config['params']['doc']) == 'hr') {
       $tab = [$this->gridname => [
         'gridcolumns' => [
-          'action', 'itemname', 'amt', 'rem', 'ref'
+          'action',
+          'itemname',
+          'amt',
+          'rem',
+          'ref'
         ]
       ]];
     } else {
       $tab = [$this->gridname => ['gridcolumns' => [
-        'action', 'itemname', 'amt', 'rem'
+        'action',
+        'itemname',
+        'amt',
+        'rem'
       ]]];
     }
 

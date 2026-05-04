@@ -89,6 +89,7 @@ class moduleapproval
             $obj[0][$this->gridname]['columns'][0]['btns']['approvers']['label'] = 'HR/Payroll Approver';
             $obj[0][$this->gridname]['columns'][0]['btns']['supervisors']['label'] = 'Head Dept. Approver';
         }
+        $obj[0][$this->gridname]['columns'][0]['btns']['delete']['label'] = 'delete';
 
         return $obj;
     }
@@ -197,11 +198,16 @@ class moduleapproval
 
     public function delete($config)
     {
-        $row = $config['params']['row'];
-
-        $qry = "delete from " . $this->table . " where line=?";
-        $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
-        return ['status' => true, 'msg' => 'Successfully deleted.'];
+        $modulename = $config['params']['row']['modulename'];
+        $doc = $this->coreFunctions->datareader('select doc as value from pendingapp where doc=?', [$modulename]);
+        if ($doc != '' || $doc != null) {
+            return ['status' => false, 'msg' => 'Cannot delete module name: pending applications exist.'];
+        } else {
+            $row = $config['params']['row'];
+            $qry = "delete from " . $this->table . " where line=?";
+            $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
+            return ['status' => true, 'msg' => 'Successfully deleted.'];
+        }
     }
 
 

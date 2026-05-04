@@ -48,6 +48,8 @@ class bms
     $this->coreFunctions->sbcaddcolumngrp(["clientinfo"], ['sentence1', 'sentence2', 'sentence3', 'bullet1', 'bullet2', 'bullet3', 'bullet4', 'bullet5', 'bullet6', 'bullet7'], "VARCHAR(1000) NOT NULL DEFAULT ''", 0);
     $this->coreFunctions->sbcaddcolumngrp(['client'], ['istru'], "tinyint(1) not null default '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["gldetail", "ladetail"], ['type'], "VARCHAR(45) NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->sbcaddcolumngrp(['client'], ['isbrgyemp', 'isbrgywl'], "tinyint(1) not null default '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["mtsofh"], "varchar(1000) NOT NULL DEFAULT ''", 0);
     // $this->coreFunctions->sbcdropcolumngrp(["glhead", "lahead"], ["contact"]);
   } //end function
 } // end class

@@ -356,10 +356,10 @@ class mj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -2095,7 +2095,7 @@ class mj
         } else {
           $rrref = $this->coreFunctions->datareader("select group_concat(rr.sline separator ',') as value from serialout as sj left join serialin as rr on rr.outline = sj.sline where sj.trno = " . $trno . " and sj.line =" . $line);
           if ($rrref <> '') {
-            $cost = $this->othersClass->computecostingserial($data['itemid'], $data['whid'], $trno, $line, $data['iss'], $config['params']['doc'], '', $rrref,$loc);
+            $cost = $this->othersClass->computecostingserial($data['itemid'], $data['whid'], $trno, $line, $data['iss'], $config['params']['doc'], '', $rrref, $loc);
           } else {
             $cost = -1;
             $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'ENTER SERIAL', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
@@ -3625,7 +3625,7 @@ class mj
 
         //costing
         $rrref = $this->coreFunctions->getfieldvalue("serialin", "concat(trno,'~',line)", "sline = ?", [$sline]);
-        $cost = $this->othersClass->computecostingserial($itemid, $whid, $trno, $line, 1, $doc, $rrref, $sline,$loc);
+        $cost = $this->othersClass->computecostingserial($itemid, $whid, $trno, $line, 1, $doc, $rrref, $sline, $loc);
         if ($cost != -1) {
           $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 1, $this->hqty => 1, 'cost' => $cost], ['trno' => $trno, 'line' => $line]);
           $computedata = $this->othersClass->computestock($tstock[0]->isamt, $tstock[0]->disc, 1, $tstock[0]->uomfactor);

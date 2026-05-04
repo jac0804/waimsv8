@@ -84,10 +84,11 @@ class so
   public function report_default_query($trno)
   {
     $query = "select concat(left(head.docno,2),right(head.docno,9)) as docno ,head.trno, head.clientname, head.address, 
-      date(head.dateid) as dateid,head.terms, head.rem,head.agent,head.wh,
+      date(head.dateid) as dateid,head.terms, head.agent,head.wh,
       item.barcode, item.itemname, stock.isamt as gross,  stock.isqty as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-      agent.clientname as agentname,head.shipto,cust.client,head.yourref
+      agent.clientname as agentname,head.shipto,cust.client,head.yourref,item.sizeid,ifnull(head.rem,'') as rem
+
       from sohead as head left join sostock as stock on stock.trno=head.trno 
       left join item on item.itemid=stock.itemid
       left join client as agent on agent.client=head.agent
@@ -96,10 +97,10 @@ class so
       where  head.doc='so' and head.trno='$trno'
       union all
       select concat(left(head.docno,2),right(head.docno,9)) as docno,head.trno, head.clientname, head.address, 
-      date(head.dateid) as dateid, head.terms, head.rem,head.agent,head.wh,
+      date(head.dateid) as dateid, head.terms,head.agent,head.wh,
       item.barcode, item.itemname, stock.isamt as gross,  stock.isqty as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-       agent.clientname as agentname,head.shipto,cust.client,head.yourref
+       agent.clientname as agentname,head.shipto,cust.client,head.yourref,item.sizeid,ifnull(head.rem,'') as rem
       from hsohead as head 
       left join hsostock as stock on stock.trno=head.trno
       left join item on item.itemid=stock.itemid 
@@ -114,10 +115,11 @@ class so
   public function report_pending_query($trno)
   {
     $query = "select concat(left(head.docno,2),right(head.docno,9)) as docno,head.trno, head.clientname, head.address, 
-      date(head.dateid) as dateid,head.terms, head.rem,head.agent,head.wh,
+      date(head.dateid) as dateid,head.terms,head.agent,head.wh,
       item.barcode, item.itemname, stock.isamt as gross,  stock.iss-stock.qa as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-       agent.clientname as agentname,head.shipto,cust.client,head.yourref
+       agent.clientname as agentname,head.shipto,cust.client,head.yourref,item.sizeid,ifnull(head.rem,'') as rem
+        
       from sohead as head left join sostock as stock on stock.trno=head.trno 
       left join item on item.itemid=stock.itemid
       left join client as agent on agent.client=head.agent
@@ -127,10 +129,10 @@ class so
       where head.doc='so' and  head.trno='$trno' and  stock.iss>stock.qa and stock.void=0
       union all
       select concat(left(head.docno,2),right(head.docno,9)) as docno,head.trno, head.clientname, head.address, 
-      date(head.dateid) as dateid, head.terms, head.rem,head.agent,head.wh,
+      date(head.dateid) as dateid, head.terms,head.agent,head.wh,
       item.barcode, item.itemname, stock.isamt as gross,   stock.iss-stock.qa as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-       agent.clientname as agentname,head.shipto,cust.client,head.yourref
+       agent.clientname as agentname,head.shipto,cust.client,head.yourref,item.sizeid,ifnull(head.rem,'') as rem
       from hsohead as head 
       left join hsostock as stock on stock.trno=head.trno
       left join item on item.itemid=stock.itemid 
@@ -139,10 +141,15 @@ class so
       left join client as cust on cust.client = head.client
       left join transnum as num on num.trno=head.trno
       where head.doc='so' and head.trno='$trno' and  stock.iss>stock.qa and stock.void=0 and num.postdate is not null order by line";
-
+    // var_dump($query);
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn  
+
+  // trim(concat(
+  //     if(head.rem <> '', concat('[', head.rem, ']'), ''),
+  //     if(head.rem <> '' and cust.rem <> '', ' ', ''),
+  //     if(cust.rem <> '', cust.rem, ''))) as rem
 
   public function reportplotting($params, $data)
   {
@@ -307,7 +314,7 @@ class so
 
     return $str;
   }
-  public function default_pending_so_PDF($params, $data)
+  public function default_pending_so_PDF($params, $data) //recopy
   {
     $companyid = $params['params']['companyid'];
     $amtformat = $params['params']['dataparams']['amountformat'];
@@ -324,8 +331,10 @@ class so
     $fontbold = "CourierB";
     $border = "1px solid ";
     $trno = $params['params']['dataid'];
+
+    $datahere = $this->report_default_query($trno);
+    $this->default_so_header_PDF($params, $datahere, $next = 0);
     $data = $this->report_pending_query($trno);
-    $this->default_so_header_PDF($params, $data, $next = 0);
 
     $countarr = 0;
     PDF::SetCellPaddings(5, 5, 5, 5);
@@ -333,7 +342,7 @@ class so
       for ($i = 0; $i < count($data); $i++) {
         $maxrow = 1;
         $arr_qty = $this->reporter->fixcolumn([number_format($data[$i]['qty'], 0)], '15', 0);
-        $arr_uom = $this->reporter->fixcolumn([$data[$i]['uom']], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$data[$i]['sizeid']], '13', 0);
         $arr_desc = $this->reporter->fixcolumn([$data[$i]['itemname']], '51', 0);
         // $arr_rem = $this->reporter->fixcolumn([$data[$i]['rem']], '20', 0);
         $maxrow = $this->othersClass->getmaxcolumn([$arr_qty, $arr_uom, $arr_desc]);
@@ -522,17 +531,16 @@ class so
     //   PDF::MultiCell($textWidth + $buffer, 0, $tel, 0, 'C', false);
     // }
 
-    
-    if($next == 1)  {
-    $y = (float)20;
-    $x = PDF::GetX();
-    PDF::SetXY($x, $y);
-   
-    }else{
-    PDF::SetFont($font, '', 8);
-    PDF::MultiCell(764, 0, '', '');
+
+    if ($next == 1) {
+      $y = (float)20;
+      $x = PDF::GetX();
+      PDF::SetXY($x, $y);
+    } else {
+      PDF::SetFont($font, '', 8);
+      PDF::MultiCell(764, 0, '', '');
     }
- 
+
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
@@ -562,7 +570,7 @@ class so
     PDF::MultiCell(365, 0, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0);
     PDF::MultiCell(80, 0, 'OF Date', '', 'L', false, 0);
     PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-   
+
     if (isset($data[0]['dateid'])) {
       $dateid = $data[0]['dateid'];
       $date = new DateTime($dateid);
@@ -572,80 +580,80 @@ class so
 
     if ($next == 0) { //first page
       $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-        $maxChars = 43;
-        $adds = strlen($add);
-        $firstLine = '';
-        $remaininglines = [];
-        $addsz = '';
+      $maxChars = 43;
+      $adds = strlen($add);
+      $firstLine = '';
+      $remaininglines = [];
+      $addsz = '';
 
-        if ($adds > $maxChars) {
-            $firstLine = substr($add, 0, $maxChars);
-            $remaining = substr($add, $maxChars);
-            // Split remaining address into multiple lines without cutting words
-            while (strlen($remaining) > $maxChars) {
-                // Find the last space within the maxChars limit
-                $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
+      if ($adds > $maxChars) {
+        $firstLine = substr($add, 0, $maxChars);
+        $remaining = substr($add, $maxChars);
+        // Split remaining address into multiple lines without cutting words
+        while (strlen($remaining) > $maxChars) {
+          // Find the last space within the maxChars limit
+          $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
 
-                // If there's no space, just cut at maxChars
-                if ($spacePos === false) {
-                    $nextLine = substr($remaining, 0, $maxChars);
-                    $remaining = substr($remaining, $maxChars);
-                } else {
-                    $nextLine = substr($remaining, 0, $spacePos);
-                    $remaining = substr($remaining, $spacePos + 1);
-                }
+          // If there's no space, just cut at maxChars
+          if ($spacePos === false) {
+            $nextLine = substr($remaining, 0, $maxChars);
+            $remaining = substr($remaining, $maxChars);
+          } else {
+            $nextLine = substr($remaining, 0, $spacePos);
+            $remaining = substr($remaining, $spacePos + 1);
+          }
 
-                $remainingLines[] = $nextLine;
-            }
-            // Add the final remaining part if it's less than or equal to $maxChars
-            if (strlen($remaining) > 0) {
-                $remainingLines[] = $remaining;
-            }
-        } else {
-            $addsz = $add;
+          $remainingLines[] = $nextLine;
         }
-
-
-           if ($adds > $maxChars) {
-            PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(365, 0, $firstLine, '', 'L', false, 0);
-            PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
-            // Loop through remaining lines and print them
-            foreach ($remainingLines as $line) {
-                      PDF::MultiCell(140, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(15, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(365, 0, $line, '', 'L', false, 0);
-                      PDF::MultiCell(80, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(15, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(105, 0, '', '', 'L', false);
-
-                    PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
-                    PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-                    PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
-
-                    PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
-                    PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-                    PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
-            }
-        } else {
-            PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(365, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0);
-            PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
-
-            PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
-
-            PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+        // Add the final remaining part if it's less than or equal to $maxChars
+        if (strlen($remaining) > 0) {
+          $remainingLines[] = $remaining;
         }
+      } else {
+        $addsz = $add;
+      }
+
+
+      if ($adds > $maxChars) {
+        PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(365, 0, $firstLine, '', 'L', false, 0);
+        PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
+        // Loop through remaining lines and print them
+        foreach ($remainingLines as $line) {
+          PDF::MultiCell(140, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(365, 0, $line, '', 'L', false, 0);
+          PDF::MultiCell(80, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(105, 0, '', '', 'L', false);
+
+          PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+          PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
+
+          PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+          PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+        }
+      } else {
+        PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(365, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0);
+        PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
+
+        PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
+
+        PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+      }
     }
     PDF::MultiCell(0, 0, "\n");
 
@@ -682,7 +690,7 @@ class so
       for ($i = 0; $i < count($data); $i++) {
         $maxrow = 1;
         $arr_qty = $this->reporter->fixcolumn([number_format($data[$i]['qty'], 0)], '15', 0);
-        $arr_uom = $this->reporter->fixcolumn([$data[$i]['uom']], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$data[$i]['sizeid']], '13', 0);
         $arr_desc = $this->reporter->fixcolumn([$data[$i]['itemname']], '55', 0);
         // $arr_rem = $this->reporter->fixcolumn([$data[$i]['rem']], '20', 0);
         $maxrow = $this->othersClass->getmaxcolumn([$arr_qty, $arr_uom, $arr_desc]);
@@ -858,16 +866,15 @@ class so
     //   PDF::MultiCell($textWidth + $buffer, 0, $tel, 0, 'C', false);
     // }
 
-    if($next == 1)  {
-    $y = (float)20;
-    $x = PDF::GetX();
-    PDF::SetXY($x, $y);
-   
-    }else{
-    PDF::SetFont($font, '', 8);
-    PDF::MultiCell(764, 0, '', '');
+    if ($next == 1) {
+      $y = (float)20;
+      $x = PDF::GetX();
+      PDF::SetXY($x, $y);
+    } else {
+      PDF::SetFont($font, '', 8);
+      PDF::MultiCell(764, 0, '', '');
     }
- 
+
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
@@ -906,82 +913,82 @@ class so
       // PDF::MultiCell(120, 0, 'Customer Address', '', 'L', false, 0);
       // PDF::MultiCell(10, 0, ':', '', 'L', false, 0);
       // PDF::MultiCell(590, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false);
-    
+
       $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-        $maxChars = 43;
-        $adds = strlen($add);
-        $firstLine = '';
-        $remaininglines = [];
-        $addsz = '';
+      $maxChars = 43;
+      $adds = strlen($add);
+      $firstLine = '';
+      $remaininglines = [];
+      $addsz = '';
 
-        if ($adds > $maxChars) {
-            $firstLine = substr($add, 0, $maxChars);
-            $remaining = substr($add, $maxChars);
-            // Split remaining address into multiple lines without cutting words
-            while (strlen($remaining) > $maxChars) {
-                // Find the last space within the maxChars limit
-                $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
+      if ($adds > $maxChars) {
+        $firstLine = substr($add, 0, $maxChars);
+        $remaining = substr($add, $maxChars);
+        // Split remaining address into multiple lines without cutting words
+        while (strlen($remaining) > $maxChars) {
+          // Find the last space within the maxChars limit
+          $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
 
-                // If there's no space, just cut at maxChars
-                if ($spacePos === false) {
-                    $nextLine = substr($remaining, 0, $maxChars);
-                    $remaining = substr($remaining, $maxChars);
-                } else {
-                    $nextLine = substr($remaining, 0, $spacePos);
-                    $remaining = substr($remaining, $spacePos + 1);
-                }
+          // If there's no space, just cut at maxChars
+          if ($spacePos === false) {
+            $nextLine = substr($remaining, 0, $maxChars);
+            $remaining = substr($remaining, $maxChars);
+          } else {
+            $nextLine = substr($remaining, 0, $spacePos);
+            $remaining = substr($remaining, $spacePos + 1);
+          }
 
-                $remainingLines[] = $nextLine;
-            }
-            // Add the final remaining part if it's less than or equal to $maxChars
-            if (strlen($remaining) > 0) {
-                $remainingLines[] = $remaining;
-            }
-        } else {
-            $addsz = $add;
+          $remainingLines[] = $nextLine;
         }
-
-
-           if ($adds > $maxChars) {
-            PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(365, 0, $firstLine, '', 'L', false, 0);
-            PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
-            // Loop through remaining lines and print them
-            foreach ($remainingLines as $line) {
-                      PDF::MultiCell(140, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(15, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(365, 0, $line, '', 'L', false, 0);
-                      PDF::MultiCell(80, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(15, 0, '', '', 'L', false, 0);
-                      PDF::MultiCell(105, 0, '', '', 'L', false);
-
-                    PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
-                    PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-                    PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
-
-                    PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
-                    PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-                    PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
-            }
-        } else {
-            PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(365, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0);
-            PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
-
-            PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
-
-            PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
-            PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
-            PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+        // Add the final remaining part if it's less than or equal to $maxChars
+        if (strlen($remaining) > 0) {
+          $remainingLines[] = $remaining;
         }
+      } else {
+        $addsz = $add;
+      }
+
+
+      if ($adds > $maxChars) {
+        PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(365, 0, $firstLine, '', 'L', false, 0);
+        PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
+        // Loop through remaining lines and print them
+        foreach ($remainingLines as $line) {
+          PDF::MultiCell(140, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(365, 0, $line, '', 'L', false, 0);
+          PDF::MultiCell(80, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(105, 0, '', '', 'L', false);
+
+          PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+          PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
+
+          PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
+          PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+          PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+        }
+      } else {
+        PDF::MultiCell(140, 0, 'Customer Address', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(365, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0);
+        PDF::MultiCell(80, 0, 'PO#', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(105, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false);
+
+        PDF::MultiCell(140, 0, 'Deliver to', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(565, 0, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), '', 'L', false);
+
+        PDF::MultiCell(140, 0, 'Salesman', '', 'L', false, 0);
+        PDF::MultiCell(15, 0, ':', '', 'L', false, 0);
+        PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
+      }
 
       // PDF::MultiCell(120, 0, 'Customer Address', '', 'L', false, 0);
       // PDF::MultiCell(10, 0, ':', '', 'L', false, 0);
@@ -1034,5 +1041,4 @@ class so
     PDF::MultiCell(250, 0, '', '', 'L', false, 0, $x + 400, $y);
     PDF::MultiCell(70, 0, 'Page ' . PDF::PageNo(), '', 'R', false, 1, $x + 650, $y);
   }
- 
 }

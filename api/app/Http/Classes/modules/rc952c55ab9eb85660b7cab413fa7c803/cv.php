@@ -129,7 +129,7 @@ class cv
     $companyid = $config['params']['companyid'];
     $col1 = [];
     $col2 = [];
-   
+
     return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1, 'col2' => $col2]];
   }
 
@@ -221,8 +221,8 @@ class cv
         'print',
         'post',
         'unpost',
-        'lock',
-        'unlock',
+        // 'lock',
+        // 'unlock',
         'logs',
         'edit',
         'backlisting',
@@ -290,12 +290,12 @@ class cv
     $companyid = $config['params']['companyid'];
     $release = $this->othersClass->checkAccess($config['params']['user'], 4391);
     $systype = $this->companysetup->getsystemtype($config['params']);
-   
-    $column = ['action',  'db', 'cr', 'postdate', 'checkno','ref','rrref', 'void', 'acnoname'];
-        
+
+    $column = ['action',  'db', 'cr', 'postdate', 'checkno', 'ref', 'rrref', 'void', 'acnoname'];
+
     foreach ($column as $key => $value) {
-        $$value = $key;
-      }
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
@@ -360,11 +360,11 @@ class cv
     data_set($col1, 'client.lookupclass', 'allclienthead');
     data_set($col1, 'docno.label', 'Transaction#');
 
-    $fields = ['dateid', ['yourref', 'ourref'],'dewt'];
+    $fields = ['dateid', ['yourref', 'ourref'], 'dewt'];
     $col2 = $this->fieldClass->create($fields);
 
 
-    $fields = [['cur', 'forex'],['dacnoname','amount'], ['checkno', 'checkdate']];
+    $fields = [['cur', 'forex'], ['dacnoname', 'amount'], ['checkno', 'checkdate']];
     $col3 = $this->fieldClass->create($fields);
 
     data_set($col3, 'dacnoname.label', 'Payment Type');
@@ -739,8 +739,8 @@ class cv
     $trno = $config['params']['trno'];
     $companyid = $config['params']['companyid'];
     if ($companyid == 60) { //transpower
-       $ourref = $this->coreFunctions->datareader("select ourref as value from lahead where trno=?", [$trno]);
-       if ($ourref == '') {
+      $ourref = $this->coreFunctions->datareader("select ourref as value from lahead where trno=?", [$trno]);
+      if ($ourref == '') {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. PO # cannot be blank.'];
       }
       $yourref = $this->coreFunctions->datareader("select yourref as value from lahead where trno=?", [$trno]);
@@ -1807,13 +1807,13 @@ class cv
     $chks = $this->coreFunctions->opentable('select trno from checksetup');
     $detail = $this->opendetail($trno, $config);
     $search = "online";
-    if(!empty($chks)){
+    if (!empty($chks)) {
       foreach ($detail as $key => $value) {
         $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno=?", [$detail[$key]->acno]);
-        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid],'',true);
-        if($exist !=0 || $exist !=""){
+        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid], '', true);
+        if ($exist != 0 || $exist != "") {
           if (preg_match("/{$search}/i", $detail[$key]->checkno)) {
-          } else {      
+          } else {
             $alias = $this->coreFunctions->getfieldvalue("coa", "left(alias,2)", "acnoid=?", [$acnoid]);
             if ($alias == 'CB') {
               if ($exist != 0) {
@@ -1829,7 +1829,7 @@ class cv
         }
       }
     }
-    
+
 
 
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -1876,7 +1876,7 @@ class cv
     if (preg_match("/{$search}/i", $data[0]->checkno)) {
     } else {
       if ($alias == 'CB') {
-        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid],'',true);
+        $exist = $this->coreFunctions->getfieldvalue("checksetup", "line", "acnoid=?", [$acnoid], '', true);
         if ($exist != 0) {
           $current = $this->coreFunctions->getfieldvalue("checksetup", "current", "acnoid=? and " . $data[0]->checkno . " between `start` and `end`", [$acnoid]);
           if ($current == $data[0]->checkno) {
@@ -2466,23 +2466,18 @@ class cv
     $modulename = $this->modulename;
     $data = [];
 
-    $companyid = $config['params']['companyid'];
-    switch ($companyid) {
-      case 27: //nte
-      case 36: //rozlab
-      case 59://roosevelt
-        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
-        if (!$isposted) {
-          $result = $this->othersClass->posttransacctg($config);
-          if (!$result['status']) {
-            return ['status' => false, 'msg' => $result['msg']];
-          }
-        }
-        break;
+    $isreload = false;
+    $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+    if (!$isposted) {
+      $result = $this->othersClass->posttransacctg($config);
+      if (!$result['status']) {
+        return ['status' => false, 'msg' => $result['msg']];
+      } else {
+        $isreload = true;
+      }
     }
-
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

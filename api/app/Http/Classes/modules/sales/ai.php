@@ -287,7 +287,7 @@ class ai
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['head.docno', 'head.clientname','head.yourref', 'head.createby', 'head.editby', 'head.viewby', 'num.postedby'];
+      $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.createby', 'head.editby', 'head.viewby', 'num.postedby'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -319,10 +319,10 @@ class ai
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -413,8 +413,8 @@ class ai
     $noprint = 18;
     $barcode = 19;
 
-    $column = ['action', 'itemdescription', 'serialno', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'markup', 'insurance', 'rebate', 'wh', 'whname', 'ref', 'loc', 'expiry', 'itemname', 'stock_projectname','noprint', 'barcode'];
-    $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'markup', 'insurance', 'rebate', 'wh', 'whname', 'ref', 'loc', 'expiry', 'itemname', 'stock_projectname', 'noprint','barcode'];
+    $column = ['action', 'itemdescription', 'serialno', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'markup', 'insurance', 'rebate', 'wh', 'whname', 'ref', 'loc', 'expiry', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
+    $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'markup', 'insurance', 'rebate', 'wh', 'whname', 'ref', 'loc', 'expiry', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
     $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
 
     if ($companyid == 10) { //afti
@@ -574,7 +574,7 @@ class ai
 
     $fields = ['yourref', ['cur', 'forex'], 'dbranchname'];
     if ($config['params']['companyid'] == 10) { //afti
-      array_push($fields, 'ddeptname');      
+      array_push($fields, 'ddeptname');
     }
     $col3 = $this->fieldClass->create($fields);
 

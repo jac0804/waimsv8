@@ -336,12 +336,12 @@ class daily_sales_collection_report
         break;
       default:
         $query = "
-              select head.docno, head.dateid, head.clientname, head.rem, sum(detail.cr) as amount,coa.alias
+              select head.docno, head.dateid, head.clientname, head.rem, sum(detail.cr - detail.db) as amount,coa.alias
               from glhead as head
                 left join gldetail as detail on detail.trno=head.trno
                 left join coa on coa.acnoid=detail.acnoid
                 left join cntnum on cntnum.trno=head.trno
-              where head.doc in ('GD','GC','CV') and left(coa.alias,2)='CA' and detail.cr>0 $date_rage $filter
+              where head.doc in ('GD','GC','CV') and left(coa.alias,2)='CA' and (detail.cr - detail.db) >0 $date_rage $filter
               group by head.dateid, head.docno, head.clientname, head.rem,coa.alias
               order by dateid";
         break;

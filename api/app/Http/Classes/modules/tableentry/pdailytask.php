@@ -55,9 +55,10 @@ class pdailytask
 
     public function createTab($config)
     {
+        $allowaddcredit = $this->othersClass->checkAccess($config['params']['user'], 5698);
         $modulename = $config['params']['row']['modulename'];
         $cols = ['action', 'statname', 'dateid', 'clientname', 'amt', 'rem', 'rem1'];
-
+        $projecthead = $this->coreFunctions->getfieldvalue("client", "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$config['params']['row']['userid']], '', true);
         if ($config['params']['row']['ischecker'] == 1) {
             array_push($cols, 'assignto');
         }
@@ -68,9 +69,13 @@ class pdailytask
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
 
         if ($config['params']['row']['ischecker'] == 1) {
-            $stockbuttons = ['approve',  'disapprove', 'undone', 'commenthistory']; //'completetask',
+            if ($allowaddcredit) {
+                $stockbuttons = ['completetask',  'disapprove', 'undone', 'commenthistory'];
+            } else {
+                $stockbuttons = ['approve',  'disapprove', 'undone', 'commenthistory'];
+            }
         } else {
-            $stockbuttons = ['approve', 'disapprove', 'delete', 'cancel']; //, 'addattachments'
+            $stockbuttons = ['approve', 'disapprove', 'delete', 'cancel', 'commenthistory']; //, 'addattachments'
         }
 
         if ($modulename == 'Task Monitoring') {
@@ -100,7 +105,7 @@ class pdailytask
         }
 
         if ($config['params']['row']['ischecker'] == 1) {
-            $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['label'] = 'Complete';
+
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['label'] = 'Return';
 
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['action'] = 'customform';
@@ -108,19 +113,25 @@ class pdailytask
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['class'] = 'btnviewtaskcomment';
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['access'] = 'edititem';
 
-            $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['checkfield'] = 'iscomplete';
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['checkfield'] = 'iscomplete';
             $obj[0][$this->gridname]['columns'][$action]['btns']['undone']['checkfield'] = 'iscomplete';
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['checkfield'] = 'iscomplete';
+
 
             $obj[0][$this->gridname]['columns'][$assignto]['type'] = 'label';
             $obj[0][$this->gridname]['columns'][$assignto]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;max-width:100px;';
             //3.26.2026- rwen
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['action'] = 'customform';
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['lookupclass'] = 'viewtaskhistory';
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['class'] = 'btnviewtaskhistory';
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['access'] = 'edititem';
-            // $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['color'] = 'green';
+
+            if ($allowaddcredit) {
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['action'] = 'customform';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['lookupclass'] = 'viewtaskhistory';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['class'] = 'btnviewtaskhistory';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['access'] = 'edititem';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['color'] = 'green';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['completetask']['checkfield'] = 'iscomplete';
+            } else {
+                $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['label'] = 'Complete';
+                $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['checkfield'] = 'iscomplete';
+            }
         } else {
             $obj[0][$this->gridname]['columns'][$action]['btns']['approve']['label'] = 'Done';
             $obj[0][$this->gridname]['columns'][$action]['btns']['disapprove']['label'] = 'Undone';
@@ -169,7 +180,7 @@ class pdailytask
 
         //pag true ay hide
         $orderby = " order by trno asc";
-        $qry = "select c.clientname, date(dt.dateid) as dateid,
+        $qry = "select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller),c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,dt.trno,'DY' as doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when '5' then 'Cancelled' when '6' then 'Return' end) as statname,dt.isprev,
@@ -182,17 +193,18 @@ class pdailytask
 
                     if(dt.statid in (1,6),'true','false') as iscomplete,
                     dt.ischecker, date(dt.startchecker) as startchecker,assigned.clientname as assignto, dt.empid,
-                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid
+                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category
 
                    from dailytask as dt
                    left join client as c on c.clientid = dt.clientid
                    left join tmdetail as tm on tm.trno=dt.tasktrno and tm.line=dt.taskline
                    left join client as assigned on assigned.clientid=tm.userid
+                   left join reqcategory as req on req.line=tm.taskcatid
                    where dt.trno=" . $trno . " and  dt.userid=" . $adminid . "  and date(dt.dateid) ='" . $currentdate . "' 
 
                    union all
 
-                   select c.clientname, date(dt.dateid) as dateid,
+                   select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller),c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,dt.trno,'DY' as doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when '5' then 'Cancelled' when '6' then 'Return' end) as statname,dt.isprev,
@@ -204,12 +216,13 @@ class pdailytask
                     if(dt.statid in (5,0) and dt.isprev = 1 and dt.tasktrno = 0,'false','true') as iscancel,
                     if(dt.statid in (1,6),'true','false') as iscomplete,
                     dt.ischecker, date(dt.startchecker) as startchecker,assigned.clientname as assignto, dt.empid, 
-                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid
+                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category
 
                    from hdailytask as dt
                    left join client as c on c.clientid = dt.clientid
                    left join tmdetail as tm on tm.trno=dt.tasktrno and tm.line=dt.taskline
                    left join client as assigned on assigned.clientid=tm.userid
+                   left join reqcategory as req on req.line=tm.taskcatid
                    where dt.trno=" . $trno . " and  dt.userid=" . $adminid . " and date(dt.dateid) ='" . $currentdate . "'  
             
                    $orderby";
@@ -235,6 +248,7 @@ class pdailytask
         $config['params']['doc'] = 'DY';
         $tmstat = '';
         $solutionrem = $row['rem1'];
+        $amount = $row['amt'];
         //user
         $creator = $this->coreFunctions->datareader("select c.clientname as value from dailytask as d
                                                           left join client as c on c.clientid=d.userid
@@ -313,6 +327,14 @@ class pdailytask
                                         $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$dyuser]);
                                         $socketmsg = "Task checked and completed: " . $row['rem'];
                                         if ($socketmsg != '' && $username != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
+                                    }
+                                    // REIMBURSEMENT
+                                    if ($config['params']['doc'] == 'DY') {
+                                        if ($amount != 0) {
+                                            $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
+                                            $r =  $this->othersClass->insertUpdatePendingapp($trno, 0, 'DY', [], $url, $config, 3863, false, true, 'REIMBURSEMENT');
+                                            $this->coreFunctions->LogConsole('Amount: ' . $amount . ' msg: ' . $r['msg']);
+                                        }
                                     }
                                 } else {
                                     //done ng user tapos for checking kay checker/requestor

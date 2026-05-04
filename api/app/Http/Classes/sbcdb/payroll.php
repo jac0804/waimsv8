@@ -1154,8 +1154,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["tmshifts"], ["isonelog", "isdefault", "isfixhrs"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
 		$this->coreFunctions->sbcaddcolumn("tmshifts", "sig", "INT(2) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["latehrs2", "lateoffset", "earlyothrs"], "DECIMAL(15,2) NOT NULL DEFAULT '0.00'", 0);
-		$this->coreFunctions->sbcaddcolumngrp(["timesheet", "timesheethistory", "paytrancurrent", "paytranhistory"], ["qty2"], "DECIMAL(15,2) NOT NULL DEFAULT '0.00'", 0);
-		$this->coreFunctions->sbcaddcolumn("timesheethistory", "qty", "DECIMAL(15,2) NOT NULL DEFAULT '0.00'");
+		$this->coreFunctions->sbcaddcolumngrp(["timesheet", "timesheethistory", "paytrancurrent", "paytranhistory"], ["qty", "qty2"], "DECIMAL(15,3) NOT NULL DEFAULT '0.000'");
 		$this->coreFunctions->sbcaddcolumn("timerec", "machno", "varchar(30) NOT NULL DEFAULT ''");
 
 		$qry = "CREATE TABLE `tihead` (
@@ -1666,5 +1665,18 @@ class payroll
                KEY `Index_ltline` (`ltline`)
                ) ENGINE=MyISAM; ";
 		$this->coreFunctions->sbccreatetable("leave_picture", $qry);
+		$this->coreFunctions->sbcaddcolumn("itinerary", "area", "VARCHAR(300) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["annualtax"], "TINYINT(1) NOT NULL DEFAULT '0'", 0);
+
+		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["othrs", "spot"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["ndiffhrs"], "DECIMAL(18,5) NOT NULL DEFAULT '0.00000'", 0);
+		$this->coreFunctions->sbcaddcolumn("paygroup", "s3maxbracket", "int(2) NOT NULL DEFAULT '0'");
+
+		$this->coreFunctions->sbcaddcolumn("standardsetup", "isdeductible", "tinyint(1) NOT NULL DEFAULT '0'");
+
+		$this->coreFunctions->sbcaddcolumn("timecard", "pgline", "int(4) unsigned NOT NULL DEFAULT '0'");
+
+		$this->coreFunctions->createindex("timecard", "Index_PG", ["pgline"]);
+		$this->coreFunctions->createindex("timecard", "Index_Shift", ["shiftid"]);
 	} //end function
 } // end class

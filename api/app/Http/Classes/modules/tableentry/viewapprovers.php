@@ -200,11 +200,18 @@ class viewapprovers
 
   public function delete($config)
   {
-    $row = $config['params']['row'];
-    $this->coreFunctions->execqry("delete from " . $this->table . " where line=" . $row['line'] . " and trno=" . $row['trno'], 'delete');
-    $this->updateCounts($row['trno']);
-    $sourcerow = $this->loadsourcerow($config, $row['trno']);
-    return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadtableentry' => $sourcerow];
+
+    $clientid = $config['params']['row']['clientid'];
+    $pendingapp = $this->coreFunctions->datareader("select clientid as value from pendingapp where clientid=? and approver='isapprover'", [$clientid], '', true);
+    if ($pendingapp != 0) {
+      return ['status' => false, 'msg' => 'Cannot delete approver: pending applications exist.'];
+    } else {
+      $row = $config['params']['row'];
+      $this->coreFunctions->execqry("delete from " . $this->table . " where line=" . $row['line'] . " and trno=" . $row['trno'], 'delete');
+      $this->updateCounts($row['trno']);
+      $sourcerow = $this->loadsourcerow($config, $row['trno']);
+      return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadtableentry' => $sourcerow];
+    }
   }
 
   public function loaddataperrecord($config, $trno, $line)

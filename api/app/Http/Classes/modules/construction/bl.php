@@ -158,10 +158,10 @@ class bl
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -201,9 +201,25 @@ class bl
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'location', 'supplier', 'address', 'tin', 'ref', 'particulars',
-          'qty', 'uom', 'rrcost', 'purchase', 'vat', 'ext', 'rem', 'isvat', 'ordate', 'dateid'
-        ], 'computefield' => ['dqty' => 'qty', 'damt' => 'rrcost', 'total' => 'ext'],
+          'action',
+          'location',
+          'supplier',
+          'address',
+          'tin',
+          'ref',
+          'particulars',
+          'qty',
+          'uom',
+          'rrcost',
+          'purchase',
+          'vat',
+          'ext',
+          'rem',
+          'isvat',
+          'ordate',
+          'dateid'
+        ],
+        'computefield' => ['dqty' => 'qty', 'damt' => 'rrcost', 'total' => 'ext'],
         'headgridbtns' => ['viewref']
       ],
     ];

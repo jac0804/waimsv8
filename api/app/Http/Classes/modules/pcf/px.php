@@ -43,9 +43,9 @@ class px
   private $stockselect;
   public $dqty = 'rrqty';
   public $damt = 'rrcost';
-  private $fields = ['trno', 'docno', 'dateid', 'projectid','clientname', 'dtcno','pcfno', 'poref', 'aftistock', 'reason','rem', 'agentid', 'project', 'clientid', 'oandaphpusd', 'oandausdphp', 'osphpusd','potrno', 'fullcomm', 'commamt', 'remarks','terms','termsdetails','checkdate'];
+  private $fields = ['trno', 'docno', 'dateid', 'projectid', 'clientname', 'dtcno', 'pcfno', 'poref', 'aftistock', 'reason', 'rem', 'agentid', 'project', 'clientid', 'oandaphpusd', 'oandausdphp', 'osphpusd', 'potrno', 'fullcomm', 'commamt', 'remarks', 'terms', 'termsdetails', 'checkdate'];
   private $blnfields = ['aftistock'];
-  private $except = ['trno', 'dateid','projectid'];
+  private $except = ['trno', 'dateid', 'projectid'];
   public $showfilteroption = true;
   public $showfilter = true;
   public $showcreatebtn = true;
@@ -89,7 +89,7 @@ class px
       'post' => 5384,
       'unpost' => 5385,
       'deleteitem' => 5386,
-      
+
       'additem' => 5387,
       'edititem' => 5388,
 
@@ -99,8 +99,8 @@ class px
     );
     return $attrib;
   }
-  
-  
+
+
 
 
   public function createdoclisting($config)
@@ -116,7 +116,7 @@ class px
     $cols[$liststatus]['name'] = 'statuscolor';
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-  
+
     $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -124,8 +124,8 @@ class px
 
   public function paramsdatalisting($config)
   {
-    $fields =[];
-    $col1 =[];
+    $fields = [];
+    $col1 = [];
     // $allownew = $this->othersClass->checkAccess($config['params']['user'], 2455);
     // if ($allownew == '1') {
     //   array_push($fields, 'pickpo');
@@ -162,9 +162,10 @@ class px
     $isadmin = $this->othersClass->checkAccess($config['params']['user'], 5389);
     $isphead = 0;
     switch ($companyid) {
-      case 10: case 12: //afti
-        if($isadmin == 0){
-          $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile","agentid","agentid = ?",[$user],'',true);
+      case 10:
+      case 12: //afti
+        if ($isadmin == 0) {
+          $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile", "agentid", "agentid = ?", [$user], '', true);
         }
         break;
     }
@@ -231,7 +232,7 @@ class px
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['head.docno','head.dtcno','head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
+      $searchfield = ['head.docno', 'head.dtcno', 'head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -242,13 +243,13 @@ class px
     // $this->coreFunctions->LogConsole($isphead. "-phead");
 
     if ($companyid == 10 || $companyid == 12) { //afti
-      if ($isadmin == 0 && $isphead == 0){
-        $addparams .= " and head.createby='".$username."'";
-      }else{
-        if($isphead != 0){
-           $addparams .= " and pm.agentid = ".$user ." or head.createby='".$username."'";
+      if ($isadmin == 0 && $isphead == 0) {
+        $addparams .= " and head.createby='" . $username . "'";
+      } else {
+        if ($isphead != 0) {
+          $addparams .= " and pm.agentid = " . $user . " or head.createby='" . $username . "'";
         }
-      } 
+      }
     }
 
     $dateid = "date_format(head.dateid,'%m-%d-%Y') as dateid";
@@ -269,7 +270,7 @@ class px
      on num.trno=head.trno  " . $hjoin . " left join client as cl on cl.clientid = head.clientid
      left join projectmasterfile as pm on pm.code = head.project   where  num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
     $orderby $limit";
-    $this->coreFunctions->LogConsole($qry.$date1 .' '. $date2);
+    $this->coreFunctions->LogConsole($qry . $date1 . ' ' . $date2);
     $data = $this->coreFunctions->opentable($qry, [$center, $date1, $date2, $center, $date1, $date2]);
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
   }
@@ -283,10 +284,10 @@ class px
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -346,7 +347,7 @@ class px
     $obj = $this->tabClass->createtab($tab, []);
 
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
-    
+
 
     if ($this->companysetup->getistodo($config['params'])) {
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrytransnumtodo', 'label' => 'To Do', 'access' => 'view']];
@@ -386,12 +387,12 @@ class px
     $tab = [
       $this->gridname => [
         'gridcolumns' => $column,
-        'computefield' => ['dqty' => 'rrqty',  'damt' => 'rrcost','total' => 'ext'],
+        'computefield' => ['dqty' => 'rrqty',  'damt' => 'rrcost', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ],
     ];
 
-    
+
 
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -408,13 +409,13 @@ class px
     $obj[0][$this->gridname]['totalfield'] = 'totalsrp';
     // 7 - ref
     $obj[0]['inventory']['columns'][$rrcost]['label'] = 'List';
-    
-    
+
+
     if ($viewtp == '0') {
       $obj[0]['inventory']['columns'][$tp]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$totaltp]['type'] = 'coldel';
-    } 
-    
+    }
+
     $obj[0]['inventory']['columns'][$barcode]['style'] = 'width: 1%;whiteSpace: normal;min-width:1%;max-width:1%';
 
     $obj[0]['inventory']['descriptionrow'] = [];
@@ -425,7 +426,7 @@ class px
 
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-      
+
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -440,7 +441,7 @@ class px
   public function createHeadField($config)
   {
     $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 5389);
-    $fields = ['docno', 'client','clientname', 'projectname','dagentname','projectid'];
+    $fields = ['docno', 'client', 'clientname', 'projectname', 'dagentname', 'projectid'];
 
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'docno.label', 'Transaction#');
@@ -462,42 +463,42 @@ class px
     data_set($col1, 'dagentname.required', true);
     data_set($col1, 'projectid.required', true);
 
-    $fields = ['dateid', 'pcfno','dtcno','poref',['terms','termsdetails'],'fullcomm'];
+    $fields = ['dateid', 'pcfno', 'dtcno', 'poref', ['terms', 'termsdetails'], 'fullcomm'];
 
     if ($noeditdate == 0) {
-      $fields = ['dateid', 'pcfno','dtcno',['terms','termsdetails'],'poref'];
+      $fields = ['dateid', 'pcfno', 'dtcno', ['terms', 'termsdetails'], 'poref'];
     }
 
-    $col2 = $this->fieldClass->create($fields);    
+    $col2 = $this->fieldClass->create($fields);
 
-      if ($noeditdate == 0) {
-        data_set($col2, 'dateid.class', 'sbccsreadonly');
-        data_set($col2, 'pcfno.class', 'sbccsreadonly');
-        data_set($col2, 'dtcno.class', 'sbccsreadonly');
-        data_set($col2, 'fullcomm.class', 'sbccsreadonly');
-      }
+    if ($noeditdate == 0) {
+      data_set($col2, 'dateid.class', 'sbccsreadonly');
+      data_set($col2, 'pcfno.class', 'sbccsreadonly');
+      data_set($col2, 'dtcno.class', 'sbccsreadonly');
+      data_set($col2, 'fullcomm.class', 'sbccsreadonly');
+    }
 
-      data_set($col2, 'poref.type', 'lookup');
-      data_set($col2, 'terms.label', 'Payment terms');
-      data_set($col2, 'terms.lookupclass', 'termspcf');
-      data_set($col2, 'termsdetails.type', 'lookup');
-      data_set($col2, 'termsdetails.action', 'lookuprandom');
-      data_set($col2, 'termsdetails.lookupclass', 'lookuptermsdet');
-      data_set($col2, 'termsdetails.class', 'sbccsreadonly');
-      data_set($col2, 'termsdetails.required', true);
-      data_set($col2, 'terms.required', true);
-      data_set($col2, 'poref.lookupclass', 'lookupyourrefrf');
-      data_set($col2, 'poref.action', 'lookupyourrefrf');
-      data_set($col2, 'poref.readonly', true);
-      data_set($col2, 'poref.addedparams', ['client']);
-      data_set($col2, 'poref.class', 'csporef sbccsreadonly');
-    
-      $fields = ['checkdate','rem','oandaphpusd','oandausdphp','osphpusd','aftistock'];
-      // if ($noeditdate == 0) {
-      //   $fields = ['rem'];
-      // }
- 
- 
+    data_set($col2, 'poref.type', 'lookup');
+    data_set($col2, 'terms.label', 'Payment terms');
+    data_set($col2, 'terms.lookupclass', 'termspcf');
+    data_set($col2, 'termsdetails.type', 'lookup');
+    data_set($col2, 'termsdetails.action', 'lookuprandom');
+    data_set($col2, 'termsdetails.lookupclass', 'lookuptermsdet');
+    data_set($col2, 'termsdetails.class', 'sbccsreadonly');
+    data_set($col2, 'termsdetails.required', true);
+    data_set($col2, 'terms.required', true);
+    data_set($col2, 'poref.lookupclass', 'lookupyourrefrf');
+    data_set($col2, 'poref.action', 'lookupyourrefrf');
+    data_set($col2, 'poref.readonly', true);
+    data_set($col2, 'poref.addedparams', ['client']);
+    data_set($col2, 'poref.class', 'csporef sbccsreadonly');
+
+    $fields = ['checkdate', 'rem', 'oandaphpusd', 'oandausdphp', 'osphpusd', 'aftistock'];
+    // if ($noeditdate == 0) {
+    //   $fields = ['rem'];
+    // }
+
+
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
     }
@@ -508,17 +509,17 @@ class px
     data_set($col3, 'rem.type', 'lookup');
     data_set($col3, 'rem.lookupclass', 'lookupreasoncode');
     data_set($col3, 'rem.action', 'lookupreasoncode');
-    data_set($col3, 'rem.class', 'sbccsreadonly');   
+    data_set($col3, 'rem.class', 'sbccsreadonly');
     data_set($col3, 'rem.required', true);
-   
-    $fields = ['remarks','qtno','lblrem'];
-   
+
+    $fields = ['remarks', 'qtno', 'lblrem'];
+
     $col4 = $this->fieldClass->create($fields);
     data_set($col4, 'lblrem.label', 'LOST');
     data_set($col4, 'lblrem.style', 'font-weight:bold;font-size:30px;font-family:Century Gothic;color: red;');
     data_set($col4, 'qtno.type', 'input');
     data_set($col4, 'qtno.class', 'sbccsreadonly');
-     
+
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
   }
 
@@ -548,7 +549,8 @@ class px
   //       console.log("rem status", state.headercols.col4.rem.required)
   //       state.headercols.col4.rem.required = false
   //     }
-   public function sbcscript($config){
+  public function sbcscript($config)
+  {
     return '
       if(payload.field !== undefined){
         if(payload.field === "fullcomm"){
@@ -575,7 +577,7 @@ class px
         }
       }
     ';
-   }
+  }
 
 
   public function createnewtransaction($docno, $params)
@@ -583,7 +585,7 @@ class px
     $agent = "";
     $agentname = "";
     $agentid = 0;
-    if ($params['adminid']!=0) {
+    if ($params['adminid'] != 0) {
       $salesperson_qry = "
       select 
         ifnull(ag.client, '') as agent, 
@@ -614,7 +616,7 @@ class px
     $data[0]['client'] = '';
     $data[0]['clientid'] = 0;
     $data[0]['potrno'] = 0;
-    
+
     $data[0]['pcfno'] = '';
     $data[0]['dtcno'] = '';
     $data[0]['poref'] = '';
@@ -624,24 +626,24 @@ class px
     $data[0]['aftistock'] = '0';
     $data[0]['fullcomm'] = '';
 
-    $date = date("Y-m-d",strtotime($this->othersClass->getCurrentDate()));
-    $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='".$date."' order by dateid desc limit 1");
-    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1",[],'','',true);
+    $date = date("Y-m-d", strtotime($this->othersClass->getCurrentDate()));
+    $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
+    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', '', true);
 
-    if(empty($datacur)){
-      $data[0]['oandaphpusd']=0;
-      $data[0]['oandausdphp']=0;
-    }else{
-      $data[0]['oandaphpusd']=$datacur[0]->oandaphpusd;
-      $data[0]['oandausdphp']=$datacur[0]->oandausdphp;
+    if (empty($datacur)) {
+      $data[0]['oandaphpusd'] = 0;
+      $data[0]['oandausdphp'] = 0;
+    } else {
+      $data[0]['oandaphpusd'] = $datacur[0]->oandaphpusd;
+      $data[0]['oandausdphp'] = $datacur[0]->oandausdphp;
     }
 
 
-    if(empty($osphpusd)){
+    if (empty($osphpusd)) {
       $data[0]['osphpusd'] = 0;
-    }else{
+    } else {
       $data[0]['osphpusd'] = $osphpusd;
-    }    
+    }
     return $data;
   }
 
@@ -659,8 +661,8 @@ class px
     $isadmin = $this->othersClass->checkAccess($config['params']['user'], 5389);
     $isphead = 0;
 
-    if($isadmin == 0){
-      $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile","agentid","agentid = ?",[$user],'',true);
+    if ($isadmin == 0) {
+      $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile", "agentid", "agentid = ?", [$user], '', true);
     }
     if ($trno == 0) {
       $trno = $this->othersClass->readprofile('TRNO', $config);
@@ -676,15 +678,15 @@ class px
       $this->othersClass->checkseendate($config, $tablenum);
     }
 
-    $addparams ="";
+    $addparams = "";
     if ($companyid == 10 || $companyid == 12) { //afti
-      if ($isadmin == 0 && $isphead == 0){
-        $addparams .= " and head.createby='".$username."'";
-      }else{
-        if($isphead == 1){
-           $addparams .= " and pm.agentid = ".$user;
+      if ($isadmin == 0 && $isphead == 0) {
+        $addparams .= " and head.createby='" . $username . "'";
+      } else {
+        if ($isphead == 1) {
+          $addparams .= " and pm.agentid = " . $user;
         }
-      } 
+      }
     }
 
     $head = [];
@@ -713,7 +715,7 @@ class px
         left join client as agent on agent.clientid = head.agentid
         left join projectmasterfile as p on p.code = head.project
         left join transnum as qt on qt.trno = head.potrno
-        where head.trno = ? and num.center = ? ".$addparams ."
+        where head.trno = ? and num.center = ? " . $addparams . "
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.clientid = client.clientid
@@ -744,9 +746,9 @@ class px
         $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
         $hideobj = ['donetodo' => !$btndonetodo];
       }
-      if($head[0]->islost){
+      if ($head[0]->islost) {
         $hideobj['lblrem'] = false;
-      }else {
+      } else {
         $hideobj['lblrem'] = true;
       }
 
@@ -780,7 +782,7 @@ class px
     }
     $head['project'] = $head['projectname'];
     $blnrecompute = false;
-    
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
@@ -793,99 +795,96 @@ class px
     $data['editby'] = $config['params']['user'];
 
     if ($isupdate) {
-      $origcheckdate = $this->coreFunctions->datareader("select ifnull(checkdate,'') as value from ".$this->head." where trno = ".$head['trno']);
-      if( date("Y-m-d",strtotime($origcheckdate)) <> date("Y-m-d",strtotime($data['checkdate']))){
-        $date = date("Y-m-d",strtotime($head['checkdate']));
-        $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='".$date."' order by dateid desc limit 1");
+      $origcheckdate = $this->coreFunctions->datareader("select ifnull(checkdate,'') as value from " . $this->head . " where trno = " . $head['trno']);
+      if (date("Y-m-d", strtotime($origcheckdate)) <> date("Y-m-d", strtotime($data['checkdate']))) {
+        $date = date("Y-m-d", strtotime($head['checkdate']));
+        $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
         $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0.000000) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1");
-        $origosphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0.000000) as value from ".$this->head." where trno = ".$head['trno']);
+        $origosphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0.000000) as value from " . $this->head . " where trno = " . $head['trno']);
 
-        if(empty($datacur)){
-          $data['oandaphpusd']=0;
-          $data['oandausdphp']=0;
-        }else{
-          $data['oandaphpusd']=$datacur[0]->oandaphpusd;
-          $data['oandausdphp']=$datacur[0]->oandausdphp;
+        if (empty($datacur)) {
+          $data['oandaphpusd'] = 0;
+          $data['oandausdphp'] = 0;
+        } else {
+          $data['oandaphpusd'] = $datacur[0]->oandaphpusd;
+          $data['oandausdphp'] = $datacur[0]->oandausdphp;
         }
 
-        if($origosphpusd <> $osphpusd){
+        if ($origosphpusd <> $osphpusd) {
           $blnrecompute = true;
         }
 
-        if(empty($osphpusd)){
+        if (empty($osphpusd)) {
           $data['osphpusd'] = 0;
-          $head['osphpusd'] = 0;        
-        }else{
+          $head['osphpusd'] = 0;
+        } else {
           $data['osphpusd'] = $osphpusd;
-          $head['osphpusd'] = $osphpusd;        
+          $head['osphpusd'] = $osphpusd;
         }
-       
       }
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-      $exist = $this->coreFunctions->datareader("select trno as value from ".$this->stock." where trno = ?",[$head['trno']],'',true);
-      if(!$exist){
+      $exist = $this->coreFunctions->datareader("select trno as value from " . $this->stock . " where trno = ?", [$head['trno']], '', true);
+      if (!$exist) {
         $this->loadinv($config);
       }
-      
-      if($blnrecompute){
-        $this->recomputehiokitp($config);       
-      }
-      
-       //check duty
-       $exist = $this->coreFunctions->getfieldvalue("pxchecking","line","trno=? and expenseid =94",[$head['trno']],'',true);      
-       $line = $exist;
-       $stock = $this->coreFunctions->datareader("select sum(totaltp) as value from pxstock where trno= ?",[$head['trno']]);
-       if($stock != 0){
-         $os = $this->coreFunctions->getfieldvalue("pxhead","oandausdphp","trno=?",[$head['trno']]);
-         $stock = $stock * $os;
-       
-         $i['budget'] = round($stock * .02,2);
-         $i['actual'] = round($stock * .02,2);
-         $i['rem'] = '';
 
-         if($exist !=0){
-           $this->coreFunctions->sbcupdate('pxchecking', $i,["trno"=>$head['trno'], "line" => $line]);
-         }else{
-           $i['trno'] = $head['trno'];
-           $line =$this->coreFunctions->getfieldvalue("pxchecking","max(line)","trno=?",[$head['trno']],'',true);
-           $i['line'] = $line+1;
-           $i['expenseid'] = 94;
-           $this->coreFunctions->sbcinsert('pxchecking', $i);
-         }
-       }
+      if ($blnrecompute) {
+        $this->recomputehiokitp($config);
+      }
+
+      //check duty
+      $exist = $this->coreFunctions->getfieldvalue("pxchecking", "line", "trno=? and expenseid =94", [$head['trno']], '', true);
+      $line = $exist;
+      $stock = $this->coreFunctions->datareader("select sum(totaltp) as value from pxstock where trno= ?", [$head['trno']]);
+      if ($stock != 0) {
+        $os = $this->coreFunctions->getfieldvalue("pxhead", "oandausdphp", "trno=?", [$head['trno']]);
+        $stock = $stock * $os;
+
+        $i['budget'] = round($stock * .02, 2);
+        $i['actual'] = round($stock * .02, 2);
+        $i['rem'] = '';
+
+        if ($exist != 0) {
+          $this->coreFunctions->sbcupdate('pxchecking', $i, ["trno" => $head['trno'], "line" => $line]);
+        } else {
+          $i['trno'] = $head['trno'];
+          $line = $this->coreFunctions->getfieldvalue("pxchecking", "max(line)", "trno=?", [$head['trno']], '', true);
+          $i['line'] = $line + 1;
+          $i['expenseid'] = 94;
+          $this->coreFunctions->sbcinsert('pxchecking', $i);
+        }
+      }
     } else {
       $data['doc'] = $config['params']['doc'];
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['createby'] = $config['params']['user'];
-      $this->coreFunctions->sbcinsert($this->head, $data);      
+      $this->coreFunctions->sbcinsert($this->head, $data);
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['clientname']);
       $this->loadinv($config);
     }
-    
   } // end function
 
-  public function recomputehiokitp($config,$osphpusd = 0)
+  public function recomputehiokitp($config, $osphpusd = 0)
   {
     $trno = $config['params']['trno'];
     $data = $this->openstock($trno, $config);
     $data2 = json_decode(json_encode($data), true);
-    if($osphpusd == 0){
-      $osphpusd = $this->coreFunctions->getfieldvalue($this->head,"osphpusd","trno=?",[$trno]);
+    if ($osphpusd == 0) {
+      $osphpusd = $this->coreFunctions->getfieldvalue($this->head, "osphpusd", "trno=?", [$trno]);
     }
-    
+
     $exec = true;
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
       $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
-      if($data2[$key]['itemgrp'] == 'HIOKI'){
-        $tp = ($damt*$osphpusd)*0.83;
+      if ($data2[$key]['itemgrp'] == 'HIOKI') {
+        $tp = ($damt * $osphpusd) * 0.83;
 
-        $exec = $this->coreFunctions->execqry("update ".$this->stock." set tp = " . $tp . ",totaltp = ". round($tp*$dqty,2)." where trno = " . $trno . " and line=" . $data[$key]->line, "update");
-      }    
-      
+        $exec = $this->coreFunctions->execqry("update " . $this->stock . " set tp = " . $tp . ",totaltp = " . round($tp * $dqty, 2) . " where trno = " . $trno . " and line=" . $data[$key]->line, "update");
+      }
     }
 
-   
+
     return $exec;
   }
   public function deletetrans($config)
@@ -896,48 +895,46 @@ class px
     $docno = $this->coreFunctions->datareader("select docno as value from " . $table . ' where trno=?', [$trno]);
     $qry = "select trno as value from " . $this->tablenum . " where doc=? and trno<? order by trno desc limit 1 ";
     $trno2 = $this->coreFunctions->datareader($qry, [$doc, $trno]);
-    $poref = $this->coreFunctions->getfieldvalue($this->head,"potrno","trno=?",[$trno]);
+    $poref = $this->coreFunctions->getfieldvalue($this->head, "potrno", "trno=?", [$trno]);
 
     $this->coreFunctions->execqry('delete from ' . $this->stock . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry("delete from pxchecking where trno=?", 'delete', [$trno]);
 
-    
-    $isposted = $this->othersClass->isposted2($poref,'transnum');
+
+    $isposted = $this->othersClass->isposted2($poref, 'transnum');
     $qstbl = 'headinfotrans';
-    if($isposted){
+    if ($isposted) {
       $qstbl = 'hheadinfotrans';
     }
-    
-    $this->coreFunctions->execqry("update ".$qstbl." set dtctrno = 0 where trno=?", 'update', [$poref]);
+
+    $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
 
   //before posting, checking required pcf admin fields
-  private function checkRequiredFields($config,$fields,$trno)
+  private function checkRequiredFields($config, $fields, $trno)
   {
     $status = false;
     $checkfield = $this->coreFunctions->opentable("select $fields from " . $this->head . " where trno=?", [$trno]);
 
-    if(
-        ($checkfield[0]->dateid == '') ||
-        ($checkfield[0]->pcfno == '') ||
-        ($checkfield[0]->dtcno == '') ||
-        ($checkfield[0]->fullcomm  == '') 
-        // ($checkfield[0]->oandaphpusd == 0) ||
-        // ($checkfield[0]->oandausdphp == 0) ||
-        // ($checkfield[0]->osphpusd == 0)
-      )
-    {
+    if (
+      ($checkfield[0]->dateid == '') ||
+      ($checkfield[0]->pcfno == '') ||
+      ($checkfield[0]->dtcno == '') ||
+      ($checkfield[0]->fullcomm  == '')
+      // ($checkfield[0]->oandaphpusd == 0) ||
+      // ($checkfield[0]->oandausdphp == 0) ||
+      // ($checkfield[0]->osphpusd == 0)
+    ) {
       $status = true;
     }
 
 
     return $status;
-    
   }
 
   public function posttrans($config)
@@ -953,7 +950,7 @@ class px
 
     $fieldsToCheck = "dateid, pcfno, dtcno, fullcomm";
 
-    if($this->checkRequiredFields($config,$fieldsToCheck,$trno)){
+    if ($this->checkRequiredFields($config, $fieldsToCheck, $trno)) {
       return ['status' => false, 'msg' => 'Posting failed. All Fields required before Posting.'];
     }
 
@@ -965,42 +962,42 @@ class px
     //   }
     // }
 
-    
-    $date = $this->coreFunctions->datareader('select checkdate as value from ' . $this->head . ' where trno=?', [$trno]);
-    $date = date("Y-m-d",strtotime($date));
-    $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='".$date."' order by dateid desc limit 1");
-    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1",[],'','',true);
-    $oandaphpusd = 0;
-    $oandausdphp =0;
 
-    if(!empty($datacur)){
-      $oandaphpusd=$datacur[0]->oandaphpusd;
-      $oandausdphp=$datacur[0]->oandausdphp;
-    }else{
+    $date = $this->coreFunctions->datareader('select checkdate as value from ' . $this->head . ' where trno=?', [$trno]);
+    $date = date("Y-m-d", strtotime($date));
+    $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
+    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', '', true);
+    $oandaphpusd = 0;
+    $oandausdphp = 0;
+
+    if (!empty($datacur)) {
+      $oandaphpusd = $datacur[0]->oandaphpusd;
+      $oandausdphp = $datacur[0]->oandausdphp;
+    } else {
       return ['status' => false, 'msg' => 'Posting failed. Please setup conversion rates for this checking date.'];
     }
 
-    if(empty($osphpusd)){
+    if (empty($osphpusd)) {
       return ['status' => false, 'msg' => 'Posting failed. Please setup conversion rates for OS PHP.'];
-    }else{
+    } else {
       // /$this->recomputehiokitp($config,$osphpusd);
       //update duty
-      $stock = $this->coreFunctions->datareader("select sum(totaltp) as value from pxstock where trno= ?",[$trno]);
-      if($stock!=0){
-        $os = $this->coreFunctions->getfieldvalue("pxhead","oandausdphp","trno=?",[$trno]);
-        $stock = round(($stock * $os)*.02,2);
-        $exist = $this->coreFunctions->getfieldvalue("pxchecking","line","trno=? and expenseid =94",[$trno],'',true);
-        $this->coreFunctions->execqry("update pxchecking set budget = ".$stock.",actual =".$stock." where trno=? and line =?","update",[$trno,$exist]);      
+      $stock = $this->coreFunctions->datareader("select sum(totaltp) as value from pxstock where trno= ?", [$trno]);
+      if ($stock != 0) {
+        $os = $this->coreFunctions->getfieldvalue("pxhead", "oandausdphp", "trno=?", [$trno]);
+        $stock = round(($stock * $os) * .02, 2);
+        $exist = $this->coreFunctions->getfieldvalue("pxchecking", "line", "trno=? and expenseid =94", [$trno], '', true);
+        $this->coreFunctions->execqry("update pxchecking set budget = " . $stock . ",actual =" . $stock . " where trno=? and line =?", "update", [$trno, $exist]);
       }
     }
-    
+
     //for glhead
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,clientid,clientname,project,projectid,dateid,
       rem,dtcno,pcfno,poref,createdate,createby,editby,editdate,lockdate,lockuser,aftistock,fullcomm,agentid,oandaphpusd,
       oandausdphp, osphpusd,percentage,viewby,viewdate,potrno,commamt,remarks,terms,termsdetails,checkdate)
-      SELECT head.trno,head.doc,head.docno,head.clientid,head.clientname,head.project,head.projectid,'".$date."',
+      SELECT head.trno,head.doc,head.docno,head.clientid,head.clientname,head.project,head.projectid,'" . $date . "',
       head.rem,head.dtcno,head.pcfno,head.poref,head.createdate,head.createby,head.editby,head.editdate,head.lockdate,head.lockuser,
-      head.aftistock,head.fullcomm,head.agentid,".$oandaphpusd.",".$oandausdphp.", ".$osphpusd.",head.percentage,head.viewby,head.viewdate,
+      head.aftistock,head.fullcomm,head.agentid," . $oandaphpusd . "," . $oandausdphp . ", " . $osphpusd . ",head.percentage,head.viewby,head.viewdate,
       head.potrno,head.commamt,head.remarks,head.terms,head.termsdetails,head.checkdate
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
@@ -1013,83 +1010,80 @@ class px
         FROM " . $this->stock . " where trno =?";
 
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-          $qry = "insert into hpxchecking(trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid)
+        $qry = "insert into hpxchecking(trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid)
           SELECT trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid
           FROM pxchecking where trno =?";
-          if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-            //update transnum
-            $date = $this->othersClass->getCurrentTimeStamp();
-            $data = ['postdate' => $date, 'postedby' => $config['params']['user']];
-            $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
-            $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from pxchecking where trno=?", "delete", [$trno]);
+        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+          //update transnum
+          $date = $this->othersClass->getCurrentTimeStamp();
+          $data = ['postdate' => $date, 'postedby' => $config['params']['user']];
+          $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+          $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from pxchecking where trno=?", "delete", [$trno]);
 
-            //update instruction  
-            $poref = $this->coreFunctions->datareader('select potrno as value from ' . $this->hhead . ' where trno=?', [$trno],'',true);
-            $data = $this->coreFunctions->opentable('select projectid,pcfno,dtcno from ' . $this->hhead . ' where trno=?', [$trno]);         
-            $c=1;
-            $dtcno = "";
-            if($poref!=0){
-              $dtcno = $data[0]->dtcno;
-                $ins = "";
-                $q = $this->coreFunctions->opentable("select p.actual, e.category as expensename  from hpxchecking as p left join reqcategory as e on e.line = p.expenseid where e.line <> 94 and p.trno = " . $trno);
-                if (!empty($q)) {
-                  if ($data[0]->projectid != "N/A") {
-                    $ins  = "Project ID:" . $data[0]->projectid."\n";
-                  }
-                  foreach ($q as $x => $y) {
-                    if ($data[0]->pcfno != "") {
-                      if ($ins == "") {
-                        $ins  = $data[0]->pcfno . "/" . $data[0]->dtcno . "\n" .
-                          "Approved Expenses:\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
-                      } else {
-                        if($c==1){
-                          $ins .= "Approved Expenses:";
-                        }
-                        $ins  = $ins . "\n" . $c
-                         . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
-                      }
-                    } else {
-                      if ($ins == "") {
-                        $ins  = $data[0]['dtcno'] . "\n" .
-                          "Approved Expenses:\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
-                      } else {
-                        if($c==1){
-                          $ins .= "Approved Expenses:";
-                        }
-                        $ins  = $ins . "\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
-                      }
+          //update instruction  
+          $poref = $this->coreFunctions->datareader('select potrno as value from ' . $this->hhead . ' where trno=?', [$trno], '', true);
+          $data = $this->coreFunctions->opentable('select projectid,pcfno,dtcno from ' . $this->hhead . ' where trno=?', [$trno]);
+          $c = 1;
+          $dtcno = "";
+          if ($poref != 0) {
+            $dtcno = $data[0]->dtcno;
+            $ins = "";
+            $q = $this->coreFunctions->opentable("select p.actual, e.category as expensename  from hpxchecking as p left join reqcategory as e on e.line = p.expenseid where e.line <> 94 and p.trno = " . $trno);
+            if (!empty($q)) {
+              if ($data[0]->projectid != "N/A") {
+                $ins  = "Project ID:" . $data[0]->projectid . "\n";
+              }
+              foreach ($q as $x => $y) {
+                if ($data[0]->pcfno != "") {
+                  if ($ins == "") {
+                    $ins  = $data[0]->pcfno . "/" . $data[0]->dtcno . "\n" .
+                      "Approved Expenses:\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
+                  } else {
+                    if ($c == 1) {
+                      $ins .= "Approved Expenses:";
                     }
-                    $c += 1;
+                    $ins  = $ins . "\n" . $c
+                      . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
+                  }
+                } else {
+                  if ($ins == "") {
+                    $ins  = $data[0]['dtcno'] . "\n" .
+                      "Approved Expenses:\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
+                  } else {
+                    if ($c == 1) {
+                      $ins .= "Approved Expenses:";
+                    }
+                    $ins  = $ins . "\n" . $c . ". " . $q[$x]->expensename . "- PHP" . number_format($q[$x]->actual, 2);
                   }
                 }
-          
-                if($ins!=''){
-                  $tbl= 'headinfotrans';
-                  $isposted = $this->othersClass->isposted2($poref,'transnum');
-                  if($isposted){
-                    $tbl = 'hheadinfotrans';
-                  }
-                  $exist = $this->coreFunctions->getfieldvalue($tbl,"rem2","trno=?",[$poref]);
-                  // if($exist !=""){
-                  //   $ins .="\n\n".$exist;
-                  // }
-                  $this->coreFunctions->sbcupdate($tbl,["rem2" => $ins,"dtctrno" => $trno],["trno"=>$poref]);
-                }
-              
+                $c += 1;
+              }
             }
 
-            $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
-            $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
-            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
-
-          }else{
-            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
-            return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Checking'];
+            if ($ins != '') {
+              $tbl = 'headinfotrans';
+              $isposted = $this->othersClass->isposted2($poref, 'transnum');
+              if ($isposted) {
+                $tbl = 'hheadinfotrans';
+              }
+              $exist = $this->coreFunctions->getfieldvalue($tbl, "rem2", "trno=?", [$poref]);
+              // if($exist !=""){
+              //   $ins .="\n\n".$exist;
+              // }
+              $this->coreFunctions->sbcupdate($tbl, ["rem2" => $ins, "dtctrno" => $trno], ["trno" => $poref]);
+            }
           }
-       
+
+          $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+          $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
+          return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+        } else {
+          $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Checking'];
+        }
       } else {
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
         return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting stock'];
@@ -1125,25 +1119,23 @@ class px
         FROM " . $this->hstock . " where trno =?";
 
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-          $qry = "insert into pxchecking(trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid)
+        $qry = "insert into pxchecking(trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid)
           SELECT trno,line,budget,actual,rem,reftrno,editdate,editby,expenseid
           FROM hpxchecking where trno =?";
-          if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-            //update transnum
-            $date = $this->othersClass->getCurrentTimeStamp();
-            $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,statid=39 where trno=?", 'update', [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from hpxchecking where trno=?", "delete", [$trno]);
-            $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
-            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
-
-          }else{
-            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
-            return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Unposting Checking'];
-          }
-       
+        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+          //update transnum
+          $date = $this->othersClass->getCurrentTimeStamp();
+          $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,statid=39 where trno=?", 'update', [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from hpxchecking where trno=?", "delete", [$trno]);
+          $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+          return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+        } else {
+          $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Unposting Checking'];
+        }
       } else {
         $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
         return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Unposting stock'];
@@ -1205,7 +1197,7 @@ class px
     where stock.trno =? group by item.brand,mm.model_name,item.itemid,stock.trno,
     stock.line,stock.sortline,item.barcode,item.itemname,stock.srp,stock.totalsrp,stock.tp,stock.totaltp,
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") ,
-    stock." . $this->dqty." ,
+    stock." . $this->dqty . " ,
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") ,stock.encodeddate,
     item.partno,brand.brand_desc,i.itemdescription,sit.itemdesc,p.name
     UNION ALL
@@ -1220,11 +1212,11 @@ class px
     where stock.trno =? group by item.brand,mm.model_name,item.itemid,stock.trno,
     stock.line,stock.sortline,item.barcode,item.itemname,stock.srp,stock.totalsrp,stock.tp,stock.totaltp,
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") ,
-    stock." . $this->dqty."  ,
+    stock." . $this->dqty . "  ,
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") ,stock.encodeddate,
     item.partno,brand.brand_desc,i.itemdescription,sit.itemdesc,p.name
     order by sortline,line";
-    
+
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
   } //end function
@@ -1244,7 +1236,7 @@ class px
 
     $leftjoin = '';
     $rcgrpby = '';
-    
+
 
     $qry = $sqlselect . "
     FROM $this->stock as stock
@@ -1257,7 +1249,7 @@ class px
     where stock.trno = ? and stock.line = ? group by item.brand,mm.model_name,item.itemid,stock.trno,
     stock.line,stock.sortline,item.barcode,item.itemname,stock.srp,stock.totalsrp,stock.tp,stock.totaltp,
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") ,
-    stock." . $this->dqty." ,
+    stock." . $this->dqty . " ,
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") ,stock.encodeddate,
     item.partno,brand.brand_desc,i.itemdescription,sit.itemdesc,p.name";
     $this->coreFunctions->LogConsole('open stock line');
@@ -1290,7 +1282,7 @@ class px
       case 'deleteallitem':
         return $this->deleteallitem($config);
         break;
-     
+
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
         break;
@@ -1327,7 +1319,7 @@ class px
   {
     return "
           select head.docno, head.client, head.clientname, head.yourref, client.clientid,
-          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt as rrcost,
+          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt*uom.factor as rrcost,
           round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end,
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,p.name as itemgrp
           FROM hqshead as head left join hqsstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
@@ -1337,7 +1329,7 @@ class px
           where stock.trno = ? 
           union all
           select head.docno, head.client, head.clientname, head.yourref, client.clientid,
-          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt as rrcost,
+          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt*uom.factor as rrcost,
           round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end,
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,p.name as itemgrp
           FROM qshead as head left join qsstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
@@ -1347,7 +1339,7 @@ class px
           where stock.trno = ? 
           union all
           select head.docno, head.client, head.clientname, head.yourref, client.clientid,
-          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt as rrcost,
+          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt*uom.factor as rrcost,
           round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end,
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,p.name as itemgrp
           FROM hqshead as head left join hqtstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
@@ -1357,7 +1349,7 @@ class px
           where stock.trno = ?
           union all
           select head.docno, head.client, head.clientname, head.yourref, client.clientid,
-          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt as rrcost,
+          item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.iss,stock.amt*uom.factor as rrcost,
           round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end,
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,p.name as itemgrp
           FROM qshead as head left join qtstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
@@ -1370,10 +1362,10 @@ class px
   public function loadinv($config)
   {
     $trno = $config['params']['trno'];
-    $potrno = $this->coreFunctions->getfieldvalue($this->head,"potrno","trno=?",[$trno]);
+    $potrno = $this->coreFunctions->getfieldvalue($this->head, "potrno", "trno=?", [$trno]);
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'Load Inventory');
 
-    $data = $this->coreFunctions->opentable($this->getqssummaryqry($config),[$potrno,$potrno,$potrno,$potrno]);
+    $data = $this->coreFunctions->opentable($this->getqssummaryqry($config), [$potrno, $potrno, $potrno, $potrno]);
 
     $itemcount = 0;
     if (!empty($data)) {
@@ -1390,7 +1382,7 @@ class px
         // }else{
         //   $config['params']['data']['amt'] = 0;
         // }
-        
+
         $return = $this->additem('insert', $config);
         if ($return['status']) {
           $tbl = 'headinfotrans';
@@ -1399,8 +1391,8 @@ class px
             $tbl = 'hheadinfotrans';
           }
           $this->coreFunctions->sbcupdate($tbl, ['dtctrno' => $trno], ['trno' => $data[$key2]->trno]);
-        }else{
-          return ['status'=>false,'msg' => 'Failed.'];
+        } else {
+          return ['status' => false, 'msg' => 'Failed.'];
         }
       }
     }
@@ -1517,22 +1509,22 @@ class px
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
-    $osphpusd = $this->coreFunctions->getfieldvalue($this->head,"osphpusd","trno=?",[$trno]);
+    $osphpusd = $this->coreFunctions->getfieldvalue($this->head, "osphpusd", "trno=?", [$trno]);
 
     $rrqty = 0;
     $amt = 0;
-    $ext =0;
+    $ext = 0;
 
-    $srp=0;
-    $totalsrp=0;
+    $srp = 0;
+    $totalsrp = 0;
     $tp = 0;
-    $totaltp =0;
+    $totaltp = 0;
 
-    if(isset($config['params']['data']['srp'])){
+    if (isset($config['params']['data']['srp'])) {
       $srp = $config['params']['data']['srp'];
     }
 
-    
+
     $line = 0;
     $qry = "select item.barcode,item.itemname,item.amt,item.famt,p.name as itemgrp from item left join projectmasterfile as p on p.line = item.projectid where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$itemid]);
@@ -1545,23 +1537,23 @@ class px
       $line = $line + 1;
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
-      $rrqty = $config['params']['data']['qty'];      
-      
+      $rrqty = $config['params']['data']['qty'];
+
       $factor = 1;
-      if($amt != 0){
-        if($item[0]->itemgrp == 'HIOKI'){
-          $tp = ($amt*$osphpusd)*0.83;
-        }else{
+      if ($amt != 0) {
+        if ($item[0]->itemgrp == 'HIOKI') {
+          $tp = ($amt * $osphpusd) * 0.83;
+        } else {
           $tp = $item[0]->famt;
-        }    
+        }
       }
-      
-          
+
+
       // if (!empty($item)) {
       //   if($amt ==0){
       //     $amt = $amt;
       //   }
-        
+
       //   if($item[0]->itemgrp == 'HIOKI'){
       //     $tp = ($amt*$osphpusd)*0.83;
       //   }else{
@@ -1572,20 +1564,20 @@ class px
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
       $amt = $config['params']['data'][$this->damt];
-      $rrqty = $config['params']['data'][$this->dqty];    
-      $config['params']['line'] = $line;      
+      $rrqty = $config['params']['data'][$this->dqty];
+      $config['params']['line'] = $line;
 
-      if(isset($config['params']['data']['srp'])){
+      if (isset($config['params']['data']['srp'])) {
         $srp = $config['params']['data']['srp'];
       }
-  
-      if(isset($config['params']['data']['tp'])){
+
+      if (isset($config['params']['data']['tp'])) {
         $tp = $config['params']['data']['tp'];
       }
     }
-    
+
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);  
+    $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
     $rrqty = round($rrqty, $this->companysetup->getdecimal('qty', $config['params']));
     $computedata = $this->othersClass->computestock($amt, '', $rrqty, 1);
     $srp = $this->othersClass->sanitizekeyfield('amt', $srp);
@@ -1604,10 +1596,10 @@ class px
       'srp' => $srp,
       'totalsrp' => number_format($computedata2['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', ''),
       'tp' => $tp,
-      'totaltp' => number_format($computedata3['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', ''),      
+      'totaltp' => number_format($computedata3['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', ''),
     ];
 
-   // $totaltp = $computedata3['ext'];
+    // $totaltp = $computedata3['ext'];
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
@@ -1626,7 +1618,7 @@ class px
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         $row = $this->openstockline($config);
         $msg = 'Item was successfully added.';
-        
+
         return ['row' => $row, 'status' => true, 'msg' => $msg];
       } else {
         return ['status' => false, 'msg' => 'Add item Failed'];
@@ -1635,29 +1627,29 @@ class px
       $return = true;
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
 
-       //update duty
-       $totaltp = $this->coreFunctions->datareader("select sum(totaltp) as value from ".$this->stock." where trno= ?",[$trno]);
-      if($totaltp !=0){
+      //update duty
+      $totaltp = $this->coreFunctions->datareader("select sum(totaltp) as value from " . $this->stock . " where trno= ?", [$trno]);
+      if ($totaltp != 0) {
         $i = [];
-        $isduty =  $this->coreFunctions->getfieldvalue("pxchecking","line","trno=? and expenseid =94",[$trno],'',true); 
-        $os = $this->coreFunctions->getfieldvalue("pxhead","oandausdphp","trno=?",[$trno]);
+        $isduty =  $this->coreFunctions->getfieldvalue("pxchecking", "line", "trno=? and expenseid =94", [$trno], '', true);
+        $os = $this->coreFunctions->getfieldvalue("pxhead", "oandausdphp", "trno=?", [$trno]);
         $stock = $totaltp * $os;
-        if($isduty!=0){                          
-              $i['budget'] = round($stock * .02,2);
-              $i['actual'] = round($stock * .02,2);      
-              $this->coreFunctions->sbcupdate("pxchecking", $i,["trno"=>$trno, "line" => $isduty]);              
-        }else{
+        if ($isduty != 0) {
+          $i['budget'] = round($stock * .02, 2);
+          $i['actual'] = round($stock * .02, 2);
+          $this->coreFunctions->sbcupdate("pxchecking", $i, ["trno" => $trno, "line" => $isduty]);
+        } else {
           $i['trno'] = $trno;
           $i['line'] = 1;
           $i['expenseid'] = 94;
-          $i['budget'] = round($stock * .02,2);
-          $i['actual'] = round($stock * .02,2);
+          $i['budget'] = round($stock * .02, 2);
+          $i['actual'] = round($stock * .02, 2);
           $i['rem'] = '';
 
           $this->coreFunctions->sbcinsert("pxchecking", $i);
         }
       }
-    
+
       return $return;
     }
   } // end function
@@ -1666,18 +1658,18 @@ class px
   {
     $isallow = true;
     $trno = $config['params']['trno'];
-    $poref = $this->coreFunctions->getfieldvalue($this->head,"potrno","trno=?",[$trno]);
+    $poref = $this->coreFunctions->getfieldvalue($this->head, "potrno", "trno=?", [$trno]);
 
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
 
-    $isposted = $this->othersClass->isposted2($poref,'transnum');
+    $isposted = $this->othersClass->isposted2($poref, 'transnum');
 
     $qstbl = 'headinfotrans';
-    if($isposted){
+    if ($isposted) {
       $qstbl = 'hheadinfotrans';
     }
-    
-    $this->coreFunctions->execqry("update ".$qstbl." set dtctrno = 0 where trno=?", 'update', [$poref]);
+
+    $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
 
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
@@ -1728,7 +1720,7 @@ class px
           and item.barcode = ? 
           and stock." . $this->damt . " <> 0 and cntnum.trno <>?
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
-      $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
+    $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
 
 
     if (empty($data)) { // if walang data from filter ng rrcost latest transaction, requery sa cost na field 
@@ -1800,7 +1792,7 @@ class px
     //     $str = app($this->companysetup->getreportpath($config['params']))->reportplottingexcelIR($config, $data);
     //   }
     // } else {
-      $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+    $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
     // }
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];

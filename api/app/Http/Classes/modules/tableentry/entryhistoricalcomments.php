@@ -157,13 +157,21 @@ class entryhistoricalcomments
         case 'TM':
         case 'TK':
           $qry = "select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr where pr.tmtrno=$trno and pr.tmline=$line
-            order by pr.line desc";
+                  union all
+                  select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr
+                        left join dailytask as dy1 on dy1.trno=pr.dytrno
+                        where dy1.tasktrno=$trno and dy1.taskline=$line
+                        union all
+                  select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr
+                        left join hdailytask as dy1 on dy1.trno=pr.dytrno
+                        where dy1.tasktrno=$trno and dy1.taskline=$line
+                        order by createdate desc"; //para makita yung ni comment sa dailytask listing 
           break;
         case 'DY':
           $qry = "select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate,pr.touser from headprrem as pr where pr.dytrno=$trno order by pr.line desc";
           break;
       }
-
+      // var_dump($qry);
       $data = $this->coreFunctions->opentable($qry);
       return $data;
     } else {

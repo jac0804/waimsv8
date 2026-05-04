@@ -92,9 +92,19 @@ class pay_slip
         $col2 = $this->fieldClass->create($fields);
 
         break;
+      case 66: // metrodragon payroll
+        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'batchrep'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+        data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
+        data_set($col1, 'deptrep.label', 'Department');
+
+        $fields = [];
+        $col2 = $this->fieldClass->create($fields);
+        break;
 
       default:
-        $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep'];
+        $fields = ['radioprint', 'batchrep', 'divrep', 'deptrep', 'dclientname'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
         data_set($col1, 'dclientname.label', 'Employee');
@@ -102,7 +112,17 @@ class pay_slip
         data_set($col1, 'divrep.label', 'Company');
         data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
         data_set($col1, 'deptrep.label', 'Department');
-        if ($companyid == 53) { //camera
+
+        data_set($col1, 'batchrep.addedparams', ['clientid']);
+        data_set($col1, 'divrep.addedparams', ['line']);
+        data_set($col1, 'deptrep.addedparams', ['line', 'divid']);
+        data_set($col1, 'dclientname.addedparams', ['line', 'divid', 'deptid']);
+
+
+        data_set($col1, 'batchrep.lookupclass', 'lookupbatchrep');
+        data_set($col1, 'batchrep.required', true);
+
+        if ($companyid == 53) {
           data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'default', 'color' => 'red']
           ]);
@@ -110,10 +130,8 @@ class pay_slip
 
         switch ($companyid) {
           case 45: //pdpi payroll
-            $fields = ['batchrep', 'radiooption'];
+            $fields = ['radiooption'];
             $col2 = $this->fieldClass->create($fields);
-            data_set($col2, 'batchrep.lookupclass', 'lookupbatchrep');
-            data_set($col2, 'batchrep.required', true);
             data_set($col2, 'radiooption.options', array(
               ['label' => 'With Time In', 'value' => 'timein', 'color' => 'orange'],
               ['label' => 'Manual Entry', 'value' => 'manual', 'color' => 'orange']
@@ -121,32 +139,25 @@ class pay_slip
             break;
           case 28: //xcomp
           case 30: //RT
-            $fields = ['batchrep', 'radiooption'];
+            $fields = ['radiooption'];
             $col2 = $this->fieldClass->create($fields);
-            data_set($col2, 'batchrep.lookupclass', 'lookupbatchrep');
-            data_set($col2, 'batchrep.required', true);
             data_set($col2, 'radiooption.options', array(
               ['label' => 'Default', 'value' => 'default', 'color' => 'orange'],
               ['label' => 'W/out Hrs', 'value' => 'nohrs', 'color' => 'orange']
             ));
             break;
           case 62: //onesky
-            $fields = ['batchrep', 'radioreporttype'];
+            $fields = ['radioreporttype'];
             $col2 = $this->fieldClass->create($fields);
-            data_set($col2, 'batchrep.lookupclass', 'lookupbatchrep');
-            data_set($col2, 'batchrep.required', true);
             data_set($col2, 'radioreporttype.options', array(
               ['label' => 'One Sky Logo', 'value' => 'onesky', 'color' => 'red'],
               ['label' => 'NSON Logo', 'value' => 'nson', 'color' => 'red'],
               ['label' => 'W/out Logo', 'value' => 'none', 'color' => 'red']
             ));
             break;
-
           default:
-            $fields = ['batchrep'];
+            $fields = [];
             $col2 = $this->fieldClass->create($fields);
-            data_set($col2, 'batchrep.lookupclass', 'lookupbatchrep');
-            data_set($col2, 'batchrep.required', true);
             break;
         }
         break;
@@ -194,6 +205,9 @@ class pay_slip
     '' as divrep,
     '' as deptrep,
     '' as batchrep,
+    '' as sectrep,
+    '' as sectname,
+    '' as sectid,
     '" . $printtype . "' as printtype,
     '' as dbranchname,
     '' as branchcode,
@@ -280,6 +294,9 @@ class pay_slip
         break;
       case 62: //one sky
         return $this->onesky_Layout($config);
+        break;
+      case 66: //metrodragon payroll
+        return $this->metrodragon_layout($config);
         break;
       default:
         return $this->DEFAULT_Layout($config);
@@ -1134,6 +1151,7 @@ where empid = ? and batchid = ?";
         break;
 
       case 58: //cdo
+      case 66: //metrodragon
         $filter = "";
         $orderby = " ";
         $filteraccIn = " and acc.alias in ('ABSENT','LATE','UNDERTIME','YWT','YSE','YME','YPE','LOAN','SSSLOAN','HDMFLOAN','DEDUCTION') ";
@@ -9128,9 +9146,9 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
       $str .= $this->reporter->startrow();
       // $str .= $this->reporter->col('', '330', '25px', false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col('', '5', '14.5', false, $border, '', '', $font, $fontsize, '', '', '1px');
-      $str .= $this->reporter->col('', '150', '14.5', false, $border, '', 'L', $font, $fontsize, '', '', '1px');
+      $str .= $this->reporter->col('', '70', '14.5', false, $border, '', 'L', $font, $fontsize, '', '', '1px');
       $str .= $this->reporter->col('', '70', '14.5', false, $border, '', 'R', $font, $fontsize, '', '', '1px');
-      $str .= $this->reporter->col('', '100', '14.5', false, $border, '', 'R', $font, $fontsize, '', '', '1px');
+      $str .= $this->reporter->col('', '50', '14.5', false, $border, '', 'R', $font, $fontsize, '', '', '1px');
       $str .= $this->reporter->col('', '5', '14.5', false, $border, 'R', 'R', $font, $fontsize, '', '', '1px');
       $str .= $this->reporter->endrow();
     }
@@ -9887,7 +9905,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= "<div style='position:absolute; margin:-10px 0 0 -95px'>";
         $str .= $this->reporter->begintable(340);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('EARNINGS', '340', null, false, $border, 'TBR', 'C', $font, $font_size, 'B', '', '8px');
+        $str .= $this->reporter->col('EARNINGS', '340', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '8px');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $listdeduc = ['PPBLE', 'YWT']; #'DEDUCTION', 'LATE', 'ABSENT'
@@ -9947,11 +9965,11 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
 
         switch ($logotype) {
           case 'onesky':
-            $logo = URL::to('/images/onesky/onesky_logo.png');
+            $logo = URL::to($this->companysetup->getlogopath($config['params'])) . '/onesky_logo.png';
             $dislogo = '<img src ="' . $logo . '" alt="mbc" width="330" height ="90px" >';
             break;
           case 'nson':
-            $logo = URL::to('/images/onesky/nson_logo.png');
+            $logo = URL::to($this->companysetup->getlogopath($config['params'])) . '/nson_logo.png';
             $dislogo = '<img src ="' . $logo . '" alt="mbc" width="330" height ="90px" >';
             break;
 
@@ -10129,6 +10147,653 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
       $str .= $this->reporter->endrow();
     }
     $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  private function metrodragon_Header($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = 'Century Gothic';
+    $font_size = '11';
+    $padding = '';
+    $margin = '';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $batch      = $config['params']['dataparams']['batchid'];
+
+    $str = '';
+    $layoutsize = '1000';
+
+    $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->col('', null, null, false, '2px dashed', 'B', 'C', $font, '12', 'B', '', '', '', '', '', '', '', '#696969');
+    // $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->col('', null, '15', false, '2px dashed', '', 'C', $font, '12', 'B', '', '', '', '', '', '', '', '#696969');
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($headerdata[0]->name, null, null, false, $border, '', 'C', $font, '12', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->col('PAYROLL RECEIPT', null, null, false, $border, '', 'C', 'Times New Roman', '12', 'B', '', '');
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  public function metrodragon_qry($config)
+  {
+    // QUERY
+    $client     = $config['params']['dataparams']['client'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname     = $config['params']['dataparams']['deptname'];
+    $batchid      = $config['params']['dataparams']['line'];
+    $filter   = "";
+    $filter1   = "";
+    $filter2   = "";
+    $filter3   = "";
+
+    if ($client != "") {
+      $filter .= " and e.client = '$client'";
+    }
+    if ($deptname != "") {
+      $filter1 .= " and emp.deptid = $deptid";
+    }
+    if ($divname != "") {
+      $filter2 .= " and emp.divid = $divid";
+    }
+
+    if ($batchid != 0) {
+      $filter2 .= " and p.batchid = " . $batchid . " ";
+    }
+
+    $filter3 = " and pa.alias not in ('YIS','YIM','YIP','YSR','YER','YMR','YPR','MPF','MPFER')";
+
+    if ($config['params']['dataparams']['printtype'] != 'dashboardprinting') {
+      $emplvl = $this->othersClass->checksecuritylevel($config);
+      $filter2 .= " and emp.level in $emplvl";
+    }
+
+    $query = "SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,year(p.dateid) as yr,
+      date_format(batch.startdate,'%b %d, %y') as startd,
+      date_format(batch.enddate,'%b %d, %y') as endd,
+      p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
+      p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,
+      p.qty, 
+      pa.alias,emp.empid,p.qty2,pa.seq
+      FROM paytrancurrent as p LEFT JOIN employee AS emp ON emp.empid=p.empid
+      left join client as e on e.clientid = emp.empid
+      left join division as d on d.divid = emp.divid
+      left join batch on batch.line=p.batchid
+      left join client as dept on dept.clientid = emp.deptid
+      left join paccount as pa on pa.line=p.acnoid
+      where ''='' $filter $filter1 $filter2 $filter3
+      union all
+      SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,year(p.dateid) as yr,
+      date_format(batch.startdate,'%b %d, %y') as startd,
+      date_format(batch.enddate,'%b %d, %y') as endd,
+      p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
+      p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,
+      p.qty,  
+      pa.alias,emp.empid,p.qty2,pa.seq
+      FROM paytranhistory as p LEFT JOIN employee AS emp ON emp.empid=p.empid
+      left join client as e on e.clientid = emp.empid
+      left join division as d on d.divid = emp.divid
+      left join batch on batch.line=p.batchid
+      left join client as dept on dept.clientid = emp.deptid
+      left join paccount as pa on pa.line=p.acnoid
+      where ''='' $filter $filter1 $filter2 $filter3
+      order by clientname,seq";
+
+    return $this->coreFunctions->opentable($query);
+  }
+
+  public function metrodragon_Layout($config)
+  {
+    $result = $this->metrodragon_qry($config);
+
+    $companyid = $config['params']['companyid'];
+
+    $border    = '1px solid';
+    $font      = 'Times New Roman';
+    $font_size = '10';
+    $layoutsize = '1000';
+
+    $str = '';
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+
+    $clientname = "";
+    $divname    = "";
+    $deptname   = "";
+    $basicpay   = 0;
+    $absent     = 0;
+    $late       = 0;
+    $undertime  = 0;
+    $rot        = 0;
+    $ndiffot    = 0;
+    $leave      = 0;
+    $restday    = 0;
+    $restdayot  = 0;
+    $special    = 0;
+    $specialot  = 0;
+    $specialun  = 0;
+    $legal      = 0;
+    $legalot    = 0;
+    $legalun    = 0;
+    $wht        = 0;
+    $sss        = 0;
+    $phic       = 0;
+    $hdmf       = 0;
+    $loan       = 0;
+    $sssloan    = 0;
+    $hdmfloan   = 0;
+    $bonus      = 0;
+    $otherearnings  = 0;
+    $otherdeduction = 0;
+    $allowance  = 0;
+    $tripping   = 0;
+    $operator   = 0;
+    $netpay     = 0;
+    $totalearn  = 0;
+    $totalded   = 0;
+
+    $qtybasicpay  = 0;
+    $qtyabsent    = 0;
+    $qtylate      = 0;
+    $qtyundertime = 0;
+    $qtyrot       = 0;
+    $qtyndiffot   = 0;
+    $qtyleave     = 0;
+    $qtyrestday   = 0;
+    $qtyrestdayot = 0;
+    $qtyspecial   = 0;
+    $qtyspecialot = 0;
+    $qtylegal     = 0;
+    $qtylegalot   = 0;
+    $qtyspecialun = 0;
+    $qtylegalun   = 0;
+
+    $i = 0;
+    $c = 0;
+    $employeeCount = 0;
+    $prevEmployee  = null;
+
+    // FIXED HEIGHT PER EMPLOYEE
+    $FIXED_EMPLOYEE_HEIGHT = 500;
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->addline();
+
+      $clientname = $data->clientname;
+      $client     = $data->client;
+      $divname    = $data->divname;
+      $deptname   = $data->deptname;
+
+      // Print header on every employee change
+      if ($prevEmployee !== $clientname) {
+
+        // Page break every 3 employees
+        if ($employeeCount > 0 && $employeeCount % 3 == 0) {
+          $str .= $this->reporter->page_break();
+        }
+
+        $prevEmployee = $clientname;
+
+        // MAIN CONTAINER WITH FIXED HEIGHT FOR EACH EMPLOYEE
+        $str .= '<div style="width: 100%; height: ' . $FIXED_EMPLOYEE_HEIGHT . 'px; position: relative; page-break-inside: avoid;">';
+
+        // DIV 1: EMPLOYEE HEADER + COLUMN HEADERS
+        $str .= '<div style="width: 100%; position: absolute; top: 0; left: 0;">';
+
+        // Company Header
+        $str .= $this->metrodragon_Header($config);
+
+        // Employee Header
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Employee Name : ' . strtoupper($clientname) . '&nbsp&nbsp&nbsp' . strtoupper($client), '490', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Division : ' . strtoupper($divname), '490', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Payroll Period : ' . date('F d, Y', strtotime($data->startdate)) . ' to ' . date('F d, Y', strtotime($data->enddate)), '490', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Department : ' . strtoupper($deptname), '490', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', null, '10', false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endtable();
+
+        // COLUMN HEADER
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '490', null, false, '3px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '490', null, false, '3px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('E A R N I N G S', '490', null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('D E D U C T I O N S', '490', null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '490', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '490', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->endtable();
+
+        $str .= '</div>'; // Close DIV 1
+      }
+
+      // Accumulate alias data
+      if ($data->alias == 'BSA') {
+        $basicpay = $basicpay + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtybasicpay = $qtybasicpay + $data->qty;
+      } elseif ($data->alias == 'ABSENT') {
+        $absent = $absent + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+        $qtyabsent = $qtyabsent + $data->qty;
+      } elseif ($data->alias == 'LATE') {
+        $late = $late + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+        if ($companyid == 43) {
+          $qtylate = $qtylate + $data->qty2;
+        } else {
+          $qtylate = $qtylate + $data->qty;
+        }
+      } elseif ($data->alias == 'UNDERTIME') {
+        $undertime = $undertime + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+        $qtyundertime = $qtyundertime + $data->qty;
+      } elseif ($data->alias == 'OTREG') {
+        $rot = $rot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrot = $qtyrot + $data->qty;
+      } elseif ($data->alias == 'NDIFF') {
+        $ndiffot = $ndiffot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyndiffot = $qtyndiffot + $data->qty;
+      } elseif ($data->alias == 'ALLOWANCE') {
+        $allowance = $allowance + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'SL' || $data->alias == 'VL' || $data->alias == 'SIL' || $data->alias == 'ML') {
+        $leave = $leave + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyleave = $qtyleave + $data->qty;
+      } elseif ($data->alias == '13PAY') {
+        $bonus = $bonus + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'PPBLE') {
+        $netpay = $netpay + $data->db - $data->cr;
+      } elseif ($data->alias == 'RESTDAY') {
+        $restday = $restday + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrestday = $qtyrestday + $data->qty;
+      } elseif ($data->alias == 'RESTDAYOT' || $data->alias == 'OTRES') {
+        $restdayot = $restdayot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrestdayot = $qtyrestdayot + $data->qty;
+      } elseif ($data->alias == 'SP') {
+        $special = $special + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecial = $qtyspecial + $data->qty;
+      } elseif ($data->alias == 'SPUN') {
+        $specialun = $specialun + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecialun = $qtyspecialun + $data->qty;
+      } elseif ($data->alias == 'SPECIALOT') {
+        $specialot = $specialot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecialot = $qtyspecialot + $data->qty;
+      } elseif ($data->alias == 'LEG') {
+        $legal = $legal + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegal = $qtylegal + $data->qty;
+      } elseif ($data->alias == 'LEGUN') {
+        $legalun = $legalun + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegalun = $qtylegalun + $data->qty;
+      } elseif ($data->alias == 'LEGALOT') {
+        $legalot = $legalot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegalot = $qtylegalot + $data->qty;
+      } elseif ($data->alias == 'YWT') {
+        $wht = $wht + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YSE') {
+        $sss = $sss + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YME') {
+        $phic = $phic + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YPE') {
+        $hdmf = $hdmf + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'LOAN') {
+        $loan = $loan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'SSSLOAN') {
+        $sssloan = $sssloan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'HDMFLOAN') {
+        $hdmfloan = $hdmfloan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'INCENTIVE1') {
+        $tripping = $tripping + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'INCENTIVE2') {
+        $operator = $operator + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } else {
+        if ($data->cr > 0) {
+          $otherdeduction = $otherdeduction + $data->cr;
+          $totalded = $totalded + $data->cr;
+        } elseif ($data->db > 0) {
+          $otherearnings = $otherearnings + $data->db;
+          $totalearn = $totalearn + $data->db;
+        }
+      }
+
+      if ($c == 0) {
+        $c = $this->getcount($config, $data->empid, $config['params']['dataparams']['line']);
+      }
+
+      $i = $i + 1;
+      if ($i == $c) {
+
+        // Fetch detailed earn data
+        $dataearn = $this->dataearn($config, $data->empid, $data->batchid);
+
+        // Pre-calculate total leave qty in HRS to adjust BSA
+        $leave_aliases   = array('SL', 'VL', 'SIL', 'ML');
+        $total_leave_qty = 0;
+        foreach ($dataearn as $earn) {
+          if (in_array($earn->alias, $leave_aliases)) {
+            if ($earn->uom == 'HRS') {
+              $total_leave_qty += $earn->qty;
+            } else {
+              $total_leave_qty += ($earn->qty * 8);
+            }
+          }
+        }
+
+        $listdeduc = array('PPBLE', 'YWT', 'YSE', 'YME', 'YPE', 'LOAN', 'SSSLOAN', 'HDMFLOAN', 'ABSENT', 'LATE', 'UNDERTIME', 'DEDUCTION');
+
+        // Build earnings array with proper display value and include unit label
+        $earn_rows = array();
+        foreach ($dataearn as $earn) {
+
+          if (in_array($earn->alias, $listdeduc)) {
+            continue;
+          }
+
+          if ($earn->db > 0) {
+            $qty = $earn->qty;
+            $uom = $earn->uom;
+
+            if ($earn->alias == 'BSA') {
+              $qty_adjusted = $qty - $total_leave_qty;
+              // For BSA, show DAYS with label
+              $display_qty = $qty_adjusted / 8;
+              $display_label = '&nbsp&nbsp&nbspDAY/S';
+            } elseif ($uom == 'PESO' || $qty == 0) {
+              $display_qty = 0;
+              $display_label = '';
+            } elseif ($uom == 'HRS') {
+              // For OT and other HRS items, show HOURS with label
+              $display_qty = $qty;
+              $display_label = '&nbsp&nbsp&nbspHRS';
+            } else {
+              // For DAYS items, show DAYS with label
+              $display_qty = $qty;
+              $display_label = '&nbsp&nbsp&nbspDAY/S';
+            }
+
+            // Only add if display_qty is not 0 or it's a monetary item
+            if ($display_qty != 0 || $earn->alias == 'ALLOWANCE' || $earn->alias == '13PAY') {
+              $earn_rows[] = array(
+                'codename' => $earn->codename,
+                'code' => $earn->code,
+                'alias' => $earn->alias,
+                'display_qty' => $display_qty,
+                'display_label' => $display_label,
+                'amount'   => $earn->db,
+              );
+            }
+          }
+        }
+
+        usort($earn_rows, function ($a, $b) {
+          $a_is_rate = (isset($a['code']) && $a['code'] == 'PT57') || (isset($a['alias']) && $a['alias'] == 'BSA');
+          $b_is_rate = (isset($b['code']) && $b['code'] == 'PT57') || (isset($b['alias']) && $b['alias'] == 'BSA');
+
+          $a_is_otreg = (isset($a['code']) && $a['code'] == 'PT15') || (isset($a['alias']) && $a['alias'] == 'OTREG');
+          $b_is_otreg = (isset($b['code']) && $b['code'] == 'PT15') || (isset($b['alias']) && $b['alias'] == 'OTREG');
+
+          // BASIC RATE comes first
+          if ($a_is_rate && !$b_is_rate) {
+            return -1;
+          }
+          if (!$a_is_rate && $b_is_rate) {
+            return 1;
+          }
+
+          // Regular OT comes second
+          if ($a_is_otreg && !$b_is_otreg) {
+            return -1;
+          }
+          if (!$a_is_otreg && $b_is_otreg) {
+            return 1;
+          }
+
+          return strcmp($a['codename'], $b['codename']);
+        });
+
+        // Build deductions array - USE getdeductionbreakdown
+        $deduction = $this->getdeductionbreakdown($config, $data->empid, $data->batchid);
+        $ded_rows  = array();
+        foreach ($deduction as $ded) {
+          // Show ALL deductions with cr > 0
+          if ($ded->cr > 0) {
+            $ded_rows[] = array(
+              'codename' => $ded->codename,
+              'amount'   => $ded->cr,
+            );
+          }
+        }
+
+        usort($ded_rows, function ($a, $b) {
+          // Check for ABSENT (code = PT5)
+          $a_is_absent = (isset($a['codename']) && $a['codename'] == 'ABSENT');
+          $b_is_absent = (isset($b['codename']) && $b['codename'] == 'ABSENT');
+
+          // ABSENT comes first
+          if ($a_is_absent && !$b_is_absent) {
+            return -1;
+          }
+          if (!$a_is_absent && $b_is_absent) {
+            return 1;
+          }
+
+          return strcmp($a['codename'], $b['codename']);
+        });
+
+        // Calculate net pay
+        $netpay = $totalearn - $totalded;
+
+        $max_rows = max(count($earn_rows), count($ded_rows));
+
+        // DIV 2: CONTENT
+        $str .= '<div style="width: 100%; position: absolute; top: 160px; left: 0; max-height: 200px;">';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        for ($r = 0; $r < $max_rows; $r++) {
+          $e = isset($earn_rows[$r]) ? $earn_rows[$r] : null;
+          $d = isset($ded_rows[$r])  ? $ded_rows[$r]  : null;
+
+          $str .= $this->reporter->startrow();
+          // Earnings side
+          $str .= $this->reporter->col(isset($e) ? $e['codename'] : '', '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+          // Earnings side
+          if (isset($e) && $e['display_qty'] != 0) {
+            $display_text = number_format($e['display_qty'], 2) . ' ' . $e['display_label'];
+            $str .= $this->reporter->col($display_text, '180', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+          } else {
+            $str .= $this->reporter->col('', '180', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+          }
+          // Earnings side: Amount
+          $str .= $this->reporter->col(isset($e) && $e['amount'] != 0 ? number_format($e['amount'], 2) : '', '110', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+          // Deductions side: Description
+          $str .= $this->reporter->col(isset($d) ? $d['codename'] : '', '380', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+          // Deductions side: Amount
+          $str .= $this->reporter->col(isset($d) && $d['amount'] != 0 ? number_format($d['amount'], 2) : '', '110', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+          $str .= $this->reporter->endrow();
+        }
+        $str .= $this->reporter->endtable();
+
+        $str .= '</div>'; // Close DIV 2
+
+        // DIV 3: TOTALS
+        $str .= '<div style="width: 100%; position: absolute; bottom: 20px; left: 0;">';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '490', null, false, '2px solid', 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '20', null, false, '2px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '490', null, false, '2px solid', 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Total Earnings', '320', null, false, '', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($totalearn == 0 ? '-' : number_format($totalearn, 2), '170', null, false, '', '', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, '', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Total Deductions', '320', null, false, '', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($totalded == 0 ? '-' : number_format($totalded, 2), '170', null, false, '', '', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '490', null, false, '3px solid', 'T', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '20', null, false, '3px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '490', null, false, '3px solid', 'T', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('TAKE HOME PAY : ', '150', null, false, '', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($netpay == 0 ? '-' : number_format($netpay, 2), '340', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '20', null, false, '', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('RECEIVED BY : ', '150', null, false, '', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '340', null, false, '2px solid', 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '490', '15', false, '3px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '20', '15', false, '3px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '490', '15', false, '3px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= '</div>'; // Close DIV 3
+
+        $str .= '</div>'; // Close main container
+
+        // Reset all variables 
+        $i = 0;
+        $c = 0;
+        $basicpay = 0;
+        $absent = 0;
+        $late = 0;
+        $undertime = 0;
+        $rot = 0;
+        $ndiffot = 0;
+        $leave = 0;
+        $restday = 0;
+        $restdayot = 0;
+        $special = 0;
+        $specialot = 0;
+        $specialun = 0;
+        $legal = 0;
+        $legalot = 0;
+        $legalun = 0;
+        $wht = 0;
+        $sss = 0;
+        $phic = 0;
+        $hdmf = 0;
+        $loan = 0;
+        $sssloan = 0;
+        $hdmfloan = 0;
+        $bonus = 0;
+        $otherearnings = 0;
+        $otherdeduction = 0;
+        $allowance = 0;
+        $tripping = 0;
+        $operator = 0;
+        $netpay = 0;
+        $totalearn = 0;
+        $totalded = 0;
+        $qtybasicpay = 0;
+        $qtyabsent = 0;
+        $qtylate = 0;
+        $qtyundertime = 0;
+        $qtyrot = 0;
+        $qtyndiffot = 0;
+        $qtyleave = 0;
+        $qtyrestday = 0;
+        $qtyrestdayot = 0;
+        $qtyspecial = 0;
+        $qtyspecialot = 0;
+        $qtylegal = 0;
+        $qtylegalot = 0;
+        $qtyspecialun = 0;
+        $qtylegalun = 0;
+
+        $employeeCount++;
+      }
+    }
+
+    $str .= $this->reporter->endreport();
     return $str;
   }
 }//end class

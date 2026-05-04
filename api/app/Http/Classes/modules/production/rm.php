@@ -261,10 +261,10 @@ class rm
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -562,7 +562,7 @@ class rm
             if (!empty($item)) {
               $isnoninv = $item[0]->isnoninv;
               $item[0]->factor = $this->othersClass->val($item[0]->factor);
-              if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+              if ($item[0]->factor !== 0) $factor = $item[0]->factor;
             }
             $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$head['wh']]);
             $computedata = $this->othersClass->computestock($s->rrcost, $s->disc, $s->qty, $factor, 0);
@@ -1125,7 +1125,7 @@ class rm
     if (!empty($item)) {
       $isnoninv = $item[0]->isnoninv;
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);

@@ -52,7 +52,8 @@ class bu
         'rem',
         'isbusiness',
         'isallowliquor',
-        'clientpref'
+        'clientpref',
+        'plateno'
     ];
 
     private $except = ['clientid'];
@@ -201,15 +202,16 @@ class bu
         data_set($col2, 'addr2.label', 'Owner Address');
         data_set($col2, 'contact.label', 'Contact No.');
 
-        $fields = ['picture', 'isallowliquor'];
+        $fields = ['plateno'];
         $col3 = $this->fieldClass->create($fields);
-        data_set($col3, 'picture.lookupclass', 'client');
-        data_set($col3, 'picture.folder', 'business');
-        data_set($col3, 'picture.table', 'client');
-        data_set($col3, 'picture.fieldid', 'clientid');
+        data_set($col3, 'plateno.label', 'Plate No.');
 
-        $fields = [];
+        $fields = ['picture', 'isallowliquor'];
         $col4 = $this->fieldClass->create($fields);
+        data_set($col4, 'picture.lookupclass', 'client');
+        data_set($col4, 'picture.folder', 'business');
+        data_set($col4, 'picture.table', 'client');
+        data_set($col4, 'picture.fieldid', 'clientid');
 
         return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
     }
@@ -236,6 +238,7 @@ class bu
         $data[0]['isbusiness'] = 1;
         $data[0]['iscustomer'] = 1;
         $data[0]['isallowliquor'] = '0';
+        $data[0]['plateno'] = '';
 
         return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
     }
@@ -318,6 +321,7 @@ class bu
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
         $data['addr'] = $data['brgy'] . ' ' . $data['area'];
+        $data['iscustomer'] = 1;
 
         if ($isupdate) {
             $this->coreFunctions->sbcupdate('client', $data, ['clientid' => $head['clientid']]);

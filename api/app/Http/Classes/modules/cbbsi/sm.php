@@ -50,8 +50,29 @@ class sm
   public $acctg = [];
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',
-    'wh', 'address', 'contra', 'tax', 'vattype', 'projectid', 'subproject', 'waybill', 'ewt', 'ewtrate', 'trnxtype'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'contra',
+    'tax',
+    'vattype',
+    'projectid',
+    'subproject',
+    'waybill',
+    'ewt',
+    'ewtrate',
+    'trnxtype'
   ];
 
   private $otherfields = ['trno', 'freight'];
@@ -233,10 +254,10 @@ class sm
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -308,11 +329,33 @@ class sm
     $itemname = 11;
 
     $column = [
-      'action', 'rrqty', 'uom',  'wh', 'lastcost', 'rrcost', 'charges', 'cost', 'ext', 'ref', 'barcode', 'itemname'
+      'action',
+      'rrqty',
+      'uom',
+      'wh',
+      'lastcost',
+      'rrcost',
+      'charges',
+      'cost',
+      'ext',
+      'ref',
+      'barcode',
+      'itemname'
     ];
 
     $sortcolumn = [
-      'action', 'rrqty', 'uom',  'wh', 'lastcost', 'rrcost', 'charges', 'cost', 'ext', 'ref', 'barcode', 'itemname'
+      'action',
+      'rrqty',
+      'uom',
+      'wh',
+      'lastcost',
+      'rrcost',
+      'charges',
+      'cost',
+      'ext',
+      'ref',
+      'barcode',
+      'itemname'
     ];
 
     $headgridbtns = ['viewdistribution'];

@@ -2116,24 +2116,25 @@ class daily_cashiers_position_report
                         group by dx.amount,coa.acnoname,userr.name,userr.username,dx.docno,num.bref,num.seq
                         
                         union all
-                        select head.amount,(case paymode.category when 'BANK TRANSFER' then concat(paymode.category,'-',head.acnoname) else paymode.category end) as bankname,
-                        userr.name,userr.username,'' as docno from hcehead as head
+                        select sum(amount) as amount,bankname,name,username,'' as docno from
+                        (select head.amount,(case paymode.category when 'BANK TRANSFER' then concat(paymode.category,'-',head.acnoname) else paymode.category end) as bankname,
+                        userr.name,userr.username,head.docno as docno from hcehead as head
                         LEFT JOIN transnum AS num ON num.trno = head.trno
                         LEFT JOIN reqcategory AS paymode ON paymode.line = head.mpid and paymode.ispaymode =1
                         LEFT JOIN reqcategory AS ttype ON ttype.line = head.trnxtid and ttype.isttype =1
                         left join useraccess as userr on userr.username=head.createby
                         where paymode.category not IN ('Cash','Check')  and ttype.category not in ('REFUND','SUBSIDY')
                         and date(head.dateid)='$start' $filter
-                        group by head.amount,paymode.category,head.acnoname,userr.name,userr.username
+                        group by head.amount,paymode.category,head.acnoname,userr.name,userr.username,head.docno
                         union all
-                        select head.amount,ttype.category as bankname,userr.name,userr.username,'' as docno from hcehead as head
+                        select head.amount,ttype.category as bankname,userr.name,userr.username,head.docno as docno from hcehead as head
                         LEFT JOIN transnum AS num ON num.trno = head.trno
                         LEFT JOIN reqcategory AS paymode ON paymode.line = head.mpid and paymode.ispaymode =1
                         LEFT JOIN reqcategory AS ttype ON ttype.line = head.trnxtid and ttype.isttype =1
                         left join useraccess as userr on userr.username=head.createby
                         where ttype.category  in ('REFUND','SUBSIDY')
                         and date(head.dateid)='$start' $filter
-                        group by head.amount,ttype.category,userr.name,userr.username
+                        group by head.amount,ttype.category,userr.name,userr.username,head.docno) as b group by bankname,name,username
                         
                         ) as a group by bankname,name,username,docno
 

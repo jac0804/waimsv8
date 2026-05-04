@@ -146,10 +146,10 @@ class wc
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -184,7 +184,16 @@ class wc
 
     $gridcolumns = [
       'action',
-      'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'qa', 'rem', 'ref', 'void'
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'qa',
+      'rem',
+      'ref',
+      'void'
     ];
     if ($this->companysetup->getisproject($config['params'])) {
       $gridcolumns = ['action', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'qa', 'rem', 'ref', 'stage', 'void'];

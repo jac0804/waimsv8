@@ -174,10 +174,10 @@ class hd
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -509,15 +509,14 @@ class hd
           $this->coreFunctions->execqry($qry, 'update');
         }
       }
-      
 
-        $explanation = $this->coreFunctions->datareader("select explanation as value from disciplinary where trno=?", [$trno]);
-        if($explanation !=''){
-           $this->coreFunctions->execqry("delete from pendingapp where doc='HD' and trno=" . $trno , 'delete');
-        }else{
-           return ['status' => false, 'msg' => 'Posting failed. Explanation cannot be blank.'];
-        }
 
+      $explanation = $this->coreFunctions->datareader("select explanation as value from disciplinary where trno=?", [$trno]);
+      if ($explanation != '') {
+        $this->coreFunctions->execqry("delete from pendingapp where doc='HD' and trno=" . $trno, 'delete');
+      } else {
+        return ['status' => false, 'msg' => 'Posting failed. Explanation cannot be blank.'];
+      }
     } else {
       $msg = "Posting failed. Kindly check the head data.";
     }

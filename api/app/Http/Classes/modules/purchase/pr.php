@@ -66,7 +66,8 @@ class pr
     'modelid',
     'blklotid',
     'amenityid',
-    'subamenityid'
+    'subamenityid',
+    'deptid'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -345,10 +346,10 @@ class pr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -747,6 +748,7 @@ class pr
 
     $data[0]['subamenityid'] = 0;
     $data[0]['subamenityname'] = '';
+    $data[0]['deptid'] = 0;
     return $data;
   }
 
@@ -821,7 +823,7 @@ class pr
     amh.line as amenityid,
     amh.description as amenityname,
     subamh.line as subamenityid,
-    subamh.description as subamenityname,num.statid";
+    subamh.description as subamenityname,num.statid,head.deptid";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -972,13 +974,13 @@ class pr
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,purtype,requestor, 
       budgetreqno,
-      projectid,phaseid,modelid,blklotid,amenityid,subamenityid)
+      projectid,phaseid,modelid,blklotid,amenityid,subamenityid,deptid)
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.purtype,head.requestor,
       head.budgetreqno,
-      head.projectid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid
+      head.projectid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.deptid
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
@@ -1030,11 +1032,11 @@ class pr
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
     yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,purtype,requestor, budgetreqno,
-    projectid,phaseid,modelid,blklotid,amenityid,subamenityid)
+    projectid,phaseid,modelid,blklotid,amenityid,subamenityid,deptid)
     select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
     head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
     head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.purtype,head.requestor, head.budgetreqno,
-    head.projectid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid
+    head.projectid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.deptid
     from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
     where head.trno=? limit 1";
     //head

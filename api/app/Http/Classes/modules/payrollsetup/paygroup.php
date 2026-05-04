@@ -34,7 +34,7 @@ class paygroup
   public $tablelogs_del = 'del_masterfile_log';
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['code', 'paygroup'];
+  private $fields = ['code', 'paygroup', 'othrs', 'spot', 'ndiffhrs', 's3maxbracket'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
@@ -63,19 +63,38 @@ class paygroup
 
   public function createTab($config)
   {
-    $tab = [
-      $this->gridname => [
-        'gridcolumns' => ['action', 'code', 'paygroup']
-      ]
-    ];
+
+    $column = ['action', 'code', 'paygroup', 'othrs', 'spot', 'ndiffhrs', 's3maxbracket'];
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
+    $tab = [$this->gridname => ['gridcolumns' => $column, 'sortcolumns' => $column]];
 
     $stockbuttons = ['save', 'delete'];
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
-    $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
-    $obj[0][$this->gridname]['columns'][1]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-    $obj[0][$this->gridname]['columns'][2]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
+
+    $obj[0][$this->gridname]['columns'][$code]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+
+    if ($config['params']['companyid'] != 68) { //JDA
+      $obj[0][$this->gridname]['columns'][$othrs] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$spot] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$ndiffhrs] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$s3maxbracket] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$paygroup]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
+      $obj[0][$this->gridname]['columns'][$action]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
+    } else {
+      $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
+      $obj[0][$this->gridname]['columns'][$paygroup]['style'] = "width:390px;whiteSpace: normal;min-width:390px;";
+      $obj[0][$this->gridname]['columns'][$othrs]['style'] = "width:150px;whiteSpace: normal;min-width:150px;text-align:left;";
+      $obj[0][$this->gridname]['columns'][$ndiffhrs]['style'] = "width:150px;whiteSpace: normal;min-width:150px;text-align:left;";
+      $obj[0][$this->gridname]['columns'][$othrs]['label'] = "Legal OT Multiplier";
+      $obj[0][$this->gridname]['columns'][$ndiffhrs]['label'] = "NDIFF Multiplier";
+    }
+
+    $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
 
@@ -95,6 +114,12 @@ class paygroup
     $data['line'] = 0;
     $data['code'] = '';
     $data['paygroup'] = '';
+
+    $data['othrs'] =  0;
+    $data['spot'] =  0;
+    $data['ndiffhrs'] =  0;
+    $data['s3maxbracket'] =  0;
+
     $data['bgcolor'] = 'bg-blue-2';
     return $data;
   }
@@ -131,6 +156,13 @@ class paygroup
         //   $line,
         //   $config,
         //   'CREATE' . ' - ' .$data['code'].' - '.$data['paygroup']); 
+        if ($config['params']['companyid'] == 68) { //JDA
+          $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data['code'] . ' - ' . $data['paygroup']
+            . ' Legal OT Multipler - ' . $data['othrs'] . ';'
+            . ' Special OT Multipler - ' . $data['spot'] . ';'
+            . ' NDIFF Multipler - ' . $data['ndiffhrs'] . ';'
+            . ' SSS Max Bracket -  ' . $data['s3maxbracket']);
+        }
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -154,11 +186,7 @@ class paygroup
       $data['editby'] = $config['params']['user'];
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
         $returnrow = $this->loaddataperrecord($row['line']);
-        $this->logger->sbcmasterlog(
-          $row['line'],
-          $config,
-          'UPDATE' . ' - ' . $row['code'] . ' - ' . $row['paygroup']
-        );
+        $this->logger->sbcmasterlog($row['line'], $config, 'UPDATE' . ' - ' . $row['code'] . ' - ' . $row['paygroup']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -185,12 +213,16 @@ class paygroup
             return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data[$key]['code'], 'data' => $data];
           }
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
-
-          $this->logger->sbcmasterlog(
-            $line,
-            $config,
-            'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup'] . ' - LINE' . $line
-          );
+          if ($config['params']['companyid'] == 68) { //JDA
+            $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup']
+              . 'Legal OT Multipler - ' . $data[$key]['othrs'] . ';'
+              . 'Special OT Multipler - ' . $data[$key]['spot'] . ';'
+              . 'NDIFF Multipler - ' . $data[$key]['ndiffhrs'] . ';'
+              . 'SSS Max Bracket - ' . $data[$key]['s3maxbracket']
+              . ' - LINE' . $line);
+          } else {
+            $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup'] . ' - LINE' . $line);
+          }
         } else {
           $qry = "select code as value from " . $this->table . " where code = '" . $data[$key]['code'] . "' and line = '" . $data[$key]['line'] . "'";
           $checking = $this->coreFunctions->datareader($qry);

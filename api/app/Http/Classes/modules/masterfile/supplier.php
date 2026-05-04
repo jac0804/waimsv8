@@ -216,6 +216,7 @@ class supplier
 
   public function createHeadbutton($config)
   {
+    $systemtype = $this->companysetup->getsystemtype($config['params']);
 
     $btns = array(
       'load',
@@ -230,6 +231,12 @@ class supplier
       'toggleup',
       'toggledown'
     );
+
+    if ($systemtype == 'AIMSPOS' || $systemtype == 'MISPOS') {
+      if (($key = array_search('delete', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+    }
 
     if ($this->companysetup->getclientlength($config['params']) != 0) {
       array_push($btns, 'others');
@@ -371,11 +378,11 @@ class supplier
           $return['ITEM ENTRY'] = ['icon' => 'fa fa-clipboard-list sub_menu_ico', 'tab' => $attach2];
         }
         break;
-       case 63://ericco
-          $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku', 'label' => 'SKU']];
-          $sku = $this->tabClass->createtab($tab, []);
-          $return['ITEM LIST'] = ['icon' => 'fa fa-list-ul', 'tab' => $sku];
-        break;  
+      case 63: //ericco
+        $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku', 'label' => 'SKU']];
+        $sku = $this->tabClass->createtab($tab, []);
+        $return['ITEM LIST'] = ['icon' => 'fa fa-list-ul', 'tab' => $sku];
+        break;
     }
 
     return $return;

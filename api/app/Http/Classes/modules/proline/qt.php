@@ -159,10 +159,10 @@ class qt
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -1080,7 +1080,7 @@ class qt
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
     $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
@@ -1290,9 +1290,7 @@ class qt
     return $this->coreFunctions->execqry("update hopstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
   }
 
-  public function setservedinvtagging($refx, $linex)
-  {
-  }
+  public function setservedinvtagging($refx, $linex) {}
 
   // report 
 

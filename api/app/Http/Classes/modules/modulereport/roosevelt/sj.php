@@ -88,33 +88,39 @@ class sj
 
     $trno = $config['params']['dataid'];
     $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid,concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, client.clientname,
-            head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid,concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, head.clientname,
+            if(head.address !='',head.address,client.addr) as address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, head.agent,
             ag.clientname as agname, item.brand,
-            wh.client as whcode, wh.clientname as whname,concat(left(stock.ref,2),right(stock.ref,9)) as ref
+            wh.client as whcode, wh.clientname as whname,concat(left(stock.ref,2),right(stock.ref,9)) as ref,item.sizeid,item.sizeid,ifnull(category.cat_name, '') as categoryname,
+            ifnull(head.swsno,'') as shipvia, ifnull(head.rem2,'') as mv, ifnull(head.voyage,'') as voyage,ifnull(head.orderno,'') as blno,
+            ifnull(head.ctnsno,'') as ctnsno
             from lahead as head
             left join lastock as stock on stock.trno=head.trno
             left join client on client.client=head.client
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.client=head.agent
             left join client as wh on wh.client=head.wh
+            left join category_masterfile as category on client.category = category.cat_id
             where head.doc='sj' and head.trno='$trno'
     
 
             UNION ALL
             select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid,concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, client.clientname,
-            head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid,concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, head.clientname,
+            if(head.address !='',head.address,client.addr) as address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
              ag.clientname as agname, item.brand,
-            wh.client as whcode, wh.clientname as whname,concat(left(stock.ref,2),right(stock.ref,9)) as ref
+            wh.client as whcode, wh.clientname as whname,concat(left(stock.ref,2),right(stock.ref,9)) as ref,item.sizeid,item.sizeid,ifnull(category.cat_name, '') as categoryname,
+            ifnull(head.swsno,'') as shipvia, ifnull(head.rem2,'') as mv, ifnull(head.voyage,'') as voyage,ifnull(head.orderno,'') as blno,
+            ifnull(head.ctnsno,'') as ctnsno
              from glhead as head
             left join glstock as stock on stock.trno=head.trno
             left join client on client.clientid=head.clientid
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.clientid=head.agentid
             left join client as wh on wh.clientid=head.whid
+            left join category_masterfile as category on client.category = category.cat_id
             where head.doc='sj' and head.trno='$trno'
         
              order by line";
@@ -127,11 +133,13 @@ class sj
   {
 
     $query = "select stock.line,stock.rem as srem,head.rem,
-          left(head.dateid,10) as dateid, concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, client.clientname,
-           head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+          left(head.dateid,10) as dateid, concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, head.clientname,
+           if(head.address !='',head.address,client.addr) as address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
           item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
           item.sizeid,  ag.clientname as agname, item.brand,head.vattype,
-          wh.client as whcode, wh.clientname as whname,client.tin,part.part_code,part.part_name,brands.brand_desc
+          wh.client as whcode, wh.clientname as whname,client.tin,part.part_code,part.part_name,brands.brand_desc,item.sizeid,ifnull(category.cat_name, '') as categoryname,
+          ifnull(head.swsno,'') as shipvia, ifnull(head.rem2,'') as mv, ifnull(head.voyage,'') as voyage,ifnull(head.orderno,'') as blno,
+          ifnull(head.ctnsno,'') as ctnsno
           from lahead as head
           left join lastock as stock on stock.trno=head.trno
           left join client on client.client=head.client
@@ -140,14 +148,17 @@ class sj
           left join client as wh on wh.client=head.wh
           left join part_masterfile as part on part.part_id = item.part
           left join frontend_ebrands as brands on brands.brandid = item.brand
+          left join category_masterfile as category on client.category = category.cat_id
           where head.doc='sj' and head.trno='$trno'
           UNION ALL
           select stock.line,stock.rem as srem,head.rem,
-          left(head.dateid,10) as dateid, concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, client.clientname,
-          head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+          left(head.dateid,10) as dateid, concat(left(head.docno,2),right(head.docno,9)) as docno, client.client, head.clientname,
+           if(head.address !='',head.address,client.addr) as address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
           item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
           item.sizeid,  ag.clientname as agname, item.brand,head.vattype,
-          wh.client as whcode, wh.clientname as whname,client.tin,part.part_code,part.part_name,brands.brand_desc
+          wh.client as whcode, wh.clientname as whname,client.tin,part.part_code,part.part_name,brands.brand_desc,item.sizeid,ifnull(category.cat_name, '') as categoryname,
+          ifnull(head.swsno,'') as shipvia, ifnull(head.rem2,'') as mv, ifnull(head.voyage,'') as voyage,ifnull(head.orderno,'') as blno,
+          ifnull(head.ctnsno,'') as ctnsno
           from glhead as head
           left join glstock as stock on stock.trno=head.trno
           left join client on client.clientid=head.clientid
@@ -156,6 +167,7 @@ class sj
           left join client as wh on wh.clientid=head.whid
           left join part_masterfile as part on part.part_id = item.part
           left join frontend_ebrands as brands on brands.brandid = item.brand
+          left join category_masterfile as category on client.category = category.cat_id
           where head.doc='sj' and head.trno='$trno' order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -258,13 +270,11 @@ class sj
 
 
     $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-    $maxChars = 55;
+
+    $maxChars = 54;
     $adds = strlen($add);
     $firstLine = '';
-    $remaininglines = [];
-    $addsz = '';
-
-    if ($adds > $maxChars) {
+    if ($adds >= $maxChars) {
       $firstLine = substr($add, 0, $maxChars);
       $remaining = substr($add, $maxChars);
       // Split remaining address into multiple lines without cutting words
@@ -288,9 +298,8 @@ class sj
         $remainingLines[] = $remaining;
       }
     } else {
-      $addsz = $add;
+      $firstLine = $add;
     }
-
     PDF::SetFont($font, '', $fontsize);
     PDF::SetCellPaddings(3, 0, 0, 0);
     PDF::MultiCell(50, 0, 'Address:', 'L', 'L', false, 0);
@@ -305,11 +314,11 @@ class sj
         $refs[] = $row['ref'];
       }
     }
-    $refString = implode("\n", array_unique($refs));
+    $refString = implode(",", array_unique($refs));
     PDF::MultiCell(50, 0, 'P.O. No.:', 'TL', 'L', false, 0);
-    PDF::MultiCell(75, 0, $refString, 'TR', 'L', false, 0);
+    PDF::MultiCell(75, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'TR', 'L', false, 0);
     PDF::MultiCell(50, 0, 'RC No.:', 'T', 'L', false, 0);
-    PDF::MultiCell(145, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'TR', 'L', false);
+    PDF::MultiCell(145, 0, $refString, 'TR', 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
     PDF::SetCellPaddings(3, 2, 0, 0);
@@ -334,14 +343,16 @@ class sj
     PDF::MultiCell(50, 0, 'Place:', 'L', 'L', false, 0); // (isset($data[0]['place']) ? $data[0]['place'] : '')
     PDF::MultiCell(145, 0, '', 'R', 'L', false);
 
-    PDF::MultiCell(78, 0, '', 'LB', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'BR', 'C', false, 0);
+    PDF::SetFont($font, '', 7.5);
+    PDF::MultiCell(78, 0, (isset($data[0]['shipvia']) ? $data[0]['shipvia'] : ''), 'L', 'L', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['mv']) ? $data[0]['mv'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['voyage']) ? $data[0]['voyage'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['blno']) ? $data[0]['blno'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['ctnsno']) ? $data[0]['ctnsno'] : ''), 'R', 'C', false, 0);
     PDF::MultiCell(10, 0, '', '', '', false, 0);
-    PDF::MultiCell(50, 0, 'Type:', 'TL', '', false, 0);
-    PDF::MultiCell(75, 0, (isset($data[0]['type']) ? $data[0]['type'] : ''), 'T', 'L', false, 0);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(30, 0, 'Type:', 'TL', '', false, 0);
+    PDF::MultiCell(95, 0, (isset($data[0]['categoryname']) ? $data[0]['categoryname'] : ''), 'T', 'L', false, 0);
     PDF::MultiCell(50, 0, 'Salesman:', 'L', 'L', false, 0);
 
     // PDF::SetFont($font, '', $fontsize);
@@ -367,11 +378,37 @@ class sj
     PDF::MultiCell($maxWidth, $lineHeight, $text, 'R', 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(78, 0, '', 'LB', 'L', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'BR', 'C', false, 0);
+    PDF::MultiCell(10, 0, '', '', '', false, 0);
 
-    PDF::MultiCell(400, 0, '', '', '', false, 0);
+    // PDF::MultiCell(400, 0, '', '', '', false, 0);
     PDF::MultiCell(125, 0, '', 'LB', '', false, 0);
     PDF::MultiCell(50, 0, 'Page: ', 'LB', 'L', false, 0);
     PDF::MultiCell(145, 0, PDF::PageNo() . ' of ' . PDF::getAliasNbPages(), 'BR', 'L', false);
+
+
+    $startY = (float) 240;
+    $x = PDF::GetX();        //pedeng manual set
+    $y_start = $startY;
+    $y_end = PDF::GetY();    // after ng last MultiCell
+    PDF::SetLineWidth(0.6);
+    PDF::Line($x, $y_start, $x, $y_end);
+
+
+    $startY = (float) 240;
+    $x = (float) 430;        //pedeng manual set
+    $y_start = $startY;
+    $y_end = PDF::GetY();    // after ng last MultiCell
+    PDF::SetLineWidth(0.6);
+    PDF::Line($x, $y_start, $x, $y_end);
+
+
+
+
 
     PDF::MultiCell(0, 0, "\n");
     // $y = PDF::getY(); //283.00125
@@ -424,7 +461,7 @@ class sj
         $maxrow = 1;
         $itemname = $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 0);
-        $uom = $data[$i]['uom'];
+        $uom = $data[$i]['sizeid'];
         $amt = number_format($data[$i]['amt'], 2);
 
         $ext = number_format($data[$i]['ext'], 2);
@@ -504,8 +541,6 @@ class sj
             PDF::SetCellPaddings(0, 4, 0, 0);
           }
         }
-        $totalext += $data[$i]['ext'];
-        $totaldisc += $damt;
       }
     }
     $this->default_del_footer($params, $data);
@@ -822,7 +857,7 @@ class sj
         $maxrow = 1;
         $itemname = $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 0);
-        $uom = $data[$i]['uom'];
+        $uom = $data[$i]['sizeid'];
         $amt = number_format($data[$i]['amt'], 2);
 
         $ext = number_format($data[$i]['ext'], 2);
@@ -897,8 +932,6 @@ class sj
             PDF::SetCellPaddings(0, 4, 0, 0);
           }
         }
-        $totalext += $data[$i]['ext'];
-        $totaldisc += $damt;
       }
     }
 
@@ -980,13 +1013,13 @@ class sj
     PDF::MultiCell(145, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'TR', 'L', false, 1,  $x + 575, $y + 145);
 
     $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-    $maxChars = 55;
+    $maxChars = 54;
     $adds = strlen($add);
     $firstLine = '';
     $remaininglines = [];
     $addsz = '';
 
-    if ($adds > $maxChars) {
+    if ($adds >= $maxChars) {
       $firstLine = substr($add, 0, $maxChars);
       $remaining = substr($add, $maxChars);
       // Split remaining address into multiple lines without cutting words
@@ -1010,7 +1043,7 @@ class sj
         $remainingLines[] = $remaining;
       }
     } else {
-      $addsz = $add;
+      $firstLine = $add;
     }
 
     PDF::SetFont($font, '', $fontsize);
@@ -1027,11 +1060,11 @@ class sj
         $refs[] = $row['ref'];
       }
     }
-    $refString = implode("\n", array_unique($refs));
+    $refString = implode(",", array_unique($refs));
     PDF::MultiCell(50, 0, 'P.O. No.:', 'TL', 'L', false, 0);
-    PDF::MultiCell(75, 0, $refString, 'TR', 'L', false, 0);
+    PDF::MultiCell(75, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'TR', 'L', false, 0);
     PDF::MultiCell(50, 0, 'RC No.:', 'T', 'L', false, 0);
-    PDF::MultiCell(145, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'TR', 'L', false);
+    PDF::MultiCell(145, 0, $refString, 'TR', 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
     PDF::SetCellPaddings(3, 2, 0, 0);
@@ -1056,14 +1089,16 @@ class sj
     PDF::MultiCell(50, 0, 'Place:', 'L', 'L', false, 0); // (isset($data[0]['place']) ? $data[0]['place'] : '')
     PDF::MultiCell(145, 0, '', 'R', 'L', false);
 
-    PDF::MultiCell(78, 0, '', 'LB', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
-    PDF::MultiCell(78, 0, '', 'BR', 'C', false, 0);
+    PDF::SetFont($font, '', 7.5);
+    PDF::MultiCell(78, 0, (isset($data[0]['shipvia']) ? $data[0]['shipvia'] : ''), 'L', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['mv']) ? $data[0]['mv'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['voyage']) ? $data[0]['voyage'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['blno']) ? $data[0]['blno'] : ''), '', 'C', false, 0);
+    PDF::MultiCell(78, 0, (isset($data[0]['ctnsno']) ? $data[0]['ctnsno'] : ''), 'R', 'C', false, 0);
     PDF::MultiCell(10, 0, '', '', '', false, 0);
-    PDF::MultiCell(50, 0, 'Type:', 'TL', '', false, 0);
-    PDF::MultiCell(75, 0, (isset($data[0]['type']) ? $data[0]['type'] : ''), 'T', 'L', false, 0);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(30, 0, 'Type:', 'TL', '', false, 0);
+    PDF::MultiCell(95, 0, (isset($data[0]['categoryname']) ? $data[0]['categoryname'] : ''), 'T', 'L', false, 0);
     PDF::MultiCell(50, 0, 'Salesman:', 'L', 'L', false, 0);
     // PDF::SetFont($font, '', 9);
     // PDF::MultiCell(107, 0, (isset($data[0]['agname']) ? $data[0]['agname'] : ''), 'R', 'L', false);
@@ -1091,10 +1126,32 @@ class sj
     PDF::SetFont($font, '', $fontsize);
 
 
-    PDF::MultiCell(400, 0, '', '', '', false, 0);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(78, 0, '', 'LB', 'L', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'B', 'C', false, 0);
+    PDF::MultiCell(78, 0, '', 'BR', 'C', false, 0);
+    PDF::MultiCell(10, 0, '', '', '', false, 0);
     PDF::MultiCell(125, 0, '', 'LB', '', false, 0);
     PDF::MultiCell(50, 0, 'Page: ', 'LB', 'L', false, 0);
     PDF::MultiCell(145, 0, PDF::PageNo() . ' of ' . PDF::getAliasNbPages(), 'BR', 'L', false);
+
+
+    $startY = (float) 240;
+    $x = PDF::GetX();        //pedeng manual set
+    $y_start = $startY;
+    $y_end = PDF::GetY();    // after ng last MultiCell
+    PDF::SetLineWidth(0.6);
+    PDF::Line($x, $y_start, $x, $y_end);
+
+
+    $startY = (float) 240;
+    $x = (float) 430;        //pedeng manual set
+    $y_start = $startY;
+    $y_end = PDF::GetY();    // after ng last MultiCell
+    PDF::SetLineWidth(0.6);
+    PDF::Line($x, $y_start, $x, $y_end);
 
     PDF::MultiCell(0, 0, "\n");
     // $y = PDF::getY(); //283.00125

@@ -45,10 +45,13 @@ class leave_details_report
     $fields = ['radioprint'];
     $col1 = $this->fieldClass->create($fields);
 
-    $fields = ['start', 'end'];
+    $fields = ['start', 'end', 'dclientname'];
     $col2 = $this->fieldClass->create($fields);
-    data_set($col2, 'start.required', true);
-    data_set($col2, 'end.required', true);
+    data_set($col1, 'start.required', true);
+    data_set($col1, 'end.required', true);
+    data_set($col2, 'dclientname.lookupclass', 'lookupemployee');
+    data_set($col2, 'dclientname.label', 'Employee');
+
 
     $fields = ['print'];
     $col3 = $this->fieldClass->create($fields);
@@ -62,7 +65,11 @@ class leave_details_report
     return $this->coreFunctions->opentable("select 
     'default' as print,
     adddate(left(now(),10),-360) as start,
-    left(now(),10) as end
+        left(now(),10) as end,
+     '' as client,
+    '' as clientname,
+    '' as dclientname
+
     ");
   }
 
@@ -88,19 +95,25 @@ class leave_details_report
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $emplvl = $this->othersClass->checksecuritylevel($config);
+    $filter = '';
+    $employee = $config['params']['dataparams']['client'];
+
+    if (!empty($employee)) {
+      $filter = " and e.client = '$employee'";
+    }
 
     $query = "select concat(upper(emp.emplast), ', ', emp.empfirst, ' ', left(emp.empmiddle, 1), '.') as employee,
       l.dateid, acc.code, acc.codename, l.adays as days, l.remarks, l.status
-      from ((((((leavetrans as l
+      from (((((((leavetrans as l
       left join leavesetup as levset on levset.trno = l.trno) 
       left join employee as emp on emp.empid = levset.empid) 
       left join paccount as acc on acc.line = levset.acnoid) 
       left join department as dept on dept.deptid = emp.deptid) 
       left join division as d on d.divid = emp.divid) 
       left join section as sec on sec.sectid = emp.sectid)
-      where l.dateid between '" . $start . "' and '" . $end . "' and emp.level in $emplvl 
+      left join client as e on e.clientid = levset.empid)
+      where l.dateid between '" . $start . "' and '" . $end . "' and emp.level in $emplvl $filter
       order by employee";
-
     return $this->coreFunctions->opentable($query);
   }
 

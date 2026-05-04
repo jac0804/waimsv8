@@ -403,7 +403,7 @@ class stockcard
         $duplicateitem = $this->othersClass->checkAccess($config['params']['user'], 5508);
 
         $allowview = $this->othersClass->checkAccess($config['params']['user'], 5488);
-        $getcols = ['action', 'barcode', 'itemname', 'uom', 'namt5', 'namt7', 'amt2',  'disc2', 'namt2', 'amt4', 'disc4', 'namt4', 'activestat'];
+        $getcols = ['action', 'barcode', 'itemname', 'uom', 'namt5', 'amt7', 'disc7', 'namt7', 'amt2',  'disc2', 'namt2', 'amt4', 'disc4', 'namt4', 'activestat'];
         $stockbuttons = ['view'];
         if ($duplicateitem == 1) {
           $stockbuttons = ['view', 'duplicatedoc'];
@@ -424,6 +424,11 @@ class stockcard
         $cols[$disc2]['label'] = 'Wholesale Disc';
 
         $cols[$namt5]['style'] = 'width: 90px; whiteSpace: normal; min-width:90px; max-width:90px;';
+
+        $cols[$amt7]['style'] = 'width: 90px; whiteSpace: normal; min-width:90px; max-width:90px;';
+        $cols[$disc7]['style'] = 'width: 90px; whiteSpace: normal; min-width:90px; max-width:90px;';
+        $cols[$amt7]['label'] = 'DR Price';
+        $cols[$amt7]['type'] = 'label';
         //$cols[$namt5]['align'] = 'text-right';
 
         $cols[$namt7]['style'] = 'width: 90px;whiteSpace: normal;min-width:90;max-width:90px;';
@@ -592,9 +597,13 @@ class stockcard
         $condition .= "where 1=1 and item.isfa=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
         break;
       case 60: //transpower
-        $addedfields .= ", format(item.namt5,2) as namt5,format(item.namt7,2) as namt7,format(item.amt2,2) as amt2,item.disc2, format(item.amt4,2) as amt4, item.disc4, format(item.namt4,2) as namt4 , format(item.namt2,2) as namt2 ";
+        $addedfields .= ", format(item.namt5,2) as namt5,format(item.namt7,2) as namt7,format(item.amt2,2) as amt2,item.disc2, format(item.amt4,2) as amt4, item.disc4, format(item.namt4,2) as namt4 , format(item.namt2,2) as namt2, format(item.amt7,2) as amt7, item.disc7 as disc7  ";
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
         $condition .= "where 1=1 and item.isfa=0 and item.isinactive =0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
+        break;
+      case 59:
+        $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
+        $condition .= "where 1=1 and item.isfa=0 and item.israwmat=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
         break;
       default:
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
@@ -1055,7 +1064,7 @@ class stockcard
 
 
     if ($ispos) {
-      array_push($fields, 'shortname');
+      array_push($fields, 'shortname', 'dlock');
     }
 
     switch ($companyid) {
@@ -1486,6 +1495,7 @@ class stockcard
     $data[0]['minimum'] = 0;
     $data[0]['isreversewireitem'] = 0;
     $data[0]['isfg'] = '0';
+    $data[0]['dlock'] = null;
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
@@ -1548,7 +1558,7 @@ class stockcard
         '' as drevenue,
         '' as dsalesreturn,
         ifnull(dept.clientname,'') as deptname,
-        item.linkdept,item.avecost,item.maximum,item.aveleadtime,item.maxleadtime";
+        item.linkdept,item.avecost,item.maximum,item.aveleadtime,item.maxleadtime,item.dlock";
 
     $qry = $qryselect . " from item
         left join part_masterfile as pmaster on pmaster.part_id = item.part

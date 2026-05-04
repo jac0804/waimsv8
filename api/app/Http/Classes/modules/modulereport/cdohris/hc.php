@@ -74,14 +74,14 @@ class hc
     public function report_default_query($config)
     {
         $trno = $config['params']['dataid'];
-        $query = "select num.trno,num.docno,head.empid,upper(client.clientname) as empname,
+        $query = "select head.status, num.trno,num.docno,head.empid,upper(client.clientname) as empname,
                         d.clientname as deptname,date(head.dateid) as dateid,
                         date(head.hired) as hired,date(head.lastdate) as lastday,head.jobtitle,
                         cl.client as emphead,cl.clientname as empheadname,
                         head.cause, ifnull(em.mobileno,'') as contactno,d.clientname as deptname,
                         br.clientname as brname, witness.clientname as witnessname,divi.divcode,
                         ifnull(cl.addr,'') as address,head.amount as lastpay,head.deduction,
-                        ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2
+                        ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2, head.rem, client.addr as empaddress
                 from clearance as head
                 left join client as cl on cl.clientid=head.empheadid   
                 left join client on client.clientid=head.empid
@@ -94,14 +94,14 @@ class hc
                 left join division as divi on divi.divid = em.divid 
                 where num.trno = '$trno'
                 union all
-                 select num.trno,num.docno,head.empid,upper(client.clientname) as empname,
+                 select head.status, num.trno,num.docno,head.empid,upper(client.clientname) as empname,
                        d.clientname as deptname,date(head.dateid) as dateid,
                        date(head.hired) as hired,date(head.lastdate) as lastday,head.jobtitle,
                        cl.client as emphead,cl.clientname as empheadname,
                        head.cause,ifnull(em.mobileno,'') as contactno,d.clientname as deptname,
                        br.clientname as brname, witness.clientname as witnessname,divi.divcode,
                        ifnull(cl.addr,'') as address,head.amount as lastpay,head.deduction,
-                       ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2
+                       ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2, head.rem, client.addr as empaddress
                 from hclearance as head
                 left join client as cl on cl.clientid=head.empheadid
                 left join client on client.clientid=head.empid
@@ -118,17 +118,69 @@ class hc
         return $result;
     }
 
+    public function report_signatories($config) //list
+    {
+        $query = "select p.clientid, c.clientname, j.jobtitle
+                from approvers as p
+                left join moduleapproval as m on m.line = p.trno
+                left join client as c on c.clientid = p.clientid
+                left join employee as e on e.empid = c.clientid
+                left join jobthead as j on j.line = e.jobid
+                where m.modulename = 'HC'
+                and p.issupervisor = 1
+                order by seq;
+                ";
+        $sig = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+        return $sig;
+    }
+
+    public function report_signatories_appr($config) //approved
+    {
+        $trno = $config['params']['dataid'];
+        $query = "select sig.trno, p.clientid, c.clientname, j.jobtitle, date(sig.donedate) as donedate, sig.rem
+                from approvers as p
+                left join moduleapproval as m on m.line = p.trno
+                left join client as c on c.clientid = p.clientid
+                left join employee as e on e.empid = c.clientid
+                left join jobthead as j on j.line = e.jobid
+                left join hrissig as sig on sig.clientid = c.clientid
+                where m.modulename = 'HC'
+                and p.issupervisor = 1
+                and sig.trno = '$trno'
+                order by seq;
+                ";
+        $appr = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+        return $appr;
+    }
+
+
+    public function report_ceo_gm($config) //CEO and General Manager
+    {
+        $query = "select client.clientname, job.jobtitle, emp.jobid
+                from client
+                left join employee as emp on emp.empid = client.clientid
+                left join jobthead as job on job.line = emp.jobid
+                where emp.jobid in (112, 248)
+                order by jobid desc;
+                ";
+        $ceo = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+        return $ceo;
+    }
+
+
     public function reportplotting($config, $data)
     {
-
+        $sig = $this->report_signatories($config);
+        $appr = $this->report_signatories_appr($config);
         $data = $this->report_default_query($config);
+        $ceo = $this->report_ceo_gm($config);
         $reporttype = $config['params']['dataparams']['reporttype'];
         if ($config['params']['dataparams']['print'] == "default") {
             $str = $this->rpt_HC_layout($config, $data);
         } else if ($config['params']['dataparams']['print'] == "PDFM") {
             switch ($reporttype) {
                 case 0: //clerance cert
-                    $str = $this->rpt_HC_PDF($config, $data);
+                    $str = $this->rpt_HC_PDF($config, $data, $sig, $appr, $ceo);
                     break;
                 case 1: //authority and consent
                     $str = $this->authority_and_consent_pdf($config, $data);
@@ -286,7 +338,642 @@ class hc
     }
 
 
-    public function rpt_HC_PDF($config, $data)
+    public function rpt_HC_PDF($config, $data, $sig, $appr, $ceo)
+    {
+        $center = $config['params']['center'];
+        $username = $config['params']['user'];
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', 'LEGAL');
+        PDF::SetMargins(40, 40);
+
+
+        $empid = $data[0]['empid'];
+        $division = $this->coreFunctions->getfieldvalue("employee", "divid", "empid=?", [$empid]); //divi
+        $divcode = $this->coreFunctions->getfieldvalue("division", "divcode", "divid=?", [$division]);
+
+        $divname = $this->coreFunctions->getfieldvalue("division", "divname", "divid=?", [$division]);
+        $divname = substr($divname, 0, 27); //limits characters
+
+        $companyPath = $this->companysetup->getlogopath($config['params']) . 'paflogo.png';
+        $localPath = public_path('images/cdohris/paflogo.png');
+
+        $bottomY = PDF::GetPageHeight() - 40; //for the page number
+
+        switch ($divcode) {
+            case '001':
+                $companyPath = $this->companysetup->getlogopath($config['params']) . 'paflogo.png';
+                $localPath = public_path('images/cdohris/paflogo.png');
+                if (file_exists($companyPath)) {
+                    PDF::Image($companyPath, 40, 10, 533, 80);
+                } else {
+                    PDF::Image($localPath, 40, 10, 533, 80);
+                }
+                break;
+            case '002':
+                $companyPath = $this->companysetup->getlogopath($config['params']) . 'mbcpaflogo.png';
+                $localPath = public_path('images/cdohris/mbcpaflogo.png');
+                if (file_exists($companyPath)) {
+                    PDF::Image($companyPath, 40, 10, 533, 80);
+                } else {
+                    PDF::Image($localPath, 40, 10, 533, 80);
+                }
+                break;
+            case '003':
+                $companyPath = $this->companysetup->getlogopath($config['params']) . 'ridefundpaf.png';
+                $localPath = public_path('images/cdohris/ridefundpaf.png');
+                if (file_exists($companyPath)) {
+                    PDF::Image($companyPath, 40, 10, 533, 80);
+                } else {
+                    PDF::Image($localPath, 40, 10, 533, 80);
+                }
+                break;
+        }
+
+        PDF::MultiCell(0, 0, "\n\n\n\n\n\n\n");
+        PDF::SetFont($fontbold, '', 13);
+        PDF::MultiCell(533, 10, "APPLICATION FOR CLEARANCE CERTIFICATE", '', 'C', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(533, 0, '');
+
+        PDF::SetFont($fontbold, '', 11);
+        $name = (isset($data[0]['empname']) ? $data[0]['empname'] : '');
+        $name = substr($name, 0, 27); //limits characters
+
+        PDF::MultiCell(266.5, 18, ' NAME: ' . $name, 'LT', 'L', false, 0);
+        PDF::MultiCell(266.5, 18, ' DATE FILED: ' . (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'LTR', 'L', false);
+        PDF::MultiCell(266.5, 18, ' POSITION: ' . (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), 'LT', 'L', false, 0);
+        PDF::MultiCell(266.5, 18, ' DATE HIRED: ' . (isset($data[0]['hired']) ? $data[0]['hired'] : ''), 'LTR', 'L', false);
+        PDF::MultiCell(266.5, 18, ' COMPANY: ' . $divname, 'LT', 'L', false, 0);
+        PDF::MultiCell(266.5, 18, ' DATE OF SEPARATION: ' . (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'LTR', 'L', false);
+        PDF::MultiCell(266.5, 18, ' BRANCH: ' . (isset($data[0]['brname']) ? $data[0]['brname'] : ''), 'LT', 'L', false, 0);
+        PDF::MultiCell(266.5, 18, ' DEPARTMENT: ' . (isset($data[0]['deptname']) ? $data[0]['deptname'] : ''), 'LTR', 'L', false);
+        PDF::MultiCell(533, 18, ' Contact No.: ' . (isset($data[0]['contactno']) ? $data[0]['contactno'] : ''), 'LTR', 'L', false);
+
+        PDF::SetFont($fontbold, '', 13);
+        PDF::MultiCell(533, 18, ' REASON FOR SEPARATION:', 'LTR', 'L', false);
+
+        $reasonY = PDF::GetY(); // capture Y right after the cell
+
+        // Draw the 10x10 checkbox
+        PDF::SetXY(40, $reasonY);
+        PDF::SetFont($font, '', 10);
+        PDF::MultiCell(30, 20, '', 'L', 'L', false, 0);
+        PDF::SetDrawColor(0, 0, 0);
+        PDF::SetLineWidth(0.5);
+        PDF::Rect(73, $reasonY + 5, 10, 10);
+        PDF::SetXY(87, $reasonY + 4);
+        PDF::MultiCell(65, 11, 'Resignation', '', 'L', false, 0);
+
+        PDF::Rect(168, $reasonY + 5, 10, 10);
+        PDF::SetXY(182, $reasonY + 4);
+        PDF::MultiCell(120, 11, 'End of Contract', '', 'L', false, 0);
+
+        PDF::Rect(296, $reasonY + 5, 10, 10);
+        PDF::SetXY(310, $reasonY + 4);
+        PDF::MultiCell(110, 11, 'Retirement', '', 'L', false, 0);
+
+        PDF::Rect(424, $reasonY + 5, 10, 10);
+        PDF::SetXY(438, $reasonY + 4);
+        PDF::MultiCell(40, 13, 'Others', '', 'L', false, 0);
+        PDF::MultiCell(90, 13, '', 'B', 'L', false, 0);
+
+        PDF::SetFont($font, '', 11);
+        PDF::SetXY(507, $reasonY);
+        PDF::MultiCell(66, 20, '', 'R', 'L', false, 1);
+
+        PDF::SetFont($font, '', 2);
+        PDF::MultiCell(533, 5, '', 'LBR', '', false, 1);
+
+        $currentY = PDF::GetY() + 2;
+
+        function printRow($startX, &$currentY, $texts, $widths, $fonts, $fontSizes, $borders = [], $aligns = [], $lineHeight = 18, $extraX = [], $extraY = [], $moveCursor = true, $fontStyles = [])
+        {
+            $x = $startX;
+            $maxExtraY = 0;
+
+            foreach ($texts as $i => $text) {
+                $offsetX = isset($extraX[$i]) ? $extraX[$i] : 0;
+                $offsetY = isset($extraY[$i]) ? $extraY[$i] : 0;
+                $maxExtraY = max($maxExtraY, $offsetY);
+
+                PDF::SetXY($x + $offsetX, $currentY + $offsetY);
+                $font = isset($fonts[$i]) ? $fonts[$i] : 'dejavusans';
+                $fontSize = isset($fontSizes[$i]) ? $fontSizes[$i] : 11;
+                $fontStyle = isset($fontStyles[$i]) ? $fontStyles[$i] : '';
+                $border = isset($borders[$i]) ? $borders[$i] : 0;
+                $align = isset($aligns[$i]) ? $aligns[$i] : 'L';
+
+                PDF::SetFont($font, $fontStyle, $fontSize);
+
+                if ($text === '__checkbox__') {
+                    PDF::SetDrawColor(0, 0, 0);
+                    PDF::SetLineWidth(0.2); // padding for the top
+                    $topPadding = 2;
+                    PDF::Rect($x + 4 + $offsetX, $currentY + $offsetY + $topPadding, 10, 10);
+                    PDF::MultiCell($widths[$i], $lineHeight, '', $border, $align, false, 0);
+                } elseif ($text === '__checkbox_filled__') {
+                    PDF::SetDrawColor(0, 0, 0);
+                    PDF::SetFillColor(0, 0, 0);
+                    PDF::SetLineWidth(0.2);
+                    $topPadding = 2;
+                    PDF::Rect($x + 4 + $offsetX, $currentY + $offsetY + $topPadding, 10, 10, 'DF');
+                    PDF::SetFillColor(255, 255, 255);
+                    PDF::MultiCell($widths[$i], $lineHeight, '', $border, $align, false, 0);
+                } else {
+                    PDF::MultiCell($widths[$i], $lineHeight, $text, $border, $align, false, 0, '', '', true, 0, false, true, $lineHeight);
+                }
+
+                $x += $widths[$i];
+            }
+
+            if ($moveCursor) {
+                PDF::Ln();
+                $currentY += $lineHeight + $maxExtraY;
+            }
+        }
+
+
+
+        $startX = 40;
+        $currentY = PDF::GetY();
+        $lineHeight = 13;
+
+        $datedepthead = isset($data[0]['dateid']) ? trim($data[0]['dateid']) : '';
+
+        $status = isset($data[0]['status']) ? $data[0]['status'] : '';
+        $checkboxAppr = ($status == 'Cleared') ? '__checkbox_filled__' : '__checkbox__';
+        $checkboxDisAppr = ($status == 'Not Cleared') ? '__checkbox_filled__' : '__checkbox__';
+        $checkboxPending = ($status == 'Pending') ? '__checkbox_filled__' : '__checkbox__';
+
+        // Header row
+        printRow(
+            $startX,
+            $currentY,
+            ['DEPARTMENT', 'SIGNATORY', 'APPROVAL', 'REMARKS'],
+            [120, 140, 120, 153],
+            [$fontbold, $fontbold, $fontbold, $fontbold],
+            [8, 8, 8, 8],
+            ['LB', 'LB', 'LB', 'LBR'],
+            ['C', 'C', 'C', 'C'],
+            $lineHeight
+        );
+        printRow( //lines
+            $startX,
+            $currentY,
+            [' ', ' ', ' ', ''],
+            [120, 140, 120, 153],
+            [$font, $font, $font, $font],
+            [0.1, 0.1, 0.1, 0.1],
+            ['L', 'L', 'L', 'LR'],
+            ['', '', '', ''],
+            $lineHeight * 4, //should atleast cover the 4 rows for the signatories
+            [],
+            [],
+            false
+        );
+        // Data row
+        printRow(
+            $startX,
+            $currentY,
+            ['', (isset($data[0]['brname']) ? $data[0]['brname'] : ''), (isset($data[0]['empheadname']) ? $data[0]['empheadname'] : ''), $checkboxAppr, 'APPROVED', (isset($data[0]['rem']) ? $data[0]['rem'] : '')],
+            [10, 110, 140, 20, 100, 153],
+            [$fontbold, $font, $font, $font, $font, $font],
+            [9, 9, 9, 9, 9, 9],
+
+            ['', '', '', '', '', ''],
+            ['L', 'L', 'L', 'L', 'L', 'L'],
+            $lineHeight,
+            [0, 0, 5, 5, 5, 5] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', ' / ' . (isset($data[0]['deptname']) ? $data[0]['deptname'] : ''), '', $checkboxDisAppr, 'DISAPPROVED', ''],
+            [10, 110, 140, 20, 100, 153],
+            [$fontbold, $font, $font, $font, $font, $font],
+            [9, 9, 9, 9, 9, 9],
+            ['', '', '', '', '', ''],
+            ['L', 'L', 'L', 'L', 'L', 'L'],
+            $lineHeight,
+            [0, 0, 5, 5, 5] //x
+        );
+        printRow(
+            $startX,
+            $currentY,
+            ['', '', '', $checkboxPending, 'PENDING', ''],
+            [10, 110, 140, 20, 100, 153],
+            [$fontbold, $font, $font, $font, $font, $font],
+            [9, 9, 9, 9, 9, 9],
+            ['', '', '', '', '', ''],
+            ['L', 'L', 'L', 'L', 'L', 'L'],
+            $lineHeight,
+            [0, 0, 5, 5, 5] //x
+        );
+        printRow(
+            $startX,
+            $currentY,
+            ['', '', '', 'Date: ' . $datedepthead, ''],
+            [10, 110, 140, 120, 153],
+            [$fontbold, $font, $font, $font, $font],
+            [8, 8, 8, 8, 8],
+            ['B', 'B', 'B', 'B', 'B'],
+            ['L', 'L', 'L', 'L', 'L'],
+            $lineHeight,
+            [] //x
+        );
+
+        //loop for the signatories
+        for ($i = 0; $i < count($sig); $i++) {
+            $jobtitle = isset($sig[$i]['jobtitle']) ? $sig[$i]['jobtitle'] : '';
+            $signame = isset($sig[$i]['clientname']) ? $sig[$i]['clientname'] : '';
+            $donedate = isset($appr[$i]['donedate']) ? $appr[$i]['donedate'] : '';
+            $rem = isset($appr[$i]['rem']) ? $appr[$i]['rem'] : '';
+
+            PDF::SetFont($font, '', 9); //split
+            $jobtitleLines = array_pad(array_slice(explode("\n", wordwrap($jobtitle, 20, "\n", true)), 0, 4), 4, ''); // takes only 4 elemets; if less then 4, then '' the rest
+            $signameLines = array_pad(array_slice(explode("\n", wordwrap($signame, 20, "\n", true)), 0, 4), 4, '');
+            $remLines = array_pad(array_slice(explode("\n", wordwrap($rem, 20, "\n", true)), 0, 4), 4, '');
+
+
+            $status = isset($sig[$i]['status']) ? $sig[$i]['status'] : '';
+            $checkboxAppr = ($donedate !== '') ? '__checkbox_filled__' : '__checkbox__'; //depends on 'donedate' field
+            $checkboxDisAppr = ($status == 'Not Cleared') ? '__checkbox_filled__' : '__checkbox__'; //not used; 
+            $checkboxPending = ($status == 'Pending') ? '__checkbox_filled__' : '__checkbox__'; //not used ;
+
+            printRow( //lines
+                $startX,
+                $currentY,
+                [' ', ' ', ' ', ''],
+                [120, 140, 120, 153],
+                [$font, $font, $font, $font],
+                [0.1, 0.1, 0.1, 0.1],
+                ['L', 'L', 'L', 'LR'],
+                ['', '', '', ''],
+                $lineHeight * 4, //should atleast cover the 4 rows for the signatories
+                [],
+                [],
+                false
+            );
+            // the Signatory rows
+            printRow(
+                $startX,
+                $currentY,
+                ['', $jobtitleLines[0], $signameLines[0], $checkboxAppr, 'APPROVED', $remLines[0]],
+                [10, 110, 140, 20, 100, 153],
+                [$fontbold, $font, $font, $font, $font, $font],
+                [9, 9, 9, 9, 9, 9],
+                ['', '', '', '', '', ''],
+                ['L', 'L', 'L', 'L', 'L', 'L'],
+                $lineHeight,
+                [0, 0, 5, 5, 5] //x
+            );
+
+            printRow(
+                $startX,
+                $currentY,
+                ['', $jobtitleLines[1], $signameLines[1], $checkboxDisAppr, 'DISAPPROVED', $remLines[1]],
+                [10, 110, 140, 20, 100, 153],
+                [$fontbold, $font, $font, $font, $font, $font],
+                [9, 9, 9, 9, 9, 9],
+                ['', '', '', '', '', ''],
+                ['L', 'L', 'L', 'L', 'L', 'L'],
+                $lineHeight,
+                [0, 0, 5, 5, 5] //x
+            );
+            printRow(
+                $startX,
+                $currentY,
+                ['', $jobtitleLines[2], $signameLines[2], $checkboxPending, 'PENDING', $remLines[2]],
+                [10, 110, 140, 20, 100, 153],
+                [$fontbold, $font, $font, $font, $font, $font],
+                [9, 9, 9, 9, 9, 9],
+                ['', '', '', '', '', ''],
+                ['L', 'L', 'L', 'L', 'L', 'L'],
+                $lineHeight,
+                [0, 0, 5, 5, 5] //x
+            );
+            printRow(
+                $startX,
+                $currentY,
+                ['', $jobtitleLines[3], $signameLines[3], 'Date: ' . $donedate, $remLines[3]],
+                [10, 110, 140, 120, 153],
+                [$fontbold, $font, $font, $font, $font],
+                [11, 11, 11, 9, 11],
+                ['B', 'B', 'B', 'B', 'B'],
+                ['L', 'L', 'L', 'L', 'L'],
+                $lineHeight,
+                [] //x
+            );
+        }
+
+        $currentPage = PDF::getAliasNumPage();
+        printRow(
+            $startX,
+            $bottomY,
+            [$currentPage],
+            [573],
+            [$font],
+            [10],
+            [''],
+            ['R'],
+            $lineHeight,
+            []
+        );
+
+        //second page
+        PDF::AddPage();
+        $currentY = PDF::GetY();
+
+        $startX = 40;
+        $currentY = PDF::GetY() + 2;
+        $lineHeight = 17;
+
+        $bottomY = PDF::GetPageHeight() - 40; //for the page number
+
+        printRow( //space
+            $startX,
+            $currentY,
+            ['', '', ''],
+            [10, 200, 323],
+            [$fontbold, $font, $font, $font],
+            [11, 11, 11,],
+            ['B', 'B', ''],
+            ['L', 'C', 'L'],
+            $lineHeight * 4,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', 'EMPLOYEE PRINT NAME & SIGNATURE', ''],
+            [20, 200, 313],
+            [$font, $fontbold, $font],
+            [11, 9, 11],
+            ['', '', ''],
+            ['L', 'L', 'L'],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', 'DATE :', ''],
+            [20, 150, 363],
+            [$font, $font, $font, $font],
+            [11, 9, 11],
+            ['', '', ''],
+            ['L', 'L', 'L'],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', 'Contact No.:', ''],
+            [20, 150, 363],
+            [$font, $font, $font, $font],
+            [9, 9, 9],
+            ['', '', ''],
+            ['L', 'L', 'L'],
+            60,
+            [] //x
+        );
+        printRow(
+            $startX,
+            $currentY,
+            ['Approved By:', '', ''],
+            [260, 260, 200],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['', '', '',],
+            ['L', 'L', 'L'],
+            60,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            [(isset($ceo[0]['clientname']) ? $ceo[0]['clientname'] : ''), '', (isset($ceo[1]['clientname']) ? $ceo[1]['clientname'] : '')],
+            [250, 33, 250],
+            [$fontbold, $font, $fontbold],
+            [9, 9, 9],
+            ['', '', '',],
+            ['L', 'L', 'L'],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['CEO', '', 'GENERAL MANAGER'],
+            [250, 33, 250],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['', '', '',],
+            ['L', 'L', 'L'],
+            40,
+            [] //x
+        );
+
+        //broken line
+        PDF::SetLineStyle([
+            'width' => 0.2,
+            'dash' => '2,2', // dash length, gap length
+        ]);
+        printRow(
+            $startX,
+            $currentY,
+            [''],
+            [533],
+            [$font],
+            [11],
+            ['B'],
+            ['L'],
+            $lineHeight,
+            [] //x
+        );
+
+
+
+        //revert
+        PDF::SetLineStyle([
+            'width' => 0.2,
+            'dash' => 0, // dash length, gap length
+        ]);
+
+        //space
+        printRow(
+            $startX,
+            $currentY,
+            [''],
+            [533],
+            [$font, $font, $font, $font],
+            [11],
+            [''],
+            ['L'],
+            20,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['TO BE FILLED UP BY HR'],
+            [533],
+            [$font],
+            [9],
+            [''],
+            ['C'],
+            30,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['RECEIVED BY:'],
+            [533],
+            [$font],
+            [9],
+            [''],
+            ['L'],
+            40,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['Name & Signature', ''],
+            [150, 383],
+            [$font, $font],
+            [9, 9],
+            ['T', ''],
+            ['C', ''],
+            30,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['Date:'],
+            [533],
+            [$font],
+            [9],
+            [''],
+            ['L'],
+            30,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['TRANSMITTAL'],
+            [533],
+            [$font],
+            [9],
+            [''],
+            ['L'],
+            30,
+            [] //x
+        );
+
+        //Bottom Table
+        printRow(
+            $startX,
+            $currentY,
+            ['STATUS', 'DATE', 'REMARKS'],
+            [160, 160, 160],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['TLR', 'TLR', 'TLR'],
+            ['C', 'C', 'C'],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', '', ''],
+            [160, 160, 160],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['TLR', 'TLR', 'TLR'],
+            ['', '', ''],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', '', ''],
+            [160, 160, 160],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['TLR', 'TLR', 'TLR'],
+            ['', '', ''],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $currentY,
+            ['', '', ''],
+            [160, 160, 160],
+            [$font, $font, $font],
+            [9, 9, 9],
+            ['TLRB', 'TLRB', 'TLRB'],
+            ['', '', ''],
+            $lineHeight,
+            [] //x
+        );
+
+        printRow(
+            $startX,
+            $bottomY,
+            [$currentPage],
+            [573],
+            [$font],
+            [10],
+            [''],
+            ['R'],
+            $lineHeight,
+            []
+        );
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+
+    public function rpt_HC_PDF_old($config, $data)
     {
         $center = $config['params']['center'];
         $username = $config['params']['user'];
@@ -318,13 +1005,13 @@ class hc
         $divname = $this->coreFunctions->getfieldvalue("division", "divname", "divid=?", [$division]);
         switch ($divcode) {
             case '001':
-                PDF::Image($this->companysetup->getlogopath($config['params']) . 'paflogo.png', 40, 10,  720, 100); //x   x   width height
+                PDF::Image($this->companysetup->getlogopath($config['params']) . 'paflogo.png', 40, 10, 720, 100); //x   x   width height
                 break;
             case '002':
-                PDF::Image($this->companysetup->getlogopath($config['params']) . 'mbcpaflogo.png', 40, 10,  720, 100); //x   x   width height
+                PDF::Image($this->companysetup->getlogopath($config['params']) . 'mbcpaflogo.png', 40, 10, 720, 100); //x   x   width height
                 break;
             case '003':
-                PDF::Image($this->companysetup->getlogopath($config['params']) . 'ridefundpaf.png', 40, 10,  720, 100); //x   x   width height
+                PDF::Image($this->companysetup->getlogopath($config['params']) . 'ridefundpaf.png', 40, 10, 720, 100); //x   x   width height
                 break;
         }
 
@@ -387,7 +1074,7 @@ class hc
         PDF::Rect(528, 273.5, 10, 10); // slight Y adjustment to center with label
 
         PDF::SetXY(546, 273);
-        PDF::MultiCell(130, 13, 'Others',  '', 'L', false, 0);
+        PDF::MultiCell(130, 13, 'Others', '', 'L', false, 0);
 
 
         PDF::SetFont($font, '', 11);
@@ -464,7 +1151,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [300, 300, 300, 300], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'L', 'LR'], // Draw top border only, for example
+            ['L', 'L', 'L', 'LR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -649,7 +1336,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -675,7 +1362,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'MIS / Inventory (TBA\'S, Helmet, Jersey, etc.) ',  'from', 'To', ''],
+            ['__checkbox__', 'MIS / Inventory (TBA\'S, Helmet, Jersey, etc.) ', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -728,7 +1415,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -753,7 +1440,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'Accounting Department',  'from', 'To', ''],
+            ['__checkbox__', 'Accounting Department', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -833,7 +1520,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [300, 300, 300, 300], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'L', 'LR'], // Draw top border only, for example
+            ['L', 'L', 'L', 'LR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -941,7 +1628,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -968,7 +1655,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Turn - over of OR/CR',  'from', 'To', ''],
+            ['✓', 'Turn - over of OR/CR', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1017,7 +1704,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Lacking Documents',  '', '', ''],
+            ['✓', 'Lacking Documents', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1038,7 +1725,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1064,7 +1751,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'MC UNIT LOAN',  'from', 'To', ''],
+            ['✓', 'MC UNIT LOAN', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1110,7 +1797,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Others: _________________',  '', '', ''],
+            ['✓', 'Others: _________________', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1125,7 +1812,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['LOANS: ',  '', '', '', '', ''],
+            ['LOANS: ', '', '', '', '', ''],
             [300, 110, 110, 20, 160, 20],
             [$fontbold, $font, $font, $font, $font, $font],
             [11, 11, 11, 11, 11, 11],
@@ -1157,7 +1844,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Folders / Documents',  '', '', ''],
+            ['✓', 'Folders / Documents', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1172,7 +1859,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Others',  '', '', ''],
+            ['✓', 'Others', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1193,7 +1880,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1227,7 +1914,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [50, 50, 50, 50], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'L', 'LR'], // Draw top border only, for example
+            ['L', 'L', 'L', 'LR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1238,7 +1925,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Salary Loan',  'from', 'To', ''],
+            ['✓', 'Salary Loan', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1290,7 +1977,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1308,7 +1995,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [50, 50, 50, 50], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'L', 'LR'], // Draw top border only, for example
+            ['L', 'L', 'L', 'LR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1333,7 +2020,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Random Checking Findings',  'from', 'To', ''],
+            ['✓', 'Random Checking Findings', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1348,7 +2035,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['✓', 'Pending Cases, IR, Findings, etc.',  '', '', ''],
+            ['✓', 'Pending Cases, IR, Findings, etc.', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1382,7 +2069,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [22, 22, 22, 22], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'L', 'LR'], // Draw top border only, for example
+            ['L', 'L', 'L', 'LR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1416,7 +2103,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1427,7 +2114,7 @@ class hc
 
         ///////////////////       NEW PAGE
         PDF::AddPage();
-        $currentY =  PDF::GetY();
+        $currentY = PDF::GetY();
 
         ///ITO YUNG Guhit pababa dun sa bagong page 
         printRow(
@@ -1437,7 +2124,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [300, 300, 300, 300], //HANGGANG 300 VERTICAL
-            ['TL',  'TL', 'TL', 'TLR'], // Draw top border only, for example
+            ['TL', 'TL', 'TL', 'TLR'], // Draw top border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1463,7 +2150,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'LIQUIDATION',  'from', 'To', ''],
+            ['__checkbox__', 'LIQUIDATION', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1478,7 +2165,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'DM / Unliquidated Budget Request',  '', '', ''],
+            ['__checkbox__', 'DM / Unliquidated Budget Request', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1526,7 +2213,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'Others: __________________',  '', '', ''],
+            ['__checkbox__', 'Others: __________________', '', '', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1547,7 +2234,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1575,7 +2262,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['__checkbox__', 'Pending Loan',  'from', 'To', ''],
+            ['__checkbox__', 'Pending Loan', 'from', 'To', ''],
             [15, 285, 110, 110, 200],
             ['dejavusans', $font, $font, $font, $font],
             [11, 11, 11, 11, 11],
@@ -1622,7 +2309,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['Others ___________', '',  '', ''],
+            ['Others ___________', '', '', ''],
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [11, 11, 11, 11],
@@ -1644,7 +2331,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1815,7 +2502,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [273, 115, 115, 273], //HANGGANG 300 VERTICAL
-            ['L',  'L', 'LR', 'R'], //lr border
+            ['L', 'L', 'LR', 'R'], //lr border
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1933,7 +2620,7 @@ class hc
         printRow(
             $startX,
             $currentY,
-            ['Others ___________', '',  '', ''],
+            ['Others ___________', '', '', ''],
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [11, 11, 11, 11],
@@ -1955,7 +2642,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [1, 1, 1, 1], //HANGGANG 300 VERTICAL
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -1989,7 +2676,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [20, 20, 20, 20],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -2025,7 +2712,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [20, 20, 20, 20],
-            ['',  '', '', ''],
+            ['', '', '', ''],
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -2137,7 +2824,7 @@ class hc
             [300, 110, 110, 200],
             [$font, $font, $font, $font],
             [2, 2, 2, 2],
-            ['B',  'B', 'B', 'B'], // Draw bottom border only, for example
+            ['B', 'B', 'B', 'B'], // Draw bottom border only, for example
             ['', '', '', ''],
             $lineHeight,
             [],
@@ -2310,6 +2997,7 @@ class hc
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
+
     public function authority_and_consent_pdf($params, $data)
     {
         $font = "";
@@ -2330,7 +3018,7 @@ class hc
 
         $employee = isset($data[0]) ? $data[0] : [];
         $employee_name = isset($employee['empname']) ? $employee['empname'] : '';
-        $address = isset($employee['address']) ? $employee['address'] : '';
+        $address = isset($employee['empaddress']) ? $employee['empaddress'] : '';
 
 
         $lastday = isset($employee['lastday']) ? $employee['lastday'] : '';
@@ -2354,7 +3042,7 @@ class hc
         $html_content = '<br /><strong>AUTHORITY AND CONSENT</strong>';
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: center; line-height: 1.5; font-size:' . $fontsize1 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
-        $html_content = '<br />I, <strong>' . $fname .' '.$mname.' '.$lname .'</strong> of legal age, single/married, Filipino , and a resident of <strong><u>' . $address . '</u></strong> after having been sworn in accordance to law hereby depose and say:';
+        $html_content = '<br />I, <strong>' . $fname . ' ' . $mname . ' ' . $lname . '</strong> of legal age, single/married, Filipino , and a resident of <strong><u>' . $address . '</u></strong> after having been sworn in accordance to law hereby depose and say:';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
@@ -2372,13 +3060,13 @@ class hc
         //     . '<u>( <span style="font-family:DejaVu Sans;">₱</span></u>'
         //     . '<u><span style="font-size:11px;font-weight:bold;">' . number_format($lastpay, 2) . '</span> ).</u>';
         $amount = '( <span style="font-family:DejaVu Sans;">₱</span>'
-         . '<span style="font-size:11px;font-weight:bold;">' . number_format($lastpay, 2) . '</span> ).';
+            . '<span style="font-size:11px;font-weight:bold;">' . number_format($lastpay, 2) . '</span> ).';
 
         $number2 = '2.That I acknowledge that my rightful net separations pay is '
-                . '<strong><u>' . $lastpay2 . $amount . '</u></strong> ';
+            . '<strong><u>' . $lastpay2 . $amount . '</u></strong> ';
 
         $amount2 = '( <span style="font-family:DejaVu Sans;">₱</span>'
-         . '<span style="font-size:11px;font-weight:bold;">' . number_format($deduction, 2) . '</span> ).';
+            . '<span style="font-size:11px;font-weight:bold;">' . number_format($deduction, 2) . '</span> ).';
 
         $number3 = '3.That I also acknowledge that I have an existing deduction direct to my salary in the amount of '
             . '<strong><u>' . $deduction2 . $amount2 . '</u></strong>';
@@ -2488,7 +3176,7 @@ class hc
 
         PDF::writeHTML($html, true, false, true, false, '');
 
-         //  <tr>
+        //  <tr>
         //     <td width="13%"></td>
         //     <td width="85%" valign="top" style="
         //     text-align: justify;
@@ -2499,28 +3187,28 @@ class hc
         //     margin:0;
         //     ">' . $number8 . '</td>
         // </tr>
-      
-        if($fname != ''){
+
+        if ($fname != '') {
             $fname = ucwords(strtolower(trim($fname)));
-        }else{
-            $fname='';
+        } else {
+            $fname = '';
         }
-        if($mname != ''){
-            $mname=ucwords(strtolower(trim($mname)));
-        }else{
-            $mname='';
+        if ($mname != '') {
+            $mname = ucwords(strtolower(trim($mname)));
+        } else {
+            $mname = '';
         }
-         if($lname != ''){
-            $lname=ucwords(strtolower(trim($lname)));
-        }else{
-            $lname='';
+        if ($lname != '') {
+            $lname = ucwords(strtolower(trim($lname)));
+        } else {
+            $lname = '';
         }
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize2);
 
         PDF::MultiCell(310, 0, '', '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
-        $html_content = '<strong><u>' . $fname. ' ' . $mname. ' ' . $lname . '</u></strong>';
+        $html_content = '<strong><u>' . $fname . ' ' . $mname . ' ' . $lname . '</u></strong>';
         PDF::writeHTMLCell(310, 0, '', '', '<p style="text-align: center; line-height: 1.5; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
         PDF::SetFont($font, '', $fontsize2);
         PDF::MultiCell(310, 0, '', '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
@@ -2563,7 +3251,7 @@ class hc
         $html_content = 'to be the same person who executed the foregoing instrument, and acknowledged to me that the same is her';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: left; line-height: 1.5; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
-       
+
         $html_content = 'free act and deed.';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: left; line-height: 1.5; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
@@ -2583,6 +3271,7 @@ class hc
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
+
 
 
     public function waiver_pdf($params, $data)
@@ -2606,7 +3295,7 @@ class hc
 
         $employee = isset($data[0]) ? $data[0] : [];
         $employee_name = isset($employee['empname']) ? $employee['empname'] : '';
-        $address = isset($employee['address']) ? $employee['address'] : '';
+        $address = isset($employee['empaddress']) ? $employee['empaddress'] : '';
         $company_name = 'CDO 2 CYCLES MARKETING CORPORATION';
 
         $lastday = isset($employee['lastday']) ? $employee['lastday'] : '';
@@ -2634,7 +3323,7 @@ class hc
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(620, 0, 'KNOW ALL MEN BY THESE PRESENTS:', '', 'L', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-        $html_content = '<br />That I, <strong>' . $fname .''.  $mname .''.$lname.'</strong> legal age, Filipino ,and with address at <strong><u>' . $address . '</u></strong> on my own free will, and for valuable consideration, hereby declare and manifest:';
+        $html_content = '<br />That I, <strong>' . $fname . '' . $mname . '' . $lname . '</strong> legal age, Filipino ,and with address at <strong><u>' . $address . '</u></strong> on my own free will, and for valuable consideration, hereby declare and manifest:';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
@@ -2644,17 +3333,17 @@ class hc
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
         $amount = '( <span style="font-family:DejaVu Sans;">₱</span>'
-         . '<span style="font-size:11px;font-weight:bold;">' . number_format($lastpay, 2) . '</span> ).';
+            . '<span style="font-size:11px;font-weight:bold;">' . number_format($lastpay, 2) . '</span> ).';
 
 
-        $html_content = '<br />That in connection with my former employment with ' . $company_name . ', for valuable consideration  <strong>' . $lastpay2 .'<u>'.$amount.'</u>'. '</strong>
+        $html_content = '<br />That in connection with my former employment with ' . $company_name . ', for valuable consideration  <strong>' . $lastpay2 . '<u>' . $amount . '</u>' . '</strong>
                         these presents, I hereby release, waive and forever discharge ' . $company_name . ', its officers, directors, representatives or employees from any actions for sums of money or other obligations arising from
                         my previous employment with ' . $company_name . ' I acknowledge that I have received all amounts that are now or in the future maybe due me from ' . $company_name . '
                         I therefore undertake not to do any act prejudicial to the interest of ' . $company_name . ', its branches, or its projects in the Philippines arising from my previous employment.';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
-        PDF::MultiCell(620, 3,'');
+        PDF::MultiCell(620, 3, '');
         $html_content = 'That I acknowledge that I have no cause of actions whatsoever, criminal, civil or otherwise against ' . $company_name . ',  its officers, its agents or
                         representatives or project employees with respect to any matter arising from or cessation of my employment with ' . $company_name . ' I further warrant that I will
                         institute no action and will not continue to prosecute, pending actions, if any against ' . $company_name . ' , its officers, agents or representatives or project employees.';
@@ -2667,27 +3356,27 @@ class hc
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
-         if($fname != ''){
+        if ($fname != '') {
             $fname = ucwords(strtolower(trim($fname)));
-        }else{
-            $fname='';
+        } else {
+            $fname = '';
         }
-        if($mname != ''){
+        if ($mname != '') {
             // $mname=ucwords(strtolower(trim($mname)));
-            
-        }else{
-            $mname='';
+
+        } else {
+            $mname = '';
         }
-         if($lname != ''){
-            $lname=ucwords(strtolower(trim($lname)));
-        }else{
-            $lname='';
+        if ($lname != '') {
+            $lname = ucwords(strtolower(trim($lname)));
+        } else {
+            $lname = '';
         }
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(310, 0, '', '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
-        PDF::MultiCell(310, 0,  $fname . ' ' . $mname . '. ' . $lname, '', 'C', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(310, 0, $fname . ' ' . $mname . '. ' . $lname, '', 'C', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
         // PDF::MultiCell(60, 0, '', '', 'L', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
 
         PDF::SetFont($font, '', $fontsize2);
@@ -2715,9 +3404,9 @@ class hc
         }
 
         // PDF::MultiCell(720, 0,  $formattedname, '', 'L', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
-        PDF::MultiCell(206, 0,  $formattedname, '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
-        PDF::MultiCell(208, 0,  '', '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
-        PDF::MultiCell(206, 0,  $formattedname2, '', 'C', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(206, 0, $formattedname, '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(208, 0, '', '', 'L', 0, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(206, 0, $formattedname2, '', 'C', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
 
 
         PDF::MultiCell(0, 0, "\n");
@@ -2730,7 +3419,7 @@ class hc
         $html_content = 'BEFORE ME, this ______________day of ____________________ in _____________, <u>personally</u>';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5;text-indent: 50px; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
-        $html_content = 'appeared ' . '<strong>' . $fname . ' ' . $mname. '. ' .$lname . '</strong> Government Issued No._______________ issued at __________________________ on _________________________ known to me to be acknowledge to me that the same is his/her free act and deed.';
+        $html_content = 'appeared ' . '<strong>' . $fname . ' ' . $mname . '. ' . $lname . '</strong> Government Issued No._______________ issued at __________________________ on _________________________ known to me to be acknowledge to me that the same is his/her free act and deed.';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: left; line-height: 1.5; font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 

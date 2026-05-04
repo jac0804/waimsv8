@@ -82,7 +82,7 @@ class setleftmenu
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster'];
         break;
       case 'BMS':
-        $masterfile = ['parentmasterfile', 'bg', 'bu', 'infra', 'tl'];
+        $masterfile = ['parentmasterfile', 'bg', 'bu', 'infra', 'tl', 'by', 'wl'];
         break;
       default:
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'itemquery'];
@@ -103,6 +103,7 @@ class setleftmenu
         break;
 
       case 19: //housegem
+      case 68: //jda
         array_push($masterfile, 'forwarder');
         break;
 
@@ -125,6 +126,9 @@ class setleftmenu
 
       case 56: //homeworks
         array_push($masterfile, 'facard');
+        break;
+      case 59: //roosevelt
+        array_push($masterfile, 'rawmatstockcard');
         break;
     }
 
@@ -230,11 +234,14 @@ class setleftmenu
           array_push($itemmaster, 'reasoncodesetup', 'expiration');
         }
         if ($params['companyid'] == 59) { //roosevelt
-          array_push($itemmaster, 'certrate');
+          array_push($itemmaster, 'certrate', 'carton');
         }
 
         if ($params['companyid'] == 63) { //ericco
           array_push($itemmaster, 'repacker');
+        }
+        if ($params['companyid'] == 65) { // metrodragon aims
+          array_push($itemmaster, 'notesetup');
         }
         break;
     }
@@ -307,6 +314,12 @@ class setleftmenu
       case 56: //homeworks
         $purchase = ['parentpurchase',  'po', 'rr', 'dm'];
         break;
+      case 65: //metro dragon - aims
+      case 67: // yulick
+      case 68: //jda
+        $purchase = ['parentpurchase', 'pr', 'po', 'rr', 'dm'];
+        break;
+
       default:
         // $purchase = ['parentpurchase', 'po', 'rr', 'dm', 'samplepo', 'samplepo2'];
         $purchase = ['parentpurchase', 'po', 'rr', 'dm'];
@@ -372,6 +385,16 @@ class setleftmenu
       case 59: //roosevelt
         $sales = ['parentsales', 'so', 'sj', 'cm', 'pl'];
         break;
+
+      case 67: //yulick 
+        $sales = ['parentsales', 'so', 'sl', 'sj', 'cm'];
+        break;
+      case 65: //metro dragon - aims
+        $sales = ['parentsales', 'so', 'sj', 'cm', 'mi'];
+        break;
+      case 68: //jda
+        $sales = ['parentsales', 'so', 'sj', 'cm', 'mr', 'mi'];
+        break;
       default:
         if ($this->companysetup->getiscreateversion($params)) {
           $sales = ['parentsales', 'qt', 'so', 'sj', 'cm'];
@@ -397,6 +420,7 @@ class setleftmenu
         break;
       case 43: //mighty
       case 49: //hotmix
+      case 68: //jda
         $inventory = ['parentinventory', 'is', 'pc', 'aj', 'tr', 'trapproval', 'ts'];
         break;
       case 27: //nte
@@ -411,6 +435,9 @@ class setleftmenu
         break;
       case 56: //homeworks
         $inventory = ['parentinventory', 'pc', 'aj', 'ts', 'is'];
+        break;
+      case 65: //metro dragon - aims
+        $inventory = ['parentinventory', 'pc', 'aj', 'ts', 'is', 'ad', 'ab', 'an'];
         break;
       default:
 
@@ -430,23 +457,23 @@ class setleftmenu
       case 22: //eipi
       case 28: //xcomp
       case 31: //JLI
+      case 60: //transpower
+      case 65: //metro dragon - aims
+      case 67: //yulick
         $payable = ['parentpayable',  'ap', 'pv', 'cv'];
         break;
       case 39: //cbbsi
-        // $payable = ['parentpayable', 'ap', 'pv', 'pq', 'sv', 'py','ps', 'cv'];
         $payable = ['parentpayable', 'ap', 'pv', 'pq', 'sv', 'py', 'ps', 'cv'];
         break;
       case 21: //kinggeorge
-        $payable = ['parentpayable',  'ap', 'cv'];
+      case 63: //ericco
+        $payable = ['parentpayable', 'ap', 'cv'];
         break;
       case 16: //ati
         $payable = [];
         break;
       case 56: //homeworks
         $payable = ['parentpayable', 'ap', 'pv', 'cv', 'checkrelease', 'kp'];
-        break;
-      case 60: //transpower
-        $payable = ['parentpayable', 'ap', 'pv', 'cv'];
         break;
       default:
         $payable = ['parentpayable', 'pq', 'sv', 'ap', 'pv', 'cv', 'checkrelease'];
@@ -464,6 +491,7 @@ class setleftmenu
     switch ($params['companyid']) {
       case 8: //maxipro
       case 35: //aquamax
+      case 40: //cdo
         $receivable = ['parentreceivable', 'ar', 'cr'];
         break;
       case 34: //evergreen
@@ -472,16 +500,14 @@ class setleftmenu
       case 39: // cbbsi
         $receivable = ['parentreceivable', 'ar', 'ka', 'cr', 'kr', 'dc'];
         break;
-      case 40: //cdo
-        $receivable = ['parentreceivable', 'ar', 'cr'];
-        break;
       case 55: //afli
         $receivable = ['parentreceivable', 'ar', 'cr', 'rc', 'kr'];
         break;
       case 59: //roosevelt
         $receivable = ['parentreceivable', 'ar', 'cr',  'kr', 'rc', 'rh', 'rd', 'be', 're'];
         break;
-      case 60: //transpower
+      case 60:
+      case 63: //ericco //transpower
         $receivable = ['parentreceivable', 'ar', 'cr', 'kr'];
         break;
       default:
@@ -538,8 +564,19 @@ class setleftmenu
       case 56: //homeworks
         $accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds', 'exchangerate'];
         break;
+      case 61: //bytesized
+        $accounting = ['parentaccounting', 'coa', 'fa', 'postdep', 'gj', 'gd', 'gc', 'ds', 'bankrecon', 'budget', 'checksetup', 'exchangerate'];
+        break;
       case 60: //transpower
+      case 67: //yulick
         $accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds'];
+        break;
+      case 63: //ericco
+      case 65: //metro dragon - aims
+        $accounting = ['parentaccounting', 'coa', 'gj', 'ds'];
+        break;
+      case 68: //jda
+        $accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds', 'bankrecon', 'budget'];
         break;
       default:
         array_push($accounting, 'budget', 'checksetup', 'exchangerate');
@@ -1238,9 +1275,10 @@ class setleftmenu
   } //end function
   public function barangayoperation($params)
   {
-    $barangay = ['parentbarangay', 'bd', 'bc', 'bt', 'cr'];
+    $barangay = ['parentbarangay', 'bd', 'bc', 'bt', 'bk', 'bi', 'wr', 'cr'];
     return ['barangayoperation' => ['parent' => 41, 'modules' => $barangay]];
   } //end function
+
 
   public function pcf($params)
   {
@@ -1256,7 +1294,7 @@ class setleftmenu
 
   public function queuing($params)
   {
-    $queuing = ['parentqs', 'counter', 'service', 'display', 'ticketing', 'ctr', 'closequeue'];
+    $queuing = ['parentqs', 'counter', 'service', 'display', 'ticketing', 'ctr', 'closequeue', 'userdisplay'];
     return ['queuing' => ['parent' => 44, 'modules' => $queuing]];
   } //end function
 
@@ -1264,6 +1302,12 @@ class setleftmenu
   {
     $barangaysetup = ['parentbmssetup', 'brgyofficial', 'streetsetup', 'clearancetype', 'businesstype', 'bonafide', 'trutype'];
     return ['barangaysetup' => ['parent' => 45, 'modules' => $barangaysetup]];
+  } //end function
+
+  public function barangayjudiciary($params)
+  {
+    $barangay = ['parentbarangayjudiciary', 'ju', 'mn', 'mh'];
+    return ['barangayjudiciary' => ['parent' => 46, 'modules' => $barangay]];
   } //end function
 
 

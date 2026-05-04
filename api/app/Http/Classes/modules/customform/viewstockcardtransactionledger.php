@@ -112,17 +112,45 @@ class viewstockcardtransactionledger
           'center'
         ];
         break;
-      case 60://transpower
+      case 60: //transpower
         //  'isqty2', 
-          $columns = [
+        $columns = [
           'action',
-          'status', 'docno', 'dateid', 'listclientname', 'rrqty', 'isqty','baseamt', 'disc', 'amt','cost','ext', 'yourref', 'ourref', 'rem', 'ref', 'center', 'loc', 'expiry', 
+          'status',
+          'docno',
+          'dateid',
+          'listclientname',
+          'rrqty',
+          'isqty',
+          'baseamt',
+          'disc',
+          'amt',
+          'cost',
+          'ext',
+          'yourref',
+          'ourref',
+          'rem',
+          'ref',
+          'center',
+          'loc',
+          'expiry',
           #coldel
-          'isamt','rrcost', 'rrcost2', 'rrcost3', 'whname', 'location', 'pallet', 'serialno', 'totalcost', 'moduletype', 'whref', 'isqty2'
+          'isamt',
+          'rrcost',
+          'rrcost2',
+          'rrcost3',
+          'whname',
+          'location',
+          'pallet',
+          'serialno',
+          'totalcost',
+          'moduletype',
+          'whref',
+          'isqty2'
         ];
         // Status | Document | Date | Name | IN Qty | OUT Qty |  Base Amount | Discoun | Amount | Cost | Total | Yourref | Ourref | Notes | Reference | Branch | Location | Expiry
         // status | docno | date | name | in | out | base amount | discount | amount | Cost | total | yourref | ourref | notes | reference | branch | location | expiry
-        break;  
+        break;
       default:
         // $action = 0;
         // $status = 1;
@@ -330,10 +358,10 @@ class viewstockcardtransactionledger
       $obj[0][$this->gridname]['columns'][$ext]['style'] = 'text-align:right;whiteSpace:normal;';
     }
 
-    if($companyid == 60){//transpower
+    if ($companyid == 60) { //transpower
       $obj[0][$this->gridname]['columns'][$amt]['label'] = 'Amount';
       $obj[0][$this->gridname]['columns'][$cost]['label'] = 'Cost';
-      
+
       $obj[0][$this->gridname]['columns'][$cost]['style'] = 'width:90px;whiteSpace: normal;min-width:90px;text-align:right;';
 
       $obj[0][$this->gridname]['columns'][$isamt]['type'] = 'coldel';
@@ -363,12 +391,12 @@ class viewstockcardtransactionledger
     $companyid = $config['params']['companyid'];
 
     //transaction history button in po module -transpower
-     if($companyid == 60 && $config['params']['doc'] == 'PO'){
-      $row=$config['params']['row'];
-      $itemid=$row['itemid'];
+    if ($companyid == 60 && $config['params']['doc'] == 'PO') {
+      $row = $config['params']['row'];
+      $itemid = $row['itemid'];
       $item = $this->othersClass->getitemname($itemid);
       $this->modulename .= ' - Itemcode: ' .  $item[0]->barcode . ' ~ ItemName: ' . $item[0]->itemname;
-    }else{
+    } else {
       if (isset($config['params']['clientid'])) {
         if ($config['params']['clientid'] != 0) {
           $itemid = $config['params']['clientid'];
@@ -391,9 +419,9 @@ class viewstockcardtransactionledger
     data_set($col1, 'dateid.label', 'Start Date');
     data_set($col1, 'luom.lookupclass', 'uomledger');
 
-    if($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO'){ //transaction history po button
-        data_set($col1, 'luom.addedparams', ['itemid']);
-        }
+    if ($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO') { //transaction history po button
+      data_set($col1, 'luom.addedparams', ['itemid']);
+    }
 
     $fields = [];
     if ($companyid == 17 && $moduletype == 'INQUIRY') { //unihome
@@ -416,7 +444,7 @@ class viewstockcardtransactionledger
     if ($this->companysetup->isrecalc($config['params'])) {
       $allowrecalc = $this->othersClass->checkAccess($config['params']['user'], 3690);
       if ($allowrecalc) {
-        if ($config['params']['moduletype'] == 'MASTERFILE') {
+        if ($config['params']['moduletype'] == 'MASTERFILE' || $config['params']['moduletype'] == 'OUTSOURCE') {
           array_push($fields, 'recalc');
         }
       }
@@ -432,14 +460,14 @@ class viewstockcardtransactionledger
   {
     $companyid = $config['params']['companyid'];
 
-      //transaction history button in po module -transpower
-     if($companyid==60 && $config['params']['doc'] == 'PO'){
-      $row=$config['params']['row'];
-      $itemid=$row['itemid'];
-     }else{
+    //transaction history button in po module -transpower
+    if ($companyid == 60 && $config['params']['doc'] == 'PO') {
+      $row = $config['params']['row'];
+      $itemid = $row['itemid'];
+    } else {
       $itemid = $config['params']['clientid'];
-      }
-   
+    }
+
     $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
 
     switch ($companyid) {
@@ -503,8 +531,8 @@ class viewstockcardtransactionledger
   public function loaddata($config)
   {
 
-     $companyid = $config['params']['companyid'];
-     $itemid = $config['params']['dataparams']['itemid'];
+    $companyid = $config['params']['companyid'];
+    $itemid = $config['params']['dataparams']['itemid'];
     // $itemid = $config['params']['itemid'];
     $center = $config['params']['center'];
     $date = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
@@ -512,8 +540,8 @@ class viewstockcardtransactionledger
     $wh = $config['params']['dataparams']['wh'];
     $barcode = $config['params']['dataparams']['barcode'];
     $itemname = $config['params']['dataparams']['itemname'];
-   
-   
+
+
     $data = [];
 
     if ($wh == '') {
@@ -805,18 +833,20 @@ class viewstockcardtransactionledger
         // }
 
         $addfield = ",whref.clientname as whref";
-        $baseamt="";
-        $itemj="";
+        $baseamt = "";
+        $itemj = "";
 
-        switch($companyid){
-          case 43://mighty
-           $addfield = ",wh.clientname as whref";
-           break;
-          case 60://transpower
-          $amt=" ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
-          $cost=" ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
-          $baseamt=", (case when stock.iss<>0 then stock.isamt else stock.rrcost end) as baseamt";
-          $itemj="  left join item on item.itemid=stock.itemid";
+        $amt = " ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
+        $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
+        switch ($companyid) {
+          case 43: //mighty
+            $addfield = ",wh.clientname as whref";
+            break;
+          case 60: //transpower
+            $amt = " ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
+            $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
+            $baseamt = ", (case when stock.iss<>0 then stock.isamt else stock.rrcost end) as baseamt";
+            $itemj = "  left join item on item.itemid=stock.itemid";
             break;
         }
 
@@ -868,7 +898,7 @@ class viewstockcardtransactionledger
                 
                 order by status,dateid desc,trno desc";
 
-                
+
 
         break;
     }
@@ -1093,12 +1123,12 @@ class viewstockcardtransactionledger
   }
 
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     if ($config['params']['companyid'] == 60) { //transpower
       return $this->sbcscript->skcustomform($config);
     } else {
       return true;
-    }   
+    }
   }
-
 } //end class

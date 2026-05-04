@@ -194,6 +194,7 @@ class gc
 
   public function createHeadbutton($config)
   {
+    $companyid = $config['params']['companyid'];
     $btns = array(
       'load',
       'new',
@@ -201,10 +202,10 @@ class gc
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -213,6 +214,16 @@ class gc
       'help',
       'others'
     );
+
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'customersupplier', 'dateid', 'terms', 'yourref', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customersupplier', 'dateid', 'terms', 'yourref', 'csrem', 'btnsave']);
@@ -271,7 +282,7 @@ class gc
       $objtodo = $this->tabClass->createtab($tab, []);
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
-   
+
     if ($config['params']['companyid'] == 60) { //transpower      
       $changecode = $this->othersClass->checkAccess($config['params']['user'], 5507);
       if ($changecode) {
@@ -332,14 +343,14 @@ class gc
     if ($companyid == 39) { //cbbsi
       $tab['multigrid'] = ['action' => 'tableentry', 'lookupclass' => 'entryparticulars', 'label' => 'Particulars'];
     }
-   
+
 
     $stockbuttons = ['save', 'delete'];
-     if ($this->companysetup->getiseditsortline($config['params'])) {
-     if($companyid==63){//ericco
-      array_push($stockbuttons, 'sortline');
+    if ($this->companysetup->getiseditsortline($config['params'])) {
+      if ($companyid == 63) { //ericco
+        array_push($stockbuttons, 'sortline');
+      }
     }
-   }
 
 
     array_push($stockbuttons, 'detailinfo');
@@ -1108,9 +1119,9 @@ class gc
       $data['encodedby'] = $config['params']['user'];
       $data['encodeddate'] = $current_timestamp;
 
-       if ($this->companysetup->getiseditsortline($config['params'])) {
-         if($config['params']['companyid']==63){
-            $data['sortline'] =  $data['line'];
+      if ($this->companysetup->getiseditsortline($config['params'])) {
+        if ($config['params']['companyid'] == 63) {
+          $data['sortline'] =  $data['line'];
         }
       }
 
@@ -1371,9 +1382,24 @@ class gc
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    $companyid = $config['params']['companyid'];
+    switch ($companyid) {
+      case 59: //roosevelt
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->othersClass->posttransacctg($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          } else {
+            $isreload = true;
+          }
+        }
+        break;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

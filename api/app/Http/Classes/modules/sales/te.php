@@ -44,9 +44,20 @@ class te
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'clientid', 'dateid', 'datereq', 'dateneed', 'due',
-    'assignid', 'errandtype', 'contactperson', 'companyaddress', 'rem',
-    'company', 'contact'
+    'trno',
+    'docno',
+    'clientid',
+    'dateid',
+    'datereq',
+    'dateneed',
+    'due',
+    'assignid',
+    'errandtype',
+    'contactperson',
+    'companyaddress',
+    'rem',
+    'company',
+    'contact'
   ];
   private $except = ['trno'];
   public $showfilteroption = true;
@@ -277,10 +288,10 @@ class te
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -529,8 +540,13 @@ class te
       $hidetabbtn = ['btndeleteallitem' => false];
       $clickobj = ['button.btnadditem'];
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
 
       ];
     } else {

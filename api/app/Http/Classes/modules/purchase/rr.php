@@ -104,7 +104,9 @@ class rr
     'checkno',
     'checkdate',
     'isfa',
-    'rrfactor'
+    'rrfactor',
+    'modeofpayment',
+    'orderno'
   ];
   private $otherfields = ['transtyperr'];
   private $except = ['trno', 'dateid', 'due'];
@@ -283,6 +285,17 @@ class rr
     if ($config['params']['companyid'] != 56) {
       $cols[$client]['type'] = 'coldel';
     }
+
+
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -582,10 +595,10 @@ class rr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -714,12 +727,12 @@ class rr
     $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
 
     if ($companyid == 40) { //cdo
-      $column = ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo'];
-      $sortcolumn =  ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo'];
+      $column = ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+      $sortcolumn =  ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
     }
 
     if ($companyid == 63) { //ericco
-       $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'original_qty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+      $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'original_qty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
       $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'original_qty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
     }
     foreach ($column as $key => $value) {
@@ -782,7 +795,7 @@ class rr
         if ($trip_approve) array_push($headgridbtns, 'tripapproved');
         if ($trip_disapprove) array_push($headgridbtns, 'tripdisapproved');
         break;
-      case 60://transpower
+      case 60: //transpower
         array_push($headgridbtns, 'viewitemstockinfo');
         break;
     }
@@ -822,7 +835,7 @@ class rr
     if ($this->companysetup->getserial($config['params'])) {
       $stockbuttons = ['save', 'delete', 'serialin'];
     } else {
-      
+
       switch ($companyid) {
         case 21: //kinggeorge
           if ($allowviewbalance != 0) {
@@ -865,6 +878,13 @@ class rr
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
 
     $obj[0]['inventory']['columns'][$rrcost]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
 
@@ -989,10 +1009,10 @@ class rr
         $obj[0]['inventory']['columns'][$serialno]['type'] = 'textarea2';
         $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
         $obj[0]['inventory']['columns'][$serialno]['label'] = 'Engine/Chassis#';
-        $obj[0]['inventory']['columns'][$pnpcsr]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$pnpcsr]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$pnpcsr]['label'] = 'PNP/CSR#';
+        // $obj[0]['inventory']['columns'][$pnpcsr]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
+        // $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'textarea';
+        // $obj[0]['inventory']['columns'][$pnpcsr]['readonly'] = true;
+        // $obj[0]['inventory']['columns'][$pnpcsr]['label'] = 'PNP/CSR#';
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
@@ -1006,11 +1026,11 @@ class rr
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'coldel';
         break;
-      case 63://ericco
-         $obj[0]['inventory']['columns'][$original_qty]['label'] = 'PO Qty';
-         $obj[0]['inventory']['columns'][$original_qty]['type'] = 'label';
+      case 63: //ericco
+        $obj[0]['inventory']['columns'][$original_qty]['label'] = 'PO Qty';
+        $obj[0]['inventory']['columns'][$original_qty]['type'] = 'label';
         $obj[0]['inventory']['columns'][$original_qty]['style'] = 'text-align: center; width: 80px;whiteSpace: normal;min-width:80px;max-width:80px;';
-        break;  
+        break;
 
       default:
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
@@ -1032,7 +1052,8 @@ class rr
       $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
     }
 
-    if ($companyid != 24) { //not goodfound
+
+    if ($companyid != 24 && $companyid != 65) { //not goodfound/metro dragon
       if ($viewcost == '0') {
         if ($viewcost == '0') {
           $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
@@ -1290,6 +1311,7 @@ class rr
             array_push($fields, 'updatepostedinfo');
           }
         }
+
         $col4 = $this->fieldClass->create($fields);
         data_set($col4, 'rem.style', 'height: 130px; max-width: 400px;font-size:120%;');
         data_set($col4, 'subprojectname.required', false);
@@ -1374,6 +1396,15 @@ class rr
         case 63: //ericco
           $fields = ['rem', 'rrfactor'];
           $col4 = $this->fieldClass->create($fields);
+          break;
+        case 65: //metro dragon
+          $fields = [['modeofpayment', 'orderno'], 'rem'];
+          $col4 = $this->fieldClass->create($fields);
+          data_set($col4, 'modeofpayment.label', 'Mode of Payment');
+          data_set($col4, 'modeofpayment.lookupclass', 'lookuppaymenttype');
+          data_set($col4, 'modeofpayment.action', 'lookuppaymenttype');
+          data_set($col4, 'orderno.label', 'LC No.');
+          data_set($col4, 'orderno.class', 'csorderno');
           break;
         default:
           $fields = ['rem'];
@@ -1551,6 +1582,8 @@ class rr
     $data[0]['isfa'] = 0;
 
     $data[0]['rrfactor'] = 0;
+    $data[0]['modeofpayment'] = '';
+    $data[0]['orderno'] = '';
     return $data;
   }
 
@@ -1660,7 +1693,8 @@ class rr
         amh.line as amenityid,
         amh.description as amenityname,
         subamh.line as subamenityid,
-        subamh.description as subamenityname, left(head.checkdate,10) as checkdate,head.checkno,head.rrfactor
+        subamh.description as subamenityname, left(head.checkdate,10) as checkdate,head.checkno,head.rrfactor,ifnull(head.modeofpayment,'') as modeofpayment,
+        ifnull(head.orderno,'') as orderno
         " . $addedfields;
 
     $qry = $qryselect . " from $table as head
@@ -2030,21 +2064,22 @@ class rr
       if (!$this->createdistribution($config)) {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Problems in creating accounting entries.'];
       } else {
-          if ($companyid == 63) { //ericco
-          $qry="select refx, linex from lastock where refx <> 0 and linex <> 0 and trno = $trno ";
-         $data2 = $this->coreFunctions->opentable($qry);
+        if ($companyid == 63) { //ericco
+          $qry = "select refx, linex from lastock where refx <> 0 and linex <> 0 and trno = $trno ";
+          $data2 = $this->coreFunctions->opentable($qry);
           if (!empty($data2)) {
-          foreach ($data2 as $value) {
-             $refx  = $value->refx;
-             $linex = $value->linex;
-            $checkqa = $this->coreFunctions->datareader("select stock.qa as value from hpostock as stock where trno=? and line=?", [$refx,$linex]);
-            $checkqty = $this->coreFunctions->datareader("select stock.qty as value from hpostock as stock where trno=? and line=?", [$refx,$linex]);
-            if($checkqa <> $checkqty){
-              $this->coreFunctions->execqry("update hpostock  as stock set stock.void=1 where  stock.trno=" . $refx ." and stock.line = ".$linex);
+            foreach ($data2 as $value) {
+              $refx  = $value->refx;
+              $linex = $value->linex;
+              $checkqa = $this->coreFunctions->datareader("select stock.qa as value from hpostock as stock where trno=? and line=?", [$refx, $linex]);
+              $checkqty = $this->coreFunctions->datareader("select stock.qty as value from hpostock as stock where trno=? and line=?", [$refx, $linex]);
+              if ($checkqa <> $checkqty) {
+                $this->coreFunctions->execqry("update hpostock  as stock set stock.void=1 where  stock.trno=" . $refx . " and stock.line = " . $linex);
+              }
             }
-            }}
           }
-         
+        }
+
 
         $this->othersClass->logConsole('posting');
         $return = $this->othersClass->posttranstock($config);
@@ -2093,19 +2128,22 @@ class rr
         return ['status' => false, 'msg' => 'Already have posted depreciation schedule.'];
       }
     }
-    
-      if ($companyid == 63) { //ericco
-           $qry="select refx, linex from glstock where  refx <> 0 and linex <> 0 and trno = $trno ";
-           $data2 = $this->coreFunctions->opentable($qry);
-        if (!empty($data2)) {
+
+    if ($companyid == 63) { //ericco
+      $qry = "select refx, linex from glstock where  refx <> 0 and linex <> 0 and trno = $trno ";
+      $data2 = $this->coreFunctions->opentable($qry);
+      if (!empty($data2)) {
         foreach ($data2 as $value) {
-             $refx  = $value->refx;
-             $linex = $value->linex;
-            $checkqa = $this->coreFunctions->datareader("select stock.qa as value from hpostock as stock where trno=? and line=?", [$refx,$linex]);
-            $checkqty = $this->coreFunctions->datareader("select stock.qty as value from hpostock as stock where trno=? and line=?", [$refx,$linex]);
-            if($checkqa <> $checkqty){
-              $this->coreFunctions->execqry("update hpostock  as stock set stock.void=0 where  stock.trno=" . $refx ." and stock.line = ".$linex);
-            }} }  }
+          $refx  = $value->refx;
+          $linex = $value->linex;
+          $checkqa = $this->coreFunctions->datareader("select stock.qa as value from hpostock as stock where trno=? and line=?", [$refx, $linex]);
+          $checkqty = $this->coreFunctions->datareader("select stock.qty as value from hpostock as stock where trno=? and line=?", [$refx, $linex]);
+          if ($checkqa <> $checkqty) {
+            $this->coreFunctions->execqry("update hpostock  as stock set stock.void=0 where  stock.trno=" . $refx . " and stock.line = " . $linex);
+          }
+        }
+      }
+    }
 
 
     $return = $this->othersClass->unposttranstock($config);
@@ -2126,7 +2164,7 @@ class rr
     $serialfield = '';
     $qafield = 'stock.qa';
     $costfield = 'stock.cost';
-    $poqty='';
+    $poqty = '';
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $qty_dec = 0;
       $serialfield = ",ifnull(group_concat(rr.serial separator '\\n\\r'),'') as serialno";
@@ -2141,7 +2179,7 @@ class rr
       $costfield = "FORMAT(stock." . $this->hamt . " * uom.factor,6)";
     }
 
-     if ($companyid == 63) { //ericco
+    if ($companyid == 63) { //ericco
       $poqty = ', format(po.qty,2) as original_qty';
     }
 
@@ -2221,9 +2259,9 @@ class rr
       $qafield = 'rrstatus.qa2';
     }
 
-    $grpby ="";
-     if ($companyid == 63) { //ericco
-      $grpby=', po.qty';
+    $grpby = "";
+    if ($companyid == 63) { //ericco
+      $grpby = ', po.qty';
     }
 
     $sqlselect = $this->getstockselect($config);
@@ -2350,9 +2388,9 @@ class rr
     }
 
     // $addgroupby = "";
-      $grpby ="";
-     if ($companyid == 63) { //ericco
-      $grpby=', po.qty';
+    $grpby = "";
+    if ($companyid == 63) { //ericco
+      $grpby = ', po.qty';
     }
     $addgroupby = ",stock.sjrefx, stock.sjlinex";
 
@@ -2409,7 +2447,7 @@ class rr
     subam.description,
     
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . "),stock.poref,stock.sgdrate,
-    brand.brand_desc,i.itemdescription,stock.freight,sit.itemdesc,sit.isbo,stock.rtrefx,stock.rtlinex" . $addgroupby.$grpby;
+    brand.brand_desc,i.itemdescription,stock.freight,sit.itemdesc,sit.isbo,stock.rtrefx,stock.rtlinex" . $addgroupby . $grpby;
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
 
 
@@ -3153,7 +3191,7 @@ class rr
     $blklotid = 0;
     $amenityid = 0;
     $subamenityid = 0;
-    $poqty=0;
+    $poqty = 0;
 
 
 
@@ -3347,7 +3385,14 @@ class rr
       }
     }
 
-    $hamt = number_format((($computedata['amt'] * $forex) + $freight), 6, '.', '');
+    switch ($companyid) {
+      case 65: //metro dragon -aims
+        $hamt = number_format((($computedata['amt'] * $forex) + ($freight / $qty)), 6, '.', '');
+        break;
+      default:
+        $hamt = number_format((($computedata['amt'] * $forex) + $freight), 6, '.', '');
+        break;
+    }
 
     if ($companyid == 23) { //labsol cebu
       if ($forex == 1) {
@@ -3427,7 +3472,7 @@ class rr
       $data['sjlinex'] = $sjlinex;
     }
 
-   
+
 
 
     foreach ($data as $key => $value) {
@@ -4559,7 +4604,12 @@ class rr
 
     //INV
     if (floatval($invamt) != 0) {
-      $freight = $params['freight'];
+      if ($companyid == 65) { //metro dragon
+        $freight = 0; //set to zero since they input freight as part of the cost
+      } else {
+        $freight = $params['freight'];
+      }
+
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
       $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $invamt + $freight, 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
       $this->coreFunctions->LogConsole('INV ' . ($invamt + $freight));
@@ -4876,8 +4926,7 @@ class rr
         break;
     }
 
-
-    if ($config['params']['companyid'] == 60) { //transpower
+    if ($config['params']['companyid'] == 60) { //transpower and roosevelt
       $this->posttrans($config);
       $isreload = true;
     }

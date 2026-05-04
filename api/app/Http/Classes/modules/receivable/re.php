@@ -234,6 +234,7 @@ class re
 
     public function createHeadbutton($config)
     {
+        $companyid = $config['params']['companyid'];
         $btns = array(
             'load',
             'new',
@@ -253,6 +254,16 @@ class re
             'help',
             'others'
         );
+
+        if ($companyid == 59) { //roosevelt
+            if (($key = array_search('lock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            if (($key = array_search('unlock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            $btns = array_values($btns); //i-reindex
+        }
 
         $buttons = $this->btnClass->create($btns);
 
@@ -609,7 +620,7 @@ class re
 
     private function getstockselect($config)
     {
-        $sqlselect = "select stock.trno,stock.line,stock.acnoid,stock.checkno,stock.amount,stock.refx,stock.linex,
+        $sqlselect = "select stock.trno,stock.line,stock.acnoid,stock.checkno,format(stock.amount,2) as amount,stock.refx,stock.linex,
                     stock.rctrno,stock.rcline,coa.acnoname,beh.docno as ref,stock.rcchecks,
                     stock.rem,be.trno as betrno,be.line as beline,stock.clientid,c.clientname as client,'' as bgcolor,'' as errcolor ";
         return $sqlselect;
@@ -659,12 +670,12 @@ class re
     public function stockstatus($config)
     {
         switch ($config['params']['action']) {
-                // case 'adddetail':
-                //     return $this->additem('insert', $config);
-                //     break;
-                // case 'addallitem':
-                //     return $this->addallitem($config);
-                //     break;
+            // case 'adddetail':
+            //     return $this->additem('insert', $config);
+            //     break;
+            // case 'addallitem':
+            //     return $this->addallitem($config);
+            //     break;
             case 'deleteallitem':
                 return $this->deleteallitem($config);
                 break;
@@ -1141,9 +1152,14 @@ class re
         $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
         $modulename = $this->modulename;
         $data = [];
+        $isreload = false;
+        if ($config['params']['companyid'] == 59) { //rooosevelt
+            $this->posttrans($config);
+            $isreload = true;
+        }
         $style = 'width:500px;max-width:500px;';
 
-        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
     }
     public function reportdata($config)
     {

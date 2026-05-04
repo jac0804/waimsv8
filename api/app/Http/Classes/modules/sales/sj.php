@@ -96,7 +96,8 @@ class sj
     'subamenityid',
     'bpo',
     'ctnsno',
-    'invoiceno'
+    'invoiceno',
+    'plateno'
   ];
 
   private $except = ['trno', 'dateid', 'due'];
@@ -295,6 +296,16 @@ class sj
     if ($companyid == 29) {
       $cols[$rem]['style'] = 'width:320px;whiteSpace: normal;min-width:320px;';
     }
+
+
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
 
 
 
@@ -663,10 +674,10 @@ class sj
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -806,60 +817,8 @@ class sj
       $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
 
-    $column = [
-      'action',
-      'itemdescription',
-      'serialno',
-      'isqty',
-      'uom',
-      'kgs',
-      'isamt',
-      'disc',
-      'ext',
-      'itemstatus',
-      'cost',
-      'markup',
-      'rebate',
-      'gprofit',
-      'itemdesc',
-      'wh',
-      'whname',
-      'ref',
-      'loc',
-      'expiry',
-      'rem',
-      'itemname',
-      'stock_projectname',
-      'noprint',
-      'barcode'
-    ];
-    $sortcolumn = [
-      'action',
-      'itemdescription',
-      'serialno',
-      'isqty',
-      'uom',
-      'kgs',
-      'isamt',
-      'disc',
-      'ext',
-      'itemstatus',
-      'cost',
-      'markup',
-      'rebate',
-      'gprofit',
-      'itemdesc',
-      'wh',
-      'whname',
-      'ref',
-      'loc',
-      'expiry',
-      'rem',
-      'itemname',
-      'stock_projectname',
-      'noprint',
-      'barcode'
-    ];
+    $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode'];
+    $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -904,8 +863,8 @@ class sj
         $noprint = 24;
         $barcode = 25;
 
-        $column = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
-        $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
+        $column = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
+        $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
         break;
       case 60: //transpower
 
@@ -930,9 +889,25 @@ class sj
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
         break;
-      case 59:
-        $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref'];
-        $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref'];
+      case 59: //roosevelt
+
+        $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
+        foreach ($column as $key => $value) {
+          $$value = $key;
+        }
+        break;
+
+      case 65: //metrodragon
+        $column = ['action', 'barcode', 'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
+        foreach ($column as $key => $value) {
+          $$value = $key;
+        }
+        break;
+      case 67: //yulick
+        $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
         foreach ($column as $key => $value) {
           $$value = $key;
         }
@@ -1018,7 +993,6 @@ class sj
           $stockbuttons = ['save', 'delete', 'showbalance'];
           break;
       }
-    
     }
 
     switch ($companyid) {
@@ -1030,15 +1004,22 @@ class sj
       default: //main
         array_push($stockbuttons, 'stockinfo');
         break;
-      
     }
-    
+
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+      default:
+        $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
+        break;
+    }
     $obj[0]['inventory']['columns'][$kgs]['label'] = 'Selling Kgs';
     if (!$iskgs) {
       $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
@@ -1143,7 +1124,7 @@ class sj
       case 40: //cdo
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
@@ -1209,6 +1190,8 @@ class sj
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'input';
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
+        $obj[0]['inventory']['columns'][$whname]['label'] = 'Whname';
+        $obj[0]['inventory']['columns'][$whname]['readonly'] = true;
 
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
@@ -1216,7 +1199,6 @@ class sj
 
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
         $obj[0]['inventory']['columns'][$barcode]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
         $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
         $obj[0]['inventory']['columns'][$uom]['style'] = 'text-align:left; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
@@ -1230,6 +1212,16 @@ class sj
 
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'SALES INVOICE';
+        break;
+      case 65: //metrodragon
+        $obj[0]['inventory']['columns'][$weight]['label'] = 'Weight';
+        $obj[0]['inventory']['columns'][$weight]['readonly'] = false;
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
+        break;
+      case 67: //yulick
+        $obj[0]['inventory']['columns'][$isqty2]['label'] = 'Customer Qty';
+        $obj[0]['inventory']['columns'][$isqty2]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
         break;
       default:
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
@@ -1300,6 +1292,9 @@ class sj
           break;
         case 60: //transpower
           array_push($tbuttons, 'pendingpo', 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso');
+          break;
+        case 67: //yulick
+          array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso', 'pendingdr');
           break;
         default:
           array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso');
@@ -1418,6 +1413,9 @@ class sj
     }
 
     data_set($col1, 'docno.label', 'Transaction#');
+    if ($companyid == 65) { //metrodragon
+      data_set($col1, 'dprojectname.label', 'Route');
+    }
     if ($inv) {
       $fields = [['dateid', 'terms'], 'due', 'dwhname'];
     } else {
@@ -1450,6 +1448,9 @@ class sj
         break;
       case 52: //technolab
         $fields = ['invoiceno', ['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
+        break;
+      case 65: //metrodragon
+        array_push($fields, 'plateno');
         break;
     }
 
@@ -1486,6 +1487,9 @@ class sj
         break;
       case 52: //technolab
         data_set($col2, 'invoiceno.label', 'Invoice No.');
+        break;
+      case 65: //metrodragon
+        data_set($col2, 'plateno.label', 'Plate #');
         break;
     }
 
@@ -1913,6 +1917,12 @@ class sj
     $htable = $this->hhead;
     $hideheadergridbtns = [];
 
+    if ($companyid == 65) { //metrodragon
+      $plateno = ",ifnull(head.plateno,'') as plateno";
+    } else {
+      $plateno = ",ifnull(hinfo.plateno,'') as plateno";
+    }
+
     $qryselect = "select
          num.center,
          head.trno,
@@ -1951,7 +1961,7 @@ class sj
          head.billid, head.shipid,ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, head.branch,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname, head.taxdef, head.billcontactid, head.shipcontactid,head.sotrno,
          head.mlcp_freight,head.salestype,
          head.statid, ifnull(stat.status,'') as statname,
-         head.driver, ifnull(hinfo.hauler,'') as hauler, ifnull(hinfo.plateno,'') as plateno, ifnull(hinfo.licenseno,'') as licenseno, ifnull(hinfo.batchno,'') as batchno, 
+         head.driver, ifnull(hinfo.hauler,'') as hauler, ifnull(hinfo.licenseno,'') as licenseno, ifnull(hinfo.batchno,'') as batchno, 
          ifnull(hinfo.cwano,'') as cwano, ifnull(hinfo.commamt,0) as commamt, ifnull(hinfo.commvat,0) as commvat, ifnull(hinfo.commamt,0)-ifnull(hinfo.commvat,0) as netcomm,
 
          ifnull(hinfo.cwatime,'') as cwatime, 
@@ -1968,8 +1978,7 @@ class sj
          hinfo.interestrate,hinfo.downpayment,  head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, 
            bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
            subamen.line as subamenityid, subamen.description as subamenityname, head.isreported,
-           head.bpo, head.ctnsno, head.invoiceno
-         ";
+           head.bpo, head.ctnsno, head.invoiceno $plateno";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2567,6 +2576,12 @@ class sj
       case 60: //transpower
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
+      case 65: //metrodragon
+        $serialfield = ",format(ifnull(stockinfo.weight,0), 2) as weight,head.projectid as hprojectid";
+        break;
+      case 67: //yulick
+        $serialfield = ",format(ifnull(stock.isqty2,0), 2) as isqty2";
+        break;
     }
 
     $sqlselect = "select item.brand as brand,
@@ -2577,6 +2592,8 @@ class sj
     stock.sortline,
     stock.refx,
     stock.linex,
+    stock.drrefx,
+    stock.drlinex,
     item.barcode,
     $itemname
     stock.uom,
@@ -2650,6 +2667,14 @@ class sj
       case 60: //transpower
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
         break;
+      case 65: //metrodragon
+        $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
+        $hleftjoin = 'left join hstockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
+        $stockinfogroup = 'stockinfo.weight,head.projectid,';
+        break;
+      case 67: //yulick
+        $stockinfogroup = 'stock.isqty2,';
+        break;
     }
 
 
@@ -2689,7 +2714,7 @@ class sj
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
 
     stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,item.namt6
+     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,item.namt6,stock.drrefx,stock.drlinex
 
 
 
@@ -2726,11 +2751,10 @@ class sj
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
-     stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description  ,item.namt6
+    stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
+    prj.code ,amen.line , amen.description ,  subamen.line , subamen.description  ,item.namt6,stock.drrefx,stock.drlinex
 
     order by sortline, line";
-
 
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
@@ -2759,6 +2783,13 @@ class sj
         break;
       case 60: //transpower
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
+        break;
+      case 65: //metrodragon  
+        $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
+        $stockinfogroup = 'stockinfo.weight,head.projectid,';
+        break;
+      case 67: //yulick
+        $stockinfogroup = 'stock.isqty2,';
         break;
     }
 
@@ -2797,9 +2828,8 @@ class sj
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
-     stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,item.namt6
-    ";
+    stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
+    prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,item.namt6,stock.drrefx,stock.drlinex";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -2866,11 +2896,130 @@ class sj
       case 'getpodetails':
         return $this->getpodetails($config);
         break;
+      case 'getdrsummary':
+        return $this->getdrsummary($config);
+        break;
+      case 'getdrdetails':
+        return $this->getdrdetails($config);
+        break;
       default:
         return ['status' => false, 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ') SJ'];
         break;
     }
   }
+
+  public function getdrsummaryqry($config)
+  {
+    return "
+      select head.docno, client.clientid, client.client, head.clientname, head.address, ifnull(head.rem,'') as rem, head.cur, head.forex, head.shipto, head.ourref, head.yourref, head.terms,
+      item.itemid,stock.trno, stock.line, item.barcode, stock.uom, (stock.iss-stock.qa) as qty,stock.isamt, stock.ext, wh.client as wh,
+      round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,stock.rem as srem,
+      stock.disc,head.branch,head.yourref,wh.client as swh,stock.loc
+      FROM hdrhead as head 
+      left join hdrstock as stock on stock.trno=head.trno 
+      left join item on item.itemid=stock.itemid 
+      left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+      left join client as wh on wh.clientid=stock.whid
+      left join client on client.client=head.client
+      where stock.trno = ? and stock.void=0 ";
+  }
+
+  public function getdrsummary($config)
+  {
+    $trno = $config['params']['trno'];
+    $wh = '';
+    if (isset($config['params']['wh'])) $wh = $config['params']['wh'];
+    $rows = [];
+    foreach ($config['params']['rows'] as $key => $value) {
+      $qry = $this->getdrsummaryqry($config);
+      $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
+      if (!empty($data)) {
+        foreach ($data as $key2 => $value) {
+          $config['params']['data']['uom'] = $data[$key2]->uom;
+          $config['params']['data']['itemid'] = $data[$key2]->itemid;
+          $config['params']['trno'] = $trno;
+          $config['params']['data']['disc'] = $data[$key2]->disc;
+          $config['params']['data']['qty'] = $data[$key2]->rrqty;
+          $config['params']['data']['isqty2'] = $data[$key2]->rrqty;
+          $config['params']['data']['wh'] = $wh;
+          $config['params']['data']['loc'] = '';
+          $config['params']['data']['expiry'] = '';
+          $config['params']['data']['rem'] = $data[$key2]->rem;
+          $config['params']['data']['drrefx'] = $data[$key2]->trno;
+          $config['params']['data']['drlinex'] = $data[$key2]->line;
+          $config['params']['data']['ref'] = $data[$key2]->docno;
+          $config['params']['data']['amt'] = $data[$key2]->isamt;
+          $config['params']['data']['ext'] = $data[$key2]->ext;
+          $return = $this->additem('insert', $config);
+          if ($return['status']) {
+            if ($this->setserveditemsDR($data[$key2]->trno, $data[$key2]->line, $this->hqty) == 0) {
+              $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+              $line = $return['row'][0]->line;
+              $config['params']['trno'] = $trno;
+              $config['params']['line'] = $line;
+              $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              $this->setserveditemsDR($data[$key2]->trno, $data[$key2]->line, $this->hqty);
+              $row = $this->openstockline($config);
+              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+            }
+            array_push($rows, $return['row'][0]);
+          }
+        } // end foreach
+      } //end if
+    } //end foreach
+    return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
+  }
+
+  public function getdrdetails($config)
+  {
+    $trno = $config['params']['trno'];
+    $wh = $config['params']['wh'];
+    $companyid = $config['params']['companyid'];
+    $forex = 1;
+    $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
+    $rows = [];
+    foreach ($config['params']['rows'] as $key => $value) {
+      $qry = "select head.docno, item.itemid,stock.trno,stock.line, item.barcode,stock.uom, (stock.iss-stock.qa) as iss,stock.isamt,
+        round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty, stock.disc,stock.loc
+        FROM hdrhead as head left join hdrstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid 
+        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.iss>stock.qa and stock.void=0
+    ";
+      $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
+      if (!empty($data)) {
+        foreach ($data as $key2 => $value) {
+          $config['params']['data']['uom'] = $data[$key2]->uom;
+          $config['params']['data']['itemid'] = $data[$key2]->itemid;
+          $config['params']['trno'] = $trno;
+          $config['params']['data']['disc'] = $data[$key2]->disc;
+          $config['params']['data']['qty'] = $data[$key2]->isqty;
+          $config['params']['data']['isqty2'] = $data[$key2]->isqty;
+          $config['params']['data']['wh'] = $wh;
+          $config['params']['data']['loc'] = $data[$key2]->loc;
+          $config['params']['data']['rem'] = '';
+          $config['params']['data']['drrefx'] = $data[$key2]->trno;
+          $config['params']['data']['drlinex'] = $data[$key2]->line;
+          $config['params']['data']['ref'] = $data[$key2]->docno;
+          $config['params']['data']['amt'] = $data[$key2]->isamt;
+
+          $return = $this->additem('insert', $config);
+          if ($return['status']) {
+            if ($this->setserveditemsDR($data[$key2]->trno, $data[$key2]->line) == 0) {
+              $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+              $line = $return['row'][0]->line;
+              $config['params']['trno'] = $trno;
+              $config['params']['line'] = $line;
+              $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              $this->setserveditemsDR($data[$key2]->trno, $data[$key2]->line);
+              $row = $this->openstockline($config);
+              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+            }
+            array_push($rows, $return['row'][0]);
+          }
+        } // end foreach
+      } //end if
+    } //end foreach
+    return ['row' => $rows, 'status' => true, 'msg' => 'Added Items Successful...'];
+  } //end function
 
   public function diagram($config)
   {
@@ -3516,7 +3665,6 @@ class sj
   {
     $companyid = $config['params']['companyid'];
     $msg = '';
-
     foreach ($config['params']['row'] as $key => $value) {
       $config['params']['data'] = $value;
       $row = $this->additem('insert', $config);
@@ -3609,6 +3757,7 @@ class sj
   // insert and update item
   public function additem($action, $config, $setlog = false)
   {
+
     $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
@@ -3648,6 +3797,9 @@ class sj
     $poref = isset($config['params']['data']['poref']) ? $config['params']['data']['poref'] : '';
     $podate = isset($config['params']['data']['podate']) ? $config['params']['data']['podate'] : null;
 
+    $drrefx = isset($config['params']['data']['drrefx']) ? $config['params']['data']['drrefx'] : 0;
+    $drlinex = isset($config['params']['data']['drlinex']) ? $config['params']['data']['drlinex'] : 0;
+
     if ($companyid == 10) { //afti
       $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
     }
@@ -3664,6 +3816,18 @@ class sj
       if (isset($config['params']['data']['agentamt'])) {
         $agentamt = $config['params']['data']['agentamt'];
       }
+    }
+
+    $isqty2 = 0;
+    if ($companyid == 67) { //yulick
+      if (isset($config['params']['data']['isqty2'])) {
+        $isqty2 = $config['params']['data']['isqty2'];
+      }
+    }
+
+    $hprojectid = 0;
+    if ($companyid == 65) { //metrodragon
+      $hprojectid = $this->coreFunctions->datareader('select projectid as value from lahead where trno=?', [$trno], '', true);
     }
 
 
@@ -3794,7 +3958,9 @@ class sj
       'locid' => $locid,
       'palletid' => $palletid,
       'rebate' => $rebate,
-      'noprint' => $noprint
+      'noprint' => $noprint,
+      'drrefx' => $drrefx,
+      'drlinex' => $drlinex,
     ];
 
     switch ($companyid) {
@@ -3837,6 +4003,12 @@ class sj
           $data['startwire'] = $this->othersClass->sanitizekeyfield('startwire', $startwire);
           $data['endwire'] = $this->othersClass->sanitizekeyfield('endwire', $endwire);
         }
+        break;
+      case 65: //metrodragon
+        $data['projectid'] = $hprojectid;
+        break;
+      case 67: //yulick
+        $data['isqty2'] = $isqty2;
         break;
     }
 
@@ -3941,6 +4113,7 @@ class sj
             break;
         }
 
+
         if ($companyid == 60) {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' Cost' . $cost . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         } else {
@@ -3994,13 +4167,31 @@ class sj
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PO Qty.";
           }
         } else {
-          if ($this->setserveditems($refx, $linex) == 0) {
+          if ($this->setserveditems($refx, $linex, $companyid) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
             $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-            $this->setserveditems($refx, $linex);
+            $this->setserveditems($refx, $linex, $companyid);
             $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than RR Qty.";
+          }
+
+          if ($companyid == 67) { //yulick
+            $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
+            $userid   = $config['params']['adminid'];
+            if ($checkamtlimit) {
+              $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
+              $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
+              if ($maxsjamt != 0) {
+                if ($resext > $maxsjamt) {
+                  $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
+                  $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                  $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+                  $return = false;
+                  $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
+                }
+              }
+            }
           }
         }
 
@@ -4026,11 +4217,17 @@ class sj
             case 52: //technolab
             case 41: //labsol manila
             case 23: //labsol cebu
+            case 65: //metrodragon 
               $stockinfo_data = [
                 'trno' => $trno,
-                'line' => $line,
-                'itemdesc' => $itemdesc
+                'line' => $line
               ];
+
+              if ($companyid == 65) { //metrodragon
+                $stockinfo_data['weight'] = $weight;
+              } else {
+                $stockinfo_data['itemdesc'] = $itemdesc;
+              }
               $checkstockinfo = $this->coreFunctions->getfieldvalue("stockinfo", "trno", "trno=? and line =?", [$trno, $line]);
               if ($checkstockinfo == '') {
                 $this->coreFunctions->sbcinsert("stockinfo", $stockinfo_data);
@@ -4046,6 +4243,7 @@ class sj
           }
           break;
       }
+
       if ($isnoninv == 0) {
         if ($ispallet) {
           $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
@@ -4074,7 +4272,7 @@ class sj
           if ($companyid == 10) { //afti
             $this->setservedsqitems($refx, $linex);
           } else {
-            $this->setserveditems($refx, $linex);
+            $this->setserveditems($refx, $linex, $companyid);
           }
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
           $return = false;
@@ -4106,15 +4304,32 @@ class sj
         }
       } else {
         setServed:
-        if ($this->setserveditems($refx, $linex) == 0) {
+        if ($this->setserveditems($refx, $linex, $companyid) == 0) {
           $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
           $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-          $this->setserveditems($refx, $linex);
+          $this->setserveditems($refx, $linex, $companyid);
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
-      }
+        if ($companyid == 67) { //yulick
+          $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
+          $userid   = $config['params']['adminid'];
+          if ($checkamtlimit) {
+            $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
+            $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
+            if ($maxsjamt != 0) {
+              if ($resext > $maxsjamt) {
+                $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
+                $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+                $return = false;
+                $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
+              }
+            }
+          }
+        }
+      } //end
 
       if ($companyid == 24) { //goodfound
         $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));
@@ -4139,8 +4354,6 @@ class sj
         $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ["trno" => $trno]);
       }
 
-
-
       return ['status' => $return, 'msg' => $msg];
     }
   } // end function
@@ -4155,7 +4368,7 @@ class sj
       }
     }
 
-    $data = $this->coreFunctions->opentable('select refx,linex,porefx,polinex from ' . $this->stock . ' where trno=? and refx<>0', [$trno]);
+    $data = $this->coreFunctions->opentable('select refx,linex,porefx,polinex,drrefx,drlinex from ' . $this->stock . ' where trno=? and (refx<>0 or drrefx<>0)', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from stockinfo where trno=?', 'delete', [$trno]);
@@ -4172,6 +4385,7 @@ class sj
           $this->setserveditems($data[$key]->refx, $data[$key]->linex);
           break;
       }
+      if ($data[$key]->drrefx != 0) $this->setserveditemsDR($data[$key]->drrefx, $data[$key]->drlinex);
     }
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
@@ -4200,18 +4414,25 @@ class sj
     return $result;
   }
 
-  public function setserveditems($refx, $linex)
+  public function setserveditems($refx, $linex, $companyid = 0)
   {
     if ($refx == 0) {
       return 1;
     }
+
+    $qrydr = '';
+    if ($companyid == 67) { //yulick
+      $qrydr = " union all select stock." . $this->hqty . " from drhead as head left join drstock as stock on stock.trno=head.trno where head.doc='DR' and stock.refx=" . $refx . " and stock.linex=" . $linex .
+        " union all select hdrstock." . $this->hqty . " from hdrhead left join hdrstock on hdrstock.trno=hdrhead.trno where hdrhead.doc='DR' and hdrstock.refx=" . $refx . " and hdrstock.linex=" . $linex;
+    }
+
     $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as
     stock on stock.trno=head.trno where head.doc in ('SJ','BO') and stock.refx=" . $refx . " and stock.linex=" . $linex;
 
     $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
     glhead.trno where glhead.doc in ('SJ','BO') and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
 
-    $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
+    $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . $qrydr . ") as t";
     $qty = $this->coreFunctions->datareader($qry2);
     if ($qty == '') {
       $qty = 0;
@@ -4278,6 +4499,52 @@ class sj
     return $return;
   }
 
+
+  public function setserveditemsDR($refx, $linex)
+  {
+    if ($refx == 0) {
+      return 1;
+    }
+
+    $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as
+    stock on stock.trno=head.trno where head.doc='SJ' and stock.drrefx=" . $refx . " and stock.drlinex=" . $linex;
+
+    $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
+    glhead.trno where glhead.doc='SJ' and glstock.drrefx=" . $refx . " and glstock.drlinex=" . $linex;
+
+    $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
+    $qty = $this->coreFunctions->datareader($qry2);
+    if ($qty == '') {
+      $qty = 0;
+    }
+    $result = $this->coreFunctions->execqry("update hdrstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
+
+    $status = $this->coreFunctions->datareader("select ifnull(count(trno),0) as value from hdrstock where trno=? and iss>qa and void=0", [$refx]);
+    if ($status) {
+      $status = $this->coreFunctions->datareader("select ifnull(count(trno),0) as value from hdrstock where trno=? and qa<>0 and void=0", [$refx]);
+      if ($status) {
+        $this->coreFunctions->execqry("update transnum set statid=6 where trno=" . $refx); // partial
+      } else {
+        $this->coreFunctions->execqry("update transnum set statid=5 where trno=" . $refx); // no SJ
+      }
+    } else {
+      $this->coreFunctions->execqry("update transnum set statid=7 where trno=" . $refx); //complete
+    }
+
+    return $result;
+  }
+
+
+  public function totalext($trno)
+  {
+    $qry1 = "select sum(ext) as ext from lastock where trno= $trno";
+    $result = $this->coreFunctions->opentable($qry1);
+    return $result;
+  }
+
+
+
+
   public function deleteitem($config)
   {
     $config['params']['trno'] = $config['params']['row']['trno'];
@@ -4313,9 +4580,11 @@ class sj
         $this->setserveditems($data[0]->refx, $data[0]->linex);
         break;
       default:
-        $this->setserveditems($data[0]->refx, $data[0]->linex);
+        $this->setserveditems($data[0]->refx, $data[0]->linex, $config['params']['companyid']);
         break;
     }
+
+    if ($data[0]->drrefx != 0) $this->setserveditemsDR($data[0]->drrefx, $data[0]->drlinex);
 
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' barcode:' . $data[0]->barcode . ' Qty:' . $data[0]->isqty . ' Amt:' . $data[0]->isamt . ' Disc:' . $data[0]->disc . ' wh:' . $data[0]->wh . ' ext:' . $data[0]->ext);
     return ['status' => true, 'msg' => 'Item was successfully deleted.'];
@@ -4760,6 +5029,10 @@ class sj
               $config['params']['data']['agentamt'] = $data[$key2]->agentamt;
             }
 
+            if ($companyid == 67) { //yulick
+              $config['params']['data']['isqty2'] = $data[$key2]->isqty;
+            }
+
             $return = $this->additem('insert', $config);
 
             if ($msg = '') {
@@ -4769,13 +5042,13 @@ class sj
             }
 
             if ($return['status']) {
-              if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
+              if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']) == 0) {
                 $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
                 $line = $return['row'][0]->line;
                 $config['params']['trno'] = $trno;
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
+                $this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']);
                 $row = $this->openstockline($config);
                 $return = ['row' => $row, 'status' => true, 'msg' => $msg];
               }
@@ -4847,8 +5120,8 @@ class sj
             $line = $return['row'][0]->line;
             $config['params']['trno'] = $trno;
             $config['params']['line'] = $line;
-            $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-            $this->setserveditems($$value->trno, $value->line);
+            $this->coreFunctions->sbcupdate($this->stock);
+            $this->setserveditems($value->trno, $value->line, $config['params']['companyid']);
             $row = $this->openstockline($config);
             $return = ['row' => $row, 'status' => true, 'msg' => $msg];
           }
@@ -5143,6 +5416,12 @@ class sj
               $config['params']['data']['agentamt'] = $data[$key2]->agentamt;
             }
 
+            if ($companyid == 67) { //yulick
+              $config['params']['data']['isqty2'] = $data[$key2]->isqty;
+            }
+
+
+
             $return = $this->additem('insert', $config);
             if ($msg = '') {
               $msg = $return['msg'];
@@ -5150,13 +5429,13 @@ class sj
               $msg = $msg . $return['msg'];
             }
             if ($return['status']) {
-              if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
+              if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']) == 0) {
                 $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
                 $line = $return['row'][0]->line;
                 $config['params']['trno'] = $trno;
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
+                $this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']);
                 $row = $this->openstockline($config);
                 $return = ['row' => $row, 'status' => true, 'msg' => $msg];
               }
@@ -6032,6 +6311,10 @@ class sj
             return ['status' => false, 'msg' => $result['msg']];
           }
         }
+        break;
+
+      case 59: //roosevelt
+        $this->posttrans($config);
         break;
     }
 

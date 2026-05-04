@@ -57,9 +57,12 @@ class monthly_analyze_item_sales
         break;
       case 23: //labsol cebu
       case 52: //technolab
-        array_push($fields, 'luom', 'dagentname');
+        array_push($fields, 'luom', 'agentname');
         $col1 = $this->fieldClass->create($fields);
+        
         data_set($col1, 'luom.action', 'replookupuom');
+        data_set($col1, 'agentname.type', 'lookup');
+        data_set($col1, 'agentname.action', 'repagentmulti');
         break;
       case 41: //labsol mla
         array_push($fields, 'luom');
@@ -101,6 +104,10 @@ class monthly_analyze_item_sales
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
   }
 
+  public function getclientmulti($config){
+    return 'A';
+  }
+
   public function paramsdata($config)
   {
     // NAME NG INPUT YUNG NAKA ALIAS
@@ -137,6 +144,7 @@ class monthly_analyze_item_sales
           '' as part,
           '' as agent,
           0 as agentid,
+          '' as agentname,
           '' as dwhname,
           '' as project, 
           0 as projectid, 
@@ -223,6 +231,7 @@ class monthly_analyze_item_sales
     $analyzedby   = $config['params']['dataparams']['analyzedby'];
     $itemtype     = $config['params']['dataparams']['itemtype'];
     $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
 
     $filter = '';
     $filter1 = '';
@@ -296,9 +305,9 @@ class monthly_analyze_item_sales
       $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
       $grpagent = "agent.clientname, ";
 
-      if ($agent != "") {
-        $agentid = $config['params']['dataparams']['agentid'];
-        $filter1 .= " and agent.clientid=" . $agentid;
+      if ($agentid != "") {
+        $agentid = str_replace("~",",",$config['params']['dataparams']['agentid']);
+        $filter1 .= " and agent.clientid in (" . $agentid .")";
       }
     }
     $sort = "order by $agfield part, brand, barcode, itemname";
@@ -367,6 +376,7 @@ class monthly_analyze_item_sales
     $analyzedby   = $config['params']['dataparams']['analyzedby'];
     $itemtype     = $config['params']['dataparams']['itemtype'];
     $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
 
     $filter = '';
     $filter1 = '';
@@ -440,9 +450,9 @@ class monthly_analyze_item_sales
       $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
       $grpagent = "agent.clientname, ";
 
-      if ($agent != "") {
-        $agentid = $config['params']['dataparams']['agentid'];
-        $filter1 .= " and agent.clientid=" . $agentid;
+      if ($agentid != "") {
+        $agentid = str_replace("~",",",$config['params']['dataparams']['agentid']);
+        $filter1 .= " and agent.clientid in (" . $agentid .")";
       }
     }
 
@@ -513,6 +523,7 @@ class monthly_analyze_item_sales
     $analyzedby   = $config['params']['dataparams']['analyzedby'];
     $itemtype     = $config['params']['dataparams']['itemtype'];
     $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
 
     $filter = '';
     $filter1 = '';
@@ -586,9 +597,9 @@ class monthly_analyze_item_sales
       $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
       $grpagent = "agent.clientname, ";
 
-      if ($agent != "") {
-        $agentid = $config['params']['dataparams']['agentid'];
-        $filter1 .= " and agent.clientid=" . $agentid;
+      if ($agentid != "") {
+        $agentid = str_replace("~",",",$config['params']['dataparams']['agentid']);
+        $filter1 .= " and agent.clientid in (" . $agentid .")";
       }
     }
 

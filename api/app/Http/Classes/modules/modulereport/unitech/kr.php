@@ -92,7 +92,7 @@ class kr
                 left join coa on coa.acnoid=ar.acnoid
                 left join glhead as head2 on head2.trno = ar.trno 
                 left join client on client.client = head.client
-                where head.trno='$trno' order by postdate,dateid, docno";
+                where head.trno='$trno' order by postdate, ref";
         //  var_dump($query);
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;

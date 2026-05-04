@@ -44,9 +44,36 @@ class pf
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms',
-    'forex', 'cur', 'wh', 'address', 'projectid', 'subproject', 'branch', 'deptid', 'tax', 'vattype', 'empid', 'sotrno', 'billid', 'shipid', 'billcontactid', 'shipcontactid',
-    'revision', 'rqtrno', 'deldate', 'deladdress'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'branch',
+    'deptid',
+    'tax',
+    'vattype',
+    'empid',
+    'sotrno',
+    'billid',
+    'shipid',
+    'billcontactid',
+    'shipcontactid',
+    'revision',
+    'rqtrno',
+    'deldate',
+    'deladdress'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -194,10 +221,10 @@ class pf
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -285,18 +312,55 @@ class pf
     $loc = 19;
 
     $column = [
-      'action', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'qa', 'rem',
-      'ref', 'poref', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'loc'
+      'action',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'qa',
+      'rem',
+      'ref',
+      'poref',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount',
+      'loc'
     ];
 
     $sortcolumn = [
-      'action', 'rrqty', 'uom', 'rrcost', 'disc', 'ext', 'wh', 'qa', 'rem',
-      'ref', 'poref', 'stage', 'void', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'loc'
+      'action',
+      'rrqty',
+      'uom',
+      'rrcost',
+      'disc',
+      'ext',
+      'wh',
+      'qa',
+      'rem',
+      'ref',
+      'poref',
+      'stage',
+      'void',
+      'itemname',
+      'barcode',
+      'stock_projectname',
+      'partno',
+      'subcode',
+      'boxcount',
+      'loc'
     ];
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => ['itemvoiding', 'viewref', 'viewitemstockinfo', 'viewdiagram']
       ]
@@ -669,8 +733,15 @@ class pf
         $clickobj = [];
       }
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;

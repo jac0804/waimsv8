@@ -49,8 +49,22 @@ class mt
   public $defaultContra = 'IN1';
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem',
-    'wh', 'projectid', 'subproject', 'projectto', 'subprojectto', 'isnoentry','rqtrno'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'wh',
+    'projectid',
+    'subproject',
+    'projectto',
+    'subprojectto',
+    'isnoentry',
+    'rqtrno'
   ];
   private $except = ['trno', 'dateid'];
   private $acctg = [];
@@ -157,10 +171,10 @@ class mt
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -315,7 +329,7 @@ class mt
 
     $fields = [['yourref', 'ourref'], 'rem'];
     $col3 = $this->fieldClass->create($fields);
-    if($companyid == 8){//maxipro
+    if ($companyid == 8) { //maxipro
       data_set($col3, 'yourref.type', 'lookup');
       data_set($col3, 'yourref.class', 'csyourref sbccsreadonly');
       data_set($col3, 'yourref.lookupclass', 'pendingpr_yourref');
@@ -323,7 +337,7 @@ class mt
       data_set($col3, 'yourref.addedparams', ['projectto', 'subprojectto']);
       data_set($col3, 'yourref.condition', ['checkstock']);
     }
-   
+
     $fields = ['isnoentry'];
     $col4 = $this->fieldClass->create($fields);
 
@@ -1029,12 +1043,11 @@ class mt
           $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
         } else {
           if ($companyid == 8) { //maxipro
-            if($data['rrrefx']!=0){
+            if ($data['rrrefx'] != 0) {
               $cost = $this->othersClass->computecostingmi($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['rrrefx'], $data['rrlinex'], $data['iss'], $config['params']['doc']);
-            }else{
+            } else {
               $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
             }
-            
           } else {
             $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
           }
@@ -1594,8 +1607,8 @@ class mt
     return $exec;
   }
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     return $this->sbcscript->mtpr($config);
   }
-
 } //end class

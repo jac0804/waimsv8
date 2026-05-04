@@ -30,7 +30,7 @@ class entryuom
   private $logger;
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['itemid', 'uom', 'factor', 'amt', 'amt2', 'famt', 'isinactive', 'isdefault', 'isdefault2', 'issales', 'issalesdef','printuom'];
+  private $fields = ['itemid', 'uom', 'factor', 'amt', 'amt2', 'famt', 'isinactive', 'isdefault', 'isdefault2', 'issales', 'issalesdef', 'printuom'];
   public $showclosebtn = false;
 
 
@@ -62,7 +62,7 @@ class entryuom
     $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
 
 
-    $column = ['action', 'uom', 'factor', 'amt', 'amt2', 'famt', 'isdefault', 'isdefault2', 'isinactive', 'issales', 'issalesdef','printuom'];
+    $column = ['action', 'uom', 'factor', 'amt', 'amt2', 'famt', 'isdefault', 'isdefault2', 'isinactive', 'issales', 'issalesdef', 'printuom'];
     $tab = [$this->gridname => ['gridcolumns' => $column]];
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -129,7 +129,7 @@ class entryuom
           $obj[0][$this->gridname]['columns'][$isdefault]['label'] = "Default IN";
           $obj[0][$this->gridname]['columns'][$isdefault2]['label'] = "Default OUT";
         }
-        if($companyid!=63){
+        if ($companyid != 63) {
           $obj[0][$this->gridname]['columns'][$printuom]['type'] = "coldel";
         }
 
@@ -246,7 +246,7 @@ class entryuom
             . ', FACTOR: ' . $row['factor']
         );
 
-        $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp()], ['itemid' => $row['itemid']]);
+        $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp(), 'ismirror' => 0], ['itemid' => $row['itemid']]);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -279,7 +279,7 @@ class entryuom
           }
         }
         if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
-          $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp()], ['itemid' => $row['itemid']]);
+          $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp(), 'ismirror' => 0], ['itemid' => $row['itemid']]);
           $returnrow = $this->loaddataperrecord($row['itemid'], $row['line']);
           return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
         } else {
@@ -310,7 +310,7 @@ class entryuom
         if ($data[$key]['printuom'] == '') {
           $$data[$key]['printuom'] = $data[$key]['uom'];
         }
-        
+
         if ($data[$key]['line'] == 0) {
           if ($data2['isdefault'] == 1) {
             $defexist = $this->coreFunctions->getfieldvalue($this->table, "itemid", "isdefault =1 and itemid =?", [$tableid]);
@@ -345,6 +345,8 @@ class entryuom
               . ', UOM: ' . $data2['uom']
               . ', FACTOR: ' . $data2['factor']
           );
+
+          $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp(), 'ismirror' => 0], ['itemid' => $tableid]);
         } else {
 
           if ($this->othersClass->checkuomtransaction($tableid, $data2['uom'], $data[$key]['line'])) {
@@ -378,7 +380,7 @@ class entryuom
 
             $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
 
-            $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp()], ['itemid' => $tableid]);
+            $this->coreFunctions->sbcupdate("item", ['dlock' => $this->othersClass->getCurrentTimeStamp(), 'ismirror' => 0], ['itemid' => $tableid]);
           }
         }
       } // end if
@@ -396,26 +398,29 @@ class entryuom
     $row = $config['params']['row'];
     $tableid = $config['params']['tableid'];
 
+    $systemtype = $this->companysetup->getsystemtype($config['params']);
+
     if ($this->othersClass->checkuomtransaction($row['itemid'], $row['uom'], $row['line'])) {
       return ['status' => false, 'msg' => 'Delete failed. Already have transaction.'];
     } else {
-      if ($companyid == 14) { //majesty
-        return ['status' => false, 'msg' => 'Delete failed. UOM may already synced in POS.'];
-      } else {
-        $qry = "delete from uom where itemid=? and line=?";
-        $this->coreFunctions->execqry($qry, 'delete', [$row['itemid'], $row['line']]);
 
-        $params = $config;
-        $params['params']['doc'] = strtoupper("entryuom_tab");
-        $this->logger->sbcmasterlog(
-          $tableid,
-          $params,
-          ' DELETE - LINE: ' . $row['line'] . ''
-            . ', UOM: ' . $row['uom']
-            . ', FACTOR: ' . $row['factor']
-        );
-        return ['status' => true, 'msg' => 'Successfully deleted.'];
+      if ($systemtype == 'AIMSPOS' || $systemtype == 'MISPOS') {
+        return ['status' => false, 'msg' => 'Delete failed. UOM may already synced in POS.'];
       }
+
+      $qry = "delete from uom where itemid=? and line=?";
+      $this->coreFunctions->execqry($qry, 'delete', [$row['itemid'], $row['line']]);
+
+      $params = $config;
+      $params['params']['doc'] = strtoupper("entryuom_tab");
+      $this->logger->sbcmasterlog(
+        $tableid,
+        $params,
+        ' DELETE - LINE: ' . $row['line'] . ''
+          . ', UOM: ' . $row['uom']
+          . ', FACTOR: ' . $row['factor']
+      );
+      return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
   }
 

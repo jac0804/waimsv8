@@ -22,7 +22,7 @@ class viewsupervisors
 
   public $modulename = 'SUPERVISORS';
   public $gridname = 'inventory';
-  private $fields = ['clientid'];
+  private $fields = ['clientid', 'seq'];
   private $table = 'approvers';
 
   public $tablelogs = 'table_log';
@@ -80,18 +80,31 @@ class viewsupervisors
 
   public function createTab($config)
   {
+    $companyid =  $config['params']['companyid'];
     $line = $config['params']['row']['line'];
     $labelname = $config['params']['row']['labelname'];
-    $column = ['action', 'clientname'];
+    $column = ['action', 'clientname', 'seq', 'itemname'];
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
+
     $tab = [$this->gridname => ['gridcolumns' => $column]];
 
     $stockbuttons = ['delete'];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
-    $obj[0][$this->gridname]['columns'][1]['label'] = 'Name';
-    $obj[0][$this->gridname]['columns'][1]['type'] = 'lookup';
-    $obj[0][$this->gridname]['columns'][1]['action'] = 'lookupsetup';
-    $obj[0][$this->gridname]['columns'][1]['lookupclass'] = 'lookupemployee';
+    $obj[0][$this->gridname]['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px;';
+    $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
+    $obj[0][$this->gridname]['columns'][$seq]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px;';
+    $obj[0][$this->gridname]['columns'][$itemname]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+
+    $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'Name';
+    $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'lookup';
+    $obj[0][$this->gridname]['columns'][$clientname]['action'] = 'lookupsetup';
+    $obj[0][$this->gridname]['columns'][$clientname]['lookupclass'] = 'lookupemployee';
+
+    if ($companyid != 58) $obj[0][$this->gridname]['columns'][$seq]['type'] = 'coldel';
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     $this->modulename .= ' - ' . $labelname;
@@ -100,12 +113,35 @@ class viewsupervisors
 
   public function createtabbutton($config)
   {
+    $companyid =  $config['params']['companyid'];
     $line = $config['params']['row']['line'];
+
     $tbuttons = ['addrecord'];
+    if ($companyid == 58) $tbuttons = ['addrecord', 'saveallentry'];
+
     $obj = $this->tabClass->createtabbutton($tbuttons);
     $obj[0]['lookupclass'] = 'lookupemployee';
     $obj[0]['action'] = 'lookupsetup';
     return $obj;
+  }
+
+  public function saveallentry($config)
+  {
+    $data = $config['params']['data'];
+
+    foreach ($data as $key => $value) {
+      $data2 = [];
+      if ($data[$key]['bgcolor'] != '') {
+        foreach ($this->fields as $key2 => $value2) {
+          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+        }
+        $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $data[$key]['trno'], 'line' => $data[$key]['line'], 'clientid' => $data[$key]['clientid']]);
+      }
+    }
+
+    $returndata = $this->loaddata($config);
+    $sourcerow = $this->loadsourcerow($config, $data[0]['trno']);
+    return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata, 'reloadtableentry' => $sourcerow];
   }
 
   public function lookupsetup($config)
@@ -135,6 +171,7 @@ class viewsupervisors
       'clientid' => $row['clientid'],
       'issupervisor' => 1,
       'isapprover' => 0,
+      'seq' => 0,
       'bgcolor' => 'bg-blue-2'
     ];
     $return = $this->save($config);
@@ -182,7 +219,7 @@ class viewsupervisors
       $filter = " and e.empid not in (" . $id . ")";
     }
 
-    $data = $this->coreFunctions->opentable("select c.clientid, c.client, c.clientname from client as c left join employee as e on e.empid=c.clientid where c.isemployee=1 and e.issupervisor=1 and c.isinactive=0 $filter ");
+    $data = $this->coreFunctions->opentable("select c.clientid, c.client, c.clientname, 0 as seq from client as c left join employee as e on e.empid=c.clientid where c.isemployee=1 and e.issupervisor=1 and c.isinactive=0 $filter ");
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
 
@@ -195,21 +232,29 @@ class viewsupervisors
     $data['isapprover'] = 0;
     $data['issupervisor'] = 1;
     $data['bgcolor'] = 'bg-blue-2';
+    $data['seq'] = 0;
+    $data['itemname'] = '';
     return $data;
   }
 
   public function delete($config)
   {
-    $row = $config['params']['row'];
-    $this->coreFunctions->execqry("delete from " . $this->table . " where line=" . $row['line'] . " and trno=" . $row['trno'], 'delete');
-    $this->updateCounts($row['trno']);
-    $sourcerow = $this->loadsourcerow($config, $row['trno']);
-    return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadtableentry' => $sourcerow];
+    $clientid = $config['params']['row']['clientid'];
+    $pendingapp = $this->coreFunctions->datareader("select clientid as value from pendingapp where clientid=? and approver='issupervisor'", [$clientid], '', true);
+    if ($pendingapp != 0) {
+      return ['status' => false, 'msg' => 'Cannot delete supervisor: pending applications exist.'];
+    } else {
+      $row = $config['params']['row'];
+      $this->coreFunctions->execqry("delete from " . $this->table . " where line=" . $row['line'] . " and trno=" . $row['trno'], 'delete');
+      $this->updateCounts($row['trno']);
+      $sourcerow = $this->loadsourcerow($config, $row['trno']);
+      return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadtableentry' => $sourcerow];
+    }
   }
 
   public function loaddataperrecord($config, $trno, $line)
   {
-    $data = $this->coreFunctions->opentable("select h.trno, h.line, h.clientid, c.clientname, h.issupervisor, h.isapprover, '' as bgcolor from " . $this->table . " as h left join client as c on c.clientid=h.clientid where h.trno=" . $trno . " and h.line=" . $line);
+    $data = $this->coreFunctions->opentable("select h.trno, h.line, h.clientid, c.clientname, h.issupervisor, h.isapprover, '' as bgcolor, h.seq, '' as itemname from " . $this->table . " as h left join client as c on c.clientid=h.clientid where h.trno=" . $trno . " and h.line=" . $line);
     return $data;
   }
 
@@ -217,7 +262,7 @@ class viewsupervisors
   {
     $trno = isset($config['params']['row']['line']) ? $config['params']['row']['line'] : $config['params']['sourcerow']['line'];
 
-    $data = $this->coreFunctions->opentable("select h.trno, h.line, h.clientid, c.clientname, h.issupervisor, h.isapprover, '' as bgcolor from " . $this->table . " as h left join client as c on c.clientid=h.clientid where h.trno=" . $trno . " and h.issupervisor=1");
+    $data = $this->coreFunctions->opentable("select h.trno, h.line, h.clientid, c.clientname, h.issupervisor, h.isapprover, '' as bgcolor, h.seq, '' as itemname from " . $this->table . " as h left join client as c on c.clientid=h.clientid where h.trno=" . $trno . " and h.issupervisor=1 order by h.seq");
     return $data;
   }
 

@@ -157,10 +157,10 @@ class pb
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -199,7 +199,15 @@ class pb
     $tab = [
       $this->gridname => ['gridcolumns' => [
         'action',
-        'acno', 'acnoname', 'db', 'cr', 'postdate', 'rem', 'client', 'ref', 'acnoname'
+        'acno',
+        'acnoname',
+        'db',
+        'cr',
+        'postdate',
+        'rem',
+        'client',
+        'ref',
+        'acnoname'
       ]],
       //                    'adddocument'=>['event'=>['lookupclass' => 'entrycntnumpicture','action' => 'documententry','access' => 'view']] 
     ];

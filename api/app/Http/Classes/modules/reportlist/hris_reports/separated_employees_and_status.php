@@ -42,7 +42,7 @@ class separated_employees_and_status
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'divrep', 'start', 'end'];
+        $fields = ['radioprint', 'divrep', 'dbranchname', 'start', 'end'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'divrep.label', 'Company Name');
 
@@ -65,7 +65,11 @@ class separated_employees_and_status
             'default' as print,
             '' as divid,'' as divcode,
                         '' as divname,'' as divrep,
-                        '' as division,  left(adddate(now(),-30),10) as start,
+                        '' as division,  
+                        '' as dbranchname,
+                        '' as branchname,
+                        '' as branchcode,
+                        left(adddate(now(),-30),10) as start,
                          left(now(),10) as end");
     }
 
@@ -94,8 +98,12 @@ class separated_employees_and_status
         $filter   = "";
         $divid     = $config['params']['dataparams']['divid'];
         $divrep    = $config['params']['dataparams']['divrep'];
+        $branchcode = $config['params']['dataparams']['branchcode'];
         if ($divrep != '') {
             $filter = " and emp.divid = $divid";
+        }
+        if ($branchcode != '') {
+            $filter .= " and branch.client = '$branchcode'";
         }
 
         // $query = "select concat(emp.empfirst, ' ', ifnull(emp.empmiddle, ''), ' ', emp.emplast) as empname,
@@ -114,9 +122,9 @@ class separated_employees_and_status
         //         left join division as divs on divs.divid=emp.divid where date(clr.dateid) between '$start' and '$end' $filter ";
 
         $query = "select concat(emp.empfirst, ' ', ifnull(emp.empmiddle, ''), ' ', emp.emplast) as empname,
-                divs.divname as company,job.jobtitle as designation,date(emp.resigned) as transdate,
+                divs.divname as company, branch.clientname as branch, job.jobtitle as designation,date(emp.resigned) as transdate,
                 ifnull(emp.resignedtype,'') as statuss
-                from employee as emp left join division as divs on divs.divid=emp.divid left join jobthead as job on job.line=emp.jobid
+                from employee as emp left join division as divs on divs.divid=emp.divid left join jobthead as job on job.line=emp.jobid left join client as branch on branch.clientid = emp.branchid
                 where  date(emp.resigned) between '$start' and '$end' $filter";
 
         return $this->coreFunctions->opentable($query);
@@ -166,10 +174,11 @@ class separated_employees_and_status
         $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('EMPLOYEE NAME', '200', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
-        $str .= $this->reporter->col('COMPANY BRANCH', '200', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
+        $str .= $this->reporter->col('COMPANY', '200', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
+        $str .= $this->reporter->col('BRANCH', '200', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
         $str .= $this->reporter->col('DESIGNATION', '200', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
-        $str .= $this->reporter->col('TRANS-DATE', '100', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
-        $str .= $this->reporter->col('EMP-STATUS', '300', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
+        $str .= $this->reporter->col('TRANS-DATE', '120', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
+        $str .= $this->reporter->col('EMP-STATUS', '80', null,  $bgcolors, $border, 'TBL', 'C', $font, $font_size, 'B',  $fontcolor, '8px');
 
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -201,9 +210,10 @@ class separated_employees_and_status
 
             $str .= $this->reporter->col($data->empname, '200', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->company, '200', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->branch, '200', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->designation, '200', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->transdate, '100', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->statuss, '300', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->transdate, '120', null, false, $border, 'TLB', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->statuss, '80', null, false, $border, 'TLB', 'LT', $font, $font_size, '', '', '');
 
             if ($this->reporter->linecounter == $page) {
                 $str .= $this->reporter->endtable();

@@ -114,7 +114,7 @@ class customer_ledger
         }
 
         $query = "        
-        select head.trno,head.doc,head.docno,head.clientname,
+        select head.trno,head.doc,head.docno,cl.clientname,
         format(head.amount,2) as amount,head.yourref,
         date(head.dateid) as dateid
         from cehead as head 
@@ -124,7 +124,7 @@ class customer_ledger
 
 		  union all
 		  
-		select head.trno,head.doc,head.docno,head.clientname,
+		select head.trno,head.doc,head.docno,cl.clientname,
         format(head.amount,2) as amount,head.yourref,
         date(head.dateid) as dateid
         from hcehead as head 

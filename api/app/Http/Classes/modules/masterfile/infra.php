@@ -25,7 +25,7 @@ class infra
     private $btnClass;
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'Infrastructure Ledger';
+    public $modulename = 'INFRASTRUCTURE LEDGER';
     public $gridname = 'accounting';
     private $companysetup;
     private $coreFunctions;
@@ -82,7 +82,7 @@ class infra
         $this->sqlquery = new sqlquery;
         $this->reporter = new SBCPDF;
     }
-    
+
     public function getAttrib()
     {
         $attrib = array(
@@ -105,7 +105,7 @@ class infra
         $listclient = 1;
         $listclientname = 2;
         $listaddr = 2;
-        $getcols = ['action', 'listclient', 'listinfratype',  'listregdate'];
+        $getcols = ['action', 'listclient','listclientname','addr', 'listinfratype',  'listregdate'];
         $stockbuttons = ['view'];
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
         $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
@@ -138,12 +138,12 @@ class infra
         }
 
         if ($searchby != '') {
-            $grp = " group by client.clientid,client.client,client.clientname,client.infratype,client.regdate
+            $grp = " group by client.clientid,client.client,client.clientname,client.infratype,client.regdate,client.addr
                      ";
         }
 
         $qry = "select client.clientid,client.client,client.clientname,client.infratype,
-                date(client.regdate) as regdate
+                date(client.regdate) as regdate,client.addr
         from client 
         where client.isinfra =1 " .  $filtersearch .  $grp . "  
         order by client " . $limit;
@@ -180,59 +180,104 @@ class infra
         return $buttons;
     }
 
-    
+
     public function createHeadField($config)
     {
-      $fields = ['client', 'clientname', 'addr', 'infratype'];
-      $col1 = $this->fieldClass->create($fields);
-      data_set($col1, 'client.lookupclass', 'lookupinfracode');
-      data_set($col1, 'client.action', 'lookupinfracode');
-      data_set($col1, 'clientname.type', 'ctextarea');
+        $fields = ['client', 'clientname', 'addr', 'infratype'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'client.lookupclass', 'lookupinfracodeledger');
+        data_set($col1, 'client.action', 'lookupinfracodeledger');
+        data_set($col1, 'clientname.type', 'ctextarea');
 
-      $fields = ['regdate'];
-      $col2 = $this->fieldClass->create($fields);
-    
+        $fields = ['regdate'];
+        $col2 = $this->fieldClass->create($fields);
 
-      $fields = [];
-      $col3 = $this->fieldClass->create($fields);
-      
 
-      $fields = ['picture'];
-      $col4 = $this->fieldClass->create($fields);
-      
-      return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+        $fields = [];
+        $col3 = $this->fieldClass->create($fields);
+
+
+        $fields = ['picture'];
+        $col4 = $this->fieldClass->create($fields);
+
+        return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
     }
 
     public function createTab($access, $config)
     {
-        $fields = ['sentence1', 'bullet1', 'bullet2'];
-        $col1 = $this->fieldClass->create($fields);
-        
+        // $fields = ['sentence1', 'bullet1', 'sentence2'];
+        // $col1 = $this->fieldClass->create($fields);
+
         // data_set($col1, 'sentence1.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col1, 'bullet1.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col1, 'bullet2.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
-        
-        $fields = ['sentence2','bullet3', 'bullet4'];
-        $col2 = $this->fieldClass->create($fields);
+
+        // $fields = [[], 'bullet2', 'sentence3'];
+        // $col2 = $this->fieldClass->create($fields);
 
         // data_set($col2, 'sentence2.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col2, 'bullet3.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col2, 'bullet4.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
-        
-        $fields = ['sentence3','bullet5', 'bullet6','bullet7'];
-        $col3 = $this->fieldClass->create($fields);
-        
+
+        // $fields = ['', 'bullet3'];
+        // $col3 = $this->fieldClass->create($fields);
+
+        // $fields = ['', 'bullet4'];
+        // $col4 = $this->fieldClass->create($fields);
+
+        // $fields = ['', 'bullet5'];
+        // $col5 = $this->fieldClass->create($fields);
+
+        // $fields = ['', 'bullet6'];
+        // $col6 = $this->fieldClass->create($fields);
+
+        // $fields = ['', 'bullet7'];
+        // $col7 = $this->fieldClass->create($fields);
+
         // data_set($col3, 'sentence3.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col3, 'bullet5.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col3, 'bullet6.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
         // data_set($col3, 'bullet7.style', 'width: 100%; min-width: 300px; max-width: 500px; white-space: normal; text-align: left;');
-        
 
+
+        $fields = ['sentence1'];
+        $col1 = $this->fieldClass->create($fields);
+
+        $fields = [''];
+        $col2 = $this->fieldClass->create($fields);
+        $fields = [''];
+        $col3 = $this->fieldClass->create($fields);
+        $fields = [''];
+        $col4 = $this->fieldClass->create($fields);
+
+        $fields = ['bullet1'];
+        $col5 = $this->fieldClass->create($fields);
+
+        $fields = ['bullet2'];
+        $col6 = $this->fieldClass->create($fields);
+        $fields = ['bullet3'];
+        $col7 = $this->fieldClass->create($fields);
+        $fields = ['bullet4'];
+        $col8 = $this->fieldClass->create($fields);
+
+        $fields = ['bullet5'];
+        $col9 = $this->fieldClass->create($fields);
+        $fields = ['bullet6'];
+        $col10 = $this->fieldClass->create($fields);
+        $fields = ['bullet7'];
+        $col11 = $this->fieldClass->create($fields);
+        $fields = [''];
+        $col12 = $this->fieldClass->create($fields);
         
-        $tab = [
-            'multiinput1' => ['inputcolumn' => ['col1' => $col1,'col2' => $col2,'col3' => $col3], 'label' => 'LIST OF BULLETS'],
-            'multiinput2' => ['inputcolumn' => ['col2' => $col2], 'label' => 'TRANSACTION LISTS']
-        ];
+        $fields = ['sentence2'];
+        $col13 = $this->fieldClass->create($fields);
+        $fields = ['sentence3'];
+        $col14 = $this->fieldClass->create($fields);
+
+        $tab = ['multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4, 'col5' => $col5, 'col6' => $col6, 'col7' => $col7, 'col8' => $col8, 'col9' => $col9, 'col10' => $col10, 'col11' => $col11, 'col12' => $col12, 'col13' => $col13, 'col14' => $col14], 'label' => 'LIST OF BULLETS']];
+        $tab['tableentry2'] = ['action' => 'tableentry', 'lookupclass' => 'issuedclearance', 'label' => 'TRANSACTION LISTS'];
+        // $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
         // $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'entryhouseholdd', 'label' => 'HOUSEHOLD MEMBER'];
         // $tab['tableentry2'] = ['action' => 'tableentry', 'lookupclass' => 'issuedclearance', 'label' => 'CLEARANCE ISSUED'];
         $stockbuttons = [];
@@ -252,13 +297,13 @@ class infra
         $data[0]['client'] = $config['newclient'];
         $data[0]['clientname'] = '';
         $data[0]['addr'] = '';
-        
-            
-        
+
+
+
         $data[0]['infratype'] = '';
         $data[0]['regdate'] = $this->othersClass->getCurrentDate();
 
-        
+
         $data[0]['picture'] = '';
 
         $data[0]['sentence1'] = '';
@@ -271,7 +316,8 @@ class infra
         $data[0]['bullet5'] = '';
         $data[0]['bullet6'] = '';
         $data[0]['bullet7'] = '';
-        
+        $data[0]['iscustomer'] = 1;
+
 
         return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
     }
@@ -294,7 +340,7 @@ class infra
         $center = $config['params']['center'];
         $head = [];
 
-        $qryselect ="
+        $qryselect = "
                     select client.clientid, client.client,client.clientname,client.addr,client.infratype,client.regdate,client.picture,
                     ifnull(info.sentence1,'') as sentence1,ifnull(info.sentence2,'') as sentence2,ifnull(info.sentence3,'') as sentence3,
                     ifnull(info.bullet1,'') as bullet1,
@@ -364,6 +410,7 @@ class infra
 
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
+        $data['iscustomer'] = 1;
         // $data['dlock'] = $this->othersClass->getCurrentTimeStamp();
 
         if ($isupdate) {
@@ -387,17 +434,18 @@ class infra
                 $this->coreFunctions->sbcupdate('clientinfo', $clientinfo, ['clientid' => $head['clientid']]);
             }
         } else {
-          
+
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $data['isinfra'] = 1;
+            $data['iscustomer'] = 1;
             $data['center'] = $center;
-            $clientinfo['sentence1'] = 'This is to certify that '.$data['clientname'].' is applying for barangay clearance for loading/unloading of their leased space located at '.$data['addr'].' within the jurisdiction of this barangay. The undersigned interposes no objection to the application provided that the applicant shall:';
-            
+            $clientinfo['sentence1'] = 'This is to certify that ' . $data['clientname'] . ' is applying for barangay clearance for loading/unloading of their leased space located at ' . $data['addr'] . ' within the jurisdiction of this barangay. The undersigned interposes no objection to the application provided that the applicant shall:';
+
             $clientinfo['sentence2'] = 'This certification is issued upon the request of the above named applicant for the purpose herein stated only.';
-            $sentencedate = date_format($date,"jS").' day of '.date_format($date,"F").', '.date_format($date,"Y");
-            
-            $clientinfo['sentence3'] ='Issued this '.$sentencedate.' at Barangay Dona Imelda, Quezon City. Metro Manila.';
+            $sentencedate = date_format($date, "jS") . ' day of ' . date_format($date, "F") . ', ' . date_format($date, "Y");
+
+            $clientinfo['sentence3'] = 'Issued this ' . $sentencedate . ' at Barangay Dona Imelda, Quezon City. Metro Manila.';
 
             $clientinfo['bullet1'] = 'Meet all the necessary requirements set forth by all local government agencies concerned;';
             $clientinfo['bullet2'] = 'Observe safety measures during the loading/unloading works;';
@@ -478,6 +526,7 @@ class infra
         $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
         $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
 
+
         $modulename = $this->modulename;
         $data = [];
         $style = 'width:500px;max-width:500px;';
@@ -487,7 +536,8 @@ class infra
     public function reportdata($config)
     {
         $this->logger->sbcviewreportlog($config);
-
+        $dataparams = $config['params']['dataparams'];
+        if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
         // if ($companyid == 40) { // cdo
         //     $dataparams = $config['params']['dataparams'];
         //     if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);

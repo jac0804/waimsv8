@@ -181,7 +181,7 @@ class leave_filling_reports
                 $query = "
                 select date(lt.dateid) as dateid,ls.docno,cl.clientname as empname,ls.days,lt.adays,ls.empid,ls.acnoid,ls.trno,date(lt.effectivity) as effectivity,
                 app.clientname as appname,app2.clientname as appname2,lt.remarks,
-                date(lt.date_approved_disapproved) as fdate,date(lt.date_approved_disapproved2) as sdate, 
+                lt.date_approved_disapproved as fdate,lt.date_approved_disapproved2 as sdate, 
                 (case when lt.status2 = 'E' then 'ENTRY' 
                 when lt.status2 = 'A' then 'APPROVED'
                 else 'DISAPPROVED' end) as status2,

@@ -63,15 +63,35 @@ class entrycntnumpicture
 
   public function createTab($config)
   {
+    $systemtype = $this->companysetup->getsystemtype($config['params']);
     $tab = [$this->gridname => ['gridcolumns' => ['action', 'ext', 'title', 'encodedby', 'encodeddate']]];
 
     $stockbuttons = [];
-    $allow = $this->othersClass->checkAccess($config['params']['user'], 1732);
+    // $allow = $this->othersClass->checkAccess($config['params']['user'], 1732);
+    if ($systemtype == 'BMS') {
+      $doc = $config['params']['doc'];
+      switch ($doc) {
+        case 'JU':
+          $allow = $this->othersClass->checkAccess($config['params']['user'], 5682);
+          break;
+        case 'MH':
+          $allow = $this->othersClass->checkAccess($config['params']['user'], 5733);
+          break;
+      }
+    } else {
+      $allow = $this->othersClass->checkAccess($config['params']['user'], 1732);
+    }
+
     if ($allow == '1') {
       array_push($stockbuttons, 'download');
       array_push($stockbuttons, 'view');
     }
-    $allow = $this->othersClass->checkAccess($config['params']['user'], 1733);
+
+    if ($systemtype == 'BMS') {
+      $allow = $this->othersClass->checkAccess($config['params']['user'], 5683);
+    } else {
+      $allow = $this->othersClass->checkAccess($config['params']['user'], 1733);
+    }
     if ($allow == '1') {
       array_push($stockbuttons, 'delete');
     }
@@ -83,6 +103,15 @@ class entrycntnumpicture
     $obj[0]['inventory']['columns'][1]['label'] = 'FileType';
     $obj[0]['inventory']['columns'][1]['style'] = 'width: 40px;whiteSpace: normal;min-width:40px;max-width:40px;';
     $obj[0]['inventory']['columns'][0]['style'] = 'width: 20px;whiteSpace: normal;min-width:20px;max-width:20px;';
+
+    if ($systemtype == 'BMS') {
+      $obj[0]['inventory']['columns'][0]['style'] = 'width: 40px;whiteSpace: normal;min-width:40px;max-width:40px;';
+      $obj[0]['inventory']['columns'][4]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+      $obj[0]['inventory']['columns'][1]['style'] = 'width: 40px;whiteSpace: normal;min-width:40px;max-width:40px;text-align:center;';
+    }
+    $obj[0]['inventory']['columns'][0]['btns']['view']['label'] = 'view';
+    $obj[0]['inventory']['columns'][0]['btns']['download']['label'] = 'download';
+    $obj[0]['inventory']['columns'][0]['btns']['delete']['label'] = 'delete';
     return $obj;
   }
 
@@ -116,13 +145,9 @@ class entrycntnumpicture
     return $qry;
   }
 
-  public function saveallentry($config)
-  {
-  } // end function  
+  public function saveallentry($config) {} // end function  
 
-  public function save($config)
-  {
-  } //end function
+  public function save($config) {} //end function
 
   public function delete($config)
   {
@@ -198,13 +223,9 @@ class entrycntnumpicture
     return $data;
   }
 
-  public function lookupsetup($config)
-  {
-  }
+  public function lookupsetup($config) {}
 
-  public function lookupcallback($config)
-  {
-  } // end function
+  public function lookupcallback($config) {} // end function
 
 
 

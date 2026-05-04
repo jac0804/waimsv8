@@ -31,7 +31,7 @@ class emptimecard
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = false;
   public $showclosebtn = false;
-  public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout',   'logactualin',   'logactualout',   'loglunchin',   'loglunchout'];
+  public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout',   'logactualin',   'logactualout',   'loglunchin',   'loglunchout', 'shiftid', 'pgline'];
 
   public function __construct()
   {
@@ -61,12 +61,8 @@ class emptimecard
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'others'
-    );
+    $btns = array('others');
     $buttons = $this->btnClass->create($btns);
-
-
     // $addedparams = ['empcode', 'empname', 'empdivname', 'deptname', 'section', 'shiftcode', 'start', 'end'];
     $buttons['others']['items']['first'] =  ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigationht']];
     $buttons['others']['items']['prev'] =  ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigationht']];
@@ -78,11 +74,10 @@ class emptimecard
   public function createTab($config)
   {
     $companyid = $config['params']['companyid'];
-
-    $columns = ['action', 'details', 'dateid', 'daytype', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
-
-
-    $sortcolumn =  ['action', 'details', 'dateid', 'daytype', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
+    //allow edit daytype,shift,paygroup access
+    $allowedittm = $this->othersClass->checkAccess($config['params']['user'], 5818);
+    $columns = ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
+    $sortcolumn =  ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
 
     if ($companyid == 62) { //one sky
       $sortcolumn = ['action', 'details', 'dateid', 'daytype', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
@@ -151,6 +146,12 @@ class emptimecard
       $obj[0][$this->gridname]['columns'][$earlyothrs]['type'] = 'coldel';
     }
 
+
+    if ($companyid != 68 || !$allowedittm) {
+      $obj[0][$this->gridname]['columns'][$shiftcode]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$paygroup]['type'] = 'coldel';
+    }
+
     switch ($companyid) { //allow edit daytype
       case 62: //onesky
         $obj[0][$this->gridname]['columns'][$daytype]['action'] = 'lookupdaytype';
@@ -161,7 +162,31 @@ class emptimecard
         $obj[0][$this->gridname]['columns'][$actualbrkout]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$actualbrkin]['type'] = 'coldel';
         break;
+      case 68: //JDA
+        if ($allowedittm) {
+          $obj[0][$this->gridname]['columns'][$daytype]['action'] = 'lookupdaytype';
+          $obj[0][$this->gridname]['columns'][$daytype]['type'] = "lookup";
+          $obj[0][$this->gridname]['columns'][$daytype]['style'] = 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px';
+          $obj[0][$this->gridname]['columns'][$shiftcode]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+          $obj[0][$this->gridname]['columns'][$shiftcode]['readonly'] = false;
+          $obj[0][$this->gridname]['columns'][$shiftcode]['type'] = 'lookup';
+          $obj[0][$this->gridname]['columns'][$shiftcode]['action'] = 'lookupshift';
+
+          $obj[0][$this->gridname]['columns'][$paygroup]['label'] = 'Pay Group';
+          $obj[0][$this->gridname]['columns'][$paygroup]['type'] = 'lookup';
+          $obj[0][$this->gridname]['columns'][$paygroup]['action'] = 'lookuppaygroup';
+        } else {
+          $obj[0][$this->gridname]['columns'][$shiftcode]['type'] = 'label';
+          $obj[0][$this->gridname]['columns'][$shiftcode]['readonly'] = true;
+          $obj[0][$this->gridname]['columns'][$paygroup]['type'] = 'label';
+          $obj[0][$this->gridname]['columns'][$paygroup]['readonly'] = true;
+
+          $obj[0][$this->gridname]['columns'][$daytype]['type'] = 'label';
+          $obj[0][$this->gridname]['columns'][$daytype]['readonly'] = true;
+        }
+        break;
     }
+
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -368,7 +393,7 @@ class emptimecard
     $end = date('Y-m-d', strtotime($end));
 
     $addfields = "";
-
+    $join = " ";
     switch ($companyid) {
       case 44: //stonepro
         $addfields = ",t.ismactualin,t.ismactualout,t.isobactualin,t.isobactualout,t.ischangesched,
@@ -395,6 +420,11 @@ class emptimecard
                       '' as schedin_bgcolor,'' as schedout_bgcolor,
                       '' as actualbrkin_bgcolor,'' as actualbrkout_bgcolor";
         break;
+      case 68: //jda
+        $addfields = ",sh.shftcode as shiftcode,t.shiftid,dayofweek(t.dateid) as dayn,t.pgline,pg.paygroup";
+        $join = " left join paygroup as pg on pg.line=t.pgline
+                  left join tmshifts as sh on sh.line=t.shiftid";
+        break;
     }
 
     $qry = "select t.empid, t.`daytype`, date(t.dateid) as dateid,date_format(t.schedin,'%Y-%m-%d %H:%i') as schedin, 
@@ -408,7 +438,8 @@ class emptimecard
                   t.isnologout, t.isnologbreak, t.isnologunder,t.isuspended,'' as isnologin_bgcolor,'' as isnologout_bgcolor,
                   '' as isnologbreak_bgcolor,'' as isnologunder_bgcolor $addfields
           from timecard as t 
-          where date(t.dateid)>=? and date(t.dateid)<=? " . ($empid == 0 ? "" : " and t.empid=" . $empid) . "
+          $join
+          where date(t.dateid)>=? and date(t.dateid)<=? " . ($empid == 0 ? "" : " and t.empid=" . $empid) . " 
           order by t.dateid";
     $returndata = [];
 
@@ -750,6 +781,8 @@ class emptimecard
     $filter = '';
     $condition = '';
     $orderby = "order by client.clientname,emp.classrate limit 1";
+
+    $emplvl = $this->othersClass->checksecuritylevel($config);
     $filterdivision = "'" . $data['empdivname'] . "'";
 
     switch ($navigation) {
@@ -772,7 +805,7 @@ class emptimecard
     $query  = "select client.clientname,divi.divname as empdivname from employee as emp 
               left join client as client on client.clientid = emp.empid
               left join division as divi on divi.divid = emp.divid
-              where 1=1 $condition ";
+              where 1=1 and emp.level in $emplvl $condition ";
     $checkparams = $this->coreFunctions->opentable($query);
     $division = '';
     if (empty($checkparams)) { // same division and filter new division
@@ -803,7 +836,7 @@ class emptimecard
 				left join division as divi on divi.divid = emp.divid
 				left join section as sect on sect.sectid = emp.sectid
         left join tmshifts as shft on shft.line = emp.shiftid
-				where client.isemployee = 1 $filter ";
+				where client.isemployee = 1 and emp.level in $emplvl $filter ";
     $addedparams = $this->coreFunctions->opentable($qry);
 
     if (empty($addedparams)) {

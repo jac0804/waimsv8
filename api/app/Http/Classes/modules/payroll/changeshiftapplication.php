@@ -746,14 +746,21 @@ class changeshiftapplication
             return ['status' => false, 'msg' => $msg, 'clientid' => $clientid];
         }
 
-        $qry = "select line as value from changeshiftapp where line = '$clientid' and status <> 0 ";
-        $count = $this->coreFunctions->datareader($qry);
 
-        if ($count != "") {
-            return ['clientid' => '0', 'status' => false, 'msg' => "Transaction cannot be deleted."];
+        $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where line = ? and doc = 'CHANGESHIFT'", [$clientid]);
+        if ($appdoc != "") {
+            return ['clientid' => '0', 'status' => false, 'msg' => "This application can’t be deleted because it’s already in the Pending Application"];
+        }
+        $qry = "select submitdate as value from changeshiftapp where line = '$clientid' and submitdate is not null";
+        $submitdate = $this->coreFunctions->datareader($qry);
+
+        if ($submitdate) {
+            return ['clientid' => '0', 'status' => false, 'msg' => "The application cannot be deleted, as it is already for approval."];
         }
 
         $this->coreFunctions->execqry('delete from changeshiftapp where line=?', 'delete', [$clientid]);
+        $this->coreFunctions->execqry("delete from pendingapp where line=? and doc='CHANGESHIFT'", 'delete', [$clientid]);
+        $this->logger->sbcmasterlog($clientid, $config, "DELETED " . $this->modulename);
         return ['clientid' => $clientid, 'status' => true, 'msg' => 'Successfully deleted.', 'action' => 'backlisting'];
     } //end function
 

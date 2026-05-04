@@ -185,6 +185,16 @@ class dm
     }
 
 
+    if ($config['params']['companyid'] == 59) { //roosevelt
+      $this->showfilterlabel = [
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+      ];
+    }
+
+
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -410,10 +420,10 @@ class dm
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -596,7 +606,7 @@ class dm
     }
 
 
-    if ($companyid == 10 || $companyid ==60) { //afti and transpower
+    if ($companyid == 10 || $companyid == 60) { //afti and transpower
       array_push($headgridbtns, 'viewitemstockinfo');
     }
 
@@ -619,7 +629,7 @@ class dm
       $stockbuttons = ['save', 'delete', 'serialout'];
     } else {
 
-      
+
       switch ($companyid) {
         case 21: //kinggeorge
           if ($allowviewbalance != 0) {
@@ -635,7 +645,6 @@ class dm
           $stockbuttons = ['save', 'delete', 'showbalance'];
           break;
       }
-
     }
 
     if ($this->companysetup->getiseditsortline($config['params'])) {
@@ -652,9 +661,8 @@ class dm
           case 0: //main
             array_push($stockbuttons, 'stockinfo');
             break;
-          
         }
-        
+
         break;
     }
 
@@ -664,6 +672,12 @@ class dm
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
 
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
@@ -1347,7 +1361,7 @@ class dm
     am.description as amenityname,
     subam.line as subamenity,
     subam.description as subamenityname,
-
+    
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount ";
     return $sqlselect;
   }
@@ -2780,7 +2794,7 @@ class dm
     $modulename = $this->modulename;
     $data = [];
     $isreload = false;
-    if ($config['params']['companyid'] == 60) { //transpower
+    if ($config['params']['companyid'] == 60 || $config['params']['companyid'] == 59) { //transpower and rooosevelt
       $this->posttrans($config);
       $isreload = true;
     }

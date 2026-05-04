@@ -30,7 +30,7 @@ class entryappreq
   private $logger;
   private $othersClass;
   public $style = 'width:1100px;max-width:1100px;';
-  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid'];
+  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid', 'expiry'];
   public $showclosebtn = false;
   private $hrislookup;
 
@@ -57,8 +57,9 @@ class entryappreq
 
   public function createTab($config)
   {
+    $doc = $config['params']['doc'];
 
-    $gridcols = ['action', 'pin', 'reqs', 'submitdate', 'notes', 'issubmitted'];
+    $gridcols = ['action', 'pin', 'reqs', 'submitdate', 'expiry', 'notes', 'issubmitted'];
     $stockbuttons = ['save', 'delete'];
 
     foreach ($gridcols as $key => $value) {
@@ -80,6 +81,16 @@ class entryappreq
     $obj[0][$this->gridname]['columns'][$reqs]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$issubmitted]['align'] = "text-left";
 
+    if ($doc == 'EMPLOYEE') {
+      $obj[0][$this->gridname]['columns'][$issubmitted]['type'] = "coldel";
+      $obj[0][$this->gridname]['columns'][$submitdate]['type'] = "coldel";
+      $obj[0][$this->gridname]['columns'][$expiry]['type'] = "date";
+      $obj[0][$this->gridname]['columns'][$expiry]['readonly'] = false;
+    } else {
+      $obj[0][$this->gridname]['columns'][$expiry]['type'] = "coldel";
+    }
+
+    $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
 
@@ -99,6 +110,7 @@ class entryappreq
     $data['reqid'] = 0;
     $data['reqs'] = '';
     $data['submitdate'] = date('Y-m-d');
+    $data['expiry'] = date('Y-m-d');
     $data['notes'] = '';
     $data['pin'] = '';
     $data['issubmitted'] = 0;
@@ -108,7 +120,7 @@ class entryappreq
 
   private function selectqry()
   {
-    $qry = "line,empid,reqs,left(submitdate,10) as submitdate,notes,pin,case when issubmitted=0 then 'false' else 'true' end as issubmitted,reqid";
+    $qry = "line,empid,reqs,date(submitdate) as submitdate,notes,pin,case when issubmitted=0 then 'false' else 'true' end as issubmitted,reqid,date(expiry) as expiry ";
 
     return $qry;
   }
@@ -117,11 +129,21 @@ class entryappreq
   {
     $empid = $config['params']['tableid'];
     $data = $config['params']['data'];
+    $doc = $config['params']['doc'];
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+        }
+        $logexp = '';
+        if ($doc == 'EMPLOYEE') {
+          $this->table = 'erequire';
+          $config['params']['doc'] = strtoupper('emp_req');
+          $logexp = ', Expiry Date: ';
+        } else {
+          $config['params']['doc'] = strtoupper('app_req');
         }
         if ($data[$key]['line'] == 0) {
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
@@ -134,6 +156,7 @@ class entryappreq
               . ' , SUBMIT DATE: ' . date('Y-m-d')
               . ' , NOTES: '
               . ' , SUBMITTED: NO'
+              . $logexp
           );
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -148,18 +171,28 @@ class entryappreq
 
   public function save($config)
   {
+    $doc = $config['params']['doc'];
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
     }
+    $logexp = '';
+    if ($doc == 'EMPLOYEE') {
+      $this->table = 'erequire';
+      $config['params']['doc'] = strtoupper('emp_req');
+      $logexp = ', Expiry Date: ';
+    } else {
+      $config['params']['doc'] = strtoupper('app_req');
+    }
     if ($row['line'] == 0) {
       $data['submitdate'] = NULL;
+      $data['expiry'] = NULL;
+
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
-        $returnrow = $this->loaddataperrecord($row['empid'], $line);
+        $returnrow = $this->loaddataperrecord($config, $row['empid'], $line);
 
-        $config['params']['doc'] = strtoupper('app_req');
         $this->logger->sbcmasterlog(
           $row['empid'],
           $config,
@@ -169,6 +202,7 @@ class entryappreq
             . ' , SUBMIT DATE: ' . date('Y-m-d')
             . ' , NOTES: '
             . ' , SUBMITTED: NO'
+            . $logexp
         );
 
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
@@ -179,7 +213,7 @@ class entryappreq
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
-        $returnrow = $this->loaddataperrecord($row['empid'], $row['line']);
+        $returnrow = $this->loaddataperrecord($config, $row['empid'], $row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -189,11 +223,21 @@ class entryappreq
 
   public function delete($config)
   {
+
     $row = $config['params']['row'];
+    $doc = $config['params']['doc'];
+    $logexp = '';
+    if ($doc == 'EMPLOYEE') {
+      $this->table = 'erequire';
+      $doc = strtoupper('emp_req');
+      $logexp = ' Expiry Date: ' . $row['expiry'];
+    } else {
+      $doc = strtoupper('app_req');
+    }
     $qry = "delete from " . $this->table . " where line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
 
-    $config['params']['doc'] = strtoupper('app_req');
+    $config['params']['doc'] = $doc;
     $issubmitted = $row['issubmitted'] = true ? "YES" : "NO";
     $this->logger->sbcmasterlog(
       $row['empid'],
@@ -203,14 +247,19 @@ class entryappreq
         . ' , REQUIREMENTS: ' . $row['reqs']
         . ' , SUBMIT DATE: ' . $row['submitdate']
         . ' , NOTES: ' . $row['notes']
-        . ' , SUBMITTED: ' . $issubmitted
+        . ' , SUBMITTED: ' . $issubmitted . $logexp
     );
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
 
 
-  private function loaddataperrecord($empid, $line)
+  private function loaddataperrecord($config, $empid, $line)
   {
+    $doc = $config['params']['doc'];
+
+    if ($doc == 'EMPLOYEE') {
+      $this->table = 'erequire';
+    }
     $select = $this->selectqry();
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . " where  empid=? and line=?";
@@ -221,6 +270,11 @@ class entryappreq
   public function loaddata($config)
   {
     $tableid = $config['params']['tableid'];
+    $doc = $config['params']['doc'];
+
+    if ($doc == 'EMPLOYEE') {
+      $this->table = 'erequire';
+    }
     $select = $this->selectqry();
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . "  where  empid=?  order by line";
@@ -256,6 +310,7 @@ class entryappreq
       $config['params']['row']['pin'] = $value['code'];
       $config['params']['row']['reqs'] = $value['req'];
       $config['params']['row']['submitdate'] = date('Y-m-d');
+      $config['params']['row']['expiry'] = date('Y-m-d');
       $config['params']['row']['notes'] = '';
       $config['params']['row']['issubmitted'] = 0;
       $config['params']['row']['bgcolor'] = 'bg-blue-2';
@@ -270,6 +325,7 @@ class entryappreq
 
   public function lookuplogs($config)
   {
+    $doc = $config['params']['doc'];
     $lookupsetup = array(
       'type' => 'show',
       'title' => 'List of Logs',
@@ -284,11 +340,11 @@ class entryappreq
       ['name' => 'dateid', 'label' => 'Date Occured', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'],
     ];
 
-    $doc = $config['params']['doc'] = strtoupper('app_req');
+    $doc = $config['params']['doc'] == 'EMPLOYEE' ? strtoupper('emp_req') : strtoupper('app_req');
     $qry = "
       select trno, doc, task, dateid as dateid,dateid as sort, user
       from " . $this->tablelogs . "
-      where doc = ?
+      where doc = ? and trno = $trno
       order by sort desc
     ";
 

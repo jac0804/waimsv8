@@ -139,7 +139,7 @@ class cm
     $getcols = ['action', 'liststatus', 'listdocument',  'listdate', 'listclientname', 'yourref', 'ourref',  'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
     foreach ($getcols as $key => $value) {
-        $$value = $key;
+      $$value = $key;
     }
 
     $stockbuttons = ['view'];
@@ -159,7 +159,7 @@ class cm
   {
     $companyid = $config['params']['companyid'];
     $fields = [];
-    
+
     return ['status' => true, 'data' => [], 'txtfield' => ['col1' => []]];
   }
 
@@ -287,10 +287,10 @@ class cm
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -326,7 +326,7 @@ class cm
     if ($this->companysetup->getisshowmanual($config['params'])) {
       $buttons['others']['items']['manual'] = ['label' => 'View Manual', 'todo' => ['lookupclass' => 'cm', 'title' => 'CM_MANUAL', 'action' => 'viewpdf',  'access' => 'view', 'type' => 'viewmanual']];
     }
-   
+
     return $buttons;
   } // createHeadbutton
 
@@ -338,7 +338,7 @@ class cm
     $obj = $this->tabClass->createtab($tab, []);
 
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
-    
+
     if ($this->companysetup->getistodo($config['params'])) {
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycntnumtodo', 'label' => 'To Do', 'access' => 'view']];
       $objtodo = $this->tabClass->createtab($tab, []);
@@ -359,11 +359,11 @@ class cm
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
 
-    $column = ['action',  'rrqty', 'uom', 'isamt', 'disc', 'ext', 'cost', 'wh','ref', 'loc', 'rem'];
+    $column = ['action',  'rrqty', 'uom', 'isamt', 'disc', 'ext', 'cost', 'wh', 'ref', 'loc', 'rem'];
     $sortcolumn = ['action',  'rrqty', 'uom',  'isamt', 'disc', 'ext', 'cost', 'wh',  'ref', 'loc', 'rem'];
-    
+
     foreach ($column as $key => $value) {
-        $$value = $key;
+      $$value = $key;
     }
 
     if ($invonly) {
@@ -426,7 +426,7 @@ class cm
     $companyid = $config['params']['companyid'];
     $fields = ['docno', 'client', 'clientname'];
     array_push($fields, 'address');
-    
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.label', 'Customer');
     data_set($col1, 'client.lookupclass', 'customer');
@@ -441,11 +441,11 @@ class cm
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'dacnoname.label', 'AR Account');
 
-    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname'];       
+    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname'];
     $col3 = $this->fieldClass->create($fields);
 
     $fields = ['rem'];
-   
+
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
     }
@@ -455,7 +455,7 @@ class cm
     }
 
     $col4 = $this->fieldClass->create($fields);
-    
+
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
@@ -554,7 +554,7 @@ class cm
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $addedfield = "";
     $addedjoin = "";
-    
+
     $qryselect = "select
          num.center,
          head.trno,
@@ -756,7 +756,7 @@ class cm
   {
     $companyid = $config['params']['companyid'];
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
-    
+
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
     item.itemid,
@@ -1301,7 +1301,7 @@ class cm
     return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];
   }
 
-  
+
   public function updateperitem($config)
   {
     $config['params']['data'] = $config['params']['row'];
@@ -1709,12 +1709,12 @@ class cm
     $trno =  $config['params']['trno'];
     $pricetype = $this->companysetup->getpricetype($config['params']);
     $data = [];
-    
+
     $pricegrp = $this->coreFunctions->getfieldvalue("client", "class", "client=?", [$client]);
 
     if ($pricegrp != '') {
-        $pricefield = $this->othersClass->getamtfieldbygrp($pricegrp);
-        $qry = "select 'A' as g,'" . $pricefield['label'] . "' as docno, left(now(),10) as dateid," . $pricefield['amt'] . " as amt," . $pricefield['amt'] . " as defamt, " . $pricefield['disc'] . " as disc, uom, itemid,1 as factor from item where barcode=? 
+      $pricefield = $this->othersClass->getamtfieldbygrp($pricegrp);
+      $qry = "select 'A' as g,'" . $pricefield['label'] . "' as docno, left(now(),10) as dateid," . $pricefield['amt'] . " as amt," . $pricefield['amt'] . " as defamt, " . $pricefield['disc'] . " as disc, uom, itemid,1 as factor from item where barcode=? 
         union all
         select 'Z' as g,docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as defamt,disc,uom,itemid,factor from(select head.docno,head.dateid,
         stock.isamt as amt,stock.uom,stock.disc,stock.itemid,uom.factor
@@ -1738,13 +1738,13 @@ class cm
         and item.barcode = ? and client.client = ?
         and stock.isamt <> 0 and cntnum.trno <> ?
         order by dateid desc limit 5) as tbl order by g,dateid desc";
-        $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
+      $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
 
-        if (!empty($data)) {
+      if (!empty($data)) {
         goto setpricehere;
-        }
+      }
     } else {
-        if ($pricetype == 'CustomerGroupLatest') {
+      if ($pricetype == 'CustomerGroupLatest') {
         $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,
         round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as defamt,disc,uom,rem from(select head.docno,head.dateid,
             stock.isamt as amt,stock.uom,stock.disc,'test' as rem
@@ -1768,7 +1768,7 @@ class cm
             order by dateid desc limit 5) as tbl order by dateid desc";
 
         $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
-        } else {
+      } else {
         $qry = "select 'STOCKCARD'  as docno,left(now(),10) as dateid,amt,amt as defamt,disc,uom,'test' as rem,1 as factor from item where barcode=? 
         union all
         select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as defamt,disc,uom,rem,factor from(select head.docno,head.dateid,
@@ -1794,36 +1794,36 @@ class cm
         and stock.isamt <> 0 and cntnum.trno <> ?
         order by dateid desc limit 5) as tbl";
         $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
-        }
+      }
     }
 
     setpricehere:
     $defuom = '';
 
     if (!empty($data)) {
-        if ($this->companysetup->getisdefaultuominout($config['params'])) {
-            if (empty($data)) {
-            $data[0]->docno = 'UOM';
-            }
-            $defuom = $this->coreFunctions->datareader("select ifnull(uom.uom,'') as value from item left join uom on uom.itemid=item.itemid and uom.isdefault = 1 where item.barcode=?", [$barcode]);
-            $this->coreFunctions->LogConsole('def' . $defuom . $data[0]->amt);
-            if ($defuom != "") {
-            $deffactor = $this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = '" . $defuom . "' where item.barcode=?", [$barcode]);
-            $data[0]->uom = $defuom;
-            $data[0]->factor = $deffactor;
-            if ($this->companysetup->getisrecalcamtchangeuom($config['params'])) {
-                if (floatval($data[0]->amt) != 0) {
-                $data[0]->amt = number_format($data[0]->amt * $deffactor, 2);
-                } 
-            }
-            } else {
-            if ($this->companysetup->getisrecalcamtchangeuom($config['params'])) {
-                if (floatval($data[0]->amt) != 0) {
-                $data[0]->amt = $data[0]->amt * ($this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = item.uom where item.barcode=?", [$barcode]));
-                }
-            }
-            }
+      if ($this->companysetup->getisdefaultuominout($config['params'])) {
+        if (empty($data)) {
+          $data[0]->docno = 'UOM';
         }
+        $defuom = $this->coreFunctions->datareader("select ifnull(uom.uom,'') as value from item left join uom on uom.itemid=item.itemid and uom.isdefault = 1 where item.barcode=?", [$barcode]);
+        $this->coreFunctions->LogConsole('def' . $defuom . $data[0]->amt);
+        if ($defuom != "") {
+          $deffactor = $this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = '" . $defuom . "' where item.barcode=?", [$barcode]);
+          $data[0]->uom = $defuom;
+          $data[0]->factor = $deffactor;
+          if ($this->companysetup->getisrecalcamtchangeuom($config['params'])) {
+            if (floatval($data[0]->amt) != 0) {
+              $data[0]->amt = number_format($data[0]->amt * $deffactor, 2);
+            }
+          }
+        } else {
+          if ($this->companysetup->getisrecalcamtchangeuom($config['params'])) {
+            if (floatval($data[0]->amt) != 0) {
+              $data[0]->amt = $data[0]->amt * ($this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = item.uom where item.barcode=?", [$barcode]));
+            }
+          }
+        }
+      }
       return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data];
     } else {
       $qry = "select amt,amt as defamt,disc,uom, 'STOCKCARD'  as docno from item where barcode=?";
@@ -2043,7 +2043,7 @@ class cm
         }
 
         $cost = $stock[$key]->cost;
-        
+
 
         $expense = isset($stock[$key]->expense) ? $stock[$key]->expense : '';
 

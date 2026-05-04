@@ -145,10 +145,10 @@ class es
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -364,12 +364,12 @@ class es
     $doc = $config['params']['doc'];
     $table = $config['docmodule']->tablenum;
     $qry = "select value from (
-      select trno as value from en_srchead where schedtrno=".$trno." union all
-      select trno as value from en_sosubject where ctrno=".$trno." union all
-      select trno as value from en_sjsubject where ctrno=".$trno." union all
-      select trno as value from en_glsubject where ctrno=".$trno." union all
-      select trno as value from en_gegrades where ctrno=".$trno." union all
-      select trno as value from en_glgrades where ctrno=".$trno."
+      select trno as value from en_srchead where schedtrno=" . $trno . " union all
+      select trno as value from en_sosubject where ctrno=" . $trno . " union all
+      select trno as value from en_sjsubject where ctrno=" . $trno . " union all
+      select trno as value from en_glsubject where ctrno=" . $trno . " union all
+      select trno as value from en_gegrades where ctrno=" . $trno . " union all
+      select trno as value from en_glgrades where ctrno=" . $trno . "
     ) as v";
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') {

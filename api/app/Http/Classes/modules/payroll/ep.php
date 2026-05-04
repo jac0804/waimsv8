@@ -1099,6 +1099,17 @@ class ep
                 $this->coreFunctions->sbcinsert($this->headOther, $dataOther);
             }
 
+            //end contract monitoring when resigned
+            if (isset($dataOther['resigned'])) {
+                if (($dataOther['resigned'] != null && $dataOther['resigned'] != '0000-00-00')) {
+                    $this->coreFunctions->execqry("update regprocess set evaluated='" . $dataOther['resigned'] . "', resigned='" . $dataOther['resigned'] . "' where empid=" . $head['empid'] . " and evaluated is null");
+                }
+            }
+
+            if ($head['empdesc'] == 'REGULAR') {
+                $this->coreFunctions->execqry("update regprocess set evaluated='" . $this->othersClass->getCurrentTimeStamp() . "' where empid=" . $head['empid'] . " and evaluated is null");
+            }
+
             $clientid = $head['empid'];
             $empid = $head['empid'];
         } else {

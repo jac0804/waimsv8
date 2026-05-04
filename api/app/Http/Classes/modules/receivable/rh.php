@@ -201,26 +201,17 @@ class rh
 
     public function createHeadbutton($config)
     {
-        $btns = array(
-            'load',
-            'new',
-            'save',
-            'delete',
-            'cancel',
-            'print',
-            'post',
-            'unpost',
-            'lock',
-            'unlock',
-            'logs',
-            'edit',
-            'backlisting',
-            'toggleup',
-            'toggledown',
-            'help',
-            'others'
-        );
-
+        $companyid = $config['params']['companyid'];
+        $btns = array('load',  'new', 'save',  'delete', 'cancel',  'print',    'post', 'unpost', 'lock', 'unlock', 'logs', 'edit', 'backlisting', 'toggleup',  'toggledown',  'help', 'others');
+        if ($companyid == 59) { //roosevelt
+            if (($key = array_search('lock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            if (($key = array_search('unlock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            $btns = array_values($btns); //i-reindex
+        }
         $buttons = $this->btnClass->create($btns);
         $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
         $step2 = $this->helpClass->getFields(['btnedit', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
@@ -310,7 +301,7 @@ class rh
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         $obj[0][$this->gridname]['totalfield'] = 'amount';
 
-        if($companyid == 59){//roosevelt
+        if ($companyid == 59) { //roosevelt
             $obj[0][$this->gridname]['columns'][$branch]['type'] = 'coldel';
         }
 
@@ -1014,9 +1005,14 @@ class rh
         $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
         $modulename = $this->modulename;
         $data = [];
+        $isreload = false;
+        if ($config['params']['companyid'] == 59) { //rooosevelt
+            $this->posttrans($config);
+            $isreload = true;
+        }
         $style = 'width:500px;max-width:500px;';
 
-        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
     }
 
     public function reportdata($config)

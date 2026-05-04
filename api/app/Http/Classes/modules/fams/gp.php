@@ -183,10 +183,10 @@ class gp
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -241,7 +241,8 @@ class gp
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => ['action', 'address', 'barcode', 'itemname', 'isqty', 'serialno'], 'checkchanges' => 'tableentry',
+        'gridcolumns' => ['action', 'address', 'barcode', 'itemname', 'isqty', 'serialno'],
+        'checkchanges' => 'tableentry',
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ],

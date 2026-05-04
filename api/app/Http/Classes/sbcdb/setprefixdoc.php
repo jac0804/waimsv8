@@ -56,7 +56,6 @@ class setprefixdoc
       'DE' => ['prefix' => 'DEP', 'title' => 'Department'],
       'TL' => ['prefix' => 'TL', 'title' => 'Tenant'],
       'BH' => ['prefix' => 'BR', 'title' => 'Branch'],
-      'BG' => ['prefix' => 'BG', 'title' => 'Barangay Ledger'],
       'EP' => ['prefix' => 'EM', 'title' => 'Employee Record'],
 
     ];
@@ -69,11 +68,13 @@ class setprefixdoc
 
 
     $systype = $this->companysetup->getsystemtype($params);
-    if ($systype == 'BMS') { //cdo
+    if ($systype == 'BMS') {
       $menu['masterfile']['IF'] = ['prefix' => 'IF', 'title' => 'Infrastructure Ledger'];
       $menu['masterfile']['TL'] = ['prefix' => 'TL', 'title' => 'TRU Ledger'];
       $menu['masterfile']['BG'] = ['prefix' => 'BG', 'title' => 'Barangay Member'];
       $menu['masterfile']['BU'] = ['prefix' => 'BU', 'title' => 'Business Ledger'];
+      $menu['masterfile']['BY'] = ['prefix' => 'BY', 'title' => 'Barangay Employee Information'];
+      $menu['masterfile']['WL'] = ['prefix' => 'WL', 'title' => 'Working Ledger'];
     }
 
 
@@ -127,7 +128,8 @@ class setprefixdoc
       'RF' => ['prefix' => 'RF', 'title' => 'Request for Replacement/Return'],
       'RO' => ['prefix' => 'RP', 'title' => 'Request Order'],
       'CH' => ['prefix' => 'SI', 'title' => 'Consign Invoice'],
-      'ON' => ['prefix' => 'OI', 'title' => 'Outright Invoice']
+      'ON' => ['prefix' => 'OI', 'title' => 'Outright Invoice'],
+      'DR' => ['prefix' => 'DR', 'title' => 'Delivery Receipt']
     ];
 
     switch ($params['companyid']) {
@@ -385,6 +387,11 @@ class setprefixdoc
         $menu['cashier']['TC'] = ['prefix' => 'TC', 'title' => 'Petty Cash Entry'];
         $menu['cashier']['DX'] = ['prefix' => 'DX', 'title' => 'Deposit Slip'];
         break;
+      case 65: //metro dragon - aims
+        $menu['inventory']['AN'] = ['prefix' => 'NCP', 'title' => 'NCP'];
+        $menu['inventory']['AB'] = ['prefix' => 'BTF', 'title' => 'Billet to Finished Goods'];
+        $menu['inventory']['AD'] = ['prefix' => 'STB', 'title' => 'Scrap to Billet'];
+        break;
 
       case 0:
         // STANDARD SERVICE TICKETING
@@ -412,8 +419,15 @@ class setprefixdoc
       'BD' => ['prefix' => 'BD', 'title' => 'Local of Clearance'],
       'BC' => ['prefix' => 'BC', 'title' => 'Business Clearance'],
       'BT' => ['prefix' => 'BT', 'title' => 'T.R.U Clearace'],
-      'BI' => ['prefix' => 'BI', 'title' => 'Infrastructure Clearace']
+      'BI' => ['prefix' => 'BI', 'title' => 'Infrastructure Clearance'],
+      'WR' => ['prefix' => 'WR', 'title' => 'Working Clearance'],
+      'BK' => ['prefix' => 'BK', 'title' => 'Creating Id Clearance']
+    ];
 
+    $menu['barangayjudiciary'] = [
+      'JU' => ['prefix' => 'JU', 'title' => 'Judiciary'],
+      'MH' => ['prefix' => 'MH', 'title' => 'Minutes of Hearing'],
+      'MN' => ['prefix' => 'MN', 'title' => 'Summon']
     ];
 
     $menu['accountutilities']['RG'] = ['prefix' => 'RG', 'title' => 'Company Rules and Guidelines'];

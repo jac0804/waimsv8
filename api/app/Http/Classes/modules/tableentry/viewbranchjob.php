@@ -31,7 +31,7 @@ class viewbranchjob
     public $style = 'width:500px;max-width:500px;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['qty', 'clientid', 'jobid'];
+    private $fields = ['qty', 'clientid', 'jobid', 'deptid'];
     public $showclosebtn = false;
     private $reporter;
 
@@ -57,7 +57,7 @@ class viewbranchjob
 
     public function createTab($config)
     {
-        $columns = ['action', 'jobtitle', 'qty', 'itemname'];
+        $columns = ['action', 'jobtitle', 'qty', 'department', 'itemname'];
 
         foreach ($columns as $key => $value) {
             $$value = $key;
@@ -77,6 +77,10 @@ class viewbranchjob
         $obj[0][$this->gridname]['columns'][$jobtitle]['class'] = "csjobtitle sbccsreadonly";
         $obj[0][$this->gridname]['columns'][$jobtitle]['action'] = "lookupsetup";
         $obj[0][$this->gridname]['columns'][$jobtitle]['lookupclass'] = "lookupbranchjob";
+
+        $obj[0][$this->gridname]['columns'][$department]['type'] = "lookup";
+        $obj[0][$this->gridname]['columns'][$department]['action'] = "lookupsetup";
+        $obj[0][$this->gridname]['columns'][$department]['lookupclass'] = "lookupdepartments";
         // $obj[0][$this->gridname]['columns'][$itemname]['type'] = "hidden";
 
 
@@ -101,6 +105,8 @@ class viewbranchjob
         $data['jobtitle'] = '';
         $data['clientid'] = $config['params']['tableid'];
         $data['qty'] = 0;
+        $data['deptid'] = 0;
+        $data['department'] = '';
         $data['bgcolor'] = 'bg-blue-2';
         return $data;
     }
@@ -178,7 +184,7 @@ class viewbranchjob
 
     private function selectqry()
     {
-        $select = " client.clientname,clj.qty,clj.line,clj.clientid,jobt.jobtitle,clj.jobid ";
+        $select = " client.clientname,clj.qty,clj.line,clj.clientid,jobt.jobtitle,clj.jobid,dept.clientname as department,dept.clientid as deptid ";
 
         return $select;
     }
@@ -191,6 +197,7 @@ class viewbranchjob
         $qry = "select $select ,'' as bgcolor
               from cljobs as clj 
               left join client  on client.clientid=clj.clientid
+              left join client as dept on dept.clientid=clj.deptid
               left join jobthead as jobt on jobt.line=clj.jobid
               where clj.clientid = ? and clj.line = ?";
 
@@ -207,6 +214,7 @@ class viewbranchjob
         $qry = "select $select ,'' as bgcolor
                 from cljobs as clj 
                 left join client on client.clientid=clj.clientid
+                left join client as dept on dept.clientid=clj.deptid
                 left join jobthead as jobt on jobt.line=clj.jobid
                 where clj.clientid = ? ";
         $data = $this->coreFunctions->opentable($qry, [$tableid]);
@@ -224,6 +232,9 @@ class viewbranchjob
                 break;
             case 'lookupbranchjob':
                 return $this->lookupjobtitle($config);
+                break;
+            case 'lookupdepartments':
+                return $this->lookupdepartments($config);
                 break;
             default:
                 return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup'];
@@ -356,7 +367,33 @@ class viewbranchjob
         $data = $this->coreFunctions->opentable($qry);
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
     }
+    public function lookupdepartments($config)
+    {
+        $rowindex = $config['params']['index'];
+        $lookupsetup = array(
+            'type' => 'single',
+            'title' => 'List of Department',
+            'style' => 'width:1000px;max-width:1000px;'
+        );
 
+
+        $plotsetup = array(
+            'plottype' => 'plotgrid',
+            'plotting' => array('department' => 'department', 'deptid' => 'deptid')
+        );
+
+        $cols = array(
+            array('name' => 'department', 'label' => 'Department Name', 'align' => 'left', 'field' => 'department', 'sortable' => true, 'style' => 'font-size:16px;')
+        );
+
+        $qry = "select 0 as deptid, '' as department
+     union all 
+     select clientid as deptid,clientname as department from client where isdepartment = 1";
+
+        $data = $this->coreFunctions->opentable($qry);
+
+        return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex];
+    }
 
     // -> Print Function
     public function reportsetup($config)

@@ -196,12 +196,16 @@ class word
         select csapp.line as trno,
         cl.client, cl.clientname, cl.clientid as empid, csapp.line as clientid,
         date(csapp.dateid) as dateid, csapp.rem,csapp.originalin,csapp.originalout,case
-        when csapp.status = 0 then 'ENTRY'
+        when csapp.status = 0 and csapp.status2 = '1' then 'FOR APPROVAL'
         when csapp.status = 1 then 'APPROVED'
         when csapp.status = 2 then 'DISAPPROVED'
-        END as jstatus,case when csapp.status2 = '0' then 'ENTRY'
+        END as jstatus,
+        case   
+               when csapp.status2 = '0' and submitdate is null then 'ENTRY'
+               when csapp.status2 = '0' and submitdate is not null then 'FOR APPROVAL'
                when csapp.status2 = '1' then 'APPROVED'
-               when csapp.status2 = '2' then 'DISAPPROVED' end as status2
+               when csapp.status2 = '2' then 'DISAPPROVED' 
+        end as status2
         from changeshiftapp as csapp
         left join employee as emp on emp.empid = csapp.empid
         left join client as cl on cl.clientid = emp.empid
@@ -232,7 +236,8 @@ class word
         return $buttons;
     } // createHeadbutton
 
-    public function createTab($access, $config) {
+    public function createTab($access, $config)
+    {
         return [];
     }
 

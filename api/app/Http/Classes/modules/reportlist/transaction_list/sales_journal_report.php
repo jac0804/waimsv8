@@ -80,6 +80,10 @@ class sales_journal_report
         $fields = ['radioprint', 'start', 'end', 'dclientname', 'dcentername', 'reportusers', 'approved'];
         $col1 = $this->fieldClass->create($fields);
         break;
+      case 61: //bitesized
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'dcentername', 'dwhname', 'dagentname', 'reportusers', 'approved'];
+        $col1 = $this->fieldClass->create($fields);
+        break;
       default:
         $fields = ['radioprint', 'start', 'end', 'dclientname', 'dcentername', 'dagentname', 'reportusers', 'approved'];
         $col1 = $this->fieldClass->create($fields);
@@ -276,50 +280,50 @@ class sales_journal_report
     ini_set('max_execution_time', 0);
 
     // QUERY
-    $posttype   = $config['params']['dataparams']['posttype'];// 0 for post, 1 for unpost, 2 for all
-    $reporttype = $config['params']['dataparams']['reporttype'];// 0 for summary, 1 for detail
-    
+    $posttype   = $config['params']['dataparams']['posttype']; // 0 for post, 1 for unpost, 2 for all
+    $reporttype = $config['params']['dataparams']['reporttype']; // 0 for summary, 1 for detail
+
     ////////
-      $filter = "";
-      $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-      $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-      
-      $client     = $config['params']['dataparams']['client'];
-      $clientid = $config['params']['dataparams']['clientid'];
+    $filter = "";
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
-      if ($client != "") {
-        $filter .= " and client.clientid = '$clientid' ";
-      }
+    $client     = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
 
-      $branchname   = isset($config['params']['dataparams']['centername']) ? $config['params']['dataparams']['centername'] : '';
-      $fcenter  = isset($config['params']['dataparams']['center']) ? $config['params']['dataparams']['center'] : '';
+    if ($client != "") {
+      $filter .= " and client.clientid = '$clientid' ";
+    }
 
-      if ($branchname != "") {
-        $filter .= " and cntnum.center = '$fcenter'";
-      }
+    $branchname   = isset($config['params']['dataparams']['centername']) ? $config['params']['dataparams']['centername'] : '';
+    $fcenter  = isset($config['params']['dataparams']['center']) ? $config['params']['dataparams']['center'] : '';
 
-      $agent = isset($config['params']['dataparams']['agent']) ? $config['params']['dataparams']['agent'] : '';
-      $agentid = isset($config['params']['dataparams']['agentid']) ? $config['params']['dataparams']['agentid'] : '';
-      $agentname = isset($config['params']['dataparams']['dagentname']) ? $config['params']['dataparams']['dagentname'] : '';
-      
-      if ($agentname != '') {
-        $filter .= " and ag.agentid='" . $agentid . "'";
-      }
-      
-      $username   = isset($config['params']['user']) ? $config['params']['user'] : '';
-      $filterusername  = isset($config['params']['dataparams']['username']) ? $config['params']['dataparams']['username'] : '';
+    if ($branchname != "") {
+      $filter .= " and cntnum.center = '$fcenter'";
+    }
 
-      if ($filterusername != "") {
-        $filter .= " and head.createby = '$filterusername' ";
-      }
+    $agent = isset($config['params']['dataparams']['agent']) ? $config['params']['dataparams']['agent'] : '';
+    $agentid = isset($config['params']['dataparams']['agentid']) ? $config['params']['dataparams']['agentid'] : '';
+    $agentname = isset($config['params']['dataparams']['dagentname']) ? $config['params']['dataparams']['dagentname'] : '';
 
-      $prefix     = isset($config['params']['dataparams']['approved']) ? $config['params']['dataparams']['approved'] : '';
+    if ($agentname != '') {
+      $filter .= " and ag.agentid='" . $agentid . "'";
+    }
 
-      if ($prefix != "") {
-        $filter .= " and cntnum.bref = '$prefix' ";
-      }
-      
-      $sorting    = isset($config['params']['dataparams']['sorting']) ? $config['params']['dataparams']['sorting'] : '';
+    $username   = isset($config['params']['user']) ? $config['params']['user'] : '';
+    $filterusername  = isset($config['params']['dataparams']['username']) ? $config['params']['dataparams']['username'] : '';
+
+    if ($filterusername != "") {
+      $filter .= " and head.createby = '$filterusername' ";
+    }
+
+    $prefix     = isset($config['params']['dataparams']['approved']) ? $config['params']['dataparams']['approved'] : '';
+
+    if ($prefix != "") {
+      $filter .= " and cntnum.bref = '$prefix' ";
+    }
+
+    $sorting    = isset($config['params']['dataparams']['sorting']) ? $config['params']['dataparams']['sorting'] : '';
 
     //////////
 
@@ -337,7 +341,7 @@ class sales_journal_report
         where head.doc in ('SJ','MJ') and date(head.dateid) between '$start' and '$end' $filter
         group by head.dateid,client.clientname,head.docno,head.trno
         order by docno $sorting";
-        
+
         break;
       case '1': // UNPOSTED
         $query = "select 'UNPOSTED' as 'status',head.dateid,client.clientname,head.docno,head.trno,ifnull(sum(stock.ext),0) as ext 
@@ -370,10 +374,10 @@ class sales_journal_report
         where head.doc in ('SJ','MJ') and date(head.dateid) between '$start' and '$end' $filter
         group by head.dateid,client.clientname,head.docno,head.trno
         order by docno $sorting";
-        
+
         break;
     }
-        
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -386,13 +390,13 @@ class sales_journal_report
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $client     = $config['params']['dataparams']['client'];
     $clientid = $config['params']['dataparams']['clientid'];
-    $whid = $config['params']['dataparams']['whid'];
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
     $reporttype = $config['params']['dataparams']['reporttype'];
     $sorting    = $config['params']['dataparams']['sorting'];
     $posttype   = $config['params']['dataparams']['posttype'];
     $wh         = !isset($config['params']['dataparams']['wh']) ? '' : $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
 
     $branchname = '';
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
@@ -4289,30 +4293,30 @@ class sales_journal_report
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable($layoutsize);
-    
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('User: ' . $user, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Prefix: ' . $prefix, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-    
+
     $str .= $this->reporter->endrow();
-    
+
     $str .= $this->reporter->startrow();
-    
-      
+
+
     $str .= $this->reporter->col('', '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->col('Transaction Type: ' . $posttype, '250', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Sort by: ' . $sorting, '250', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
-  
+
 
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('DATE', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('CUSTOMER NAME', '300', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT NO.', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
@@ -4320,7 +4324,7 @@ class sales_journal_report
     $str .= $this->reporter->col('STATUS', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('CE NO', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
 
-    
+
 
     $str .= $this->reporter->endrow();
     // $str .= $this->reporter->endtable();
@@ -4328,7 +4332,7 @@ class sales_journal_report
     return $str;
   }
 
-  
+
   public function report_TRANSPOWER_Layout_SUMMARIZED($config)
   {
     //oks
@@ -4376,18 +4380,19 @@ class sales_journal_report
         $str .= $this->reporter->addline();
         // $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-            $ceno = '';
-            $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->clientname, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-            
-            $ceno  = $this->coreFunctions->datareader(
-              "select group_concat(docno) as value from cntnum where trno in (select trno from gldetail where refx=".$data->trno.") and doc='CR'");
-            
-            $str .= $this->reporter->col($ceno, '200', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          
+        $ceno = '';
+        $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->clientname, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
+        $ceno  = $this->coreFunctions->datareader(
+          "select group_concat(docno) as value from cntnum where trno in (select trno from gldetail where refx=" . $data->trno . ") and doc='CR'"
+        );
+
+        $str .= $this->reporter->col($ceno, '200', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
         $totalext = $totalext + $data->ext;
         $str .= $this->reporter->endrow();
         // $str .= $this->reporter->endtable();
@@ -4404,14 +4409,14 @@ class sales_journal_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('', '125', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '300', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('TOTAL :', '125', null, false, $border, 'TB', 'R', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col(number_format($totalext, 2), '125', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '125', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '200', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
-  
+
 
     $str .= $this->reporter->endrow();
     // $str .= $this->reporter->endtable();

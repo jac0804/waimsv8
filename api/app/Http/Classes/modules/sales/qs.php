@@ -282,10 +282,10 @@ class qs
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -2126,7 +2126,7 @@ class qs
         } // end foreach
 
         //calllogs 
-        $checkingcalllogs = $this->coreFunctions->datareader("select trno as value from qscalllogs where trno = ? ", [$trno],'',true);
+        $checkingcalllogs = $this->coreFunctions->datareader("select trno as value from qscalllogs where trno = ? ", [$trno], '', true);
         if ($checkingcalllogs == 0) {
           $data3 = [
             'trno' => $trno,

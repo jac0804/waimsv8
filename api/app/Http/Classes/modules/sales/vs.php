@@ -259,10 +259,10 @@ class vs
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -347,7 +347,8 @@ class vs
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt,  'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ],
@@ -1575,7 +1576,6 @@ class vs
     $srqty = $this->coreFunctions->getfieldvalue("hsrstock", "iss", "trno=? and line =?", [$refx, $linex]);
     if ($srqty == $qty) {
       $this->coreFunctions->execqry("update hsrstock set void=1  where  trno=" . $refx . " and line=" . $linex, 'update');
-      
     } else {
       $this->coreFunctions->execqry("update hsrstock set void=0  where  trno=" . $refx . " and line=" . $linex, 'update');
     }

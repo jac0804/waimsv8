@@ -294,7 +294,7 @@ class job_order_reports
                                    workdesc,joqty,joamt,jototalamt,jcdate,jcdocno,jcqty,jcamt,jctotalamt,
                                    retention,jostat,projcode,projname,subproject ,void,voidqty
                             from (select head.trno,left(head.dateid,10) as jodate,head.docno as jodocno,
-                                        'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,head.yourref as jrdocno,item.barcode,itemname,
+                                        'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,ifnull(jr.docno,'') as jrdocno,item.barcode,itemname,
                                         head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt,stock.ext as jototalamt,
                                         (select group_concat(distinct dateid separator '\r') 
                                         from (select left(jc.dateid,10) as dateid,jcs.ref,jcs.itemid
@@ -352,7 +352,7 @@ class job_order_reports
                                   from hjostock as stock
                                   left join hjohead as head on head.trno=stock.trno
                                   left join client as supp on supp.client=head.client
-                                  left join hprhead as jr on jr.docno=head.yourref
+                                  left join hprhead as jr on jr.trno=stock.refx
                                   left join item on item.itemid =stock.itemid
                                   left join transnum as num on num.trno=head.trno
                                   left join trxstatus as stat on stat.line=num.statid
@@ -364,7 +364,7 @@ class job_order_reports
           case 1: // unposted
             $query = "select head.trno,left(head.dateid,10) as jodate,head.docno as jodocno,
                                   'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,
-                                  head.yourref as jrdocno,item.barcode,item.itemname,head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt,stock.ext as jototalamt, '' as jcdate, '' as jcdocno, 0 as jcqty,0 as jcamt, 0 as jctotalamt, 
+                                  ifnull(jr.docno,'') as jrdocno,item.barcode,item.itemname,head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt,stock.ext as jototalamt, '' as jcdate, '' as jcdocno, 0 as jcqty,0 as jcamt, 0 as jctotalamt, 
                                   0 as retention, 'Pending' as jostat,  
                                   proj.code as projcode,proj.name as projname, subproj.subproject,
                                   case when stock.void=0 then 'False' else 'True' end as void,
@@ -374,7 +374,7 @@ class job_order_reports
                             from jostock as stock
                             left join johead as head on head.trno=stock.trno
                             left join client as supp on supp.client=head.client
-                            left join hprhead as jr on jr.docno=head.yourref
+                            left join hprhead as jr on jr.trno=stock.refx
                             left join item on item.itemid =stock.itemid
                             left join transnum as num on num.trno=head.trno
                             left join trxstatus as stat on stat.line=num.statid
@@ -389,7 +389,7 @@ class job_order_reports
                              jcdate,jcdocno,jcqty,jcamt,jctotalamt,retention,jostat,projcode,projname, subproject,void,voidqty
                       from (select head.trno,left(head.dateid,10) as jodate,head.docno as jodocno,
                                   'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,
-                                  head.yourref as jrdocno,item.barcode,item.itemname,head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt, stock.ext as jototalamt,'' as jcdate, '' as jcdocno, 0 as jcqty,0 as jcamt,0 as jctotalamt, 
+                                  ifnull(jr.docno,'') as jrdocno,item.barcode,item.itemname,head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt, stock.ext as jototalamt,'' as jcdate, '' as jcdocno, 0 as jcqty,0 as jcamt,0 as jctotalamt, 
                                   '' as retention, 'Pending' as jostat, 
                                   proj.code as projcode,proj.name as projname, subproj.subproject,
                                   case when stock.void=0 then 'False' else 'True' end as void,
@@ -399,7 +399,7 @@ class job_order_reports
                             from jostock as stock
                             left join johead as head on head.trno=stock.trno
                             left join client as supp on supp.client=head.client
-                            left join hprhead as jr on jr.docno=head.yourref
+                            left join hprhead as jr on jr.trno=stock.refx
                             left join item on item.itemid =stock.itemid
                             left join transnum as num on num.trno=head.trno
                             left join trxstatus as stat on stat.line=num.statid
@@ -410,7 +410,7 @@ class job_order_reports
                             select trno,jodate,jodocno,transtype,subcon,jrdate,jrdocno,barcode,itemname,
                                    workdesc,joqty,joamt,jototalamt,jcdate,jcdocno,jcqty,jcamt,jctotalamt,retention,jostat,projcode,projname,subproject,void,voidqty
                             from (select head.trno,left(head.dateid,10) as jodate,head.docno as jodocno,
-                                        'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,head.yourref as jrdocno,item.barcode,itemname,
+                                        'JOB ORDER' as transtype,head.clientname as subcon,left(jr.dateid,10) as jrdate,ifnull(jr.docno,'') as jrdocno,item.barcode,itemname,
                                         head.workdesc,stock.rrqty as joqty,stock.rrcost as joamt,stock.ext as jototalamt,
                                         (select group_concat(distinct dateid separator '\r') 
                                         from (select left(jc.dateid,10) as dateid,jcs.ref,jcs.itemid
@@ -467,7 +467,7 @@ class job_order_reports
                                   from hjostock as stock
                                   left join hjohead as head on head.trno=stock.trno
                                   left join client as supp on supp.client=head.client
-                                  left join hprhead as jr on jr.docno=head.yourref
+                                  left join hprhead as jr on jr.trno=stock.refx
                                   left join item on item.itemid =stock.itemid
                                   left join transnum as num on num.trno=head.trno
                                   left join trxstatus as stat on stat.line=num.statid
@@ -1004,8 +1004,8 @@ class job_order_reports
     $str .= $this->reporter->col('JC Number', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '4px');
     $str .= $this->reporter->col('JC Total Qty', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '4px');
     $str .= $this->reporter->col('JO Balance Qty', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '4px');
-
-    $str .= $this->reporter->col('Project', '300', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('JO Total Amt', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '4px');
+    $str .= $this->reporter->col('Project', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '4px');
     $str .= $this->reporter->col('Subproject', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '4px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -1085,7 +1085,8 @@ class job_order_reports
         $str .= $this->reporter->col($data->jcdocno, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(number_format($data->jcqty, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($totaljobal == 0 ? '-' : number_format($totaljobal, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->projname, '300', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->jototalamt, '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->projname, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->subproject, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();

@@ -244,7 +244,7 @@ class ot_filling_reports
             case 51: // ulitc
                 $query = "select approver.clientname as appname,approver2.clientname as appname2,date(ot.createdate) as dateapp ,cl.clientname,date(ot.scheddate) as scheddate,ot.othrs,
         ot.daytype,date_format(ot.ottimein,'%H:%i %p') as timein,date_format(ot.ottimeout,'%H:%i %p') as timeout,
-        ot.rem as reason,ot.apothrs,date(ot.approvedate) as approvedate,date(ot.approvedate2) as approvedate2, ot.approvedby,ot.remarks as appreason,
+        ot.rem as reason,ot.apothrs,ot.approvedate as approvedate,ot.approvedate2 as approvedate2, ot.approvedby,ot.remarks as appreason,
         ot.disapproved_remarks2 as appreason2,
         case
         when ot.otstatus2 = 1 && ot.submitdate is null then 'ENTRY'
@@ -285,7 +285,7 @@ class ot_filling_reports
         when ot.otstatus = 3 then 'DISAPPROVED' 
         end as status,
 
-        ot.rem as remarks,approver.clientname as approvedby,approver2.clientname as approvedby2,date(ot.approvedate) as appdate,date(ot.approvedate2) as appdate2
+        ot.rem as remarks,approver.clientname as approvedby,approver2.clientname as approvedby2,ot.approvedate as appdate,ot.approvedate2 as appdate2
         from otapplication as ot
         left join client as cl on cl.clientid=ot.empid
         left join employee as emp on emp.empid = ot.empid

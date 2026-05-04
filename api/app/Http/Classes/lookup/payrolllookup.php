@@ -274,6 +274,7 @@ class payrolllookup
   public function lookupdaytype($config)
   {
     $doc = $config['params']['doc'];
+    $companyid = $config['params']['companyid'];
     $lookupsetup = array(
       'type' => 'single',
       'title' => 'List of Day Type',
@@ -288,11 +289,13 @@ class payrolllookup
     $plottype = 'plothead';
     // camera all application lookup working and resday na lang 10-27-2025
     if (strtoupper($doc) == 'TTC' || strtoupper($doc) == 'EMPTIMECARD') {
-      //   $qry .= "
-      // union all 
-      // select 'SP' as daytype
-      // union all 
-      // select 'LEG' as daytype";
+      if ($companyid == 62 || $companyid == 66) { //onesky || metro dragon payroll
+        $qry .= "
+        union all 
+        select 'SP' as daytype
+        union all 
+        select 'LEG' as daytype";
+      }
       $plottype = 'plotgrid';
     }
 
@@ -530,10 +533,79 @@ class payrolllookup
       array('name' => 'schedout', 'label' => 'Time Out', 'align' => 'left', 'field' => 'schedout', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $schedin = date('Y-m-d', strtotime($row['schedin']));
-    $qry = "select '' as changetime,line,times,date_format(timestamp('" . $schedin . "',time(times)),'%Y-%m-%d %H:%i') as schedin,
-      date_format(timestamp(date_add(date('" . $row['schedin'] . "'),interval case when date(date_add(timestamp('" . $schedin . "',time(times)),INTERVAL 9 HOUR)) > date('" . $row['schedin'] . "') then 1 else 0 end day),TIME(date_add(timestamp('" . $schedin . "',time(times)), interval 9 hour))),'%Y-%m-%d %H:%i') as schedout
+
+    $date = DateTime::createFromFormat('m/d/Y H:i', $row['schedin']);
+
+    $schedin = $date->format('Y-m-d');
+    $schedinhours = $date->format('Y-m-d H:i');
+
+    $qry = "select '' as changetime,line,times,date_format(timestamp('" . $schedin . "',time(times)),'%m/%d/%Y %H:%i') as schedin,
+      date_format(timestamp(date_add(date('" . $schedinhours . "'),interval case when date(date_add(timestamp('" . $schedin . "',time(times)),INTERVAL 9 HOUR)) > date('" . $schedinhours . "') then 1 else 0 end day),TIME(date_add(timestamp('" . $schedin . "',time(times)), interval 9 hour))),'%m/%d/%Y %H:%i') as schedout
       from timesetup";
+
+    $data = $this->coreFunctions->opentable($qry);
+    $table = $config['params']['table'];
+    $rowindex = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table, 'rowindex' => $rowindex];
+  }
+
+  public function lookupbanktype($config)
+  {
+    $doc = $config['params']['doc'];
+    $plotting = array();
+
+    $title = 'List of Bank';
+
+    $plotting = array('bank' => 'bank');
+
+    $plottype = 'plothead';
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:500px;max-width:500px;'
+    );
+    $plotsetup = array(
+      'plottype' => $plottype,
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    $cols = array(
+      array('name' => 'bank', 'label' => 'Bank', 'align' => 'left', 'field' => 'bank', 'sortable' => true, 'style' => 'font-size:16px;')
+    );
+
+    $qry = "select 'CASH' as  bank union all
+              select 'METROBANK' as  bank union all 
+              select 'BPI' as bank";
+
+    $data = $this->coreFunctions->opentable($qry);
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function lookuppaygroup($config)
+  {
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Pay Group',
+      'style' => 'width:1000px;max-width:1000px;height:700px'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'plotgrid',
+      'plotting' => array(
+        'pgline' => 'line',
+        'paygroup' => 'code'
+      )
+    );
+
+    $cols = array(
+      array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'paygroup', 'label' => 'Pay Group', 'align' => 'left', 'field' => 'paygroup', 'sortable' => true, 'style' => 'font-size:16px;')
+    );
+
+    $qry = "select line, paygroup,code from paygroup order by paygroup";
 
     $data = $this->coreFunctions->opentable($qry);
     $table = $config['params']['table'];

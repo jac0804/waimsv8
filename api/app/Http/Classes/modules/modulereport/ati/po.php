@@ -803,7 +803,7 @@ class po
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
       PDF::Image('public/images/reports/ATIsignature.jpg', '600', '785', 200, 155);
     } elseif (str_contains($config['params']['dataparams']['approved'], 'JOCELYN VILLAGRACIA')) {
-      PDF::Image('public/images/reports/ATIsignatureJocelyn.png', '600', '785', 200, 155);
+      PDF::Image('public/images/reports/ATIsignatureJocelyn.jpg', '600', '785', 200, 155);
     } elseif (str_contains($config['params']['dataparams']['approved'], 'ANGEL LYN BARCOS')) {
       PDF::Image('public/images/reports/ATIsignatureAngel.png', '600', '785', 200, 155);
     }
@@ -1159,6 +1159,10 @@ class po
     PDF::MultiCell(125, 15, $config['params']['dataparams']['checked'], '', 'C', false, 0, '325', '');
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
       PDF::Image('public/images/reports/ATIsignature.jpg', '550', '810', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'JOCELYN VILLAGRACIA')) {
+      PDF::Image('public/images/reports/ATIsignatureJocelyn.jpg', '550', '810', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'ANGEL LYN BARCOS')) {
+      PDF::Image('public/images/reports/ATIsignatureAngel.jpg', '550', '810', 200, 155);
     }
     PDF::MultiCell(220, 15, $config['params']['dataparams']['approved'], '', 'C', false, 1, '540', '');
   }
@@ -1480,6 +1484,10 @@ class po
     PDF::MultiCell(175, 15, $config['params']['dataparams']['checked'], '', 'C', false, 0, '335', '');
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
       PDF::Image('public/images/reports/ATIsignature.jpg', '550', '824', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'JOCELYN VILLAGRACIA')) {
+      PDF::Image('public/images/reports/ATIsignatureJocelyn.jpg', '550', '824', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'ANGEL LYN BARCOS')) {
+      PDF::Image('public/images/reports/ATIsignatureAngel.jpg', '550', '824', 200, 155);
     }
     PDF::MultiCell(175, 15, $config['params']['dataparams']['approved'], '', 'C', false, 1, '578', '');
   }
@@ -1810,6 +1818,10 @@ class po
     PDF::MultiCell(125, 15, $config['params']['dataparams']['checked'], '', 'C', false, 0, '325', '');
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
       PDF::Image('public/images/reports/ATIsignature.jpg', '550', '810', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'JOCELYN VILLAGRACIA')) {
+      PDF::Image('public/images/reports/ATIsignatureJocelyn.jpg', '550', '810', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'ANGEL LYN BARCOS')) {
+      PDF::Image('public/images/reports/ATIsignatureAngel.jpg', '550', '810', 200, 155);
     }
     PDF::MultiCell(220, 15, $config['params']['dataparams']['approved'], '', 'C', false, 1, '540', '');
   }
@@ -2097,6 +2109,10 @@ class po
 
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
       PDF::Image('public/images/reports/ATIsignature.jpg', '515', '715', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'JOCELYN VILLAGRACIA')) {
+      PDF::Image('public/images/reports/ATIsignatureJocelyn.jpg', '515', '715', 200, 155);
+    } elseif (str_contains($config['params']['dataparams']['approved'], 'ANGEL LYN BARCOS')) {
+      PDF::Image('public/images/reports/ATIsignatureAngel.jpg', '515', '715', 200, 155);
     }
     PDF::MultiCell(175, 15, $config['params']['dataparams']['approved'], '', 'C', false, 1, '540', '');
   }

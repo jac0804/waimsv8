@@ -230,6 +230,9 @@ class trigger_masterfile
 		$this->branchjoblist_triggers($config);
 		$this->allowancesetup_triggers($config);
 		$this->locclearance_triggers($config);
+		$this->entryuserdisplay_triggers($config);
+		$this->entrybrandsizepercarton_triggers($config);
+		$this->emp_req_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -490,6 +493,10 @@ class trigger_masterfile
 		$fields = [
 			'Code' => ['code' => []],
 			'Name' => ['paygroup' => []],
+			'Legal OT Multipler' => ['othrs' => []],
+			'Special OT Multiplier' => ['spot' => []],
+			'NDIFF Multiplier' => ['ndiffhrs' => []],
+			'SSS Max Bracket' => ['s3maxbracket' => []],
 		];
 
 		$this->settriggermasterfilelogs($config, 'paygroup', 'paygroup', 'masterfile_log', $fields, 'line');
@@ -848,10 +855,22 @@ class trigger_masterfile
 		$fields = [
 			'line' => ['line' => []],
 			'submitdate' => ['submitdate' => []],
+			'Expiry Date' => ['expiry' => []],
 			'notes' => ['notes' => []],
 		];
 
 		$this->settriggermasterfilelogs($config, 'app_req', 'arequire', 'masterfile_log', $fields, 'line', 'empid');
+	}
+	private function emp_req_triggers($config)
+	{
+		$fields = [
+			'line' => ['line' => []],
+			'submitdate' => ['submitdate' => []],
+			'Expiry Date' => ['expiry' => []],
+			'notes' => ['notes' => []],
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_req', 'erequire', 'masterfile_log', $fields, 'line', 'empid');
 	}
 
 	private function app_emptest_triggers($config)
@@ -965,6 +984,7 @@ class trigger_masterfile
 			'week5' => ['w5' => []],
 			'13th' => ['w13' => []],
 			'void' => ['halt' => []],
+			'Deduct always w/out checking balance' => ['isdeductible' => []],
 			'priority' => ['priority' => []],
 			'Temp Amount' => ['camt' => []]
 		];
@@ -1328,6 +1348,7 @@ class trigger_masterfile
 
 		if ($companyid == 63) {
 			$fields['client'] = ['clientid' => [true, "concat(client, '-', clientname)", "client", "clientid"]];
+			$fields['itemname'] = ['itemname' => []];
 		} else {
 			$fields['clientid'] = ['clientid' => []];
 		}
@@ -2349,6 +2370,9 @@ class trigger_masterfile
 				$doc = 'entryreasonforhiring';
 				$labelcat = 'Category';
 				break;
+			case 65: // metrodragon aims
+				$doc = 'entrynotesetup';
+				break;
 			default: // BMS
 				$labeldesc = 'description';
 				break;
@@ -2625,7 +2649,8 @@ class trigger_masterfile
 		$doc = 'BRANCH_JOB_LIST';
 		$fields = [
 			'Allocation' => ['qty' => []],
-			'Job Title' => ['jobid' => []]
+			'Job Title' => ['jobid' => []],
+			'Department' => ['deptid' => [true, "clientname", "client", "clientid"]],
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'cljobs', 'masterfile_log', $fields, 'line', '', '', '', 'clientid');
 	}
@@ -2646,5 +2671,23 @@ class trigger_masterfile
 			'Price' => ['price' => []]
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'locclearance', 'masterfile_log', $fields, 'line');
+	}
+	private function entryuserdisplay_triggers($config)
+	{
+		$fields = [
+			'User Id' => ['userid' => []],
+			'User Group' => ['usergrp' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'entryuserdisplay', 'userdisplay', 'masterfile_log', $fields, 'line');
+	}
+	private function entrybrandsizepercarton_triggers($config)
+	{
+		$fields = [
+			'Brand' => ['brandid' => []],
+			'Size' => ['sizeid' => []],
+			'Quantity' => ['qty' => []],
+			'carton' => ['carton' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'entrycarton', 'carton', 'masterfile_log', $fields, 'line');
 	}
 }// end class

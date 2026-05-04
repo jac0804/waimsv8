@@ -536,10 +536,10 @@ class po
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -1106,6 +1106,7 @@ class po
       } else {
         $fields = [['dateid', 'terms'], 'due', 'dvattype', 'dwhname', 'dprojectname'];
       }
+
       $col2 = $this->fieldClass->create($fields);
       data_set($col2, 'dprojectname.required', true);
       data_set($col2, 'dprojectname.lookupclass', 'projectcode');
@@ -1134,6 +1135,9 @@ class po
               break;
             case 56:
               $fields = [['dateid', 'terms'], 'due', ['expiration', 'days'], 'whname'];
+              break;
+            case 65: //metrodragon
+              $fields = [['dateid', 'terms'], 'due', 'whname', 'ddeptname'];
               break;
             default:
               $fields = [['dateid', 'terms'], 'due', 'whname'];
@@ -1175,6 +1179,10 @@ class po
           data_set($col2, 'days.label', 'Days');
           data_set($col2, 'days.readonly', true);
           data_set($col2, 'days.class', 'csdaytype sbccsreadonly');
+          break;
+        case 65: //metrodragon
+          data_set($col2, 'ddeptname.label', 'Department');
+          data_set($col2, 'ddeptname.type', 'input');
           break;
       }
     }
@@ -3635,6 +3643,7 @@ class po
 
   public function getprsummary($config)
   {
+
     $companyid = $config['params']['companyid'];
     $systype = $this->companysetup->getsystemtype($config['params']);
     $trno = $config['params']['trno'];
@@ -3652,13 +3661,13 @@ class po
         (stock.qty-(stock.qa+stock.cdqa)) as qty,stock.rrcost,
         round((stock.qty-(stock.qa+stock.cdqa))/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
         stock.disc,st.line as stageid,
-        stock.projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid
+        stock.projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid,head.deptid
         FROM hprhead as head 
         left join hprstock as stock on stock.trno=head.trno 
         left join transnum on transnum.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and
         uom.uom=stock.uom left join stagesmasterfile as st on st.line = stock.stageid where stock.trno = ? " . $filtercenter . " and stock.qty>(stock.qa+stock.cdqa) and stock.void=0
-    ";
+     ";
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
@@ -3702,12 +3711,16 @@ class po
               $row = $this->openstockline($config);
               $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
             }
+
+            if ($companyid == 65) { //metrodragon
+              $this->coreFunctions->sbcupdate($this->head, ['deptid' => $data[0]->deptid], ['trno' => $trno]);
+            }
             array_push($rows, $return['row'][0]);
           }
         } // end foreach
       } //end if
     } //end foreach
-    return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.'];
+    return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
   } //end function
 
 
@@ -3834,7 +3847,7 @@ class po
         } // end foreach
       } //end if
     } //end foreach
-    return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.'];
+    return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
   } //end function
 
 
@@ -4784,6 +4797,17 @@ class po
     $modulename = $this->modulename;
     $data = [];
     $isreload = false;
+
+    // auto lock
+    switch ($config['params']['companyid']) {
+      case 65: //metrodragon
+        $config['params']['action'] = 'lock';
+        $config['params']['locktype'] = 'AUTO';
+        $this->headClass->lockunlock($config);
+        $isreload = true;
+        break;
+    }
+
     if ($config['params']['companyid'] == 60) { //transpower
       $this->posttrans($config);
       $isreload = true;

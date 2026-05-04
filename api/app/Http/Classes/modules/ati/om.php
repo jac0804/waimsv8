@@ -46,7 +46,10 @@ class om
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'rem'
+    'trno',
+    'docno',
+    'dateid',
+    'rem'
   ];
   private $otherfields = ['trno', 'trnxtype'];
   private $except = ['trno', 'dateid'];
@@ -194,10 +197,10 @@ class om
         $condition = ' and num.postdate is null and head.lockdate is null and stock.statid=0';
         break;
 
-        // case 'forreceiving':
-        //   $condition = ' and num.postdate is null and head.lockdate is null and stock.statid=47';
-        //   $status = "ifnull(stat2.status,'DRAFT')";
-        //   break;
+      // case 'forreceiving':
+      //   $condition = ' and num.postdate is null and head.lockdate is null and stock.statid=47';
+      //   $status = "ifnull(stat2.status,'DRAFT')";
+      //   break;
 
       case 'forso':
         $condition = ' and num.postdate is null and head.lockdate is null and stock.statid=46';
@@ -284,10 +287,10 @@ class om
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -373,8 +376,34 @@ class om
     $barcode = 27;
 
     $column = [
-      'action', 'ctrlno', 'isrr', 'priolvl', 'isexisted', 'oraclecode', 'rrqty', 'unit', 'rrcost', 'ispa', 'disc', 'surcharge', 'ext', 'sodetails', 'itemdesc',
-      'specs', 'rem', 'requestorname', 'department', 'ref', 'supplier', 'customer', 'svsnum', 'sanodesc', 'poref', 'pono', 'itemname',  'barcode'
+      'action',
+      'ctrlno',
+      'isrr',
+      'priolvl',
+      'isexisted',
+      'oraclecode',
+      'rrqty',
+      'unit',
+      'rrcost',
+      'ispa',
+      'disc',
+      'surcharge',
+      'ext',
+      'sodetails',
+      'itemdesc',
+      'specs',
+      'rem',
+      'requestorname',
+      'department',
+      'ref',
+      'supplier',
+      'customer',
+      'svsnum',
+      'sanodesc',
+      'poref',
+      'pono',
+      'itemname',
+      'barcode'
     ];
 
     $tab = [

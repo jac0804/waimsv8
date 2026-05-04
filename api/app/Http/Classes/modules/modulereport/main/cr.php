@@ -80,6 +80,7 @@ class cr
     $companyid = $config['params']['companyid'];
 
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
+    $prepared = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'prepared' and doc =? ", [$config['params']['doc']]);
     $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
     $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
 
@@ -88,6 +89,13 @@ class cr
         $paramstr = "select
           'PDFM' as print,
           '$username' as prepared,
+          '$approved' as approved,
+          '$received' as received";
+        break;
+      case 61: //bytesized
+        $paramstr = "select
+          'PDFM' as print,
+          '$prepared' as prepared,
           '$approved' as approved,
           '$received' as received";
         break;

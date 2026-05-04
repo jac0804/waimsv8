@@ -23,7 +23,7 @@ class viewsection
 {
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'LIST OF SECTION';
+    public $modulename = 'SECTION LIST';
     public $gridname = 'customformacctg';
     private $companysetup;
     private $coreFunctions;
@@ -54,22 +54,31 @@ class viewsection
     public function createTab($config)
     {
 
-        $cols = ['action', 'sectname', 'counts'];
+        $cols = ['action', 'sectname', 'oqty', 'itemname', 'counts', 'clientquota'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
-        $stockbuttons = ['viewbranch'];
+        $stockbuttons = ['viewarea'];
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         $obj[0][$this->gridname]['columns'][$sectname]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-        $obj[0][$this->gridname]['columns'][$sectname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+        $obj[0][$this->gridname]['columns'][$sectname]['style'] = "width:350px;whiteSpace: normal;min-width:350px;";
 
         $obj[0][$this->gridname]['columns'][$counts]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$counts]['label'] = "Existing";
-        $obj[0][$this->gridname]['columns'][$counts]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+        $obj[0][$this->gridname]['columns'][$counts]['style'] = "text-align:left;width:100px;whiteSpace: normal;min-width:100px;";
 
-        $this->modulename .= ' - ' . $config['params']['row']['company'];
+        $obj[0][$this->gridname]['columns'][$oqty]['label'] = "Allocation";
+        $obj[0][$this->gridname]['columns'][$oqty]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$oqty]['style'] = "text-align:right;width:175px;whiteSpace: normal;min-width:175px;";
+
+        $obj[0][$this->gridname]['columns'][$clientquota]['label'] = "Lacking";
+        $obj[0][$this->gridname]['columns'][$clientquota]['style'] = "text-align:right;width:125px;whiteSpace: normal;min-width:125px;";
+
+        $obj[0][$this->gridname]['columns'][$itemname]['style'] = "text-align:right;width:150px;whiteSpace: normal;min-width:150px;";
+
+        $this->modulename .= ' (' . $config['params']['row']['company'] . ' )';
 
         return $obj;
     }
@@ -89,10 +98,40 @@ class viewsection
     public function loaddata($config)
     {
         $divid =  $config['params']['row']['divid'];
-        $query  = "select count(emp.empid) as counts, emp.divid,sec.sectid,sec.sectname from employee as emp
-				  left join section as sec on sec.sectid = emp.sectid 
-                  where emp.isactive = 1 and emp.divid = $divid and emp.sectid <> 0
+        $company = $config['params']['row']['company'];
+        $query  = "select count(emp.empid) as counts, emp.divid,sec.sectid,sec.sectname,0 as oqty, 0 as clientquota,'$company' as company from employee as emp
+				  left join section as sec on sec.sectid = emp.sectid
+                  where emp.isactive = 1 and emp.divid = $divid
                   group by emp.divid,sec.sectid,sec.sectname";
-        return $this->coreFunctions->opentable($query);
+
+        $data = $this->coreFunctions->opentable($query);
+
+        foreach ($data as $key => $value) {
+
+            $jobcount =  $this->checksectionjob($value->divid, $value->sectid);
+            if ($jobcount != 0) {
+                $value->oqty = $jobcount;
+            }
+            $value->clientquota = $value->oqty - $value->counts;
+        }
+
+        return $data;
+    }
+    public function checksectionjob($divid, $sectid)
+    {
+        $job = $this->coreFunctions->opentable("select emp.jobid,emp.branchid from employee as emp  
+            where emp.divid = $divid and emp.sectid = $sectid and (emp.jobid <> 0 and emp.branchid <> 0) and emp.isactive = 1 
+            group by emp.branchid ,emp.jobid");
+
+        $qty = 0;
+        foreach ($job as $key => $value) {
+            $oqty = $this->coreFunctions->datareader("select ifnull(sum(jobs.qty),0) as value from cljobs as jobs
+                where jobs.jobid = $value->jobid and jobs.clientid = $value->branchid", [], '', true);
+
+            if ($oqty != 0) {
+                $qty += $oqty;
+            }
+        }
+        return $qty;
     }
 } //end class

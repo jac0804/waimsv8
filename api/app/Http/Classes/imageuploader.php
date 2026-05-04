@@ -381,7 +381,7 @@ class imageuploader
       $data['line'] = $line;
       $data['trno'] = $creds['trno'];
       $data['doc'] = $creds['doc'];
-      $data['tmline'] = $creds['tmline']; //edit for TM only
+      if (isset($creds['tmline'])) $data['tmline'] = $creds['tmline']; //edit for TM only
       $data['title'] = $this->othersClass->sanitizekeyfield('title', $creds['title']);
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
@@ -679,7 +679,7 @@ class imageuploader
         $creds['filename'] =  $hashfilename;
       }
       $filename = $creds['folder'] . '/' . $creds['tableid'] . '_' . $line . '_' . $creds['filename'];
-      $data['picpath'] = '/images'. $mainfolder . $filename;
+      $data['picpath'] = '/images' . $mainfolder . $filename;
       $data['filename'] = $creds['filename'];
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       $data['editdate'] = $current_timestamp;

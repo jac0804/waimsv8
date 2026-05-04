@@ -178,6 +178,7 @@ class rd
 
     public function createHeadbutton($config)
     {
+        $companyid = $config['params']['companyid'];
         $btns = array(
             'load',
             'new',
@@ -197,6 +198,15 @@ class rd
             'help',
             'others'
         );
+        if ($companyid == 59) { //roosevelt
+            if (($key = array_search('lock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            if (($key = array_search('unlock', $btns)) !== false) {
+                unset($btns[$key]);
+            }
+            $btns = array_values($btns); //i-reindex
+        }
 
         $buttons = $this->btnClass->create($btns);
         $step1 = $this->helpClass->getFields(['btnnew', 'dcontra', 'dateid', 'terms', 'yourref', 'csrem', 'btnsave']);
@@ -476,7 +486,7 @@ class rd
     {
         $qry = "select concat(detail.trno,detail.line) as keyid,detail.trno as rctrno,detail.rdtrno as trno,
                     detail.line,head.docno,date(head.dateid) as dateid,
-                   ag.clientname as agent,detail.bank,detail.branch,detail.checkno,detail.amount,
+                   ag.clientname as agent,detail.bank,detail.branch,detail.checkno,format(detail.amount,2) as amount,
                    date(detail.checkdate) as checkdate,'' as bgcolor
             from hrchead as head
             left join hrcdetail as detail on detail.trno=head.trno
@@ -502,7 +512,7 @@ class rd
     {
         $qry = "select head.doc,concat(detail.trno,detail.line) as keyid,detail.trno as rctrno,detail.rdtrno as trno,detail.line,
                     head.docno,date(head.dateid) as dateid,
-                   ag.clientname as agent,detail.bank,detail.branch,detail.checkno,detail.amount,
+                   ag.clientname as agent,detail.bank,detail.branch,detail.checkno,format(detail.amount,2) as amount,
                    date(detail.checkdate) as checkdate,'' as bgcolor 
             from hrchead as head
             left join hrcdetail as detail on detail.trno=head.trno
@@ -629,9 +639,14 @@ class rd
 
         $modulename = $this->modulename;
         $data = [];
+        $isreload = false;
+        if ($config['params']['companyid'] == 59) { //rooosevelt
+            $this->posttrans($config);
+            $isreload = true;
+        }
         $style = 'width:500px;max-width:500px;';
 
-        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
     }
 
     public function reportdata($config)

@@ -161,10 +161,10 @@ class eh
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -504,7 +504,7 @@ class eh
         order by client.clientid";
       $dataS = $this->coreFunctions->opentable($qry, [$trno]);
       $clientid = $totalscore = $totalgrade = $percenttotal = $gcpercent = $tentativetotal = $finaltotal = $rcardtotal = $quarterid = 0;
-      if(!empty($dataS)) {
+      if (!empty($dataS)) {
         foreach ($dataS as $ds) {
           $clientid = $ds->clientid;
           $qry = "select client.clientid, client.clientname as name, stock.trno, sum(stock.points) as scoregrade,
@@ -705,9 +705,9 @@ class eh
       case 'deleteallitem':
         return $this->deleteallitem($config);
         break;
-        // case 'generateestud':
-        //   return $this->generateEStud($config);
-        //   break;
+      // case 'generateestud':
+      //   return $this->generateEStud($config);
+      //   break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
         break;

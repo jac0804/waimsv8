@@ -42,17 +42,42 @@ class leave_balance_report
 
   public function createHeadField($config)
   {
-    $fields = ['radioprint', 'print'];
-    $col1 = $this->fieldClass->create($fields);
+    $companyid = $config['params']['companyid'];
+    $fields = ['radioprint'];
 
-    return array('col1' => $col1);
+    if ($companyid == 62) { //onesky
+      array_push($fields, 'start', 'end', 'divrep', 'dclientname');
+    }
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
+    data_set($col1, 'dclientname.label', 'Employee');
+    data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+    data_set($col1, 'divrep.label', 'Company');
+    data_set($col1, 'radioprint.options', array(
+      ['label' => 'Default', 'value' => 'default', 'color' => 'red'],
+      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+    ));
+
+    $fields = ['print'];
+    $col2 = $this->fieldClass->create($fields);
+    return array('col1' => $col1, 'col2' => $col2);
   }
 
   public function paramsdata($config)
   {
     // NAME NG INPUT YUNG NAKA ALIAS
     return $this->coreFunctions->opentable("
-    select 'default' as print");
+    select 'default' as print,
+    adddate(left(now(),10),-360) as start,
+    left(now(),10) as end,
+    '' as client,
+    '' as clientname,
+    '' as dclientname,
+    '' as divid,
+    '' as divname,
+    '' as divrep,
+    '' as division
+    ");
   }
 
   // put here the plotting string if direct printing
@@ -69,12 +94,25 @@ class leave_balance_report
 
   public function reportplotting($config)
   {
+    $companyid = $config['params']['companyid'];
     return $this->reportDefaultLayout($config);
   }
 
   public function reportDefault($config)
   {
     $emplvl = $this->othersClass->checksecuritylevel($config);
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $divname = $config['params']['dataparams']['divname'];
+    $employee = $config['params']['dataparams']['client'];
+    $filter = '';
+
+    if (!empty($divname)) {
+      $filter = " and d.divname = '$divname' ";
+    }
+    if (!empty($employee)) {
+      $filter .= " and cl.client = '$employee' ";
+    }
 
     $query = "select cl.client empcode, concat(upper(emp.emplast), ', ', emp.empfirst, ' ', left(emp.empmiddle, 1), '.') as employee, l.docno, 
       acc.codename as accname, l.days as entitled, l.bal, l.prdstart, l.prdend 
@@ -85,9 +123,8 @@ class leave_balance_report
       left join division as d on d.divid = emp.divid
       left join section as sec on sec.sectid = emp.sectid
       left join client as cl on cl.clientid = emp.empid
-      where l.bal > 0 and emp.level in $emplvl
+      where l.dateid between '$start' and '$end' and  l.bal > 0 and emp.level in $emplvl $filter
       order by employee";
-
     return $this->coreFunctions->opentable($query);
   }
 
@@ -119,27 +156,26 @@ class leave_balance_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '4px');
-    $str .= $this->reporter->col('', '950', null, false, $border, '', '', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Printdate:' . '&nbsp&nbsp&nbsp'  . date('m/d/y'), '950', null, false, $border, '', '', $font, $font_size, '', '', '');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->printline();
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Employee Name', '200', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Document #', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Account name', '220', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Entitled', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Balance', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Period Start', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('Period End', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Employee Name', '200', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Document #', '150', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Account name', '220', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Entitled', '80', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Balance', '80', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Period Start', '100', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, '3px solid', 'T', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Period End', '100', null, false, '3px solid', 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     return $str;
@@ -199,7 +235,6 @@ class leave_balance_report
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-        $str .= $this->reporter->printline();
         $str .= $this->displayHeader($config);
         $str .= $this->reporter->endrow();
         $page = $page + $count;

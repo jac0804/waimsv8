@@ -46,19 +46,25 @@ class deposit_advise
 
   public function createHeadField($config)
   {
-    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep', 'bank'];
-    $col1 = $this->fieldClass->create($fields);
-    data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
-    data_set($col1, 'dclientname.label', 'Employee');
-    data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
-    data_set($col1, 'divrep.label', 'Company');
-    data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
-    data_set($col1, 'deptrep.label', 'Department');
-    data_set($col1, 'bank.type', 'lookup');
-    data_set($col1, 'bank.action', 'lookupbanktype');
-    data_set($col1, 'bank.lookupclass', 'lookupbanktype');
-    data_set($col1, 'bank.class', 'csbank sbccsreadonly');
-
+    if ($config['params']['companyid'] == 66) {
+      $fields = ['radioprint', 'checked', 'approved'];
+      $col1 = $this->fieldClass->create($fields);
+      data_set($col1, 'checked.label', 'Verified');
+      data_set($col1, 'approved.label', 'Approved');
+    } else {
+      $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep', 'bank'];
+      $col1 = $this->fieldClass->create($fields);
+      data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
+      data_set($col1, 'dclientname.label', 'Employee');
+      data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+      data_set($col1, 'divrep.label', 'Company');
+      data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
+      data_set($col1, 'deptrep.label', 'Department');
+      data_set($col1, 'bank.type', 'lookup');
+      data_set($col1, 'bank.action', 'lookupbanktype');
+      data_set($col1, 'bank.lookupclass', 'lookupbanktype');
+      data_set($col1, 'bank.class', 'csbank sbccsreadonly');
+    }
     $fields = ['batchrep'];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'batchrep.lookupclass', 'lookupbatchrep');
@@ -73,6 +79,11 @@ class deposit_advise
 
   public function paramsdata($config)
   {
+
+    $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
+    $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
+    $checked = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'checked' and doc =? ", [$config['params']['doc']]);
+
     // NAME NG INPUT YUNG NAKA ALIAS
     return $this->coreFunctions->opentable("select 
     'default' as print,
@@ -90,7 +101,9 @@ class deposit_advise
     '' as batch,
     '' as deptrep,
     '' as line,
-    '' as batchrep
+    '' as batchrep,
+    '$approved' as approved,
+    '$checked' as checked
     ");
   }
 
@@ -110,8 +123,13 @@ class deposit_advise
   {
     $center = $config['params']['center'];
     $username = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
 
-    return $this->reportDefaultLayout($config);
+    if ($companyid == 66) {
+      return $this->reportDefaultLayout_MD($config);
+    } else {
+      return $this->reportDefaultLayout($config);
+    }
   }
 
   public function reportDefault($config)
@@ -147,15 +165,16 @@ class deposit_advise
     $query = "SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,emp.bankacct,
   p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
   p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid
-  FROM paytrancurrent as p LEFT JOIN employee AS emp ON emp.empid=p.empid
+  FROM paytrancurrent as p 
+  LEFT JOIN employee AS emp ON emp.empid=p.empid
   left join client as e on e.clientid = emp.empid
   left join division as d on d.divid = emp.divid
   left join batch on batch.line=p.batchid
   left join client as dept on dept.clientid = emp.deptid
   left join paccount as pa on pa.line=p.acnoid
-  where  p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3
+  where  p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3 
+  and emp.atm = 1 and emp.bankacct <>''
   order by e.clientname";
-
     return $this->coreFunctions->opentable($query);
   }
 
@@ -311,6 +330,180 @@ class deposit_advise
 
     $str .= $this->reporter->endreport();
 
+
+    return $str;
+  }
+
+
+  private function displayHeader_MD($config)
+  {
+    $border    = '1px solid';
+    $font      = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid      = $config['params']['dataparams']['divid'];
+    $divname    = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $batchno    = $config['params']['dataparams']['batch'];
+    $batch      = $config['params']['dataparams']['line'];
+    $bank       = $config['params']['dataparams']['bank'];
+
+    $str        = '';
+    $layoutsize = '1000';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DEPOSIT ADVISE', null, null, false, $border, '', 'C', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $batchstart = $this->coreFunctions->datareader("select date(startdate) as value from batch where line=? ", [$batch]);
+    $batchend   = $this->coreFunctions->datareader("select date(enddate) as value from batch where line=? ", [$batch]);
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Batch :' . '<u>' . strtoupper($batchno) . '</u>' . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Payroll Date : ' . '<u>' . strtoupper($batchstart) . '</u>' . ' to ' . '<u>' . strtoupper($batchend) . '</u>', NULL, null, false, $border, '', 'C', $font, '10', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Print Date : ' . date('m-d-Y'), null, null, false, $border, '', 'C', $font, '10', '', '', '', '');
+    $str .= $this->reporter->pagenumber('Page', null, null, false, $border, '', 'C', $font, '10', '', '', '4px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T', 'C', $font, $font_size, '',  '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T',  'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('No', '50',  null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T',  'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Name', '350', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T',  'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Account Number', '350', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T',  'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Net Pay', '200', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'T',  'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  public function reportDefaultLayout_MD($config)
+  {
+
+    $approved = $config['params']['dataparams']['approved'];
+    $checked = $config['params']['dataparams']['checked'];
+    $result    = $this->reportDefault($config);
+
+    $border    = '1px solid';
+    $font      = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+
+    $count     = 55;
+    $page      = 55;
+    $layoutsize = '1000';
+
+    $str      = '';
+    $Tot      = 0;
+    $Grandtot = 0;
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->displayHeader_MD($config);
+
+    $rowCount = 1;
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col('', '10',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col($rowCount, '50',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col('', '10',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col($data->clientname, '350', null, false, $border, '', '',  $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col('', '10',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col($data->bankacct, '350', null, false, $border, '', 'L', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col('', '10',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col(number_format($data->db, 2),      '200', null, false, $border, '', 'R', $font, $font_size, '',  '', '');
+      $str .= $this->reporter->col('', '10',  null, false, $border, '', 'C', $font, $font_size, '',  '', '');
+
+      $Tot = $Tot + $data->db;
+
+      $rowCount++;
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      $Grandtot = $Grandtot + $Tot;
+      $Tot = 0;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        $str .= $this->displayHeader_MD($config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('GRAND TOTAL: ', '780',  null, false, $border, 'TB', 'L', $font, '13', 'B',  '', '');
+    $str .= $this->reporter->col(number_format($Grandtot, 2), '200', null, false, $border, 'TB', 'R', $font, '13', 'B', '', '');
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'TB', 'C', $font, '13', '',  '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '10',  null, false, $border, 'B', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '50',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->col('Verified by :', '100',  null, false, $border, '', 'L', $font, '10', '',  '', '');
+    $str .= $this->reporter->col('', '100',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->col('Approved by :', '100',  null, false, $border, '', 'L', $font, '10', '',  '', '');
+    $str .= $this->reporter->col('', '100',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '50',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->col($checked, '100',  null, false, $border, 'T', 'C', $font, '10', '',  '', '');
+    $str .= $this->reporter->col('', '100',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->col($approved, '100',  null, false, $border, 'T', 'C', $font, '10', '',  '', '');
+    $str .= $this->reporter->col('', '100',  null, false, $border, '', 'C', $font, '15', 'B',  '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
 
     return $str;
   }

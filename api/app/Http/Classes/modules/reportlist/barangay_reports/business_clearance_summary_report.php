@@ -164,7 +164,7 @@ class business_clearance_summary_report
 
     $filter1 = "";
 
-     
+
     if ($area != '') {
       $filter .= " and cl.area = '$area' ";
     }
@@ -175,7 +175,7 @@ class business_clearance_summary_report
     if ($client != '') {
       $filter .= " and cl.clientname = '$client' ";
     }
-  
+
 
     $query = "select st.code,cl.area,date(head.dateid) as dateid, loccl.clearance as purpose,cl.client as brgy_id, head.docno, cl.clientname, head.amount, cl.addr,head.bstype
         from lahead as head
@@ -197,8 +197,8 @@ class business_clearance_summary_report
         LEFT JOIN street AS st ON st.street = cl.area
         where cnum.doc = 'BC'  and date(head.dateid) between '$start' and '$end' $filter
         order by dateid";
-              
-// var_dump($query);
+
+    // var_dump($query);
 
 
 
@@ -226,7 +226,7 @@ class business_clearance_summary_report
     $endFormat = date('M-d-Y', strtotime($end));
     $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
     $str = '';
-    
+
 
     // $logopath = URL::to($this->companysetup->getlogopath($config['params']) . 'sbclogo1.jpg');
     // $path = $this->companysetup->getlogopath($config['params']);
@@ -237,43 +237,43 @@ class business_clearance_summary_report
     // $str .= "<img src='{$logopath}' width='1350' height='300'>";
     // $str .= "</div>";
 
-       $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($reporttimestamp, '1000', null, false, '', '', 'L', $font, $font_size);
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $str .= '<br></br>';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($reporttimestamp, '1000', null, false, '', '', 'L', $font, $font_size);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= '<br></br>';
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-       $str .= $this->reporter->col(strtoupper($headerdata[0]->name), '1000', '20', false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-      //  $str .= $this->reporter->col('BARANGGAY', '500', '20', false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-       
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
-       
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), '1000', '20', false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    //  $str .= $this->reporter->col('BARANGGAY', '500', '20', false, '2px solid', '', 'L', $font, '12', 'B', '', '');
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-       $str .= $this->reporter->col('BUSINESS CLEARANCE SUMMARY REPORT', '1000', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-       $str .= $this->reporter->col('DATE FROM '.$startFormat .' to ' .$endFormat, '100', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-      //  $str .= $this->reporter->col('STREET: '. $street, null, null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-      //  $str .= $this->reporter->col('STREET: '. (!empty($area) ? $area : 'ALL'), null, null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-       $str .= $this->reporter->col('STREET: '. (!empty($area) ? $area : 'ALL'), '1000', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('BUSINESS CLEARANCE SUMMARY REPORT', '1000', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
-     
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DATE FROM ' . $startFormat . ' to ' . $endFormat, '100', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    //  $str .= $this->reporter->col('STREET: '. $street, null, null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    //  $str .= $this->reporter->col('STREET: '. (!empty($area) ? $area : 'ALL'), null, null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col('STREET: ' . (!empty($area) ? $area : 'ALL'), '1000', null, false, '2px solid', '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
 
     return $str;
   }
@@ -314,29 +314,29 @@ class business_clearance_summary_report
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->displayHeader($config);
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-       $str .= $this->reporter->col('', '1000', null, false, '3px solid', 'B', 'L', $font, '12', '', '', '');
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', null, false, '3px solid', 'B', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
-       $str .= $this->reporter->begintable($layoutsize);
-       $str .= $this->reporter->startrow();
-       $str .= $this->reporter->col('DATE', '100', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
-       $str .= $this->reporter->col('CONTORL #', '130', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
-       $str .= $this->reporter->col('BRGY. ID', '160', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
-       $str .= $this->reporter->col('FULL NAME', '180', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
-       $str .= $this->reporter->col('ADDRESS', '160', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
-       $str .= $this->reporter->col('BUSINESS TYPE', '140', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size ,'B', '', '');
-       $str .= $this->reporter->col('AMOUNT', '105', null, false, '2px solid', 'B', 'C', $font,$font_size, 'B', '', '');
-       $str .= $this->reporter->endrow();
-       $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DATE', '100', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+    $str .= $this->reporter->col('CONTORL #', '130', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+    $str .= $this->reporter->col('BRGY. ID', '160', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+    $str .= $this->reporter->col('FULL NAME', '180', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+    $str .= $this->reporter->col('ADDRESS', '160', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font, 'B', '', '');
+    $str .= $this->reporter->col('BUSINESS TYPE', '140', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('AMOUNT', '105', null, false, '2px solid', 'B', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
 
 
@@ -349,7 +349,7 @@ class business_clearance_summary_report
 
     foreach ($result as $key => $data) {
 
-    if ($prevDate != '' && $prevDate != $data->dateid) {
+      if ($prevDate != '' && $prevDate != $data->dateid) {
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -380,79 +380,79 @@ class business_clearance_summary_report
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        
+
         $dateTotal = 0;
         $dateCount = 0;
-    }
+      }
 
-    if ($prevDate != $data->dateid) {
+      if ($prevDate != $data->dateid) {
         $str .= $this->reporter->begintable($layoutsize);
+      }
+
+
+      $dateTotal += $data->amount;
+      $dateCount++;
+
+      $grandTotal += $data->amount;
+      $grandCount++;
+
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($data->dateid, '100', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->docno, '130', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->brgy_id, '160', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '180', null, false, '2px solid', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->addr, '160', null, false, '2px solid', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bstype, '140', null, false, '2px solid', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->amount, 2), '105', null, false, '2px solid', '', 'R', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->endrow();
+
+      $prevDate = $data->dateid;
     }
-
-    
-    $dateTotal += $data->amount;
-    $dateCount++;
-
-    $grandTotal += $data->amount;
-    $grandCount++;
-
-   
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($data->dateid, '100', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col($data->docno, '130', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col($data->brgy_id, '160', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col($data->clientname, '180', null, false, '2px solid', '', 'L', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col($data->addr, '160', null, false, '2px solid', '', 'L', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col($data->bstype, '140', null, false, '2px solid', '', 'L', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '5', null, false, '2px solid', '', 'C', $font,$font_size, '', '', '');
-    $str .= $this->reporter->col(number_format($data->amount,2), '105', null, false, '2px solid', '', 'R', $font,$font_size, 'B', '', '');
-    $str .= $this->reporter->endrow();
-
-    $prevDate = $data->dateid;
-}
 
 
     if ($prevDate != '') {
 
-    $str .= $this->reporter->startrow();
-    
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('TOTAL CLEARANCE:', '170', null, false, '', 'B', 'LT', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col($dateCount, '150', null, false, '1px solid', 'TBRL', 'CT', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '290', null, false, '', 'B', 'LT', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('TOTAL AMOUNT : ', '210', null, false, '', 'B', 'RT', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col(number_format($dateTotal, 2) ?: '-', '130', null, false, '1px solid', 'TBRL', 'RT', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->endrow();
-            
+      $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->endtable();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col('TOTAL CLEARANCE:', '170', null, false, '', 'B', 'LT', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col($dateCount, '150', null, false, '1px solid', 'TBRL', 'CT', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col('', '290', null, false, '', 'B', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('TOTAL AMOUNT : ', '210', null, false, '', 'B', 'RT', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col(number_format($dateTotal, 2) ?: '-', '130', null, false, '1px solid', 'TBRL', 'RT', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->endrow();
 
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '100', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '120', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '160', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '225', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '160', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '225', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->col('', '163', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-}
+
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '100', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '120', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '160', '20', false, '1px dashed', 'B', 'LT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '225', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '160', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '225', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '10', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->col('', '163', '20', false, '1px dashed', 'B', 'RT', $font, '', '', '', '', '', 0, '', 0, 0, '#C4C0C0');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+    }
 
 
     $str .= $this->reporter->begintable($layoutsize);
@@ -460,11 +460,11 @@ class business_clearance_summary_report
     $str .= $this->reporter->col('', '1000', '10', false, '2px solid', '', 'C', $font, $font, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-  
+
     $str .= $this->reporter->col('', '50', null, false, '', 'B', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', '170', null, false, '', 'B', 'LT', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', '150', null, false, '1px solid', '', 'CT', $font, $font_size, 'B', '', '');
@@ -478,6 +478,5 @@ class business_clearance_summary_report
 
     $str .= $this->reporter->endreport();
     return $str;
-  
-}
+  }
 }

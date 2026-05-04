@@ -151,10 +151,10 @@ class sp
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -841,7 +841,8 @@ class sp
         return ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
       } else {
         return [
-          'status' => false, 'msg' => 'Add item Failed'
+          'status' => false,
+          'msg' => 'Add item Failed'
         ];
       }
     } elseif ($action == 'update') {

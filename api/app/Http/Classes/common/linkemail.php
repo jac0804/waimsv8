@@ -1740,7 +1740,7 @@ class linkemail
         $response['remarks'] = $remarkslog;
         return view('emails.approved', compact('response'));
     }
-    public function weblink($params, $config) 
+    public function weblink($params, $config)
     {
         $params['view'] = 'emails.firstnotice';
         $params['cc'] = '';
@@ -1817,7 +1817,6 @@ class linkemail
             if (!$resutmail['status']) {
                 $this->coreFunctions->create_Elog($resutmail['msg']);
                 return ['status' => false, 'msg' => $resutmail['msg']];
-                
             } else {
                 $this->logger->sbcmasterlog2($params['line'], $config, "EMAIL SENT TO: " . $params['email'], 'payroll_log');
                 return ['status' => true, 'msg' => 'Email sent'];
@@ -1960,6 +1959,20 @@ class linkemail
 
 
 
+        $location = '';
+        $dataid2 = 'datetime2';
+        switch ($cid) {
+            case 51: //ulitc
+                $dataid2 = 'datetime';
+                break;
+            case 53: //camera
+                $location = '
+                  <div>
+                     <strong>Location:</strong>
+                     <span>' . $params['location'] . '</span>
+                  </div>';
+                break;
+        }
         $appdate2 = '<div>
                        <strong>Applied Date Time:</strong>
                         <span>' . $params['datetime'] . '</span>
@@ -1967,6 +1980,7 @@ class linkemail
 
         switch ($params['type']) {
             case 'Off-setting':
+            case 'Official Business':
                 $appdate2 = '
                     <div>
                        <strong>Applied Date Time In:</strong>
@@ -1988,7 +2002,7 @@ class linkemail
             case 'Time-Out at the Place Visited':
                 $appdate2 = '<div>
                        <strong>Applied Date Time:</strong>
-                        <span>' . $params['datetime2'] . '</span>
+                        <span>' . $params[$dataid2] . '</span>
                     </div>';
                 break;
         }
@@ -2067,12 +2081,8 @@ class linkemail
                         <span>' . $params['scheddate'] . '</span>
                     </div>
                     
-                              ' . $appdate2 . '
+                              ' . $appdate2 . $location . '  
                     
-                    <div>
-                        <strong>Location:</strong>
-                        <span>' . $params['location'] . '</span>
-                    </div>
                     <div>
                         <strong>Reason:</strong>
                         <span>' . $params['rem'] . '</span>

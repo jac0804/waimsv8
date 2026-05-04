@@ -142,100 +142,100 @@ class cashier_entry
             case 0: // posted
                 $query = " select head.docno,left(head.dateid,10) as dateid,head.clientname,
                             head.address,rc3.category as purposeofpayment,rc1.category as trnxtype2,
-                            head.rem,head.yourref,head.ourref,head.checkinfo,format(head.amount,2) as amount,head.bank,
+                            head.rem,head.yourref,head.ourref,head.checkinfo,head.amount as amount,head.bank,
                              date(head.checkdate) as checkdate,head.rem2,head.sicsino,
                             head.drno,
                             rc2.category as modeofpayment2,
-                            ifnull(ds.docno,'') as deposit
+                            ifnull(ds.docno,'') as deposit,head.createby
 
                         from hcehead as head
                         left join transnum as num on num.trno = head.trno
                             left join transnum as ds on ds.trno = num.dstrno
                             left join client as cl on cl.clientid = head.clientid
-                            left join reqcategory as rc1 on rc1.line = head.trnxtid
-                            left join reqcategory as rc2 on rc2.line = head.mpid
-                            left join reqcategory as rc3 on rc3.line = head.ppid
+                           left join reqcategory as rc1 on rc1.line = head.trnxtid and rc1.isttype = 1
+                            left join reqcategory as rc2 on rc2.line = head.mpid and rc2.ispaymode = 1
+                            left join reqcategory as rc3 on rc3.line = head.ppid and rc3.ispaytype = 1
                         where date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
                          group by head.docno,head.dateid,head.clientname,
                             head.address,rc3.category,rc1.category,
                             head.rem,head.yourref,head.ourref,head.checkinfo,head.amount,head.bank,
                             head.checkdate,head.rem2,head.sicsino,
-                            head.drno,rc2.category,ds.docno
-                            order by head.clientname";
+                            head.drno,rc2.category,ds.docno,head.createby
+                            order by head.createby,docno";
                 break;
 
             case 1: // unposted
                 $query = " select head.docno,left(head.dateid,10) as dateid,head.clientname,
                             head.address,rc3.category as purposeofpayment,rc1.category as trnxtype2,
-                            head.rem,head.yourref,head.ourref,head.checkinfo,format(head.amount,2) as amount,head.bank,
+                            head.rem,head.yourref,head.ourref,head.checkinfo,head.amount as amount,head.bank,
                              date(head.checkdate) as checkdate,head.rem2,head.sicsino,
                             head.drno,
                             rc2.category as modeofpayment2,
-                            ifnull(ds.docno,'') as deposit
+                            ifnull(ds.docno,'') as deposit,head.createby
 
                         from cehead as head
                         left join transnum as num on num.trno = head.trno
                             left join transnum as ds on ds.trno = num.dstrno
                             left join client as cl on cl.clientid = head.clientid
-                            left join reqcategory as rc1 on rc1.line = head.trnxtid
-                            left join reqcategory as rc2 on rc2.line = head.mpid
-                            left join reqcategory as rc3 on rc3.line = head.ppid
+                           left join reqcategory as rc1 on rc1.line = head.trnxtid and rc1.isttype = 1
+                            left join reqcategory as rc2 on rc2.line = head.mpid and rc2.ispaymode = 1
+                            left join reqcategory as rc3 on rc3.line = head.ppid and rc3.ispaytype = 1
                         where  date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
                          group by head.docno,head.dateid,head.clientname,
                             head.address,rc3.category,rc1.category,
                             head.rem,head.yourref,head.ourref,head.checkinfo,head.amount,head.bank,
                             head.checkdate,head.rem2,head.sicsino,
-                            head.drno,rc2.category,ds.docno
-                            order by head.clientname";
+                            head.drno,rc2.category,ds.docno,head.createby
+                            order by head.createby,docno";
                 break;
 
             default: // all
                 $query = " select head.docno,left(head.dateid,10) as dateid,head.clientname,
                             head.address,rc3.category as purposeofpayment,rc1.category as trnxtype2,
-                            head.rem,head.yourref,head.ourref,head.checkinfo,format(head.amount,2) as amount,head.bank,
+                            head.rem,head.yourref,head.ourref,head.checkinfo,head.amount as amount,head.bank,
                             date(head.checkdate) as checkdate,head.rem2,head.sicsino,
                             head.drno,
                             rc2.category as modeofpayment2,
-                            ifnull(ds.docno,'') as deposit
+                            ifnull(ds.docno,'') as deposit,head.createby
 
                         from cehead as head
                         left join transnum as num on num.trno = head.trno
                             left join transnum as ds on ds.trno = num.dstrno
                             left join client as cl on cl.clientid = head.clientid
-                            left join reqcategory as rc1 on rc1.line = head.trnxtid
-                            left join reqcategory as rc2 on rc2.line = head.mpid
-                            left join reqcategory as rc3 on rc3.line = head.ppid
+                            left join reqcategory as rc1 on rc1.line = head.trnxtid and rc1.isttype = 1
+                            left join reqcategory as rc2 on rc2.line = head.mpid and rc2.ispaymode = 1
+                            left join reqcategory as rc3 on rc3.line = head.ppid and rc3.ispaytype = 1
                         where date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . " 
                          group by head.docno,head.dateid,head.clientname,
                             head.address,rc3.category,rc1.category,
                             head.rem,head.yourref,head.ourref,head.checkinfo,head.amount,head.bank,
                             head.checkdate,head.rem2,head.sicsino,
-                            head.drno,rc2.category,ds.docno
+                            head.drno,rc2.category,ds.docno,head.createby
 
                     union all
 
                     select head.docno,left(head.dateid,10) as dateid,head.clientname,
                             head.address,rc3.category as purposeofpayment,rc1.category as trnxtype2,
-                            head.rem,head.yourref,head.ourref,head.checkinfo,format(head.amount,2) as amount,head.bank,
+                            head.rem,head.yourref,head.ourref,head.checkinfo,head.amount as amount,head.bank,
                              date(head.checkdate) as checkdate,head.rem2,head.sicsino,
                             head.drno,
                             rc2.category as modeofpayment2,
-                            ifnull(ds.docno,'') as deposit
+                            ifnull(ds.docno,'') as deposit,head.createby
 
                         from hcehead as head
                         left join transnum as num on num.trno = head.trno
                             left join transnum as ds on ds.trno = num.dstrno
                             left join client as cl on cl.clientid = head.clientid
-                            left join reqcategory as rc1 on rc1.line = head.trnxtid
-                            left join reqcategory as rc2 on rc2.line = head.mpid
-                            left join reqcategory as rc3 on rc3.line = head.ppid
+                            left join reqcategory as rc1 on rc1.line = head.trnxtid and rc1.isttype = 1
+                            left join reqcategory as rc2 on rc2.line = head.mpid and rc2.ispaymode = 1
+                            left join reqcategory as rc3 on rc3.line = head.ppid and rc3.ispaytype = 1
                         where  date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . " 
                         group by head.docno,head.dateid,head.clientname,
                             head.address,rc3.category,rc1.category,
                             head.rem,head.yourref,head.ourref,head.checkinfo,head.amount,head.bank,
                             head.checkdate,head.rem2,head.sicsino,
-                            head.drno,rc2.category,ds.docno
-                            order by clientname";
+                            head.drno,rc2.category,ds.docno,head.createby
+                            order by createby,docno";
 
                 break;
         } // end switch posttype
@@ -328,13 +328,44 @@ class cashier_entry
         $str .= $this->header_DEFAULT($config);
         $str .= $this->tableheader($layoutsize, $config);
         $clientname = '';
+        $tamt = 0;
+        $tcamt = 0;
         if (!empty($result)) {
             foreach ($result as $key => $data) {
                 $str .= $this->reporter->begintable($layoutsize);
-                if ($clientname == '' || $clientname != $data->clientname) {
+                if ($clientname == '' || $clientname != $data->createby) {
+                    if($tcamt != 0){
+                        $str .= $this->reporter->startrow();
+                        $str .= $this->reporter->col('', '120', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col(number_format($tcamt,2), '90', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+    
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+    
+    
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+                        $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+    
+                        $str .= $this->reporter->endrow();
+                        $str .= $this->reporter->endtable();
+                        $str .= $this->reporter->begintable($layoutsize);
+                    }                      
+                    
+                    $tcamt =0;
                     $str .= $this->reporter->startrow();
-                    $str .= $this->reporter->col($data->clientname, '1800', null, false, $border, '', 'L', $font, $fontsizes, '', '', '');
-                    $clientname = $data->clientname;
+                    $str .= $this->reporter->col($data->createby, '1800', null, false, $border, 'T', 'L', $font, $fontsizes, '', '', '');
+                    $clientname = $data->createby;
                     $str .= $this->reporter->endrow();
                 }
                 $str .= $this->reporter->endtable();
@@ -354,7 +385,7 @@ class cashier_entry
                 $str .= $this->reporter->col($data->ourref, '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->sicsino, '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->drno, '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($data->amount, '90', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col(number_format($data->amount,2), '90', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
                 $str .= $this->reporter->col($data->bank, '90', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->checkinfo, '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -377,7 +408,65 @@ class cashier_entry
                     $str .= $this->tableheader($layoutsize, $config);
                     $page = $page + $count;
                 } //end if
+
+                $tamt = $tamt + $data->amount;
+                $tcamt = $tcamt + $data->amount;
             }
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '120', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($tcamt,2), '90', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+
+
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->addline();
+
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '120', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($tamt,2), '90', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+
+
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->endtable();

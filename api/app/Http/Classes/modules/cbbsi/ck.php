@@ -253,10 +253,10 @@ class ck
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -360,8 +360,10 @@ class ck
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
-        'computefield' => $computefield, 'headgridbtns' => $headgridbtns
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
+        'computefield' => $computefield,
+        'headgridbtns' => $headgridbtns
       ]
     ];
 
@@ -590,8 +592,14 @@ class ck
         $hideobj = ['donetodo' => !$btndonetodo];
       }
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;

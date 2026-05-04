@@ -44,9 +44,36 @@ class lq
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms',
-    'forex', 'cur', 'wh', 'address', 'projectid', 'subproject', 'branch', 'deptid', 'tax', 'vattype', 'empid', 'sotrno', 'billid', 'shipid', 'billcontactid', 'shipcontactid',
-    'revision', 'rqtrno', 'deldate', 'deladdress'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'projectid',
+    'subproject',
+    'branch',
+    'deptid',
+    'tax',
+    'vattype',
+    'empid',
+    'sotrno',
+    'billid',
+    'shipid',
+    'billcontactid',
+    'shipcontactid',
+    'revision',
+    'rqtrno',
+    'deldate',
+    'deladdress'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -176,11 +203,11 @@ class lq
         $condition = ' and num.postdate is null and head.lockdate is null ';
         break;
 
-        // case 'pending':
-        //   $leftjoin = ' left join oqstock as stock on stock.trno=head.trno';
-        //   $leftjoin_posted = ' left join hoqstock as stock on stock.trno=head.trno';
-        //   $condition = ' and stock.qty>stock.qa';
-        //   break;
+      // case 'pending':
+      //   $leftjoin = ' left join oqstock as stock on stock.trno=head.trno';
+      //   $leftjoin_posted = ' left join hoqstock as stock on stock.trno=head.trno';
+      //   $condition = ' and stock.qty>stock.qa';
+      //   break;
 
       case 'locked':
         $condition = ' and head.lockdate is not null and num.postdate is null ';
@@ -220,10 +247,10 @@ class lq
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -272,7 +299,17 @@ class lq
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'requestorname', 'deptname', 'sono', 'reqdate', 'releasedate', 'purpose', 'rem', 'ref', 'rrcost', 'ctrlno'
+          'action',
+          'requestorname',
+          'deptname',
+          'sono',
+          'reqdate',
+          'releasedate',
+          'purpose',
+          'rem',
+          'ref',
+          'rrcost',
+          'ctrlno'
         ]
       ]
     ];
@@ -497,8 +534,15 @@ class lq
       $clickobj = ['button.btnadditem'];
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'clickobj' => $clickobj,
+        'hidetabbtn' => $hidetabbtn
       ];
     } else {
       $head[0]['trno'] = 0;

@@ -262,10 +262,10 @@ class fg
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -330,7 +330,8 @@ class fg
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+        'gridcolumns' => $column,
+        'sortcolumns' => $sortcolumn,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => ['viewdistribution']
       ]
@@ -496,8 +497,15 @@ class fg
       $hideheadergridbtns = ['tagreceived' => !$lblreceived_stat, 'untagreceived' => $lblreceived_stat];
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted,
-        'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj, 'hideheadgridbtns' => $hideheadergridbtns
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj,
+        'hideheadgridbtns' => $hideheadergridbtns
       ];
     } else {
       $head[0]['trno'] = 0;
@@ -1044,7 +1052,7 @@ class fg
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
@@ -1205,7 +1213,7 @@ class fg
       if (!empty($item)) {
         $isnoninv = $item[0]->isnoninv;
         $item[0]->factor = $this->othersClass->val($item[0]->factor);
-        if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+        if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       }
       $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$config['params']['rows'][$key]['wh']]);
       $computedata = $this->othersClass->computestock($data[0]->rrcost, $data[0]->disc, $data[0]->qty, $factor, 0);

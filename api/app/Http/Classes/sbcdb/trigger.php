@@ -212,7 +212,7 @@ class trigger
       'Ship/Delivered to' => ['shipto' => []],
       'Drop-off WH' => ['dropoffwh' => [true, "concat(client, '~', clientname)", 'client', 'clientid']],
       $deptcode => ['deptcode' => []],
-      
+
       'Make' => ['make' => []],
       'Motor No.' => ['motorno' => []],
       'Plate No.' => ['plateno' => []],
@@ -340,39 +340,39 @@ class trigger
         $shortname = 'Specifications';
         $othcode = 'Barcode Name';
         break;
-      case 60://transpower
+      case 60: //transpower
         $shortname = 'Shortname';
         $othcode = 'Other Code';
         $retail = 'base price';
-        $pricea ='distributor price';
-        $priceb ='cost';
-        $pricec ='invoice price';
+        $pricea = 'distributor price';
+        $priceb = 'cost';
+        $pricec = 'invoice price';
         $priced = 'Lowest price';
         $pricee = 'dr price';
-        $discountr= 'base discount';
+        $discountr = 'base discount';
         $discountw = 'wholesale discount';
         $discounta = 'distributor discount';
         $discountb = 'cost discount';
         $discountc = 'invoice disc';
-        $discountd ='lowest disc';
-        $discounte ='dr discount';
+        $discountd = 'lowest disc';
+        $discounte = 'dr discount';
         break;
       default:
         $shortname = 'Shortname';
         $othcode = 'Other Code';
         $retail = 'retail price';
-        $pricea ='price A';
-        $priceb ='price B';
-        $pricec ='price C';
+        $pricea = 'price A';
+        $priceb = 'price B';
+        $pricec = 'price C';
         $priced = 'price D';
         $pricee = 'price E';
-        $discountr= 'discount R';
+        $discountr = 'discount R';
         $discountw = 'discount W';
         $discounta = 'discount A';
         $discountb = 'discount B';
         $discountc = 'discount C';
-        $discountd ='discount D';
-        $discounte ='discount E';
+        $discountd = 'discount D';
+        $discounte = 'discount E';
         break;
     }
 
@@ -614,6 +614,8 @@ class trigger
       'Fixed Asset' => ['isfa' => []],
       'Cost Code' => ['costcodeid' => [true, 'name', 'costcode_masterfile', 'line']],
       'Employee' => ['empid' =>  [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
+      'MOP' => ['modeofpayment' => []],
+      'LC No.' => ['orderno' => []],
     ];
 
     $this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
@@ -4243,6 +4245,7 @@ class trigger
       'Volume' => ['volume' => []],
       'Weight' => ['weight' => []],
       'Chassis No' => ['chassisno' => []],
+      'Location' => ['locid' =>  [true, 'clientname', 'client', 'clientid']],
     ];
 
     $this->settriggerlogs($trigger_name, 'AFTER UPDATE', $table, $table_log, $fields, $key, "ITEM INFO");
@@ -4814,6 +4817,7 @@ class trigger
         truncate approverinfo;
         truncate apreemploy;
         delete from arequire;
+        delete from erequire;
         delete from arledger;
         delete from attemptolog;
         delete from attendee;
@@ -5543,6 +5547,7 @@ class trigger
         delete from profile where psection='ACCTGCUTOFF';
         delete from timesetup;
         delete from cljobs;
+        delete from carton;
 
       END";
 

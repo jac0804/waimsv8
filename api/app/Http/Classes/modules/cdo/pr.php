@@ -43,8 +43,22 @@ class pr
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $fields = [
-    'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref',
-    'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'purtype', 'requestor'
+    'trno',
+    'docno',
+    'dateid',
+    'due',
+    'client',
+    'clientname',
+    'yourref',
+    'ourref',
+    'rem',
+    'terms',
+    'forex',
+    'cur',
+    'wh',
+    'address',
+    'purtype',
+    'requestor'
   ];
   private $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
@@ -253,10 +267,10 @@ class pr
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -353,7 +367,24 @@ class pr
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'itemdescription', 'rrqty', 'rrcost', 'uom', 'disc', 'netamt', 'ext', 'qa', 'rem', 'wh', 'whname', 'void', 'itemname', 'partno', 'subcode', 'boxcount', 'barcode'
+          'action',
+          'itemdescription',
+          'rrqty',
+          'rrcost',
+          'uom',
+          'disc',
+          'netamt',
+          'ext',
+          'qa',
+          'rem',
+          'wh',
+          'whname',
+          'void',
+          'itemname',
+          'partno',
+          'subcode',
+          'boxcount',
+          'barcode'
         ],
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
@@ -584,8 +615,14 @@ class pr
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked,
-        'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg, 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'islocked' => $islocked,
+        'isposted' => $isposted,
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'hideobj' => $hideobj
       ];
     } else {
       $head[0]['trno'] = 0;

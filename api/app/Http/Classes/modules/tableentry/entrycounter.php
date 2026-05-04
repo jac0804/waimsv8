@@ -117,7 +117,7 @@ class entrycounter
         $qry    = "select " . $select . " from " . $this->table .
             " where iscounter = 1 " . $filtersearch . " order by line";
 
-        Logger($qry);
+        // Logger($qry);
         $data = $this->coreFunctions->opentable($qry);
 
 

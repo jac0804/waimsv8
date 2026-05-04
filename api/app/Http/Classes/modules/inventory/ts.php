@@ -293,25 +293,19 @@ class ts
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'post',
-      'unpost',
-      'lock',
-      'unlock',
-      'logs',
-      'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown',
-      'help',
-      'others'
-    );
+    $companyid = $config['params']['companyid'];
+    $btns = array('load', 'new', 'save',  'delete', 'cancel', 'print',  'post', 'unpost', 'lock', 'unlock',  'logs', 'edit', 'backlisting',  'toggleup', 'toggledown', 'help',  'others');
+
+    if ($companyid == 59) { //roosevelt
+      if (($key = array_search('lock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      if (($key = array_search('unlock', $btns)) !== false) {
+        unset($btns[$key]);
+      }
+      $btns = array_values($btns); //i-reindex
+    }
+
     $buttons = $this->btnClass->create($btns);
     $step1 = $this->helpClass->getFields(['btnnew', 'destination', 'dateid', 'cswhname', 'yourref', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'destination', 'dateid', 'cswhname', 'yourref', 'csrem', 'btnsave']);
@@ -361,7 +355,7 @@ class ts
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
 
-    
+
     if ($config['params']['companyid'] == 60) { //transpower      
       $changecode = $this->othersClass->checkAccess($config['params']['user'], 5496);
       if ($changecode) {
@@ -463,7 +457,7 @@ class ts
     if ($this->companysetup->getserial($config['params'])) {
       $stockbuttons = ['save', 'delete', 'serialout'];
     } else {
-      
+
       switch ($companyid) {
         case 21: //kinggeorge
           if ($allowviewbalance != 0) {
@@ -496,7 +490,6 @@ class ts
           default: //main
             array_push($stockbuttons, 'stockinfo');
             break;
-          
         }
         break;
     }
@@ -509,6 +502,13 @@ class ts
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+
+    switch ($companyid) {
+      case 59: //ROOSEVELT
+        $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
+        break;
+    }
 
     if ($companyid == 21) { //kinggeorge
       $obj[0][$this->gridname]['totalfield'] = 'ext2';
@@ -2115,7 +2115,7 @@ class ts
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
-    $isnoninv= 0;
+    $isnoninv = 0;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
@@ -2222,7 +2222,7 @@ class ts
 
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:' . $computedata['ext'] . ' Uom:' . $uom);
         $havestock = true;
-        if($isnoninv ==0){
+        if ($isnoninv == 0) {
           if ($ispallet) {
             $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
           } else {
@@ -2230,7 +2230,7 @@ class ts
           }
           if ($cost != -1) {
             $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
-  
+
             if ($companyid == 21) { //kinggeorge
               $this->logger->sbcwritelog($trno, $config, 'DEBUG', 'ADD - Line:' . $line . ' itemid:' . $itemid . '. Cost:' . $cost);
             }
@@ -2241,7 +2241,7 @@ class ts
             $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:0.0');
           }
         }
-        
+
         $row = $this->openstockline($config);
         $msg = 'Item was successfully added.';
 
@@ -2256,7 +2256,7 @@ class ts
     } elseif ($action == 'update') {
       $return = true;
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
-      if($isnoninv == 0){
+      if ($isnoninv == 0) {
         if ($ispallet) {
           $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
         } else {
@@ -2274,9 +2274,9 @@ class ts
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:0.0');
           $return = false;
         }
-      }      
+      }
 
-      
+
       if ($this->setserveditems($refx, $linex) == 0) {
         $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
         $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
@@ -2298,7 +2298,7 @@ class ts
         $this->setservedsoitems($sorefx, $solinex);
         $return = false;
       }
-      
+
       return $return;
     }
   } // end function
@@ -2656,9 +2656,14 @@ where stock.trno = ? and stock.qty>stock.qa";
 
     $modulename = $this->modulename;
     $data = [];
+    $isreload = false;
+    if ($config['params']['companyid'] == 59) { //rooosevelt
+      $this->posttrans($config);
+      $isreload = true;
+    }
     $style = 'width:500px;max-width:500px;';
 
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

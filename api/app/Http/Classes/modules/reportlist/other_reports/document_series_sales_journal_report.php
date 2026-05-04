@@ -407,13 +407,13 @@ class document_series_sales_journal_report
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('DATE', 110, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
-    $str .= $this->reporter->col('INV. NO.', 100, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
+    $str .= $this->reporter->col('INV. NO.', 130, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
     $str .= $this->reporter->col('', 10, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
     $str .= $this->reporter->col('CUSTOMER', 200, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
     $str .= $this->reporter->col('INV. REMARKS / BTB/ CHEQUE DETAILS', 300, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
-    $str .= $this->reporter->col('TOTAL SALES', 100, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
-    $str .= $this->reporter->col('AMOUNT PAID', 100, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
-    $str .= $this->reporter->col('A/R BALANCE', 100, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
+    $str .= $this->reporter->col('TOTAL SALES', 90, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
+    $str .= $this->reporter->col('AMOUNT PAID', 90, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
+    $str .= $this->reporter->col('A/R BALANCE', 90, null, '', $border, 'B', 'C', $font, '10', '', '', '4px');
     $str .= $this->reporter->col('STATUS', 80, null, '', $border, 'B', 'R', $font, '10', '', '', '4px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -527,14 +527,14 @@ class document_series_sales_journal_report
 
 
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col($data->dateid, 110, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($data->docno, 100, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col('', 10, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($data->clientname, 200, null, '', $border, 'B', 'LT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($checno, 300, null, '', $border, 'B', 'LT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($data->total != 0 ? number_format($data->total, 2) : '-', 100, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($data->paid != 0 ? number_format($data->paid, 2) : '-', 100, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '5px');
-          $str .= $this->reporter->col($data->bal != 0 ? number_format($data->bal, 2) : '-', 100, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col($data->dateid, 110, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($data->docno, 130, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col('', 10, null, '', $border, 'B', 'CT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($data->clientname, 200, null, '', $border, 'B', 'LT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($checno, 300, null, '', $border, 'B', 'LT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($data->total != 0 ? number_format($data->total, 2) : '-', 90, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($data->paid != 0 ? number_format($data->paid, 2) : '-', 90, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '3px 3px');
+          $str .= $this->reporter->col($data->bal != 0 ? number_format($data->bal, 2) : '-', 90, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '3px 3px');
           $str .= $this->reporter->col($data->status, 80, null, '', $border, 'B', 'RT', $font, $fontsize, '', '', '');
           $str .= $this->reporter->endrow();
           if (strlen($data->clientname) > 26) { //fix for long names

@@ -52,6 +52,10 @@ class item_to_expired
         data_set($col1, 'project.required', false);
         data_set($col1, 'project.label', 'Item Group/Project');
         break;
+      case 23:
+        array_push($fields, 'dwhname');
+        $col1 = $this->fieldClass->create($fields);
+        break;
       default:
         $col1 = $this->fieldClass->create($fields);
         break;
@@ -74,12 +78,15 @@ class item_to_expired
     $paramstr = "select 
       'default' as print,
       left(now(),10) as start,
+      '' as wh,
+      '' as dwhname,
+      0 as whid,
       '' as category,
       '' as subcat,
       '' as subcatname,
       '' as categoryname,
       '' as brand,
-      0 as brandid,
+      '' as brandid,
       '' as brandname,
       '' as project,
       0 as projectid,
@@ -124,6 +131,8 @@ class item_to_expired
     // $center    = $config['params']['center'];
     $asof       = date("Y/m/d", strtotime($config['params']['dataparams']['start']));
     $companyid = $config['params']['companyid'];
+    $wh     = $config['params']['dataparams']['wh'];
+    $dwhname     = $config['params']['dataparams']['dwhname'];
     $categoryname  = $config['params']['dataparams']['categoryname'];
     $subcatname =  $config['params']['dataparams']['subcatname'];
     $brandname     = $config['params']['dataparams']['brandname'];
@@ -137,6 +146,11 @@ class item_to_expired
       }
     } else {
       $filter .= "";
+    }
+
+    if ($wh != "") {
+      $whid = $config['params']['dataparams']['whid'];
+      $filter .= " and rr.whid='$whid'";
     }
 
     if ($categoryname != "") {
@@ -319,6 +333,21 @@ class item_to_expired
       }
     }
 
+    $show_warehouse = false;
+    $wh_display = "";
+    if ($companyid == 23) {
+      $show_warehouse = true;
+      $whname = $config['params']['dataparams']['whname'];
+      if ($whname != "") {
+        $wh_display = $whname;
+      } else {
+        $wh_display = "ALL";
+      }
+    }
+
+    // Set column width based on whether warehouse is shown
+    $col_width = ($show_warehouse) ? '250' : '150';
+
     $str = '';
     $layoutsize = '1000';
 
@@ -336,19 +365,28 @@ class item_to_expired
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Project : ' . $projname, '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
 
-    if ($categoryname == '') {
-      $str .= $this->reporter->col('Category : ALL',  '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Category : ' . $categoryname,  '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    // Warehouse column - ONLY for company 23
+    if ($show_warehouse) {
+      $str .= $this->reporter->col('Warehouse : ' . $wh_display, $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
     }
 
-    if ($subcatname == '') {
-      $str .= $this->reporter->col('Sub-Category: ALL', '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    // Project column
+    $str .= $this->reporter->col('Project : ' . $projname, $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+
+    // Category column
+    if ($categoryname == '') {
+      $str .= $this->reporter->col('Category : ALL', $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
     } else {
-      $subcatname =  $config['params']['dataparams']['subcatname'];
-      $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Category : ' . $categoryname, $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    }
+
+    // Sub-Category column
+    if ($subcatname == '') {
+      $str .= $this->reporter->col('Sub-Category: ALL', $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    } else {
+      $subcatname = $config['params']['dataparams']['subcatname'];
+      $str .= $this->reporter->col('Sub-Category : ' . $subcatname, $col_width, null, '', $border, '', 'L', $font, $font_size, '', '', '');
     }
 
     $str .= $this->reporter->endrow();
@@ -377,9 +415,9 @@ class item_to_expired
     $result = $this->reportDefault($config);
     $this->reporter->linecounter = 0;
 
-    if (empty($result)) {
-      return $this->othersClass->emptydata($config);
-    }
+    // if (empty($result)) {
+    //   return $this->othersClass->emptydata($config);
+    // }
 
     $str = '';
     $layoutsize = '1000';

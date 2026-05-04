@@ -992,7 +992,7 @@ class posClass
       }
       return false;
     } catch (Exception $ex) {
-      throw new \Exception('Exception message (ftpfilecheckendfile) => ' . $ex);
+      throw new \Exception('Exception message (ftpfilecheckendfile) => ' . $path . ' - ' . $ex);
     }
   }
 
@@ -2280,11 +2280,14 @@ class posClass
         $this->coreFunctions->LogConsole(count($data));
         // $this->coreFunctions->LogConsole(json_encode($data));
 
+        $blnUpDlock = false;
+
         if (!empty($data)) {
           $uniquefield = [];
           switch ($table) {
             case 'item':
               $uniquefield = ['itemid'];
+              $blnUpDlock = true;
               break;
             case 'uom':
               $uniquefield = ['itemid', 'uom'];
@@ -2292,6 +2295,7 @@ class posClass
             case 'client':
             case 'clientinfo':
               $uniquefield = ['clientid'];
+              $blnUpDlock = true;
               break;
             case 'item_class':
               $uniquefield = ['cl_id'];
@@ -2375,6 +2379,19 @@ class posClass
                   $this->coreFunctions->LogConsole("failed update");
                   $status = false;
                 }
+              }
+            }
+
+            if ($blnUpDlock) {
+              switch ($table) {
+                case 'item':
+                case 'uom':
+                  $this->coreFunctions->execqry("update item set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' WHERE itemid=" . $uniquefield[0]);
+                  break;
+                case 'client':
+                case 'clientinfo':
+                  $this->coreFunctions->execqry("update client set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' WHERE clientid=" . $uniquefield[0]);
+                  break;
               }
             }
           }

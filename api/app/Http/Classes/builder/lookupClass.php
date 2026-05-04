@@ -17,6 +17,7 @@ use App\Http\Classes\lookup\documentmanagementlookup;
 use App\Http\Classes\builder\txtfieldClass;
 use App\Http\Classes\lookup\poslookup;
 use App\Http\Classes\lookup\hmslookup;
+use App\Http\Classes\lookup\barangaylookup;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Classes\Logger;
@@ -42,6 +43,7 @@ class lookupClass
 
   private $poslookup;
   private $hmslookup;
+  private $barangaylookup;
 
 
   public function __construct()
@@ -61,6 +63,7 @@ class lookupClass
     $this->filesaving = new filesaving;
     $this->poslookup = new poslookup;
     $this->hmslookup = new hmslookup;
+    $this->barangaylookup = new barangaylookup;
   }
 
   //declaration of function to avoid double function
@@ -69,13 +72,16 @@ class lookupClass
     ini_set('memory_limit', '512M');
     $systemtype =  $this->companysetup->getsystemtype($config['params']);
     switch ($config['params']['action']) {
+      case 'repagentmulti':
+        return $this->lookupclientmulti($config);
+        break;
       case 'lookupdocno':
         return $this->lookupdocno($config);
         break;
       case 'lookupinvoice':
         return $this->lookupinvoice($config);
         break;
-      case 'lookupclient':
+      case 'lookupclient':      
       case 'lookupsqsupplier':
         switch ($config['params']['lookupclass']) {
           case "hbranch":
@@ -711,14 +717,17 @@ class lookupClass
 
       // lookup barangay
       case 'lookupbrgyclient':
-        return $this->getisbrgyclient($config);
+        return $this->barangaylookup->getisbrgyclient($config);
         break;
       case 'lookupbusinessclr':
-        return $this->getbusinessclr($config);
+        return $this->barangaylookup->getbusinessclr($config);
         break;
       case 'lookuppurposed':
-        return $this->localclearace($config);
+        return $this->barangaylookup->localclearace($config);
         break;
+      case 'lookupbrgycomplaint':
+        return $this->barangaylookup->brgycomplaint($config);
+        break;  
       // case 'lookuprxscompany':
       //   return  $this->lookuprxscompany($config);
       //   break;
@@ -1070,6 +1079,13 @@ class lookupClass
       case 'lookupchangetimettc':
         return $this->payrolllookup->lookupchangetimettc($config);
         break;
+      case 'lookuppbank':
+        return $this->payrolllookup->lookupbanktype($config);
+        break;
+      case 'lookuppaygroup':
+        return $this->payrolllookup->lookuppaygroup($config);
+        break;  
+
       // end of payroll
       case 'lookupqtype':
         return $this->hrislookup->lookupqtype($config);
@@ -1811,6 +1827,10 @@ class lookupClass
         return $this->lookupstatus($config);
         break;
 
+      case 'lookupinfracodeledger':
+        return $this->lookupinfracodeledger($config);
+        break;
+
       case 'lookupinfracode':
         return $this->lookupinfracode($config);
         break;
@@ -1833,6 +1853,9 @@ class lookupClass
       case 'lookuptruledger':
         return $this->lookuptruledger($config);
         break;
+      case 'lookupworkingledger':
+        return $this->lookupworkingledger($config); 
+        break;  
 
       // addded 2026-03-19
       case 'lookupqservice':
@@ -1846,6 +1869,17 @@ class lookupClass
       case 'lookupcollectiondetails':
         return $this->lookupcollectiondetails($config);
         break;
+      case 'lookupfalocation':
+        return $this->lookupfalocation($config);
+        break;
+      case 'lookupcalltype':
+        return $this->lookupcalltype($config);
+        break;
+    
+      case 'lookupopentask':
+        return $this->lookupopentask($config);
+        break;
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
         break;
@@ -1857,6 +1891,10 @@ class lookupClass
   public function lookupcallback($config)
   {
     switch ($config['params']['action']) {
+      case 'getclientmulti':
+        return 'A';
+        //return $this->getclientmulti($config);
+        break;
       case 'computeterms':
         return $this->computeterms($config);
         break;
@@ -2131,6 +2169,7 @@ class lookupClass
   // 4. 'callback' - call api after select
   // 5. 'plotledger' - plotting in view textbox
   // 6. 'show' - no action, just for show
+  // 7. 'plotmulti' - multiple selection from lookup- use for reports params only, plotting same with plothead, required keyid field on qry
   // action - if you select plottype = callback, required for function to execute in server
   // plotting - after select, choose what field to plot and where to plot(array)
   // 1. sample format - array('field1'=>'field2')
@@ -4105,9 +4144,48 @@ class lookupClass
                 if ($check['leftjoin'] != "") {
                   $leftjoin .= $check['leftjoin'];
                 }
+              }else {
+                   if (isset($config['params']['name'])) {
+                     if ($config['params']['name'] == 'pay_slip') {
+                       if (!empty($config['params']['addedparams'])) {
+                         $batchid =  $config['params']['addedparams'][0] != "" ? $config['params']['addedparams'][0] : 0;
+                         $divid =  $config['params']['addedparams'][1] != "" ? $config['params']['addedparams'][1] : 0;
+                         $diptid =  $config['params']['addedparams'][2] != "" ? $config['params']['addedparams'][2] : 0;
+
+                         $batch = "";
+                         $filter_emp = "";
+
+                        if ($divid != 0) {
+                           $filter_emp .= " and employee.divid = $divid ";
+                         }
+                         if ($diptid != 0) {
+                           $filter_emp .= " and employee.deptid = $diptid ";
+                         }
+                         if ($batchid != 0) {
+                           $batch .= " and pt.batchid = $batchid ";
+                             $query = "
+                                 select employee.empid from paytrancurrent as pt
+                                 left join employee on employee.empid = pt.empid
+                                 where 1=1 $batch $filter_emp group by employee.empid
+                                 union all
+                                 select employee.empid from paytranhistory as pt
+                                 left join employee on employee.empid = pt.empid 
+                                 where 1=1 $batch $filter_emp group by employee.empid";
+                             $empid = $this->coreFunctions->opentable($query);
+                             if(!empty($empid)){
+                              $id = implode(",", array_map(function ($e) {
+                                 return $e->empid;
+                              }, $empid));
+                             $condition .= " and employee.empid in ($id) ";
+                            }
+                         }else {
+                          $condition .= $filter_emp;
+                         }
+                       }
+                     }
+                   }
               }
             }
-
             $condition .= "order by client.client";
             break;
           case 'lookupemployeelist':
@@ -4393,6 +4471,24 @@ class lookupClass
           $plotting['shipto'] = 'shipto';
           $plottype = 'plothead';
         }
+        if($companyid == 0){ // bms
+          if($config['params']['doc'] == 'CR'){
+             $addonfield .= ", 
+             case 
+             when client.isbrgy = 1 then 'Local/ID Clearance'
+             when client.istru = 1 then 'T.R.U Clearance'
+             when client.isbusiness = 1 then 'Business Clearance'
+             when client.isinfra = 1 then 'Infrastructure Clearance'
+             when client.isbrgywl = 1 then 'Working Clearance' else '' end as clearancetype";
+          }
+        }
+
+        if ($config['params']['companyid'] == 59) { //roosevelt
+          $addonfield .= ", ifnull(client.rem,'') as rem";
+          $plotting['rem'] = 'rem';
+          $plottype = 'plothead';
+        }
+
 
         if ($config['params']['companyid'] == 43 && ($config['params']['doc'] == 'MI' || $config['params']['doc'] == 'MR')) { //MIGHTY
           $condition = " where (client.iscustomer=1 or client.isemployee=1 or client.issupplier=1) and client.isinactive =0 " . $addoncondition . " order by client";
@@ -5202,6 +5298,11 @@ class lookupClass
             array_push($cols, array('name' => 'province', 'label' => 'Province', 'align' => 'left', 'field' => 'province', 'sortable' => true, 'style' => 'font-size:16px;'));
             array_push($cols, array('name' => 'region', 'label' => 'Region', 'align' => 'left', 'field' => 'region', 'sortable' => true, 'style' => 'font-size:16px;'));
           }
+        }
+        if($config['params']['companyid'] == 0){ // bms
+         if($config['params']['doc'] == 'CR'){
+            array_push($cols, array('name' => 'clearancetype', 'label' => 'Clearance Type', 'align' => 'left', 'field' => 'clearancetype', 'sortable' => true, 'style' => 'font-size:16px;'));
+         }
         }
 
         break;
@@ -6171,6 +6272,8 @@ class lookupClass
         array_push($cols, array('name' => 'itemname', 'label' => 'Item Description', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px; width:20%;max-width:20%;'));
         array_push($cols, array('name' => 'uom', 'label' => 'Uom', 'align' => 'left', 'field' => 'uom', 'sortable' => true, 'style' => 'font-size:16px; width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'namt5', 'label' => 'Net Invoice', 'align' => 'right', 'field' => 'namt5', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
+        array_push($cols, array('name' => 'amt7', 'label' => 'DR Price', 'align' => 'right', 'field' => 'amt7', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
+        array_push($cols, array('name' => 'disc7', 'label' => 'DR Disc', 'align' => 'right', 'field' => 'disc7', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'namt7', 'label' => 'Net DR', 'align' => 'right', 'field' => 'namt7', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'amt2', 'label' => 'Wholesale Base', 'align' => 'right', 'field' => 'amt2', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'disc2', 'label' => 'Wholesale Disc', 'align' => 'left', 'field' => 'disc2', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
@@ -6318,7 +6421,7 @@ class lookupClass
         $qry = "select sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
               itemname,item.uom,uom1.factor,round(item.amt,2) as amt,brand,ifnull(cls.cl_name,'') as class,body,
               ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
-              round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color,item.namt5,if(item.isinactive=1,'Inactive','Active') as activestat
+              round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color,item.namt5,if(item.isinactive=1,'Inactive','Active') as activestat 
               from item
               left join item_class as cls on cls.cl_id=item.class
               left join uom as uom1 on item.itemid = uom1.itemid and uom1.uom = item.uom
@@ -7263,10 +7366,11 @@ class lookupClass
       case 'en_course':
       case 'locationledger':
       case 'restday':
-      case 'workonresday':
+      case 'word':
       case 'lcc':
       case 'ucc':
       case 'itinerary':
+      case 'occ':
 
         $cols = array(
           array('name' => 'user', 'label' => 'User', 'align' => 'left', 'field' => 'user', 'sortable' => true, 'style' => 'font-size:16px;'),
@@ -7993,7 +8097,7 @@ class lookupClass
             $qry = "select acnoid, acno,acnoname from coa where left(alias,2) in ('CR','CA','CB')";
           } else {
             if ($doc == 'CV' && $company == 55) { //afli
-              $qry = "select c.acnoid, c.acno,c.acnoname,case ifnull(ch.current,'') when '' then '' else (case ch.current when 0 then ch.start else ch.current+1 end) end as checkno from coa as c left join checksetup as ch on ch.acnoid = c.acnoid and ch.current <> ch.end where left(c.alias,2)=?";
+              $qry = "select c.acnoid, c.acno,c.acnoname,case ifnull(ch.current,'') when '' then '' else (case ch.current when 0 then ch.start else ch.current+1 end) end as checkno from coa as c left join checksetup as ch on ch.acnoid = c.acnoid and ch.current <> ch.end where left(c.alias,2)='".$alias."'";
             } else {
               switch ($company) {
                 case 55: //afli
@@ -8012,14 +8116,13 @@ class lookupClass
                   break;
                 default:
                   select:
-                  $qry = "select acnoid, acno,acnoname from coa where left(alias,2)=?";
+                  $qry = "select acnoid, acno,acnoname from coa where left(alias,2)='".$alias."'";
                   break;
               }
             }
           }
         }
-
-        $data = $this->coreFunctions->opentable($qry, [$alias]);
+        $data = $this->coreFunctions->opentable($qry);
         break;
     }
 
@@ -10198,6 +10301,9 @@ class lookupClass
 
   public function pendingsisummary($config)
   {
+
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $lookupsetup = array(
       'type' => 'multi',
       'rowkey' => 'trno',
@@ -10206,6 +10312,18 @@ class lookupClass
       ['label' => 'Show Details', 'lookupclass' => 'lookupsetup', 'action' => 'pendingsidetail']],
       'style' => 'width:800px;max-width:800px;'
     );
+
+    if($companyid == 59){ //roosevelt
+      if($doc == 'PL'){
+          $lookupsetup = array(
+           'type' => 'multi',
+           'rowkey' => 'trno',
+           'title' => 'List of Invoice',
+           'style' => 'width:800px;max-width:800px;'
+          );
+      }
+
+    }
 
     $plotsetup = array(
       'plottype' => 'callback',
@@ -10218,6 +10336,14 @@ class lookupClass
       array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
     );
+
+    if($companyid == 59){
+      if($doc == 'PL'){
+      array_push($cols, 
+      array('name' => 'clientname', 'label' => 'Customer', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'totalamt', 'label' => 'Amount', 'align' => 'left', 'field' => 'totalamt', 'sortable' => true, 'style' => 'font-size:16px;'));
+      }
+    }
 
 
 
@@ -10357,7 +10483,7 @@ class lookupClass
     $cols = array(
       array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;width:200px;'),
       array('name' => 'totalamt', 'label' => 'Amount', 'align' => 'left', 'field' => 'totalamt', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
@@ -11412,13 +11538,15 @@ class lookupClass
     }
 
     $title = 'List of Project';
-
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $title = 'List of Item Group';
-    }
-
-    if ($companyid == 26) { //bee healthy
+    switch ($companyid) {
+      case 10://afti, afti usd
+      case 12:
+         $title = 'List of Item Group';
+       
+        break;
+      case 26://bee healthy
       $title = 'List of Business Unit';
+       break;
     }
 
     $lookupsetup = array(
@@ -11734,7 +11862,7 @@ class lookupClass
       case 'stbranch':
         $plotting = array('deptid' => 'line', 'dept' => 'code', 'clientname' => 'name', 'client' => 'warehouse', 'wh2' => 'whname');
         if ($companyid == 40) { //cdo
-          $filter = " and c.code <> '$center'";
+          $filter = " and center.code <> '$center'";
         }
         break;
       default:
@@ -11779,7 +11907,7 @@ class lookupClass
           where access.userid = $userid";
           break;
         case 'stbranch':
-          $qry = "select center.line,center.code,center.name,center.shortname,center.warehouse,wh.clientname as whname from center left join client as wh on wh.client = center.warehouse order by center.line";
+          $qry = "select center.line,center.code,center.name,center.shortname,center.warehouse,wh.clientname as whname from center left join client as wh on wh.client = center.warehouse where 1=1 $filter order by center.line";
           break;
 
         default:
@@ -12349,7 +12477,11 @@ class lookupClass
   public function lookupstreet($config)
   {
     //default
+    $doc=$config['params']['doc'];
     $plotting = array('area' => 'street', 'street' => 'code');
+    if($doc=='BG'){
+    $plotting = array('street' => 'street','addr' => 'street');
+    }
     $plottype = 'plothead';
     $title = 'Street Lists';
 
@@ -12398,7 +12530,7 @@ class lookupClass
       ['name' => 'area', 'label' => 'Area', 'align' => 'left', 'field' => 'area', 'sortable' => true, 'style' => 'font-size:16px;']
     ];
 
-    $qry = "select distinct area from client";
+    $qry = "select distinct area from client order by area";
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   } //end function
@@ -15237,6 +15369,11 @@ class lookupClass
         $plotting = array('type' => 'mode');
         $qry = "select '' as mode union all select 'CASH' as mode union all select 'CHEQUE/Terms' as mode";
         break;
+        case 'RR':
+          if($config['params']['companyid']==65){//metrodragon
+            $qry = "select '' as mode union all select 'CASH' as mode union all select 'CHEQUE' as mode";
+          }
+        break;
     }
 
     $plotsetup = array(
@@ -17449,6 +17586,10 @@ class lookupClass
         $plotting = array('whcode4' => 'client', 'whname4' => 'clientname');
         $title = 'Warehouse Filter 4';
         break;
+      default:
+        $plotting = array('wh' => 'client', 'whname' => 'clientname','whid' => 'clientid');
+        $title = 'Warehouse Filter';
+        break;
     }
 
 
@@ -17469,7 +17610,7 @@ class lookupClass
       array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $qry = "select client,clientname from client where iswarehouse=1 order by client asc";
+    $qry = "select clientid,client,clientname from client where iswarehouse=1 order by client asc";
 
     $data = $this->coreFunctions->opentable($qry);
 
@@ -18372,8 +18513,8 @@ class lookupClass
   } //end function
 
   public function lookupsourcename($config)
-  {
-    $params = strtolower($config['params']['addedparams'][0]);
+  { 
+      $params = strtolower($config['params']['addedparams'][0]);
 
     $lookupsetup = array(
       'type' => 'single',
@@ -18494,7 +18635,6 @@ class lookupClass
         left join contactperson as cp on cp.line = att.contactid
         where att.exhibitid = '" . $sourceid . "' and att.optrno = 0
         " . $filter . "";
-
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
@@ -19831,6 +19971,15 @@ class lookupClass
           select case reqtype when '' then category else concat(category,'~',reqtype) end as field1,line from reqcategory where isindustry =1";
 
         $btnadd = $this->sqlquery->checksecurity($config, 4476, '/tableentries/tableentry/entryclientindustry');
+        break;
+      case 'lookuptype1':
+        $plotting = array('type' => 'field1');
+        $plottype = 'plothead';
+        $title = 'TYPE';
+        $label = 'Type';
+        $qry = "select 'SINGLE' as field1 
+        union all 
+        select 'UMBRELLA' as field1 ";
         break;
 
       default:
@@ -24203,105 +24352,6 @@ class lookupClass
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
-  public function getisbrgyclient($config)
-  {
-
-    $lookupsetup = array(
-      'type' => 'single',
-      'rowkey' => 'keyid',
-      'title' => 'List of Barangay Member',
-      'style' => 'width:100%;max-width:100%;'
-    );
-
-    $plotsetup = array(
-      'plottype' => 'plothead',
-      'plotting' => array('client' => 'client', 'clientid' => 'clientid', 'address' => 'address', 'addressno' => 'addressno', 'clientname' => 'clientname')
-    );
-
-    // lookup columns
-    $cols = array(
-      array('name' => 'client', 'label' => 'Barangay ID', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'clientname', 'label' => 'Full Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'address', 'label' => 'Address', 'align' => 'left', 'field' => 'address', 'sortable' => true, 'style' => 'font-size:16px;'),
-    );
-
-    $query = "  
-      select client,concat(info.lname,', ',info.fname,' ',info.mname) as clientname,addressno,client.clientid as keyid, client.clientid,client.addr as address
-    from client
-    left join clientinfo as info on info.clientid = client.clientid 
-    where isbrgy = 1";
-    $data = $this->coreFunctions->opentable($query);
-    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
-  }
-
-  public function getbusinessclr($config)
-  {
-    $lookupsetup = array(
-      'type' => 'single',
-      'rowkey' => 'keyid',
-      'title' => 'List of Business',
-      'style' => 'width:100%;max-width:100%;'
-    );
-
-    $plotsetup = array(
-      'plottype' => 'plothead',
-      'plotting' => array(
-        'client' => 'client',
-        'clientid' => 'clientid',
-        'address' => 'addr',
-        'bstype' => 'bstyle',
-        'clientname' => 'clientname',
-        'ownername' => 'owner',
-        'owneraddr' => 'addr2',
-        'contact' => 'contact',
-        'rem' => 'rem',
-        'ownertype' => 'building',
-        'trnxtype' => 'clientpref'
-      )
-    );
-
-    // lookup columns
-    $cols = array(
-      array('name' => 'client', 'label' => 'Barangay ID', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'clientname', 'label' => 'Business Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'addr', 'label' => 'Business Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'bstyle', 'label' => 'Business Type', 'align' => 'left', 'field' => 'bstyle', 'sortable' => true, 'style' => 'font-size:16px;'),
-    );
-
-    $query = "  
-    select client,clientname,addr,client.clientid as keyid, client.clientid,type,owner,addr2,bstyle,contact,rem,building,clientpref
-    from client
-    where isbusiness = 1";
-    $data = $this->coreFunctions->opentable($query);
-    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
-  }
-
-  public function localclearace($config)
-  {
-
-    $lookupsetup = array(
-      'type' => 'single',
-      'rowkey' => 'keyid',
-      'title' => 'List of Barangay Member',
-      'style' => 'width:100%;max-width:100%;'
-    );
-
-    $plotsetup = array(
-      'plottype' => 'plothead',
-      'plotting' => array('purposeid' => 'line', 'purpose' => 'purpose', 'amount' => 'price')
-    );
-
-    // lookup columns
-    $cols = array(
-      array('name' => 'purpose', 'label' => 'Clearance', 'align' => 'left', 'field' => 'purpose', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'price', 'label' => 'Rate', 'align' => 'left', 'field' => 'price', 'sortable' => true, 'style' => 'font-size:16px;')
-    );
-
-    $query = "select line as keyid,line, clearance as purpose,format(price, 2) as price from locclearance";
-
-    $data = $this->coreFunctions->opentable($query);
-    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
-  }
 
   public function lookupbank($config)
   {
@@ -24354,6 +24404,8 @@ class lookupClass
     select 'Purchase of laptop or desk top of computer' as purpose
     union all
     select 'Financial assistance in cases of calamity' as purpose
+    union all
+    select 'Others' as purpose
 ";
 
 
@@ -24366,8 +24418,8 @@ class lookupClass
     $row = $config['params']['row'];
     $check = $this->coreFunctions->datareader("select trno as value from cmevaluate where empid=" . $row['empid'] . " and trno=" . $row['regline'], [], '', true);
     if ($check == 0) {
-      if ($this->coreFunctions->execqry("insert into cmevaluate(trno, empid) values(" . $row['regline'] . ", " . $row['empid'] . ")", 'insert')) {
-        $data = $this->coreFunctions->opentable("select e.empid, e.trno as line, concat(emp.empfirst, ' ', emp.emplast) as name from cmevaluate as e left join employee as emp on emp.empid=e.empid where e.trno=" . $row['regline']);
+      if ($this->coreFunctions->execqry("insert into cmevaluate(trno, empid, createdate, createby) values(" . $row['regline'] . ", " . $row['empid'] . ",'". $this->othersClass->getCurrentTimeStamp() ."','". $config['params']['user'] ."')", 'insert')) {
+        $data = $this->coreFunctions->opentable("select e.empid, e.trno as line, concat(emp.empfirst, ' ', emp.emplast) as name, e.createdate from cmevaluate as e left join employee as emp on emp.empid=e.empid where e.trno=" . $row['regline']);
         $this->othersClass->insertUpdatePendingapp(0, $row['regline'], 'CONTRACTMONITORING', [], '', $config, $row['empid'], false, true);
         return ['status' => true, 'msg' => 'Evaluator added', 'reloadledgergrid' => true, 'data' => $data];
       }
@@ -24921,7 +24973,7 @@ class lookupClass
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
 
-  public function lookupinfracode($config)
+  public function lookupinfracodeledger($config)
   {
     $plotting = array('infraid' => 'infraid', 'infracode' => 'infracode');
     $plottype = 'plothead';
@@ -24970,6 +25022,40 @@ class lookupClass
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
 
+  public function lookupinfracode($config){
+
+    $plotting = array('client' => 'client', 'clientid' => 'clientid', 'address' => 'address', 
+     'clientname' => 'clientname'
+    );
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Infrastructure Ledger',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'clientname', 'label' => 'Client Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'],
+    ];
+   
+  $query = "  
+    select client,clientname,client.clientid as keyid,
+    client.clientid,client.addr as address
+    from client
+    left join clientinfo as info on info.clientid = client.clientid 
+    where isinfra = 1";
+    $data = $this->coreFunctions->opentable($query);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
 
   public function lookupinfratype($config)
   {
@@ -24991,15 +25077,15 @@ class lookupClass
     $cols = [
       [
         'name' => 'infratype',
-        'label' => 'Code',
+        'label' => 'Infratype',
         'align' => 'left',
-        'field' => 'infracode',
+        'field' => 'infratype',
         'sortable' => true,
         'style' => 'font-size:16px;'
       ],
     ];
 
-    $data = $this->coreFunctions->opentable("select '' as infratype");
+    $data = $this->coreFunctions->opentable("select '' as infratype union all select infratype from client where infratype<>''");
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
@@ -25157,5 +25243,241 @@ class lookupClass
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
+
+
+    public function lookupworkingledger($config){
+
+    $plotting = array('client' => 'client', 'clientid' => 'clientid', 'address' => 'addr','clientname' => 'clientname','bday' => 'bday',
+         'civilstatus' => 'civilstatus', 'sex' => 'sex', 'employer' => 'employer', 'companyaddress' => 'companyaddress', 'position' => 'position','picture' => 'picture');
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Working Ledger',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'clientname', 'label' => 'Client Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'],
+    ];
+   
+  $query = "  
+    select client,concat(info.lname,', ',info.fname,' ',info.mname) as clientname,ifnull(client.addr,'') as addr,
+    date_format(client.bday,'%Y-%m-%d') as bday,   ifnull(info.civilstatus,'') as civilstatus,client.sex,
+    ifnull(info.employer,'') as employer,ifnull(info.companyaddress,'') as companyaddress,ifnull(client.position,'') as position,client.picture
+    from client
+    left join clientinfo as info on info.clientid = client.clientid 
+    where isbrgywl = 1";
+    $data = $this->coreFunctions->opentable($query);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+
+   public function brgycomplaint($config)
+  {
+    $doc=$config['params']['doc'];
+
+    if($doc=='MH'){
+      $title='Summon';
+    }else{
+      $title='List of Brgy Complaint';
+    }
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'rowkey' => 'keyid',
+      'title' => $title,
+      'style' => 'width:100%;max-width:100%;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'plotting' => array(
+        'layref' => 'docno',
+        'clientname' => 'clientname',
+        'address' => 'address',
+        'contact' => 'contact',
+        'ownername' => 'ownername',
+        'owneraddr' => 'owneraddr',
+        'orderno' => 'orderno',
+        'crno' => 'crno',
+        'conaddr' => 'conaddr',
+        'creditinfo' => 'creditinfo',
+        'ourref' => 'ourref',
+        'bstype' => 'bstype',
+        'refdate' => 'dateid'
+      )
+    );
+
+    // lookup columns
+    $cols = array(
+      array('name' => 'docno', 'label' => 'Brgy Case #', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'clientname', 'label' => 'Complainant Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'ownername', 'label' => 'Respondent Name', 'align' => 'left', 'field' => 'ownername', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'crno', 'label' => 'For', 'align' => 'left', 'field' => 'crno', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'conaddr', 'label' => 'T.D.P.O', 'align' => 'left', 'field' => 'conaddr', 'sortable' => true, 'style' => 'font-size:16px;')
+    );
+
+    if($doc=='MH'){
+      $doc='MN';
+    }else{
+      $doc='JU';
+    }
+
+    $query="select head.trno as keyid,head.docno, ifnull(head.clientname,'') as clientname,
+              ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
+              ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
+              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
+              ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
+              ifnull(head.creditinfo,'') as creditinfo
+              from glhead as head
+              left join cntnum as num on num.trno=head.trno
+              where num.doc = '$doc' and head.isfinish <>1";
+    $data = $this->coreFunctions->opentable($query);
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function lookupclientmulti($config)
+  {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
+    $systemtype = $this->companysetup->getsystemtype($config['params']);
+
+    $lookupsetup = array(
+      'type' => 'multi',
+      'rowkey' => 'keyid',
+      'title' => 'List of Client',
+      'btns' => [],
+      'style' => 'width:100%;max-width:100%;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'plotmulti',
+      'plotting' => array(
+        'agentid' => 'keyid', 
+        'agentname'=>'clientname')
+    );
+
+    // lookup columns
+    $cols = array();
+    array_push($cols, array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'));
+    array_push($cols, array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
+    array_push($cols, array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'));
+
+
+    //testqry
+    $data = $this->coreFunctions->opentable("select clientid as keyid,client,clientname,addr from client where isagent =1 limit 500");
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+    public function lookupfalocation($config)
+  {
+    $doc=$config['params']['doc'];
+    $title='List of Department';
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'rowkey' => 'keyid',
+      'title' => $title,
+      'style' => 'width:70%;max-width:70%;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'plotting' => array(
+        'loc' => 'loc',
+        'locid' => 'clientid' ));
+
+    // lookup columns
+    $cols = array(
+      array('name' => 'loc', 'label' => 'Department Name ', 'align' => 'left', 'field' => 'loc', 'sortable' => true, 'style' => 'font-size:16px;'));
+    $query="select  client.clientid,ifnull(client.clientname, '') as loc
+            from client  where client.isdepartment=1";
+    $data = $this->coreFunctions->opentable($query);
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function lookupcalltype($config){
+   $plotting = array();
+
+    $plotting = array('calltype' => 'calltype');
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List Of Call Type',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'calltype', 'label' => 'Call Type', 'align' => 'left', 'field' => 'calltype', 'sortable' => true, 'style' => 'font-size:16px;'],
+    ];
+
+      $qry = "select 'Follow Up' as calltype
+    union all
+    select 'Prospecting'
+    union all 
+    select 'Others'";
+    $data = $this->coreFunctions->opentable($qry);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+
+    //rowen 2026-04-27
+  public function lookupopentask($config)
+  {
+    //default
+    $companyid = $config['params']['companyid'];
+    $plotting = array();
+    $plottype = '';
+
+    $title = 'List of Open Task';
+
+    $plotting = array('clientname' => 'clientname', 'tmtrno' => 'trno', 'tmclientid' => 'clientid','tmclient' => 'client','tmreseller' => 'reseller');
+    $plottype = 'plotledger';
+       
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => $plottype,
+      'action' => '',
+      'plotting' => $plotting
+    );
+    // lookup columns
+    
+        $cols = [
+          ['name' => 'clientname', 'label' => 'Clientname', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
+          ['name' => 'reseller', 'label' => 'Reseller', 'align' => 'left', 'field' => 'reseller', 'sortable' => true, 'style' => 'font-size:16px;'],
+          ['name' => 'rem', 'label' => 'Task', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;']];
+
+        $qry = "select 0 as trno, 0 as clientid, '' as rem, '' as clientname,'' as client, '' as reseller
+                union all
+                select tm.trno,tm.clientid,tm.rem,cl.clientname, cl.client as client,tm.reseller from tmhead as tm
+                left join client as cl on cl.clientid=tm.clientid";
+  
+
+    $data = $this->coreFunctions->opentable($qry);
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  } //end function
+
+
+
+
+
 
 } // end class

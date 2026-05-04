@@ -74,7 +74,7 @@ class hd
                         dept.clientname as deptname,head.deptid,ir.docno as irno,ir.idescription as irdesc,
                         chead.code as artcode,cdetail.section as sectioncode,date(ne.dateid) as noticedate,
                         date(ir.dateid) as irdate,date(ne.ddate) as noticedeadline,head.findings,
-                        date(head.startdate) as disciplinarystart,date(ir.idate) as memodate
+                        date(head.startdate) as disciplinarystart,date(ir.idate) as memodate, date(head.enddate) as disciplinaryend
                 from disciplinary as head
                 left join client as emp on emp.clientid=head.empid
                 left join client as dept on dept.clientid=head.deptid
@@ -92,7 +92,7 @@ class hd
                        dept.clientname as deptname,head.deptid,ir.docno as irno,ir.idescription as irdesc,
                        chead.code as artcode,cdetail.section as sectioncode,date(ne.dateid) as noticedate,
                        date(ir.dateid) as irdate,date(ne.ddate) as noticedeadline,head.findings,
-                       date(head.startdate) as disciplinarystart,date(ir.idate) as memodate
+                       date(head.startdate) as disciplinarystart,date(ir.idate) as memodate, date(head.enddate) as disciplinaryend
                 from hdisciplinary as head
                 left join client as emp on emp.clientid=head.empid
                 left join client as dept on dept.clientid=head.deptid
@@ -430,14 +430,28 @@ class hd
 
         PDF::MultiCell(0, 0, "\n");
 
-        PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(210, 18, 'This disciplinary action takes effect on ', '', 'L', false, 0);
+        $start = $data[0]['disciplinarystart'];
+        $end   = $data[0]['disciplinaryend'];
 
-        PDF::SetFont($fontbold, '', $fontsize);
-        $disciplinarystart = $data[0]['disciplinarystart'];
-        $nodhere = new DateTime($disciplinarystart);
-        $newformatnoddate = strtoupper($nodhere->format('M-j-Y'));
-        PDF::MultiCell(590, 18, $newformatnoddate . '.', '', 'L', false);
+        $formattedStart = strtoupper((new DateTime($start))->format('M-j-Y'));
+        $formattedEnd   = strtoupper((new DateTime($end))->format('M-j-Y'));
+
+        if ($start == $end) {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(210, 18, 'This disciplinary action takes effect on', '', 'L', false, 0);
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(490, 18, $formattedStart . '.', '', 'L', false);
+        } else {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(230, 18, 'This disciplinary action takes effect starting', '', 'L', false, 0);
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(70, 18, $formattedStart, '', 'L', false, 0);
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(30, 18, ' until', '', 'L', false, 0);
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(370, 18, $formattedEnd . '.', '', 'L', false);
+        }
+
 
         PDF::MultiCell(0, 0, "\n\n\n");
 

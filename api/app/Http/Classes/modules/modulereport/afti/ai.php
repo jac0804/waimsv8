@@ -1359,6 +1359,7 @@ class ai
 
                 if ($datastock[0]['vattype'] == 'VATABLE') {
                     $vatsales = $vatsales + $linetotal;
+                    $totalext = $totalext + $linetotal;
                 } else {
                     $vatsales = 0;
                     $totalext = $totalext + $linetotal;
@@ -1386,6 +1387,7 @@ class ai
                 $vat = 0;
             }
 
+            //$tamtdue = round(($vatsales + $vat) - $ewt, 2);
             $cur = $data[0]['cur'];
             $nonvat = '0.00';
             if ($datastock[0]['vattype'] != 'VATABLE') {
@@ -1420,7 +1422,6 @@ class ai
         } while (PDF::getY() < 620);
 
        
-
         //1
         PDF::MultiCell(150, 10, '', 'T', 'R', false, 0);
         PDF::MultiCell(90, 10, 'VATable Sales ', 'TBLR', 'R', false, 0);

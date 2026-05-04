@@ -1736,7 +1736,8 @@ class sqlquery
     " . $itemname . "," . $uomfield . ",uom1.factor" . $amtfield . ",brand,ifnull(cls.cl_name,'') as class,body,
     ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
     round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color,
-    format(item.namt5,2) as namt5,format(item.namt7,2) as namt7,format(item.amt2,2) as amt2,item.disc2, format(item.namt4,2) as namt4 " . $addedfields . "
+    format(item.namt5,2) as namt5,format(item.namt7,2) as namt7,format(item.amt2,2) as amt2,item.disc2, format(item.namt4,2) as namt4,
+    format(item.amt7,2) as amt7, item.disc7 " . $addedfields . "
     from item
     left join item_class as cls on cls.cl_id=item.class
     left join uom as uom1 on item.itemid = uom1.itemid and uom1.uom = item.uom
@@ -2189,6 +2190,9 @@ class sqlquery
 
         $join = 'left join uom on uom.itemid=rrstatus.itemid and uom.uom=rrstatus.uom';
         break;
+      case 50:
+        $bal = 'FORMAT(sum(rrstatus.bal/uom.factor),2) as bal';
+        break;
     }
 
     switch ($company) {
@@ -2213,25 +2217,42 @@ class sqlquery
       case 60: //transpower
         $year = date('Y');
         $qry = "select rrstatus.wh,rrstatus.clientname as whname,'' as loc,
-              sum(rrstatus.qty-rrstatus.iss) as bal,'' as expiry,rrstatus.uom,'' as min,'' as max,
+              sum(rrstatus.qty-rrstatus.iss) as bal,'' as expiry,rrstatus.uom,rrstatus.min,rrstatus.max,
              '' as pallet, '' as location
               from 
-                (select sum(stock.iss) as iss,sum(stock.qty) as qty,stock.itemid,stock.whid,client.clientname,client.client as wh,'' as loc,item.uom
+                (select sum(stock.iss) as iss,sum(stock.qty) as qty,stock.itemid,stock.whid,client.clientname,client.client as wh,'' as loc,item.uom,il.min,il.max
                 from lastock as stock left join lahead as head on head.trno = stock.trno
                 left join client on client.clientid = stock.whid
                 left join cntnum on cntnum.trno=stock.trno
                 left join item on item.itemid=stock.itemid
+                left join itemlevel as il on il.itemid = item.itemid and il.center = client.client
                 where stock.itemid =" .  $config['params']['itemid'] . " and year(head.dateid)= $year 
-                group by client.clientname,stock.whid,stock.itemid,item.uom,client.client
+                group by client.clientname,stock.whid,stock.itemid,item.uom,client.client,il.min,il.max
                 union all
-                select sum(stock.iss) as iss,sum(stock.qty) as qty,stock.itemid,stock.whid,client.clientname,client.client as wh,'' as loc,item.uom
+                select sum(stock.iss) as iss,sum(stock.qty) as qty,stock.itemid,stock.whid,client.clientname,client.client as wh,'' as loc,item.uom,il.min,il.max
                 from glstock as stock left join glhead as head on head.trno = stock.trno
                 left join client on client.clientid = stock.whid
                 left join cntnum on cntnum.trno=stock.trno
                 left join item on item.itemid=stock.itemid
+                left join itemlevel as il on il.itemid = item.itemid and il.center = client.client
                 where stock.itemid =" .  $config['params']['itemid'] . " and year(head.dateid)= $year  
-                group by client.clientname,stock.whid,stock.itemid,item.uom,client.client) as rrstatus
-              group by clientname,itemid,uom,wh having sum(rrstatus.qty-rrstatus.iss)<>0";
+                group by client.clientname,stock.whid,stock.itemid,item.uom,client.client,il.min,il.max) as rrstatus
+              group by clientname,itemid,uom,wh,min,max having sum(rrstatus.qty-rrstatus.iss)<>0";
+        break;
+      case 50:
+        $qry = "select wh.client as wh,wh.clientname as whname,rrstatus.loc,
+              $bal,rrstatus.expiry,il.min,il.max,
+              ifnull(pallet.`name`,'') as pallet, ifnull(location.loc,'') as location,
+              uom.uom
+              from rrstatus
+              left join client as wh on wh.clientid = rrstatus.whid
+              left join item on item.itemid=rrstatus.itemid left join itemlevel as il on il.itemid = item.itemid and il.center = wh.client
+              left join pallet on pallet.line=rrstatus.palletid
+              left join location on location.line=rrstatus.locid
+              left join uom on uom.itemid=rrstatus.itemid and uom.isdefault2 = 1
+              where item.itemid = " . $config['params']['itemid'] . " and rrstatus.bal>0 $filter
+              group by wh.client,wh.clientname,rrstatus.loc,rrstatus.expiry,il.min,il.max,pallet.`name`,
+              location.loc,item.itemid";
         break;
       default:
         $qry = "select wh.client as wh,wh.clientname as whname,rrstatus.loc,
@@ -2248,6 +2269,7 @@ class sqlquery
               location.loc";
         break;
     }
+
 
     return $this->coreFunctions->opentable($qry);
   } //end function
@@ -5041,16 +5063,42 @@ class sqlquery
 
   public function getpendingsisummary($config)
   {
+    $doc = $config['params']['doc'];
+    $companyid = $config['params']['companyid'];
     $client = isset($config['params']['client']) ? $config['params']['client'] : $config['params']['dataid'];
     $center = $config['params']['center'];
     $trno = isset($config['params']['trno']) ? $config['params']['trno'] : 0;
-    $cur = $this->coreFunctions->getfieldvalue("lahead", "cur", "trno = ?", [$trno]);
 
+    $cur = $this->coreFunctions->getfieldvalue("lahead", "cur", "trno = ?", [$trno]);
     $condition = "where head.doc in ('SS') and client.client = ? and  stock.iss>stock.qa
             and cntnum.center = ? and head.cur = ? and stock.void = 0";
     $filter = [$client, $center, $cur];
+    $union = "";
 
-    $qry = "select stock.trno,head.docno,left(head.dateid,10) as dateid,client.clientid,
+    if ($companyid == 59) { //roosevelt
+      $this->coreFunctions->LogConsole("Doc: " . $doc);
+      if ($doc == 'PL') {
+        $condition = "where head.doc in ('SJ') and client.client = ? and  stock.iss>stock.qa
+                          and cntnum.center = ? and stock.void = 0 and head.pltrno = 0";
+        $union = "
+            union all
+            select 'u' as status,stock.trno,head.docno,left(head.dateid,10) as dateid,client.clientid,client.clientname,
+            FORMAT(sum(stock.ext)," . $this->companysetup->getdecimal('currency', $config['params']) . ") as totalamt,
+            head.yourref,head.ourref
+            from lahead as head
+            right join lastock as stock on stock.trno = head.trno
+            left join cntnum on cntnum.trno = head.trno
+            left join client on client.client=head.client
+            $condition
+            group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,client.clientid,client.clientname
+        ";
+        $filter = [$client, $center, $client, $center];
+      }
+    }
+
+
+
+    $qry = "select 'p' as status,stock.trno,head.docno,left(head.dateid,10) as dateid,client.clientid,client.clientname,
             FORMAT(sum(stock.ext)," . $this->companysetup->getdecimal('currency', $config['params']) . ") as totalamt,
             head.yourref,head.ourref
             from glhead as head
@@ -5058,7 +5106,8 @@ class sqlquery
             left join cntnum on cntnum.trno = head.trno
             left join client on client.clientid=head.clientid
             $condition
-            group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,client.clientid";
+            group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,client.clientid,client.clientname
+            $union ";
     $data = $this->coreFunctions->opentable($qry, $filter);
     return $data;
   } // end function
@@ -5128,6 +5177,8 @@ class sqlquery
     $docfilter = "'DR'";
     $addqry = '';
 
+    $arrfilter = [$center];
+
     if ($company == 39) { //cbbsi
       switch ($doc) {
         case 'CK':
@@ -5151,6 +5202,7 @@ class sqlquery
           union all";
           $filter .= " and cntnum.dptrno = 0 ";
           $docfilter = "'DR','ST'";
+          $arrfilter = [$center, $center];
           break;
         case 'SK':
           $filter .= " and cntnum.svnum=0 ";
@@ -5166,10 +5218,23 @@ class sqlquery
       $docfilter = "'SJ'";
     }
 
-    if ($client != '') $filter .= " and client.client='" . $client . "'";
     if ($cur != '') $filter .= " and head.cur='" . $cur . "'";
 
-    $qry = $addqry . " 
+    switch ($company) {
+      case 67: //yulick
+        if ($client != '') $filter .= " and head.client='" . $client . "'";
+        $qry = "select stock.trno,head.docno,left(head.dateid,10) as dateid,
+            FORMAT(sum(stock.ext)," . $this->companysetup->getdecimal('currency', $config['params']) . ") as totalamt,
+            head.yourref,head.ourref,head.clientname
+            from hdrhead as head
+            right join hdrstock as stock on stock.trno = head.trno
+            left join transnum on transnum.trno = head.trno
+            where head.doc='DR' and transnum.center = ? " . $filter . " and stock.void = 0 and stock.iss>stock.qa 
+            group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,head.clientname";
+        break;
+      default:
+        if ($client != '') $filter .= " and client.client='" . $client . "'";
+        $qry = $addqry . " 
             select stock.trno,head.docno,left(head.dateid,10) as dateid,
             FORMAT(sum(stock.ext)," . $this->companysetup->getdecimal('currency', $config['params']) . ") as totalamt,
             head.yourref,head.ourref,client.clientname
@@ -5181,7 +5246,10 @@ class sqlquery
             and cntnum.center = ? " . $filter . "
             and stock.void = 0
             group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,client.clientname";
-    $data = $this->coreFunctions->opentable($qry, [$center, $center]);
+        break;
+    }
+
+    $data = $this->coreFunctions->opentable($qry, $arrfilter);
     return $data;
   } // end function
 
@@ -5453,9 +5521,35 @@ class sqlquery
       }
     }
 
-    if ($client != '') $filter .= " and client.client='" . $client . "'";
+
     if ($cur != '') $filter .= " and head.cur='" . $cur . "' ";
-    $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
+
+    switch ($company) {
+      case 67: //yulick
+        if ($client != '') $filter .= " and head.client='" . $client . "'";
+        $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
+              FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
+              FORMAT(stock.iss," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
+              FORMAT(stock.isamt," . $this->companysetup->getdecimal('price', $config['params']) . ") as isamt,stock.disc,
+              FORMAT(stock.amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,
+              FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,
+              FORMAT((stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
+              FORMAT((stock.iss-stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,stock.loc,head.yourref,'' as expiry
+              from hdrhead as head
+              right join hdrstock as stock on stock.trno = head.trno
+              left join item on item.itemid=stock.itemid
+              left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+              left join transnum on transnum.trno = head.trno
+              left join client as wh on wh.clientid=stock.whid
+              where head.doc='DR' and stock.iss>stock.qa
+              and transnum.center = ? 
+              and stock.void = 0 
+              $filter
+              ";
+        break;
+      default:
+        if ($client != '') $filter .= " and client.client='" . $client . "'";
+        $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
               FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
               FORMAT(stock.iss," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
               FORMAT(stock.isamt," . $this->companysetup->getdecimal('price', $config['params']) . ") as isamt,stock.disc,
@@ -5475,6 +5569,10 @@ class sqlquery
               and stock.void = 0 
               $filter
               ";
+        break;
+    }
+
+
 
     $data = $this->coreFunctions->opentable($qry, [$center]);
     return $data;
@@ -6044,6 +6142,12 @@ class sqlquery
       $filterAlias = " and coa.alias<>'APTX3'";
     }
 
+    if ($config['params']['companyid'] == 65) { //metrodragon
+      $addonfields1 = ",ifnull(glhead.orderno,'') as orderno"; // LC No. 
+      $addonfields2 = ",ifnull(glhead.orderno,'') as orderno"; // LC No. 
+      $addonfields3 = ",'' as orderno ";
+    }
+
     $qry = "select concat(apledger.trno,apledger.line) as keyid,glhead.doc,ctbl.client,ctbl.clientname,apledger.docno,apledger.trno,apledger.line,apledger.acnoid,coa.acno,coa.acnoname,cntnum.center,
     apledger.clientid,FORMAT(apledger.db," . $this->companysetup->getdecimal('currency', $config['params']) . ") as db,FORMAT(apledger.cr," . $this->companysetup->getdecimal('currency', $config['params']) . ") as cr, round(apledger.bal," . $this->companysetup->getdecimal('currency', $config['params']) . ") as bal ,left(apledger.dateid,10) as dateid,
     abs(apledger.fdb-apledger.fcr) as fdb,$yourrefap,$addrem as rem,glhead.rem as hrem, gldetail.ref,gldetail.projectid,gldetail.subproject,gldetail.stageid,gldetail.branch,gldetail.deptid,gldetail.poref,gldetail.podate, glhead.invoiceno,
@@ -6082,7 +6186,6 @@ class sqlquery
     left join cntnum on cntnum.trno = glhead.trno
     left join client as ctbl on ctbl.clientid = apledger.clientid " . $addleftjoinjc . "
     where cntnum.center=" . $center . " and apledger.bal<>0 " . $filterAlias . $clientfilter . " " . $addfilter . $docfilter . " order by dateid, yourref";
-
     return $data = $this->coreFunctions->opentable($qry);
   } // end function
 
@@ -9110,6 +9213,9 @@ class sqlquery
 	  when cntnum.doc = 'BT' then 'T.R.U Clearance'
 	  when cntnum.doc = 'BD' then 'Local Clearance' 
 	  when cntnum.doc = 'BC' then 'Business Clearance'
+    when cntnum.doc = 'BK' then 'Creating ID Clearance'
+    when cntnum.doc = 'WR' then 'Working Clearance'
+    when cntnum.doc = 'BI' then 'Infrastructure Clearance'
     else '' end as ctype
     from (arledger
     left join coa on coa.acnoid=arledger.acnoid)

@@ -183,7 +183,7 @@ class daily_time_record_absent_report
         where dateid between '" . $start . "' and '" . $end . "' and timecard.absdays <> 0 and emp.level in $emplvl $filter
         order by e.clientname,timecard.dateid) as t 
         $groupby";
-        Logger($query);
+        // Logger($query);
         return $this->coreFunctions->opentable($query);
     }
     public function getcountdata($config, $empid)

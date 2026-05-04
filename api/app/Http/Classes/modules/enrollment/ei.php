@@ -171,10 +171,10 @@ class ei
       'delete',
       'cancel',
       'print',
-      'post',
-      'unpost',
       'lock',
       'unlock',
+      'post',
+      'unpost',
       'logs',
       'edit',
       'backlisting',
@@ -521,8 +521,8 @@ class ei
     $table = $config['docmodule']->tablenum;
     $docno = $this->coreFunctions->datareader("select docno as value from " . $table . ' where trno=?', [$trno]);
     $qry = "select value from (
-      select trno as value from en_sjhead where sotrno=".$trno." union all
-      select trno as value from glhead where sotrno=".$trno."
+      select trno as value from en_sjhead where sotrno=" . $trno . " union all
+      select trno as value from glhead where sotrno=" . $trno . "
     ) as v";
     $check = $this->coreFunctions->opentable($qry);
     if (!empty($check)) return ['status' => false, 'trno' => $trno, 'msg' => 'Unable to delete, already has reference...'];

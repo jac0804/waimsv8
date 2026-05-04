@@ -262,6 +262,7 @@ class leftmenu
                 break;
             case 59: //roosevelt
                 $modulename = 'Order Form';
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
                 break;
         }
 
@@ -408,6 +409,9 @@ class leftmenu
             case 60: //transpower
                 $qry .=  ",(5487,0,'Allow Click Change Code Button','',0,'\\50205','\\502',0,'0',0," . $params['levelid'] . ")";
                 break;
+            case 67: //yulick
+                $qry .=  ",(5812,0,'Allow Access Checking Amount Limit','',0,'\\50229','\\502',0,'0',0," . $params['levelid'] . ")";
+                break;
         }
         $this->insertattribute($params, $qry);
 
@@ -438,6 +442,7 @@ class leftmenu
                 break;
             case 59: //roosevelt
                 $label = 'Sales Invoice';
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
                 break;
         }
 
@@ -686,6 +691,12 @@ class leftmenu
                 break;
             case 50: //unitech
                 $folder = 'unitechindustry';
+                break;
+            case 59: //roosevelt
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
+                break;
+            case 67: //yulick   
+                $folder = 'a5ce0dd7c60273e71ccf80f476f58068';
                 break;
         }
 
@@ -1895,8 +1906,8 @@ class leftmenu
     {
         $p = $parent;
         $parent = '\\' . $parent;
-        $qry = "(5605,0,'Infrastructure Clearance Ledger','',0,'\\109','$parent',0,'0',0," . $params['levelid'] . "),
-        (5606,0,'Allow View Infrastructure Clearance Ledger','',0,'\\10901','\\109',0,'0',0," . $params['levelid'] . "),
+        $qry = "(5605,0,'Infrastructure Ledger','',0,'\\109','$parent',0,'0',0," . $params['levelid'] . "),
+        (5606,0,'Allow View Infrastructure Ledger','',0,'\\10901','\\109',0,'0',0," . $params['levelid'] . "),
         (5630,0,'Allow Click Edit Button IF','',0,'\\10902','\\109',0,'0',0," . $params['levelid'] . "),
         (5631,0,'Allow Click New Button IF','',0,'\\10903','\\109',0,'0',0," . $params['levelid'] . "),
         (5632,0,'Allow Click Save Button IF','',0,'\\10904','\\109',0,'0',0," . $params['levelid'] . "),        
@@ -1906,7 +1917,7 @@ class leftmenu
         (5636,0,'Allow Click Change Button IF','',0,'\\10908','\\109',0,'0',0," . $params['levelid'] . ")";
 
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'infra','/ledgergrid/masterfile/infra','Infrastructure Clearance Ledger','fa fa-user-tie sub_menu_ico',5605," . $params['levelid'] . ")";
+        return "($sort,$p,'infra','/ledgergrid/masterfile/infra','Infrastructure Ledger','fa fa-user-tie sub_menu_ico',5605," . $params['levelid'] . ")";
     }
 
 
@@ -2228,6 +2239,9 @@ class leftmenu
             case 47: //kstar
                 $folder = 'kitchenstar';
                 break;
+            case 59: //roosevelt
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
+                break;
         }
 
         $this->insertattribute($params, $qry);
@@ -2240,24 +2254,24 @@ class leftmenu
         $parent = '\\' . $parent;
         $label = 'Fixed Asset Schedule';
 
-        $qry = "(4786,0,'" . $label . "','',0,'\\402','$parent',0,'0',0," . $params['levelid'] . "),
-        (4787,0,'Allow View Transaction','FA',0,'\\40201','\\402',0,'0',0," . $params['levelid'] . "),
-        (4788,0,'Allow Click Edit Button','',0,'\\40202','\\402',0,'0',0," . $params['levelid'] . "),
-        (4789,0,'Allow Click New Button','',0,'\\40203','\\402',0,'0',0," . $params['levelid'] . "),
-        (4790,0,'Allow Click Save Button','',0,'\\40204','\\402',0,'0',0," . $params['levelid'] . "),
-        (4791,0,'Allow Click Delete Button','',0,'\\40206','\\402',0,'0',0," . $params['levelid'] . "),
-        (4792,0,'Allow Click Print Button','',0,'\\40207','\\402',0,'0',0," . $params['levelid'] . "),
-        (4793,0,'Allow Click Lock Button','',0,'\\40208','\\402',0,'0',0," . $params['levelid'] . "),
-        (4794,0,'Allow Click UnLock Button','',0,'\\40209','\\402',0,'0',0," . $params['levelid'] . "),
-        (4795,0,'Allow Click Post Button','',0,'\\40210','\\402',0,'0',0," . $params['levelid'] . "),
-        (4796,0,'Allow Click UnPost Button','',0,'\\40211','\\402',0,'0',0," . $params['levelid'] . "),
-        (4797,0,'Allow Change Amount','',0,'\\40213','\\402',0,'0',0," . $params['levelid'] . "),
-        (4798,1,'Allow Click Add Item','',0,'\\40214','\\402',0,'0',0," . $params['levelid'] . "),
-        (4799,1,'Allow Click Edit Item','',0,'\\40215','\\402',0,'0',0," . $params['levelid'] . "),
-        (4800,1,'Allow Click Delete Item','',0,'\\40216','\\402',0,'0',0," . $params['levelid'] . ")";
+        $qry = "(4786,0,'" . $label . "','',0,'\\422','$parent',0,'0',0," . $params['levelid'] . "),
+        (4787,0,'Allow View Transaction','FA',0,'\\42201','\\422',0,'0',0," . $params['levelid'] . "),
+        (4788,0,'Allow Click Edit Button','',0,'\\42202','\\422',0,'0',0," . $params['levelid'] . "),
+        (4789,0,'Allow Click New Button','',0,'\\42203','\\422',0,'0',0," . $params['levelid'] . "),
+        (4790,0,'Allow Click Save Button','',0,'\\42204','\\422',0,'0',0," . $params['levelid'] . "),
+        (4791,0,'Allow Click Delete Button','',0,'\\42206','\\422',0,'0',0," . $params['levelid'] . "),
+        (4792,0,'Allow Click Print Button','',0,'\\42207','\\422',0,'0',0," . $params['levelid'] . "),
+        (4793,0,'Allow Click Lock Button','',0,'\\42208','\\422',0,'0',0," . $params['levelid'] . "),
+        (4794,0,'Allow Click UnLock Button','',0,'\\42209','\\422',0,'0',0," . $params['levelid'] . "),
+        (4795,0,'Allow Click Post Button','',0,'\\42210','\\422',0,'0',0," . $params['levelid'] . "),
+        (4796,0,'Allow Click UnPost Button','',0,'\\42211','\\422',0,'0',0," . $params['levelid'] . "),
+        (4797,0,'Allow Change Amount','',0,'\\42213','\\422',0,'0',0," . $params['levelid'] . "),
+        (4798,1,'Allow Click Add Item','',0,'\\42214','\\422',0,'0',0," . $params['levelid'] . "),
+        (4799,1,'Allow Click Edit Item','',0,'\\42215','\\422',0,'0',0," . $params['levelid'] . "),
+        (4800,1,'Allow Click Delete Item','',0,'\\42216','\\422',0,'0',0," . $params['levelid'] . ")";
 
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'FA','/module/seastar/fa','" . $label . "','fa fa-list-alt sub_menu_ico',4786," . $params['levelid'] . ")";
+        return "($sort,$p,'FA','/module/m02a3f482219c97efb281d279650727d0/fa','" . $label . "','fa fa-list-alt sub_menu_ico',4786," . $params['levelid'] . ")";
     } //end function
 
     public function sn($params, $parent, $sort)
@@ -2325,6 +2339,9 @@ class leftmenu
             case 26: // bee healthy
                 $folder = 'bee';
                 break;
+            case 59: // roosevelt
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
+                break;
         }
         $this->insertattribute($params, $qry);
         return "($sort,$p,'DM','/module/" . $folder . "/dm','Purchase Return','fa fa-retweet sub_menu_ico',97," . $params['levelid'] . ")";
@@ -2378,6 +2395,12 @@ class leftmenu
                 break;
             case 40: //cdo
                 $folder = 'cdo';
+                break;
+            case 67: //yulick
+                $folder = 'a5ce0dd7c60273e71ccf80f476f58068';
+                break;
+            case 65: // metrodragon aims
+                $folder = 'm38a958797bdeb853bfb5931ffe5e0d2b';
                 break;
             default:
                 if ($systemtype == 'REALESTATE') {
@@ -2827,6 +2850,9 @@ class leftmenu
             case 60: //transpower
                 $qry .=  ",(5499,0,'Allow Click Change Code Button','',0,'\\20217','\\202',0,'0',0," . $params['levelid'] . ")";
                 break;
+            case 68: //JDA
+                $qry .=  ",(5826,0,'Allow Override Budget Restriction','',0,'\\20218','\\202',0,'0',0," . $params['levelid'] . ")";
+                break;
         }
 
         $this->insertattribute($params, $qry);
@@ -2902,8 +2928,8 @@ class leftmenu
             case 55: //lending afli
                 $folder = 'lending';
                 break;
-            case 59://roosevelt
-                $folder ='rc952c55ab9eb85660b7cab413fa7c803';
+            case 59: //roosevelt
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
                 break;
         }
 
@@ -3064,7 +3090,10 @@ class leftmenu
                 $folder = 'lending';
                 break;
             case 0: //bms
-                $folder = 'barangay';
+                $folder = 'brgy';
+                break;
+            case 59:
+                $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
                 break;
         }
 
@@ -3324,7 +3353,8 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(2370,0,'Budget Setup','',0,'\\306','$parent',0,'0',0," . $params['levelid'] . ") ,
         (2371,0,'Allow View Transaction','BUDGET',0,'\\30601','\\306',0,'0',0," . $params['levelid'] . ") ,
-        (2372,0,'Allow Create Budget','',0,'\\30602','\\306',0,'0',0," . $params['levelid'] . ")";
+        (2372,0,'Allow Create Budget','',0,'\\30602','\\306',0,'0',0," . $params['levelid'] . "),
+        (3623,0,'Allow Click Print Button','',0,'\\30603','\\306',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'BUDGET','/headtable/accounting/entrybudget','Budget Setup','fa fa-piggy-bank sub_menu_ico',2370," . $params['levelid'] . ")";
     } //end function
@@ -5020,6 +5050,9 @@ class leftmenu
 
         switch ($params['companyid']) {
             case 58: //cdo
+                $qry .= ", (1176,0,'Allow Click Post Button Employment Status Entry / Change','',0,'\\171208','\\1712',0,'0',0," . $params['levelid'] . ") ,
+                           (1701,0,'Allow Click Lock Button Employment Status Entry / Change','',0,'\\171210','\\1712',0,'0',0," . $params['levelid'] . "),
+                           (1702,0,'Allow Click UnLock Button Employment Status Entry / Change','',0,'\\171211','\\1712',0,'0',0," . $params['levelid'] . ")";
                 break;
             default:
                 $qry .= ", (1176,0,'Allow Click Post Button Employment Status Entry / Change','',0,'\\171208','\\1712',0,'0',0," . $params['levelid'] . ") ,
@@ -5432,6 +5465,10 @@ class leftmenu
         (1622,1,'Allow Click Button Save Employee`s Timecard','',0,'\\200602','\\2006',0,0,0," . $params['levelid'] . ") ,
         (1623,1,'Allow Click Button Print Employee`s Timecard','',0,'\\200603','\\2006',0,0,0," . $params['levelid'] . ") ,
         (1624,1,'Allow Click Button Edit Employee`s Timecard','',0,'\\200604','\\2006',0,0,0," . $params['levelid'] . ")";
+
+        if ($params['companyid'] == 68) { //JDA
+            $qry .= ", (5818,0,'Allow Click Button Edit Employee`s Timecard Day Type, Shift, Paygroup only','',0,'\\200605','\\2006',0,'0',0," . $params['levelid'] . ")";
+        }
         $this->insertattribute($params, $qry);
         return "($sort,$p,'emptimecard','/headtable/payrollcustomform/emptimecard','Employee`s Timecard','fa fa-calendar-week sub_menu_ico',1620," . $params['levelid'] . ")";
     } //end function
@@ -5443,14 +5480,17 @@ class leftmenu
         if ($this->companysetup->istimekeeping($params)) {
             $label = 'Timekeeping Process';
         }
-
         $p = $parent;
         $parent = '\\' . $parent;
-        $qry = "(2480,1,'" . $label . "','',0,'\\2007','$parent',0,0,0," . $params['levelid'] . ") ,
-        (2481,1,'Allow View " . $label . "','',0,'\\200701','\\2007',0,0,0," . $params['levelid'] . ") ,
-        (2482,1,'Allow Click Button Save " . $label . "','',0,'\\200702','\\2007',0,0,0," . $params['levelid'] . ") ,
-        (2483,1,'Allow Click Button Print " . $label . "','',0,'\\200703','\\2007',0,0,0," . $params['levelid'] . ") ,
-        (2484,1,'Allow Click Button Edit " . $label . "','',0,'\\200704','\\2007',0,0,0," . $params['levelid'] . ")";
+        $qry = "(2480,1,'" . $label . "','',0,'\\2007','$parent',0,0,0," . $params['levelid'] . "),
+        (2481,1,'Allow Click Create Schedule','',0,'\\200702','\\2007',0,0,0," . $params['levelid'] . "),
+        (2482,1,'Allow Click Post Actual In/Out','',0,'\\200703','\\2007',0,0,0," . $params['levelid'] . "),
+        (2483,1,'Allow Click Compute Timecard','',0,'\\200704','\\2007',0,0,0," . $params['levelid'] . "),
+        (5814,1,'Allow Click Compute Timesheet','',0,'\\200705','\\2007',0,0,0," . $params['levelid'] . "),
+        (2484,1,'Allow Click Payroll Closing','',0,'\\200706','\\2007',0,0,0," . $params['levelid'] . "),
+        (5816,1,'Allow Click Payroll Unclosing','',0,'\\200707','\\2007',0,0,0," . $params['levelid'] . "),
+        (5817,1,'Allow Click Download MBTC Txtfile','',0,'\\200708','\\2007',0,0,0," . $params['levelid'] . ")";
+
         $this->insertattribute($params, $qry);
         return "($sort,$p,'timecardsetup','/headtable/payrollcustomform/payrollprocess','" . $label . "','fa fa-calculator sub_menu_ico',2480," . $params['levelid'] . ")";
     } //end function
@@ -6234,6 +6274,18 @@ class leftmenu
 
         if ($this->companysetup->getmultibranch($params)) {
             $qry .= ",(4165,1,'Allow View All Branches (Reports)','',0,'\\81008','$parent',0,'0',0," . $params['levelid'] . ")";
+        }
+
+        switch ($systemtype) {
+            case 'PAYROLLPORTAL':
+            case 'PAYROLL':
+            case 'HRIS':
+            case 'HRISPAYROLL':
+            case 'AIMSPAYROLL';
+                $qry .= "
+                ,(5647,1,'Allow View Birthday Announcement','',0,'\\81009','$parent',0,'0',0," . $params['levelid'] . "),
+                (5648,1,'Allow View Milestone','',0,'\\81010','$parent',0,'0',0," . $params['levelid'] . ")";
+                break;
         }
 
         $this->insertattribute($params, $qry);
@@ -9321,7 +9373,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(5266,1,'Barangay Official Setup','',0,'\\24034','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'brgyofficial','/tableentries/tableentry/brgyofficial','Barangay Official Setup','fa fa-user sub_menu_ico',5266," . $params['levelid'] . ")";
+        return "($sort,$p,'brgyofficial','/tableentries/brgyentry/brgyofficial','Barangay Official Setup','fa fa-user sub_menu_ico',5266," . $params['levelid'] . ")";
     } //end function
 
     public function streetsetup($params, $parent, $sort)
@@ -9330,7 +9382,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(5278,1,'Street List Setup','',0,'\\24035','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'streetsetup','/tableentries/tableentry/streetsetup','Street List Setup','fa fa-list sub_menu_ico',5278," . $params['levelid'] . ")";
+        return "($sort,$p,'streetsetup','/tableentries/brgyentry/streetsetup','Street List Setup','fa fa-list sub_menu_ico',5278," . $params['levelid'] . ")";
     } //end function
 
     public function clearancetype($params, $parent, $sort)
@@ -9339,7 +9391,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(5279,1,'Local Clearance Type Setup','',0,'\\24036','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'clearancetype','/tableentries/tableentry/clearancetype','Local Clearance Type Setup','fa fa-list sub_menu_ico',5279," . $params['levelid'] . ")";
+        return "($sort,$p,'clearancetype','/tableentries/brgyentry/clearancetype','Local Clearance Type Setup','fa fa-list sub_menu_ico',5279," . $params['levelid'] . ")";
     } //end function
 
     public function businesstype($params, $parent, $sort)
@@ -9348,7 +9400,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(5280,1,'Business Type Setup','',0,'\\24037','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'businesstype','/tableentries/tableentry/businesstype','Business Type Setup','fa fa-list sub_menu_ico',5280," . $params['levelid'] . ")";
+        return "($sort,$p,'businesstype','/tableentries/brgyentry/businesstype','Business Type Setup','fa fa-list sub_menu_ico',5280," . $params['levelid'] . ")";
     } //end function
 
     // public function samplepo($params, $parent, $sort)
@@ -9447,7 +9499,7 @@ class leftmenu
         (5276,0,'Allow Click Post Button BD ','',0,'\\410109','\\4101',0,'0',0," . $params['levelid'] . ") ,
         (5277,0,'Allow Click UnPost Button BD ','',0,'\\410110','\\4101',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'BD','/module/barangay/bd','Local Clearance','fa fa-clipboard sub_menu_ico',5267," . $params['levelid'] . ")";
+        return "($sort,$p,'BD','/module/brgy/bd','Local Clearance','fa fa-clipboard sub_menu_ico',5267," . $params['levelid'] . ")";
     } //end function
 
 
@@ -9467,7 +9519,7 @@ class leftmenu
         (5298,0,'Allow Click Post Button BC ','',0,'\\410209','\\4102',0,'0',0," . $params['levelid'] . ") ,
         (5299,0,'Allow Click UnPost Button BC ','',0,'\\410210','\\4102',0,'0',0," . $params['levelid'] . ");";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'BC','/module/barangay/bc','Business Clearance','fa fa-clipboard sub_menu_ico',5289," . $params['levelid'] . ")";
+        return "($sort,$p,'BC','/module/brgy/bc','Business Clearance','fa fa-clipboard sub_menu_ico',5289," . $params['levelid'] . ")";
     } //end function
     public function itinerary($params, $parent, $sort)
     {
@@ -9791,7 +9843,8 @@ class leftmenu
         (5564,1,'Allow View Dashboard Daily Task','',0,'\\204107','\\2041',0,0,0," . $params['levelid'] . "),
         (5567,1,'Allow Click Add Attachment Daily Task','',0,'\\204108','\\2041',0,0,0," . $params['levelid'] . "),
         (5584,0,'Allow View All Daily Task','',0,'\\204109','\\2041',0,0,0," . $params['levelid'] . "),
-        (5601,0,'Allow bypass of checker requirements','',0,'\\204110','\\2041',0,0,0," . $params['levelid'] . ") ";
+        (5601,0,'Allow bypass of checker requirements','',0,'\\204110','\\2041',0,0,0," . $params['levelid'] . "),
+        (5698,0,'Allow Add Task Credit','',0,'\\204111','\\2041',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'dy','/ledger/taskmonitoring/dy','Daily Task','fa fa-calendar-day sub_menu_ico',5557," . $params['levelid'] . ")";
     } //end function
@@ -9919,13 +9972,13 @@ class leftmenu
     {
         $p = $parent;
         $parent = '\\' . $parent;
-        $qry = "(5610,0,'T.R.U Ledger','',0,'\\103','$parent',0,'0',0," . $params['levelid'] . "),
-        (5611,0,'Allow View T.R.U Ledger','TL',0,'\\10301','\\103',0,'0',0," . $params['levelid'] . "),
-        (5612,0,'Allow Click Edit Button TL','',0,'\\10302','\\103',0,'0',0," . $params['levelid'] . "),
-        (5613,0,'Allow Click New Button TL','',0,'\\10303','\\103',0,'0',0," . $params['levelid'] . "),
-        (5614,0,'Allow Click Save Button TL','',0,'\\10304','\\103',0,'0',0," . $params['levelid'] . "),        
-        (5615,0,'Allow Click Delete Button TL','',0,'\\10306','\\103',0,'0',0," . $params['levelid'] . "),
-        (5616,0,'Allow Click Print Button TL','',0,'\\10307','\\103',0,'0',0," . $params['levelid'] . ")";
+        $qry = "(5610,0,'T.R.U Ledger','',0,'\\122','$parent',0,'0',0," . $params['levelid'] . "),
+        (5611,0,'Allow View T.R.U Ledger','TL',0,'\\12201','\\122',0,'0',0," . $params['levelid'] . "),
+        (5612,0,'Allow Click Edit Button TL','',0,'\\12202','\\122',0,'0',0," . $params['levelid'] . "),
+        (5613,0,'Allow Click New Button TL','',0,'\\12203','\\122',0,'0',0," . $params['levelid'] . "),
+        (5614,0,'Allow Click Save Button TL','',0,'\\12204','\\122',0,'0',0," . $params['levelid'] . "),        
+        (5615,0,'Allow Click Delete Button TL','',0,'\\12206','\\122',0,'0',0," . $params['levelid'] . "),
+        (5616,0,'Allow Click Print Button TL','',0,'\\12207','\\122',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'tl','/ledgergrid/masterfile/tl','T.R.U Ledger','fa fa-address-card sub_menu_ico',5610," . $params['levelid'] . ")";
     } //end function
@@ -9936,8 +9989,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(5621,1,'TRU Type Setup','',0,'\\1114','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'trutype','/tableentries/barangayentry/trutype','TRU Type Setup',
-        'fa fa-list sub_menu_ico',5621," . $params['levelid'] . ")";
+        return "($sort,$p,'trutype','/tableentries/brgyentry/trutype','TRU Type Setup','fa fa-list sub_menu_ico',5621," . $params['levelid'] . ")";
     } //end function
 
     public function bonafide($params, $parent, $sort)
@@ -9947,7 +9999,7 @@ class leftmenu
         $qry = "(5623,0,'Bonafide Setup','',0,'\\4216','$parent',0,'0',0," . $params['levelid'] . ")
         ";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'bonafide','/tableentries/barangayentry/entrybonafide','Bonafide Setup','fa fa-list  sub_menu_ico',5623," . $params['levelid'] . ")";
+        return "($sort,$p,'bonafide','/tableentries/brgyentry/entrybonafide','Bonafide Setup','fa fa-list  sub_menu_ico',5623," . $params['levelid'] . ")";
     } //end function
 
     public function bt($params, $parent, $sort)
@@ -9966,6 +10018,306 @@ class leftmenu
         (5626,0,'Allow Click Post Button BT','',0,'\\410309','\\4103',0,'0',0," . $params['levelid'] . ") ,
         (5627,0,'Allow Click UnPost Button BT','',0,'\\410310','\\4103',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'BT','/module/barangay/bt','T.R.U Clearance','fa fa-clipboard sub_menu_ico',5617," . $params['levelid'] . ")";
+        return "($sort,$p,'BT','/module/brgy/bt','T.R.U Clearance','fa fa-clipboard sub_menu_ico',5617," . $params['levelid'] . ")";
     } //end function
-}//end 
+
+    public function bi($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5671,0,'Infrastructure Clearance','',0,'\\4104','$parent',0,'0',0," . $params['levelid'] . ") ,
+        (5672,0,'Allow View Transaction BI', 'BI',0,'\\410401','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5673,0,'Allow Click Edit Button  BI','',0,'\\410402','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5674,0,'Allow Click New Button BI','',0,'\\410403','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5675,0,'Allow Click Save Button BI','',0,'\\410404','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5676,0,'Allow Click Delete Button BI','',0,'\\410405','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5677,0,'Allow Click Print Button BI','',0,'\\410406','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5678,0,'Allow Click Lock Button BI','',0,'\\410407','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5679,0,'Allow Click UnLock Button BI','',0,'\\410408','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5680,0,'Allow Click Post Button BI','',0,'\\410409','\\4104',0,'0',0," . $params['levelid'] . ") ,
+        (5681,0,'Allow Click UnPost Button BI','',0,'\\410410','\\4104',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'BI','/module/brgy/bi','Infrastructure Clearance','fa fa-clipboard sub_menu_ico',5671," . $params['levelid'] . ")";
+    } //end function
+
+    public function rawmatstockcard($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $label = 'Raw Material Stockcard';
+        $qry = "(5649,0,'" . $label . "','',0,'\\4104','$parent',0,'0',0," . $params['levelid'] . "),
+        (5650,0,'Allow View " . $label . "','RM',0,'\\410401','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5651,0,'Allow Click Edit Button RM','',0,'\\410402','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5652,0,'Allow Click New Button RM','',0,'\\410403','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5653,0,'Allow Click Save Button RM','',0,'\\410404','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5654,0,'Allow Click Delete Button RM','',0,'\\410406','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5655,0,'Allow Print Button RM','',0,'\\410407','\\4104',0,'0',0," . $params['levelid'] . "),
+        (5656,0,'Allow View SRP Button RM','',0,'\\410408','\\4104',0,'0',0," . $params['levelid'] . ")";
+
+        $this->insertattribute($params, $qry);
+
+        return "($sort,$p,'stockcard','/ledgergrid/rc952c55ab9eb85660b7cab413fa7c803/stockcard','" . $label . "','fa fa-clipboard-list sub_menu_ico',5649," . $params['levelid'] . ")";
+    } //end function
+
+
+    public function ju($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5659,0,'Complaints File','',0,'\\4105','$parent',0,'0',0," . $params['levelid'] . "),
+        (5660,0,'Allow View Transaction JU ','JU',0,'\\410501','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5661,0,'Allow Click Edit Button  JU ','',0,'\\410502','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5662,0,'Allow Click New Button JU ','',0,'\\410503','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5663,0,'Allow Click Save Button JU ','',0,'\\410504','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5664,0,'Allow Click Delete Button JU ','',0,'\\410505','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5665,0,'Allow Click Print Button JU ','',0,'\\410506','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5666,0,'Allow Click Lock Button JU ','',0,'\\410507','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5667,0,'Allow Click UnLock Button JU ','',0,'\\410508','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5668,0,'Allow Click Post Button JU ','',0,'\\410509','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5669,0,'Allow Click UnPost Button JU ','',0,'\\410510','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5682,0,'Allow Download Documents','',0,'\\410511','\\4105',0,'0',0," . $params['levelid'] . "),
+        (5683,0,'Allow Delete Documents','',0,'\\410512','\\4105',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'JU','/module/brgy/ju','Complaints File','fa fa-clipboard-list sub_menu_ico',5659," . $params['levelid'] . ")";
+    } //end function
+
+    public function parentbarangayjudiciary($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5670,0,'BARANGAY JUDICIARY','',0,'$parent','\\',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "insert into left_parent(id,name,seq,class,doc,levelid) values($p,'BARANGAY JUDICIARY',$sort,'fas fa-balance-scale',',,'," . $params['levelid'] . ")";
+    } //end function
+
+
+    public function by($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5684,0,'Barangay Employee Information','',0,'\\4106','$parent',0,'0',0," . $params['levelid'] . "),
+        (5685,0,'Allow View Transaction BY ','BY',0,'\\410601','\\4106',0,'0',0," . $params['levelid'] . "),
+        (5686,0,'Allow Click Edit Button  BY ','',0,'\\410602','\\4106',0,'0',0," . $params['levelid'] . "),
+        (5687,0,'Allow Click New Button BY ','',0,'\\410603','\\4106',0,'0',0," . $params['levelid'] . "),
+        (5688,0,'Allow Click Save Button BY ','',0,'\\410604','\\4106',0,'0',0," . $params['levelid'] . "),
+        (5689,0,'Allow Click Delete Button BY ','',0,'\\410605','\\4106',0,'0',0," . $params['levelid'] . "),
+        (5690,0,'Allow Click Print Button BY ','',0,'\\410606','\\4106',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'BY','/ledgergrid/masterfile/by','Barangay Employee Information','fa fa-address-card sub_menu_ico',5684," . $params['levelid'] . ")";
+    } //end function
+
+    public function bk($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5699,0,'Creating Id Clearance','',0,'\\4109','$parent',0,'0',0," . $params['levelid'] . "),
+        (5700,0,'Allow View Transaction BK ','BK',0,'\\410901','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5701,0,'Allow Click Edit Button  BK ','',0,'\\410902','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5702,0,'Allow Click New Button BK ','',0,'\\410903','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5703,0,'Allow Click Save Button BK ','',0,'\\410904','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5704,0,'Allow Click Delete Button BK ','',0,'\\410905','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5705,0,'Allow Click Print Button BK ','',0,'\\410906','\\4109',0,'0',0," . $params['levelid'] . "),
+        (5717,0,'Allow Click Lock Button BK ','',0,'\\410907','\\4109',0,'0',0," . $params['levelid'] . ") ,
+        (5718,0,'Allow Click UnLock Button BK ','',0,'\\410908','\\4109',0,'0',0," . $params['levelid'] . ") ,
+        (5719,0,'Allow Click Post Button BK ','',0,'\\410909','\\4109',0,'0',0," . $params['levelid'] . ") ,
+        (5720,0,'Allow Click UnPost Button BK ','',0,'\\410910','\\4109',0,'0',0," . $params['levelid'] . ");";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'bk','/module/brgy/bk','Creating Id Clearance','fa fa-id-card-alt sub_menu_ico',5699," . $params['levelid'] . ")";
+    } //end function
+
+
+    public function wl($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5691,0,'Working Ledger','',0,'\\4107','$parent',0,'0',0," . $params['levelid'] . "),
+        (5692,0,'Allow View Transaction WL ','WL',0,'\\410701','\\4107',0,'0',0," . $params['levelid'] . "),
+        (5693,0,'Allow Click Edit Button  WL ','',0,'\\410702','\\4107',0,'0',0," . $params['levelid'] . "),
+        (5694,0,'Allow Click New Button WL ','',0,'\\410703','\\4107',0,'0',0," . $params['levelid'] . "),
+        (5695,0,'Allow Click Save Button WL ','',0,'\\410704','\\4107',0,'0',0," . $params['levelid'] . "),
+        (5696,0,'Allow Click Delete Button WL ','',0,'\\410705','\\4107',0,'0',0," . $params['levelid'] . "),
+        (5697,0,'Allow Click Print Button WL ','',0,'\\410706','\\4107',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'WL','/ledgergrid/masterfile/wl','Working Ledger','fa fa-address-card sub_menu_ico',5691," . $params['levelid'] . ")";
+    } //end function
+
+
+    public function wr($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5706,0,'Working Clearance','',0,'\\4108','$parent',0,'0',0," . $params['levelid'] . ") ,
+        (5707,0,'Allow View Transaction WR ','WR',0,'\\410801','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5708,0,'Allow Click Edit Button  WR ','',0,'\\410802','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5709,0,'Allow Click New Button WR ','',0,'\\410803','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5710,0,'Allow Click Save Button WR ','',0,'\\410804','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5711,0,'Allow Click Delete Button WR ','',0,'\\410805','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5712,0,'Allow Click Print Button WR ','',0,'\\410806','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5713,0,'Allow Click Lock Button WR ','',0,'\\410807','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5714,0,'Allow Click UnLock Button WR ','',0,'\\410808','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5715,0,'Allow Click Post Button WR ','',0,'\\410809','\\4108',0,'0',0," . $params['levelid'] . ") ,
+        (5716,0,'Allow Click UnPost Button WR ','',0,'\\410810','\\4108',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'WR','/module/brgy/wr','Working Clearance','fa fa-clipboard sub_menu_ico',5706," . $params['levelid'] . ")";
+    } //end function
+
+    public function mh($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5722,0,'Minutes of Hearing','',0,'\\4110','$parent',0,'0',0," . $params['levelid'] . "),
+        (5723,0,'Allow View Transaction MH ','MH',0,'\\411001','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5724,0,'Allow Click Edit Button  MH ','',0,'\\411002','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5725,0,'Allow Click New Button MH ','',0,'\\411003','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5726,0,'Allow Click Save Button MH ','',0,'\\411004','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5727,0,'Allow Click Delete Button MH ','',0,'\\411005','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5728,0,'Allow Click Print Button MH ','',0,'\\411006','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5729,0,'Allow Click Lock Button MH ','',0,'\\411007','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5730,0,'Allow Click UnLock Button MH ','',0,'\\411008','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5731,0,'Allow Click Post Button MH ','',0,'\\411009','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5732,0,'Allow Click UnPost Button MH ','',0,'\\411010','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5733,0,'Allow Download Documents MH','',0,'\\411011','\\4110',0,'0',0," . $params['levelid'] . "),
+        (5734,0,'Allow Delete Documents MH','',0,'\\411012','\\4110',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'MH','/module/brgy/mh','Minutes of Hearing','fa fa-user-clock sub_menu_ico',5722," . $params['levelid'] . ")";
+    } //end function
+
+    public function mn($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5735,0,'Summon','',0,'\\4111','$parent',0,'0',0," . $params['levelid'] . "),
+        (5736,0,'Allow View Transaction MN ','MN',0,'\\411101','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5737,0,'Allow Click Edit Button  MN ','',0,'\\411102','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5738,0,'Allow Click New Button MN ','',0,'\\411103','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5739,0,'Allow Click Save Button MN ','',0,'\\411104','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5740,0,'Allow Click Delete Button MN ','',0,'\\411105','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5741,0,'Allow Click Print Button MN ','',0,'\\411106','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5742,0,'Allow Click Lock Button MN ','',0,'\\411107','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5743,0,'Allow Click UnLock Button MN ','',0,'\\411108','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5744,0,'Allow Click Post Button MN ','',0,'\\411109','\\4111',0,'0',0," . $params['levelid'] . "),
+        (5745,0,'Allow Click UnPost Button MN ','',0,'\\411110','\\4111',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'MN','/module/brgy/mn','Summon','fa fa-user-check sub_menu_ico',5735," . $params['levelid'] . ")";
+    } //end function
+
+    public function userdisplay($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5721,0,'User Display','',0,'\\4217','$parent',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'userdisplay','/tableentries/tableentry/entryuserdisplay','User Display Setup','fa fa-users sub_menu_ico',5721," . $params['levelid'] . ")";
+    } //end function
+
+
+    public function sl($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $modulename = 'Delivery Receipt';
+        $qry = " (5746,0,'" . $modulename . "','',0,'\\527','$parent',0,'0',0," . $params['levelid'] . "),
+        (5747,0,'Allow View Transaction DR','DR',0,'\\52701','\\527',0,'0',0," . $params['levelid'] . "),
+        (5748,0,'Allow Click Edit Button DR','',0,'\\52702','\\527',0,'0',0," . $params['levelid'] . "),
+        (5749,0,'Allow Click New  Button DR','',0,'\\52703','\\527',0,'0',0," . $params['levelid'] . "),
+        (5750,0,'Allow Click Save Button DR','',0,'\\52704','\\527',0,'0',0," . $params['levelid'] . "),
+        (5751,0,'Allow Click Delete Button DR','',0,'\\52706','\\527',0,'0',0," . $params['levelid'] . "),
+        (5752,0,'Allow Click Print Button DR','',0,'\\52707','\\527',0,'0',0," . $params['levelid'] . "),
+        (5753,0,'Allow Click Lock Button DR','',0,'\\52708','\\527',0,'0',0," . $params['levelid'] . "),
+        (5754,0,'Allow Click UnLock Button DR','',0,'\\52709','\\527',0,'0',0," . $params['levelid'] . "),
+        (5755,0,'Allow Click Post Button DR','',0,'\\52712','\\527',0,'0',0," . $params['levelid'] . "),
+        (5756,0,'Allow Click UnPost  Button DR','',0,'\\52713','\\527',0,'0',0," . $params['levelid'] . "),
+        (5757,1,'Allow Click Add Item DR','',0,'\\52714','\\527',0,'0',0," . $params['levelid'] . "),
+        (5758,1,'Allow Click Edit Item DR','',0,'\\52715','\\527',0,'0',0," . $params['levelid'] . "),
+        (5759,1,'Allow Click Delete Item DR','',0,'\\52716','\\527',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'DR','/module/a5ce0dd7c60273e71ccf80f476f58068/dr','Delivery Receipt','fa fa-file-invoice sub_menu_ico',5746," . $params['levelid'] . ")";
+    } //end function
+    public function an($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5760,0,'Non Conforming Products','',0,'\\606','$parent',0,'0',0," . $params['levelid'] . ") ,
+        (5761,0,'Allow View Transaction NCP','NCP',0,'\\60601','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5762,0,'Allow Click Edit Button  NCP','',0,'\\60602','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5763,0,'Allow Click New Button NCP','',0,'\\60603','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5764,0,'Allow Click Save Button NCP','',0,'\\60604','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5765,0,'Allow Click Delete Button NCP','',0,'\\60606','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5766,0,'Allow Click Print Button NCP','',0,'\\60607','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5767,0,'Allow Click Lock Button NCP','',0,'\\60608','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5768,0,'Allow Click UnLock Button NCP','',0,'\\60609','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5769,0,'Allow Click Post Button NCP','',0,'\\60610','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5770,0,'Allow Click UnPost Button NCP','',0,'\\60611','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5771,0,'Allow View Transaction Accounting NCP','',0,'\\60612','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5772,1,'Allow Click Add Item NCP','',0,'\\60613','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5773,1,'Allow Click Edit Item NCP','',0,'\\60614','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5774,1,'Allow Click Delete Item NCP','',0,'\\60615','\\606',0,'0',0," . $params['levelid'] . ") ,
+        (5775,1,'Allow Change Amount NCP','',0,'\\60616','\\606',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'NCP','/module/m38a958797bdeb853bfb5931ffe5e0d2b/an','Non Conforming Products','fa fa-crop-alt sub_menu_ico',5760," . $params['levelid'] . ")";
+    } // 
+    public function ab($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5776,0,'Billet To Finished Goods','',0,'\\607','$parent',0,'0',0," . $params['levelid'] . ") ,
+        (5777,0,'Allow View Transaction BTF','BTF',0,'\\60701','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5778,0,'Allow Click Edit Button  BTF','',0,'\\60702','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5779,0,'Allow Click New Button BTF','',0,'\\60703','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5780,0,'Allow Click Save Button BTF','',0,'\\60704','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5781,0,'Allow Click Delete Button BTF','',0,'\\60706','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5782,0,'Allow Click Print Button BTF','',0,'\\60707','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5783,0,'Allow Click Lock Button BTF','',0,'\\60708','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5784,0,'Allow Click UnLock Button BTF','',0,'\\60709','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5785,0,'Allow Click Post Button BTF','',0,'\\60710','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5786,0,'Allow Click UnPost Button BTF','',0,'\\60711','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5787,0,'Allow View Transaction Accounting BTF','',0,'\\60712','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5788,1,'Allow Click Add Item BTF','',0,'\\60713','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5789,1,'Allow Click Edit Item BTF','',0,'\\60714','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5790,1,'Allow Click Delete Item BTF','',0,'\\60715','\\607',0,'0',0," . $params['levelid'] . ") ,
+        (5791,1,'Allow Change Amount BTF','',0,'\\60716','\\607',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'BTF','/module/m38a958797bdeb853bfb5931ffe5e0d2b/ab','Billet To Finished Goods','fa fa-arrows-alt-v sub_menu_ico',5776," . $params['levelid'] . ")";
+    } // 
+
+    public function ad($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5792,0,'Scrap To Billet','',0,'\\608','$parent',0,'0',0," . $params['levelid'] . ") ,
+        (5793,0,'Allow View Transaction STB','STB',0,'\\60801','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5794,0,'Allow Click Edit Button  STB','',0,'\\60802','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5795,0,'Allow Click New Button STB','',0,'\\60803','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5796,0,'Allow Click Save Button STB','',0,'\\60804','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5797,0,'Allow Click Delete Button STB','',0,'\\60806','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5798,0,'Allow Click Print Button STB','',0,'\\60807','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5799,0,'Allow Click Lock Button STB','',0,'\\60808','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5800,0,'Allow Click UnLock Button STB','',0,'\\60809','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5801,0,'Allow Click Post Button STB','',0,'\\60810','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5802,0,'Allow Click UnPost Button STB','',0,'\\60811','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5803,0,'Allow View Transaction Accounting STB','',0,'\\60812','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5804,1,'Allow Click Add Item STB','',0,'\\60813','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5805,1,'Allow Click Edit Item STB','',0,'\\60814','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5806,1,'Allow Click Delete Item STB','',0,'\\60815','\\608',0,'0',0," . $params['levelid'] . ") ,
+        (5807,1,'Allow Change Amount STB','',0,'\\60816','\\608',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'STB','/module/m38a958797bdeb853bfb5931ffe5e0d2b/ad','Scrap To Billet','fa fa-recycle sub_menu_ico',5792," . $params['levelid'] . ")";
+    } // 
+
+    public function notesetup($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5808,0,'Notes Setup','',0,'\\24039','$parent',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'notesetup','/tableentries/tableentry/entrynotesetup','Notes Setup','fa fa-sticky-note sub_menu_ico',5808," . $params['levelid'] . ")";
+    } //end function
+    public function carton($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5815,1,'Brand Size Per Carton','',0,'\\4218','$parent',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'carton','/tableentries/tableentry/entrycarton','Brand Size Per Carton','fa fa-box sub_menu_ico',5815," . $params['levelid'] . ")";
+    } //end function <i class="fas fa-box"></i>
+}//end

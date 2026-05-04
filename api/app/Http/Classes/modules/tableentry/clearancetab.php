@@ -59,22 +59,40 @@ class clearancetab
 
     public function createTab($config)
     {
-        $tab = [$this->gridname => ['gridcolumns' => ['count', 'issued', 'docno', 'status', 'amount']]];
+        $doc = $config['params']['doc'];
+        $columns = ['count', 'issued', 'docno', 'status', 'amount'];
+        $tab = [$this->gridname => ['gridcolumns' => $columns]];
+
+        foreach ($columns as $key => $value) {
+            $$value = $key;
+        }
+
         $stockbuttons = [];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        $obj[0][$this->gridname]['columns'][0]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
-        $obj[0][$this->gridname]['columns'][1]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-        $obj[0][$this->gridname]['columns'][2]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-        $obj[0][$this->gridname]['columns'][3]['style'] = "width:80px;whiteSpace: normal;min-width:80px; text-align:left;";
-        $obj[0][$this->gridname]['columns'][4]['style'] = "width:520px;whiteSpace: normal;min-width:520px; text-align:left;";
-        $obj[0][$this->gridname]['columns'][1]['label'] = "Issued Date";
-        $obj[0][$this->gridname]['columns'][2]['label'] = "Bus. Cert.";
 
-        $obj[0][$this->gridname]['columns'][0]['type'] = "label";
-        $obj[0][$this->gridname]['columns'][1]['type'] = "label";
-        $obj[0][$this->gridname]['columns'][2]['type'] = "label";
-        $obj[0][$this->gridname]['columns'][3]['type'] = "label";
-        $obj[0][$this->gridname]['columns'][4]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$issued]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$docno]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$status]['style'] = "width:80px;whiteSpace: normal;min-width:80px; text-align:left;";
+        $obj[0][$this->gridname]['columns'][$amount]['style'] = "width:520px;whiteSpace: normal;min-width:520px; text-align:left;";
+        $obj[0][$this->gridname]['columns'][$issued]['label'] = "Issued Date";
+
+
+
+        $obj[0][$this->gridname]['columns'][$issued]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$docno]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$status]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$amount]['type'] = "label";
+
+        if ($doc == 'WL') {
+            $obj[0][$this->gridname]['columns'][$count]['type'] = "coldel";
+            $obj[0][$this->gridname]['columns'][$docno]['label'] = "Working Clearance";
+        } else {
+            $obj[0][$this->gridname]['columns'][$count]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
+            $obj[0][$this->gridname]['columns'][$count]['type'] = "label";
+            $obj[0][$this->gridname]['columns'][$docno]['label'] = "Bus. Cert.";
+        }
+
+        $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
 
@@ -105,21 +123,27 @@ class clearancetab
     public function loaddata($config)
     {
         $trno = $config['params']['tableid'];
-        $data = $this->getissuedclearance($trno);
+        $data = $this->getissuedclearance($config, $trno);
         return $data;
     }
 
 
-    private function getissuedclearance($trno)
+    private function getissuedclearance($config, $trno)
     {
+        $doc = $config['params']['doc'];
+        if ($doc == 'WL') {
+            $doc = 'WR';
+        } else {
+            $doc = 'BC';
+        }
+
         $qry = "select 1 as count ,date(dateid) as issued,docno,'Unposted' as status,format(head.amount,2) as amount
                 from lahead as head
                 left join client on client.client=head.client
-                where doc='BC' and client.clientid = ?
+                where doc='$doc' and client.clientid = ?
                 union all
                 select 1 as count ,date(dateid) as issued,docno,'Posted' as status,format(head.amount,2) as amount
-                from glhead as head where doc='BC' and head.clientid = ?";
-
+                from glhead as head where doc='$doc' and head.clientid = ?";
         $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
         return $data;
     }

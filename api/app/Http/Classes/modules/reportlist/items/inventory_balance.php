@@ -386,6 +386,9 @@ class inventory_balance
           case 60: //transpower
             $result = $this->transpower_NONE_Layout($config);
             break;
+          case 68: //jda 
+            $result = $this->jda_NONE_Layout($config);
+            break;
           default:
             $result = $this->reportDefaultLayout_NONE($config);
             break;
@@ -1032,24 +1035,24 @@ class inventory_balance
           select stock.itemid,  " . $fielduom . ", stock.whid, 
           sum(" . $fieldqty . ") as qty, 
           sum(" . $fieldiss . ") as iss, 
-          stock.loc, stock.expiry $proj1 $addwh
+          stock.loc, stock.expiry, item.itemrem as rem $proj1 $addwh
           from lahead as head left join lastock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
           $proj2
           $proj3 $hmunpostedwh
           $defaultljoin
           where $filtetdate $filter $filter1 $filteritem  $filterexcwh  and item.isofficesupplies = 0
-          group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry $proj1 $hmgroup
+          group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry, item.itemrem $proj1 $hmgroup
           union all
           select stock.itemid, " . $fielduom . ", stock.whid, 
           sum(" . $fieldqty . ") as qty, 
           sum(" . $fieldiss . ") as iss, 
-          stock.loc, stock.expiry $proj1 $addwh
+          stock.loc, stock.expiry, item.itemrem as rem $proj1 $addwh
           from glhead as head left join glstock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
           $proj2
           $proj3  $hmpostedwh
           $defaultljoin
           where $filtetdate $filter $filter1 $filteritem  $filterexcwh  and item.isofficesupplies = 0
-          group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry $proj1 $hmgroup
+          group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry, item.itemrem $proj1 $hmgroup
 
           $unionInvbal
           ) as ib left join item on item.itemid = ib.itemid
@@ -1104,6 +1107,7 @@ class inventory_balance
     $order = " order by category,itemname";
     $filter = " and item.isimport in $itemtype";
     $filteritem = "";
+    $join = "";
 
     $isallitems = true;
     if ($brand != "") {
@@ -1141,12 +1145,16 @@ class inventory_balance
     if ($uom != '') {
       $filteritem = $filteritem . " and item.uom='$uom'";
     }
-
+    $fields = " , 0 as minimum, 0 as maximum ";
+    $groupby = "";
     if ($wh != "") {
       $filter = $filter . " and stock.whid='$whid'";
+      $join .= " left join itemlevel as itemlvl on itemlvl.itemid = item.itemid and itemlvl.center='$wh'";
+      $fields = ", ifnull(itemlvl.min,0) as minimum, ifnull(itemlvl.max,0) as maximum ";
+      $groupby = ", itemlvl.min, itemlvl.max";
     }
 
-    $query = "select ib.itemid, item.barcode, item.disc, item.minimum, item.maximum, cat.name as category, subcat.name as subcatname, item.itemname as itemname, item.partno,
+    $query = "select ib.itemid, item.barcode, item.disc $fields, cat.name as category, subcat.name as subcatname, item.itemname as itemname, item.partno,
           item.groupid, item.brand as brandname, item.brand, ifnull(partgrp.part_name, '') as partname,
           ifnull(modelgrp.model_name, '') as modelname, item.model, partgrp.part_name as part, item.brand, item.sizeid, item.body, item.class, ib.uom,
           sum(ib.qty - ib.iss) as balance,
@@ -1172,13 +1180,14 @@ class inventory_balance
 
           ) as ib left join item on item.itemid = ib.itemid
           left join itemcategory as cat on cat.line = item.category
+          $join
           left join itemsubcategory as subcat on subcat.line = item.subcat
           left join part_masterfile as partgrp on partgrp.part_id = item.part
           left join model_masterfile as modelgrp on modelgrp.model_id = item.model
           left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
-          group by disc, minimum, maximum, cat.name, subcat.name, ib.itemid, barcode, itemname, groupid, brandname, partname,partno,
+          group by disc $groupby, cat.name, subcat.name, ib.itemid, barcode, itemname, groupid, brandname, partname,partno,
           ifnull(modelgrp.model_name, ''), model, partgrp.part_name, brand, sizeid, body, class, item.amt, ib.uom,loc,expiry
-          having (case when sum(ib.qty - ib.iss) > 0 then 1 else 0 end) in " . $itemstock . ' ' . $order;;
+          having (case when sum(ib.qty - ib.iss) > 0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
     return $query;
   }
 
@@ -1835,6 +1844,7 @@ class inventory_balance
 
     return $query;
   }
+
 
   private function default_displayHeader_SELLING_PRICE($config)
   {
@@ -6042,14 +6052,15 @@ class inventory_balance
       $joins .= "left join frontend_ebrands as brand on brand.brandid = i.brand";
     }
     $query = "select i.itemid,i.itemname,i.uom,i.amt,i.disc, sum(rr.bal) as balance, partgrp.part_name as part,i.barcode,
-        '' as category, 0 as stockgrp_name, cat.name as category,rr.loc,rr.expiry $addfield 
+        '' as category, 0 as stockgrp_name, cat.name as category,rr.loc,rr.expiry, i.itemrem as rem  $addfield 
         from rrstatus as rr
         left join item as i on i.itemid=rr.itemid
         left join part_masterfile as partgrp on partgrp.part_id = i.part
         left join itemcategory as cat on cat.line = i.category
+
         $joins
         where i.isofficesupplies = 0 " . $filter . "  and i.isimport in $itemtype
-        group by i.itemid, i.itemname,i.uom,i.amt,i.disc, partgrp.part_name,i.barcode,cat.name,rr.loc,rr.expiry $grpby" . $filterbal . " order by i.itemname";
+        group by i.itemid, i.itemname,i.uom,i.amt,i.disc, partgrp.part_name,i.barcode,cat.name,rr.loc,rr.expiry, i.itemrem $grpby" . $filterbal . " order by i.itemname";
     return $query;
   }
   public function reportdatacsv($config)
@@ -8402,6 +8413,230 @@ class inventory_balance
       $str .= $this->reporter->endreport();
     } catch (Exception $e) {
       $this->othersClass->logConsole('Exception' . $e->getMessage());
+    }
+
+    return $str;
+  }
+
+
+  private function jda_none_table_cols($layoutsize, $border, $font, $fontsize, $config)
+  {
+    $str = '';
+    $companyid = $config['params']['companyid'];
+    $itemstock = $config['params']['dataparams']['itemstock'];
+    $amountformat = $config['params']['dataparams']['amountformat'];
+    $str .= $this->reporter->printline();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('ITEM CODE',        '120', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '320', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('REMARKS',          '300', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('LAST REC',         '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('LAST SELL',        '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('BALANCE',          '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('UOM',              '60',  null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('COUNT',            '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+
+    return $str;
+  }
+
+
+  public function jda_NONE_Layout($config)
+  {
+    $str = '';
+    try {
+      $result = $this->reportDefault($config);
+
+      $border     = '1px solid';
+      $font       = $this->companysetup->getrptfont($config['params']);
+      $font_size  = 10;
+      $fontsize11 = 11;
+      $companyid  = $config['params']['companyid'];
+      $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
+
+      $count = 51;
+      $page  = 50;
+
+      $this->reporter->linecounter = 0;
+
+      if (empty($result)) {
+        return $this->othersClass->emptydata($config);
+      }
+
+      $layoutsize = '1200';
+      $str .= $this->reporter->beginreport($layoutsize);
+      $str .= $this->default_displayHeader_NONE($config);
+      $str .= $this->jda_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+
+      $totalbalqty = 0;
+      $part        = "";
+      $scatgrp     = "";
+      $igrp        = "";
+      $totalext    = 0;
+      $grandtotal  = 0;
+
+      $multiheader = true;
+      if (isset($config['params']['multiheader'])) {
+        $multiheader = $config['params']['multiheader'];
+      }
+
+      foreach ($result as $key => $data) {
+
+        $balance = number_format($data->balance, 2);
+        if ($balance == 0) {
+          $balance = '-';
+        }
+
+        $rem = isset($data->rem) ? $data->rem : '';
+
+        if (isset($data->amt)) {
+          $isamt = number_format($data->amt, 2);
+          if ($isamt == 0) {
+            $isamt = '-';
+          }
+        } else {
+          $isamt    = '-';
+          $data->amt = 0;
+        }
+
+
+
+        $lrdate = '';
+        try {
+          $lastreceive = "select h.dateid from lahead as h
+                    left join lastock as s on s.trno=h.trno
+                    left join item as i on i.itemid=s.itemid
+                    where doc='RR' and s.itemid = $data->itemid
+                    union all
+                    select h.dateid from glhead as h
+                    left join glstock as s on s.trno=h.trno
+                    left join item as i on i.itemid=s.itemid
+                    where doc='RR' and s.itemid = $data->itemid
+                    order by dateid desc limit 1";
+
+          $lrdateresult = $this->coreFunctions->opentable($lastreceive);
+          if (!empty($lrdateresult)) {
+            $lrdate = $lrdateresult[0]->dateid;
+          }
+        } catch (Exception $e) {
+          $this->othersClass->logConsole('LR Exception: ' . $e->getMessage());
+        }
+
+
+        $lsdate = '';
+        try {
+          $lastsell = "select h.dateid from lahead as h
+                    left join lastock as s on s.trno=h.trno
+                    left join item as i on i.itemid=s.itemid
+                    where doc='SJ' and s.itemid = $data->itemid
+                    union all
+                    select h.dateid from glhead as h
+                    left join glstock as s on s.trno=h.trno
+                    left join item as i on i.itemid=s.itemid
+                    where doc='SJ' and s.itemid = $data->itemid
+                    order by dateid desc limit 1";
+          $lsdateresult = $this->coreFunctions->opentable($lastsell);
+          if (!empty($lsdateresult)) {
+            $lsdate = $lsdateresult[0]->dateid;
+          }
+        } catch (Exception $e) {
+          $this->othersClass->logConsole('LS Exception: ' . $e->getMessage());
+        }
+
+
+        if ($data->part != 0 || $data->part != null) {
+          if (strtoupper($part) == strtoupper($data->part)) {
+            $part = "";
+          } else {
+            $part = strtoupper($data->part);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->addline();
+            $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B',  '', '');
+            $str .= $this->reporter->col('',    '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('',    '100', null, false, '1px solid ', '', 'R', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->col('',    '75',  null, false, '1px solid ', '', 'C', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->col('',    '75',  null, false, '1px solid ', '', 'C', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->endrow();
+          }
+        } else {
+          $part = "";
+        }
+
+        // ── Category grouping header ──────────────────────────────
+        if ($data->category != 0 || $data->category != null) {
+          if (strtoupper($scatgrp) == strtoupper($data->category)) {
+            $scatgrp = "";
+          } else {
+            $scatgrp = strtoupper($data->category);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->addline();
+            $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('',       '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('',       '100', null, false, '1px solid ', '', 'R', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->col('',       '75',  null, false, '1px solid ', '', 'C', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->col('',       '75',  null, false, '1px solid ', '', 'C', $font, $font_size, '',   '', '');
+            $str .= $this->reporter->endrow();
+          }
+        } else {
+          $scatgrp = "";
+        }
+
+
+        $totalext = $data->balance * $data->amt;
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+
+        $str .= $this->reporter->col($data->barcode,  '120', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->itemname, '320', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($rem,            '300', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col(!empty($lrdate) ? date('Y/m/d', strtotime($lrdate)) : '', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col(!empty($lsdate) ? date('Y/m/d', strtotime($lsdate)) : '', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($balance,        '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->uom,      '60',  null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('',       '100', null, false, '1px solid ', 'B', 'RT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $scatgrp = strtoupper($data->category);
+        $part    = strtoupper($data->part);
+        $igrp    = isset($data->stockgrp_name) ? strtoupper($data->stockgrp_name) : '';
+
+        $grandtotal  = $grandtotal  + $totalext;
+        $totalbalqty = $totalbalqty + $data->balance;
+
+        // ── Page break ────────────────────────────────────────────
+        if ($multiheader) {
+          if ($this->reporter->linecounter >= $page) {
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->page_break();
+            $str .= $this->reporter->begintable($layoutsize);
+            $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+
+            if (!$allowfirstpage) {
+              $str .= $this->default_displayHeader_NONE($config);
+            }
+            $str .= $this->jda_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+            $page = $page + $count;
+          }
+        }
+      }
+
+      // ── Footer ────────────────────────────────────────────────────
+      $str .= $this->reporter->endtable();
+      $str .= $this->reporter->begintable($layoutsize);
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('',                                  '75',  null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      $str .= $this->reporter->col('OVERALL STOCKS :',                  '375', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      $str .= $this->reporter->col(number_format($totalbalqty, 2), '75',  null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->endtable();
+      $str .= $this->reporter->printline();
+      $str .= $this->reporter->endreport();
+    } catch (Exception $e) {
+      $this->othersClass->logConsole('Exception: ' . $e->getMessage());
     }
 
     return $str;
