@@ -229,14 +229,12 @@ class viewreimbursement
                 $details['encodedby'] = $config['params']['user'];
                 $ladetail = $this->coreFunctions->sbcinsert('ladetail', $details);
                 if ($ladetail) {
-                    $msg .= ' Details Inserted Successfully.';
+                    $msg = ' Details Inserted Successfully.';
                     $apvtrno = $this->coreFunctions->execqry("update hdailytask set apvtrno = $trno where userid =?  and  trno =? ", 'update', [$data[$key]['userid'], $data[$key]['trno']]);
                     $qry = "select trno as value from hdailytask where refx = ? limit 1";
                     $hdtrno = $this->coreFunctions->datareader($qry, [$data[$key]['trno']], '', true);
                     $this->coreFunctions->logconsole($hdtrno . '-' . $trno);
-                    $this->coreFunctions->execqry("delete from pendingapp where trno=? and approver = 'REIMBURSEMENT'", 'delete', [$hdtrno]);
                     $this->logger->sbcwritelog($trno, $config, 'DETAIL', ' ADD ' . 'Line : ' . $line . ' CR: ' . $data[$key]['amount'] . ' Notes: AUTO GENERATED REIMBURSEMENT');
-                    $apvtrno = true;
                     if ($apvtrno) {
                         $data2['line'] = $line + 1;
                         $config['params']['trno'] = $trno;
@@ -245,8 +243,10 @@ class viewreimbursement
                             $posttran = $this->othersClass->posttransacctg($config);
                             $this->coreFunctions->logconsole($posttran['msg'] . ' status: ' . $posttran['status']);
                             if (!$posttran['status']) {
+                                $msg = $posttran['msg'];
                                 goto endgenerate;
                             } else {
+                                $this->coreFunctions->execqry("delete from pendingapp where trno=? and approver = 'REIMBURSEMENT'", 'delete', [$hdtrno]);
                                 $msg = $posttran['msg'];
                             }
                         } else {
@@ -256,7 +256,7 @@ class viewreimbursement
                     break;
                 } else {
                     // failed to generate head or insert details
-                    $msg .= ' Insert Details Failed.';
+                    $msg = ' Insert Details Failed.';
                     $this->logger->sbcwritelog($trno, $config, 'DETAIL', $msg);
                     endgenerate:
                     $status = false;

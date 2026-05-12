@@ -558,8 +558,9 @@ class moduleClass
 			$socketserver = $this->companysetup->getsocketserver($params);
 			$socketnotify = $this->companysetup->getsocketnotify($params);
 			$isnavigation = $this->companysetup->getisnavigation($params);
+			$isenterqty = $this->companysetup->getisenterqty($params);
             $lookupclientpermodule= $this->companysetup->getlookupclientpermodule($params);
-			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url'=>$socketserver,'notify'=>$socketnotify],'lookupclientpermodule'=>$lookupclientpermodule,'otherparams'=>['isnavigation'=>$isnavigation]], 200);
+			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url'=>$socketserver,'notify'=>$socketnotify],'lookupclientpermodule'=>$lookupclientpermodule,'otherparams'=>['isnavigation'=>$isnavigation,'isenterqty'=>$isenterqty]], 200);
 		} else {
 			$this->logger->sbciplog('LOG-FAIL', $params['ip'], $params['username']);
 			$status = false;
@@ -2731,7 +2732,11 @@ class moduleClass
 
 
 		$poseq = $pref . $seq;
-		$yr = $this->coreFunctions->datareader("select yr as value FROM profile where psection ='" . $this->config['params']['doc'] . "' and doc ='SED'");
+		$yr =0;
+		if ($this->companysetup->getdocyr($this->config['params'])) {
+			$yr = $this->coreFunctions->datareader("select yr as value FROM profile where psection ='" . $this->config['params']['doc'] . "' and doc ='SED'");
+		}
+		
 		$newdocno = $this->othersClass->PadJ($poseq, $docnolength, $yr);
 		$this->config['pref'] = $pref;
 		$this->coreFunctions->logconsole('POSEQ: ' . $poseq);

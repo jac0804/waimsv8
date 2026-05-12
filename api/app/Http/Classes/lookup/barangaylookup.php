@@ -177,6 +177,8 @@ class barangaylookup
         $data = $this->coreFunctions->opentable($query);
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
     }
+
+
     public function brgycomplaint($config)
     {
         $doc = $config['params']['doc'];
@@ -228,16 +230,26 @@ class barangaylookup
             $doc = 'JU';
         }
 
+        switch ($doc) {
+            case 'MN':
+                $table = 'hmnhead';
+                break;
+            case 'JU':
+                $table = 'hjuhead';
+                break;
+        }
+
         $query = "select head.trno as keyid,head.docno, ifnull(head.clientname,'') as clientname,
-              ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
-              ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
-              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
-              ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
-              ifnull(head.creditinfo,'') as creditinfo
-              from glhead as head
-              left join cntnum as num on num.trno=head.trno
-              where num.doc = '$doc' and head.isfinish <>1";
+        ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
+        ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
+        ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
+        ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
+        ifnull(head.creditinfo,'') as creditinfo
+        from $table as head
+        left join transnum as num on num.trno=head.trno
+        where num.doc = '$doc' and head.isfinish <>1";
         $data = $this->coreFunctions->opentable($query);
+        
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
     }
 }

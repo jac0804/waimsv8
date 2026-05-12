@@ -117,6 +117,10 @@ class entryterms
       $obj[0][$this->gridname]['columns'][4]['label']  = 'PF';
     }
 
+    if ($companyid == 63) { //ericco
+      $obj[0][$this->gridname]['columns'][3]['type']  = 'coldel';
+    }
+
     if ($companyid == 40) { //cdo
       $obj[0][$this->gridname]['columns'][2]['label']  = 'Days/Months';
     }

@@ -348,62 +348,70 @@ class pendingtask
                 }
             } else { // nireturn galing sa checker  nasa pendingapp lang ito - connected sa TM
 
-                $assigned = $this->coreFunctions->datareader("select c.clientname as value from tmdetail as d
+                $dailytasktrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "tasktrno=? and taskline=? ", [$trno, $line], '', true);
+                if ($dailytasktrno != 0) {
+                    $label = 'Task is already in dailytask. Please refresh the page.';
+                    $this->coreFunctions->execqry("delete from pendingapp where  doc='TM' and trno=? AND line=?", 'delete', [$trno, $line]);
+                } else {
+                    if ($approver == 'RETURN') {
+                        $assigned = $this->coreFunctions->datareader("select c.clientname as value from tmdetail as d
                                                           left join client as c on c.clientid=d.userid
                                                           where d.line =? and d.trno = ?", [$line, $trno]);
 
-                $label = 'Successfully started.';
-                $data = [
-                    'tasktrno' => $trno,
-                    'taskline' => $line,
-                    'reftrno' => 0,
-                    'rem' => $config['params']['row']['title'],
-                    'amt' => 0,
-                    'clientid' =>  $config['params']['row']['clid'],
-                    'userid' => $adminid,
-                    'dateid' => $dateid,
-                    'donedate' => null,
-                    'statid' => 0,
-                    'apvtrno' => 0,
-                    'isprev' => 0,
-                    'createdate' => $datenow,
-                    'encodeddate' => $datenow,
-                    'ischecker' => 0,
-                    'empid' => $checkerid,
-                    'taskcatid' => $config['params']['row']['taskcatid'],
-                    'assignedid' => $config['params']['row']['userid'],
-                    'reseller' => $config['params']['row']['reseller']
-                ];
+                        $label = 'Successfully started.';
+                        $data = [
+                            'tasktrno' => $trno,
+                            'taskline' => $line,
+                            'reftrno' => 0,
+                            'rem' => $config['params']['row']['title'],
+                            'amt' => 0,
+                            'clientid' =>  $config['params']['row']['clid'],
+                            'userid' => $adminid,
+                            'dateid' => $dateid,
+                            'donedate' => null,
+                            'statid' => 0,
+                            'apvtrno' => 0,
+                            'isprev' => 0,
+                            'createdate' => $datenow,
+                            'encodeddate' => $datenow,
+                            'ischecker' => 0,
+                            'empid' => $checkerid,
+                            'taskcatid' => $config['params']['row']['taskcatid'],
+                            'assignedid' => $config['params']['row']['userid'],
+                            'reseller' => $config['params']['row']['reseller']
+                        ];
 
-                if ($checkerid != 0) {
-                    if ($checkerid == $adminid) {
-                        $data['ischecker'] = 1;
-                        $data['startchecker'] = $this->othersClass->getCurrentTimeStamp();
-                        $checkerid = 0;
+                        if ($checkerid != 0) {
+                            if ($checkerid == $adminid) {
+                                $data['ischecker'] = 1;
+                                $data['startchecker'] = $this->othersClass->getCurrentTimeStamp();
+                                $checkerid = 0;
+                            }
+                        }
+
+                        $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
+                        if ($dttrno) {
+                            $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and approver='RETURN' and trno=" . $trno . " and line=" . $line, 'delete');
+
+                            if ($checkerid != 0) {
+                                $checkername = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$checkerid]);
+                                $tasktitle = $data['rem'];
+                                $socketmsg = "Task accepted: " . $tasktitle;
+                                if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $checkername);
+                            } else {
+                                $tasktitle = $data['rem'];
+                                $socketmsg = "Task accepted: " . $tasktitle;
+                                if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '',  $row['requestbycode']);
+                            }
+
+                            $config['params']['doc'] = 'DY';
+                            $this->logger->sbcmasterlog2($dttrno, $config, ' Daily task has been created and started by ' . $assigned, 'task_log');
+                            $config['params']['doc'] = $doc;
+
+                            $config['params']['doc'] = 'ENTRYTASK';
+                            $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' Task started by: ' . $assigned);
+                        }
                     }
-                }
-
-                $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
-                if ($dttrno) {
-                    $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and approver='RETURN' and trno=" . $trno . " and line=" . $line, 'delete');
-
-                    if ($checkerid != 0) {
-                        $checkername = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$checkerid]);
-                        $tasktitle = $data['rem'];
-                        $socketmsg = "Task accepted: " . $tasktitle;
-                        if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $checkername);
-                    } else {
-                        $tasktitle = $data['rem'];
-                        $socketmsg = "Task accepted: " . $tasktitle;
-                        if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '',  $row['requestbycode']);
-                    }
-
-                    $config['params']['doc'] = 'DY';
-                    $this->logger->sbcmasterlog2($dttrno, $config, ' Daily task has been created and started by ' . $assigned, 'task_log');
-                    $config['params']['doc'] = $doc;
-
-                    $config['params']['doc'] = 'ENTRYTASK';
-                    $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' Task started by: ' . $assigned);
                 }
             }
         }

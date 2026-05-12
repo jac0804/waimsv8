@@ -91,6 +91,7 @@ class loadinventorywithbal
             case 27: //nte
             case 36: //rozlab
             case 39: //CBBSI
+            case 68: //jda
                 switch ($doc) {
                     case 'PC':
                         $fields = ['class', 'brandname', 'divsion', 'categoryname', 'subcatname', 'refresh'];
@@ -131,6 +132,7 @@ class loadinventorywithbal
             case 27: //nte
             case 36: //rozlab
             case 39: //CBBSI
+            case 68: //jda
                 switch ($doc) {
                     case 'PC':
                         $select = "
@@ -158,7 +160,7 @@ class loadinventorywithbal
                         
                         '' as subcatname,
                         '' as subcat";
-                        $data = $this->coreFunctions->opentable($select, [$trno]);
+                        $data = $this->coreFunctions->opentable($select);
                         break;
                 }
                 break;
@@ -252,6 +254,7 @@ class loadinventorywithbal
             case 27: //nte
             case 36: //rozlab    
             case 39: //CBBSI
+            case 68: //jda
                 switch ($doc) {
                     case 'PC':
 

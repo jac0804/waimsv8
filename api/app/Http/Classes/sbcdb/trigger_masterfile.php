@@ -233,6 +233,8 @@ class trigger_masterfile
 		$this->entryuserdisplay_triggers($config);
 		$this->entrybrandsizepercarton_triggers($config);
 		$this->emp_req_triggers($config);
+
+		$this->batchsetup_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -2689,5 +2691,17 @@ class trigger_masterfile
 			'carton' => ['carton' => []]
 		];
 		$this->settriggermasterfilelogs($config, 'entrycarton', 'carton', 'masterfile_log', $fields, 'line');
+	}
+
+	private function batchsetup_triggers($config)
+	{
+		$fields = [
+			'SSS' => ['sss' => []],
+			'PHIC' => ['ph' => []],
+			'HDMF' => ['hdmf' => []],
+			'TAX' => ['tax' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'batchsetup', 'batch', 'masterfile_log', $fields, 'line');
 	}
 }// end class

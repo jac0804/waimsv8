@@ -1678,5 +1678,7 @@ class payroll
 
 		$this->coreFunctions->createindex("timecard", "Index_PG", ["pgline"]);
 		$this->coreFunctions->createindex("timecard", "Index_Shift", ["shiftid"]);
+		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["editdate"],  "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["editby"],  "VARCHAR(100) NOT NULL DEFAULT ''", 0);
 	} //end function
 } // end class

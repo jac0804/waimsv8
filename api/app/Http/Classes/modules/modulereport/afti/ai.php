@@ -1375,8 +1375,8 @@ class ai
                 $ewt = $vatsales *  ($datastock[0]['ewtrate'] / 100);
             }
             if ($datastock[0]['vattype'] == 'VATABLE') {
-                if ($datastock[0]['vattype'] != 0) {
-                    $vat = round($datastock[0]['vattype'], 2);
+                if ($datastock[0]['taxdef'] != 0) {
+                    $vat = round($datastock[0]['taxdef'], 2);
                 } else {
                     $vat = round($vatsales * .12, 2);
                 }

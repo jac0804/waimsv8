@@ -186,14 +186,19 @@ class entrysku
   public function createtabbutton($config)
   {
     $allow_update = $this->othersClass->checkAccess($config['params']['user'], 4876);
-    $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];
+
+    if ($config['params']['companyid'] == 63) { //ericco
+      $tbuttons = ['addoutlet', 'saveallentry', 'masterfilelogs'];
+    } else {
+      $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];
+    }
+
     if ($config['params']['companyid'] == 21) { // kinggeorge
       if (!$allow_update) {
         $tbuttons = array_slice($tbuttons, 2, 1);
       }
     }
     $obj = $this->tabClass->createtabbutton($tbuttons);
-
     return $obj;
   }
 
@@ -207,7 +212,7 @@ class entrysku
         $data['itemid'] = $config['params']['tableid'];
         $data['clientid'] = 0;
         if ($config['params']['companyid'] == 63) { //ericco
-          $itemdesc = $config['params']['data'][0]['itemdesc'];
+          $itemdesc = $this->coreFunctions->getfieldvalue("item", "itemname", "itemid=?", [$config['params']['tableid']]);
           $data['issku'] = 1;
           $data['itemdesc'] = $itemdesc;
           $data['groupid'] = '';
@@ -254,20 +259,20 @@ class entrysku
               $data2['groupid'] = $data[$key]['groupid'];
               $data2['issku'] = $data[$key]['issku'];
               $data2['uom2'] = $data[$key]['uom2'];
-              $data2['itemname'] = $data[$key]['itemdesc'];         
-              
+              $data2['itemname'] = $data[$key]['itemdesc'];
+
               $qry = "select sku.groupid as outlet from sku where sku.itemid = '" .  $data[$key]['itemid'] . "' and sku.groupid=  '" .  $data[$key]['groupid'] . "'  and sku.issku=1 limit 1";
               $opendata = $this->coreFunctions->opentable($qry);
               $resultdata =  json_decode(json_encode($opendata), true);
-              if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {                
+              if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
                 if (!empty($resultdata[0]['outlet'])) {
                   if (trim($resultdata[0]['outlet']) == trim($data[$key]['wh'])) {
                     return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
                   }
-                }                
+                }
               }
 
-              if($data[$key]['uom2'] ==''){
+              if ($data[$key]['uom2'] == '') {
                 return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
               }
 
@@ -349,7 +354,7 @@ class entrysku
                     goto update;
                   }
 
-                  if($data[$key]['uom2'] ==''){
+                  if ($data[$key]['uom2'] == '') {
                     return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
                   }
                 }
@@ -374,7 +379,6 @@ class entrysku
   {
     $data = [];
     $row = $config['params']['row'];
-    // var_dump($row);
     $tableid = $config['params']['tableid'];
     $doc = $config['params']['doc'];
     foreach ($this->fields as $key => $value) {
@@ -388,21 +392,29 @@ class entrysku
           $data['issku'] = $row['issku'];
           $data['uom2'] = $row['uom2'];
           $data['itemname'] = $row['itemdesc'];
+          $qry = "select sku.groupid as outlet from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";
           $opendata = $this->coreFunctions->opentable($qry);
           $resultdata =  json_decode(json_encode($opendata), true);
 
           if ($row['line'] == 0 && $row['wh'] != '') {
-            $qry = "select sku.groupid as outlet from sku where sku.itemid = '" . $row['itemid'] . "' and sku.groupid=  '" . $row['groupid'] . "'  and sku.issku=1 limit 1";            
             if (!empty($resultdata[0]['outlet'])) {
               if (trim($resultdata[0]['outlet']) == trim($row['wh'])) {
                 return ['status' => false, 'msg' => ' Outlet ( ' . $resultdata[0]['outlet'] . ' )' . ' already exist.', 'data' => [$resultdata]];
               }
-            }           
+            }
           }
 
-          if($row['uom2'] ==''){
-            return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
+          if ($row['line'] == 0 && $row['groupid'] != '') {
+            if (!empty($resultdata[0]['outlet'])) {
+              if (trim($resultdata[0]['outlet']) == trim($row['groupid'])) {
+                return ['status' => false, 'msg' => $resultdata[0]['outlet'], 'data' => [$resultdata]];
+              }
+            }
           }
+
+          // if ($row['uom2'] == '') {
+          //   return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
+          // }
 
           break;
         case 'SUPPLIER':
@@ -424,7 +436,6 @@ class entrysku
     }
 
     if ($row['line'] == 0) {
-      // var_dump($data);
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
         $returnrow = $this->loaddataperrecord($config, $line);
@@ -466,8 +477,6 @@ class entrysku
               } else {
                 goto update;
               }
-
-              
             }
 
             break;
@@ -489,7 +498,7 @@ class entrysku
                 goto update;
               }
 
-              if($row['uom2'] ==''){
+              if ($row['uom2'] == '') {
                 return ['status' => false, 'msg' => ' UOM Required.', 'data' => [$resultdata]];
               }
             }
@@ -643,6 +652,11 @@ class entrysku
         return $this->lookupuom($config);
         break;
 
+      case 'addoutlet':
+        return $this->addoutlet($config);
+        break;
+
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup'];
         break;
@@ -667,7 +681,6 @@ class entrysku
     $index = $config['params']['index'];
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
   }
-
 
 
   public function lookuplogs($config)
@@ -814,6 +827,73 @@ class entrysku
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex];
   } //end function
+
+  public function addoutlet($config)
+  {
+    $lookupsetup = array(
+      'type' => 'multi',
+      'rowkey' => 'groupid',
+      'title' => 'List of Groups',
+      'style' => 'width:800px;max-width:800px;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'tableentry',
+      'action' => 'addtogrid'
+    );
+
+    // lookup columns
+    $cols = [['name' => 'groupid', 'label' => 'Group', 'align' => 'left', 'field' => 'groupid', 'sortable' => true, 'style' => 'font-size:16px;']];
+    $qry = "select distinct groupid from client where groupid<>'' order by groupid";
+    $data = $this->coreFunctions->opentable($qry);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function lookupcallback($config)
+  {
+    $id = $config['params']['tableid'];
+    $row = $config['params']['rows'];
+    $data = [];
+    $returndata = [];
+    $errors = [];
+    $msg = 'Successfully added.';
+    $itemdesc = $this->coreFunctions->getfieldvalue("item", "itemname", "itemid=?", [$config['params']['tableid']]);
+    $uom = $this->coreFunctions->getfieldvalue("item", "uom", "itemid=?", [$config['params']['tableid']]);
+    $amt = $this->coreFunctions->getfieldvalue("item", "amt", "itemid=?", [$config['params']['tableid']]);
+    $disc = $this->coreFunctions->getfieldvalue("item", "disc", "itemid=?", [$config['params']['tableid']]);
+    foreach ($row  as $key2 => $value) {
+      $config['params']['row']['line'] = 0;
+      $config['params']['row']['itemid'] = $config['params']['tableid'];
+      $config['params']['row']['clientid'] = 0;
+      $config['params']['row']['issku'] = 1;
+      $config['params']['row']['itemdesc'] = $itemdesc;
+      $config['params']['row']['groupid'] = $row[$key2]['groupid'];
+      $config['params']['row']['uom2'] = $uom; //default
+      $config['params']['row']['client'] = '';
+      $config['params']['row']['wh'] = '';
+      $config['params']['row']['sku'] = '';
+      $config['params']['row']['amt'] =  $amt;
+      $config['params']['row']['disc'] =  $disc;
+      $config['params']['row']['bgcolor'] = 'bg-blue-2';
+      $return = $this->save($config);
+      if ($return['status']) {
+        array_push($returndata, $return['row'][0]);
+      } else {
+        $errors[] = $return['msg'];
+      }
+    }
+
+    $status = count($returndata) > 0;
+    $msg = $status ? 'Successfully added.'  : 'No outlet were saved. ';
+
+    if (!empty($errors)) {
+      $msg .= implode(', ', $errors) . ' outlet  already exist.';
+    }
+
+    return ['status' => $status, 'msg' => $msg, 'data' => $returndata];
+  } // end function
+
 
   // -> Print Function
   public function reportsetup($config)

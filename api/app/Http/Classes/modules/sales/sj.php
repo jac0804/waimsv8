@@ -252,7 +252,7 @@ class sj
     $cols[$ar]['label'] = 'AR Balance';
     $cols[$total]['align'] = 'text-left';
 
-    if ($companyid != 19 && $companyid != 28) { //not housegem & not xcomp
+    if ($companyid != 19 && $companyid != 28 && $companyid != 52) { //not housegem & not xcomp & not technolab
       $cols[$total]['type'] = 'coldel';
     }
     if ($companyid != 28 && $companyid != 37 && $companyid != 29) { //not xcomp & mega crystal
@@ -517,6 +517,25 @@ class sj
         if ($searchfilter == "") $limit = 'limit 150';
         $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
         $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
+        break;
+      case 52://technolab
+        if ($searchfilter == "") $limit = 'limit 150';
+        $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
+        $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
+        $lfield = ',format(sum(stock.ext),2) as total';
+        $gfield = ',format(sum(stock.ext),2) as total';
+        $ljoin = 'left join ' . $this->stock . ' as stock on stock.trno=head.trno';
+        $gjoin = 'left join ' . $this->hstock . ' as stock on stock.trno=head.trno';
+        $linkstock = true;
+        if ($this->companysetup->linearapproval($config['params'])) {
+          $lstat = "case when num.postdate is null and head.lockdate is null and num.statid=10 then 'FOR APPROVAL' 
+          when num.postdate is null and num.statid=36 then 'APPROVED' else 'DRAFT' end";
+          $lstatcolor = "case when num.postdate is null and num.statid=36 or num.statid=10 then 'grey' when head.lockdate is not null then 'green' else 'red' end";
+        }
+        $group = 'group by head.trno,head.docno,head.clientname,head.dateid,head.lockdate,
+        head.createby,head.editby,head.viewby,num.postedby,
+         head.yourref, head.ourref,head.shipto';
+
         break;
       default:
         if ($searchfilter == "") $limit = 'limit 150';

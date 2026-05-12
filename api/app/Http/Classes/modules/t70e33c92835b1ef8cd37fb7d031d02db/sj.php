@@ -3597,7 +3597,7 @@ class sj
         0
       );
 
-      $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
+      $computedata['amt']  = $computedata['amt'];
       $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
 
       $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");

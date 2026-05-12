@@ -241,21 +241,12 @@ class mb
   public function createTab($access, $config)
   {
 
-    $action = 0;
-    $acno = 1;
-    $acnoname = 2;
-    $db = 3;
-    $cr = 4;
-    $postdate = 5;
-    $rem = 6;
-    $client = 7;
-    $ref = 8;
-    $acnoname2 = 9;
-
     $companyid = $config['params']['companyid'];
 
-    $columns = ['action', 'acno', 'acnoname', 'db', 'cr', 'postdate', 'rem', 'client', 'ref', 'acnoname'];
-
+    $columns = ['acno', 'acnoname', 'db', 'cr', 'postdate', 'rem', 'client'];
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns,
@@ -269,7 +260,15 @@ class mb
 
     $obj[0]['accounting']['columns'][$rem]['type'] = "label";
     $obj[0]['accounting']['columns'][$acno]['readonly'] = true;
+    $obj[0]['accounting']['columns'][$acno]['type'] = 'label';
+    $obj[0]['accounting']['columns'][$db]['type'] = 'label';
+    $obj[0]['accounting']['columns'][$cr]['type'] = 'label';
+    $obj[0]['accounting']['columns'][$postdate]['type'] = 'label';
+    $obj[0]['accounting']['columns'][$rem]['type'] = 'label';
     $obj[0]['accounting']['columns'][$acnoname]['readonly'] = true;
+    $obj[0]['accounting']['columns'][$acnoname]['type'] = 'label';
+    $obj[0]['accounting']['columns'][$client]['type'] = 'Tenant Code';
+    $obj[0]['accounting']['descriptionrow'] = [];
     $obj[0]['accounting']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }

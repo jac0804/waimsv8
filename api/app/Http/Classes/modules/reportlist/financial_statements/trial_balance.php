@@ -445,6 +445,10 @@ class trial_balance
         // $result = $this->roosevelt_query($config);
         $reportdata =  $this->roosevelt_trial_balance_layout($config);
         break;
+      case 68: //jda
+        $result = $this->default_query($config);
+        $reportdata =  $this->JDA_DEFAULT_TRIAL_BALANCE_LAYOUT($config, $result);
+        break;
       default:
         $result = $this->default_query($config);
         $reportdata =  $this->DEFAULT_TRIAL_BALANCE_LAYOUT($config, $result);
@@ -1803,4 +1807,114 @@ class trial_balance
     $result = $this->coreFunctions->opentable($query);
     return $result;
   }
+
+  private function jda_default_table_cols($layoutsize, $border, $font, $fontsize10, $config)
+  {
+    $str = '';
+    $fontsize10 = '10';
+    $str .= $this->reporter->printline();
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ACCOUNT #', '40', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('ACCOUNT TITLE', '250', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('DEBIT', '50', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('CREDIT', '50', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    return $str;
+  }
+
+  private function JDA_DEFAULT_TRIAL_BALANCE_LAYOUT($params, $data)
+  {
+    $border = '1px solid';
+    $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize10 = '10';
+    $fontsize11 = 11;
+
+    $str = "";
+    $count = 71;
+    $page = 70;
+    $this->reporter->linecounter = 0;
+
+    if (empty($data)) {
+      return $this->othersClass->emptydata($params);
+    }
+
+    $str .= $this->reporter->beginreport();
+    $str .= $this->DEFAULT_HEADER_LAYOUT($params);
+    $str .= $this->jda_default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+    $totaldb = 0;
+    $totalcr = 0;
+    for ($i = 0; $i < count($data); $i++) {
+
+      if ($data[$i]['amt'] < 0) {
+        $cr = $data[$i]['amt'] * -1;
+      } else {
+        $cr = 0;
+      }
+
+      if ($data[$i]['amt'] > 0) {
+        $db = $data[$i]['amt'];
+      } else {
+        $db = 0;
+      }
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+        $str .= $this->reporter->col($data[$i]['acno'], '40', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . $data[$i]['acnoname'], '250', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+
+        if ($db == 0) {
+          $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+        } else {
+          $str .= $this->reporter->col(number_format($db, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+        }
+
+        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+
+        if ($cr == 0) {
+          $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+        } else {
+          $str .= $this->reporter->col(number_format($cr, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+        }
+        $str .= $this->reporter->endrow();
+
+      $totaldb = $totaldb + $cr;
+      $totalcr = $totalcr + $db;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->DEFAULT_HEADER_LAYOUT($params);
+        }
+        $str .= $this->jda_default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->printline();
+        $page = $page + $count;
+      }
+    } //END FOR EACH
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '40', null, false, '1px solid ', 'TB', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '250', null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalcr, 2), '50', null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, 2), '50', null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->printline();
+    $str .= $this->reporter->endreport();
+    return $str;
+  } //end fn
+
 }//end class

@@ -322,7 +322,7 @@ class hj
     if ($trno == 0) {
       $trno = $this->othersClass->readprofile('TRNO', $config);
       if ($trno == '') {
-        $trno = $this->coreFunctions->datareader("select trno as value from " . $this->tablenum . " where doc='HJ' and center=? order by trno desc limit 1", [$doc, $center]);
+        $trno = $this->coreFunctions->datareader("select trno as value from " . $this->tablenum . " where doc='HJ' and center=? order by trno desc limit 1", [$center]);
       }
       $config['params']['trno'] = $trno;
     } else {
@@ -584,7 +584,7 @@ class hj
             $this->coreFunctions->execqry($ins5, 'insert', [$empid]);
 
             $ins6 = "insert into ratesetup (dateid,dateeffect, dateend, empid, remarks, basicrate, type, hjtrno) values ( '" . $dateid . "','" . $effectdate . "','9999-12-31'," . $clientid . ",'" . $data[0]->docno . "'," . $rate . ",'" . $classrate . "'," . $trno . ")";
-            $this->coreFunctions->execqry($ins6, 'insert', [$empid]);
+            $this->coreFunctions->execqry($ins6, 'insert');
 
             $ins7 = "insert into erequire (empid,reqs,submitdate,notes,issubmitted,pin,reqid,editby,editdate,expiry,empcode)
              select '" . $clientid . "' as empid, reqs, submitdate, notes, issubmitted, pin, reqid, editby, editdate, expiry, empcode from arequire where empid = ? ";

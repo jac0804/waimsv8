@@ -157,6 +157,7 @@ class pl
         data_set($col2, 'waybill.type', 'input');
         data_set($col2, 'waybill.label', 'Waybill No.');
         data_set($col2, 'amount.label', 'Total Carton');
+        data_set($col2, 'amount.class', 'csamount sbccsreadonly');
 
         $fields = ['dateid'];
         $col3 = $this->fieldClass->create($fields);
@@ -294,7 +295,7 @@ class pl
         $center = $config['params']['center'];
 
         $select = "select head.trno,head.doc,head.docno,head.dateid,head.trno,
-        client.clientid,client.clientname,client.client,head.address,format(head.amount,0) as amount,
+        client.clientid,client.clientname,client.client,head.address,format(head.amount,2) as amount,
         head.shipto,head.waybill
         ";
         $query = $select . " from " . $this->head . " as head 
@@ -378,6 +379,19 @@ class pl
         $data['editby'] = $config['params']['user'];
         if ($isupdate) {
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+
+            $query =
+                "select trno from lahead where pltrno = ?
+                 union all
+                 select trno from glhead where pltrno = ?";
+
+            $sj_head = $this->coreFunctions->opentable($query, [$head['trno'], $head['trno']]);
+
+            $sjtrno = [];
+            foreach ($sj_head as $k => $val) {
+                array_push($sjtrno, $val->trno);
+            }
+            $this->computecarton($config, $sjtrno, $head['trno']);
         } else {
             $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -407,18 +421,60 @@ class pl
     {
         $trno = $config['params']['trno'];
         $rows = [];
+        $sjtrno = [];
         foreach ($config['params']['rows'] as $key => $value) {
             $config['params']['data'] = $value;
             $return = $this->additem('update', $config);
+            $return['status'] = true;
             if ($return['status']) {
                 $refx = $return['row'][0]->trno;
                 $config['params']['refx'] = $refx;
                 $config['params']['trno'] = $trno;
                 array_push($rows, $return['row'][0]);
+                array_push($sjtrno, $config['params']['rows'][$key]['trno']);
             }
         }
-        return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.'];
+        $this->computecarton($config, $sjtrno, $refx, 'add');
+        return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
     } //end function
+    public function computecarton($config, $sjtrno, $refx, $action = '')
+    {
+        $amount = 0;
+        $trno = 0;
+        $filter = "";
+
+        if (!empty($sjtrno)) {
+            $trno = implode(",", $sjtrno);
+            $filter = " and stock.trno in ($trno)";
+        }
+        $data = $this->coreFunctions->opentable("select stock.uom,stock.iss from lastock as stock 
+        left join lahead as head on head.trno = stock.trno
+        where  head.pltrno = ? $filter
+                union all 
+        select stock.uom,stock.iss from glstock as stock
+        left join glhead as head on head.trno = stock.trno
+        where  head.pltrno = ? $filter", [$refx, $refx]);
+        if (!empty($data)) {
+            foreach ($data as $k => $val) {
+
+                $sizeid = $this->coreFunctions->datareader('select qty as value from carton where sizeid=? limit 1', [$val->uom]);
+                if ($sizeid != "") {
+                    $amount += $val->iss / $sizeid;
+                    $this->coreFunctions->LogConsole('amount: ' . $amount);
+                }
+            }
+        }
+        $currentamt = $this->coreFunctions->datareader('select amount as value from plhead where trno=?', [$refx]);
+        if ($action == 'add') {
+            if ($currentamt != 0) {
+                $amount += $currentamt;
+            }
+        }
+
+        $this->coreFunctions->execqry("update plhead set amount = $amount where trno=?", 'update', [$refx]);
+
+        return ['status' => true, 'msg' => ''];
+    }
 
     public function getstockselect($config)
     {
@@ -481,12 +537,13 @@ class pl
                 $table = 'lahead';
             }
             $qry = " update " . $table . " set pltrno = 0 where trno=? ";
-            $this->coreFunctions->execqry($qry, 'update', [$value->refx]);
+            $update = $this->coreFunctions->execqry($qry, 'update', [$value->refx]);
+            $this->computecarton($config, [], $trno, 'delete');
 
             $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - trno:' . $value->refx . ' SI#:' . $value->docno);
         }
 
-        return ['status' => true, 'msg' => 'Successfully deleted.'];
+        return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadhead' => true];
     } // end function
     public function additem($action, $config)
     {

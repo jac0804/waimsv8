@@ -53,6 +53,9 @@ class leave_filling_reports
         if ($companyid == 51 || $companyid == 53) { //camera,ulitc
             array_push($fields, 'radioposttype');
         }
+        if ($companyid == 44) { //stonepro
+            array_push($fields, 'radiopaymenttype');
+        }
 
         $col1 = $this->fieldClass->create($fields);
 
@@ -60,6 +63,14 @@ class leave_filling_reports
             data_set($col1, 'radioposttype.options', [
                 ['label' => 'ENTRY', 'value' => 'entry', 'color' => 'red'],
                 ['label' => 'APPROVED', 'value' => 'approved', 'color' => 'red']
+            ]);
+        }
+        if ($companyid == 44) { // stonepro
+            data_set($col1, 'radiopaymenttype.label', 'Paymode');
+
+            data_set($col1, 'radiopaymenttype.options', [
+                ['label' => 'Weekly', 'value' => 'W', 'color' => 'red'],
+                ['label' => 'Semi-Monthly', 'value' => 'S', 'color' => 'red']
             ]);
         }
 
@@ -89,7 +100,8 @@ class leave_filling_reports
     '' as division,
     '' as client,
     '' as clientname,
-    '' as dclientname
+    '' as dclientname,
+    'S' as paymenttype
     ");
     }
 
@@ -139,6 +151,7 @@ class leave_filling_reports
         $url = 'App\Http\Classes\modules\payrollentry\\' . 'leaveapplicationportalapproval';
         $adminid = $config['params']['adminid'];
         $posttype     = $config['params']['dataparams']['posttype'];
+        $paymode     = $config['params']['dataparams']['paymenttype'];
 
         $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 5228);
         $user = $config['params']['user'];
@@ -174,6 +187,11 @@ class leave_filling_reports
         if ($check['leftjoin'] != "") {
             $leftjoin .= $check['leftjoin'];
         }
+        if ($companyid == 44) { // stonepro
+            if ($paymode != "") {
+                $filter .= " e.paymode = '$paymode' and ";
+            }
+        }
 
         switch ($companyid) {
             case 53: // camera
@@ -181,11 +199,11 @@ class leave_filling_reports
                 $query = "
                 select date(lt.dateid) as dateid,ls.docno,cl.clientname as empname,ls.days,lt.adays,ls.empid,ls.acnoid,ls.trno,date(lt.effectivity) as effectivity,
                 app.clientname as appname,app2.clientname as appname2,lt.remarks,
-                lt.date_approved_disapproved as fdate,lt.date_approved_disapproved2 as sdate, 
-                (case when lt.status2 = 'E' then 'ENTRY' 
+                lt.date_approved_disapproved as fdate,lt.date_approved_disapproved2 as sdate,
+                (case when lt.status2 = 'E' then 'ENTRY'
                 when lt.status2 = 'A' then 'APPROVED'
                 else 'DISAPPROVED' end) as status2,
-                (case when lt.status = 'E' then 'ENTRY' 
+                (case when lt.status = 'E' then 'ENTRY'
                 when lt.status = 'A' then 'APPROVED'
                 else 'DISAPPROVED' end) as status,
                 lt.disapproved_remarks2 as reason2,lt.disapproved_remarks as reason,b.batch,lt.fillingtype,p.codename
@@ -207,15 +225,15 @@ class leave_filling_reports
                 break;
 
             default:
-                $query = "select ls.docno,cl.client,ls.days,ls.empid,ls.acnoid,ls.trno,lt.effectivity
+                $query = "select ls.docno,cl.client,ls.days,ls.empid,ls.acnoid,ls.trno
                 from leavetrans as lt
                 left join leavesetup as ls on lt.trno = ls.trno
                 left join employee as e on e.empid=ls.empid
                 left join paccount as p on p.line=ls.acnoid
                 left join client as cl on cl.clientid=e.empid
                 $leftjoin
-                where $status date(lt.date_approved_disapproved) is not null $filter and date(lt.effectivity) between '" . $datestart . "' and '" . $dateend . "' $filteremp
-                group by ls.docno,ls.trno,client,ls.days,ls.empid,ls.acnoid,lt.effectivity order by lt.effectivity";
+                where $status $filter date(lt.effectivity) between '" . $datestart . "' and '" . $dateend . "' $filteremp
+                group by ls.docno,ls.trno,client,ls.days,ls.empid,ls.acnoid order by cl.clientname";
                 break;
         }
 
@@ -380,8 +398,8 @@ class leave_filling_reports
     date(ls.dateid) as createdate,
     approver.clientname as approvedby,
     approver2.clientname as approvedby2,
-    date(lt.date_approved_disapproved) as date_approved,
-    date(lt.date_approved_disapproved2) as date_approved2,
+    lt.date_approved_disapproved as date_approved,
+    lt.date_approved_disapproved2 as date_approved2,
     lt.disapproved_remarks,lt.disapproved_remarks2
     from leavetrans as lt
     left join leavesetup as ls on lt.trno = ls.trno
@@ -390,11 +408,11 @@ class leave_filling_reports
     left join client as approver2 on approver2.email = lt.approvedby_disapprovedby2 and approver2.email <> ''
     left join batch as b on b.line=lt.batchid
     left join paccount as p on p.line=ls.acnoid
-    left join paytrancurrent as ptrans on ptrans.acnoid = p.line
+ 
     left join client on client.clientid=e.empid
     where lt.status = 'A' and ls.acnoid = ? and ls.docno = ? and ls.empid = ?
     group by ls.docno,lt.effectivity,p.code,client.client,lt.dateid,e.emplast,e.empfirst,e.empmiddle,lt.adays,ls.days,
-    p.alias,e.empid,ptrans.batchid,lt.status,lt.status2,ls.bal,lt.remarks,ls.dateid,lt.date_approved_disapproved,lt.date_approved_disapproved2,lt.disapproved_remarks,lt.disapproved_remarks2,approver.clientname,approver2.clientname
+    p.alias,e.empid,lt.status,lt.status2,ls.bal,lt.remarks,ls.dateid,lt.date_approved_disapproved,lt.date_approved_disapproved2,lt.disapproved_remarks,lt.disapproved_remarks2,approver.clientname,approver2.clientname
     order by lt.effectivity";
             $data2 = $this->coreFunctions->opentable($qry, [$data->acnoid, $data->docno, $data->empid]);
             foreach ($data2 as $key2 => $value) {
@@ -851,6 +869,8 @@ class leave_filling_reports
     public function report_stonepro_Layout($config)
     {
         $result = $this->reportDefault($config);
+        $datestart = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+        $dateend = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
 
         $username = $config['params']['user'];
         $border = '1px solid';
@@ -926,8 +946,8 @@ class leave_filling_reports
     date(ls.dateid) as createdate,
     approver.clientname as approvedby,
     approver2.clientname as approvedby2,
-    date(lt.date_approved_disapproved) as date_approved,
-    date(lt.date_approved_disapproved2) as date_approved2,
+    lt.date_approved_disapproved as date_approved,
+    lt.date_approved_disapproved2 as date_approved2,
     lt.disapproved_remarks as reason,lt.disapproved_remarks2 as reason2
     from leavetrans as lt
     left join leavesetup as ls on lt.trno = ls.trno
@@ -937,12 +957,11 @@ class leave_filling_reports
 
     left join batch as b on b.line=lt.batchid
     left join paccount as p on p.line=ls.acnoid
-    left join paytrancurrent as ptrans on ptrans.acnoid = p.line
     left join client on client.clientid=e.empid
-    where lt.status = 'A' and ls.acnoid = ? and ls.docno = ? and ls.empid = ?
-    group by ls.docno,lt.effectivity,p.code,client.client,lt.dateid,e.emplast,e.empfirst,e.empmiddle,lt.adays,ls.days,
-    p.alias,e.empid,ptrans.batchid,lt.status,lt.status2,ls.bal,lt.remarks,ls.dateid,lt.date_approved_disapproved,lt.date_approved_disapproved2,lt.disapproved_remarks,lt.disapproved_remarks2,approver.clientname,approver2.clientname
-    order by lt.effectivity";
+    where lt.status = 'A' and ls.acnoid = ? and ls.docno = ? and ls.empid = ? and date(lt.effectivity) between '$datestart' and '$dateend'
+    group by ls.docno,date(lt.effectivity),p.code,client.client,lt.dateid,e.emplast,e.empfirst,e.empmiddle,lt.adays,ls.days,
+    p.alias,e.empid,lt.status,lt.status2,ls.bal,lt.remarks,ls.dateid,lt.date_approved_disapproved,lt.date_approved_disapproved2,lt.disapproved_remarks,lt.disapproved_remarks2,approver.clientname,approver2.clientname
+    order by date(lt.effectivity) asc";
             $data2 = $this->coreFunctions->opentable($qry, [$data->acnoid, $data->docno, $data->empid]);
             foreach ($data2 as $key2 => $value) {
 

@@ -188,7 +188,7 @@ class entrytabrole
           $line,
           $config,
           'CREATE - LINE: ' . $line
-            . ' - ROLE: ' . $data['rolename']
+            . ' - ROLE: ' . $row['rolename']
         );
 
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];

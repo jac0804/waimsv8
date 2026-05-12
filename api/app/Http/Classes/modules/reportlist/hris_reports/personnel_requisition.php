@@ -221,7 +221,7 @@ class personnel_requisition
         $filter1 .= " and d.clientid = $deptid";
       }
       $query = "select '' as client,head.docno,date(head.dateid) as dateid, head.dept, personnel, dateneed, job, 
-                     head.class, headcount, hpref, agerange,gpref, rank, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,d.clientname as deptname, em.clientname as personnelname, head.empid, jh.jobtitle 
+                     head.class, headcount, hpref, agerange,gpref, `rank`, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,d.clientname as deptname, em.clientname as personnelname, head.empid, jh.jobtitle 
               from personreq as head
               left join client as em on em.clientid = head.empid
               left join empstatentry as empstat on empstat.line = head.empstatusid
@@ -231,7 +231,7 @@ class personnel_requisition
               where head.dateid between '" . $start . "' and '" . $end . "' $filter $filter1 
               union all
               SELECT '' as client,head.docno,  date(head.dateid) as dateid, head.dept, personnel, dateneed, job, 
-                    head.class, headcount, hpref, agerange,gpref, rank, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,
+                    head.class, headcount, hpref, agerange,gpref, `rank`, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,
                   d.clientname as deptname, em.clientname as personnelname, head.empid, jh.jobtitle
               from hpersonreq as head
               left join client as em on em.clientid = head.empid

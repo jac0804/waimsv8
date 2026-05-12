@@ -207,7 +207,7 @@ class gb
 
     //insert code for updating tenancy status
     foreach ($dttenant as $k => $v) {
-      $tenancy = $this->coreFunctions->opentable("select line,monthsno,effectdate,status,datefrom,dateto from tenancystatus where date(effectdate) <='" . $billdate . "'  and clientid = " . $dttenant[$k]->clientid . " and applied <> 1 order by dateid limit 1");
+      $tenancy = $this->coreFunctions->opentable("select line,monthsno,effectdate,status,datefrom,dateto from tenancystatus where date(effectdate) <='" . $billdate . "'  and clientid = " . $dttenant[$k]->clientid . " and applied <> 1 order by effectdate limit 1");
       if (!empty($tenancy)) {
         switch ($tenancy[0]->status) {
           case 'Renewable':
@@ -460,6 +460,12 @@ class gb
 
 
       $this->coreFunctions->LogConsole('Penalty:' . $penalty);
+
+      $checkacct = $this->othersClass->checkcoaacct(['AR1', 'SA1', 'SA2', 'TX2', 'SA3','SA4','SA5','SA6']);
+
+      if ($checkacct != '') {
+        return ['status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
+      }
 
       $aracct = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='AR1'");
       $rentacct = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA1'");
@@ -764,6 +770,19 @@ class gb
 
               $this->coreFunctions->LogConsole($totalar . 'out' . $outbal);
 
+              //checking for 0.01 discrepancy
+              $variance = $this->coreFunctions->datareader("select sum(db-cr) as value from " . $this->detail . " where trno=?", [$trno], '', true);
+              if (abs($variance) == 0.01) {
+                $taxamt = $this->coreFunctions->datareader("select d.cr as value from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and coa.alias='TX2'", [$trno], '', true);
+                if ($taxamt != 0) {
+                  $salesentry = $this->coreFunctions->opentable("select d.line from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and left(coa.alias,2)='SA'  order by d.line desc limit 1", [$trno]);
+                  if ($salesentry) {
+                    $this->coreFunctions->execqry("update " . $this->detail . " set cr=cr+" . $variance . " where trno=" . $trno . " and line=" . $salesentry[0]->line);
+                    $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'FORCE BALANCE WITH 0.01 VARIANCE');
+                  }
+                }
+              }
+
               //posting
               $ret = $this->othersClass->posttransacctg($config);
               if ($ret['status']) {
@@ -807,7 +826,7 @@ class gb
                 $this->coreFunctions->execqry('delete from cntnum where trno=?', 'delete', [$trno]);
                 $this->coreFunctions->execqry('delete from lahead where trno=?', 'delete', [$trno]);
                 $this->coreFunctions->execqry('delete from ladetail where trno=?', 'delete', [$trno]);
-                return ['status' => true, 'msg' => "Error in Posting" . $ret['msg']];
+                return ['status' => true, 'msg' => "Error in Posting " . $ret['msg']];
               }
             } else {
               $this->coreFunctions->execqry('delete from cntnum where trno=?', 'delete', [$trno]);

@@ -274,7 +274,7 @@ class electricityreading
               select tinfo.clientid, '" . $bmonth . "', '" . $year . "', '" . $center . "', 
               (select readstart from " . $this->head . " where bmonth = $bmonth and byear= $year and center='" . $center . "' limit 1),
               (select readend from " . $this->head . " where bmonth = $bmonth and byear= $year and center='" . $center . "' limit 1), " . $erate . ",
-              (select eend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid) as estart,0 as eend
+              ifnull((select eend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid),0) as estart,0 as eend
               from tenantinfo as tinfo
               left join client as cl on cl.clientid = tinfo.clientid
               left join loc as loc on loc.line = cl.locid

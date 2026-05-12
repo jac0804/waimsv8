@@ -177,6 +177,8 @@ class bd
         $condition = '';
         $searchfilter = $config['params']['search'];
         $filtersearch = "";
+
+
         switch ($itemfilter) {
             case 'draft':
                 $condition = ' and num.postdate is null ';
@@ -194,7 +196,7 @@ class bd
         '' as ref                                                                                
         from lahead as head
         left join cntnum as num on num.trno = head.trno
-        where num.doc = '$doc' $condition
+        where num.doc = '$doc' and num.center = '$center' $condition
         union all
         select  head.trno,head.docno,date(head.dateid) as dateid,
         head.doc,cl.client,
@@ -209,7 +211,7 @@ class bd
         from glhead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid = head.clientid
-        where num.doc = '$doc' $condition
+        where num.doc = '$doc'  and num.center = '$center' $condition
         ";
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -286,7 +288,7 @@ class bd
         left join clientinfo as info on info.clientid = cl.clientid 
         left join locclearance as locl on locl.line = head.purposeid
         left join cntnum_picture as pic on pic.trno = head.trno
-        where num.doc = '$doc' and head.trno = ?
+        where num.doc = '$doc' and head.trno = ? and num.center = '$center'
         union all
         select  head.trno,head.docno,head.due,head.yourref,head.ourref,
         head.doc,cl.client,head.clientname,locl.clearance as purpose,
@@ -298,7 +300,7 @@ class bd
         left join clientinfo as info on info.clientid = head.clientid
         left join locclearance as locl on locl.line = head.purposeid
         left join cntnum_picture as pic on pic.trno = head.trno
-        where num.doc = '$doc' and head.trno = ? ";
+        where num.doc = '$doc' and head.trno = ? and num.center = '$center' ";
         $head = $this->coreFunctions->opentable($query, [$trno, $trno]);
 
         if (!empty($head)) {

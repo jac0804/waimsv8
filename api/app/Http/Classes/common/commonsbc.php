@@ -94,7 +94,9 @@ class commonsbc
       $yr = $pyear;
     } else {
       if (!$posextraction) {
-        $yr = floatval($this->coreFunctions->datareader("select ifnull(yr,0) as value FROM profile where psection ='$moduledoc' and doc ='SED'"));
+        if ($this->companysetup->getdocyr($config['params'])) {
+          $yr = floatval($this->coreFunctions->datareader("select ifnull(yr,0) as value FROM profile where psection ='$moduledoc' and doc ='SED'"));
+        }
       }
     }
 
@@ -106,7 +108,8 @@ class commonsbc
       }
     }
 
-    switch ($config['params']['companyid']) {
+    $companyid = isset($config['params']['companyid']) ? $config['params']['companyid'] : 0;
+    switch ($companyid) {
       case 10:
         switch ($doc) {
           case 'SJ':
@@ -351,7 +354,11 @@ class commonsbc
       $filter_bref = " and bref='" . $prefix . "'";
     }
 
-    $yr = floatval($this->coreFunctions->datareader("select yr as value FROM profile where psection ='$doc' and doc ='SED'"));
+    $yr =0;
+    if ($this->companysetup->getdocyr($config['params'])) {
+      $yr = floatval($this->coreFunctions->datareader("select yr as value FROM profile where psection ='$doc' and doc ='SED'"));
+    }
+    
     if (floatval($yr) <> 0) {
       $last = $this->coreFunctions->opentable("select bref FROM $table where doc='$doc' and yr = " . $yr . " and center='$center'" . $filter_bref . " order by trno desc limit 1");
     } else {
@@ -961,7 +968,4 @@ class commonsbc
 
     return (int) $date1->diffInMonths($date2, false);
   }
-
-
-
 }

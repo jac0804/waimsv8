@@ -40,7 +40,12 @@ class undertime_reports
 
     public function createHeadField($config)
     {
+        $companyid = $config['params']['companyid'];
         $fields = ['radioprint',  'divname', 'dclientname', 'start', 'end'];
+        if ($companyid == 44) { //stonepro
+            array_push($fields, 'radiopaymenttype');
+        }
+        array_push($fields, 'radioposttype');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dateid.label', 'Date');
         data_set($col1, 'dateid.readonly', false);
@@ -49,6 +54,20 @@ class undertime_reports
         data_set($col1, 'divname.action', 'lookupempdivision');
         data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
         data_set($col1, 'dclientname.label', 'Employee');
+
+        data_set($col1, 'radioposttype.options', [
+            ['label' => 'ENTRY', 'value' => 'entry', 'color' => 'red'],
+            ['label' => 'APPROVED', 'value' => 'approved', 'color' => 'red']
+        ]);
+
+        if ($companyid == 44) { // stonepro
+            data_set($col1, 'radiopaymenttype.label', 'Paymode');
+
+            data_set($col1, 'radiopaymenttype.options', [
+                ['label' => 'Weekly', 'value' => 'W', 'color' => 'red'],
+                ['label' => 'Semi-Monthly', 'value' => 'S', 'color' => 'red']
+            ]);
+        }
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -73,9 +92,13 @@ class undertime_reports
                 adddate(left(now(), 10),-360) as start,
                 left(now(),10) as end,
                 0 as divid,
-                    '' as client,
-                    '' as clientname,
-                    '' as dclientname"
+                '' as divname,
+                '' as division,
+                '' as client,
+                '' as clientname,
+                '' as dclientname,
+                'approved' as posttype,
+                'S' as paymenttype"
 
         );
     }
@@ -112,6 +135,8 @@ class undertime_reports
         $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
         $divid = $config['params']['dataparams']['divid'];
         $client     = $config['params']['dataparams']['client'];
+        $paymode     = $config['params']['dataparams']['paymenttype'];
+        $posttype     = $config['params']['dataparams']['posttype'];
         $userid = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
         $filter = "";
@@ -122,30 +147,41 @@ class undertime_reports
         if ($client != "") {
             $filter .= " and client.client = '$client' ";
         }
-
-        $url = 'App\Http\Classes\modules\payroll\\' . 'undertime';
-        $data = app($url)->approvers($config['params']);
-        foreach ($data as $key => $value) {
-            if (count($data) > 1) {
-                $status = " u.status = 'A' and  u.status2 = 'A' and ";
-                break;
-            } else {
-                if (count($data) == 1) {
-                    $status = " u.status = 'A' and ";
-                    break;
-                }
+        if ($companyid == 44) { // stonepro
+            if ($paymode != "") {
+                $filter .= " and e.paymode = '$paymode' ";
             }
         }
+        $filteremp = "";
+        $leftjoin = "";
+
+        $check = $this->othersClass->checkapproversetup($config, $userid, 'UNDERTIME', 'e');
+        if ($check['filter'] != "") {
+            $filteremp .= $check['filter'];
+        }
+        if ($check['leftjoin'] != "") {
+            $leftjoin .= $check['leftjoin'];
+        }
+
+        switch ($posttype) {
+            case 'entry':
+                $status = " u.status = 'E' and ";
+                break;
+            case 'approved':
+                $status = " u.status = 'A' and ";
+                break;
+        }
+
         $query = "select u.empid,concat(upper(e.emplast), ', ', e.empfirst, ' ', left(e.empmiddle, 1), '.') as employee,cl.client as empcode,u.rem as reason,
-date(u.createdate) as createdate,u.dateid,date_format(u.dateid, '%Y-%m-%d %H:%i') as dateid,
-date_format(u.dateid, '%H:%i') as time,time(t.schedout) as schedtime,timestampdiff(hour, u.dateid, t.schedout) as hours,
-u.approvedby,date(u.approvedate) as approvedate,u.approverem
-from undertime as u
-left join employee as e on e.empid = u.empid
-left join division as d on d.divcode = e.division
-left join client as cl on cl.clientid = e.empid
-left join timecard as t on t.empid = u.empid and date(t.dateid) = date(u.dateid)
-where $status date(u.dateid) between '" . $start . "' and '" . $end . "' $filter";
+            date(u.createdate) as createdate,u.dateid,date_format(u.dateid, '%Y-%m-%d %H:%i') as dateid,
+            date_format(u.dateid, '%H:%i') as time,time(t.schedout) as schedtime,timestampdiff(hour, u.dateid, t.schedout) as hours,
+            u.approvedby,u.approvedate as approvedate,u.approverem
+            from undertime as u
+            left join employee as e on e.empid = u.empid
+            left join division as d on d.divcode = e.division
+            left join client as cl on cl.clientid = e.empid
+            left join timecard as t on t.empid = u.empid and date(t.dateid) = date(u.dateid)
+            where $status date(u.dateid) between '" . $start . "' and '" . $end . "' $filter $filteremp order by cl.clientname,date(u.dateid) asc";
         return $query;
     }
 
@@ -194,7 +230,7 @@ where $status date(u.dateid) between '" . $start . "' and '" . $end . "' $filter
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Employee Code', '120', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Employee Name', '200', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Date Field.', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Date Filed', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Date of Undertime', '150', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Time Covered', '110', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Number of Hours', '130', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');

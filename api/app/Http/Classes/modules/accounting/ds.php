@@ -99,10 +99,10 @@ class ds
     // $db = 7;
     // $postdate = 8;
 
-    if($companyid==29){ //sbc
+    if ($companyid == 29) { //sbc
       $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'acnoname', 'yourref', 'ourref', 'db', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
-    }else{
-       $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'db', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    } else {
+      $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'db', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     }
 
     foreach ($getcols as $key => $value) {
@@ -120,14 +120,14 @@ class ds
 
     switch ($companyid) {
       case 19: //housegem
-         $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
         break;
-      case 29://sbc
-         $cols[$db]['type'] = 'coldel';
-         $cols[$acnoname]['label'] = 'Account Name';
-         $cols[$acnoname]['type'] = 'label';
-         $cols[$acnoname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-       break;
+      case 29: //sbc
+        $cols[$db]['type'] = 'coldel';
+        $cols[$acnoname]['label'] = 'Account Name';
+        $cols[$acnoname]['type'] = 'label';
+        $cols[$acnoname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        break;
       default:
         $cols[$db]['type'] = 'coldel';
         $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
@@ -195,7 +195,7 @@ class ds
         if ($searchfilter == "") $limit = 'limit 150';
         $orderby =  "order by docno desc, dateid desc";
         break;
-      case 29://sbc
+      case 29: //sbc
         $dateid = "left(head.dateid,10) as dateid";
         if ($searchfilter == "") $limit = 'limit 150';
         $orderby =  "order by  dateid desc, docno desc";
@@ -1145,7 +1145,7 @@ class ds
     }
 
     $this->loadheaddata($config);
-    return ['row' => $rows, 'status' => true, 'msg' => 'Account was successfully added.','reloadhead'=>true];
+    return ['row' => $rows, 'status' => true, 'msg' => 'Account was successfully added.', 'reloadhead' => true];
   } //end function
 
   public function getprojcheckselected($config)
@@ -1192,12 +1192,18 @@ class ds
   public function autoentry($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = $config['params']['companyid'];
     $rows = [];
 
     $contra = $this->coreFunctions->getfieldvalue($this->head, 'contra', 'trno=?', [$trno]);
     $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
     $project = $this->coreFunctions->getfieldvalue($this->head, 'project', 'trno=?', [$trno]);
     $acnoid = $this->coreFunctions->getfieldvalue("coa", 'acnoid', 'acno=?', [$contra]);
+
+    $lastclient = '';
+    if ($companyid == 68) {
+      $lastclient = $this->coreFunctions->datareader("select client as value from " . $this->detail . " where trno=" . $trno . " and cr<>0 order by line desc limit 1");
+    }
 
     $qry = "delete from " . $this->detail . " where trno=? and acnoid=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $acnoid]);
@@ -1220,7 +1226,7 @@ class ds
       $config['params']['data']['postdate'] = $dateid;
       $config['params']['data']['project'] = $project;
       $config['params']['data']['rem'] = 'AUTO-ENTRY';
-      $config['params']['data']['client'] = '';
+      $config['params']['data']['client'] = $lastclient;
       $config['params']['data']['ref'] = '';
       $config['params']['data']['refx'] = 0;
       $config['params']['data']['linex'] = 0;

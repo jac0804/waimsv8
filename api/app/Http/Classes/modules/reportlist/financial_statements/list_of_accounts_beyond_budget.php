@@ -176,6 +176,7 @@ class list_of_accounts_beyond_budget
 
         ) as x
         group by x.acno, x.acnoname
+        having sum(budget - total) <> 0
         order by acnoname
         ";
         // var_dump($query);

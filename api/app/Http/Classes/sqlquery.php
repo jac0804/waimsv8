@@ -1891,7 +1891,12 @@ class sqlquery
             break;
           case 40: //cdo
             if ($doc <> 'STOCKCARD') {
-              $criteria = " where item.isinactive = 0 and partno <>'' ";
+              if(strtoupper($doc) == 'CI'){
+                $criteria = " where item.isinactive = 0 and item.partno <>'' and item.groupid = 15 ";
+              }else{
+                $criteria = " where item.isinactive = 0 and item.partno <>'' ";
+              }
+             
             } else {
               $criteria = " where item.isinactive = 0 ";
             }
@@ -2029,7 +2034,7 @@ class sqlquery
       $qrysave = $qry . "  " . $criteria . "  order by item.itemname asc ";
       $qry = $qry . "  " . $criteria . "  order by item.itemname asc " . $limit;
     }
-    //$this->coreFunctions->LogConsole($qry . '--this');
+    $this->coreFunctions->LogConsole($qry . '--this');
     $data = $this->coreFunctions->opentable($qry);
 
     if ($rowcount != 0) {
@@ -2520,7 +2525,7 @@ class sqlquery
   {
     $companyid = $config['params']['companyid'];
     $filter_served = '';
-    if ($companyid == 39) { //CBBSI
+    if ($companyid == 39 || $companyid == 68) { //CBBSI // JDA
       $filter_served = 'and stock.qty>(stock.qa+stock.cdqa)';
     }
     $center = $config['params']['center'];
@@ -2530,6 +2535,7 @@ class sqlquery
       where transnum.doc='PR' and transnum.center = ? $filter_served
       and ifnull(item.islabor,0) = 0 and stock.void = 0
       group by stock.trno,head.docno,head.dateid,head.client,head.clientname,head.yourref order by head.dateid desc";
+
     $data = $this->coreFunctions->opentable($qry, [$center]);
     return $data;
   }
@@ -3998,6 +4004,7 @@ class sqlquery
     $doc = $config['params']['doc'];
     $companyid = $config['params']['companyid'];
     $condition = '';
+    $addfield = "";
     switch ($doc) {
       case 'SS':
       case 'ST':
@@ -4006,7 +4013,7 @@ class sqlquery
         } else {
           $filter = $this->coreFunctions->opentable("select client as dept,wh as client from lahead where trno=?", [$trno]);
         }
-        //$filter = $this->coreFunctions->opentable("select client as dept,wh as client from lahead where trno=?", [$trno]);
+
         break;
       case 'PR':
         $filter = $this->coreFunctions->opentable("select client as dept, wh as client from prhead where trno=?", [$trno]);
@@ -4023,10 +4030,14 @@ class sqlquery
         $filter = $this->coreFunctions->opentable("select head.client,client.client as dept from lahead as head left join client on client.clientid=head.deptid where head.trno=?", [$trno]);
         break;
     }
+
     if (!empty($filter)) {
       $client = $filter[0]->dept;
       $wh = $filter[0]->client;
     }
+
+
+
     switch ($doc) {
       case 'SS':
         $condition = " and head.client='" . $client . "'";
@@ -4051,6 +4062,17 @@ class sqlquery
             $condition = "and head.approvedate is not null";
           }
         }
+
+
+        if ($companyid == 68) { //JDA
+          $field1 = isset($config['params']['addedparams']) ? $config['params']['addedparams'] : [];
+          $whcode = isset($field1[0]) ? $field1[0] : 0;
+          $whname = isset($field1[1]) ? $field1[1] : '';
+          if ($trno == 0) {
+            $condition = " and head.approvedate is not null";
+            $addfield = " , '$whcode' as descode , '$whname' as desname";
+          }
+        }
         break;
       default:
         $condition = " and head.client='" . $client . "' and head.wh='" . $wh . "'";
@@ -4069,7 +4091,7 @@ class sqlquery
             where stock.qty>stock.qa " . $condition . " group by head.doc,head.docno,head.dateid,head.trno,head.yourref,head.cur,head.forex,head.wh,c.name";
     } else {
       $qry = "select head.doc,head.docno, date(head.dateid) as dateid,head.trno, head.wh,
-            sum(round(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as totalamt, head.yourref,concat(head.cur,' ',head.forex) as cur
+            sum(round(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as totalamt, head.yourref,concat(head.cur,' ',head.forex) as cur $addfield
             FROM htrhead as head
             left join htrstock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid
@@ -4081,6 +4103,29 @@ class sqlquery
     $this->coreFunctions->LogConsole($qry);
     return $data;
   }
+
+
+  public function getpendingtrsummarysc($config)
+  {
+    $search = '';
+    if (isset($config['params']['search'])) {
+      $txt = $config['params']['search'];
+      $search = " and (head.docno like '%" . $txt . "%' or head.dateid like '%" . $txt . "%' or head.yourref like '%" . $txt . "%'
+      or head.clientname like '%" . $txt . "%' or head.client like '%" . $txt . "%')";
+    }
+
+    $qry = "select head.doc,head.docno, date(head.dateid) as dateid,head.trno, head.wh,
+            sum(round(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as totalamt, head.yourref,concat(head.cur,' ',head.forex) as cur
+            FROM htrhead as head
+            left join htrstock as stock on stock.trno = head.trno
+            left join item on item.itemid = stock.itemid
+            left join uom on uom.itemid=item.itemid and uom.uom = stock.uom
+            left join client as warehouse on warehouse.clientid=stock.whid
+            where stock.qty>stock.qa $search group by head.doc,head.docno,head.dateid,head.trno,head.yourref,head.cur,head.forex,head.wh";
+    $data = $this->coreFunctions->opentable($qry);
+    return $data;
+  }
+
 
   public function getpendingtrdetails($config)
   {

@@ -180,19 +180,19 @@ class bc
         from lahead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
-        where num.doc = '$doc' $condition
+        where num.doc = '$doc' and num.center = '$center' $condition
         union all
         select  head.trno,head.docno,date(head.dateid) as dateid,cl.clientname,
         head.doc,head.createby,'POSTED' as status,format(head.amount,2) as amount,
         (select hh.docno from lahead as hh
-         left join ladetail as d on d.trno=hh.trno where d.refx=head.trno
-         union all
-         select hh.docno from glhead as hh
-         left join gldetail as d on d.trno=hh.trno where d.refx=head.trno) as ref
+        left join ladetail as d on d.trno=hh.trno where d.refx=head.trno
+        union all
+        select hh.docno from glhead as hh
+        left join gldetail as d on d.trno=hh.trno where d.refx=head.trno) as ref
         from glhead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
-        where num.doc = '$doc' $condition ";
+        where num.doc = '$doc' and num.center = '$center' $condition ";
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
@@ -261,28 +261,28 @@ class bc
         $isposted = $this->othersClass->isposted($config);
         $query = "
         select head.trno,head.docno,head.dateid,FORMAT(head.amount,2) as amount,
-              ifnull(cl.client,'') as client, ifnull(cl.clientname,'') as clientname, 
-              ifnull(head.address,'') as address, ifnull(head.bstype,'') as bstype,cl.clientid,
-              ifnull(head.contact,'') as contact, ifnull(head.rem,'') as rem,
-              ifnull(head.ownertype,'') as ownertype, ifnull(head.ownername,'') as ownername,
-              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.crno,'') as crno,ifnull(head.checker,'') as checker,cp.picture,ifnull(head.trnxtype,'') as trnxtype,cl.plateno
+        ifnull(cl.client,'') as client, ifnull(cl.clientname,'') as clientname, 
+        ifnull(head.address,'') as address, ifnull(head.bstype,'') as bstype,cl.clientid,
+        ifnull(head.contact,'') as contact, ifnull(head.rem,'') as rem,
+        ifnull(head.ownertype,'') as ownertype, ifnull(head.ownername,'') as ownername,
+        ifnull(head.owneraddr,'') as owneraddr,ifnull(head.crno,'') as crno,ifnull(head.checker,'') as checker,cp.picture,ifnull(head.trnxtype,'') as trnxtype,cl.plateno
         from lahead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
         left join cntnum_picture as cp on cp.trno=head.trno
-        where num.doc = '$doc' and head.trno = ?
+        where num.doc = '$doc' and num.center = '$center' and head.trno = ?
         union all
         select head.trno,head.docno,head.dateid,FORMAT(head.amount,2) as amount,
-               ifnull(cl.client,'') as client, ifnull(cl.clientname,'') as clientname, 
-               ifnull(head.address,'') as address, ifnull(head.bstype,'') as type,cl.clientid,
-                ifnull(head.contact,'') as contact, ifnull(head.rem,'') as rem,
-              ifnull(head.ownertype,'') as ownertype, ifnull(head.ownername,'') as ownername,
-              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.crno,'') as crno,ifnull(head.checker,'') as checker,cp.picture,ifnull(head.trnxtype,'') as trnxtype,cl.plateno
+        ifnull(cl.client,'') as client, ifnull(cl.clientname,'') as clientname, 
+        ifnull(head.address,'') as address, ifnull(head.bstype,'') as type,cl.clientid,
+        ifnull(head.contact,'') as contact, ifnull(head.rem,'') as rem,
+        ifnull(head.ownertype,'') as ownertype, ifnull(head.ownername,'') as ownername,
+        ifnull(head.owneraddr,'') as owneraddr,ifnull(head.crno,'') as crno,ifnull(head.checker,'') as checker,cp.picture,ifnull(head.trnxtype,'') as trnxtype,cl.plateno
         from glhead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
-         left join cntnum_picture as cp on cp.trno=head.trno
-        where num.doc = '$doc' and head.trno = ? ";
+        left join cntnum_picture as cp on cp.trno=head.trno
+        where num.doc = '$doc' and num.center = '$center' and head.trno = ? ";
         $head = $this->coreFunctions->opentable($query, [$trno, $trno]);
         if (!empty($head)) {
             $viewdate = $this->othersClass->getCurrentTimeStamp();

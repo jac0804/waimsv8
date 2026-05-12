@@ -79,9 +79,6 @@ class emptimecard
     $columns = ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
     $sortcolumn =  ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
 
-    if ($companyid == 62) { //one sky
-      $sortcolumn = ['action', 'details', 'dateid', 'daytype', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
-    }
 
     foreach ($columns as $key => $value) {
       $$value = $key;

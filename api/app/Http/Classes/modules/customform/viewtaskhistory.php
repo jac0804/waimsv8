@@ -352,6 +352,15 @@ class viewtaskhistory
                     $socketmsg = "Task checked and completed: " . $rem;
                     if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
                   }
+                  // REIMBURSEMENT
+                  if ($config['params']['doc'] == 'DY') {
+                      $amount = $this->coreFunctions->datareader("select amt as value from hdailytask where trno = ?", [$refx],'',true);
+                      if ($amount != 0) {
+                          $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
+                          $r =  $this->othersClass->insertUpdatePendingapp($checkertrno, 0, 'DY', [], $url, $config, 3863, false, true, 'REIMBURSEMENT');
+                          $this->coreFunctions->LogConsole('Amount: ' . $amount . ' msg: ' . $r['msg']);
+                      }
+                  }
                 }
               }
               $config['params']['doc'] = 'DY';

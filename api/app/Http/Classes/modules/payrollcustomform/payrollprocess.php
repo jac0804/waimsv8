@@ -458,7 +458,11 @@ class payrollprocess
       '' as empdivname,
       0 as empdivid,
       '' as empbranchname,
-      0 as empbranchid
+      0 as empbranchid,
+      0 as sss,
+      0 as ph,
+      0 as hdmf,
+      0 as tax
     ");
 
     if (!empty($data)) {
@@ -616,7 +620,7 @@ class payrollprocess
     $this->coreFunctions->execqry($qry, 'delete', [$empid]);
 
     if ($shiftid != 0) {
-      $qry = "select s.line, time(s.tschedin) as timein, time(s.tschedout) as timeout
+      $qry = "select s.line, time(s.tschedin) as timein, time(s.tschedout) as timeout, '' as paygroup
         from tmshifts as s 
         where s.line=?";
       $shift = $this->coreFunctions->opentable($qry, [$shiftid]);

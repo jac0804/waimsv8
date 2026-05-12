@@ -82,7 +82,7 @@ class pl
     }
 
     $query = "select right(head.docno,10) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
-           hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address
+           hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,format(hpl.amount,2) as amount
             from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join item as it on it.itemid=stock.itemid
@@ -91,13 +91,13 @@ class pl
             left join client on client.client = hpl.client
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
-            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address
+            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount
 
 
        union all
 
     select right(head.docno,10) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
-             hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address
+             hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,format(hpl.amount,2) as amount
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
             left join item as it on it.itemid=stock.itemid
@@ -106,7 +106,7 @@ class pl
             left join client on client.client = hpl.client
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
-            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address";
+            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -237,7 +237,7 @@ class pl
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $count = $page = 25;
+    $count = $page = 35;
     $totalext = 0;
 
 
@@ -282,8 +282,7 @@ class pl
           $y = PDF::getY();
           $rowCount++;
           if ($rowCount >= $page && $i < count($data) - 1) {
-            $this->default_footer1($params, $data);
-            $this->default_footer2($params, $data);
+            $this->default_footer3($params, $data);
             $rowCount = 0;
             $y = (float)210;
             $this->roosevelt_pl_header_PDF($params, $data);
@@ -307,9 +306,10 @@ class pl
     $fontbold = "CourierB";
 
     $invoices = [];
-    $totalqty = 0;
+    $totalctns = 0;
     foreach ($data as $row) {
-      $totalqty += $row['qty'];
+      // $totalctns += $row['amount'];
+      $totalctns = $row['amount'];
       if ($row['invoice'] != '') {
         $invoices[] = $row['invoice'];
       }
@@ -321,7 +321,7 @@ class pl
     $invoicesstring = implode(" , ", array_unique($invoices));
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
-    PDF::MultiCell(135, 0,  number_format($totalqty, 2), 'T', 'L', false, 0);
+    PDF::MultiCell(135, 0,  number_format($totalctns, 2), 'T', 'C', false, 0);
     PDF::MultiCell(555, 0,  'ctns.', '', 'L', false, 1);
 
 
@@ -380,6 +380,22 @@ class pl
     $printeddate = $this->othersClass->getCurrentTimeStamp();
     $datetime = new DateTime($printeddate);
     $formattedDate = $datetime->format('Y/m/d h:i:s a'); //2025-09-25 16:46:32 pm
+    PDF::MultiCell(614, 0,  $formattedDate, '', 'L', false, 0, '', '');
+    PDF::MultiCell(106, 0,  'Page ' . PDF::PageNo(), '', 'R', false, 1);
+  }
+
+
+
+  public function default_footer3($params, $data)
+  {
+    $fontsize = 12;
+    $font = "Courier";
+    // Format with AM/PM
+    $printeddate = $this->othersClass->getCurrentTimeStamp();
+    $datetime = new DateTime($printeddate);
+    $formattedDate = $datetime->format('Y/m/d h:i:s a'); //2025-09-25 16:46:32 pm
+    PDF::SetFont($font, '', $fontsize);
+    PDF::SetY(951);
     PDF::MultiCell(614, 0,  $formattedDate, '', 'L', false, 0, '', '');
     PDF::MultiCell(106, 0,  'Page ' . PDF::PageNo(), '', 'R', false, 1);
   }

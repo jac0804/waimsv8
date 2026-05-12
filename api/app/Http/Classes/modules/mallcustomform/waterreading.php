@@ -219,7 +219,7 @@ class waterreading
   public function headtablestatus($config)
   {
     $action = $config['params']["action2"];
-
+    
     switch ($action) {
       case "create":
         $data = [];
@@ -270,7 +270,7 @@ class waterreading
               select tinfo.clientid, '" . $bmonth . "', '" . $year . "', '" . $center . "', 
               (select readstart from " . $this->head . " where bmonth = $bmonth and byear= $year and center='" . $center . "' limit 1),
               (select readend from " . $this->head . " where bmonth = $bmonth and byear= $year and center='" . $center . "' limit 1), " . $waterrate . ",
-              (select wend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid) as wstart,0 as wend
+              ifnull((select wend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid),0) as wstart,0 as wend
               from tenantinfo as tinfo
               left join client as cl on cl.clientid = tinfo.clientid
               left join loc as loc on loc.line = cl.locid
@@ -282,7 +282,7 @@ class waterreading
             $qry = "
                 insert into " . $this->head . "(clientid, bmonth, byear, center, readstart, readend, wrate,wstart,wend)
                 select tinfo.clientid, '" . $bmonth . "', '" . $year . "', '" . $center . "', '" . $start . "', '" . $end . "', " . $waterrate . ",
-                (select wend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid) as wstart,0 as wend
+                ifnull((select wend from " . $this->hhead . " where bmonth = month('" . $prevbilldate . "') and byear=year('" . $prevbilldate . "') and clientid = cl.clientid),0) as wstart,0 as wend
                 from tenantinfo as tinfo
                 left join client as cl on cl.clientid = tinfo.clientid
                 left join loc as loc on loc.line = cl.locid

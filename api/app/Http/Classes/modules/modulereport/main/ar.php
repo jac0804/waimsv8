@@ -403,36 +403,55 @@ class ar
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
-    PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
+    PDF::MultiCell(520, 15, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(80, 0, "Docno #: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(80, 15, "Docno #: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', 10);
-    PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(100, 15, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 0, '',  '');
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(0, 30, "", '', 'L');
+    PDF::MultiCell(0, 15, "", '', 'L');
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(80, 0, "Customer: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(80, 15, "", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 0, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(470, 15,'', '', 'L', false, 0, '',  '');
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(50, 15, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(100, 15, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(0, 15, "", '', 'L');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(80, 15, "Customer: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(470, 15, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 15, "Ref: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(100, 15, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 0, '',  '');
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(80, 15, "Address: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(470, 15, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'B', 'L', false, 0, '',  '');
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(50, 0, "Ref: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(50, 15, "Our Ref: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(100, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(100, 15, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), '', 'L', false, 0, '',  '');
+    
+    PDF::MultiCell(0, 0, "\n");
+    
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(80, 30, "Notes: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(470, 30, (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'L', false, 0, '',  '');
+    PDF::MultiCell(150, 30, '', '', 'L', false, 0, '',  '');
 
 
-    PDF::MultiCell(0, 0, "\n\n\n");
+
+    PDF::MultiCell(0, 0, "\n\n");
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(705, 0, '', 'T');

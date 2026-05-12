@@ -455,6 +455,7 @@ class comm
         $gross = 0;
         $override = 0;
         $comma = 0;
+        $pxdel =0;
 
         foreach ($data as $key => $value) {
           $ardate = date_create($data[$key]->dateid);
@@ -468,7 +469,16 @@ class comm
               $profit = 0;
             } else {
               $p = $tamt / $data[$key]->ext;
-              $del = $data[$key]->delcharge / $p;
+              if($data[$key]->delcharge == 0){//double check on pcf
+                $qstrno = $this->coreFunctions->getfieldvalue("glhead","sotrno","trno=?",[$data[$key]->trno],'',true);
+                $pxtrno = $this->coreFunctions->getfieldvalue("hheadinfotrans","dtctrno","trno=?",[$qstrno],'',true);
+                $pxdel = $this->coreFunctions->datareader("select sum(actual) as value from hpxchecking as px left join reqcategory as r on r.line = px.expenseid and r.ispexp = 1 where  px.trno = ".$pxtrno." and r.iscomm =1 ");
+                if($pxdel !=0){
+                  $del = $pxdel / $p;
+                }
+              }else{
+                $del = $data[$key]->delcharge / $p;
+              }
 
               $invamt = $data[$key]->ext - $del - $insurance;
 

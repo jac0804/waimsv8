@@ -93,22 +93,22 @@ class applicant_status_report
         $start  = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end    = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
-        $query = "select date(req.dateid) as dateid, req.docno, jh.jobtitle, req.headcount,
+        $query = "select date(req.dateid) as dateid, req.docno, jh.jobtitle, req.headcount, c.clientname as branch, a.jstatus,
             concat_ws(' ', a.empfirst, nullif(trim(a.empmiddle), ''), a.emplast) as list, t.status
             from hpersonreq as req
             left join jobthead as jh on jh.docno = req.job
             left join app as a on a.hqtrno = req.trno
             left join trxstatus as t on t.line = a.statid
-            left join client as c on c.clientid = req.empid
+            left join client as c on c.clientid = req.branchid
             where date(req.dateid) between '$start' and '$end'
             union all
-            select date(req.dateid) as dateid, req.docno, jh.jobtitle, req.headcount,
+            select date(req.dateid) as dateid, req.docno, jh.jobtitle, req.headcount, c.clientname as branch, a.jstatus,
             concat_ws(' ', a.empfirst, nullif(trim(a.empmiddle), ''), a.emplast) as list, t.status
             from personreq as req
             left join jobthead as jh on jh.docno = req.job
             left join app as a on a.hqtrno = req.trno
             left join trxstatus as t on t.line = a.statid
-            left join client as c on c.clientid = req.empid
+            left join client as c on c.clientid = req.branchid
             where date(req.dateid) between '$start' and '$end'
             and req.docno not like 'HQ%'
             order by dateid desc";
@@ -126,9 +126,9 @@ class applicant_status_report
       
         $str      = '';
         $font     = 'Tahoma';
-        $fontsize = "11";
+        $fontsize = "10";
         $border   = "1px solid ";
-        $layoutsize = 1000;
+        $layoutsize = '1100';
         $font     = $this->companysetup->getrptfont($config['params']);
 
         $qry = "select code,name,address,tel from center where code = '" . $center . "'";
@@ -172,12 +172,13 @@ class applicant_status_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DOCUMENT NO.',              '150', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('TRANSACTION DATE',          '120', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('JOB TITLE',                 '140', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('NO. OF PERSONNEL NEEDED',   '145', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('LIST OF APPLICANT PROCESS', '200', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('APPLICATIONS STATUS',       '245', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT NO.','120', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('TRANSACTION DATE','120', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('BRANCH','110', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('JOB TITLE','140', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('NO. OF PERSONNEL NEEDED','100', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('LIST OF APPLICANT PROCESS','200', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('APPLICATIONS STATUS','245', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -187,7 +188,7 @@ class applicant_status_report
     public function report_default_detailed($config, $data)
     {
         $str        = '';
-        $layoutsize = '1000';
+        $layoutsize = '1100';
         $font       = 'Tahoma';
         $fontsize   = '10';
         $border     = '1px solid';
@@ -196,7 +197,6 @@ class applicant_status_report
             return $this->othersClass->emptydata($config);
         }
 
-        // Group by docno
         $grouped = [];
         foreach ($data as $row) {
             $grouped[$row->docno][] = $row;
@@ -207,38 +207,25 @@ class applicant_status_report
 
         foreach ($grouped as $docno => $rows) {
 
-            $first     = $rows[0];
-            $dateid    = date("Y-m-d", strtotime($first->dateid));
-            $jobtitle  = isset($first->jobtitle)  ? $first->jobtitle  : '';
+            $first = $rows[0];
+            $dateid = date("Y-m-d", strtotime($first->dateid));
+            $branch = isset($first->branch) ? $first->branch : '';
+            $jobtitle = isset($first->jobtitle)  ? $first->jobtitle  : '';
             $headcount = isset($first->headcount) ? $first->headcount : '';
-
-            // Build numbered list of applicants
-            // $applicantList = '';
-            // foreach ($rows as $i => $row) {
-            //     if (!empty($row->list)) {
-            //         $applicantList .= ($i + 1) . '. ' . strtoupper($row->list) . '<br/>';
-            //     }
-            // }
-
-            // // Build numbered list of statuses aligned with applicants
-            // $statusList = '';
-            // foreach ($rows as $i => $row) {
-            //     if (!empty($row->list)) {
-            //         $status = !empty($row->status) ? strtoupper($row->status) : '';
-            //         $statusList .= ($i + 1) . '. ' . $status . '<br/>';
-            //     }
-            // }
 
             $applicantList = '';
             $statusList    = '';
 
             $applicants = [];
-            $statuses   = [];
+            $status   = [];
             
             foreach ($rows as $row) {
                 if (!empty($row->list)) {
                     $applicants[] = strtoupper($row->list);
-                    $statuses[]   = !empty($row->status) ? strtoupper($row->status) : '';
+                    // $status[] = !empty($row->status) ? strtoupper($row->status) : '';
+                    $status[] = !empty($row->jstatus)
+                        ? strtoupper($row->jstatus)
+                        : (!empty($row->status) ? strtoupper($row->status) : '');
                 }
             }
 
@@ -247,9 +234,8 @@ class applicant_status_report
             for ($i = 0; $i < $totalApplicants; $i++) {
 
                 $applicantList .= ($i + 1) . '. ' . $applicants[$i];
-                $statusList    .= ($i + 1) . '. ' . $statuses[$i];
+                $statusList .= ($i + 1) . '. ' . $status[$i];
 
-                // add line separator except last row
                 if ($i < ($totalApplicants - 1)) {
                     $applicantList .= '<br/><hr style="margin:0;padding:0;border-top:1px solid #000;"/>';
                     $statusList    .= '<br/><hr style="margin:0;padding:0;border-top:1px solid #000;"/>';
@@ -258,12 +244,13 @@ class applicant_status_report
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($docno,         '150', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($dateid,        '120', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($jobtitle,      '140', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($headcount,     '145', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($applicantList, '200', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($statusList,    '245', null, false, $border, 'BLR', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($docno,'120', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($dateid,'120', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($branch,'110', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($jobtitle,'140', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($headcount,'100', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($applicantList,'200', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($statusList,'245', null, false, $border, 'BLR', 'LT', $font, $fontsize, '', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
         }

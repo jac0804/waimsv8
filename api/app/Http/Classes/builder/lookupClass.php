@@ -1927,6 +1927,7 @@ class lookupClass
       case 'getapprovedtrsummary':
       case 'getloanapplication':
       case 'getqspcfsummaryshortcut':
+      case 'gettrsummaryshortcut':
         return $this->othersClass->generateShortcutTransaction($config);
         break;
       case 'statuslist':
@@ -2136,7 +2137,10 @@ class lookupClass
         $data = $this->sqlquery->getlelist($config);
         return ['status' => true, 'msg' => 'ok', 'data' => $data];
         break;
-
+     case 'trsearch':
+        $data = $this->sqlquery->getpendingtrsummarysc($config);
+        return ['status' => true, 'msg' => 'ok', 'data' => $data];
+        break;
 
       default:
         return ['status' => false, 'msg' => 'lookupsearch under lookupclass not setup (' . $config['params']['action'] . ')'];
@@ -4466,6 +4470,10 @@ class lookupClass
           $plottype = 'plothead';
         }
 
+        if ($config['params']['companyid'] == 63) {//ericco
+          $addonfield .= ", ifnull(client.registername,'') as registername";          
+        }
+
         if ($config['params']['companyid'] == 47) { //kitchenstar
           $addonfield .= ", ifnull(client.ship,'') as shipto";
           $plotting['shipto'] = 'shipto';
@@ -5245,6 +5253,9 @@ class lookupClass
       default:
         array_push($cols, array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'));
         array_push($cols, array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
+        if ($config['params']['companyid'] == 63) { //ericco
+          array_push($cols, array('name' => 'registername', 'label' => 'Company Name', 'align' => 'left', 'field' => 'registername', 'sortable' => true, 'style' => 'font-size:16px;'));
+        }
         array_push($cols, array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'));
 
         if ($config['params']['companyid'] == 20 && $config['params']['doc'] == 'SO') { //proline
@@ -7709,6 +7720,8 @@ class lookupClass
           case 'be':
           case 'tc':
           case 'px':
+          case 'ju':
+          case 'mh':
             // case 'tm':
 
             // INVENTORY
@@ -7992,7 +8005,8 @@ class lookupClass
 
     $plotsetup = array(
       'plottype' => $plottype,
-      'plotting' => $plotting
+      'plotting' => $plotting,
+      'action' => 'lookupcontra'
     );
 
     // lookup columns
@@ -10754,23 +10768,51 @@ class lookupClass
   }
 
   //A
-  public function pendingtrsummary($config)
+   public function pendingtrsummary($config)
   {
-    $lookupsetup = array(
-      'type' => 'multi',
+    $type = 'multi';
+    $actioncallback = 'gettrsummary';
+    $callbackfieldlookup = array();
+    $actionsearch = [];
+    $companyid = $config['params']['companyid'];
+
+    $summary = ['summary' => ['label' => 'Show Details', 'lookupclass' => 'lookupsetup', 'action' => 'pendingtrdetail']];
+
+     switch ($config['params']['lookupclass']) {
+      case 'pendingtrsummaryshortcut':
+        $summary = [];
+        $actioncallback = 'gettrsummaryshortcut';
+        $callbackfieldlookup = array('trno');
+        break;
+    }
+
+     $lookupsetup = array(
+      'type' => $type,
       'rowkey' => 'trno',
       'title' => 'List of Stock Request Summary',
-      'btns' => ['summary' =>
-      ['label' => 'Show Details', 'lookupclass' => 'lookupsetup', 'action' => 'pendingtrdetail']],
+      'btns' => $summary,
       'style' => 'width:800px;max-width:800px;'
     );
 
-    $companyid = $config['params']['companyid'];
-
+    if($companyid ==68){ //jda
+      array_push($callbackfieldlookup, 'descode', 'desname');
+    }
+  
     $plotsetup = array(
       'plottype' => 'callback',
-      'action' => 'gettrsummary'
+      'action' => $actioncallback,
+      'callbackfieldlookup' => $callbackfieldlookup
     );
+
+
+    if ($config['params']['lookupclass'] == 'pendingtrsummaryshortcut') {
+      $lookupsetup = array(
+        'type' => 'singlesearch',
+        'actionsearch' => 'trsearch',
+        'title' => 'Pending Stock Request Summary',
+        'style' => 'width:900px;max-width:900px;'
+      );
+    }
 
     // lookup columns
     if ($companyid == 40) { //cdo
@@ -11897,19 +11939,24 @@ class lookupClass
       switch ($config['params']['lookupclass']) {
         case 'getmultibranch':
           if ($config['params']['logintype'] == '62608e08adc29a8d6dbc9754e659f125') {
-            $userid = $this->coreFunctions->getfieldvalue("client", "userid", "email=?", [$user]);
+            $userid = $this->coreFunctions->getfieldvalue("client", "clientid", "email=?", [$user]);
+          $qry = "select access.center as code,center.name,center.shortname from center 
+            left join centeraccess as access on access.center = center.code
+            left join client as user on user.clientid = access.userid
+            where user.clientid = $userid";
           } else {
             $userid = $this->coreFunctions->getfieldvalue("useraccess", "userid", "username=?", [$user]);
+            $qry = "select access.center as code,center.name,center.shortname from center 
+              left join centeraccess as access on access.center = center.code
+              left join useraccess as user on user.userid = access.userid
+              where access.userid = $userid";
           }
-          $qry = "select access.center as code,center.name,center.shortname from center 
-          left join centeraccess as access on access.center = center.code
-          left join useraccess as user on user.userid = access.userid
-          where access.userid = $userid";
+
           break;
         case 'stbranch':
           $qry = "select center.line,center.code,center.name,center.shortname,center.warehouse,wh.clientname as whname from center left join client as wh on wh.client = center.warehouse where 1=1 $filter order by center.line";
           break;
-
+        
         default:
           $qry = "select c.line,c.code,c.name,c.warehouse,wh.clientname as whname,c.shortname from center as c left join centeraccess as ca on ca.center=c.code 
           left join useraccess as u on u.userid=ca.userid left join client as wh on wh.client = c.warehouse where u.username='$user' $filter order by c.line";
@@ -25444,6 +25491,7 @@ class lookupClass
     $plottype = '';
 
     $title = 'List of Open Task';
+    $clientcode = isset($config['params']['addedparams'][0]) ? $config['params']['addedparams'][0] : '';
 
     $plotting = array('clientname' => 'clientname', 'tmtrno' => 'trno', 'tmclientid' => 'clientid','tmclient' => 'client','tmreseller' => 'reseller');
     $plottype = 'plotledger';
@@ -25461,14 +25509,16 @@ class lookupClass
     // lookup columns
     
         $cols = [
+          ['name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'],
           ['name' => 'clientname', 'label' => 'Clientname', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
           ['name' => 'reseller', 'label' => 'Reseller', 'align' => 'left', 'field' => 'reseller', 'sortable' => true, 'style' => 'font-size:16px;'],
           ['name' => 'rem', 'label' => 'Task', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;']];
 
-        $qry = "select 0 as trno, 0 as clientid, '' as rem, '' as clientname,'' as client, '' as reseller
+        $qry = "select 0 as trno, 0 as clientid, '' as rem, '' as clientname,'' as client, '' as reseller , '' as dateid
                 union all
-                select tm.trno,tm.clientid,tm.rem,cl.clientname, cl.client as client,tm.reseller from tmhead as tm
-                left join client as cl on cl.clientid=tm.clientid";
+                select tm.trno,tm.clientid,tm.rem,cl.clientname, cl.client as client,tm.reseller, date(tm.dateid) as dateid 
+                from tmhead as tm
+                left join client as cl on cl.clientid=tm.clientid where cl.client='$clientcode'";
   
 
     $data = $this->coreFunctions->opentable($qry);

@@ -39,7 +39,7 @@ class pos
         '#', //AR payment
         '$', //service charge
         '**', //open item
-        '***', //Line Subtotal discont
+        '***', //FineDine - Multiple Subtotal Line Discount
         '$$', //Delivery Charge
         '$$$',
         '##' // Promo - General Line item (MIS)

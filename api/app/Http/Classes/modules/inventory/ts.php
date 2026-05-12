@@ -164,11 +164,29 @@ class ts
         return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1]];
         break;
 
+      case 68: //jda
+        $fields = ['dwhto'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'dwhto.label', 'Destination');
+
+
+
+        $fields = ['picktr'];
+        $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'picktr.lookupclass', 'pendingtrsummaryshortcut');
+        data_set($col2, 'picktr.addedparams', ['whto', 'whtoname']);
+
+        return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1, 'col2' => $col2]];
+        break;
+
       default:
         return [];
         break;
     }
   }
+
+
+
 
   public function loaddoclisting($config)
   {
@@ -720,6 +738,7 @@ class ts
       case 27: //NTE
       case 36: //ROZLAB
       case 43: //mighty
+      case 68: //jda
         $tbuttons = ['pendingtr', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
         break;
       default:
@@ -1539,7 +1558,8 @@ class ts
   public function gettrsummary($config)
   {
     $trno = $config['params']['trno'];
-    $wh = $config['params']['wh'];
+    $wh = $config['params']['rows'][0]['wh'];
+
     $rows = [];
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
@@ -2348,8 +2368,6 @@ class ts
     if ($qty === '') {
       $qty = 0;
     }
-
-
     return $this->coreFunctions->execqry("update htrstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
   }
 
@@ -2552,23 +2570,28 @@ class ts
       return $getlatestcostTS;
     }
   } // end function
+
+
+
   public function gettrsummaryqry($config)
   {
     return "
-select head.trno,head.docno,head.dateid,wh2.client as wh2,head.deptid,wh.client ,wh.clientname,
-head.projectid,head.yourref,head.ourref,head.rem,head.terms,head.cur,head.forex,head.address,head.branch,head.vattype,
-stock.rem as rem2,item.itemid,stock.trno, stock.line, item.barcode,stock.uom,stock.loc,stock.disc,
-stock.qty,stock.rrcost,stock.rrqty,stock.ext,stock.qa,stock.cost
-from htrhead as head
-left join htrstock as stock on stock.trno = head.trno
-left join client as wh on wh.client = head.wh
-left join item on item.itemid=stock.itemid
-left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
-left join hheadinfotrans as info on info.trno=head.trno
-left join client as wh2 on wh2.clientid = info.wh2
-left join client as whs on whs.clientid=stock.whid
-where stock.trno = ? and stock.qty>stock.qa";
+    select head.trno,head.docno,head.dateid,wh2.client as wh2,head.deptid,wh.client ,wh.clientname,
+    head.projectid,head.yourref,head.ourref,head.rem,head.terms,head.cur,head.forex,head.address,head.branch,head.vattype,
+    stock.rem as rem2,item.itemid,stock.trno, stock.line, item.barcode,stock.uom,stock.loc,stock.disc,
+    stock.qty,stock.rrcost,stock.rrqty,stock.ext,stock.qa,stock.cost 
+    from htrhead as head
+    left join htrstock as stock on stock.trno = head.trno
+    left join client as wh on wh.client = head.wh
+    left join item on item.itemid=stock.itemid
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+    left join hheadinfotrans as info on info.trno=head.trno
+    left join client as wh2 on wh2.clientid = info.wh2
+    left join client as whs on whs.clientid=stock.whid
+    where stock.trno = ? and stock.qty>stock.qa";
   }
+
+
   public function refillitem($config)
   {
     $trno = $config['params']['trno'];

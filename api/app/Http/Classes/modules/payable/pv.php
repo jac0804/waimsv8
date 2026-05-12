@@ -521,7 +521,6 @@ class pv
         $obj[0]['accounting']['columns'][$lot]['readonly'] = true;
         break;
     }
-
     $obj[0]['accounting']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -1021,39 +1020,42 @@ class pv
   {
     $trno = $config['params']['trno'];
 
-    //JDA
-    $budgetaccess = $this->othersClass->checkAccess($config['params']['user'], 5826);
-    if (!$budgetaccess) {
-      $qry = "select head.dateid,c.acnoid,head.projectid,detail.db from lahead as head
-                left join ladetail as detail on detail.trno=head.trno
-                left join coa as c on c.acnoid=detail.acnoid
-                where head.trno=$trno and head.doc='PV'";
-      $resmain = $this->coreFunctions->opentable($qry);
-      foreach ($resmain as $row) {
-        $dateid = isset($row->dateid) ? $row->dateid : '';
-        $projectid = isset($row->projectid) ? $row->projectid : 0;
-        $acnoid = isset($row->acnoid) ? $row->acnoid : 0;
-        $db = isset($row->db) ? $row->db : 0;
-
-        $month = (int) date('m', strtotime($dateid));
-        $year  = date('Y', strtotime($dateid));
-
-        $qry = "select amt" . $month . " as  budget, $acnoid as acnoid, $projectid as projectid,$db as db  from budget as b
-                where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
-
-        $data = $this->coreFunctions->opentable($qry);
-        $budget = isset($data[0]->budget) ? (float)$data[0]->budget : 0;
-
-        if ($db > $budget) {
-          return [
-            'trno' => $trno,
-            'status' => false,
-            'msg' => "Posting failed. Month total of " . number_format($db, 2) .
-              " exceeds month budget of  " . number_format($budget, 2)
-          ];
+    if($config['params']['companyid'] == 68){ //JDA
+      $budgetaccess = $this->othersClass->checkAccess($config['params']['user'], 5826);
+      if (!$budgetaccess) {
+        $qry = "select head.dateid,c.acnoid,head.projectid,detail.db from lahead as head
+                  left join ladetail as detail on detail.trno=head.trno
+                  left join coa as c on c.acnoid=detail.acnoid
+                  where head.trno=$trno and head.doc='PV'";
+        $resmain = $this->coreFunctions->opentable($qry);
+        foreach ($resmain as $row) {
+          $dateid = isset($row->dateid) ? $row->dateid : '';
+          $projectid = isset($row->projectid) ? $row->projectid : 0;
+          $acnoid = isset($row->acnoid) ? $row->acnoid : 0;
+          $db = isset($row->db) ? $row->db : 0;
+  
+          $month = (int) date('m', strtotime($dateid));
+          $year  = date('Y', strtotime($dateid));
+  
+          $qry = "select amt" . $month . " as  budget, $acnoid as acnoid, $projectid as projectid,$db as db  from budget as b
+                  where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
+  
+          $data = $this->coreFunctions->opentable($qry);
+          $budget = isset($data[0]->budget) ? (float)$data[0]->budget : 0;
+  
+          if ($db > $budget) {
+            return [
+              'trno' => $trno,
+              'status' => false,
+              'msg' => "Posting failed. Month total of " . number_format($db, 2) .
+                " exceeds month budget of  " . number_format($budget, 2)
+            ];
+          }
         }
       }
     }
+   
+    
     return $this->othersClass->posttransacctg($config);
   } //end function
 

@@ -25,16 +25,16 @@ class mh
     private $othersClass;
     private $logger;
     public $expirystatus = ['readonly' => false, 'show' => true, 'showdate' => true];
-    public $tablenum = 'cntnum';
-    public $head = 'lahead';
-    public $hhead = 'glhead';
+    public $tablenum = 'transnum';
+    public $head = 'mhhead';
+    public $hhead = 'hmhhead';
     public $stock = 'lastock';
     public $hstock = 'glstock';
     public $detail = 'ladetail';
     public $hdetail = 'gldetail';
-    public $tablelogs = 'table_log';
-    public $htablelogs = 'htable_log';
-    public $tablelogs_del = 'del_table_log';
+    public $tablelogs = 'transnum_log';
+    public $htablelogs = 'htransnum_log';
+    public $tablelogs_del = 'del_transnum_log';
 
     private $fields = ['trno', 'docno',  'dateid', 'clientname',  'bstype', 'address', 'contact', 'ownername', 'owneraddr', 'orderno',  'ourref', 'crno', 'conaddr', 'creditinfo', 'rem', 'rem2', 'refdate', 'layref', 'mtsofh'];
 
@@ -123,7 +123,6 @@ class mh
         data_set($col2, 'layref.label', 'Summon #');
         data_set($col2, 'layref.action', 'lookupbrgycomplaint');
 
-
         $fields = [['dateid', 'bstype'], ['refdate', 'ourref']];
         $col3 = $this->fieldClass->create($fields);
         data_set($col3, 'bstype.label', 'Time');
@@ -153,14 +152,14 @@ class mh
         $query = "
         select head.trno,head.docno,date_format(head.dateid,'%Y-%m-%d') as dateid,head.clientname,
         head.doc,head.createby, 'DRAFT' as status,ifnull(head.ownername,'') as planholder
-        from lahead as head
-        left join cntnum as num on num.trno = head.trno
+        from mhhead as head
+        left join transnum as num on num.trno = head.trno
         where num.doc = '$doc' $condition
         union all
         select  head.trno,head.docno,date_format(head.dateid,'%Y-%m-%d') as dateid,head.clientname,
         head.doc,head.createby,'POSTED' as status,ifnull(head.ownername,'') as planholder
-        from glhead as head
-        left join cntnum as num on num.trno = head.trno
+        from hmhhead as head
+        left join transnum as num on num.trno = head.trno
         where num.doc = '$doc' $condition ";
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -242,26 +241,26 @@ class mh
 
         $qry = "
         select head.trno,head.docno, ifnull(head.clientname,'') as clientname, 
-              ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
-              ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
-              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
-              ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
-              ifnull(head.creditinfo,'') as creditinfo,ifnull(head.rem,'') as rem,ifnull(head.rem2,'') as rem2,
-              date(head.refdate) as refdate,head.layref,ifnull(head.mtsofh,'') as mtsofh
-            from $table as head
-            left join $tablenum as num on num.trno = head.trno
-            where num.doc = '$doc' and head.trno = ? 
-            union all 
-           select head.trno,head.docno, ifnull(head.clientname,'') as clientname, 
-              ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
-              ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
-              ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
-              ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
-              ifnull(head.creditinfo,'') as creditinfo,ifnull(head.rem,'') as rem,ifnull(head.rem2,'') as rem2,
-              date(head.refdate) as refdate,head.layref,ifnull(head.mtsofh,'') as mtsofh
-              from $htable as head
-          left join $tablenum as num on num.trno = head.trno
-          where num.doc = '$doc' and head.trno = ? ";
+        ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
+        ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
+        ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
+        ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
+        ifnull(head.creditinfo,'') as creditinfo,ifnull(head.rem,'') as rem,ifnull(head.rem2,'') as rem2,
+        date(head.refdate) as refdate,head.layref,ifnull(head.mtsofh,'') as mtsofh
+        from $table as head
+        left join $tablenum as num on num.trno = head.trno
+        where num.doc = '$doc' and head.trno = ? 
+        union all 
+        select head.trno,head.docno, ifnull(head.clientname,'') as clientname, 
+        ifnull(head.address,'') as address,ifnull(head.contact,'') as contact,head.dateid,
+        ifnull(head.bstype,'') as bstype, ifnull(head.ownername,'') as ownername,
+        ifnull(head.owneraddr,'') as owneraddr,ifnull(head.orderno,'') as orderno,
+        ifnull(head.ourref,'') as ourref, ifnull(head.crno,'') as crno,ifnull(head.conaddr,'') as conaddr,
+        ifnull(head.creditinfo,'') as creditinfo,ifnull(head.rem,'') as rem,ifnull(head.rem2,'') as rem2,
+        date(head.refdate) as refdate,head.layref,ifnull(head.mtsofh,'') as mtsofh
+        from $htable as head
+        left join $tablenum as num on num.trno = head.trno
+        where num.doc = '$doc' and head.trno = ? ";
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $trno]);
         if (!empty($head)) {
@@ -331,15 +330,15 @@ class mh
 
             if ($prev_layref != $head['layref']) {
                 if (!empty($prev_layref)) {
-                    $prevtrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$prev_layref]);
+                    $prevtrno = $this->coreFunctions->getfieldvalue('hmhhead', "trno", "docno=?", [$prev_layref]);
                     if ($prevtrno) {
-                        $this->coreFunctions->sbcupdate('glhead',  ['isfinish' => 0], ['trno' => $prevtrno]);
+                        $this->coreFunctions->sbcupdate('hmhhead',  ['isfinish' => 0], ['trno' => $prevtrno]);
                     }
                 }
                 if (!empty($head['layref'])) {
-                    $newtrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$head['layref']]);
+                    $newtrno = $this->coreFunctions->getfieldvalue('hmhhead', "trno", "docno=?", [$head['layref']]);
                     if ($newtrno) {
-                        $this->coreFunctions->sbcupdate('glhead',  ['isfinish' => 1], ['trno' => $newtrno]);
+                        $this->coreFunctions->sbcupdate('hmhhead',  ['isfinish' => 1], ['trno' => $newtrno]);
                     }
                 }
             }
@@ -350,9 +349,9 @@ class mh
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
-            $complainttrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$head['layref']]);
+            $complainttrno = $this->coreFunctions->getfieldvalue('hmhhead', "trno", "docno=?", [$head['layref']]);
             if ($complainttrno) {
-                $this->coreFunctions->sbcupdate('glhead', ['isfinish' => 1], ['trno' => $complainttrno]);
+                $this->coreFunctions->sbcupdate('hmhhead', ['isfinish' => 1], ['trno' => $complainttrno]);
             }
 
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno']);
@@ -362,12 +361,75 @@ class mh
 
     public function posttrans($config)
     {
-        return $this->othersClass->posttranstock($config);
+        $trno = $config['params']['trno'];
+        $user = $config['params']['user'];
+
+        $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
+
+        if ($this->othersClass->isposted($config)) {
+            return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
+        }
+
+        // Insert into hjuhead from juhead
+        $qry = "insert into " . $this->hhead . "(trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, rem, rem2, refdate, layref, mtsofh, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate)
+            SELECT trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, rem, rem2, refdate, layref, mtsofh, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate
+            FROM " . $this->head . " where trno=? limit 1";
+
+        $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+
+        if ($posthead) {
+            // Update transnum with postdate and postedby
+            $date = $this->othersClass->getCurrentTimeStamp();
+            $data = ['postdate' => $date, 'postedby' => $user];
+            $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+
+            // Delete from juhead after successful posting
+            $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", "delete", [$trno]);
+
+            // Write log
+            $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+            $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
+
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+        } else {
+            return ['status' => false, 'msg' => 'Error posting complaint record.'];
+        }
     } //end function
 
     public function unposttrans($config)
     {
-        return $this->othersClass->unposttranstock($config);
+        $trno = $config['params']['trno'];
+        $user = $config['params']['user'];
+
+        $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
+
+        // Insert from hjuhead back to juhead
+        $qry = "insert into " . $this->head . "(trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, rem, rem2, refdate, layref, mtsofh, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate)
+            SELECT trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, rem, rem2, refdate, layref, mtsofh, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate
+            FROM " . $this->hhead . " where trno=? limit 1";
+
+        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+            // Clear postdate from transnum
+            $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null, postedby='' where trno=?", 'update', [$trno]);
+
+            // Delete from hjuhead after successful unposting
+            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+
+            // Write log
+            $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+        } else {
+            return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED. Error restoring draft record.'];
+        }
     } //end function
 
     public function deletetrans($config)

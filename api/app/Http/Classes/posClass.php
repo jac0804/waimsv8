@@ -2443,7 +2443,9 @@ class posClass
 
   function isDateField($columnName)
   {
-    $dateFields = ['dateid', 'promostart', 'promoend', 'effectdate', 'dateupdated', 'warranty', 'bday', 'lock', 'hired', 'resigned', 'enddate', 'editdate', 'voiddate', 'bday2', 'viewdate', 'start', 'dlock', 'lasttrans'];
+    // $dateFields = ['dateid', 'promostart', 'promoend', 'effectdate', 'dateupdated', 'warranty', 'bday', 'lock', 'hired', 'resigned', 'enddate', 'editdate', 'voiddate', 'bday2', 'viewdate', 'start', 'dlock', 'lasttrans', 'regdate'];
+
+    $dateFields = $this->othersClass->getDateFields();
     return in_array(strtolower($columnName), $dateFields);
   }
 

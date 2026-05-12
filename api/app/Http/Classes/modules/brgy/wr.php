@@ -233,19 +233,20 @@ class wr
         from lahead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
-        where num.doc = '$doc' $condition
+        where num.doc = '$doc' and num.center = '$center' $condition
         union all
         select  head.trno,head.docno,date(head.dateid) as dateid,cl.clientname,
         head.doc,head.createby,'POSTED' as status,format(head.amount,2) as amount,
         (select hh.docno from lahead as hh
-         left join ladetail as d on d.trno=hh.trno where d.refx=head.trno
-         union all
-         select hh.docno from glhead as hh
-         left join gldetail as d on d.trno=hh.trno where d.refx=head.trno) as ref
+        left join ladetail as d on d.trno=hh.trno where d.refx=head.trno
+        union all
+        select hh.docno from glhead as hh
+        left join gldetail as d on d.trno=hh.trno where d.refx=head.trno) as ref
         from glhead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
-        where num.doc = '$doc' $condition ";
+        where num.doc = '$doc' and num.center = '$center' $condition ";
+        
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
@@ -275,7 +276,7 @@ class wr
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
         left join clientinfo as info on info.clientid = cl.clientid
-        where num.doc = '$doc' and head.trno = ?
+        where num.doc = '$doc' and num.center = '$center' and head.trno = ?
         union all
         select head.trno,head.docno,cl.client,cl.clientname, head.address, head.dateid,format(head.amount,2) as amount,
         date_format(cl.bday,'%Y-%m-%d') as bday,   ifnull(info.civilstatus,'') as civilstatus,cl.sex,
@@ -284,7 +285,7 @@ class wr
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
         left join clientinfo as info on info.clientid = cl.clientid
-        where num.doc = '$doc' and head.trno = ? ";
+        where num.doc = '$doc' and num.center = '$center' and head.trno = ? ";
         $head = $this->coreFunctions->opentable($query, [$trno, $trno]);
         if (!empty($head)) {
             $viewdate = $this->othersClass->getCurrentTimeStamp();

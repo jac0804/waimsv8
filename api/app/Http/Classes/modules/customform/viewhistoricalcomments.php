@@ -99,13 +99,7 @@ class viewhistoricalcomments
       }
     }
 
-    if ($doc == 'TM') {
-      $trno = $config['params']['row']['trno'];
-      $reqbyid = $this->coreFunctions->getfieldvalue("tmhead", "requestby", "trno=?", [$trno]);
-      if ($userid != $reqbyid) {
-        $fields = [];
-      }
-    }
+
 
     $col2 = $this->fieldClass->create($fields);
     if (!empty($fields)) {
@@ -280,12 +274,7 @@ class viewhistoricalcomments
           if ($doc == 'TK' || $doc == 'TM' && $dstatus != 1) {
             $data2 = [];
             $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
-
-            $idhere = $this->coreFunctions->getfieldvalue('tmhead', "requestby", "trno=?", [$trno]); //requestor
-            if ($adminid == $idhere) { //
-              $idhere = $this->coreFunctions->getfieldvalue('tmdetail', "userid", "trno=? and line=?", [$trno, $line]); //assigned
-            }
-
+            $idhere = $this->coreFunctions->getfieldvalue('tmdetail', "userid", "trno=? and line=?", [$trno, $line]); //assigned
             $linesz = [0];
             $qry = "select line from pendingapp where trno=$trno ";
             $lines = $this->coreFunctions->opentable($qry);

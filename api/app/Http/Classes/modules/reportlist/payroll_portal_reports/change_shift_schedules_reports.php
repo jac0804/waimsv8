@@ -48,6 +48,10 @@ class change_shift_schedules_reports
     {
         $companyid = $config['params']['companyid'];
         $fields = ['radioprint', 'divname', 'dclientname',  'start', 'end', 'radioposttype'];
+
+        if ($companyid == 44) { //stonepro
+            array_push($fields, 'radiopaymenttype');
+        }
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
         data_set($col1, 'dclientname.label', 'Employee');
@@ -67,6 +71,15 @@ class change_shift_schedules_reports
             ['label' => 'APPROVED', 'value' => 'approved', 'color' => 'red']
         ]);
 
+        if ($companyid == 44) { // stonepro
+            data_set($col1, 'radiopaymenttype.label', 'Paymode');
+
+            data_set($col1, 'radiopaymenttype.options', [
+                ['label' => 'Weekly', 'value' => 'W', 'color' => 'red'],
+                ['label' => 'Semi-Monthly', 'value' => 'S', 'color' => 'red']
+            ]);
+        }
+
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
 
@@ -83,9 +96,11 @@ class change_shift_schedules_reports
       left(now(),10) as end,
       'approved' as posttype,
       0 as divid,
+      '' as division,
     '' as client,
     '' as clientname,
-    '' as dclientname
+    '' as dclientname,
+    'S' as paymenttype
     ");
     }
 
@@ -130,6 +145,7 @@ class change_shift_schedules_reports
         $dateend = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
         $posttype = $config['params']['dataparams']['posttype'];
         $divid = $config['params']['dataparams']['divid'];
+        $paymode     = $config['params']['dataparams']['paymenttype'];
         $adminid = $config['params']['adminid'];
         $filter   = "";
 
@@ -142,7 +158,11 @@ class change_shift_schedules_reports
                 $status = " csapp.status = 1 and ";
                 break;
         }
-
+        if ($companyid == 44) { // stonepro
+            if ($paymode != "") {
+                $filter .= " emp.paymode = '$paymode' and ";
+            }
+        }
         $filteremp = "";
         $leftjoin = "";
 
@@ -164,9 +184,9 @@ class change_shift_schedules_reports
         time(csapp.schedin) as schedin,
         time(csapp.schedout) as schedout,
         tcard.daytype,
-        csapp.rem,ifnull(app.clientname,app2.clientname) as appname,ifnull(app2.clientname,disapp2.clientname) as appname2,csapp.disapproved_remarks as apprem,csapp.disapproved_remarks2 as apprem2,
-        ifnull(date(csapp.approveddate2),date(csapp.disapproveddate2)) as appdate2,
-        ifnull(date(csapp.approveddate),date(csapp.disapproveddate)) as appdate,
+        csapp.rem,ifnull(app.clientname,disapp.clientname) as appname,ifnull(app2.clientname,disapp2.clientname) as appname2,csapp.disapproved_remarks as apprem,csapp.disapproved_remarks2 as apprem2,
+        ifnull(csapp.approveddate2,csapp.disapproveddate2) as appdate2,
+        ifnull(csapp.approveddate,csapp.disapproveddate) as appdate,
        (case when csapp.status = 0 then 'Entry'
               when csapp.status = 1 then 'Approved'
               when csapp.status = 2 then 'Disapproved'
@@ -190,8 +210,7 @@ class change_shift_schedules_reports
 
         left join timecard as tcard on tcard.empid = csapp.empid and tcard.dateid = csapp.dateid
         $leftjoin
-        where $status $filter date(csapp.dateid) between '" . $datestart . "' and '" . $dateend . "' $filteremp ";
-
+        where $status $filter date(csapp.dateid) between '" . $datestart . "' and '" . $dateend . "' $filteremp  order by cl.clientname,date(csapp.dateid) asc";
         return $this->coreFunctions->opentable($query);
     }
 

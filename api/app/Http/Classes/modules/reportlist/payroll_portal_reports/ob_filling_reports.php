@@ -46,6 +46,9 @@ class ob_filling_reports
         if ($companyid == 51) { // ulitc
             array_push($fields, 'radioreporttype');
         }
+        if ($companyid == 44) { //stonepro
+            array_push($fields, 'radiopaymenttype');
+        }
         array_push($fields, 'radioposttype');
         $col1 = $this->fieldClass->create($fields);
 
@@ -60,6 +63,16 @@ class ob_filling_reports
         data_set($col1, 'divname.action', 'lookupempdivision');
         data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
         data_set($col1, 'dclientname.label', 'Employee');
+
+        if ($companyid == 44) { // stonepro
+            data_set($col1, 'radiopaymenttype.label', 'Paymode');
+
+            data_set($col1, 'radiopaymenttype.options', [
+                ['label' => 'Weekly', 'value' => 'W', 'color' => 'red'],
+                ['label' => 'Semi-Monthly', 'value' => 'S', 'color' => 'red']
+            ]);
+        }
+
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -91,7 +104,8 @@ class ob_filling_reports
                     '' as dclientname,
                     '0' as divid,
                     '' as divname,
-                    '' as division"
+                    '' as division,
+                    'S' as paymenttype"
 
         );
     }
@@ -147,6 +161,7 @@ class ob_filling_reports
         $divid = $config['params']['dataparams']['divid'];
         $client     = $config['params']['dataparams']['client'];
         $posttype     = $config['params']['dataparams']['posttype'];
+        $paymode     = $config['params']['dataparams']['paymenttype'];
         $adminid = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
 
@@ -190,6 +205,11 @@ class ob_filling_reports
                 $status = " ob.status = 'A' and ";
                 break;
         }
+        if ($companyid == 44) { // stonepro
+            if ($paymode != "") {
+                $filter .= " and emp.paymode = '$paymode' ";
+            }
+        }
 
         $addfields = "";
         $jobtitle = ""; //ob.
@@ -231,11 +251,11 @@ class ob_filling_reports
         $query = "
       select
       cl.client, cl.clientname,
-      if(ob.type = 'Official Business',concat(time_format(ob.dateid, '%H:%i '),' - ',time_format(ob.dateid2, '%H:%i ')),time_format(ob.dateid, '%H:%i ')) as time,
+      if(ob.type = 'Official Business',concat(time_format(ob.dateid, '%H:%i '),' - ',time_format(ob.dateid2, '%H:%i ')),time_format(ifnull(ob.dateid,ob.dateid2), '%H:%i ')) as time,
 
       time_format(ob.dateid2, '%H:%i ') as timeout
       ,ob.line,$jobtitle dept.clientname as department,date(ob.scheddate) as scheddate,
-      ob.type, date(ob.dateid) as dateid, ob.rem as remarks,
+      ob.type, date(ifnull(ob.dateid,ob.dateid2)) as dateid, ob.rem as remarks,
       case
       when ob.status = 'A' then 'APPROVED'
       when ob.status = 'E' then 'ENTRY'
@@ -261,7 +281,7 @@ class ob_filling_reports
       left join client as iniapp on iniapp.email = ob.initialapprovedby and iniapp.email <> ''
       left join client as iniapp2 on iniapp2.email = ob.initialapprovedby2 and iniapp2.email <> ''
       $leftjoin
-      where  $status date(ob.dateid) between '" . $start . "' and '" . $end . "' $filter $filteremp order by cl.clientname, date(dateid) asc";
+       where $status date(ifnull(ob.dateid,ob.dateid2)) between '" . $start . "' and '" . $end . "' $filteremp $filter order by cl.clientname, date(ifnull(ob.dateid,ob.dateid2))";
         return $query;
     }
     public function ob_detailed($config, $line)
@@ -409,7 +429,8 @@ class ob_filling_reports
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
-        $str .= $this->reporter->beginreport($layoutsize);
+        // $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:50px');
         $str .= $this->header_DEFAULT($config, $seqcount);
         $str .= $this->tableheader($layoutsize, $config, $seqcount);
         $i = 0;
@@ -560,7 +581,7 @@ class ob_filling_reports
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col($data->createdate, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($data->clientname, '180', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->clientname, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->dateid, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->type, '60', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->location, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');

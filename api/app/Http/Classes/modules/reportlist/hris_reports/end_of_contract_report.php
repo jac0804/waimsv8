@@ -96,8 +96,8 @@ class end_of_contract_report
     public function defaultqry($config)
     {
         $filter   = "";
-        $start = date('m/d/Y', strtotime($config['params']['dataparams']['start']));
-        $end   = date('m/d/Y', strtotime($config['params']['dataparams']['end']));
+        $start = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+        $end   = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
         $dept   = $config['params']['dataparams']['dept'];
         $deptid   = $config['params']['dataparams']['deptid'];
         $deptname = $config['params']['dataparams']['deptname'];
@@ -109,10 +109,10 @@ class end_of_contract_report
         if ($divname != '') {
             $filter = " and e.divid = '$divid'";
         }
-        if ($deptid != "") {
+        if ($deptname != "") {
             $filter .= " and e.deptid = $deptid";
         }
-        if ($sectid != "") {
+        if ($sectname != "") {
             $filter .= " and e.sectid = $sectid";
         }
 
@@ -122,8 +122,7 @@ class end_of_contract_report
         left join division as d on d.divcode = e.division
         left join section as s on s.sectcode = e.orgsection
         left join department as dept on dept.deptcode = e.dept
-        where 1 = 1 $filter";
-        // var_dump($query);
+        where date(c.datefrom) >= '$start' and date(c.dateto) <= '$end' $filter";
 
         return $this->coreFunctions->opentable($query);
     }

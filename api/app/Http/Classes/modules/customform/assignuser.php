@@ -61,6 +61,7 @@ class assignuser
         data_set($col1, 'clientname.type', 'lookup');
         data_set($col1, 'clientname.lookupclass', 'lookupopentask');
         data_set($col1, 'clientname.action', 'lookupopentask');
+        data_set($col1, 'clientname.addedparams', ['dyclient']);
         data_set($col1, 'clientname.label', 'Company');
         data_set($col1, 'refresh.label', 'Save');
         return array('col1' => $col1);
@@ -68,7 +69,6 @@ class assignuser
 
     public function paramsdata($config)
     {
-
         $username = $config['params']['addedparams']['username'];
         $assignedid = $config['params']['addedparams']['assignedid'];
         $customerid = $config['params']['addedparams']['custid'];
@@ -80,10 +80,13 @@ class assignuser
         $reseller = $config['params']['addedparams']['reseller'];
         $dyclient = $config['params']['addedparams']['client'];
         $tasktrno = $config['params']['addedparams']['tasktrno'];
+        // $companyname = $config['params']['addedparams']['clientname'];
+        // $companyid = $config['params']['addedparams']['custid'];
+
         return $this->coreFunctions->opentable("select  if('$username' != '', '$username', '') as username, '$assignedid' as assignedid,'$trno' as trno,
                                   '$customerid' as customerid,'$checkerid' as checkerid,'$notes' as notes,'$userid' as userid,'$catid' as catid,'$tasktrno' as tasktrno,
                                   '" . $reseller . "' as reseller, '" . $dyclient . "' as dyclient,
-                                  '' as clientname, 0 as tmtrno, 0 as tmclientid, '' as tmreseller, '' as tmclient ");
+                                   '' as clientname, 0 as tmtrno, '' as tmclientid, '' as tmreseller, '' as tmclient ");
     }
 
 
@@ -110,7 +113,6 @@ class assignuser
 
     public function loaddata($config)
     {
-
         $datenow = $this->othersClass->getCurrentTimeStamp();
         $dateid = $this->othersClass->getCurrentDate();
         $clientid = $config['params']['clientid'];
@@ -133,119 +135,127 @@ class assignuser
 
         $createdby = $config['params']['adminid'];
         $email = $this->coreFunctions->getfieldvalue("client", "email", "clientid=? ", [$createdby]);
-        
-        if ($assignedid != 0) {
-            // DETERMINE KUNG MAG-IINSERT OR CREATE
-            $useExisting = false;
+        $msg = '';
 
-            if ($tmclientid != 0) {
-                // same client + same reseller
-                if ($dyclient == $tmclient && $reseller == $tmreseller) {
-                    $useExisting = true;
-                }
+        $projecthead = $this->coreFunctions->getfieldvalue("client",  "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$checkerid], '', true);
+        if ($projecthead != 0) {
+            if ($assignedid != 0) {
+                // DETERMINE KUNG MAG-IINSERT OR CREATE
+                $useExisting = false;
 
-                // same client but different reseller 
-                //pag hindi same yung reseller nung nilookup at nung dailytask pero same ng company 
-                // search kung meron open task na same ng company at same din ng reseller
-                elseif ($dyclient == $tmclient) {
-                    $searchsame = $this->coreFunctions->datareader(
-                        "select h.trno as value  from tmhead as h 
-                            left join client as cl on cl.clientid=h.clientid 
-                            where h.reseller=? and cl.client=? and h.status=1 
-                            order by h.dateid asc limit 1",[$reseller, $dyclient]);
-
-                    if (!empty($searchsame)) {
-                        $tmtrno = $searchsame;
+                if ($tmclientid != 0) {
+                    // same client + same reseller
+                    if ($dyclient == $tmclient && $reseller == $tmreseller) {
                         $useExisting = true;
                     }
+
+                    // same client but different reseller 
+                    //pag hindi same yung reseller nung nilookup at nung dailytask pero same ng company 
+                    // search kung meron open task na same ng company at same din ng reseller
+                    elseif ($dyclient == $tmclient) {
+                        $searchsame = $this->coreFunctions->datareader(
+                            "select h.trno as value  from tmhead as h 
+                            left join client as cl on cl.clientid=h.clientid 
+                            where h.reseller=? and cl.client=? and h.status=1 
+                            order by h.dateid asc limit 1",
+                            [$reseller, $dyclient]
+                        );
+
+                        if (!empty($searchsame)) {
+                            $tmtrno = $searchsame;
+                            $useExisting = true;
+                        }
+                    }
                 }
-            }
 
-            $updateassignedid = $this->coreFunctions->sbcupdate('dailytask', ['assignedid' => $assignedid],  ['trno' => $clientid] );
+                $updateassignedid = $this->coreFunctions->sbcupdate('dailytask', ['assignedid' => $assignedid],  ['trno' => $clientid]);
 
-            if ($updateassignedid != 1) {
-                return ['status' => false,'msg' => 'User assigning error. Please refresh the page.',  'closecustomform' => true,  'reloadhead' => true  ];
-            }
-
-          
-            // IF EXISTING  INSERT DETAIL
-            if ($useExisting) {
-                $getline = $this->coreFunctions->getfieldvalue("tmdetail","line",  "trno=? order by line desc",[$tmtrno], '',  true);
-                $lines = $getline + 1;
-                $detaildata = [
-                    'trno' => $tmtrno,
-                    'line' => $lines,
-                    'userid' => $assignedid,
-                    'encodedby' => $email,
-                    'encodeddate' => $datenow,
-                    'title' => $notes,
-                    'status' => 2,
-                    'taskcatid' => $catid
-                ];
-                $this->coreFunctions->insertGetId('tmdetail', $detaildata);
-                $tmline = $this->coreFunctions->getfieldvalue("tmdetail",  "line", "trno=?", [$tmtrno], '', true);
-                if ($tmline != 0) {
-                    $url = 'App\Http\Classes\modules\taskmonitoring\\tm';
-                    $this->othersClass->insertUpdatePendingapp($tmtrno, $lines, 'TM', [], $url, $config, $assignedid, false, true);
-                    $assigned = $this->coreFunctions->getfieldvalue("client",   "clientname",  "clientid=?", [$assignedid]);
-                    $config['params']['doc'] = 'ENTRYTASK';
-                    $this->logger->sbcmasterlog( $tmtrno, $config, ' Line: ' . $tmline . ' , This task has been assigned to ' . $assigned );
+                if ($updateassignedid != 1) {
+                    return ['status' => false, 'msg' => 'User assigning error. Please refresh the page.',  'closecustomform' => true,  'reloadhead' => true];
                 }
-                $msg = 'User assigned; task monitoring detail generated successfully.';
-            }
 
-             //CREATE NEW
-            else {
-                $data = [
-                    'clientid' => $customerid,
-                    'systype' => 0,
-                    'tasktype' => 2,
-                    'rate' => 0,
-                    'dateid' => $dateid,
-                    'requestby' => $checkerid,
-                    'createdate' => $datenow,
-                    'createby' => $createby,
-                    'rem' => '',
-                    'status' => 1,
-                    'checkerid' => $userid,
-                    'reseller' => $reseller
-                ];
 
-                $generatetm = $this->coreFunctions->insertGetId('tmhead', $data);
-
-                if ($generatetm != 0) {
-                    $data2 = [
-                        'trno' => $generatetm,
-                        'line' => 1,
-                        'task' => '',
+                // IF EXISTING  INSERT DETAIL
+                if ($useExisting) {
+                    $getline = $this->coreFunctions->getfieldvalue("tmdetail", "line",  "trno=? order by line desc", [$tmtrno], '',  true);
+                    $lines = $getline + 1;
+                    $detaildata = [
+                        'trno' => $tmtrno,
+                        'line' => $lines,
                         'userid' => $assignedid,
-                        'startdate' => $datenow,
-                        'encodeddate' => $datenow,
                         'encodedby' => $email,
+                        'encodeddate' => $datenow,
                         'title' => $notes,
                         'status' => 2,
-                        'acceptdate' => $datenow,
                         'taskcatid' => $catid
                     ];
-
-                    $this->coreFunctions->insertGetId('tmdetail', $data2);
-                    $checktmdetail = $this->coreFunctions->getfieldvalue("tmdetail",  "trno",   "trno=? and line=1", [$generatetm]   );
-
-                    if ($checktmdetail != 0) {
+                    $this->coreFunctions->insertGetId('tmdetail', $detaildata);
+                    $tmline = $this->coreFunctions->getfieldvalue("tmdetail",  "line", "trno=?", [$tmtrno], '', true);
+                    if ($tmline != 0) {
                         $url = 'App\Http\Classes\modules\taskmonitoring\\tm';
-                        $this->othersClass->insertUpdatePendingapp($generatetm, 1, 'TM', [], $url, $config, $assignedid, false, true);
-
-                        $assigned = $this->coreFunctions->getfieldvalue("client", "clientname",   "clientid=?",  [$assignedid]  );
-
+                        $this->othersClass->insertUpdatePendingapp($tmtrno, $lines, 'TM', [], $url, $config, $assignedid, false, true);
+                        $assigned = $this->coreFunctions->getfieldvalue("client",   "clientname",  "clientid=?", [$assignedid]);
                         $config['params']['doc'] = 'ENTRYTASK';
-                        $this->logger->sbcmasterlog($generatetm, $config,  ' Line: 1 , This task has been assigned to ' . $assigned ); }
-
-                    $msg = 'User assigned; task monitoring document generated successfully.';
+                        $this->logger->sbcmasterlog($tmtrno, $config, ' Line: ' . $tmline . ' , This task has been assigned to ' . $assigned);
+                    }
+                    $msg = 'User assigned; task monitoring detail generated successfully.';
                 }
-            }
 
-            return ['status' => true,  'msg' => $msg, 'closecustomform' => true, 'reloadhead' => true ];
+                //CREATE NEW
+                else {
+                    $data = [
+                        'clientid' => $customerid,
+                        'systype' => 0,
+                        'tasktype' => 2,
+                        'rate' => 0,
+                        'dateid' => $dateid,
+                        'requestby' => $checkerid,
+                        'createdate' => $datenow,
+                        'createby' => $createby,
+                        'rem' => '',
+                        'status' => 1,
+                        'checkerid' => $userid,
+                        'reseller' => $reseller
+                    ];
+
+                    $generatetm = $this->coreFunctions->insertGetId('tmhead', $data);
+
+                    if ($generatetm != 0) {
+                        $data2 = [
+                            'trno' => $generatetm,
+                            'line' => 1,
+                            'task' => '',
+                            'userid' => $assignedid,
+                            'startdate' => $datenow,
+                            'encodeddate' => $datenow,
+                            'encodedby' => $email,
+                            'title' => $notes,
+                            'status' => 2,
+                            'acceptdate' => $datenow,
+                            'taskcatid' => $catid
+                        ];
+
+                        $this->coreFunctions->insertGetId('tmdetail', $data2);
+                        $checktmdetail = $this->coreFunctions->getfieldvalue("tmdetail",  "trno",   "trno=? and line=1", [$generatetm]);
+
+                        if ($checktmdetail != 0) {
+                            $url = 'App\Http\Classes\modules\taskmonitoring\\tm';
+                            $this->othersClass->insertUpdatePendingapp($generatetm, 1, 'TM', [], $url, $config, $assignedid, false, true);
+
+                            $assigned = $this->coreFunctions->getfieldvalue("client", "clientname",   "clientid=?",  [$assignedid]);
+
+                            $config['params']['doc'] = 'ENTRYTASK';
+                            $this->logger->sbcmasterlog($generatetm, $config,  ' Line: 1 , This task has been assigned to ' . $assigned);
+                        }
+
+                        $msg = 'User assigned; task monitoring document generated successfully.';
+                    }
+                }
+
+                return ['status' => true,  'msg' => $msg, 'closecustomform' => true, 'reloadhead' => true];
+            }
+        } else {
+            return ['status' => false,  'msg' => 'Please select the designated project head as checker.', 'closecustomform' => false, 'reloadhead' => false];
         }
-       
     }
 }

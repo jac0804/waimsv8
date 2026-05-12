@@ -305,11 +305,17 @@ class payroll_register
         where a.code in ('PT8','PT9','PT81') 
         and p.empid = emp.empid $innerbatch), 0) as CBABenefit,
 
-        ifnull((select sum(p.db) from paytrancurrent as p 
+        ifnull((select sum(p.cr) from paytrancurrent as p 
         left join paccount as a on a.line = p.acnoid 
         left join batch as b on b.line = p.batchid
-        where a.code in ('PT6') 
-        and p.empid = emp.empid $innerbatch), 0) as Late,
+        where a.code in ('PT6','PT7') 
+        and p.empid = emp.empid $innerbatch), 0) as LateUnd,
+
+        ifnull((select sum(p.cr) from paytrancurrent as p 
+        left join paccount as a on a.line = p.acnoid 
+        left join batch as b on b.line = p.batchid
+        where a.code in ('PT5') 
+        and p.empid = emp.empid $innerbatch), 0) as Abs,
 
         ifnull((select sum(p.cr) from paytrancurrent as p 
         left join paccount as a on a.line = p.acnoid 
@@ -390,7 +396,7 @@ class payroll_register
             emp.empmiddle
         order by deptname, fname
         ";
-
+    // $this->othersClass->LogConsole($query);
     // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
@@ -545,7 +551,7 @@ class payroll_register
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('CBA Benefit', 50, null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col('Lates', 50, null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col('Lates/ Undertime', 50, null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('Gross Pay', 50, null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
@@ -600,6 +606,7 @@ class payroll_register
       $rowCount = 0;
 
       $count = 0;
+      $RegPay = 0;
 
       $toalDeduc = 0;
       $subBPay = 0;
@@ -607,7 +614,7 @@ class payroll_register
       $subOT = 0;
       $subOtherIncome = 0;
       $subCBA = 0;
-      $subLate = 0;
+      $subLateUnd = 0;
       $subGross = 0;
       $subWHT = 0;
       $subSSS = 0;
@@ -662,8 +669,9 @@ class payroll_register
       foreach ($result as $data) {
 
           $firstline++;
-          $deptChange = ($dept !== $data->deptname && $dept !== null);//if change, subtotal
-          $newDept = ($dept !== $data->deptname);//if new, deptname
+          $deptname = $data->deptname ? $data->deptname:'NO DEPARTMENT';
+          $deptChange = ($dept !== $deptname && $dept !== null);//if change, subtotal
+          $newDept = ($dept !== $deptname);//if new, deptname
 
           $neededRows = 1; //default
           if ($deptChange)
@@ -698,7 +706,7 @@ class payroll_register
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
-              $str .= $this->reporter->col(number_format($subLate, 2), 90, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+              $str .= $this->reporter->col(number_format($subLateUnd, 2), 90, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
@@ -788,7 +796,7 @@ class payroll_register
 
               //Reset 
               $subBPay = $subEcola = $subOT = $subOtherIncome = $subCBA = 0;
-              $subLate = $subGross = $subWHT = $subSSS = $subPHIC = $subHDMF = 0;
+              $subLateUnd = $subGross = $subWHT = $subSSS = $subPHIC = $subHDMF = 0;
               $subSSSLoan = $subHDMFLoan = $subTotalDeduc = $subNpay = 0;
               $subComploan = $subEduLoan = $subCalloan = $subChit = 0;
               $subOtherDeduc = $subUnionDues = $subNetPay = 0;
@@ -804,76 +812,78 @@ class payroll_register
               $str .= $this->reporter->endrow();
               $str .= $this->reporter->endtable();
 
-              $dept = $data->deptname;
+              $dept = $data->deptname ? $data->deptname: 'NO DEPARTMENT' ;
               $str .= $this->reporter->begintable($layoutsize);
               $str .= $this->reporter->startrow();
               $str .= $this->reporter->col($dept, null, null, false, $border, '', '', $font, '8', 'B', '', '');
               $str .= $this->reporter->endrow();
               $str .= $this->reporter->endtable();
           }
-
+          $RegPay = $data->BasicPay - $data->Abs; 
           $totalDeduc = $data->WHT + $data->SSS + $data->PHIC + $data->HDMF + $data->HDMFLoan + $data->SSSLoan;
-          $gross = $data->BasicPay + $data->OT + $data->ECOLA + $data->CBABenefit + $data->Otherincome - $data->Late;
+          $gross = $RegPay + $data->OT + $data->ECOLA + $data->CBABenefit + $data->Otherincome - $data->LateUnd; 
           $netPay = $gross - $totalDeduc;
+          
+        
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col($data->fname, 170, null, false, $border, '', 'L', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->basicrate, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->basicrate == 0 ? '-' :number_format($data->basicrate, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->BasicPay, 2), 70, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($RegPay == 0 ? '-' :number_format($RegPay, 2), 70, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->ECOLA, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->ECOLA == 0 ? '-' :number_format($data->ECOLA, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->OT, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->OT == 0 ? '-' :number_format($data->OT, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->Otherincome, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->Otherincome == 0 ? '-' :number_format($data->Otherincome, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->CBABenefit, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->CBABenefit == 0 ? '-' :number_format($data->CBABenefit, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->Late, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->LateUnd == 0 ? '-' :number_format($data->LateUnd, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($gross, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($gross == 0 ? '-' :number_format($gross, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->WHT, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->WHT == 0 ? '-' :number_format($data->WHT, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->SSS, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->SSS == 0 ? '-' :number_format($data->SSS, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->PHIC, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->PHIC == 0 ? '-' :number_format($data->PHIC, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->HDMF, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->HDMF == 0 ? '-' :number_format($data->HDMF, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->SSSLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->SSSLoan == 0 ? '-' :number_format($data->SSSLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->HDMFLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->HDMFLoan == 0 ? '-' :number_format($data->HDMFLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($totalDeduc, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($totalDeduc == 0 ? '-' :number_format($totalDeduc, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($netPay, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($netPay == 0 ? '-' :number_format($netPay, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->CompLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->CompLoan == 0 ? '-' :number_format($data->CompLoan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->eduloan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->eduloan == 0 ? '-' :number_format($data->eduloan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->calloan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->calloan == 0 ? '-' :number_format($data->calloan, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->Chit, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->Chit == 0 ? '-' :number_format($data->Chit, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->OtherDeduc, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->OtherDeduc == 0 ? '-' :number_format($data->OtherDeduc, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->UnionDues, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->UnionDues == 0 ? '-' :number_format($data->UnionDues, 2), 50, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
-          $str .= $this->reporter->col(number_format($data->NetPay, 2), 60, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
+          $str .= $this->reporter->col($data->NetPay == 0 ? '-' :number_format($data->NetPay, 2), 60, null, false, $border, '', 'R', $font, $font_size, 'T', '', '');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
-          $subBPay += $data->BasicPay;
+          $subBPay += $RegPay;
           $subEcola += $data->ECOLA;
           $subOT += $data->OT;
           $subOtherIncome += $data->Otherincome;
           $subCBA += $data->CBABenefit;
-          $subLate += $data->Late;
+          $subLateUnd += $data->LateUnd;
           $subGross += $gross;
           $subWHT += $data->WHT;
           $subSSS += $data->SSS;
@@ -893,12 +903,12 @@ class payroll_register
 
           //for grandtotal
 
-          $grandBPay += $data->BasicPay;
+          $grandBPay += $RegPay;
           $grandEcola += $data->ECOLA;
           $grandOT += $data->OT;
           $grandOtherIncome += $data->Otherincome;
           $grandCBA += $data->CBABenefit;
-          $grandLate += $data->Late;
+          $grandLate += $data->LateUnd;
           $grandGross += $gross;
           $grandWHT += $data->WHT;
           $grandSSS += $data->SSS;
@@ -937,7 +947,7 @@ class payroll_register
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col(number_format($subLate, 2), 90, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col(number_format($subLateUnd, 2), 90, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', 10, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');

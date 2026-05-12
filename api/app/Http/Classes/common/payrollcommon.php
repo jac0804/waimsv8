@@ -748,10 +748,9 @@ class payrollcommon
         }
 
         if ($companyid == 62) { //onesky
-            $divid = 0;
-            if ($paytran == 0) $divid = $config['params']['dataparams']['empdivid'];
+            $divid = $config['params']['dataparams']['empdivid'];
             if ($divid != 0)  $filterEmp .= " and emp.divid=" . $divid;
-            if ($pgroup = "") $filtergrp = "";
+            if ($pgroup == "") $filtergrp = "";
 
             $addon = ", emp.mealdeduc";
         }
@@ -3484,34 +3483,36 @@ class payrollcommon
 
                             //SSS
                             if ($chksss) {
-                                if ($emp->sss != '') {
-                                    if ($emp->sssdef != 0) {
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YSE', $batchdate, 0, $emp->sssdef / ($blnWholeDeduction ? 1 : 2), 87);
-                                        $bracket = $this->coreFunctions->opentable("select sssee,ssser,eccer from ssstab where sssee=?", [$emp->sssdef]);
+                                if ($params['dataparams']['sss']) {
+                                    if ($emp->sss != '') {
+                                        if ($emp->sssdef != 0) {
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YSE', $batchdate, 0, $emp->sssdef / ($blnWholeDeduction ? 1 : 2), 87);
+                                            $bracket = $this->coreFunctions->opentable("select sssee,ssser,eccer from ssstab where sssee=?", [$emp->sssdef]);
 
-                                        if (!empty($bracket)) {
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YSR', $batchdate, 0, $bracket[0]->ssser / ($blnWholeDeduction ? 1 : 2), 88);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YER', $batchdate, 0, $bracket[0]->eccer / ($blnWholeDeduction ? 1 : 2), 89);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YIS', $batchdate, ($bracket[0]->ssser + $bracket[0]->eccer) / ($blnWholeDeduction ? 1 : 2), 0, 90);
-                                        }
+                                            if (!empty($bracket)) {
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YSR', $batchdate, 0, $bracket[0]->ssser / ($blnWholeDeduction ? 1 : 2), 88);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YER', $batchdate, 0, $bracket[0]->eccer / ($blnWholeDeduction ? 1 : 2), 89);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YIS', $batchdate, ($bracket[0]->ssser + $bracket[0]->eccer) / ($blnWholeDeduction ? 1 : 2), 0, 90);
+                                            }
 
-                                        $grossPay[2] -= ($emp->sssdef / ($blnWholeDeduction ? 1 : $contridivisor));
-                                    } else {
+                                            $grossPay[2] -= ($emp->sssdef / ($blnWholeDeduction ? 1 : $contridivisor));
+                                        } else {
 
-                                        $bracket = $this->coreFunctions->opentable("select sssee,ssser,eccer from ssstab where " . $deductionbaseSSSHDMF . " between range1 and range2");
-                                        if (!empty($bracket)) {
-                                            $ssse = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSE", "cr");
-                                            $sssr = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSR", "cr");
-                                            $ssser = $this->vtranSelectQryAlias($emp->empid, $enddate, "YER", "cr");
+                                            $bracket = $this->coreFunctions->opentable("select sssee,ssser,eccer from ssstab where " . $deductionbaseSSSHDMF . " between range1 and range2");
+                                            if (!empty($bracket)) {
+                                                $ssse = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSE", "cr");
+                                                $sssr = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSR", "cr");
+                                                $ssser = $this->vtranSelectQryAlias($emp->empid, $enddate, "YER", "cr");
 
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YSE', $batchdate, 0, $bracket[0]->sssee - $ssse, 87);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YSR', $batchdate, 0, $bracket[0]->ssser - $sssr, 88);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YER', $batchdate, 0, $bracket[0]->eccer - $ssser, 89);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YIS', $batchdate, ($bracket[0]->ssser - $sssr) + ($bracket[0]->eccer - $ssser), 0, 90);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YSE', $batchdate, 0, $bracket[0]->sssee - $ssse, 87);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YSR', $batchdate, 0, $bracket[0]->ssser - $sssr, 88);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YER', $batchdate, 0, $bracket[0]->eccer - $ssser, 89);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YIS', $batchdate, ($bracket[0]->ssser - $sssr) + ($bracket[0]->eccer - $ssser), 0, 90);
 
-                                            $deduction += ($bracket[0]->sssee - $ssse);
-                                            $grossPay[2] -= ($bracket[0]->sssee - $ssse);
-                                            $deductiontax -= ($bracket[0]->sssee - $ssse);
+                                                $deduction += ($bracket[0]->sssee - $ssse);
+                                                $grossPay[2] -= ($bracket[0]->sssee - $ssse);
+                                                $deductiontax -= ($bracket[0]->sssee - $ssse);
+                                            }
                                         }
                                     }
                                 }
@@ -3519,92 +3520,97 @@ class payrollcommon
 
                             //PHILHEALTH
                             if ($chkphic) {
-                                if ($emp->phic != '') {
-                                    if ($emp->philhdef != 0) {
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $emp->philhdef, 91);
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $emp->philhdef, 92);
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $emp->philhdef, 0, 93);
-                                        $grossPay[2] -= $emp->philhdef;
-                                    } else {
-                                        $phicamt = $deductionbaseSSSHDMF;
-                                        $bracket = $this->coreFunctions->opentable("select phicee,phicer from phictab where " . $phicamt . " BETWEEN range1 AND range2");
-
-                                        $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
-                                        $phir = $this->vtranSelectQryAlias($emp->empid, $enddate, "YMR", "cr");
-
-                                        if (!empty($bracket)) {
-
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $bracket[0]->phicee - $phie, 91);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $bracket[0]->phicee - $phir, 92);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $bracket[0]->phicee - $phir, 0, 93);
-
-                                            $deduction += ($bracket[0]->phicee - $phie);
-                                            $deductiontax += ($bracket[0]->phicee - $phie);
-                                            $grossPay[2] -= ($bracket[0]->phicee - $phie);
+                                if ($params['dataparams']['ph']) {
+                                    if ($emp->phic != '') {
+                                        if ($emp->philhdef != 0) {
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $emp->philhdef, 91);
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $emp->philhdef, 92);
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $emp->philhdef, 0, 93);
+                                            $grossPay[2] -= $emp->philhdef;
                                         } else {
+                                            $phicamt = $deductionbaseSSSHDMF;
+                                            $bracket = $this->coreFunctions->opentable("select phicee,phicer from phictab where " . $phicamt . " BETWEEN range1 AND range2");
 
-                                            $phicmulti = $this->coreFunctions->datareader("select phictotal as value from phictab where range1=0");
-                                            if ($phicmulti) {
-                                                $phicmulti = $phicmulti / 100;
+                                            $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
+                                            $phir = $this->vtranSelectQryAlias($emp->empid, $enddate, "YMR", "cr");
+
+                                            if (!empty($bracket)) {
+
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $bracket[0]->phicee - $phie, 91);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $bracket[0]->phicee - $phir, 92);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $bracket[0]->phicee - $phir, 0, 93);
+
+                                                $deduction += ($bracket[0]->phicee - $phie);
+                                                $deductiontax += ($bracket[0]->phicee - $phie);
+                                                $grossPay[2] -= ($bracket[0]->phicee - $phie);
                                             } else {
-                                                $phicmulti = 0;
+
+                                                $phicmulti = $this->coreFunctions->datareader("select phictotal as value from phictab where range1=0");
+                                                if ($phicmulti) {
+                                                    $phicmulti = $phicmulti / 100;
+                                                } else {
+                                                    $phicmulti = 0;
+                                                }
+
+                                                $phicee = round(($phicamt * $phicmulti) / 2, 2);
+
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $phicee - $phie, 91);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $phicee - $phir, 92);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $phicee - $phir, 0, 93);
+
+                                                $deduction += ($phicee - $phie);
+                                                $deductiontax += ($phicee - $phie);
+                                                $grossPay[2] -= ($phicee - $phie);
                                             }
-
-                                            $phicee = round(($phicamt * $phicmulti) / 2, 2);
-
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YME', $batchdate, 0, $phicee - $phie, 91);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YMR', $batchdate, 0, $phicee - $phir, 92);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YIM', $batchdate, $phicee - $phir, 0, 93);
-
-                                            $deduction += ($phicee - $phie);
-                                            $deductiontax += ($phicee - $phie);
-                                            $grossPay[2] -= ($phicee - $phie);
                                         }
                                     }
                                 }
-                            } // end of PHILHEALTH                        
+                            } // end of PHILHEALTH   
+
 
                             //PAG-IBIG
                             if ($chkhdmf) {
-                                if ($emp->hdmf != '') {
-                                    if ($emp->pibigdef != 0) {
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YPE', $batchdate, 0, $emp->pibigdef, 94);
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YPR', $batchdate, 0, $emp->pibigdef, 95);
-                                        $this->addProccessAccount($emp->empid, $batchid, 'YIP', $batchdate, $emp->pibigdef, 0, 96);
+                                if ($params['dataparams']['hdmf']) {
+                                    if ($emp->hdmf != '') {
+                                        if ($emp->pibigdef != 0) {
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YPE', $batchdate, 0, $emp->pibigdef, 94);
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YPR', $batchdate, 0, $emp->pibigdef, 95);
+                                            $this->addProccessAccount($emp->empid, $batchid, 'YIP', $batchdate, $emp->pibigdef, 0, 96);
 
-                                        $grossPay[2] -= $emp->pibigdef;
-                                    } else {
-                                        $hdmfamt = 0;
-                                        $hdmfamt2 = 0;
-                                        $prevhdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
+                                            $grossPay[2] -= $emp->pibigdef;
+                                        } else {
+                                            $hdmfamt = 0;
+                                            $hdmfamt2 = 0;
+                                            $prevhdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
 
-                                        if ($prevhdmf != 0) {
-                                            $hdmfamt = $prevhdmf;
-                                        }
+                                            if ($prevhdmf != 0) {
+                                                $hdmfamt = $prevhdmf;
+                                            }
 
-                                        if ($hdmfamt < 100) {
-                                            if ($deductionbaseSSSHDMF >= 5000) {
-                                                $hdmfamt = 100 - $hdmfamt;
-                                            } else {
-                                                $hdmfamt2 = round($deductionbaseSSSHDMF * 0.02, 3);
-                                                if (($hdmfamt + $hdmfamt2) > 100) {
+                                            if ($hdmfamt < 100) {
+                                                if ($deductionbaseSSSHDMF >= 5000) {
                                                     $hdmfamt = 100 - $hdmfamt;
                                                 } else {
-                                                    $hdmfamt = $hdmfamt2;
+                                                    $hdmfamt2 = round($deductionbaseSSSHDMF * 0.02, 3);
+                                                    if (($hdmfamt + $hdmfamt2) > 100) {
+                                                        $hdmfamt = 100 - $hdmfamt;
+                                                    } else {
+                                                        $hdmfamt = $hdmfamt2;
+                                                    }
                                                 }
+                                            } elseif ($hdmfamt >= 100) {
+                                                $hdmfamt = 0;
                                             }
-                                        } elseif ($hdmfamt >= 100) {
-                                            $hdmfamt = 0;
-                                        }
 
-                                        if ($hdmfamt > 0) {
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YPE', $batchdate, 0, $hdmfamt, 94);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YPR', $batchdate, 0, $hdmfamt, 95);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YIP', $batchdate, $hdmfamt, 0, 96);
+                                            if ($hdmfamt > 0) {
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YPE', $batchdate, 0, $hdmfamt, 94);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YPR', $batchdate, 0, $hdmfamt, 95);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YIP', $batchdate, $hdmfamt, 0, 96);
 
-                                            $deduction += $hdmfamt;
-                                            $deductiontax += $hdmfamt;
-                                            $grossPay[2] -= $hdmfamt;
+                                                $deduction += $hdmfamt;
+                                                $deductiontax += $hdmfamt;
+                                                $grossPay[2] -= $hdmfamt;
+                                            }
                                         }
                                     }
                                 }
@@ -3613,37 +3619,39 @@ class payrollcommon
                             //TAX
                             if ($dayRate2 > 0) {
                                 if ($chktin) {
-                                    if ($emp->tin != '') {
-                                        if ($adjustm) {
-                                            $annualtax = $this->annualtax($emp->empid, date('Y', strtotime($batchdate)), $params);
-                                            $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $annualtax, 97);
-                                            $grossPay[2] -= $annualtax;
-                                        } else {
-                                            if ($emp->wtaxdef != 0) {
-                                                // if (!str_ends_with($batchcode, '5')) { // not working on Php 8.0 below
-                                                if (substr($batchcode, -1) != '5') {
-                                                    $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $emp->wtaxdef, 98);
-                                                    $grossPay[2] -= $emp->wtaxdef;
-                                                }
+                                    if ($params['dataparams']['tax']) {
+                                        if ($emp->tin != '') {
+                                            if ($adjustm) {
+                                                $annualtax = $this->annualtax($emp->empid, date('Y', strtotime($batchdate)), $params);
+                                                $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $annualtax, 97);
+                                                $grossPay[2] -= $annualtax;
                                             } else {
-
-                                                //from vtran
-                                                if ($rate[0]->type == 'M') {
-                                                    $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
-                                                    $ssse = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSE", "cr");
-                                                    $hdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
-                                                    $whte = $this->vtranSelectQryAlias($emp->empid, $enddate, "'YWT'", "cr", 1);
+                                                if ($emp->wtaxdef != 0) {
+                                                    // if (!str_ends_with($batchcode, '5')) { // not working on Php 8.0 below
+                                                    if (substr($batchcode, -1) != '5') {
+                                                        $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $emp->wtaxdef, 98);
+                                                        $grossPay[2] -= $emp->wtaxdef;
+                                                    }
                                                 } else {
-                                                    $phie = $this->vtranSelectQryAlias($emp->empid, "", "YME", "cr", 0, $batchid);
-                                                    $ssse = $this->vtranSelectQryAlias($emp->empid, "", "YSE", "cr", 0, $batchid);
-                                                    $hdmf = $this->vtranSelectQryAlias($emp->empid, "", "YPE", "cr", 0, $batchid);
-                                                    $whte = $this->vtranSelectQryAlias($emp->empid, "", "'YWT'", "cr", 1, $batchid);
+
+                                                    //from vtran
+                                                    if ($rate[0]->type == 'M') {
+                                                        $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
+                                                        $ssse = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSE", "cr");
+                                                        $hdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
+                                                        $whte = $this->vtranSelectQryAlias($emp->empid, $enddate, "'YWT'", "cr", 1);
+                                                    } else {
+                                                        $phie = $this->vtranSelectQryAlias($emp->empid, "", "YME", "cr", 0, $batchid);
+                                                        $ssse = $this->vtranSelectQryAlias($emp->empid, "", "YSE", "cr", 0, $batchid);
+                                                        $hdmf = $this->vtranSelectQryAlias($emp->empid, "", "YPE", "cr", 0, $batchid);
+                                                        $whte = $this->vtranSelectQryAlias($emp->empid, "", "'YWT'", "cr", 1, $batchid);
+                                                    }
+                                                    $wtax = 0;
+                                                    $lesstax = $this->gettax($taxamt - ($phie + $ssse + $hdmf), $emp->paymode);
+                                                    $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $lesstax - $whte, 98);
+                                                    $wtax = $lesstax - $whte;
+                                                    $grossPay[2] -= $wtax;
                                                 }
-                                                $wtax = 0;
-                                                $lesstax = $this->gettax($taxamt - ($phie + $ssse + $hdmf), $emp->paymode);
-                                                $this->addProccessAccount($emp->empid, $batchid, 'YWT', $batchdate, 0, $lesstax - $whte, 98);
-                                                $wtax = $lesstax - $whte;
-                                                $grossPay[2] -= $wtax;
                                             }
                                         }
                                     }

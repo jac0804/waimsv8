@@ -41,7 +41,7 @@ class ot_filling_reports
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = ['radioprint',  'start', 'end', 'divname', 'dclientname', 'emploc', 'radioposttype', 'radiosortby'];
+        $fields = ['radioprint',  'start', 'end', 'divname', 'dclientname', 'emploc', 'radioposttype', 'radiopaymenttype'];
         $col1 = $this->fieldClass->create($fields);
 
         data_set($col1, 'radioposttype.options', [
@@ -61,9 +61,9 @@ class ot_filling_reports
         data_set($col1, 'emploc.action', 'lookupemplocation');
         // lookupemplocation
 
-        data_set($col1, 'radiosortby.label', 'Paymode');
+        data_set($col1, 'radiopaymenttype.label', 'Paymode');
 
-        data_set($col1, 'radiosortby.options', [
+        data_set($col1, 'radiopaymenttype.options', [
             ['label' => 'Weekly', 'value' => 'W', 'color' => 'red'],
             ['label' => 'Semi-Monthly', 'value' => 'S', 'color' => 'red']
         ]);
@@ -94,7 +94,7 @@ class ot_filling_reports
                 '' as client,
                 '' as clientname,
                 '' as dclientname,
-                'S' as sortby,
+                'S' as paymenttype,
                 '' as emploc,
                 'approved' as posttype"
 
@@ -201,7 +201,7 @@ class ot_filling_reports
         $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
         $divid = $config['params']['dataparams']['divid'];
         $client     = $config['params']['dataparams']['client'];
-        $paymode     = $config['params']['dataparams']['sortby'];
+        $paymode     = $config['params']['dataparams']['paymenttype'];
         $emploc     = $config['params']['dataparams']['emploc'];
         $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 5228);
         $user = $config['params']['user'];
@@ -265,7 +265,7 @@ class ot_filling_reports
         left join client as approver on approver.email = ot.approvedby and approver.email <> ''
         left join client as approver2 on approver2.email = ot.approvedby and approver2.email <> ''
         $leftjoin
-        where $status $filter and date(ot.scheddate) between '" . $start . "' and '" . $end . "' $filteremp";
+        where $status $filter and date(ot.scheddate) between '" . $start . "' and '" . $end . "' $filteremp order by cl.clientname,date(ot.scheddate) asc";
                 break;
 
             default:
@@ -294,7 +294,7 @@ class ot_filling_reports
         left join timecard as tm on tm.empid = ot.empid and date(ot.dateid) = date(tm.dateid)
         $leftjoin
         where $status $filter and 
-        date(ot.dateid) between '" . $start . "' and '" . $end . "' and (ot.apothrs <> 0 or ot.othrs <> 0) $filteremp";
+        date(ot.dateid) between '" . $start . "' and '" . $end . "' and (ot.apothrs <> 0 or ot.othrs <> 0) $filteremp order by cl.clientname,date(ot.scheddate) asc";
                 break;
         }
 
@@ -510,7 +510,7 @@ class ot_filling_reports
                 $str .= $this->reporter->startrow();
 
                 $str .= $this->reporter->col($data->client, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($data->clientname, '200', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->clientname, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->shiftdate, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->status, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->startdate, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');

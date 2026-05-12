@@ -499,7 +499,7 @@ class statement_of_account_report
                         $str .= $this->reporter->startrow();
                         $str .= $this->reporter->col('', '10', null, false, $border, '', 'C', $font, $fontsize, 'B');
                         $str .= $this->reporter->col('Water', '80', null, false, $border, '', 'L', $font, $fontsize, '');
-                        $str .= $this->reporter->col(date('m/d/Y', strtotime($data4[0]->rstart)) . ' - ' . date('m/d/Y', strtotime($data4[0]->rend)), '190', null, false, $border, '', 'C', $font, '14', '');
+                        $str .= $this->reporter->col(date('m/d/Y', strtotime($data4[0]->rstart)) . ' - ' . date('m/d/Y', strtotime($data4[0]->rend)), '190', null, false, $border, '', 'C', $font, $fontsize, '');
                         $str .= $this->reporter->col(number_format($data4[0]->rate, 2), '100', null, false, $border, '', 'C', $font, $fontsize, '');
                         $str .= $this->reporter->col(number_format($data4[0]->previous, 2), '100', null, false, $border, '', 'C', $font, $fontsize, '');
                         $str .= $this->reporter->col(number_format($data4[0]->current, 2), '100', null, false, $border, '', 'C', $font, $fontsize, '');
@@ -633,9 +633,9 @@ class statement_of_account_report
                     $str .= $this->reporter->begintable($layoutsize);
                     $str .= $this->reporter->startrow();
                     $str .= $this->reporter->col($prepared, '234', null, false, $border, '', 'C', $font, $fontsize, '');
-                    $str .= $this->reporter->col('', '149', null, false, $border, '', '', $font, $fontsize, '');
+                    $str .= $this->reporter->col('', '50', null, false, $border, '', '', $font, $fontsize, '');
                     $str .= $this->reporter->col($notedby, '234', null, false, $border, '', 'C', $font, $fontsize, '');
-                    $str .= $this->reporter->col('', '149', null, false, $border, '', '', $font, $fontsize, '');
+                    $str .= $this->reporter->col('', '50', null, false, $border, '', '', $font, $fontsize, '');
                     $str .= $this->reporter->col($received, '234', null, false, $border, '', 'C', $font, $fontsize, '');
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();
@@ -644,9 +644,9 @@ class statement_of_account_report
                     $str .= $this->reporter->startrow();
 
                     $str .= $this->reporter->col('Prepared By', '234', null, false, $border, 'T', 'C', $font, $fontsize, '');
-                    $str .= $this->reporter->col('', '149', null, false, $border, '', '', $font, $fontsize, '');
+                    $str .= $this->reporter->col('', '50', null, false, $border, '', '', $font, $fontsize, '');
                     $str .= $this->reporter->col('Noted By', '234', null, false, $border, 'T', 'C', $font, $fontsize, '');
-                    $str .= $this->reporter->col('', '149', null, false, $border, '', '', $font, $fontsize, '');
+                    $str .= $this->reporter->col('', '50', null, false, $border, '', '', $font, $fontsize, '');
                     $str .= $this->reporter->col('Received By', '234', null, false, $border, 'T', 'C', $font, $fontsize, '');
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();

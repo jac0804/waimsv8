@@ -25,16 +25,16 @@ class mn
     private $othersClass;
     private $logger;
     public $expirystatus = ['readonly' => false, 'show' => true, 'showdate' => true];
-    public $tablenum = 'cntnum';
-    public $head = 'lahead';
-    public $hhead = 'glhead';
+    public $tablenum = 'transnum';
+    public $head = 'mnhead';
+    public $hhead = 'hmnhead';
     public $stock = 'lastock';
     public $hstock = 'glstock';
     public $detail = 'ladetail';
     public $hdetail = 'gldetail';
-    public $tablelogs = 'table_log';
-    public $htablelogs = 'htable_log';
-    public $tablelogs_del = 'del_table_log';
+    public $tablelogs = 'transnum_log';
+    public $htablelogs = 'htransnum_log';
+    public $tablelogs_del = 'del_transnum_log';
 
     private $fields = ['trno', 'docno',  'dateid', 'clientname',  'bstype', 'address', 'contact', 'ownername', 'owneraddr', 'orderno',  'ourref', 'crno', 'conaddr', 'creditinfo', 'refdate', 'layref'];
 
@@ -158,14 +158,14 @@ class mn
         $query = "
         select head.trno,head.docno,date_format(head.dateid,'%Y-%m-%d') as dateid,head.clientname,
         head.doc,head.createby, 'DRAFT' as status,ifnull(head.ownername,'') as planholder
-        from lahead as head
-        left join cntnum as num on num.trno = head.trno
+        from mnhead as head
+        left join transnum as num on num.trno = head.trno
         where num.doc = '$doc' $condition
         union all
         select  head.trno,head.docno,date_format(head.dateid,'%Y-%m-%d') as dateid,head.clientname,
         head.doc,head.createby,'POSTED' as status,ifnull(head.ownername,'') as planholder
-        from glhead as head
-        left join cntnum as num on num.trno = head.trno
+        from hmnhead as head
+        left join transnum as num on num.trno = head.trno
         where num.doc = '$doc' $condition ";
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -312,22 +312,22 @@ class mn
         }
 
         if ($isupdate) {
-            $prev_layref = $this->coreFunctions->getfieldvalue('lahead',  "layref", "trno=?", [$head['trno']]);
+            $prev_layref = $this->coreFunctions->getfieldvalue($this->head,  "layref", "trno=?", [$head['trno']]);
 
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['editby'] = $config['params']['user'];
 
             if ($prev_layref != $head['layref']) {
                 if (!empty($prev_layref)) {
-                    $prevtrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$prev_layref]);
+                    $prevtrno = $this->coreFunctions->getfieldvalue($this->hhead, "trno", "docno=?", [$prev_layref]);
                     if ($prevtrno) {
-                        $this->coreFunctions->sbcupdate('glhead',  ['isfinish' => 0], ['trno' => $prevtrno]);
+                        $this->coreFunctions->sbcupdate($this->hhead,  ['isfinish' => 0], ['trno' => $prevtrno]);
                     }
                 }
                 if (!empty($head['layref'])) {
-                    $newtrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$head['layref']]);
+                    $newtrno = $this->coreFunctions->getfieldvalue($this->hhead, "trno", "docno=?", [$head['layref']]);
                     if ($newtrno) {
-                        $this->coreFunctions->sbcupdate('glhead',  ['isfinish' => 1], ['trno' => $newtrno]);
+                        $this->coreFunctions->sbcupdate($this->hhead,  ['isfinish' => 1], ['trno' => $newtrno]);
                     }
                 }
             }
@@ -338,9 +338,9 @@ class mn
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
-            $complainttrno = $this->coreFunctions->getfieldvalue('glhead', "trno", "docno=?", [$head['layref']]);
+            $complainttrno = $this->coreFunctions->getfieldvalue($this->hhead, "trno", "docno=?", [$head['layref']]);
             if ($complainttrno) {
-                $this->coreFunctions->sbcupdate('glhead', ['isfinish' => 1], ['trno' => $complainttrno]);
+                $this->coreFunctions->sbcupdate($this->hhead, ['isfinish' => 1], ['trno' => $complainttrno]);
             }
 
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno']);
@@ -350,12 +350,75 @@ class mn
 
     public function posttrans($config)
     {
-        return $this->othersClass->posttranstock($config);
+        $trno = $config['params']['trno'];
+        $user = $config['params']['user'];
+
+        $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
+
+        if ($this->othersClass->isposted($config)) {
+            return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
+        }
+
+        // Insert into hmnhead from mnhead
+        $qry = "insert into " . $this->hhead . "(trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate)
+            SELECT trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate
+            FROM " . $this->head . " where trno=? limit 1";
+
+        $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+
+        if ($posthead) {
+            // Update transnum with postdate and postedby
+            $date = $this->othersClass->getCurrentTimeStamp();
+            $data = ['postdate' => $date, 'postedby' => $user];
+            $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+
+            // Delete from mnhead after successful posting
+            $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", "delete", [$trno]);
+
+            // Write log
+            $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+            $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
+
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+        } else {
+            return ['status' => false, 'msg' => 'Error posting complaint record.'];
+        }
     } //end function
 
     public function unposttrans($config)
     {
-        return $this->othersClass->unposttranstock($config);
+        $trno = $config['params']['trno'];
+        $user = $config['params']['user'];
+
+        $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
+
+        // Insert from hmnhead back to mnhead
+        $qry = "insert into " . $this->head . "(trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate)
+            SELECT trno, doc, docno, clientname, address, dateid, 
+            bstype, contact, ownername, owneraddr, orderno, ourref, crno, conaddr, creditinfo, petrno,
+            createdate, createby, editby, editdate, viewby, viewdate
+            FROM " . $this->hhead . " where trno=? limit 1";
+
+        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+            // Clear postdate from transnum
+            $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null, postedby='' where trno=?", 'update', [$trno]);
+
+            // Delete from hjuhead after successful unposting
+            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+
+            // Write log
+            $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+        } else {
+            return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED. Error restoring draft record.'];
+        }
     } //end function
 
     public function deletetrans($config)

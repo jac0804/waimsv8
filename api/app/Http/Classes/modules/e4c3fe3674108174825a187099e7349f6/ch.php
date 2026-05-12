@@ -57,7 +57,7 @@ class ch
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount', 'sdate1'];
   private $except = ['trno', 'dateid', 'due'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -299,8 +299,8 @@ class ch
     }
 
 
-    $column = ['action', 'itemdescription',  'isqty', 'uom', 'rem',  'isamt',  'ext',  'wh', 'whname',  'itemname', 'barcode'];
-    $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'rem', 'isamt',  'ext',   'wh', 'whname',  'itemname', 'barcode'];
+    $column = ['action', 'barcode', 'itemname', 'isqty', 'uom', 'rem',  'isamt',  'ext',  'wh', 'whname'];
+    $sortcolumn = ['action', 'barcode', 'itemname',  'isqty', 'uom', 'rem', 'isamt',  'ext',   'wh', 'whname'];
 
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -331,15 +331,24 @@ class ch
       $obj[0]['inventory']['columns'][$true]['readonly'] = false;
     }
     $obj[0]['inventory']['columns'][$isamt]['label'] = 'Unit Price';
-    $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
+    // $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
     $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
 
-    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+    // $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+    // $obj[0]['inventory']['columns'][$barcode]['label'] = '';
     $obj[0]['inventory']['columns'][$ext]['readonly'] = false;
     $obj[0]['inventory']['columns'][$ext]['type'] = 'input';
     $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
     $obj[0]['inventory']['columns'][$wh]['type'] = 'label';
+
+    $obj[0]['inventory']['columns'][$itemname]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
+    $obj[0]['inventory']['columns'][$itemname]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$itemname]['style'] = 'text-align: left; width: 200px;whiteSpace: normal;min-width:200px';
+    $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
+    $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
+    $obj[0]['inventory']['columns'][$barcode]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
+    $obj[0][$this->gridname]['descriptionrow'] = [];
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -357,18 +366,19 @@ class ch
   {
     $inv = $this->companysetup->isinvonly($config['params']);
 
-    $fields = ['docno', 'client', 'clientname', 'address'];
+    $fields = ['docno', 'client', 'clientname', 'address', 'sdate1'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.lookupclass', 'customer');
     data_set($col1, 'client.required', false);
     data_set($col1, 'docno.label', 'Transaction#');
-
+    data_set($col1, 'sdate1.label', 'Sales Date');
     $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
 
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'dacnoname.label', 'AR Account');
     data_set($col2, 'dacnoname.lookupclass', 'AR');
+    data_set($col2, 'dateid.label', 'Invoice Date');
 
     $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname'];
 
@@ -415,6 +425,7 @@ class ch
     $data[0]['dwhname'] = '';
     $data[0]['deldate'] = $this->othersClass->getCurrentDate();
     $data[0]['amount'] = 0;
+    $data[0]['sdate1'] = $this->othersClass->getCurrentDate();
     return $data;
   }
 
@@ -478,7 +489,7 @@ class ch
       '' as dwhname,
       left(head.due,10) as due,
       date(head.deldate) as deldate,
-      head.amount
+      head.amount, date(head.sdate1) as sdate1
     ";
 
     $qry = $qryselect . " from $table as head
@@ -635,7 +646,6 @@ class ch
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as isamt,
     stock.isqty  as isqty,
     FORMAT(stock." . $this->dqty . "," . $qty_dec . ")  as qty,
-    item.itemname,
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,
     left(stock.encodeddate,10) as encodeddate,
     stock.disc,
@@ -648,8 +658,7 @@ class ch
     '' as bgcolor,
     '' as errcolor,
     case when stock.noprint=0 then 'false' else 'true' end as noprint,
-    item.itemname as itemdescription
-    ";
+    item.itemname as itemdescription, stock.itemname";
     return $sqlselect;
   }
 
@@ -675,7 +684,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname
     UNION ALL
     " . $sqlselect . "
     FROM $this->hstock as stock
@@ -691,7 +700,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint order by sortline, line";
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname order by sortline, line";
 
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
@@ -720,7 +729,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint";
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -944,6 +953,7 @@ class ch
     $config['params']['data'] = $config['params']['row'];
     $isupdate = $this->additem('update', $config);
     $data = $this->openstockline($config);
+
     $msg = '';
     if ($isupdate['msg'] != '') {
       $msg = $isupdate['msg'];
@@ -1028,7 +1038,7 @@ class ch
       $config['params']['barcode'] = $barcode;
       $data = $this->getlatestprice($config);
 
-      if (!empty($data)) {
+      if (!empty($data[0])) {
         $item[0]->amt = $data['data'][0]->amt;
         $item[0]->disc = $data['data'][0]->disc;
         $item[0]->uom = $data['data'][0]->uom;
@@ -1059,6 +1069,13 @@ class ch
     if (isset($config['params']['data']['rem'])) {
       $rem = $config['params']['data']['rem'];
     }
+
+    $itemname = $this->coreFunctions->datareader('select itemname as value from item where itemid=?', [$itemid]);
+
+    if (isset($config['params']['data']['itemname'])) {
+      $itemname = $config['params']['data']['itemname'];
+    }
+
 
     $line = 0;
 
@@ -1117,7 +1134,8 @@ class ch
       'ext' => number_format($ext, $this->companysetup->getdecimal('currency', $config['params']), '.', ''),
       'whid' => $whid,
       'rem' => $rem,
-      'uom' => $uom
+      'uom' => $uom,
+      'itemname' => $itemname
       // 'noprint' => $noprint
     ];
 
@@ -1323,7 +1341,7 @@ class ch
       if (!empty($stock)) {
         $revacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['SA1']);
         $vat = floatval($stock[0]->tax);
-        $tax =0;
+        $tax = 0;
         $tax1 = 0;
         $tax2 = 0;
         if ($vat !== 0) {

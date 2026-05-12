@@ -520,7 +520,7 @@ class othersClass
     array_push($number, 'namt', 'namt2', 'nfamt', 'namt4', 'namt5', 'namt6', 'namt7', 'iseq', 'first', 'last', 'jobid', 'jobid2', 'branchid2', 'roleid2', 'loanlimit');
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
-    array_push($number, 'brandid');
+    array_push($number, 'brandid', 'monthsno');
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -559,26 +559,7 @@ class othersClass
     array_push($boolean, 'isonelog', 'isbank', 'isnonserial', 'isbrgyoff', 'isbusiness', 'isallowliquor', 'issupervisor', 'isapprover', 'isdiminishing');
     array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible');
 
-
-    $date = [];
-
-    array_push($date, 'dateid', 'start', 'end', 'postdate', 'hired', 'dateeffect', 'prdstart', 'prdend', 'appdate', 'bday', 'date1');
-    array_push($date, 'date2', 'agency', 'constart', 'conend', 'resigned', 'effdate', 'feffdate', 'closedate', 'ordate', 'estart', 'eend', 'eext');
-    array_push($date, 'sstart', 'send', 'sext', 'astart', 'aend', 'aext', 'regular', 'prob', 'probend', 'posteddate', 'waybilldate', 'returndate');
-    array_push($date, 'refunddate', 'reqdate', 'releasedate', 'pdeadline', 'effectdate', 'dateupdated', 'breakin', 'breakout', 'date3');
-    array_push($date, 'date4', 'date5', 'date6', 'date7', 'date8', 'date9', 'date10', '13start', '13end', 'renewaldate', 'warrantyend');
-    array_push($date, 'dateacquired', 'disposaldate', 'startinsured', 'endinsured', 'invoicedate', 'podate', 'dateneeded', 'ovaliddate');
-    array_push($date, 'sentdate', 'pickupdate', 'actualin', 'actualout', 'schedbrkin', 'schedbrkout', 'actualbrkin', 'actualbrkout');
-    array_push($date, 'scheddate', 'receivedate', 'schedstarttime', 'schedendtime', 'warranty', 'trainee', 'enddate', 'podate', 'leasedate');
-    array_push($date, 'schedin', 'schedout', 'deldate', 'returndate_sup', 'dateclose', 'startdate', 'effectivity', 'createdate', 'seendate');
-    array_push($date, 'donedate', 'deadline', 'origdeadline', 'deadline2', 'conndate', 'disconndate', 'expirydate', 'refdate', 'datefrom');
-    array_push($date, 'dateto', 'shipdate', 'ordate', 'wbdate', 'dateid2','submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
-    array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
-    array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
-    array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
-    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
-    array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate', 'expiry');
+    $date = $this->getDateFields();
 
     switch ($companyid) {
       case 10: //afti
@@ -766,6 +747,33 @@ class othersClass
     }
     return $str;
   } //end function sanitize
+
+
+  // separate function for date fields to reuse sanitizekeyfield function in outher process
+  function getDateFields()
+  {
+    $date = [];
+
+    array_push($date, 'dateid', 'start', 'end', 'postdate', 'hired', 'dateeffect', 'prdstart', 'prdend', 'appdate', 'bday', 'date1');
+    array_push($date, 'date2', 'agency', 'constart', 'conend', 'resigned', 'effdate', 'feffdate', 'closedate', 'ordate', 'estart', 'eend', 'eext');
+    array_push($date, 'sstart', 'send', 'sext', 'astart', 'aend', 'aext', 'regular', 'prob', 'probend', 'posteddate', 'waybilldate', 'returndate');
+    array_push($date, 'refunddate', 'reqdate', 'releasedate', 'pdeadline', 'effectdate', 'dateupdated', 'breakin', 'breakout', 'date3');
+    array_push($date, 'date4', 'date5', 'date6', 'date7', 'date8', 'date9', 'date10', '13start', '13end', 'renewaldate', 'warrantyend');
+    array_push($date, 'dateacquired', 'disposaldate', 'startinsured', 'endinsured', 'invoicedate', 'podate', 'dateneeded', 'ovaliddate');
+    array_push($date, 'sentdate', 'pickupdate', 'actualin', 'actualout', 'schedbrkin', 'schedbrkout', 'actualbrkin', 'actualbrkout');
+    array_push($date, 'scheddate', 'receivedate', 'schedstarttime', 'schedendtime', 'warranty', 'trainee', 'enddate', 'podate', 'leasedate');
+    array_push($date, 'schedin', 'schedout', 'deldate', 'returndate_sup', 'dateclose', 'startdate', 'effectivity', 'createdate', 'seendate');
+    array_push($date, 'donedate', 'deadline', 'origdeadline', 'deadline2', 'conndate', 'disconndate', 'expirydate', 'refdate', 'datefrom');
+    array_push($date, 'dateto', 'shipdate', 'ordate', 'wbdate', 'dateid2', 'submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
+    array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
+    array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
+    array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
+    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
+    array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
+    array_push($date, 'regdate', 'expiry', 'promostart', 'promoend', 'lock', 'lasttrans');
+
+    return $date;
+  }
 
   function sbcdateformat($date, $c = '-', $f = 'Y-m-d')
   {
@@ -1382,8 +1390,8 @@ class othersClass
         break;
       case 63: //ericco
         if ($config['params']['doc'] == 'CH') {
-          $qry = "insert into " . $config['docmodule']->hstock . "(trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,sortline,noprint,encodeddate,encodedby,editdate,editby)
-                  SELECT trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,sortline,noprint,encodeddate,encodedby,editdate,editby
+          $qry = "insert into " . $config['docmodule']->hstock . "(trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,itemname,sortline,noprint,encodeddate,encodedby,editdate,editby)
+                  SELECT trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,itemname,sortline,noprint,encodeddate,encodedby,editdate,editby
                   FROM " . $config['docmodule']->stock . " as stock 
                   where stock.trno =?";
         } else {
@@ -2256,8 +2264,8 @@ class othersClass
         break;
       case 63: //ericco
         if ($config['params']['doc'] == 'CH') {
-          $qry = "insert into " . $config['docmodule']->stock . "(trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,sortline,noprint,encodeddate,encodedby,editdate,editby)
-                  SELECT trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,sortline,noprint,encodeddate,encodedby,editdate,editby
+          $qry = "insert into " . $config['docmodule']->stock . "(trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,itemname,sortline,noprint,encodeddate,encodedby,editdate,editby)
+                  SELECT trno,line,itemid,isqty,iss,uom,isamt,amt,ext,whid,rem,qa,void,itemname,sortline,noprint,encodeddate,encodedby,editdate,editby
                   FROM " . $config['docmodule']->hstock . " as stock 
                   where stock.trno =?";
         } else {
@@ -4894,10 +4902,10 @@ class othersClass
     $leftjoin = "";
     $filterself = "";
     $posttype = "";
+    $condition = "";
     $exist = false;
     $showall = false;
     $self = false;
-    $no_setup = true;
 
     if ($dataparams) {
       if (isset($config['params']['dataparams']['clientid'])) {
@@ -4928,7 +4936,7 @@ class othersClass
     $undersup = $this->coreFunctions->opentable("select * from employee where  supervisorid = '" . $approverid . "'");
     if (!empty($undersup)) {
       if ($undersup[0]->supervisorid != 0) {
-        $filtersup = " or (" . $alias . ".supervisorid = '" . $approverid . "' $filterdataparams )";
+        $filtersup = "supervisorid";
       }
     }
     // multiapp tagging
@@ -4938,34 +4946,33 @@ class othersClass
       case 'LEAVE':
         $addjoin = " and lt.empid = mul.empid";
         $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        $status = " lt.status = '$posttype' or ";
         break;
       case 'OB':
         $addjoin = " and ob.empid = mul.empid";
         $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        $status = " ob.status = '$posttype' or ";
         break;
       case 'OT':
         $addjoin = " and ot.empid = mul.empid";
         $posttype = ($posttype === 'approved') ? '2' : '1';
-        $status = " ot.otstatus = '$posttype' or ";
         break;
       case 'LOAN':
         $addjoin = " and loan.empid = mul.empid";
         $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        $status = " loan.status = '$posttype' or ";
         break;
       case 'CHANGESHIFT':
         $addjoin = " and csapp.empid = mul.empid";
         $posttype = ($posttype == 'approved') ? '1' : '0';
-        $status = " csapp.status = '$posttype' or ";
+        break;
+      case 'UNDERTIME':
+        $addjoin = " and u.empid = mul.empid";
+        $posttype = ($posttype == 'approved') ? 'A' : 'E';
         break;
     }
 
     if (!empty($doc)) {
       if (!$isdashbord && !$self) {
         if ($doc != 'PORTAL SCHEDULE') {
-          $filterself = " or (" . $alias . ".empid = '" . $approverid . "')";
+          $filterself = "empid";
         }
       }
 
@@ -4973,6 +4980,21 @@ class othersClass
     } else {
       $mulapp = $this->coreFunctions->opentable("select distinct approverid  from multiapprover where approverid = '" . $approverid . "'");
     }
+    if ($filtersup != "" && $filterself != "") {
+      // both self OR supervisor
+      $condition .= $doc != 'PORTAL SCHEDULE' ? " or " . $alias . ".empid = '$approverid'" : "";
+      $condition = " and (" . $alias . ".supervisorid = '$approverid' $condition)";
+    } else {
+      if (($filterself != "" && $doc != 'PORTAL SCHEDULE')) {
+        // self only
+        $condition = " and (" . $alias . ".empid = '$approverid')";
+      }
+      if ($filtersup != "") {
+        // supervisor only
+        $condition = " and (" . $alias . ".supervisorid = '$approverid')";
+      }
+    }
+
     if ($viewaccess) {
       $showall = true;
       $exist = true;
@@ -4981,7 +5003,6 @@ class othersClass
 
     if (!empty($mulapp)) {
       $exist = true;
-      $no_setup = false;
       if (!empty($doc)) {
         #Use 
         # Dashboard all application approved
@@ -4995,7 +5016,7 @@ class othersClass
           }
           $approverlist = array_unique($approverlist);
           $approver = implode(",", $approverlist);
-          $filter = " and ((mul.approverid in  (" . $approver . ") and mul.doc = '" . $doc . "' $filterdataparams) $filtersup $filterself)";
+          $filter = " and ((mul.approverid in  (" . $approver . ") and mul.doc = '" . $doc . "') $condition)";
           $leftjoin = " left join multiapprover as mul on mul.empid = " . $alias . ".empid and mul.doc = '" . $doc . "' $addjoin ";
         }
       } else {
@@ -5014,9 +5035,9 @@ class othersClass
         $approverlist = array_unique($approverlist);
         $approver = implode(",", $approverlist);
         if ($filtersup != "") {
-          $filter = " and (((mul.approverid in  (" . $approver . ") or " . $alias . ".supervisorid = '" . $approverid . "')) $filterdataparams )";
+          $filter = " and (((mul.approverid in  (" . $approver . ") or " . $alias . ".supervisorid = '" . $approverid . "')) )";
         } else {
-          $filter = " and (mul.approverid in  (" . $approver . ") $filterdataparams )";
+          $filter = " and (mul.approverid in  (" . $approver . ") )";
         }
       }
     }
@@ -5028,12 +5049,11 @@ class othersClass
           array_push($roleidlist, $roleid->roleid);
         }
         $exist = true;
-        $no_setup = false;
         $role_id = implode(",", $roleidlist);
         if ($filter != "") {
-          $filter .= " or (" . $alias . ".roleid in (" . $role_id . ") $filterdataparams $filterself) ";
+          $filter .= " or (" . $alias . ".roleid in (" . $role_id . ") or (" . $alias . ".empid = '$approverid')) ";
         } else {
-          $filter = " and (( " . $alias . ".roleid in (" . $role_id . ") $filterdataparams ) $filtersup $filterself) ";
+          $filter = " and (( " . $alias . ".roleid in (" . $role_id . ") or (" . $alias . ".empid = '$approverid' or " . $alias . ".supervisorid = '$approverid'))) ";
         }
       }
     }
@@ -5070,21 +5090,15 @@ class othersClass
       }
     }
     skipapprover:
+    if (empty($filter)) {
+      if ($approverid != 0) {
+        $filter .= $condition;
+      }
+    }
+    if ($filterdataparams != "") {
+      $filter .= $filterdataparams;
+    }
     if (empty($filter) || $viewaccess) {
-      if ($filterself != "") {
-        if ($status != "") {
-          $filter .= " and ( $status " . $alias . ".empid = '" . $approverid . "')";
-        } else {
-          $filter .= " or (" . $alias . ".empid = '" . $approverid . "')";
-        }
-      }
-      if ($filtersup != "") {
-        $filter .= $filtersup;
-      } else {
-        if ($filterdataparams != "") {
-          $filter .= $filterdataparams;
-        }
-      }
     } else {
       if (!$exist) {
         $filter = " and 1=0 ";
@@ -5202,7 +5216,7 @@ class othersClass
         } else {
           $path = 'App\Http\Classes\modules\purchase\\' . strtolower($doc);
           $referencemodule = 'CANVASS SHEET';
-          if ($companyid == 39) $referencemodule = 'PURCHASE REQUISITION'; //cbbsi
+          if ($companyid == 39 || $companyid == 68) $referencemodule = 'PURCHASE REQUISITION'; //cbbsi //jda
         }
         break;
       case 'RR':
@@ -5473,7 +5487,7 @@ class othersClass
         $qry = app($path)->getrfsummaryqry($config);
         break;
       case 'PO':
-        if ($companyid == 39) { //cbbsi
+        if ($companyid == 39 || $companyid == 68) { //cbbsi // jda
           $qry = app($path)->getprsummaryqry($config);
         } else {
           $qry = app($path)->getposummaryqry($config);
@@ -5619,6 +5633,12 @@ class othersClass
               break;
             case 'TS':
               $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
+              // var_dump($config['params']); // check
+              if ($companyid == 68) { //JDA
+                $descode = isset($config['params']['descode']) ? $config['params']['descode'] : 0;
+                $desname = isset($config['params']['desname']) ? $config['params']['desname'] : '';
+                $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno,  'client' => $descode, 'clientname' => $desname,  'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
+              }
               break;
             case 'SJ':
               if ($companyid == 47) { //kitchenstar
@@ -5801,7 +5821,11 @@ class othersClass
               $head['ourref'] = $data[0]->docno;
               $head['deptid'] = $data[0]->deptid;
               $head['projectid'] = $data[0]->projectid;
-              $head['wh'] = $data[0]->wh2;
+              if ($companyid == 68) { //JDA
+                $head['wh'] = $data[0]->client;
+              } else {
+                $head['wh'] = $data[0]->wh2;
+              }
               break;
             default:
               switch ($doc) {
@@ -6020,6 +6044,11 @@ class othersClass
                   break;
               }
               break;
+            case 'ON':
+              if ($companyid == 63) { //ericco here
+                $head['sdate1'] = $this->getCurrentDate();
+              }
+              break;
           }
 
           $isproject = $this->companysetup->getisproject($config['params']);
@@ -6193,6 +6222,7 @@ class othersClass
                   $config['params']['data']['linex'] = $data[$key2]->line;
                   $config['params']['data']['ref'] = $data[$key2]->docno;
                   $config['params']['data']['amt'] = $data[$key2]->rrcost;
+
                   $return = app($path)->additem('insert', $config, true);
                   if ($return['status']) {
                     if (app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
@@ -6600,7 +6630,6 @@ class othersClass
                   $config['params']['data']['itemid'] = $data[$key2]->itemid;
                   $config['params']['trno'] = $trno;
                   $config['params']['data']['disc'] = $data[$key2]->disc;
-                  $config['params']['data']['qty'] = $data[$key2]->rrqty;
                   $config['params']['data']['wh'] = $data[$key2]->wh2;
                   $config['params']['data']['loc'] = '';
                   $config['params']['data']['expiry'] = '';
@@ -6609,7 +6638,26 @@ class othersClass
                   $config['params']['data']['linex'] = $data[$key2]->line;
                   $config['params']['data']['ref'] = $data[$key2]->docno;
                   $config['params']['data']['amt'] = $data[$key2]->rrcost;
+                  $config['params']['data']['qty'] = $data[$key2]->rrqty;
+                  if ($companyid == 68) { //JDA
+                    $config['params']['data']['wh'] = $data[$key2]->client;
+                    $config['params']['data']['qa'] = $data[$key2]->rrqty;
+                  } else {
+                    $config['params']['data']['wh'] = $data[$key2]->wh2;
+                  }
                   $return = app($path)->additem('insert', $config, true);
+                  if ($companyid == 68) { //JDA
+                    if ($return['status']) {
+                      if (app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
+                        $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+                        $line = $return['row'][0]->line;
+                        $config['params']['trno'] = $trno;
+                        $config['params']['line'] = $line;
+                        $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                        app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line);
+                      }
+                    }
+                  }
                 } // end foreach
                 break;
                 defaulthere:

@@ -351,12 +351,10 @@ class pdailytask2
             }
 
             if ($statid == 2 || $statid == 4) { //undone galing sa manual
-
                 $pendingtm = $this->coreFunctions->datareader("select ifnull(count(trno),0) as value from dailytask where tasktrno<>0 and userid=" . $adminid . " and statid=0", [], '', true);
                 if ($pendingtm != 0) {
                     return ['status' => false, 'msg' => 'You cant start another task if you have pending or current task.', 'data' => []];
                 }
-
 
                 $currentdate = date('Y-m-d', strtotime($this->othersClass->getCurrentTimeStamp()));
                 // Logger($createdate . '  = ' . $currentdate);
@@ -432,10 +430,11 @@ class pdailytask2
                     $this->logger->sbcmasterlog2($row['tasktrno'], $config, ' Line: ' . $row['taskline'] . ' Task has been restarted by ' . $creator, 'masterfile_log');
                 }
             } else if ($statid == 1) { // start ng checker na may checkerid
+
                 $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "rem=? ", [$rem], '', true);
                 if ($existingtrno != 0) {
                     $pendingapptrno = $this->coreFunctions->getfieldvalue("dailytask", "refx", "trno=? ", [$existingtrno], '', true);
-                    $p1 = $this->coreFunctions->getfieldvalue("pendingapp", "trno", "trno=? ", [$pendingapptrno], '', true);
+                    $p1 = $this->coreFunctions->getfieldvalue("pendingapp", "trno", "trno=? and approver='FOR CHECKING' ", [$pendingapptrno], '', true);
                     if ($p1 == 0) { ///pag yung nakuhang refx ay wala sa pendingapp kc done ito ng user na nagkaroon ng return kukunin sa hdailytask yung last trno nung user
                         $pendingtrno = $this->coreFunctions->datareader("select hd.trno as value  from hdailytask as hd where hd.ischecker =0 and hd.refx =? order by trno desc limit 1", [$pendingapptrno]);
                         if ($pendingtrno == '' || $pendingtrno == 0) {
@@ -444,8 +443,8 @@ class pdailytask2
                             $pendingapptrno =  $pendingtrno;
                         }
                     }
-                    $label = 'Task is already in dailytask.';
-                    $this->coreFunctions->execqry("delete from pendingapp where doc='DY' and trno=" . $pendingapptrno, 'delete');
+                    $label = 'Task is already in dailytask. Please refresh the page.';
+                    $this->coreFunctions->execqry("delete from pendingapp where doc='DY' and approver='FOR CHECKING' and trno=" . $pendingapptrno, 'delete');
                 } else {
                     $label = 'The task is now being checked.';
                     $checkername = $this->coreFunctions->datareader("select c.clientname as value from client as c

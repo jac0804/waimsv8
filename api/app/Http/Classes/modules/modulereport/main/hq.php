@@ -74,7 +74,7 @@ class hq
     $query = "
         select num.trno,
         head.docno,  date(head.dateid) as dateid, head.dept, personnel, date(dateneed) as dateneed , job, head.class, headcount, hpref, agerange,
-        gpref, rank, reason, remark, refx, qualification,
+        gpref, `rank`, reason, remark, refx, qualification,
         d.clientname as deptname, em.clientname as personnelname, job.jobtitle, empstat.empstatus
         from personreq as head
         left join client as em on em.clientid = head.empid
@@ -86,7 +86,7 @@ class hq
         union all
         select num.trno,
         head.docno,  date(head.dateid) as dateid, head.dept, personnel, date(dateneed) as dateneed, job, head.class, headcount, hpref, agerange,
-        gpref, rank, reason, remark, refx, qualification,
+        gpref, `rank`, reason, remark, refx, qualification,
         d.clientname as deptname, em.clientname as personnelname, job.jobtitle, empstat.empstatus
         from hpersonreq as head
         left join client as em on em.clientid = head.empid

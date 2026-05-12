@@ -128,9 +128,11 @@ class lah_sales_collection_report
                 left join client as agent on agent.clientid=head.agentid
                 left join cntnum on cntnum.trno=head.trno
                 left join coa as c on c.acnoid=d.acnoid
-                left join ( select trno,agentid from glhead where doc = 'SJ') as sj on sj.trno = d.refx
+                left join ( select trno,agentid from glhead where doc = 'SJ') as sj on sj.trno = d.refx 
 
-                where head.doc ='CR' and sj.agentid= '3867'   and date(head.dateid) between '$start' and '$end' and d.refx <>'0' $filter
+                where head.doc ='CR' and date(head.dateid) between '$start' and '$end' and d.refx <>'0' $filter
+                and (d.refx in ( select stock.trno from glstock as stock join item on item.itemid = stock.itemid where item.barcode = 'IT0000000000020')
+                or sj.agentid= '3867')
                 group by d.refx, cl.clientname, head.docno, head.dateid, d.ref, head.rem, c.acnoName
                 order by head.dateid
                 ";

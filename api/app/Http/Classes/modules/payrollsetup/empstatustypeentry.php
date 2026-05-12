@@ -23,7 +23,7 @@ class empstatustypeentry
 {
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'Employee Status Type';
+    public $modulename = 'Employee Status Type (Upon Hiring)';
     public $gridname = 'inventory';
     private $companysetup;
     private $coreFunctions;

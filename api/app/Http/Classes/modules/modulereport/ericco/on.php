@@ -97,7 +97,7 @@ class on
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, head.agent,
             item.sizeid, left(ag.clientname,17) as agname, item.brand,ifnull(client.registername,'') as registername,date(head.due) as due,ifnull(client.contact,'') as contact,
             wh.client as whcode, wh.clientname as whname,client.clientid, item.partno,head.trno,head.vattype,head.ewtrate,
-            stock.cost, concat(round(ifnull(stock.isqty,0),0),' ',stock.uom) as landmarkqty
+            stock.cost, concat(round(ifnull(stock.isqty,0),0),' ',stock.uom) as landmarkqty,item.itemid,sku.sku
             from lahead as head
 
             left join cntnum as num on num.svnum=head.trno
@@ -107,6 +107,7 @@ class on
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.client=head.agent
             left join client as wh on wh.client=head.wh
+            left join sku on sku.itemid = item.itemid and sku.groupid = client.groupid
             where head.doc='on' and num.svnum='$trno'
             UNION ALL
             select stock.line,left(stock.rem,11) as srem,head.rem,
@@ -116,7 +117,7 @@ class on
             item.sizeid, left(ag.clientname,17) as agname,item.brand,
             ifnull(client.registername,'') as registername,date(head.due) as due,ifnull(client.contact,'') as contact,
             wh.client as whcode, wh.clientname as whname,client.clientid, item.partno,head.trno,head.vattype,head.ewtrate,
-            stock.cost, concat(round(ifnull(stock.isqty,0),0),' ',stock.uom) as landmarkqty
+            stock.cost, concat(round(ifnull(stock.isqty,0),0),' ',stock.uom) as landmarkqty,item.itemid,sku.sku
             from glhead as head
             left join cntnum as num on num.svnum=head.trno
             left join glhead as head2 on head2.trno=num.trno
@@ -125,7 +126,9 @@ class on
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.clientid=head.agentid
             left join client as wh on wh.clientid=head.whid
+            left join sku on sku.itemid = item.itemid and sku.groupid = client.groupid
             where head.doc='on' and num.svnum='$trno' order by line";
+            
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -600,7 +603,8 @@ class on
     PDF::SetXY(40, 118.75);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(75, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, '', true);
-    PDF::MultiCell(368, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    //PDF::MultiCell(368, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(368, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(127, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -632,7 +636,7 @@ class on
     PDF::SetXY(40, 205);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(113, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(330, 20, (isset($data[0]['contact']) ? $data[0]['contact'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(330, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(127, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
  
@@ -1538,7 +1542,10 @@ class on
             $maxrow = 1;
             $uom = $data[$i]['uom'];
             $itemname = $data[$i]['itemname'];
-            $sku = $data[$i]['partno'];
+            $sku = $data[$i]['sku'];
+            // $sku= $this->coreFunctions->datareader("
+                    // select group_concat(sku) as value from sku where itemid = '".$data[$i]['itemid']."'");   
+
             $qty = number_format($data[$i]['qty'], 0);
             $srem = $data[$i]['srem'];
             $amt = number_format($data[$i]['amt'], 2);
@@ -1546,7 +1553,7 @@ class on
             $ext = number_format($data[$i]['ext'], 2);
 
             $arr_uom = $this->reporter->fixcolumn([$uom], '15', 0);
-            $arr_sku = $this->reporter->fixcolumn([$sku], '15', 0);
+            $arr_sku = $this->reporter->fixcolumn([$sku], '10', 0);
             $arr_itemname = $this->reporter->fixcolumn([$itemname], '38', 0);
             $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
             $arr_srem = $this->reporter->fixcolumn([$srem], '13', 0);
@@ -1561,8 +1568,8 @@ class on
             PDF::MultiCell(80, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(70, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(5, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(303, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(41, 15, ' ' . (isset($arr_sku[$r]) ? $arr_sku[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(253, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(91, 15, ' ' . (isset($arr_sku[$r]) ? $arr_sku[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(3, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(30, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(68, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);

@@ -852,6 +852,9 @@ class customer
       case 55: //AFLI Lending
         $fields = ['client', 'fname', 'mname', 'lname', 'addr', 'tel'];
         break;
+      case 63://ericco
+        $fields = ['client', 'clientname','registername', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
+        break;
       default:
         $fields = ['client', 'clientname', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
         break;

@@ -605,8 +605,6 @@ class te
       $this->coreFunctions->execqry("delete from ppio_series  where trno=?", 'delete', [$head['trno']]);
     }
 
-    $terms = 0;
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $terms);
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {

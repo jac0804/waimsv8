@@ -45,20 +45,13 @@ class viewbreconbankbook
 
     public function createTab($config)
     {
-        $status = 0;
-        $dateid = 1;
-        $clearday = 2;
-        $postdate = 3;
-        $checkno = 4;
-        $db = 5;
-        $cr = 6;
-        $bal = 7;
-        $docno = 8;
-        $clientname = 9;
-        $rem = 10;
+        $columns = ['status', 'dateid', 'clearday', 'postdate', 'checkno',  'db', 'cr', 'bal', 'docno', 'clientname', 'rem'];
+        foreach ($columns as $key => $value) {
+            $$value = $key;
+        }
 
         $tab = [
-            $this->gridname => ['gridcolumns' => ['status', 'dateid', 'clearday', 'postdate', 'checkno',  'db', 'cr', 'bal', 'docno', 'clientname', 'rem']]
+            $this->gridname => ['gridcolumns' =>  $columns]
         ];
         $stockbuttons = [];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -67,6 +60,7 @@ class viewbreconbankbook
         $obj[0][$this->gridname]['columns'][$db]['label'] = 'Deposit';
         $obj[0][$this->gridname]['columns'][$dateid]['label'] = 'Transaction Date';
         $obj[0][$this->gridname]['columns'][$postdate]['label'] = 'Check Date';
+        $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'Name';
 
         return $obj;
     }
@@ -204,7 +198,7 @@ class viewbreconbankbook
                                                 as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,
                                                 detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,
                                                 if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,
-                                                client.client as client,head.clientname as clientname
+                                                client.client as client,if(head.clientname='',client.clientname,head.clientname) as clientname
                                     from (((glhead as head 
                                     left join gldetail as detail on((detail.trno = head.trno))) 
                                     left join coa on((coa.acnoid = detail.acnoid)))
@@ -217,7 +211,7 @@ class viewbreconbankbook
                                                 as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,
                                                 detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno, 
                                                 if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,
-                                                client.client as client,head.clientname as clientname
+                                                client.client as client,if(head.clientname='',client.clientname,head.clientname) as clientname
                                     from (((glhead as head 
                                     left join gldetail as detail on((detail.trno = head.trno))) 
                                     left join coa on((coa.acnoid = detail.acnoid)))
@@ -243,15 +237,15 @@ class viewbreconbankbook
                         (";
 
         if ($gatherby == 2) {
-            $sql .= "select 'POSTED' as type,1 as sort,detail.trno as trno,detail.line as line,detail.clearday as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,head.clientname as clientname
+            $sql .= "select 'POSTED' as type,1 as sort,detail.trno as trno,detail.line as line,detail.clearday as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,if(head.clientname='',client.clientname,head.clientname) as clientname
                     from (((glhead as head left join gldetail as detail on((detail.trno = head.trno))) left join coa on((coa.acnoid = detail.acnoid)))
                     left join client on((client.clientid = detail.clientid))) left join cntnum on cntnum.trno=head.trno where cntnum.center='" . $center . "' and " . $strfilter . " between '$date1' and '$date2' and detail.clearday  is not null and coa.acno ='\\" . $acno . "'";
         } else {
-            $sql .= "select 'POSTED' as type,3 as sort,detail.trno as trno,detail.line as line,ifnull(detail.clearday,'') as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,head.clientname as clientname
+            $sql .= "select 'POSTED' as type,3 as sort,detail.trno as trno,detail.line as line,ifnull(detail.clearday,'') as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,if(head.clientname='',client.clientname,head.clientname) as  clientname
                     from (((glhead as head left join gldetail as detail on((detail.trno = head.trno))) left join coa on((coa.acnoid = detail.acnoid)))
                     left join client on((client.clientid = detail.clientid))) left join cntnum on cntnum.trno=head.trno where cntnum.center='" . $center . "' and " . $strfilter . " between '$date1' and '$date2' and coa.acno ='\\" . $acno . "'" . $statusfilter . "
                     union all
-                    select '' as type,3 as sort,detail.trno as trno,detail.line as line,ifnull(detail.clearday,'') as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,head.clientname as clientname
+                    select '' as type,3 as sort,detail.trno as trno,detail.line as line,ifnull(detail.clearday,'') as clearday,head.docno as docno,head.dateid as dateid,coa.acno as acno,coa.acnoname,detail.postdate as postdate,detail.db as db,detail.cr as cr, detail.checkno as checkno,if(head.doc in ('DS','GJ'), head.rem, detail.rem) as rem,client.client as client,if(head.clientname='',client.clientname,head.clientname) as  clientname
                     from (((lahead as head left join ladetail as detail on((detail.trno = head.trno))) left join coa on((coa.acnoid = detail.acnoid)))
                     left join client on((client.client = detail.client))) left join cntnum on cntnum.trno=head.trno where cntnum.center='" . $center . "' and " . $strfilter . " between '$date1' and '$date2' and coa.acno ='\\" . $acno . "'" . $statusfilter;
         }
@@ -440,7 +434,7 @@ class viewbreconbankbook
 
         $border = "1px solid ";
         $font =  "Century Gothic";
-        $fontsize = "11";
+        $fontsize = "10";
         $str = '';
 
         $str .= $this->reporter->beginreport();

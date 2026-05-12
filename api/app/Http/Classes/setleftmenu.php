@@ -830,6 +830,13 @@ class setleftmenu
       if (($key = array_search('skill_requirement', $payrollsetup)) !== false) {
         unset($payrollsetup[$key]);
       }
+
+      if ($systype == 'AIMSHRISPAYROLL') {
+        if (($key = array_search('departmentmaster', $payrollsetup)) !== false) {
+          unset($payrollsetup[$key]);
+        }
+      }
+
       if (($key = array_search('job_title', $payrollsetup)) !== false) {
         unset($payrollsetup[$key]);
       }
@@ -838,7 +845,7 @@ class setleftmenu
         array_push($payrollsetup, 'leavecategory');
       }
 
-      if ($params['companyid'] == 62) { //onesky
+      if ($params['companyid'] == 62 || $params['companyid'] == 68) { //onesky | jda
         array_push($payrollsetup, 'entryreasonforhiring', 'empstatustypeentry');
       }
     }
@@ -852,7 +859,6 @@ class setleftmenu
         unset($payrollsetup[$key]);
       }
     }
-
 
     return ['payrollsetup' => ['parent' => 18, 'modules' => $payrollsetup]];
   } //end function
@@ -884,7 +890,7 @@ class setleftmenu
       case 58:
         $payrolltransaction = ['parentpayrolltransaction', 'employeepayroll', 'earningdeductionsetup', 'advancesetup', 'allowancesetup', 'leaveapplication', 'loanapplication', 'pieceentry', 'batchsetup', 'emptimecard', 'emptimecardperday', 'timecardsetup', 'otapproval', 'payrollsetup'];
         break;
-      case 62: //mighty
+      case 62: //onesky
         array_push($payrolltransaction, 'changeschedule');
         break;
     }

@@ -515,6 +515,7 @@ class setreportlist
     $rep_customerlist = "";
     $rep_currentcustomerreceivable = "";
     $rep_currentcustomerreceivableaging = "";
+    $rep_outstanding_customer_receivables = "";
     $rep_receivables_report = "";
 
     $rep_analyzecustomersalesmonthly = "";
@@ -568,6 +569,7 @@ class setreportlist
           $rep_currentcustomerreceivable = "('','\\905','','','',0,1,0,'Current Customer Receivables','\\90502',3034,'0'," . $params['levelid'] . ")";
           $rep_currentcustomerreceivableaging = "('','\\905','','','',0,1,0,'Current Customer Receivables Aging','\\90503',3035,'0'," . $params['levelid'] . ")";
           $rep_receivables_report = "('','\\905','','','',0,1,0,'Receivables Trial Balance Report','\\90560',5645,'0'," . $params['levelid'] . ")";
+          $rep_outstanding_customer_receivables = "('','\\905','','','',0,1,0,'Outstanding Customer Receivables','\\90564',5828,'0'," . $params['levelid'] . ")";
 
           if ($params['companyid'] == 8) { //maxipro
           } else {
@@ -1277,6 +1279,7 @@ class setreportlist
           $rep_salesreturnreport = "('','\\90902','','\\\\909','',0,1,0,'Sales Return Report','\\9090203',3065,'0'," . $params['levelid'] . ")";
           if ($params['companyid'] == 63) { //ericco
             $rep_consign_and_outright_invoice = "('','\\90902','','\\\\909','',0,1,0,'Consign and Outright Invoice Report','\\9090224',5587,'0'," . $params['levelid'] . ")";
+            $rep_salesreportdetail = "('','\\905','','','',0,1,0,'Sales Report','\\90508',3087,'0'," . $params['levelid'] . ")";
           }
           if ($params['companyid'] == 40) { //cdo
             $rep_sparepartsissuance = "('','\\90902','','\\\\909','',0,1,0,'Spare Parts Issuance','\\9090223',4631,'0'," . $params['levelid'] . ")";
@@ -2695,6 +2698,7 @@ class setreportlist
           $rep_customerlist,
           $rep_currentcustomerreceivable,
           $rep_currentcustomerreceivableaging,
+          $rep_outstanding_customer_receivables,
           $rep_analyzecustomersalesmonthly,
           $rep_customersalesreport,
           $rep_pendingsalesorders,
@@ -2745,6 +2749,7 @@ class setreportlist
           $rep_daily_sales_collected_and_uncollected,
           $rep_yearly_sales_collected_and_uncollected,
           $rep_monthly_sales_collected_uncollected_report,
+          $rep_salesreportdetail,
 
           // SUPPLIER
           $parent_supplier,
@@ -3747,6 +3752,7 @@ class setreportlist
           $rep_customerlist,
           $rep_currentcustomerreceivable,
           $rep_currentcustomerreceivableaging,
+          $rep_outstanding_customer_receivables,
           $rep_analyzecustomersalesmonthly,
           $rep_customersalesreport,
           $rep_pendingsalesorders,

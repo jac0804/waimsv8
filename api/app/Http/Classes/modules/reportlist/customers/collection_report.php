@@ -58,6 +58,9 @@ class collection_report
       case 29: // SBC
         $fields = ['radioprint', 'start', 'end', 'dclientname', 'optionstatus', 'prepared', 'checked', 'approved'];
         break;
+      case 63: //ericco
+        $fields = ['radioprint', 'start', 'end', 'groupid'];
+        break;
       default:
         $fields = ['radioprint', 'dclientname'];
         break;
@@ -88,6 +91,20 @@ class collection_report
     );
 
     data_set($col1, "optionstatus.options", $options);
+
+    data_set($col1, 'month.type', 'lookup');
+    data_set($col1, 'month.readonly', true);
+    data_set($col1, 'month.action', 'lookuprandom');
+    data_set($col1, 'month.lookupclass', 'lookup_month');
+    data_set($col1, 'year.type', 'lookup');
+    data_set($col1, 'year.class', 'sbccsreadonly');
+    data_set($col1, 'year.lookupclass', 'lookupyear');
+    data_set($col1, 'year.action', 'lookupyear');
+
+    data_set($col1, 'groupid.lookupclass', 'lookupclientgroupledger');
+    data_set($col1, 'groupid.action', 'lookupclientgroupledger');
+    data_set($col1, 'groupid.class', 'csgroup');
+    data_set($col1, 'groupid.readonly', false);
 
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
@@ -135,6 +152,18 @@ class collection_report
       '" . $prepared . "' as prepared,
       '" . $checked . "' as checked,
       '" . $approved . "' as approved
+      ");
+        break;
+
+      case 63: //ericco
+        return $this->coreFunctions->opentable("select 
+      'default' as print,
+      date(now()) as start, date_add(date(now()),interval 1 month) as end,  
+      '' as year,
+      '' as month,
+      '' as bmonth,
+      '' as dclientname,
+      '' as groupid
       ");
         break;
 
@@ -491,7 +520,78 @@ class collection_report
     return $this->coreFunctions->opentable($query);
   }
 
-  public function ericco_query($config) {}
+  public function ericco_query($config)
+  {
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $groupid = $config['params']['dataparams']['groupid'];
+    $year = $config['params']['dataparams']['year'];
+    $bmonth = $config['params']['dataparams']['bmonth'];
+    $filter = '';
+
+    if ($groupid != '') {
+      $filter .= " and UPPER(cl.groupid) = '" . strtoupper($groupid) . "' ";
+    }
+
+
+    $query = "select
+        code,
+        customer,
+        groupid,
+        sum(gross) as gross,
+        sum(iamount) as iamount,
+        sum(amtcollected) as amtcollected,
+        y,m
+    from (
+    select
+            center.code,
+            center.name,
+            head.clientname as customer,
+            UPPER(cl.groupid) as groupid,
+            sum(detail.cr) as gross,
+            sum(case when  detail.refx <> 0 then detail.cr - detail.db else 0 end) as iamount,
+            sum(case when left(coa.alias, 2) in ('CB', 'CR', 'CA') and detail.refx = 0 then detail.db - detail.cr else 0 end) as amtcollected,
+            date(head.dateid) as dateid,
+            cl.clientname, 
+            year(head.dateid) as y,
+            month(head.dateid) as m
+        from lahead as head
+        left join ladetail as detail on detail.trno = head.trno
+        left join client as cl on cl.client = head.client
+        left join cntnum as cnum on cnum.trno = head.trno
+        left join center on center.code = cnum.center
+        left join coa on coa.acnoid = detail.acnoid
+     where head.doc='CR'   and date(head.dateid) between '$start' and '$end' $filter 
+        group by center.code, center.name, head.clientname, cl.clientname, cl.groupid, head.dateid
+
+    union all
+        select
+            center.code,
+            center.name,
+            head.clientname as customer,
+            UPPER(cl.groupid) as groupid,
+            sum(detail.cr) as gross,
+            sum(case when  detail.refx <> 0 then detail.cr - detail.db else 0 end) as iamount,
+            sum(case when left(coa.alias, 2) in ('CB', 'CR', 'CA') and detail.refx = 0 then detail.db - detail.cr else 0 end) as amtcollected,
+            date(head.dateid) as dateid,
+            cl.clientname, 
+            year(head.dateid) as y,
+            month(head.dateid) as m
+        from glhead as head
+        left join gldetail as detail on detail.trno = head.trno
+        left join client as cl on cl.clientid = head.clientid
+        left join cntnum as cnum on cnum.trno = head.trno
+        left join center on center.code = cnum.center
+        left join coa on coa.acnoid = detail.acnoid
+     where head.doc='CR'   and date(head.dateid) between '$start' and '$end' $filter 
+        group by center.code, center.name, head.clientname, cl.clientname, cl.groupid, head.dateid
+    ) as combined
+    group by code, customer, groupid, y, m
+    order by groupid, code";
+
+    // var_dump($query);
+    return $this->coreFunctions->opentable($query);
+  }
 
   private function displayHeaderMaxiPro($config)
   {
@@ -1540,23 +1640,21 @@ class collection_report
   }
 
 
-  private function displayHeader_Ericco($config)
+  private function displayHeader_Ericco($config, $groupid = '', $deductionColumns = [])
   {
-    $result = $this->ericco_query($config);
-
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center    = $config['params']['center'];
+    $username  = $config['params']['user'];
     $companyid = $config['params']['companyid'];
-    $client     = $config['params']['dataparams']['client'];
-    $start     = $config['params']['dataparams']['start'];
-    $end     = $config['params']['dataparams']['end'];
+    $year      = $config['params']['dataparams']['year'];
+    $month     = $config['params']['dataparams']['month'];
 
-    $str = '';
+    $str        = '';
     $layoutsize = '1500';
-    // $font = $this->companysetup->getrptfont($config['params']);
-    $font = 'Tahoma';
-    $fontsize = "9";
-    $border = "1px solid ";
+    $font       = 'Tahoma';
+    $fontsize   = '9';
+    $border     = '1px solid';
+    $colWidth   = '107';
+    $colBranch  = '200';
 
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->reporter->begintable($layoutsize);
@@ -1567,103 +1665,343 @@ class collection_report
 
     $str .= '<br/><br/>';
 
+    // report title
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid ', '', '', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid', '', '', $font, '18', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    // --- Column label rows ---
+    // Row 1: top empty labels
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('LESS DEDUCTIONS', '963', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BRANCH', $colBranch, null, false, $border, 'BLT', 'C', $font, $fontsize, 'B', '', '');
+    // EWT column removed from here
+    foreach ($deductionColumns as $dc) {
+      $str .= $this->reporter->col('', $colWidth, null, false, $border, 'LT', 'C', $font, $fontsize, 'B', '', '');
+    }
+    $str .= $this->reporter->col('', $colWidth, null, false, $border, 'LT',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, null, false, $border, 'LT',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, null, false, $border, 'LRT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    // Row 2: actual labels
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($month . '&nbsp;&nbsp;&nbsp;' . $year, $colBranch, null, '#fffb00', $border, 'BL',  'C',  $font, $fontsize, 'B', '', '');
+    // EWT column removed from here
+    foreach ($deductionColumns as $dc) {
+      $str .= $this->reporter->col($dc, $colWidth, null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
+    }
+    $str .= $this->reporter->col('TOTAL DEDUCTIONS', $colWidth, null, false, $border, 'BL',  'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('INVOICE AMOUNT',   $colWidth, null, false, $border, 'BL',  'CT', $font, $fontsize, 'B', '', '5PX');
+    $str .= $this->reporter->col('AMOUNT COLLECTED', $colWidth, null, false, $border, 'BLR', 'CT', $font, $fontsize, 'B', '', '5PX');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    // --- Spacer row ---
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('BARCODE', '535', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('(PORTAL)', '214', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BLR', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colBranch, 10, false, $border, 'BL',  'C', $font, $fontsize, 'B', '', '');
+    // EWT column removed from here
+    foreach ($deductionColumns as $dc) {
+      $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    }
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LBR', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    // --- Group name row ---
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('BRANCH', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '#e32f22', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'L', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', null, false, $border, 'LR', 'C', $font, $fontsize, 'B', '#e32f22', '');
-    $str .= $this->reporter->endrow();
-
-
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('BRANCH CODE', '107', null, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('DATE FOR NOW', '107', null, '#fffb00', $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('NET OF COMM', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '#e32f22', '5PX');
-    $str .= $this->reporter->col('EWT 1%', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('RENTALS UTILITIES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('ADDTL TAGS', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('OPENING SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('DISTRIBUTION CENTER-CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('STORE CONSIGNOR CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('SELLING AREA SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('B2B CHARGES', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('AD MARKETING SUPPORT', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('TOTAL DEDUCTIONS', '107', null, false, $border, 'BL', 'CT', $font, $fontsize, 'B', '', '5PX');
-    $str .= $this->reporter->col('NET SALES REPORT', '107', null, false, $border, 'BLR', 'CT', $font, $fontsize, 'B', '#e32f22', '5PX');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '#e32f22', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '107', 10, false, $border, 'LBR', 'C', $font, $fontsize, 'B', '#e32f22', '');
+    $str .= $this->reporter->col($groupid, $colBranch, 10, false, $border, 'BL',  'C', $font, $fontsize, 'B', '#e32f22', '');
+    // EWT column removed from here
+    foreach ($deductionColumns as $dc) {
+      $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB', 'C', $font, $fontsize, 'B', '', '');
+    }
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LB',  'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', $colWidth, 10, false, $border, 'LBR', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     return $str;
   }
 
-
   public function report_Ericco_Layout($config)
   {
-    $str = '';
-    $str .= $this->displayHeader_Ericco($config);
+    $border     = '1px solid';
+    $font       = 'Tahoma';
+    $fontsize   = '9';
+    $layoutsize = '1500';
+    $colWidth   = '107';
+    $colBranch  = '200';
+
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $groupid = $config['params']['dataparams']['groupid'];
+
+
+    $result = [];
+    foreach ($this->ericco_query($config) as $row) {
+      $result[] = $row;
+    }
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+
+    $filter = '';
+    if ($groupid != '') {
+      $filter = " and UPPER(cl.groupid) = '" . strtoupper($groupid) . "' ";
+    }
+
+
+    $batchDeductionsQuery = "
+        select 
+            head.clientname,
+            year(detail.postdate) as y,
+            month(detail.postdate) as m,
+            coa.acnoname,
+            sum(detail.db - detail.cr) as amount,
+            UPPER(cl.groupid) as groupid
+        from ladetail as detail
+        left join lahead as head on head.trno = detail.trno
+        left join client as cl on cl.client = head.client
+        left join cntnum as cnum on cnum.trno = detail.trno
+        left join coa on coa.acnoid = detail.acnoid
+        where detail.refx = 0
+            and left(coa.alias, 2) not in ('CR', 'CA', 'CB')
+            and head.doc = 'CR'
+            and date(head.dateid) between '$start' and '$end'
+            $filter
+        group by head.clientname, year(detail.postdate), month(detail.postdate), coa.acnoname, cl.groupid
+        
+        union all
+        
+        select 
+            head.clientname,
+            year(detail.postdate) as y,
+            month(detail.postdate) as m,
+            coa.acnoname,
+            sum(detail.db - detail.cr) as amount,
+            UPPER(cl.groupid) as groupid
+        from gldetail as detail
+        left join glhead as head on head.trno = detail.trno
+        left join client as cl on cl.clientid = head.clientid
+        left join cntnum as cnum on cnum.trno = detail.trno
+        left join coa on coa.acnoid = detail.acnoid
+        where detail.refx = 0
+            and left(coa.alias, 2) not in ('CR', 'CA', 'CB')
+            and head.doc = 'CR'
+            and date(head.dateid) between '$start' and '$end'
+            $filter
+        group by head.clientname, year(detail.postdate), month(detail.postdate), coa.acnoname, cl.groupid
+    ";
+
+    $allDeductionsData = $this->coreFunctions->opentable($batchDeductionsQuery);
+
+
+    $deductionsByKey = [];
+
+    foreach ($allDeductionsData as $ded) {
+      $groupidKey = $ded->groupid ? strtoupper(trim($ded->groupid)) : 'NO GROUP';
+      $customer = $ded->clientname;
+      $y = $ded->y;
+      $m = $ded->m;
+      $acnoname = strtoupper(trim($ded->acnoname));
+      $amount = (float) $ded->amount;
+
+      $key = $groupidKey . '|' . $customer . '|' . $y . '|' . $m;
+
+      if (!isset($deductionsByKey[$key])) {
+        $deductionsByKey[$key] = [];
+      }
+
+      if (!isset($deductionsByKey[$key][$acnoname])) {
+        $deductionsByKey[$key][$acnoname] = 0;
+      }
+      $deductionsByKey[$key][$acnoname] += $amount;
+    }
+
+
+    $masterDeductionColumns = [];
+    $deductionTotals = [];
+
+    foreach ($deductionsByKey as $deductions) {
+      foreach ($deductions as $acnoname => $amount) {
+        if (!in_array($acnoname, $masterDeductionColumns)) {
+          $masterDeductionColumns[] = $acnoname;
+        }
+        if (!isset($deductionTotals[$acnoname])) {
+          $deductionTotals[$acnoname] = 0;
+        }
+        $deductionTotals[$acnoname] += $amount;
+      }
+    }
+
+
+
+    // Filter out zero total deduction columns
+    $filteredDeductionColumns = [];
+    foreach ($masterDeductionColumns as $column) {
+      if (abs($deductionTotals[$column]) > 0.01) {
+        $filteredDeductionColumns[] = $column;
+      }
+    }
+    $masterDeductionColumns = $filteredDeductionColumns;
+    sort($masterDeductionColumns);
+
+    // Group result by year+month then by groupid
+    $grouped = [];
+    foreach ($result as $data) {
+      $ym      = $data->y . '-' . str_pad($data->m, 2, '0', STR_PAD_LEFT);
+      $groupidVal = $data->groupid ? strtoupper(trim($data->groupid)) : 'NO GROUP';
+      if (!isset($grouped[$ym])) {
+        $grouped[$ym] = [];
+      }
+      if (!isset($grouped[$ym][$groupidVal])) {
+        $grouped[$ym][$groupidVal] = [];
+      }
+      $grouped[$ym][$groupidVal][] = $data;
+    }
+    ksort($grouped);
+
+    $str         = '';
+    $isFirstPage = true;
+
+    // Overall accumulators
+    $overallTotalDed     = 0;
+    $overallIamount      = 0;
+    $overallAmtCollected = 0;
+    $overallDeductions   = [];
+
+    foreach ($grouped as $ym => $groups) {
+      $ymParts   = explode('-', $ym);
+      $ymYear    = $ymParts[0];
+      $ymMonth   = ltrim($ymParts[1], '0');
+      $monthName = date('F', mktime(0, 0, 0, $ymMonth, 1));
+
+      $config['params']['dataparams']['year']  = $ymYear;
+      $config['params']['dataparams']['month'] = $monthName;
+
+      foreach ($groups as $groupidVal => $rows) {
+
+        $subTotalDed     = 0;
+        $subIamount      = 0;
+        $subAmtCollected = 0;
+        $subDeductions   = [];
+
+        if (!$isFirstPage) {
+          $str .= $this->reporter->endreport();
+        }
+        $isFirstPage = false;
+        $str .= $this->displayHeader_Ericco($config, $groupidVal, $masterDeductionColumns);
+
+        foreach ($rows as $data) {
+          $customer     = $data->customer;
+          $code         = $data->code;
+          $iamount      = (float) $data->iamount;
+          $amtcollected = (float) $data->amtcollected;
+          $y            = $data->y;
+          $m            = $data->m;
+
+          // Get deductions for this specific groupid, customer, year, month
+          $deductionKey = $groupidVal . '|' . $customer . '|' . $y . '|' . $m;
+          $rowDeductions = isset($deductionsByKey[$deductionKey])
+            ? $deductionsByKey[$deductionKey]
+            : [];
+
+          $totalDed = array_sum($rowDeductions);
+
+          // Accumulate subtotals per groupid per month
+          $subTotalDed     += $totalDed;
+          $subIamount      += $iamount;
+          $subAmtCollected += $amtcollected;
+
+          foreach ($masterDeductionColumns as $dc) {
+            $dedAmt = isset($rowDeductions[$dc]) ? $rowDeductions[$dc] : 0;
+            if (!isset($subDeductions[$dc])) {
+              $subDeductions[$dc] = 0;
+            }
+            $subDeductions[$dc] += $dedAmt;
+          }
+
+          // Accumulate overall totals
+          $overallTotalDed     += $totalDed;
+          $overallIamount      += $iamount;
+          $overallAmtCollected += $amtcollected;
+
+          foreach ($masterDeductionColumns as $dc) {
+            $dedAmt = isset($rowDeductions[$dc]) ? $rowDeductions[$dc] : 0;
+            if (!isset($overallDeductions[$dc])) {
+              $overallDeductions[$dc] = 0;
+            }
+            $overallDeductions[$dc] += $dedAmt;
+          }
+
+          // Render data row
+          $str .= $this->reporter->begintable($layoutsize);
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col($customer, $colBranch, 10, '', $border, 'BL', 'L', $font, $fontsize, '', '', '');
+
+          // EWT column removed from here
+          foreach ($masterDeductionColumns as $dc) {
+            $dedAmt = isset($rowDeductions[$dc]) ? $rowDeductions[$dc] : 0;
+            $str   .= $this->reporter->col($dedAmt != 0 ? number_format(round($dedAmt, 2), 2) : '-', $colWidth, 10, false, $border, 'LB', 'RT', $font, $fontsize, '', '', '');
+          }
+
+          $str .= $this->reporter->col(number_format(round($totalDed, 2), 2),    $colWidth, 10, false, $border, 'LB',  'RT', $font, $fontsize, 'B', '#1b6ae0', '');
+          $str .= $this->reporter->col(number_format(round($iamount, 2), 2),     $colWidth, 10, false, $border, 'LB',  'RT', $font, $fontsize, 'B', '',        '');
+          $str .= $this->reporter->col(number_format(round($amtcollected, 2), 2), $colWidth, 10, false, $border, 'LBR', 'RT', $font, $fontsize, 'B', '',        '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+        }
+
+        // Subtotal row per groupid per month
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', $colBranch, 10, false, $border, 'BL', 'C', $font, $fontsize, 'B', '', '');
+
+        // EWT column removed from here
+        foreach ($masterDeductionColumns as $dc) {
+          $dedAmt = isset($subDeductions[$dc]) ? $subDeductions[$dc] : 0;
+          $str   .= $this->reporter->col($dedAmt != 0 ? number_format(round($dedAmt, 2), 2) : '-', $colWidth, 10, '', $border, 'LB', 'R', $font, $fontsize, 'B', '#e32f22', '');
+        }
+
+        $str .= $this->reporter->col(number_format(round($subTotalDed, 2), 2),     $colWidth, 10, '', $border, 'LB',  'R', $font, $fontsize, 'B', '#e32f22', '');
+        $str .= $this->reporter->col(number_format(round($subIamount, 2), 2),      $colWidth, 10, '', $border, 'LB',  'R', $font, $fontsize, 'B', '#e32f22', '');
+        $str .= $this->reporter->col(number_format(round($subAmtCollected, 2), 2), $colWidth, 10, '', $border, 'LBR', 'R', $font, $fontsize, 'B', '#e32f22', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= '<br/>';
+      }
+    }
+
+    // Overall total row
+    $str .= '<br/><br/>';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('OVERALL TOTAL', $colBranch, 10, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+
+
+    foreach ($masterDeductionColumns as $dc) {
+      $dedAmt = isset($overallDeductions[$dc]) ? $overallDeductions[$dc] : 0;
+      $str   .= $this->reporter->col($dedAmt != 0 ? number_format(round($dedAmt, 2), 2) : '0.00', $colWidth, 10, '', $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    }
+
+    $str .= $this->reporter->col(number_format(round($overallTotalDed, 2), 2),     $colWidth, 10, '', $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format(round($overallIamount, 2), 2),      $colWidth, 10, '', $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format(round($overallAmtCollected, 2), 2), $colWidth, 10, '', $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     $str .= $this->reporter->endreport();
+
     return $str;
   }
 }//end class

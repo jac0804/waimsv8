@@ -56,7 +56,7 @@ class on
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype', 'sotrno'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype', 'sotrno', 'sdate1'];
   private $except = ['trno', 'dateid', 'due', 'creditinfo'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -330,8 +330,8 @@ class on
       $headgridbtns = ['viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
 
-    $column = ['action',   'isqty', 'uom', 'isamt', 'disc', 'ext',  'cost', 'markup',  'wh',  'ref', 'rem', 'itemname',   'barcode']; //'noprint',
-    $sortcolumn = ['action',  'isqty', 'uom', 'isamt', 'disc', 'ext',  'cost', 'markup',  'wh',  'ref', 'rem', 'itemname',  'barcode'];
+    $column = ['action',  'barcode', 'itemname', 'isqty', 'uom', 'isamt', 'disc', 'ext',  'cost', 'markup',  'wh',  'ref', 'rem']; //'noprint',
+    $sortcolumn = ['action', 'barcode', 'itemname', 'isqty', 'uom', 'isamt', 'disc', 'ext',  'cost', 'markup',  'wh',  'ref', 'rem'];
 
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -359,8 +359,7 @@ class on
 
     $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
 
-    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+
     $obj[0]['inventory']['columns'][$isqty]['readonly'] = true;
     $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
     $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
@@ -368,6 +367,15 @@ class on
 
     $obj[0]['inventory']['columns'][$wh]['type'] = 'label';
     $obj[0]['inventory']['columns'][$ref]['type'] = 'label';
+
+    $obj[0]['inventory']['columns'][$itemname]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
+    $obj[0]['inventory']['columns'][$itemname]['style'] = 'text-align: left; width: 200px;whiteSpace: normal;min-width:200px';
+    $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
+    $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
+    $obj[0]['inventory']['columns'][$barcode]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
+    $obj[0][$this->gridname]['descriptionrow'] = [];
+
 
     if ($viewcost == 0) {
       $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
@@ -388,19 +396,23 @@ class on
 
   public function createHeadField($config)
   {
-    $fields = ['docno', 'client', 'clientname'];
-    array_push($fields, 'address');
+    $fields = ['docno', 'client', 'clientname', 'address', 'sdate1'];
+    // array_push($fields, 'address');
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.lookupclass', 'customerdr');
     data_set($col1, 'client.required', false);
     data_set($col1, 'client.addedparams', []);
     data_set($col1, 'docno.label', 'Transaction#');
+    data_set($col1, 'sdate1.label', 'Sales Date');
 
     $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'dacnoname.label', 'AR Account');
     data_set($col2, 'dacnoname.lookupclass', 'AR');
+    data_set($col2, 'dateid.label', 'Invoice Date');
+
     $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname'];
 
     $col3 = $this->fieldClass->create($fields);
@@ -446,6 +458,7 @@ class on
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
+    $data[0]['sdate1'] = $this->othersClass->getCurrentDate();
     return $data;
   }
 
@@ -509,7 +522,7 @@ class on
       '' as dwhname,
       left(head.due,10) as due,
       date(head.deldate) as deldate,
-      head.creditinfo,num.statid as numstatid,head.sotrno
+      head.creditinfo,num.statid as numstatid,head.sotrno, date(head.sdate1) as sdate1
     ";
 
     $qry = $qryselect . " from $table as head

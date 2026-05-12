@@ -205,19 +205,10 @@ class batchsetup
 
   public function createHeadbutton($config)
   {
-    $btns = array(
-      'load',
-      'new',
-      'save',
-      'delete',
-      'cancel',
-      'print',
-      'logs',
-      // 'edit',
-      'backlisting',
-      'toggleup',
-      'toggledown'
-    );
+    $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'backlisting', 'toggleup', 'toggledown');
+    if ($config['params']['companyid'] == 66) { //metro dragon
+      $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown');
+    }
     $buttons = $this->btnClass->create($btns);
     return $buttons;
   } // createHeadbutton
@@ -423,12 +414,15 @@ class batchsetup
 
     $data = [];
 
-    $clientid = 0;
+    $clientid = $head['clientid'];
 
-    $val = $head['val'];
-    if (substr($head['paymodetype'], -2, 2) == '13') {
-      $val = '13';
-      $head['is13'] = 1;
+    if (!$isupdate) {
+      $clientid = 0;
+      $val = $head['val'];
+      if (substr($head['paymodetype'], -2, 2) == '13') {
+        $val = '13';
+        $head['is13'] = 1;
+      }
     }
 
     foreach ($this->fields as $key) {
@@ -453,34 +447,56 @@ class batchsetup
       if ($data['branchid'] == 0) return ['status' => false, 'msg' => 'Please select valid branch.'];
     }
 
-    $data['paymode'] = substr($head['paymode'][0], 0, 1);
-    $data['batch'] = 'P' . substr($head['paymode'][0], 0, 1) . $head['paycode'] . date('Ym', strtotime($head['dateid'])) . $val;
+
+    if (!$isupdate) {
+      $data['paymode'] = substr($head['paymode'][0], 0, 1);
+      $data['batch'] = 'P' . substr($head['paymode'][0], 0, 1) . $head['paycode'] . date('Ym', strtotime($head['dateid'])) . $val;
+    }
 
     $dateid = new DateTime($head['dateid']);
     $startdate = new DateTime($head['startdate']);
     $enddate = new DateTime($head['enddate']);
     $msg = '';
 
-    if ($this->coreFunctions->datareader("select batch as value from batch where batch=? and divid=? and branchid=?", [$data['batch'], $data['divid'], $data['branchid']]) == '') {
 
-      if ($dateid->format('yyyy-mm-dd') < $startdate->format('yyyy-mm-dd')) {
-        return ['status' => false, 'msg' => 'From: startdate is greater than month covered'];
-      }
-      if ($config['params']['companyid'] == 58) { //cdohris
-      } else {
-        if ($enddate->format('yyyy-mm-dd') < $dateid->format('yyyy-mm-dd')) {
-          return ['status' => false, 'msg' => 'To: enddate is less  than month covered'];
-        }
-      }
-      $clientid = $this->coreFunctions->insertGetId($this->head, $data);
 
-      $this->logger->sbcmasterlog(
-        $clientid,
-        $config,
-        'CREATE' . ' - ' . $data['batch'] . ' - ' . $head['paymode']
-      );
+    if ($isupdate) {
+      unset($data['batch']);
+      unset($data['paymode']);
+      unset($data['pgroup']);
+      unset($data['dateid']);
+      unset($data['startdate']);
+      unset($data['enddate']);
+      unset($data['is13']);
+      unset($data['13start']);
+      unset($data['13end']);
+      unset($data['annualtax']);
+      unset($data['postdate']);
+
+      // unset($data['adjustm']);
+      // unset($data['custcode']);
+      // unset($data['allow']);
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
+      $this->coreFunctions->sbcupdate($this->head, $data, ['line' => $head['clientid']]);
     } else {
-      $msg = 'Batch code already exist';
+      if ($this->coreFunctions->datareader("select batch as value from batch where batch=? and divid=? and branchid=?", [$data['batch'], $data['divid'], $data['branchid']]) == '') {
+
+        if ($dateid->format('yyyy-mm-dd') < $startdate->format('yyyy-mm-dd')) {
+          return ['status' => false, 'msg' => 'From: startdate is greater than month covered'];
+        }
+        if ($config['params']['companyid'] == 58) { //cdohris
+        } else {
+          if ($enddate->format('yyyy-mm-dd') < $dateid->format('yyyy-mm-dd')) {
+            return ['status' => false, 'msg' => 'To: enddate is less  than month covered'];
+          }
+        }
+        $clientid = $this->coreFunctions->insertGetId($this->head, $data);
+
+        $this->logger->sbcmasterlog($clientid,  $config, 'CREATE' . ' - ' . $data['batch'] . ' - ' . $head['paymode']);
+      } else {
+        $msg = 'Batch code already exist';
+      }
     }
 
     return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];

@@ -2758,6 +2758,16 @@ class tabClass
         'visible' => true
       ),
 
+      'addoutlet' => array(
+        'label' => 'ADD',
+        'icon' => 'batch_prediction',
+        'class' => 'btnaddoutlet',
+        'lookupclass' => 'addoutlet',
+        'action' => 'lookupsetup',
+        'access' => 'additem',
+        'visible' => true
+      ),
+
     );
   }
 

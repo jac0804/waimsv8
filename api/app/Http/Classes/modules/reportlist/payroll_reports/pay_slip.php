@@ -9219,7 +9219,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '60px; margin-top:10px');
+    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '60px; margin-top:15px');
     $str .= $this->camera_Header($config);
     $clientname = "";
     $divname = "";
@@ -9658,7 +9658,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '60px; margin-top:10px');
+    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '60px; margin-top:16px');
     // $str .= $this->DEFAULT_Header($config);
 
     // $str .= $this->reporter->begintable(330);
@@ -9721,8 +9721,8 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $i = 0;
     $c = 0;
     $page = 0;
-    $str .= '<div style="position: relative;">';
     $str .= $this->reporter->begintable($layoutsize);
+    $str .= '<div style="position: relative;">';
     $j = 0;
     foreach ($result as $key => $data) {
       $clientname = $data->clientname;
@@ -9854,17 +9854,10 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
       if ($c == 0) {
         $c = $this->getcount($config, $data->empid, $config['params']['dataparams']['line']);
       }
-
+      $pagebreak = false;
       $i = $i + 1;
       if ($i == $c) {
         $str .= "</br>";
-        $str .= $this->reporter->addline();
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', null, null, false, $border, '', 'L', $font, $font_size, 'B', '', '4px');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('' . strtoupper($divname), '400', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
@@ -10050,6 +10043,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
           if ((count($result)) != $page) {
             $this->coreFunctions->LogConsole($page . '-' . count($result));
             $str .= $this->reporter->page_break();
+            $pagebreak = true;
             $j = 0;
           }
         }
@@ -10103,6 +10097,9 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $qtylegalun = 0;
         $legalun = 0;
         $specialun = 0;
+      }
+      if ((count($result)) != $page && $pagebreak) {
+        $str .= '<br>';
       }
     } //loop
 

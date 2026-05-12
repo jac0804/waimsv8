@@ -9866,7 +9866,7 @@ class leftmenu
         $qry = "(5571,1,'Employee Status Type','',0,'\\1813','$parent',0,'0',0," . $params['levelid'] . ")
         ";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'empstatustypeentry','/tableentries/payrollsetup/empstatustypeentry','Employee Status Type','fa fa-user sub_menu_ico',5571," . $params['levelid'] . ")";
+        return "($sort,$p,'empstatustypeentry','/tableentries/payrollsetup/empstatustypeentry','Employee Status Type (Upon Hiring)','fa fa-user sub_menu_ico',5571," . $params['levelid'] . ")";
     } //end function
 
     public function parentqs($params, $parent, $sort)

@@ -98,6 +98,12 @@ class entrybudget
       data_set($col1, 'deptname.lookupclass', 'lookupddeptname');
       data_set($col1, 'deptname.action', 'lookupclient');
     }
+    if ($companyid == 68) { //jda
+      data_set($col1, 'radiooption.options', [
+        ['label' => 'Balance Sheet', 'value' => 0, 'color' => 'red'],
+        ['label' => 'Profit and Loss', 'value' => 1, 'color' => 'green']
+      ]);
+    }
     data_set($col1, 'year.type', 'lookup');
     data_set($col1, 'year.class', 'sbccsreadonly');
     data_set($col1, 'year.lookupclass', 'lookupyear');

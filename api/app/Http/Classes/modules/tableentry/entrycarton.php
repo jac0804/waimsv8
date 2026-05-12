@@ -325,7 +325,7 @@ class entrycarton
     {
         $plotting = array('sizeid' => 'sizeid');
         $plottype = 'plotgrid';
-        $title = 'List of Body';
+        $title = 'List of Sizes';
 
         $lookupsetup = array(
             'type' => 'single',

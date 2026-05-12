@@ -1112,6 +1112,7 @@ class rr
       case 36: //rozlab
       case 39: //cbbsi
       case 43: //mighty
+      case 68: //jda
         $this->modulename = 'RECEIVING REPORT';
         break;
     }

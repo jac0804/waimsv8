@@ -3224,6 +3224,8 @@ class hrislookup
 
   public function lookuppayrollsetupbatch($config)
   {
+    $companyid = $config['params']['companyid'];
+
     $plottype = 'plothead';
     $lookupsetup = array(
       'type' => 'single',
@@ -3277,10 +3279,24 @@ class hrislookup
             $plotsetup['plotting']['divname'] = 'divname';
             $plotsetup['plotting']['branchid'] = 'branchid';
             $plotsetup['plotting']['branchname'] = 'branchname';
+
+            if ($companyid == 66) { //metrodragon payroll
+              $plotsetup['plotting']['sss'] = 'sss';
+              $plotsetup['plotting']['ph'] = 'ph';
+              $plotsetup['plotting']['hdmf'] = 'hdmf';
+              $plotsetup['plotting']['tax'] = 'tax';
+            }
             break;
           case 'PAYROLLENTRY':
             $plotsetup['plotting']['fullwordpaymode'] = 'fullwordpaymode';
             $plotsetup['plotting']['tpaygroupname'] = 'paygroup';
+
+            if ($companyid == 66) { //metrodragon payroll
+              $plotsetup['plotting']['sss'] = 'sss';
+              $plotsetup['plotting']['ph'] = 'ph';
+              $plotsetup['plotting']['hdmf'] = 'hdmf';
+              $plotsetup['plotting']['tax'] = 'tax';
+            }
             break;
         }
         break;
@@ -3312,7 +3328,7 @@ class hrislookup
         when b.paymode = 'p' then 'Pierce'
         when b.paymode = 'l' then 'Last Pay'
       end as fullwordpaymode,
-      date(b.startdate) as startdate, date(b.enddate) as enddate, b.is13, b.adjustm, b.13start, b.13end, b.postdate, b.postby, pay.paygroup, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname
+      date(b.startdate) as startdate, date(b.enddate) as enddate, b.is13, b.adjustm, b.13start, b.13end, b.postdate, b.postby, pay.paygroup, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname,b.sss,b.ph,b.hdmf,b.tax
       from batch as b left join paygroup as pay on pay.line=b.pgroup left join division as d on d.divid=b.divid left join client as br on br.clientid=b.branchid order by enddate desc
     ";
     $btnadd = $this->sqlquery->checksecurity($config, 1570, '/ledger/payroll/batchsetup');

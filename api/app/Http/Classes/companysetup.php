@@ -45,6 +45,7 @@ class companysetup
   private $isrecalc;
   private $isshortcutjo;
   private $isshortcutpo;
+  private $isshortcutpr;
   private $isshortcutso;
   private $isshortcutdr;
   private $isshortcutcd;
@@ -129,6 +130,7 @@ class companysetup
   public $lookupclientpermodule = true;
   public $ispayrollportal = false;
   public $isnavigation = false;
+  public $isenterqty = false;
 
 
   public function __construct()
@@ -226,6 +228,8 @@ class companysetup
     $this->lookupclientpermodule = true;
     $this->ispayrollportal = false;
     $this->isnavigation = false;
+    $this->isenterqty = false;
+    $this->isshortcutpr = false;
 
     switch ($params['companyid']) {
       case 68: //JDA
@@ -244,7 +248,8 @@ class companysetup
         $this->isfa = false;
         $this->ispricescheme = false;
         $this->isconsign = false;
-        $this->isshortcutpo = false;
+        $this->isshortcutpo = true;
+        $this->isshortcutpr = true;
         $this->iscrm = false;
         $this->ispos = false;
         $this->isshortcutjo = false;
@@ -258,7 +263,7 @@ class companysetup
         $this->ismysql8 = true;
         break;
       case 67:  //yulick - aims
-        $this->clientlength = 10;
+        $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 10;
         $this->tax = 12;
@@ -368,6 +373,7 @@ class companysetup
         $this->restrictip = true;
         $this->ismysql8 = true;
         $this->iseditsortline = true;
+        $this->isenterqty = true;
         break;
       case 62: //onesky
         $this->clientlength = 15;
@@ -1733,7 +1739,7 @@ class companysetup
         $this->tax = 12;
         $this->serial = false;
         $this->companyname = 'ABC Corp.';
-        $this->systemtype = 'BMS';
+        $this->systemtype = 'MMS';
         $this->isexpiry = false;
         $this->checkbelowcost = true;
         $this->isproject = false;
@@ -2953,5 +2959,16 @@ class companysetup
   {
     $this->companylist($params);
     return $this->isnavigation;
+  }
+
+  public function getisenterqty($params)
+  {
+    $this->companylist($params);
+    return $this->isenterqty;
+  }
+  public function getisshortcutpr($params)
+  {
+    $this->companylist($params);
+    return $this->isshortcutpr;
   }
 }

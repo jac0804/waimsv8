@@ -4291,5 +4291,7 @@ class waims2
     $this->coreFunctions->sbccreatetable("carton", $qry);
     $this->coreFunctions->sbcaddcolumngrp(["tmhead"], ["reseller"], "varchar(100) NOT NULL DEFAULT ''", 0);
     $this->coreFunctions->sbcaddcolumngrp(['sku'], ["itemname"], "VARCHAR(500) NOT NULL DEFAULT ''", 0);
+
+    $this->coreFunctions->sbcaddcolumn("client", "registername", "varchar(500) NOT NULL DEFAULT ''", 1);
   }
 }

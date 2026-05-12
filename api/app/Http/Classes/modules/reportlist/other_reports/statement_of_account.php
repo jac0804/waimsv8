@@ -4785,12 +4785,7 @@ class statement_of_account
     }
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('<br>', null, null, false, '1px dotted ', '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('TOTAL DUE : ', '800', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL DUE : ', '880', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col(number_format($balance, 2), null, null, false, '1.5px solid ', '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();

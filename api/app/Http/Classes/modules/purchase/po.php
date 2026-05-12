@@ -255,7 +255,21 @@ class po
   public function paramsdatalisting($config)
   {
     $companyid = $config['params']['companyid'];
+    $isshortcutpr = $this->companysetup->getisshortcutpr($config['params']);
     switch ($companyid) {
+      case 68: //JDA
+        $fields = [];
+        if ($isshortcutpr) {
+          $allownew = $this->othersClass->checkAccess($config['params']['user'], 81);
+          if ($allownew == '1') $fields = ['pickpo'];
+        }
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'pickpo.label', 'PICKUP PR');
+        data_set($col1, 'pickpo.lookupclass', 'pendingprsummaryshortcut');
+        data_set($col1, 'pickpo.action', 'pendingprsummary');
+        data_set($col1, 'pickpo.confirmlabel', 'Proceed to pick PR?');
+        return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1]];
+        break;
       case 10: //afti
       case 12: //afti usd
         $fields = ['selectprefix', 'docno'];

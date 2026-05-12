@@ -99,7 +99,7 @@ class hq
 
         $query = "select num.trno,head.docno,date(head.dateid) as dateid, head.dept, personnel, 
                         date(dateneed) as dateneed,job,head.class,headcount,hpref, agerange,gpref, 
-                        rank, reason,head.hirereason,date(head.prdstart) as prdstart,
+                        `rank`, reason,head.hirereason,date(head.prdstart) as prdstart,
                         date(head.prdend) as prdend,head.empstatus,head.empmonths,head.empdays,
                         remark, refx, qualification,d.clientname as deptname, em.clientname as personnelname, 
                         job.jobtitle,head.amount,head.skill,head.educlevel,head.civilstatus,
@@ -117,7 +117,7 @@ class hq
                 union all
                 select num.trno,head.docno,  date(head.dateid) as dateid, head.dept, personnel, 
                        date(dateneed) as dateneed, job, head.class, headcount, hpref, agerange,gpref, 
-                       rank, reason,head.hirereason,date(head.prdstart) as prdstart,
+                       `rank`, reason,head.hirereason,date(head.prdstart) as prdstart,
                        date(head.prdend) as prdend,head.empstatus,head.empmonths,head.empdays,
                        remark, refx, qualification,d.clientname as deptname,em.clientname as personnelname, 
                        job.jobtitle,head.amount,head.skill,head.educlevel,head.civilstatus,

@@ -331,6 +331,9 @@ class inventory_balance
           case 56: //homeworks
             $result = $this->hm_SELLING_PRICE_layout($config);
             break;
+          case 68: //jda 
+            $result = $this->jdaLayout_SELLING_PRICE($config);
+            break;
           default:
             $result = $this->reportDefaultLayout_SELLING_PRICE($config);
             break;
@@ -385,9 +388,6 @@ class inventory_balance
             break;
           case 60: //transpower
             $result = $this->transpower_NONE_Layout($config);
-            break;
-          case 68: //jda 
-            $result = $this->jda_NONE_Layout($config);
             break;
           default:
             $result = $this->reportDefaultLayout_NONE($config);
@@ -3083,7 +3083,9 @@ class inventory_balance
 
 
     $str = '';
+
     $layoutsize = '1000';
+
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -3110,6 +3112,8 @@ class inventory_balance
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col($datelabel, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
@@ -3119,7 +3123,7 @@ class inventory_balance
       $str .= $this->reporter->col('Items : ' . $barcode, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
 
-    if ($companyid == 14) { //majesty
+    if ($companyid == 14) {
       if ($groupname == '') {
         $str .= $this->reporter->col('Division : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
       } else {
@@ -3135,9 +3139,9 @@ class inventory_balance
 
     $str .= $this->reporter->col('Brand : ' . $brandname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
 
-    if ($companyid == 14) { //majesty
-      $partid    = $config['params']['dataparams']['partid'];
-      $partname  = $config['params']['dataparams']['partname'];
+    if ($companyid == 14) {
+      $partid   = $config['params']['dataparams']['partid'];
+      $partname = $config['params']['dataparams']['partname'];
       if ($partname == '') {
         $str .= $this->reporter->col('Principal : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
       } else {
@@ -3181,7 +3185,7 @@ class inventory_balance
     }
     $str .= $this->reporter->col('Item Stock : ' . strtoupper($itemstock), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
 
-    if ($companyid == 14) { //majesty
+    if ($companyid == 14) {
       $str .= $this->reporter->col('Generic : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     } else {
       $str .= $this->reporter->col('Model : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
@@ -3194,14 +3198,15 @@ class inventory_balance
       $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
 
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+    if ($companyid == 10 || $companyid == 12) {
       $str .= $this->reporter->col('Project : ' . $projname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     } else {
       $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
-    $str .= $this->reporter->endrow();
 
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
+
     return $str;
   }
   //aa
@@ -8418,8 +8423,157 @@ class inventory_balance
     return $str;
   }
 
+  private function jda_displayHeader_SELLING_PRICE($config)
+  {
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '5px';
 
-  private function jda_none_table_cols($layoutsize, $border, $font, $fontsize, $config)
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    $asof       = $config['params']['dataparams']['start'];
+    $end       = $config['params']['dataparams']['end'];
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $barcode    = $config['params']['dataparams']['barcode'];
+    $itemname   = $config['params']['dataparams']['itemname'];
+    $classid    = $config['params']['dataparams']['classid'];
+    $classname  = $config['params']['dataparams']['classic'];
+    $categoryid = $config['params']['dataparams']['categoryid'];
+    $categoryname  = $config['params']['dataparams']['categoryname'];
+    $subcatname =  $config['params']['dataparams']['subcat'];
+    $groupid    = $config['params']['dataparams']['groupid'];
+    $groupname  = $config['params']['dataparams']['stockgrp'];
+    $brandid    = $config['params']['dataparams']['brandid'];
+    $brandname  = $config['params']['dataparams']['brandname'];
+    $modelid    = $config['params']['dataparams']['modelid'];
+    $modelname  = $config['params']['dataparams']['modelname'];
+    $wh         = $config['params']['dataparams']['wh'];
+    $whname     = $config['params']['dataparams']['whname'];
+    $amountformat   = $config['params']['dataparams']['amountformat'];
+    $itemstock  = $config['params']['dataparams']['itemstock'];
+    $itemtype   = $config['params']['dataparams']['itemtype'];
+
+
+    $partid    = $config['params']['dataparams']['partid'];
+    $partname  = $config['params']['dataparams']['partname'];
+
+
+
+
+    if ($brandname == '') {
+      $brandname = "ALL";
+    }
+
+    if ($modelname == '') {
+      $modelname = "ALL";
+    }
+
+    if ($whname == '') {
+      $whname = "ALL";
+    }
+
+    $str = '';
+    $layoutsize = '1200';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= '<br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $dtagathering = ' - (Current)';
+    if ($config['params']['dataparams']['dtagathering'] == 'dhistory') {
+      $dtagathering = ' - (History)';
+    }
+    $datelabel = 'Balance as of : ' . $asof;
+
+    $str .= $this->reporter->col('INVENTORY BALANCE' . $dtagathering, null, null, false, '1px solid ', '', '', $font, '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($datelabel, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    if ($barcode == '') {
+      $str .= $this->reporter->col('Items : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Items : ' . $barcode, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    }
+
+    if ($groupname == '') {
+      $str .= $this->reporter->col('Group : ALL', '200', null, false, '1px solid ', '', 'C', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Group : ' . $groupname, '200', null, false, '1px solid ', '', 'C', $font, '10', '', '', '', '');
+    }
+
+    $str .= $this->reporter->col('Brand : ' . $brandname, '250', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+
+    if ($categoryname == '') {
+      $str .= $this->reporter->col('Category : ALL', '250', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Category : ' . $categoryname, '250', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+    }
+
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('WH : ' . $whname, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    switch ($itemtype) {
+      case '(1)':
+        $itemtype = 'Import';
+        break;
+      case '(0)':
+        $itemtype = 'Local';
+        break;
+      case '(0,1)':
+        $itemtype = 'Both';
+        break;
+    }
+    $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    switch ($itemstock) {
+      case '(1)':
+        $itemstock = 'With Balance';
+        break;
+      case '(0)':
+        $itemstock = 'Without Balance';
+        break;
+      case '(0,1)':
+        $itemstock = 'None';
+        break;
+    }
+    $str .= $this->reporter->col('Item Stock : ' . strtoupper($itemstock), '150', null, false, '1px solid ', '', 'C', $font, '10', '', '', '', '');
+
+    $str .= $this->reporter->col('Model : ' . $modelname, '200', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+
+    if ($subcatname == '') {
+      $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+    }
+
+    $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  private function jda_selling_price_table_cols($layoutsize, $border, $font, $fontsize, $config)
   {
     $str = '';
     $companyid = $config['params']['companyid'];
@@ -8433,8 +8587,8 @@ class inventory_balance
     $str .= $this->reporter->col('ITEM CODE',        '120', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('ITEM DESCRIPTION', '320', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('REMARKS',          '300', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
-    $str .= $this->reporter->col('LAST REC',         '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
-    $str .= $this->reporter->col('LAST SELL',        '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('LAST REC  DATE',         '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('LAST SELL DATE',        '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('BALANCE',          '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('UOM',              '60',  null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('COUNT',            '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
@@ -8443,7 +8597,8 @@ class inventory_balance
   }
 
 
-  public function jda_NONE_Layout($config)
+
+  public function jdaLayout_SELLING_PRICE($config)
   {
     $str = '';
     try {
@@ -8467,8 +8622,8 @@ class inventory_balance
 
       $layoutsize = '1200';
       $str .= $this->reporter->beginreport($layoutsize);
-      $str .= $this->default_displayHeader_NONE($config);
-      $str .= $this->jda_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+      $str .= $this->jda_displayHeader_SELLING_PRICE($config);
+      $str .= $this->jda_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
 
       $totalbalqty = 0;
       $part        = "";
@@ -8614,9 +8769,9 @@ class inventory_balance
             $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
 
             if (!$allowfirstpage) {
-              $str .= $this->default_displayHeader_NONE($config);
+              $str .= $this->jda_displayHeader_SELLING_PRICE($config);
             }
-            $str .= $this->jda_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+            $str .= $this->jda_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
             $page = $page + $count;
           }
         }

@@ -89,6 +89,17 @@ class uploadingutility
 
     $col1 = $this->fieldClass->create($fields);
     switch ($config['params']['companyid']) {
+      case 59://roosevelt
+        data_set($col1, 'optionuploading.options',  array(['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
+        ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
+        ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
+        ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
+        ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
+        ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
+        ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
+        ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
+        ['label' => 'Upload Brand Size', 'value' => 'uploadbrands', 'color' => 'green']));
+        break;
       case 63: //ericco
         data_set($col1, 'optionuploading.options',  array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
@@ -540,6 +551,9 @@ class uploadingutility
             break;
           case 'newslitemlist':
             return $this->uploadsupplieritemlist($config);
+            break;
+          case 'uploadbrands':
+            return $this->uploadbrands($config);
             break;
           default:
             return $this->insertdatafromexcel($config['params']['dataparams']['utype'], $config['params']['data'], $config);
@@ -2477,6 +2491,68 @@ class uploadingutility
     return ['status' => $status, 'msg' => $msg];
   }
 
+  private function uploadbrands($config)
+  {
+    $rawdata = $config['params']['data'];
+    $data = [];
+    $msg = '';
+    $status = true;
+
+
+    foreach ($rawdata as $key => $value) {
+      try {
+        $grp = $this->coreFunctions->getfieldvalue("frontend_ebrands", "brandid", "brand_desc = '" . trim($rawdata[$key]['brand']) . "'",[],'',true);
+        if ($grp == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. Brand ' . trim($rawdata[$key]['brand']) . ' does not exist. ';
+          continue;
+        }
+
+        $qty = 0;
+        if (isset($rawdata[$key]['quantity'])) {
+          $qty = floatval($rawdata[$key]['quantity']);
+        }
+
+        $cartons = 0;
+        if (isset($rawdata[$key]['cartons'])) {
+          $cartons = floatval($rawdata[$key]['cartons']);
+        }
+
+        $brandline = $this->coreFunctions->getfieldvalue("carton", "line", "sizeid = '".trim($rawdata[$key]['sizeid'])."' and brandid = " . $grp, [], '', true);
+
+        $data['brandid'] = $grp;
+        $data['sizeid'] = trim($rawdata[$key]['sizeid']);
+        $data['qty'] = $qty;
+        $data['carton'] = $cartons;
+
+        if ($brandline == 0) {
+          $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
+          $data['encodedby'] =  $config['params']['user'] . '(UPLOADING)';
+          $return = $this->coreFunctions->sbcinsert("carton", $data);
+        } else {
+          $data['editby'] = $config['params']['user'] . '(UPLOADING)';
+          $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $return = $this->coreFunctions->sbcupdate("carton", $data, ["line" => $brandline]);
+        }
+
+
+        if ($return == 0) {
+          $status = false;
+          $msg .= 'Failed to upload. ';
+          goto exithere;
+        }
+      } catch (Exception $e) {
+        $status = false;
+        $msg .= 'Failed to upload. Exception error ' . $e->getMessage();
+        goto exithere;
+      }
+    }
+
+    exithere:
+
+    return ['status' => $status, 'msg' => $msg];
+  }
+
   private function insertdatafromexcel($type, $rawdata, $config)
   {
     ini_set('max_execution_time', -1);
@@ -3102,13 +3178,6 @@ class uploadingutility
                   $valtoinsert['namt6'] = $namt6['ext'];
                 }else{
                   $valtoinsert['namt6'] =$valtoinsert['amt6'];
-                }
-
-                if (isset($valtoinsert['disc6'])) {
-                  $namt6 = $this->othersClass->computestock($valtoinsert['amt6'], $valtoinsert['disc6'], 1, 1);
-                  $valtoinsert['namt6'] = round($namt6['ext'], 2);
-                } else {
-                  $valtoinsert['namt6'] = $valtoinsert['amt6'];
                 }
 
                 if (isset($valtoinsert['disc7'])) {

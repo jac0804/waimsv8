@@ -424,6 +424,15 @@ class subsidiary_ledger
           $reportdata =  $this->SUBSIDIARY_LEDGER_SUMM_LAYOUT($config, $result);
         }
         break;
+      case 68:
+        if ($config['params']['dataparams']['reporttype'] == '0') {
+          $result = $this->default_query($config);
+          $reportdata =  $this->JDA_DEFAULT_SUBSIDIARY_LEDGER_LAYOUT($config, $result);
+        } else {
+          $result = $this->default_query_summary($config);
+          $reportdata =  $this->JDA_SUBSIDIARY_LEDGER_SUMM_LAYOUT($config, $result);
+        }
+        break;
       default:
         if ($config['params']['dataparams']['reporttype'] == '0') {
           $result = $this->default_query($config);
@@ -969,16 +978,16 @@ class subsidiary_ledger
     $allselect = '';
     $grpselect = '';
 
-    $select = ', proj.code as projcode';
-    $allselect = ', projcode';
-    $grpselect = ',proj.code';
+    $select = ', proj.code as projcode, proj.name as project';
+    $allselect = ', projcode, project';
+    $grpselect = ',proj.code, proj.name';
     $selectjc = " union all
                   select head.trno as trno,head.doc as doc,head.docno as docno,date(head.dateid) as dateid,
                         client.client,head.clientname as clientname,head.rem as rem,detail.line as line,
                         coa.acno as acno,coa.acnoname as acnoname,detail.db as db,detail.cr as cr,
                         coa.alias as alias,detail.ref as ref,null as postdate,detail.client as dclient,
                         detail.rem as drem,detail.checkno as checkno ,coa.acnoid as acnoid,'u' as tr,
-                        head.yourref,'' as si,'' as chsi,proj.code as projcode
+                        head.yourref,'' as si,'' as chsi,proj.code as projcode, proj.name as project
                   from ((jchead as head
                   left join ladetail as detail on ((head.trno = detail.trno)))
                   left join coa on ((coa.acnoid = detail.acnoid)))
@@ -996,7 +1005,7 @@ class subsidiary_ledger
                             coa.acno as acno,coa.acnoname as acnoname,round(detail.db,2) as db,round(detail.cr,2) as cr,
                             coa.alias as alias,detail.ref as ref,detail.postdate as postdate,dclient.client as dclient,
                             detail.rem as drem,detail.checkno as checkno,coa.acnoid as acnoid,'p' as tr,
-                            head.yourref,'' as si,'' as chsi,proj.code as projcode
+                            head.yourref,'' as si,'' as chsi,proj.code as projcode, proj.name as project
                     from ((((hjchead as head
                     left join gldetail as detail on((head.trno = detail.trno)))
                     left join coa on((coa.acnoid = detail.acnoid)))
@@ -1325,15 +1334,27 @@ class subsidiary_ledger
         $leftjoin = 'left join projectmasterfile as proj on proj.line = head.projectid';
         $datefilter = " date(head.dateid) <'" . $end . "'";
         break;
+      case 68: //jda
+        $leftjoin = 'left join projectmasterfile as proj on proj.line = head.projectid';
+        break;
       case 19: //housegem
         $datefilter = " date(detail.postdate) between '" . $start . "' and  '" . $end . "'  ";
         break;
     }
 
+    $select = '';
+    $select_outer = '';
+    $grpselect = '';
+    if ($companyid == 68) { //jda
+      $select = ', proj.name as project';
+      $select_outer = ', a.project';
+      $grpselect = ', proj.name';
+    }
+
     switch ($isposted) {
       case 0: // posted
         $query = "select null as dateid,'Beginning Balance' as docno,'' as client,'' as clientname,'' as ref,'' as checkno,'' as rem,
-        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref from (
+        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref,'' as project from (
               select coa.acno,coa.acnoname," . $field . " as begbal
               from ((((glhead as head 
               left join gldetail as detail on((head.trno = detail.trno))) 
@@ -1349,12 +1370,12 @@ class subsidiary_ledger
          union all
         select a.dateid,a.docno,a.client,client.clientname,a.ref,
                     a.checkno,case a.ref when '' then a.rem else concat(a.rem,' ',a.ref) end as rem,
-                    coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref
+                    coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref $select_outer
               from (select head.trno as trno,head.doc as doc,head.docno as docno,date(head.dateid) as dateid,
                     client.client,head.clientname as clientname,head.rem as rem,detail.line as line,
                     coa.acno as acno,coa.acnoname as acnoname,round(detail.db,2) as db,round(detail.cr,2) as cr,
                     coa.alias as alias,detail.ref as ref,detail.postdate as postdate,dclient.client as dclient,
-                    detail.rem as drem,detail.checkno as checkno,coa.acnoid as acnoid,'p' as tr,head.yourref
+                    detail.rem as drem,detail.checkno as checkno,coa.acnoid as acnoid,'p' as tr,head.yourref $select
                     from ((((glhead as head 
                     left join gldetail as detail on((head.trno = detail.trno))) 
                     left join coa on((coa.acnoid = detail.acnoid))) 
@@ -1365,17 +1386,16 @@ class subsidiary_ledger
                     where $datefilter $filter 
                     group by  head.trno,head.doc,head.docno,head.dateid,client.client,head.clientname,head.rem,detail.line,
                     coa.acno,coa.acnoname,coa.alias,detail.ref,detail.postdate,dclient.client,
-                    detail.rem,detail.checkno,coa.acnoid,detail.db,detail.cr,head.yourref
+                    detail.rem,detail.checkno,coa.acnoid,detail.db,detail.cr,head.yourref $grpselect
                     ) as a
                 left join coa on a.acno=coa.acno left join client on client.client = a.client  
                 order by acno,dateid,docno";
-
-
+                
         break;
 
       case 1: // unposted
         $query = "select null as dateid,'Beginning Balance' as docno,'' as client,'' as clientname,'' as ref,'' as checkno,'' as rem,
-        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref from (
+        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref,'' as project from (
         select coa.acno,coa.acnoname," . $field . " as begbal
               from ((((lahead as head 
               left join ladetail as detail on((head.trno = detail.trno))) 
@@ -1391,12 +1411,12 @@ class subsidiary_ledger
          union all
          select a.dateid,a.docno,a.client,client.clientname,a.ref,
                     a.checkno,case a.ref when '' then a.rem else concat(a.rem,' ',a.ref) end as rem,
-                    coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref
+                    coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref $select_outer
                    from (select head.trno as trno,head.doc as doc,head.docno as docno,date(head.dateid) as dateid,
                            client.client,head.clientname as clientname,head.rem as rem,detail.line as line,
                            coa.acno as acno,coa.acnoname as acnoname,detail.db as db,detail.cr as cr,
                            coa.alias as alias,detail.ref as ref,null as postdate,detail.client as dclient,
-                           detail.rem as drem,detail.checkno as checkno ,coa.acnoid as acnoid,'u' as tr,head.yourref
+                           detail.rem as drem,detail.checkno as checkno ,coa.acnoid as acnoid,'u' as tr,head.yourref $select
                     from ((lahead as head 
                     left join ladetail as detail on ((head.trno = detail.trno)))
                     left join coa on ((coa.acnoid = detail.acnoid)))
@@ -1407,7 +1427,7 @@ class subsidiary_ledger
                     where $datefilter $filter
                   group by head.trno ,head.doc,head.docno,head.dateid,client.client,head.clientname,head.rem ,detail.line,
                        coa.acno,coa.acnoname ,detail.db,detail.cr,coa.alias,detail.ref,detail.client,
-                       detail.rem,detail.checkno,coa.acnoid,head.yourref
+                       detail.rem,detail.checkno,coa.acnoid,head.yourref $grpselect
                  ) as a
                     left join coa on a.acno=coa.acno left join client on client.client = a.client 
                     order by acno,dateid,docno";
@@ -1415,7 +1435,7 @@ class subsidiary_ledger
 
       case 2: // all
         $query = "select null as dateid,'Beginning Balance' as docno,'' as client,'' as clientname,'' as ref,'' as checkno,'' as rem,
-        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref from (
+        b.acno,b.acnoname,0 as db,0 as cr,sum(b.begbal) as begbal, 0 as detail,'' as drem,'' as yourref,'' as project from (
         select coa.acno,coa.acnoname," . $field . " as begbal
               from ((((lahead as head 
               left join ladetail as detail on((head.trno = detail.trno))) 
@@ -1443,12 +1463,12 @@ class subsidiary_ledger
          union all
          select a.dateid,a.docno,a.client,a.clientname,a.ref, a.checkno,
         case a.ref when '' then a.rem else concat(a.rem,' ',a.ref) end as rem,
-        coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref
+        coa.acno,coa.acnoname,a.db,a.cr,0 as begbal,coa.detail,a.drem,a.yourref $select_outer
         from ( select head.trno as trno,head.doc as doc,head.docno as docno,date(head.dateid) as dateid,
                       client.client,head.clientname as clientname,head.rem as rem,detail.line as line,
                       coa.acno as acno,coa.acnoname as acnoname,round(detail.db,2) as db,round(detail.cr,2) as cr,
                       coa.alias as alias,detail.ref as ref,detail.postdate as postdate,dclient.client as dclient,
-                      detail.rem as drem,detail.checkno as checkno,coa.acnoid as acnoid,'p' as tr,head.yourref
+                      detail.rem as drem,detail.checkno as checkno,coa.acnoid as acnoid,'p' as tr,head.yourref $select
               from ((((glhead as head 
               left join gldetail as detail on((head.trno = detail.trno))) 
               left join coa on((coa.acnoid = detail.acnoid))) 
@@ -1459,13 +1479,13 @@ class subsidiary_ledger
               where $datefilter $filter
               group by  head.trno,head.doc,head.docno,head.dateid,client.client,
                         head.clientname,head.rem,detail.line,coa.acno,coa.acnoname,coa.alias,detail.ref,detail.postdate,dclient.client,
-                        detail.rem,detail.checkno,coa.acnoid,detail.db,detail.cr,head.yourref
+                        detail.rem,detail.checkno,coa.acnoid,detail.db,detail.cr,head.yourref $grpselect
         union all 
         select head.trno as trno,head.doc as doc,head.docno as docno,date(head.dateid) as dateid,
                     client.client,head.clientname as clientname,head.rem as rem,detail.line as line,
                     coa.acno as acno,coa.acnoname as acnoname,detail.db as db,detail.cr as cr,
                     coa.alias as alias,detail.ref as ref,null as postdate,detail.client as dclient,detail.rem as drem,
-                    detail.checkno as checkno ,coa.acnoid as acnoid,'u' as tr,head.yourref
+                    detail.checkno as checkno ,coa.acnoid as acnoid,'u' as tr,head.yourref $select
               from ((lahead as head left join ladetail as detail on ((head.trno = detail.trno)))
               left join coa on ((coa.acnoid = detail.acnoid)))left join cntnum on cntnum.trno=head.trno 
               left join client on client.client=head.client
@@ -1476,10 +1496,9 @@ class subsidiary_ledger
                     client.client,head.clientname,head.rem ,detail.line,
                     coa.acno,coa.acnoname ,detail.db,detail.cr,
                     coa.alias,detail.ref,detail.client,detail.rem,
-                    detail.checkno,coa.acnoid,head.yourref) as a
+                    detail.checkno,coa.acnoid,head.yourref $grpselect) as a
         left join coa on a.acno=coa.acno 
         order by acno,dateid,docno";
-
         break;
     } // end switch
 
@@ -1988,7 +2007,7 @@ class subsidiary_ledger
     $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
     $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
 
-    if ($companyid == 8) { //maxipro
+    if ($companyid == 8 || $companyid == 68) { //maxipro or jda
       $pLayoutSize = 1000;
     }
 
@@ -2021,6 +2040,7 @@ class subsidiary_ledger
       case 17: //unihome
       case 28: //xcomp
       case 39: //CBBSI
+      case 68: //jda
         $project = isset($params['params']['dataparams']['projectname']) ? $params['params']['dataparams']['projectname'] : "";
         break;
       case 55: //homeworks
@@ -2089,6 +2109,7 @@ class subsidiary_ledger
       case 17: //unihome
       case 28: //xcomp
       case 39: //CBBSI
+      case 68: //jda
         if ($project == "") {
           $project = "ALL";
         }
@@ -2174,6 +2195,7 @@ class subsidiary_ledger
       case 28: //xcomp
       case 15: //nathina
       case 39: //CBBSI
+      case 68: //jda
         $str .= $this->reporter->col('', null, null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
         $str .= $this->reporter->col('Project : ' . $project, null, null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
         break;
@@ -2217,7 +2239,7 @@ class subsidiary_ledger
   {
     $companyid = $params['params']['companyid'];
     $str = '';
-    if ($companyid == 8) { //maxipro
+    if ($companyid == 8 || $companyid == 68) { //maxipro or jda
       $layoutsize = 1000;
     } else {
       $layoutsize = 800;
@@ -2302,6 +2324,16 @@ class subsidiary_ledger
         $str .= $this->reporter->col('CSI No.', '90', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
         $str .= $this->reporter->col('Debit', '75', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
         $str .= $this->reporter->col('Credit', '75', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Balance', '100', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+        break;
+      case 68: // jda
+        $str .= $this->reporter->col('Transaction Date', '110', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Document#', '120', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Project', '85', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Supplier/Customer', '135', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Particular', '150', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Debit', '100', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('Credit', '100', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
         $str .= $this->reporter->col('Balance', '100', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
         break;
 
@@ -5275,6 +5307,15 @@ class subsidiary_ledger
         $str .= $this->reporter->col('Project : ' . $project, '800', null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
         $str .= $this->reporter->endrow();
         break;
+      case 68: // jda
+        $project = $params['params']['dataparams']['projectname'];
+        if ($project == '') {
+          $project = 'ALL';
+        }
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Project : ' . $project, '800', null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+        $str .= $this->reporter->endrow();
+        break;
     }
 
     $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, '11', '', '', '');
@@ -6099,4 +6140,318 @@ class subsidiary_ledger
 
     return $str;
   }
+
+  private function JDA_DEFAULT_SUBSIDIARY_LEDGER_LAYOUT($params, $data)
+  {
+    $companyid = $params['params']['companyid'];
+    $isposted = $params['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
+
+    $layoutsize = 1000;
+
+    $project = $params['params']['dataparams']['dprojectname'];
+    if ($project != "") {
+      $projectid = $params['params']['dataparams']['projectid'];
+    }
+
+    $acno = $params['params']['dataparams']['contra'];
+    $acnoid = $params['params']['dataparams']['acnoid'];
+    $acnoname = $params['params']['dataparams']['acnoname'];
+    $client = $params['params']['dataparams']['client'];
+    $cost = "";
+
+    if ($acno == "") {
+      $acno = "ALL";
+    }
+
+    $cat = $this->coreFunctions->getfieldvalue('coa', 'cat', 'acno=?', [$acno]);
+    switch ($cat) {
+      case 'L':
+      case 'R':
+      case 'C':
+      case 'O':
+        $field = ' ifnull(sum(round(cr-db,2)),0) ';
+        break;
+
+      default:
+        $field = ' ifnull(sum(round(db-cr,2)),0) ';
+        break;
+    }
+
+    $filter = "";
+    if ($companyid != 15) { //not nathina
+          $filter .= " and coa.acno='\\" . $acno . "'";
+    }
+
+    if ($project != "") {
+      $filter .= " and head.projectid = '" . $projectid . "'";
+    }
+
+    if ($this->companysetup->getmultibranch($params['params'])) {
+      $center = $params['params']['dataparams']['center'];
+      $filter .= " and cntnum.center='" . $center . "' ";
+    }
+
+    if ($client != "") {
+      $filter .= " and client.client='" . $client . "' ";
+    }
+
+    $count = 36;
+    $page = 35;
+    $this->reporter->linecounter = 0;
+    $str = '';
+
+    $fontsize = 10;
+    $font = $this->companysetup->getrptfont($params['params']);
+
+    $col = array(
+      array('60', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('160', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('170', null,  false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('160', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
+      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
+      array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
+    );
+
+    $col2 = array(
+      array('110', null, false, '1px solid', '', 'C', $font, '10', 'B', '', '1px'),
+      array('120', null, false, '1px solid', '', 'L', $font, '10', 'B', '', '1px'),
+      array('85',  null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
+      array('135', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
+      array('150', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
+      array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
+      array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
+      array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
+    );
+
+    $str .= $this->reporter->beginreport();
+    $str .= $this->headerlabel($params);
+    $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
+
+    $totaldb = 0;
+    $totalcr = 0;
+    $totalbal = 0;
+    $db = 0;
+    $cr = 0;
+    $bal = 0;
+    $acno = '';
+    $acno2 = '';
+
+
+    if (!empty($data)) {
+      foreach ($data as $key => $data_) {
+        if ($acno2 != $data_->acno) { // account groupings
+          if ($acno2 != '') { // subtotal for accounts
+              $str .= $this->default_subtotal($params, $db, $cr, $bal, $companyid);
+            }
+            $db = 0;
+            $cr = 0;
+            $bal = 0;
+
+          $value2 = array($data_->acno . '     -', $data_->acnoname, '', '', '', '', '', '');
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->row($col2, $value2);
+          $str .= $this->reporter->endrow();
+        }
+        //$bal = 0;
+        //for ($i = 0; $i < count($result); $i++) {
+        if ($data_->docno == 'Beginning Balance') {
+          $bal = $data_->begbal;
+        } else {
+          switch ($cat) {
+            case 'L':
+            case 'R':
+            case 'C':
+            case 'O':
+              $bal += ($data_->cr - $data_->db);
+              break;
+            default:
+              $bal += ($data_->db - $data_->cr);
+              break;
+          } // end switch
+          $data_->begbal = $bal;
+        }
+
+        //table
+        $str .= $this->reporter->addline();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data_->dateid, '110', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->docno, '120', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->project, '85', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data_->clientname, '135', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->rem, '150', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data_->db, 2), '100', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+        $str .= $this->reporter->col(number_format($data_->cr, 2), '100', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+        $str .= $this->reporter->col(number_format($data_->begbal, 2), '100', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+
+        $totaldb += $data_->db;
+        $totalcr += $data_->cr;
+
+        $db += $data_->db;
+        $cr += $data_->cr;
+        $bal = $data_->begbal;
+
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->begintable($layoutsize);
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', $layoutsize, null, false, '1px solid', 'T', 'L', $font, $fontsize);
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+          $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+          if (!$allowfirstpage) {
+            $str .= $this->headerlabel($params);
+          }
+          $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
+          $page = $page + $count;
+        } // end if
+
+        //} // end for loop
+        $acno2 = $data_->acno;
+      }
+    }
+
+    $str .= $this->jda_default_subtotal($params, $db, $cr, $bal, $companyid);
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('</br></br></br>', $layoutsize, null, false, '1px dotted', 'T', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $prepared = $params['params']['dataparams']['prepared'];
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Prepared by: ', '100', null, false, '1px dotted', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col('', '20', null, false, '1px dotted', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($prepared, '100', null, false, '1px solid', 'B', 'C', $font, $fontsize);
+    $str .= $this->reporter->col('', '580', null, false, '1px dotted', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function JDA_SUBSIDIARY_LEDGER_SUMM_LAYOUT($params, $data)
+  {
+    $companyid = $params['params']['companyid'];
+    $isposted = $params['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
+    $acno = $params['params']['dataparams']['contra'];
+    $acnoname = $params['params']['dataparams']['acnoname'];
+    $client = $params['params']['dataparams']['client'];
+
+    $count = 60;
+    $page = 60;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '800';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->summ_header($params);
+    $str .= $this->default_summary_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $params);
+
+    $amt = 0;
+    $totalamt = 0;
+    $cat = $this->coreFunctions->getfieldvalue('coa', 'cat', 'acno=?', [$acno]);
+    if (!empty($data)) {
+      for ($i = 0; $i < count($data); $i++) {
+        switch ($cat) {
+          case 'L':
+          case 'R':
+          case 'C':
+            $amt = ($data[$i]['begbal'] + $data[$i]['cr']) - $data[$i]['db'];
+            break;
+          default:
+            $amt = ($data[$i]['begbal'] + $data[$i]['db']) - $data[$i]['cr'];
+            break;
+        }
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+        $str .= $this->reporter->col($data[$i]['acnoname'], '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($amt, 2), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+        $str .= $this->reporter->endrow();
+        $totalamt += $amt;
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+
+          #header here
+          $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+          if (!$allowfirstpage) {
+
+            $str .= $this->summ_header($params);
+          }
+          $str .= $this->default_summary_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $params);
+          #header end
+          $page = $page + $count;
+        }
+      }
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('GRAND TOTAL: ', '100', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalamt, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->endrow();
+    }
+
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('</br></br></br>', '800', null, false, '1px dotted', 'T', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $prepared = $params['params']['dataparams']['prepared'];
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Prepared by: ', '100', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col('', '20', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col($prepared, '100', null, false, '1px solid', 'B', 'C', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col('', '580', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  private function jda_default_subtotal($params, $db, $cr, $bal, $companyid)
+  {
+    $str = '';
+    $fontsize = 11;
+    $font = $this->companysetup->getrptfont($params['params']);
+
+    $col3 = array();
+    array_push($col3, array('110', null, false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('100', null, false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('65', null, false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('125', null,  false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('130', null, false, '1px solid', '', 'R', $font, $fontsize, 'B'));
+    array_push($col3, array('85', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+    array_push($col3, array('85', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+    array_push($col3, array('100', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+
+    $value2 = array('', '', '', '', 'SUB TOTAL : ', number_format($db, 2), number_format($cr, 2), number_format($bal, 2));
+
+    $str .= $this->reporter->row($col3, $value2);
+
+    return $str;
+  } // end fn
 }//end class

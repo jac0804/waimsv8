@@ -235,7 +235,7 @@ class bk
         from lahead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
-        where num.doc = '$doc' $condition
+        where num.doc = '$doc' and num.center = '$center' $condition
         union all
         select  head.trno,head.docno,date(head.dateid) as dateid,cl.clientname,
         head.doc,head.createby,'POSTED' as status,format(head.amount,2) as amount,
@@ -247,7 +247,7 @@ class bk
         from glhead as head
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
-        where num.doc = '$doc' $condition ";
+        where num.doc = '$doc' and num.center = '$center' $condition ";
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
@@ -278,7 +278,7 @@ class bk
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.client=head.client
         left join clientinfo as info on info.clientid = cl.clientid
-        where num.doc = '$doc' and head.trno = ?
+        where num.doc = '$doc' and head.trno = ? and num.center = '$center'
         union all
         select head.trno,head.docno,head.dateid,head.due,cl.client,cl.clientname,
         head.address,cl.clientid,head.rem,info.height,info.weight,info.settlertype,
@@ -289,7 +289,7 @@ class bk
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
         left join clientinfo as info on info.clientid = cl.clientid
-        where num.doc = '$doc' and head.trno = ? ";
+        where num.doc = '$doc' and head.trno = ? and num.center = '$center' ";
         $head = $this->coreFunctions->opentable($query, [$trno, $trno]);
         if (!empty($head)) {
             $viewdate = $this->othersClass->getCurrentTimeStamp();

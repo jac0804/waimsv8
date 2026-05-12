@@ -47,7 +47,7 @@ class ai
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'sotrno', 'shipcontactid', 'billcontactid', 'ewt', 'ewtrate'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'sotrno', 'shipcontactid', 'billcontactid', 'ewt', 'ewtrate','taxdef'];
   private $except = ['trno', 'dateid', 'due', 'creditinfo'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -563,7 +563,7 @@ class ai
     data_set($col1, 'docno.label', 'Transaction#');
 
     if ($config['params']['companyid'] == 10) { //afti
-      $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'dewt', 'dacnoname', 'dwhname'];
+      $fields = [['dateid', 'due'],'terms', ['dvattype','taxdef'], 'dewt', 'dacnoname', 'dwhname'];
     } else {
       $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'dacnoname', 'dwhname'];
     }
@@ -637,6 +637,7 @@ class ai
     $data[0]['ewt'] = '';
     $data[0]['dewt'] = '';
     $data[0]['ewtrate'] = 0;
+    $data[0]['taxdef'] = 0;
 
     return $data;
   }
@@ -699,7 +700,7 @@ class ai
          '' as dprojectname,
          client.groupid,head.creditinfo,ifnull(project.code,'') as projectcode,
          head.billid, head.shipid,ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, head.branch,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname,head.sotrno,
-         head.billcontactid, head.shipcontactid ";
+         head.billcontactid, head.shipcontactid,head.taxdef ";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2575,7 +2576,7 @@ class ai
         $config['params']['data']['insurance'] = $data[$key2]->insurance;
         $return = $this->additem('insert', $config);
 
-        if ($msg = '') {
+        if ($msg == '') {
           $msg = $return['msg'];
         } else {
           $msg = $msg . $return['msg'];
