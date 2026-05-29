@@ -447,17 +447,20 @@ class pl
             $trno = implode(",", $sjtrno);
             $filter = " and stock.trno in ($trno)";
         }
-        $data = $this->coreFunctions->opentable("select stock.uom,stock.iss from lastock as stock 
+        $data = $this->coreFunctions->opentable("
+        select stock.uom,stock.iss,item.brand as brandid from lastock as stock 
         left join lahead as head on head.trno = stock.trno
+        left join item on item.itemid = stock.itemid
         where  head.pltrno = ? $filter
                 union all 
-        select stock.uom,stock.iss from glstock as stock
+        select stock.uom,stock.iss,item.brand as brandid from glstock as stock
         left join glhead as head on head.trno = stock.trno
+        left join item on item.itemid = stock.itemid
         where  head.pltrno = ? $filter", [$refx, $refx]);
         if (!empty($data)) {
             foreach ($data as $k => $val) {
 
-                $sizeid = $this->coreFunctions->datareader('select qty as value from carton where sizeid=? limit 1', [$val->uom]);
+                $sizeid = $this->coreFunctions->datareader('select qty as value from carton where sizeid=? and brandid = ? limit 1', [$val->uom,$val->brandid]);
                 if ($sizeid != "") {
                     $amount += $val->iss / $sizeid;
                     $this->coreFunctions->LogConsole('amount: ' . $amount);

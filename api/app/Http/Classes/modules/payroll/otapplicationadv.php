@@ -959,6 +959,42 @@ class otapplicationadv
                     $ndiffothrs = 8;
                 }
             }
+            //earlydiff
+
+            if ($companyid == 51) { // ulitc
+                $earlydiff = 0;
+                $isearlyot = true;
+                $endearlyot = new DateTime(date('Y-m-d', strtotime($scheddate)) . ' ' . '06:00'); // 06:00 AM same date
+                if ($ottimein >= $endearlyot) {
+                    $isearlyot = false;
+                }
+
+                if ($isearlyot && $ndiffothrs < 8) {
+                    if ($data['daytype'] == 'WORKING') {
+                        if ($ottimein < $endearlyot) {
+                            $earlyot = $ottimeout > $endearlyot ? $endearlyot : $ottimeout;
+
+                            if ($earlyot > $ottimein) {
+                                $earlydiff = $ottimein->diff($earlyot);
+
+                                $earlyhours = $earlydiff->h;
+
+                                if ($earlydiff->i) {
+                                    $earlyhours += ($earlydiff->i / 60);
+                                }
+                                $ndiffothrs += $earlyhours;
+                                if ($ndiffothrs > 8) {
+                                    $ndiffothrs = 8;
+                                }
+                                $this->othersClass->logConsole('Early hours: ' . $earlyhours);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
 
             //do not remove
             // // schedule set night diff

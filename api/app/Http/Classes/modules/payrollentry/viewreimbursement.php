@@ -68,7 +68,7 @@ class viewreimbursement
     public function createTab($config)
     {
 
-        $cols = ['clientname', 'amount', 'jono', 'rem', 'empid', 'ispicked'];
+        $cols = ['clientname', 'createdate', 'amount', 'jono', 'rem', 'empid', 'ispicked'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
@@ -91,6 +91,10 @@ class viewreimbursement
         $obj[0][$this->gridname]['columns'][$empid]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$empid]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
         $obj[0][$this->gridname]['columns'][$ispicked]['label'] = "Select";
+
+
+        $obj[0][$this->gridname]['columns'][$createdate]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$createdate]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         return $obj;
     }
     public function createtabbutton($config)
@@ -113,7 +117,7 @@ class viewreimbursement
             $trno =  $row['rtrno'] != "" ? $row['rtrno'] : 0;
         }
 
-        $qry = "select task.amt as amount,client.client,client.clientname,task.userid,task.jono,'' as bgcolor,'' as errcolor,'false' as ispicked,task.trno from hdailytask as task
+        $qry = "select task.amt as amount,client.client,client.clientname,task.userid,task.jono,'' as bgcolor,'' as errcolor,'false' as ispicked,task.trno,date(task.createdate) as createdate,task.rem from hdailytask as task
                     left join client on client.clientid = task.userid
                     where task.userid = " . $row['clientid'] . " and task.trno in ( $trno ) and task.apvtrno = 0";
         return $this->coreFunctions->opentable($qry);
@@ -123,6 +127,12 @@ class viewreimbursement
         $data = $config['params']['data'];
         $status = true;
         $hdtrno_list = [];
+        $apprefx = [];;
+        $trno = 0;
+        $docno = "";
+        $userid = 0;
+
+        $acc_data = ['client' => '', 'amount' => 0, 'line' => 0];
 
         foreach ($data as $key => $value) {
             $data2 = [];
@@ -133,7 +143,7 @@ class viewreimbursement
                 }
                 // check existing head
                 array_push($hdtrno_list, $data[$key]['trno']);
-                $genehead = false;
+                $userid = $data[$key]['userid'];
 
                 $headdata = $this->coreFunctions->opentable("select trno,docno from lahead where doc = 'PV' and client ='" . $data[$key]['client'] . "'");
                 $date = $this->othersClass->getCurrentDate();
@@ -193,7 +203,8 @@ class viewreimbursement
                     } else {
                         $msg .= ' Creating Head Failed. ';
                         $this->logger->sbcwritelog($trno, $config, 'CREATE', $msg);
-                        goto endgenerate;
+                        $status = false;
+                        break;
                     }
                 }
                 //details
@@ -216,7 +227,7 @@ class viewreimbursement
                     'forex' => $forex,
                     'cur' => $cur,
                     'sortline' => $line,
-                    'postdate' => $date,
+                    'postdate' => $data[$key]['createdate'],
                     'acnoid' => 443
 
 
@@ -228,51 +239,72 @@ class viewreimbursement
                 $details['encodeddate'] = $date2;
                 $details['encodedby'] = $config['params']['user'];
                 $ladetail = $this->coreFunctions->sbcinsert('ladetail', $details);
+
+                $qry = "select trno as value from hdailytask where refx = ? limit 1";
+                $hdtrno = $this->coreFunctions->datareader($qry, [$data[$key]['trno']], '', true);
+                array_push($apprefx, $hdtrno);
+                $this->coreFunctions->logconsole($hdtrno . '-' . $trno);
                 if ($ladetail) {
                     $msg = ' Details Inserted Successfully.';
-                    $apvtrno = $this->coreFunctions->execqry("update hdailytask set apvtrno = $trno where userid =?  and  trno =? ", 'update', [$data[$key]['userid'], $data[$key]['trno']]);
-                    $qry = "select trno as value from hdailytask where refx = ? limit 1";
-                    $hdtrno = $this->coreFunctions->datareader($qry, [$data[$key]['trno']], '', true);
-                    $this->coreFunctions->logconsole($hdtrno . '-' . $trno);
+                    $apvtrno = $this->coreFunctions->execqry("update hdailytask set apvtrno = $trno where userid =?  and  trno =? ", 'update', [$userid, $data[$key]['trno']]);
                     $this->logger->sbcwritelog($trno, $config, 'DETAIL', ' ADD ' . 'Line : ' . $line . ' CR: ' . $data[$key]['amount'] . ' Notes: AUTO GENERATED REIMBURSEMENT');
                     if ($apvtrno) {
-                        $data2['line'] = $line + 1;
-                        $config['params']['trno'] = $trno;
-                        $distribution = $this->createdistribution($config, $data2);
-                        if ($distribution) {
-                            $posttran = $this->othersClass->posttransacctg($config);
-                            $this->coreFunctions->logconsole($posttran['msg'] . ' status: ' . $posttran['status']);
-                            if (!$posttran['status']) {
-                                $msg = $posttran['msg'];
-                                goto endgenerate;
-                            } else {
-                                $this->coreFunctions->execqry("delete from pendingapp where trno=? and approver = 'REIMBURSEMENT'", 'delete', [$hdtrno]);
-                                $msg = $posttran['msg'];
-                            }
-                        } else {
-                            goto endgenerate;
-                        }
+                        $acc_data['amount'] += $data[$key]['amount'];
+                        $acc_data['line'] = $line;
+                        $acc_data['client'] = $data[$key]['client'];
                     }
-                    break;
                 } else {
                     // failed to generate head or insert details
                     $msg = ' Insert Details Failed.';
                     $this->logger->sbcwritelog($trno, $config, 'DETAIL', $msg);
-                    endgenerate:
                     $status = false;
-                    $hdtrno_list = implode(",", $hdtrno_list);
-                    $this->coreFunctions->execqry("update hdailytask set apvtrno = 0 where userid = " . $data[$key]['userid'] . " and apvtrno = $trno and  trno in ($hdtrno_list)", 'update');
-                    $this->coreFunctions->execqry("delete from lahead where trno=? and doc = 'PV'", 'delete', [$trno]);
-                    $this->coreFunctions->execqry("delete from ladetail where trno=?", 'delete', [$trno]);
-                    $this->coreFunctions->execqry('delete from cntnum where trno=?', 'delete', [$trno]);
-                    $this->logger->sbcdel_log($trno, $config, $docno);
                     break;
                 }
+                $details = [];
             }
         }
+        $apptrno = implode(",", $apprefx);
+        $pendingdata = $this->coreFunctions->opentable("select trno,line,doc,clientid,approver from pendingapp where trno in ($apptrno) and doc = 'DY' and approver = 'REIMBURSEMENT'");
+        if ($status) {
+            $config['params']['trno'] = $trno;
+            $distribution = $this->createdistribution($config, $acc_data);
+            if ($distribution) {
+                $posttran = $this->othersClass->posttransacctg($config);
+                $this->coreFunctions->logconsole($posttran['msg'] . ' status: ' . $posttran['status']);
+                if (!$posttran['status']) {
+                    $msg = $posttran['msg'];
+                    goto endgenerate;
+                } else {
+                    $msg = $posttran['msg'];
+                    $this->coreFunctions->execqry("delete from pendingapp where trno in ($apptrno) and approver = ?", 'delete', ['REIMBURSEMENT']);
+                }
+            } else {
+                $msg = ' Automatic Distribution Failed.';
+                goto endgenerate;
+            }
+        } else {
+            endgenerate:
+            $this->coreFunctions->LogConsole('Pendingapp trno: ' . $apptrno);
+            $this->coreFunctions->execqry("delete from pendingapp where trno in ($apptrno) and doc = 'DY' and approver = ?", 'delete', ['REIMBURSEMENT']);
+
+            if (!empty($pendingdata)) {
+                foreach ($pendingdata as $pd) {
+                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid,approver) values(?, ?, ?, ? , ?)", 'insert', [$pd->trno, $pd->line, $pd->doc, $pd->clientid, $pd->approver]);
+                }
+            }
+            $hdtrno_list = implode(",", $hdtrno_list);
+            $this->coreFunctions->execqry("update hdailytask set apvtrno = 0 where userid = " . $userid . " and apvtrno = $trno and  trno in ($hdtrno_list)", 'update');
+            $this->coreFunctions->execqry("delete from lahead where trno=? and doc = 'PV'", 'delete', [$trno]);
+            $this->coreFunctions->execqry("delete from ladetail where trno=?", 'delete', [$trno]);
+            $this->coreFunctions->execqry('delete from cntnum where trno=?', 'delete', [$trno]);
+            $this->logger->sbcdel_log($trno, $config, $docno);
+        }
+
+
+
         $returndata = $this->loaddata($config);
         $allreimbursedata = $this->getallreimbursement($config);
-        return ['status' => $status, 'msg' => $msg, 'data' => $returndata, 'reloadtableentry' => $allreimbursedata]; // close this form and reloadtableentry na unang tinawag bago itong form na ito 
+        return ['status' => $status, 'msg' => $msg, 'data' => $returndata, 'reloadtableentry' => $allreimbursedata, 'getsbclistdata' => ['gapplications']]; // close this form and reloadtableentry na unang tinawag bago itong form na ito 
     }
     public function getallreimbursement($config)
     {
@@ -308,9 +340,9 @@ class viewreimbursement
         $status = true;
         $postdate = $this->othersClass->getCurrentDate();
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-
+        $data['line'] += 1;
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', [$this->contra]);
-        $entry = ['acnoid' => $acnoid, 'client' => $data['client'],  'ref' => '', 'db' => 0, 'cr' => $data['amount'], 'postdate' => $postdate, 'line' => $data['line']];
+        $entry = ['acnoid' => $acnoid, 'client' => $data['client'],  'ref' => '', 'db' => 0, 'cr' => $data['amount'], 'postdate' => $postdate, 'line' => $data['line'], 'sortline' => $data['line']];
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
         foreach ($this->acctg as $key => $value) {
@@ -322,7 +354,9 @@ class viewreimbursement
             $this->acctg[$key]['trno'] = $trno;
             $this->acctg[$key]['db'] = round($this->acctg[$key]['db'], 2);
             $this->acctg[$key]['cr'] = round($this->acctg[$key]['cr'], 2);
+            $this->acctg[$key]['sortline'] = $data['line'];
         }
+        $this->coreFunctions->LogConsole(json_encode($this->acctg));
         if ($this->coreFunctions->sbcinsert('ladetail', $this->acctg) == 1) {
             $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS');
             $status = true;

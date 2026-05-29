@@ -83,7 +83,7 @@ class viewtaskhistory
     data_set($col1, 'category.class', 'cscategory');
     data_set($col1, 'category.readonly', false);
 
-    $categorylist = $this->coreFunctions->datareader("select group_concat(category) as value from reqcategory where istaskcat=1", [], '', '', true);
+    $categorylist = $this->coreFunctions->datareader("select group_concat(category) as value from reqcategory where istaskcat=1", [], '', true);
     if ($categorylist != '') {
       $catlist = explode(",", $categorylist);
       $list = array();
@@ -168,7 +168,7 @@ class viewtaskhistory
               from hdailytask as dt  $filter and dt.statid=6) as totalreturn,
              (select dt.trno from hdailytask as dt
               $filter and dt.ischecker = 0 order by trno asc limit 1) as dytrno,
-              " . $refx . " as refx, '' as category, '" . $solution . "' as rem1, '$ctrno' as checkertrno,
+              " . $refx . " as refx, '" . $solution . "' as rem1, '$ctrno' as checkertrno,
               dt.rem , '$checkerid' as checkerid , '$statid' as statid,  " . $userid . " as currentuserid,'" . $category . "' as category
             from hdailytask as dt  $filter  
             group by dt.donedate,dt.rem order by donedate desc";
@@ -186,6 +186,8 @@ class viewtaskhistory
   {
     $action = $config['params']['action2'];
     $dytrno = $config['params']['dataparams']['dytrno'];
+
+    $label = '';
 
     if ($action == 'update') {
 
@@ -352,14 +354,16 @@ class viewtaskhistory
                     $socketmsg = "Task checked and completed: " . $rem;
                     if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
                   }
+                  //2026 May 17
+                  //temporary disable due to pending app for reimbursement is not working yet
                   // REIMBURSEMENT
                   if ($config['params']['doc'] == 'DY') {
-                      $amount = $this->coreFunctions->datareader("select amt as value from hdailytask where trno = ?", [$refx],'',true);
-                      if ($amount != 0) {
-                          $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
-                          $r =  $this->othersClass->insertUpdatePendingapp($checkertrno, 0, 'DY', [], $url, $config, 3863, false, true, 'REIMBURSEMENT');
-                          $this->coreFunctions->LogConsole('Amount: ' . $amount . ' msg: ' . $r['msg']);
-                      }
+                    $amount = $this->coreFunctions->datareader("select amt as value from hdailytask where trno = ?", [$refx], '', true);
+                    if ($amount != 0) {
+                      $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
+                      $r =  $this->othersClass->insertUpdatePendingapp($checkertrno, 0, 'DY', [], $url, $config, 3863, false, true, 'REIMBURSEMENT');
+                      $this->coreFunctions->LogConsole('Amount: ' . $amount . ' msg: ' . $r['msg']);
+                    }
                   }
                 }
               }
@@ -370,7 +374,7 @@ class viewtaskhistory
         }
 
         $config['params']['trno'] = $dytrno;
-        return ['status' => true, 'msg' => $label, 'data' => []]; //, 'txtdata' => $txtdata
+        return ['status' => true, 'msg' => $label, 'data' => [], 'reloadsbclist' => true, 'action' => 'dailytask']; //, 'txtdata' => $txtdata
       }
     }
   } //end function

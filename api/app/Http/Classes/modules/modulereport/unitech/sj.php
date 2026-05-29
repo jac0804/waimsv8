@@ -85,7 +85,8 @@ class sj
     public function report_default_query($config)
     {
         $trno = $config['params']['dataid'];
-        $query = "select head.rem,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,head.address, head.terms, item.barcode, client.tin,item.itemname, stock.isqty as qty, 
+        $query = "select head.rem,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,head.address, head.terms, item.barcode, client.tin,
+        item.itemname, stock.isqty as qty, 
                          stock.uom,stock.line,stock.iss,ifnull((select uom from uom where itemid=stock.itemid 
                          and uom.factor = 1),'') as uompcs,stock.isamt as gross, stock.disc, 
                          stock.ext,stock.rem as notes,uom.factor
@@ -98,7 +99,7 @@ class sj
             left join uom on uom.itemid=stock.itemid and uom.uom=stock.uom
             where head.doc='sj' and head.trno='$trno'
             UNION ALL
-            select head.rem,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+            select head.rem,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,
                     head.address, head.terms, item.barcode, client.tin,item.itemname, stock.isqty as qty, 
                     stock.uom,stock.line ,stock.iss,ifnull((select uom from uom where itemid=stock.itemid 
                          and uom.factor = 1),'') as uompcs, stock.isamt as gross, 

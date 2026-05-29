@@ -108,7 +108,7 @@ class sj
             right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty,uom.printuom as uom , stock.isamt as amt, stock.disc, stock.ext, head.agent,
-            item.sizeid, left(ag.clientname,17) as agname, item.brand,ifnull(client.registername,'') as registername,date(head.due) as due,if(head.contact !='', head.contact, ifnull(client.contact,'')) as contact,
+            item.sizeid, left(ag.clientname,17) as agname, item.brand,ifnull(client.registername,'') as registername,date(head.due) as due,ifnull(client.contact,'') as contact,
             wh.client as whcode, wh.clientname as whname,month(head.dateid) as month,year(head.dateid) as year,client.clientid, sku.sku, sg.stockgrp_name, req.category as group1, req.reqtype as repacker1, req.code as repacker2, req.position as repacker3, req2.category as group2, req2.reqtype as repacker4, req2.code as repacker5, req2.position as repacker6, date(head.sdate1) as sdate1, date(head.sdate2) as sdate2, format(head.amount,0) as amount
             from lahead as head
             left join lastock as stock on stock.trno=head.trno
@@ -128,7 +128,7 @@ class sj
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, uom.printuom as uom , stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
             item.sizeid, left(ag.clientname,17) as agname,item.brand,
-            ifnull(client.registername,'') as registername,date(head.due) as due,if(head.contact !='', head.contact, ifnull(client.contact,'')) as contact,
+            ifnull(client.registername,'') as registername,date(head.due) as due,ifnull(client.contact,'') as contact,
             wh.client as whcode, wh.clientname as whname,month(head.dateid) as month,year(head.dateid) as year,client.clientid, sku.sku, sg.stockgrp_name, req.category as group1, req.reqtype as repacker1, req.code as repacker2, req.position as repacker3, req2.category as group2, req2.reqtype as repacker4, req2.code as repacker5, req2.position as repacker6, date(head.sdate1) as sdate1, date(head.sdate2) as sdate2, format(head.amount,0) as amount
             from glhead as head
             left join glstock as stock on stock.trno=head.trno

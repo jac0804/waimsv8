@@ -64,6 +64,10 @@ class viewiteminfo
             case 'PX';
                 break;
             default:
+            if (isset($config['params']['row'])) {
+                $trno = $config['params']['row']['trno'];
+                $this->modulename = 'ITEM INFORMATION - ' . $config['params']['row']['itemname'];
+            } else{
                 if (isset($config['params']['clientid'])) {
                     if ($config['params']['clientid'] != 0) {
                         $itemid = $config['params']['clientid'];
@@ -71,6 +75,8 @@ class viewiteminfo
                         $this->modulename = 'ITEM INFORMATION - ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
                     }
                 }
+            }
+                
                 break;
         }
 

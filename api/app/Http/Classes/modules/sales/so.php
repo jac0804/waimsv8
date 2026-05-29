@@ -897,6 +897,7 @@ class so
           $tbuttons = ['eggitems', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
           break;
         case 39: //cbbsi
+        case 64: //excelin 
           $tbuttons = ['pendingqt', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
           break;
         default:
@@ -1727,6 +1728,9 @@ class so
           break;
 
         case 21: //kinggeorge
+          $qry = "select s.trno from " . $this->stock . " as s where s.trno=? and s.isamt=0 limit 1";
+          $isitemzeroamt = $this->coreFunctions->datareader($qry, [$trno], '', true);
+          if ($isitemzeroamt)  return ['status' => false, 'msg' => 'Posting failed. All items must have amount greater than zero.'];
           break;
 
         default:
@@ -1953,15 +1957,21 @@ class so
     $companyid = $config['params']['companyid'];
     $itemname = 'item.itemname,';
     $itemdesc = '';
+    $color = '';
 
     if ($companyid == 28) { //xcomp
       $itemname = "case when item.itemname like '%misc%' and stockinfo.itemdesc <>'' then stockinfo.itemdesc else item.itemname end as itemname,";
     }
 
-    if ($companyid == 47) //kitchenstar
-    {
+    if ($companyid == 47) { //kitchenstar
       $itemdesc = ",ifnull(stockinfo.itemdesc, '') as itemdesc";
     }
+
+    if ($companyid == 64) { //excelin
+      $color = ",case when stock.limitcheck = 1  then 'bg-yellow-2' else '' end as qacolor";
+    }
+
+
 
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -1997,7 +2007,7 @@ class so
 
     '' as bgcolor,
     case when stock.void=0 then '' else 'bg-red-2' end as errcolor,
-    case when stock.noprint=0 then 'false' else 'true' end as noprint";
+    case when stock.noprint=0 then 'false' else 'true' end as noprint " . $color . "";
     return $sqlselect;
   }
 
@@ -2662,14 +2672,19 @@ class so
       $sku = $this->coreFunctions->getfieldvalue('sku', "sku", "itemid=? and clientid=?", [$itemid, $clientid]);
     }
 
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty,lastpr from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
+    $lastpr = 0;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       if ($companyid == 19) { //housegem
         $weight = $item[0]->tqty;
+      }
+
+      if ($companyid == 64) { //excilin
+        $lastpr = $item[0]->lastpr;
       }
     }
 
@@ -2697,6 +2712,11 @@ class so
 
     if (floatval($forex) == 0) {
       $forex = 1;
+    }
+
+    $amt1 = 0;
+    if ($companyid == 64) { //excelin
+      $amt1 = number_format($computedata['amt'] * $forex, $this->companysetup->getdecimal('price', $config['params']), '.', '');
     }
 
     $data = [
@@ -2733,6 +2753,14 @@ class so
     }
     if ($companyid == 22) { //eipi
       $data['fstatus'] = $sku;
+    }
+
+    if ($companyid == 64) { //excelin
+      if ($amt1 < $lastpr) { //if the amount is less than last price
+        $data['limitcheck'] = 1;
+      } else {
+        $data['limitcheck'] = 0;
+      }
     }
 
     foreach ($data as $key => $value) {
@@ -2790,6 +2818,12 @@ class so
     } elseif ($action == 'update') {
       $return = true;
       $msg = '';
+
+      if ($companyid == 64) {
+        if ($data['amt'] < $lastpr) {
+          $data['limitcheck'] = 1;
+        }
+      }
 
       // $this->coreFunctions->execqry("update " . $this->stock . " set itemid='" . $data['itemid'] . "', isamt='" . $data['isamt'] . "', amt='" . $data['amt'] . "', isqty='" . $data['isqty'] . "', iss='" . $data['iss'] . "', ext='" . $data['ext'] . "', kgs='" . $data['kgs'] . "', disc='" . $data['disc'] . "', whid='" . $data['whid'] . "', loc='" . $data['loc'] . "', void='" . $data['void'] . "', uom='" . $data['uom'] . "', rem='" . $data['rem'] . "', refx='" . $data['refx'] . "', linex='" . $data['linex'] . "', expiry='" . $data['expiry'] . "', ref='" . $data['ref'] . "', fstatus='" . $data['fstatus'] . "',noprint='" . $data['noprint'] . "' where trno='" . $data['trno'] . "' and line='" . $data['line'] . "'", 'update');
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);

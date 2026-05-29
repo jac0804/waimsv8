@@ -255,7 +255,11 @@ class viewitemstockinfo
         where s.trno='" . $trno . "'";
         break;
       default:
+      $filter = '';
+      if($hstock == 'glstock'){
         $filter = " and s.cline = 0 ";
+      }
+       
         $addf = "";
         $companyid = $config['params']['companyid'];
         if ($config['params']['doc'] == "TS") {

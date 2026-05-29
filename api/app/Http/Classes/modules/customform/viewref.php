@@ -301,6 +301,7 @@ class viewref
         break;
       case 'SJ':
       case 'MJ':
+      case 'AM': 
         switch ($companyid) {
           case 40: //cdo
             $qry = '

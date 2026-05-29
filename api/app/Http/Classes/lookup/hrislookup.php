@@ -1451,23 +1451,36 @@ class hrislookup
 
   public function lookupdays($config)
   {
+    $lookupclass = $config['params']['lookupclass'];
     $lookupsetup = array(
       'type' => 'single',
       'title' => 'Select',
       'style' => 'width:400px;max-width:400px;'
     );
-
-    $plotsetup = array(
-      'plottype' => 'plothead',
-      'plotting' => array('hours' => 'hours')
-    );
+    $plotting = array('hours' => 'hours');
 
     // lookup columns
     $cols = array(
       array('name' => 'hours', 'label' => 'No. of Day', 'align' => 'left', 'field' => 'hours', 'sortable' => true, 'style' => 'font-size:16px;'),
     );
 
-    $qry = "select 'Whole day' as hours union all select 'Half day' as hours";
+    switch ($lookupclass) {
+      case 'lookupdaytype':
+        $plotting = array('type' => 'type', 'hours' => 'hours');
+        $cols = array(
+          array('name' => 'type', 'label' => 'Day', 'align' => 'left', 'field' => 'type', 'sortable' => true, 'style' => 'font-size:16px;'),
+        );
+        $qry = "select 'Whole day' as `type`, '1' as hours  union all select 'Half day' as `type`, '0.5' as hours";
+        break;
+      default:
+        $qry = "select 'Whole day' as hours union all select 'Half day' as hours";
+        break;
+    }
+
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'plotting' => $plotting
+    );
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

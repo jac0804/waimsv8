@@ -146,12 +146,18 @@ class summary_of_transaction_report
                     str_replace("ifnull(count(num.docno),0)", "group_concat(num.trno)", $qry)
                 );
 
-                $totalamount = $this->coreFunctions->datareader("select ifnull(sum($amount_origin_field),0) as value from(
-                            select trno,$amount_origin_field from $table
-                            union all
-                            select trno,$amount_origin_field from $htable
-                            ) as s
-                            where trno in ($trno_list_for_total_amount)");
+                if($trno_list_for_total_amount ==""){
+                    $totalamount =0;
+                }else{
+                    $totalamount = $this->coreFunctions->datareader("select ifnull(sum($amount_origin_field),0) as value from(
+                        select trno,$amount_origin_field from $table
+                        union all
+                        select trno,$amount_origin_field from $htable
+                        ) as s
+                        where trno in ($trno_list_for_total_amount)");
+                }
+
+                
 
                 break;
         }

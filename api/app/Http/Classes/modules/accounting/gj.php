@@ -505,6 +505,10 @@ class gj
       case 40: //cdo
         array_push($tbuttons, 'mccollection');
         break;
+
+      case 29: //sbc
+        array_push($tbuttons, 'unpaidall');
+        break;
     }
 
     $obj = $this->tabClass->createtabbutton($tbuttons);

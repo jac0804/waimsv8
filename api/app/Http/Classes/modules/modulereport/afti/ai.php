@@ -1361,7 +1361,7 @@ class ai
                     $vatsales = $vatsales + $linetotal;
                     $totalext = $totalext + $linetotal;
                 } else {
-                    $vatsales = 0;
+                    $vatsales =$totalext + $linetotal;
                     $totalext = $totalext + $linetotal;
                 }
             }
@@ -1385,6 +1385,7 @@ class ai
                 $tamtdue = round(($vatsales + $vat) - $ewt, 2);
             } else {
                 $vat = 0;
+                $tamtdue = round(($tamtdue - $ewt), 2);
             }
 
             //$tamtdue = round(($vatsales + $vat) - $ewt, 2);

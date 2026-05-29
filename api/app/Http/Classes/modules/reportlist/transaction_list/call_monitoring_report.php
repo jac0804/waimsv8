@@ -177,7 +177,7 @@ class call_monitoring_report
         $qsUnion = $filter2_active ? "" : "
         union
 
-        select qs.dateid, qs.docno, agent.clientname as agent, client.clientname,
+        select calls.dateid, qs.docno, agent.clientname as agent, client.clientname,
         qs.industry, calls.contact, calls.calltype, '' as sourcename, calls.rem
         from qshead as qs
         left join client on client.client = qs.client
@@ -187,7 +187,7 @@ class call_monitoring_report
 
         union all
 
-        select qs.dateid, qs.docno, agent.clientname as agent, client.clientname,
+        select calls.dateid, qs.docno, agent.clientname as agent, client.clientname,
         qs.industry, calls.contact, calls.calltype, '' as sourcename, calls.rem
         from hqshead as qs
         left join client on client.client = qs.client
@@ -196,7 +196,7 @@ class call_monitoring_report
         where date(calls.dateid) between '$start' and '$end' $filterQS
      ";
 
-        $query = "select op.dateid, op.docno, agent.clientname as agent, client.clientname, op.industry, calls.contact, calls.calltype, case
+        $query = "select calls.dateid, op.docno, agent.clientname as agent, client.clientname, op.industry, calls.contact, calls.calltype, case
                 when op.source = 'Exhibit' then ex.title
                 when op.source = 'Seminar' then sem.title
                 when op.source = 'Others' then ifnull(source.description, ' ')
@@ -215,7 +215,7 @@ class call_monitoring_report
 
               union
 
-              select op.dateid, op.docno, agent.clientname as agent, client.clientname, op.industry, calls.contact, calls.calltype, case
+              select calls.dateid, op.docno, agent.clientname as agent, client.clientname, op.industry, calls.contact, calls.calltype, case
                 when op.source = 'Exhibit' then ex.title
                 when op.source = 'Seminar' then sem.title
                 when op.source = 'Others' then ifnull(source.description, ' ')

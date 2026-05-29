@@ -127,15 +127,18 @@ class tenant_profile_tab
     tinfo.msales, tinfo.elecrate, tinfo.selecrate, tinfo.waterrate, tinfo.classification, tinfo.eratecat,
     tinfo.wratecat, tinfo.secdep, tinfo.secdepmos, tinfo.ewcharges, tinfo.concharges, tinfo.fencecharge,
     tinfo.powercharges, tinfo.watercharges, tinfo.housekeeping, tinfo.docstamp, tinfo.consbond, tinfo.emeterdep, tinfo.servicedep, tinfo.rem,
-    tinfo.tenanttype, loc.area, loc.emeter, loc.semeter, loc.wmeter,
-    elect.category as eratecatname, water.category as wratecatname
+    tinfo.tenanttype, loc.emeter, loc.semeter, loc.wmeter,
+    elect.category as eratecatname, water.category as wratecatname,
+    (select ifnull(sum(l.area),0) as area from tenantloc
+             left join loc as l on l.line=tenantloc.locid
+             where  tenantloc.clientid=tinfo.clientid  and l.isserve=1) as area
     from tenantinfo as tinfo
     left join client as cl on cl.clientid = tinfo.clientid
     left join loc as loc on loc.line = cl.locid
     left join ratecategory as elect on elect.line = tinfo.eratecat
     left join ratecategory as water on water.line = tinfo.wratecat
+     
     where tinfo.clientid=?";
-
     return $this->coreFunctions->opentable($qry, [$clientid]);
   }
 

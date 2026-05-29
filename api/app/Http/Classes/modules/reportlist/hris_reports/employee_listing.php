@@ -41,7 +41,12 @@ class employee_listing
 
   public function createHeadField($config)
   {
-    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep', 'sectrep',];
+    $companyid = $config['params']['companyid'];
+    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep', 'sectrep'];
+
+    if ($companyid == 58) { //cdohris
+      array_push($fields, 'branchname');
+    }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
     data_set($col1, 'dclientname.label', 'Employee');
@@ -51,6 +56,8 @@ class employee_listing
     data_set($col1, 'deptrep.label', 'Department');
     data_set($col1, 'sectrep.lookupclass', 'lookupempsection');
     data_set($col1, 'sectrep.label', 'Section');
+
+    if ($companyid == 58) data_set($col1, 'branchname.lookupclass', 'hbranch'); //cdohris
 
     $fields = ['radioreportempstatus'];
     $col2 = $this->fieldClass->create($fields);
@@ -78,7 +85,9 @@ class employee_listing
     '' as sectrep,
     '' as sectid,
     '' as sectname,
-    '(0,1)' as empstatus
+    '(0,1)' as empstatus,
+    '' as branchname,
+    '' as branch
     ");
   }
 
@@ -111,6 +120,8 @@ class employee_listing
     $deptid     = $config['params']['dataparams']['deptid'];
     $sectid     = $config['params']['dataparams']['sectid'];
     $empstatus = $config['params']['dataparams']['empstatus'];
+    $branch = $config['params']['dataparams']['branch'];
+    $branchname = $config['params']['dataparams']['branchname'];
     $filters   = "";
 
     if ($client != "") {
@@ -124,6 +135,9 @@ class employee_listing
     }
     if ($sectid != "") {
       $filters .= " and e.sectid = $sectid";
+    }
+    if ($branchname != "") {
+      if ($branch != 0) $filters .= " and e.branchid = '$branch'";
     }
     switch ($empstatus) {
       case '(0)':
@@ -139,9 +153,10 @@ class employee_listing
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
     $query = "select client.client, CONCAT(UPPER(e.emplast), ', ', e.empfirst, ' ', LEFT(e.empmiddle, 1), '.') as clientname, e.address,e.telno,
-              date(e.hired) as hired, date(e.bday) as bday, e.jobtitle, e.tin, e.sss, e.hdmf, e.phic 
+              date(e.hired) as hired, date(e.bday) as bday, job.jobtitle, e.tin, e.sss, e.hdmf, e.phic 
               from employee as e 
-              left join client on client.clientid=e.empid 
+              left join client on client.clientid=e.empid
+              left join jobthead as job on job.line=e.jobid 
               where e.emplast<>'' and e.level in $emplvl $filters
               order by e.emplast";
 
@@ -154,7 +169,7 @@ class employee_listing
     $border = '1px solid';
     $border_line = '';
     $alignment = '';
-    $font = 'Century Gothic';
+    $font = 'Arial';
     $font_size = '9';
     $padding = '';
     $margin = '';
@@ -244,11 +259,11 @@ class employee_listing
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CODE', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('EMPLOYEE &nbsp NAME', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('CODE', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE NAME', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('POSITION', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('DATE &nbsp HIRED', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('BIRTH &nbsp DATE', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('DATE HIRED', '70', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('BIRTH DATE', '70', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('ADDRESS', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('MOBILE #', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('TIN #', '60', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
@@ -268,7 +283,7 @@ class employee_listing
     $border = '1px solid';
     $border_line = '';
     $alignment = '';
-    $font = 'Century Gothic';
+    $font = 'Arial';
     $font_size = '9';
     $padding = '';
     $margin = '';
@@ -290,11 +305,11 @@ class employee_listing
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
 
-      $str .= $this->reporter->col($data->client, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->clientname, '150', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->jobtitle, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->hired, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->bday, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->hired, '70', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bday, '70', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->address, '150', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->telno, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->tin, '60', null, false, $border, '', '', $font, $font_size, '', '', '');

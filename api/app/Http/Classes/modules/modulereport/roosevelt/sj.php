@@ -316,7 +316,7 @@ class sj
     }
     $refString = implode(",", array_unique($refs));
     PDF::MultiCell(50, 0, 'P.O. No.:', 'TL', 'L', false, 0);
-    PDF::MultiCell(75, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'TR', 'L', false, 0);
+    PDF::MultiCell(75, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'TR', 'L', false, 0);
     PDF::MultiCell(50, 0, 'RC No.:', 'T', 'L', false, 0);
     PDF::MultiCell(145, 0, $refString, 'TR', 'L', false);
 
@@ -343,7 +343,7 @@ class sj
     PDF::MultiCell(50, 0, 'Place:', 'L', 'L', false, 0); // (isset($data[0]['place']) ? $data[0]['place'] : '')
     PDF::MultiCell(145, 0, '', 'R', 'L', false);
 
-    PDF::SetFont($font, '', 7.5);
+    PDF::SetFont($font, '', 11); //7.5
     PDF::MultiCell(78, 0, (isset($data[0]['shipvia']) ? $data[0]['shipvia'] : ''), 'L', 'L', false, 0);
     PDF::MultiCell(78, 0, (isset($data[0]['mv']) ? $data[0]['mv'] : ''), '', 'C', false, 0);
     PDF::MultiCell(78, 0, (isset($data[0]['voyage']) ? $data[0]['voyage'] : ''), '', 'C', false, 0);
@@ -1062,7 +1062,7 @@ class sj
     }
     $refString = implode(",", array_unique($refs));
     PDF::MultiCell(50, 0, 'P.O. No.:', 'TL', 'L', false, 0);
-    PDF::MultiCell(75, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'TR', 'L', false, 0);
+    PDF::MultiCell(75, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'TR', 'L', false, 0);
     PDF::MultiCell(50, 0, 'RC No.:', 'T', 'L', false, 0);
     PDF::MultiCell(145, 0, $refString, 'TR', 'L', false);
 
@@ -1089,7 +1089,7 @@ class sj
     PDF::MultiCell(50, 0, 'Place:', 'L', 'L', false, 0); // (isset($data[0]['place']) ? $data[0]['place'] : '')
     PDF::MultiCell(145, 0, '', 'R', 'L', false);
 
-    PDF::SetFont($font, '', 7.5);
+    PDF::SetFont($font, '', 11); //7.5
     PDF::MultiCell(78, 0, (isset($data[0]['shipvia']) ? $data[0]['shipvia'] : ''), 'L', 'C', false, 0);
     PDF::MultiCell(78, 0, (isset($data[0]['mv']) ? $data[0]['mv'] : ''), '', 'C', false, 0);
     PDF::MultiCell(78, 0, (isset($data[0]['voyage']) ? $data[0]['voyage'] : ''), '', 'C', false, 0);

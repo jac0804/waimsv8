@@ -55,7 +55,7 @@ class assignuser
 
     public function createHeadField($config)
     {
-        $fields = ['username', 'clientname', 'refresh'];
+        $fields = ['username', 'clientname', 'title', 'lblrem', 'task', 'refresh'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'username.lookupclass', 'dylookupusers');
         data_set($col1, 'clientname.type', 'lookup');
@@ -64,6 +64,9 @@ class assignuser
         data_set($col1, 'clientname.addedparams', ['dyclient']);
         data_set($col1, 'clientname.label', 'Company');
         data_set($col1, 'refresh.label', 'Save');
+        data_set($col1, 'lblrem.label', 'Task Details');
+        data_set($col1, 'title.label', 'Task Title');
+        data_set($col1, 'title.readonly', false);
         return array('col1' => $col1);
     }
 
@@ -86,7 +89,7 @@ class assignuser
         return $this->coreFunctions->opentable("select  if('$username' != '', '$username', '') as username, '$assignedid' as assignedid,'$trno' as trno,
                                   '$customerid' as customerid,'$checkerid' as checkerid,'$notes' as notes,'$userid' as userid,'$catid' as catid,'$tasktrno' as tasktrno,
                                   '" . $reseller . "' as reseller, '" . $dyclient . "' as dyclient,
-                                   '' as clientname, 0 as tmtrno, '' as tmclientid, '' as tmreseller, '' as tmclient ");
+                                   '' as clientname, 0 as tmtrno, '' as tmclientid, '' as tmreseller, '' as tmclient, '' as title, '' as task");
     }
 
 
@@ -133,12 +136,19 @@ class assignuser
         $tmclient = $config['params']['dataparams']['tmclient']; //client code sa task setup
         $tmreseller = $config['params']['dataparams']['tmreseller'];
 
+        //may 19 2026
+        $title = $config['params']['dataparams']['title'];
+        $taskdetails = $config['params']['dataparams']['task'];
+
         $createdby = $config['params']['adminid'];
         $email = $this->coreFunctions->getfieldvalue("client", "email", "clientid=? ", [$createdby]);
         $msg = '';
 
+        $blnHeadChecker = false;
+
         $projecthead = $this->coreFunctions->getfieldvalue("client",  "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$checkerid], '', true);
         if ($projecthead != 0) {
+            AssignedHere:
             if ($assignedid != 0) {
                 // DETERMINE KUNG MAG-IINSERT OR CREATE
                 $useExisting = false;
@@ -174,6 +184,10 @@ class assignuser
                     return ['status' => false, 'msg' => 'User assigning error. Please refresh the page.',  'closecustomform' => true,  'reloadhead' => true];
                 }
 
+                if ($title == '' || $taskdetails == '') {
+                    return ['status' => false, 'msg' => 'Task title or task details  cannot be blank.',  'closecustomform' => false,  'reloadhead' => false];
+                }
+
 
                 // IF EXISTING  INSERT DETAIL
                 if ($useExisting) {
@@ -185,9 +199,10 @@ class assignuser
                         'userid' => $assignedid,
                         'encodedby' => $email,
                         'encodeddate' => $datenow,
-                        'title' => $notes,
+                        'title' => $title,
                         'status' => 2,
-                        'taskcatid' => $catid
+                        'taskcatid' => $catid,
+                        'task' => $taskdetails
                     ];
                     $this->coreFunctions->insertGetId('tmdetail', $detaildata);
                     $tmline = $this->coreFunctions->getfieldvalue("tmdetail",  "line", "trno=?", [$tmtrno], '', true);
@@ -218,21 +233,26 @@ class assignuser
                         'reseller' => $reseller
                     ];
 
+                    if ($blnHeadChecker) {
+                        $data['checkerid'] = 0;
+                        $data['requestby'] = $createdby;
+                    }
+
                     $generatetm = $this->coreFunctions->insertGetId('tmhead', $data);
 
                     if ($generatetm != 0) {
                         $data2 = [
                             'trno' => $generatetm,
                             'line' => 1,
-                            'task' => '',
                             'userid' => $assignedid,
                             'startdate' => $datenow,
                             'encodeddate' => $datenow,
                             'encodedby' => $email,
-                            'title' => $notes,
+                            'title' => $title,
                             'status' => 2,
                             'acceptdate' => $datenow,
-                            'taskcatid' => $catid
+                            'taskcatid' => $catid,
+                            'task' => $taskdetails
                         ];
 
                         $this->coreFunctions->insertGetId('tmdetail', $data2);
@@ -255,6 +275,10 @@ class assignuser
                 return ['status' => true,  'msg' => $msg, 'closecustomform' => true, 'reloadhead' => true];
             }
         } else {
+            if ($this->othersClass->isSBCProjectHead($createdby)) {
+                $blnHeadChecker = true;
+                goto AssignedHere;
+            }
             return ['status' => false,  'msg' => 'Please select the designated project head as checker.', 'closecustomform' => false, 'reloadhead' => false];
         }
     }

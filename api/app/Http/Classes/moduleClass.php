@@ -355,8 +355,9 @@ class moduleClass
 		}
 	}
 
-//fpy 3.2.2026
-	public function checkrestrictip_uponlogin($params){
+	//fpy 3.2.2026
+	public function checkrestrictip_uponlogin($params)
+	{
 		if ($this->companysetup->getrestrictip($params)) {
 			$ipaccess = $params['levelid'][0]['attributes'][3722]; //restrict ip access
 			if ($ipaccess == 1) {
@@ -559,8 +560,8 @@ class moduleClass
 			$socketnotify = $this->companysetup->getsocketnotify($params);
 			$isnavigation = $this->companysetup->getisnavigation($params);
 			$isenterqty = $this->companysetup->getisenterqty($params);
-            $lookupclientpermodule= $this->companysetup->getlookupclientpermodule($params);
-			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url'=>$socketserver,'notify'=>$socketnotify],'lookupclientpermodule'=>$lookupclientpermodule,'otherparams'=>['isnavigation'=>$isnavigation,'isenterqty'=>$isenterqty]], 200);
+			$lookupclientpermodule = $this->companysetup->getlookupclientpermodule($params);
+			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url' => $socketserver, 'notify' => $socketnotify], 'lookupclientpermodule' => $lookupclientpermodule, 'otherparams' => ['isnavigation' => $isnavigation, 'isenterqty' => $isenterqty]], 200);
 		} else {
 			$this->logger->sbciplog('LOG-FAIL', $params['ip'], $params['username']);
 			$status = false;
@@ -780,6 +781,7 @@ class moduleClass
 			case 'WAREHOUSE':
 			case 'OTHERCHARGES':
 			case 'EMPPROJECTLOGB':
+			case 'AK':
 				$this->config['isposted'] = false;
 				$this->config['islocked'] = false;
 				break;
@@ -1017,8 +1019,8 @@ class moduleClass
 
 			$pricecol = [];
 
-			switch ($this->config['params']['companyid']){
-				case 60://transpower
+			switch ($this->config['params']['companyid']) {
+				case 60: //transpower
 					switch ($this->config['params']['doc']) {
 						case 'SJ':
 						case 'SO':
@@ -1034,14 +1036,14 @@ class moduleClass
 								['name' => 'yourref', 'label' => 'Your Ref#', 'align' => 'left', 'field' => 'yourref'],
 								['name' => 'ourref', 'label' => 'Our Ref#', 'align' => 'left', 'field' => 'ourref'],
 							];
-	
+
 							$pricecol = [
 								['name' => 'pricegrp', 'label' => 'Price Group', 'align' => 'left', 'field' => 'pricegrp'],
 								['name' => 'amt', 'label' => 'Price', 'align' => 'left', 'field' => 'amt'],
 								['name' => 'disc', 'label' => 'Disc', 'align' => 'left', 'field' => 'disc'],
 								['name' => 'netamt', 'label' => 'Net Price', 'align' => 'left', 'field' => 'netamt']
 							];
-	
+
 							break;
 						default:
 							$historycol = [
@@ -1054,7 +1056,7 @@ class moduleClass
 							break;
 					}
 					break;
-				case 50://unitech
+				case 50: //unitech
 					switch ($this->config['params']['doc']) {
 						case 'SJ':
 						case 'SO':
@@ -2000,6 +2002,7 @@ class moduleClass
 				return array('codehead', 'artid', 'code');
 				break;
 			case 'JOBTITLEMASTER':
+			case 'JOBSETUP': // autoservice 
 				return array('jobthead', 'line', 'docno');
 				break;
 			case 'ROOMTYPE':
@@ -2253,11 +2256,11 @@ class moduleClass
 
 				$systemtype = $this->companysetup->getsystemtype($this->config['params']);
 				if ($systemtype != 'SSMS') {
-					if($this->config['params']['companyid'] !=57){//cdo finance
+					if ($this->config['params']['companyid'] != 57) { //cdo finance
 						if (isset($this->config['params']['head']['terms'])) {
 							if ($this->config['params']['head']['terms'] != '') {
 								$terms_exist = $this->coreFunctions->getfieldvalue("terms", "terms", "terms=?", [$this->config['params']['head']['terms']]);
-	
+
 								if ($terms_exist == '') {
 									$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Terms ' . $this->config['params']['head']['terms'] . ' does not exist', 'type' => '', 'status' => false];
 									return $this;
@@ -2265,7 +2268,6 @@ class moduleClass
 							}
 						}
 					}
-					
 				}
 
 				if ($this->config['params']['companyid'] == 10 || $this->config['params']['companyid'] == 12) { //afti, afti usd
@@ -2732,11 +2734,11 @@ class moduleClass
 
 
 		$poseq = $pref . $seq;
-		$yr =0;
+		$yr = 0;
 		if ($this->companysetup->getdocyr($this->config['params'])) {
 			$yr = $this->coreFunctions->datareader("select yr as value FROM profile where psection ='" . $this->config['params']['doc'] . "' and doc ='SED'");
 		}
-		
+
 		$newdocno = $this->othersClass->PadJ($poseq, $docnolength, $yr);
 		$this->config['pref'] = $pref;
 		$this->coreFunctions->logconsole('POSEQ: ' . $poseq);
@@ -3466,12 +3468,8 @@ class moduleClass
 	}
 
 
-    public function queuing($params)
+	public function queuing($params)
 	{
-      $this->config['params'] = $params;
-	  
+		$this->config['params'] = $params;
 	}
-
-
-
 } // end class

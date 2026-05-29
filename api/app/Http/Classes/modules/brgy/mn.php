@@ -28,10 +28,10 @@ class mn
     public $tablenum = 'transnum';
     public $head = 'mnhead';
     public $hhead = 'hmnhead';
-    public $stock = 'lastock';
-    public $hstock = 'glstock';
-    public $detail = 'ladetail';
-    public $hdetail = 'gldetail';
+    public $stock = '';
+    public $hstock = '';
+    public $detail = '';
+    public $hdetail = '';
     public $tablelogs = 'transnum_log';
     public $htablelogs = 'htransnum_log';
     public $tablelogs_del = 'del_transnum_log';

@@ -61,6 +61,16 @@ class headClass
             return ['msg' => "Lock failed; zero list price is not allowed.", 'status' => false, 'islocked' => false, 'isposted' => false];
           }
 
+          $totalexp = $this->coreFunctions->datareader("select sum(budget) as value from pxchecking where expenseid <>94 and trno = ?", [$trno], '', true);
+          if ($totalexp == 0) {
+            return ['msg' => "Lock failed; please enter expenses.", 'status' => false, 'islocked' => false, 'isposted' => false];
+          }
+
+          $zeroexp = $this->coreFunctions->datareader("select trno as value from pxchecking where expenseid <>94 and trno = ? and budget =0 limit 1", [$trno], '', true);
+          if (floatval($zeroexp) != 0) {
+            return ['msg' => "Lock failed; please enter budget for added expenses.", 'status' => false, 'islocked' => false, 'isposted' => false];
+          }
+
           break;
         case 'sa':
         case 'sb':

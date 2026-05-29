@@ -81,7 +81,7 @@ class pl
       $table = 'plhead';
     }
 
-    $query = "select right(head.docno,10) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
+    $query = "select concat(left(head.docno,2),right(head.docno,10)) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,format(hpl.amount,2) as amount
             from glhead as head
             left join glstock as stock on stock.trno = head.trno
@@ -96,7 +96,7 @@ class pl
 
        union all
 
-    select right(head.docno,10) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
+    select concat(left(head.docno,2),right(head.docno,10)) as invoice,date(head.dateid) as dateid,it.itemname,it.sizeid,stock.uom, sum(stock.iss) as qty,sum(stock.ext) as ext,
              hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,format(hpl.amount,2) as amount
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
@@ -107,7 +107,6 @@ class pl
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
             hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";
-
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -123,9 +122,8 @@ class pl
   }
 
 
-  public function roosevelt_pl_header_PDF($params, $data)
+  public function roosevelt_pl_header_PDF($params, $data, $tablehead)
   {
-    // var_dump($y);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
@@ -147,7 +145,7 @@ class pl
     // }
 
 
-    $fontsize = 12;
+    $fontsize = 15;
     $font = "Courier";
     $fontbold = "CourierB";
 
@@ -162,68 +160,78 @@ class pl
     PDF::SetFont($font, '', 9);
     // $y = PDF::getY(); //10.00125
     $y = (float)30;
-    PDF::SetFont($font, '', 12);
+    PDF::SetFont($font, '', 15);
     $name = "Roosevelt Chemicals Incorporated";
-    $address = "F. Mariano Ave. Bo. de la Paz, Pasig, Metrno Manila";
+    $address = "F. Mariano Ave. Bo. de la Paz, Pasig, Metro Manila";
     $tel = "Contact Number: 8645-1089; 7900-9642 Fax: 8645-3425";
     PDF::MultiCell(720, 0, $name, '', 'C', false, 1,  '', $y + 5);
-    PDF::SetFont($font, '', 12);
+    PDF::SetFont($font, '', 15);
     PDF::MultiCell(720, 0, $address, '', 'C', false, 1,  '', $y + 20); //Rowen
 
-    // PDF::MultiCell(0, 0, "\n");
+
     $x = PDF::getX();
-    PDF::SetFont($fontbold, '', 12);
+    PDF::SetFont($fontbold, '', 15);
     PDF::MultiCell(720, 0, 'Packing List', '', 'C', false, 1,  $x, $y + 35);
 
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::SetCellPaddings(3, 3, 3, 3);
-    PDF::MultiCell(30, 0, '', '', 'L', false, 0,  $x, $y + 55);
-    PDF::MultiCell(90, 0, 'DATE', '', 'L', false, 0,  $x + 30, $y + 55);
-    PDF::MultiCell(15, 0, ':', '', 'C', false, 0,  $x + 120, $y + 55);
+    PDF::MultiCell(30, 0, '', '', 'L', false, 0,  $x, $y + 65);
+    PDF::MultiCell(105, 0, 'DATE', '', 'L', false, 0,  $x + 30, $y + 65);
+    PDF::MultiCell(15, 0, ':', '', 'C', false, 0,  $x + 135, $y + 65);
     $date = $data[0]['dateid'];
     $datetime = new DateTime($date);
     $datehere = $datetime->format('m/d/Y');
-    PDF::MultiCell(340, 0, $datehere, '', 'L', false, 1, $x + 135, $y + 55);
+    PDF::MultiCell(315, 0, $datehere, '', 'L', false, 1, $x + 150, $y + 65);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(30, 0, 'PL#', '', 'L', false, 1, $x + 475, $y + 55);
-    PDF::MultiCell(15, 0, ':', '', 'C', false, 0,  $x + 505, $y + 55);
-    PDF::MultiCell(200, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false, 1, $x + 520, $y + 55); //(isset($data[0]['docno']) ? $data[0]['docno'] : '')
+    PDF::MultiCell(40, 0, 'PL#', '', 'L', false, 1, $x + 465, $y + 65);
+    PDF::MultiCell(15, 0, ':', '', 'C', false, 0,  $x + 505, $y + 65);
+    PDF::MultiCell(200, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false, 1, $x + 520, $y + 65); //(isset($data[0]['docno']) ? $data[0]['docno'] : '')
 
 
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::SetCellPaddings(3, 3, 3, 3);
+    // PDF::SetCellPaddings($left, $top, $right, $bottom);
+    PDF::SetCellPaddings(0, 0, 0, 3);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(90, 0, 'SHIPPER', '', 'L', false, 0);
+    PDF::MultiCell(105, 0, 'SHIPPER', '', 'L', false, 0);
     PDF::MultiCell(15, 0, ':', '', 'C', false, 0);
-    PDF::MultiCell(383, 0, 'Roosevelt Chemicals Incorporated', '', 'L', false, 1);
+    PDF::MultiCell(570, 0, 'Roosevelt Chemicals Incorporated', '', 'L', false, 1);
+
+    PDF::setCellHeightRatio(1.8);
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::SetCellPaddings(3, 3, 3, 3);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(90, 0, 'CONSIGNEE', '', 'L', false, 0);
+    PDF::MultiCell(105, 0, 'CONSIGNEE', '', 'L', false, 0);
     PDF::MultiCell(15, 0, ':', '', 'C', false, 0);
-    PDF::MultiCell(585, 0, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 1);
+    PDF::MultiCell(570, 0, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::SetCellPaddings(3, 3, 3, 3);
+    $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+
+    $line1 = PDF::getNumLines($address, 570);
+
+    if ($line1 > 1) {
+      PDF::setCellHeightRatio(1);
+    }
+
     PDF::MultiCell(30, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(90, 0, 'DESTINATION', '', 'L', false, 0);
+    PDF::MultiCell(105, 0, 'DESTINATION', '', 'L', false, 0);
     PDF::MultiCell(15, 0, ':', '', 'C', false, 0);
-    PDF::MultiCell(585, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 1);
+    PDF::MultiCell(570, 0, $address, '', 'L', false, 1);
 
     // PDF::MultiCell(0, 0, "\n");
-    $y1 = (float)184;
-    PDF::SetXY($x, $y1);
-    PDF::SetCellPaddings(4, 4, 4, 4);
-    PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(30, 0, '', '', 'C', false, 0);
-    PDF::MultiCell(65, 0, 'QTY', '', 'L', false, 0);
-    PDF::MultiCell(70, 0, 'UOM', '', 'L', false, 0);
-    PDF::MultiCell(70, 0, 'SIZEID', '', 'C', false, 0);
-    PDF::MultiCell(65, 0, '', '', 'C', false, 0);
-    PDF::MultiCell(420, 0, 'ITEMNAME', '', 'L', false, 1);
+    if ($tablehead != 1) {
+      PDF::setCellHeightRatio(1.25);
+      $y1 = (float)208; //184 //192
+      PDF::SetXY($x, $y1);
+      PDF::SetCellPaddings(4, 4, 4, 4);
+      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::MultiCell(30, 0, '', '', 'C', false, 0);
+      PDF::MultiCell(85, 0, 'QTY', '', 'R', false, 0);
+      // PDF::MultiCell(5, 0, '', '', 'C', false, 0);
+      PDF::MultiCell(100, 0, 'UOM', '', 'L', false, 0);
+      PDF::MultiCell(505, 0, 'ITEMNAME', '', 'L', false, 1);
+    }
 
     PDF::SetCellPaddings(0, 0, 0, 0);
   }
@@ -237,24 +245,24 @@ class pl
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $count = $page = 35;
+    $count = $page = 30; //30 45
     $totalext = 0;
 
 
     $border = "1px solid ";
-    $fontsize = 12;
+    $fontsize = 15;
     $font = "Courier";
     $fontbold = "CourierB";
 
-    $this->roosevelt_pl_header_PDF($params, $data);
+    $this->roosevelt_pl_header_PDF($params, $data, $tablehead = 0);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
-    PDF::SetCellPaddings(0, 4, 0, 0);
+    // PDF::SetCellPaddings(0, 0, 0, 0); //left ,top, right,bottom
     $rowCount = 0;
     $countarr = 0;
-    $y = (float)210;
+    $y = (float)230;
     $x = PDF::GetX();
-
+    PDF::setCellHeightRatio(1);
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
 
@@ -269,39 +277,53 @@ class pl
         $arr_uom = $this->reporter->fixcolumn([$uom], '15', 0);
         $arr_sizeid = $this->reporter->fixcolumn([$sizeid], '15', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom, $arr_sizeid]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom]);
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::SetXY($x, $y);
-          PDF::MultiCell(30, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(65, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(70, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(70, 15, ' ' . (isset($arr_sizeid[$r]) ? $arr_sizeid[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(65, 15, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(420, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(30, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(85, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //(isset($arr_qty[$r]) ? $arr_qty[$r] : '')
+          // PDF::MultiCell(5, 0, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(505, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           $y = PDF::getY();
           $rowCount++;
           if ($rowCount >= $page && $i < count($data) - 1) {
+            $this->continuation_footer($params, $data);
             $this->default_footer3($params, $data);
             $rowCount = 0;
-            $y = (float)210;
-            $this->roosevelt_pl_header_PDF($params, $data);
-            PDF::SetCellPaddings(0, 4, 0, 0);
+            $y = (float)230;
+            $this->roosevelt_pl_header_PDF($params, $data, $tablehead = 0);
+            // PDF::SetCellPaddings(0, 1, 0, 0);
+            PDF::setCellHeightRatio(1);
           }
         }
       }
     }
-
-
+    // if ($rowCount > 36 && $rowCount <= $count) {
+    //   $this->continuation_footer($params, $data);
+    //   $this->default_footer3($params, $data);
+    //   $rowCount = 0;
+    //   $y = (float)230;
+    //   $tablehead = 1;
+    //   $this->roosevelt_pl_header_PDF($params, $data, $tablehead);
+    //   PDF::MultiCell(0, 0, "\n");
+    //   $this->default_footer1($params, $data);
+    //   $this->default_footer2($params, $data);
+    // } else { //36 pababa
     $this->default_footer1($params, $data);
     $this->default_footer2($params, $data);
+    // }
+
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
 
+
   public function default_footer1($params, $data)
   {
-    $fontsize = 12;
+    $fontsize = 15;
     $font = "Courier";
     $fontbold = "CourierB";
 
@@ -321,8 +343,9 @@ class pl
     $invoicesstring = implode(" , ", array_unique($invoices));
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
-    PDF::MultiCell(135, 0,  number_format($totalctns, 2), 'T', 'C', false, 0);
-    PDF::MultiCell(555, 0,  'ctns.', '', 'L', false, 1);
+    PDF::MultiCell(90, 0,  number_format($totalctns, 2), 'T', 'R', false, 0);
+    PDF::MultiCell(85, 0,  ' ' . 'ctns.', 'T', 'L', false, 0);
+    PDF::MultiCell(515, 0,  '', '', 'L', false, 1);
 
 
     PDF::MultiCell(0, 0, "\n");
@@ -342,7 +365,7 @@ class pl
 
   public function default_footer2($params, $data)
   {
-    $fontsize = 12;
+    $fontsize = 15;
     $font = "Courier";
     $fontbold = "CourierB";
 
@@ -351,32 +374,31 @@ class pl
       $totalext += $row['ext'];
     }
 
-    PDF::SetY(830);
+    PDF::SetY(870);
     PDF::MultiCell(720, 0, '', 'T', 'L', false, 1);
 
-    PDF::SetY(835);
+    PDF::SetY(875);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(170, 0, 'VIA : JADES CARGO', '', 'L', false, 0);
-    PDF::MultiCell(80, 0, 'WAYBILL# :', '', '', false, 0);
-    PDF::MultiCell(240, 0, '', '', '', false, 0);
+    PDF::MultiCell(90, 0, 'WAYBILL# :', '', '', false, 0);
+    PDF::MultiCell(230, 0, '', '', '', false, 0);
     PDF::MultiCell(110, 0, 'AMOUNT :', '', 'R', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(90, 0,  number_format($totalext, 2), '', 'R', false, 1);
 
-    PDF::SetY(860);
+    PDF::SetY(890);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
-    PDF::MultiCell(250, 0, 'Received in good order & condition', '', 'L', false, 0, '', '');
-    PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
+    PDF::MultiCell(690, 0, 'Received in good order & condition', '', 'L', false, 1, '', '');
+    // PDF::MultiCell(400, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::MultiCell(0, 0, "\n\n");
+    PDF::SetY(940);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(250, 0, 'Signature over printed name', 'T', 'C', false, 0, '', '');
     PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::MultiCell(0, 0, "\n");
-    // Format with AM/PM
+    PDF::SetY(962);
     $printeddate = $this->othersClass->getCurrentTimeStamp();
     $datetime = new DateTime($printeddate);
     $formattedDate = $datetime->format('Y/m/d h:i:s a'); //2025-09-25 16:46:32 pm
@@ -388,15 +410,33 @@ class pl
 
   public function default_footer3($params, $data)
   {
-    $fontsize = 12;
+    $fontsize = 15;
     $font = "Courier";
     // Format with AM/PM
     $printeddate = $this->othersClass->getCurrentTimeStamp();
     $datetime = new DateTime($printeddate);
     $formattedDate = $datetime->format('Y/m/d h:i:s a'); //2025-09-25 16:46:32 pm
     PDF::SetFont($font, '', $fontsize);
-    PDF::SetY(951);
+    PDF::SetY(956);
     PDF::MultiCell(614, 0,  $formattedDate, '', 'L', false, 0, '', '');
+
+    $currentPage = PDF::getAliasNumPage();
+    $totalPages = PDF::getAliasNbPages();
     PDF::MultiCell(106, 0,  'Page ' . PDF::PageNo(), '', 'R', false, 1);
+    //PDF::getAliasNumPage() . ' of ' . PDF::getAliasNbPages()
+
+
+    // $pageText = 'Page ' . $currentPage . ' of ' . $totalPages;
+    // PDF::MultiCell(306, 0, $pageText, '', 'R', false, 1);
+  }
+
+  public function continuation_footer($params, $data)
+  {
+    $fontsize = 15;
+    $font = "Courier";
+    PDF::SetFont($font, '', $fontsize);
+    // PDF::SetY(945);
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(620, 0,  "**CONTINUED ON NEXT PAGE**", '', 'C', false, 1, '', '');
   }
 }

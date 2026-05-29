@@ -62,8 +62,11 @@ class customers_list
       case 12: //afti usd
         $fields = ['radioprint', 'area', 'region', 'province', 'cur', 'industry'];
         break;
+      case 29:
+        $fields = ['radioprint', 'area', 'region', 'province','dcentername'];
+        break;
       default:
-        $fields = ['radioprint', 'area', 'region', 'province'];
+        $fields = ['radioprint', 'area', 'region', 'province','dcentername'];
         break;
     }
 
@@ -116,7 +119,10 @@ class customers_list
     '0' as agentid,
     '' as cur,
     '' as industry,
-    'clientname' as sortby
+    'clientname' as sortby,
+    '' as center,
+    '' as centername,
+    '' as dcentername
     ");
   }
 
@@ -172,6 +178,8 @@ class customers_list
     $region   = $config['params']['dataparams']['region'];
     $province = $config['params']['dataparams']['province'];
     $sortby   = $config['params']['dataparams']['sortby'];
+    $center = $config['params']['dataparams']['center'];
+    $centername =   $config['params']['dataparams']['centername'];
     $agentname = "";
     $agentid = "";
     $agent = "";
@@ -204,6 +212,10 @@ class customers_list
       $filter .= " and agent.clientid='$agentid'";
     }
 
+    if ($center != '' &&  $centername != '') {
+      $filter .= " and center.code = '$center'";
+    }
+
     $query = "select 
       cust.client,cust.clientname, cust.province,cust.region,cust.area, cust.addr, cust.email , cust.tel, cust.tel2, cust.tin, cust.contact,
       agent.client as agentcode, agent.clientname as agentname,cust.terms
@@ -212,11 +224,13 @@ class customers_list
       left join client as agent on agent.client = cust.agent
       left join billingaddr as bill on  bill.clientid = cust.clientid and bill.line = cust.billid
       Left join category_masterfile as cat on cat.cat_id = cust.category
+      left join center on center.code = cust.center
       " . $addleftjoin . "
       where cust.iscustomer=1 and cust.clientname<>'' 
       $filter 
       order by cust.$sortby";
 
+      // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
 

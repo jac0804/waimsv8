@@ -192,6 +192,7 @@ class pendingtask
         $username = $row['assignto'];
         $userid = $row['userid'];
         $checkerid = $row['checkerid'];
+        $title = $row['title'];
         $data = [];
         $data2 = [];
 
@@ -231,16 +232,84 @@ class pendingtask
                 if ($pendingtm != 0) {
                     return ['status' => false, 'msg' => 'You cant start another task if you have pending or current task.', 'data' => []];
                 }
-
-                if ($status == 'A') { //start 3- ongoing stat
-                    $stat = $this->coreFunctions->sbcupdate('tmdetail', ['acceptdate' => $datenow, 'startdate' => $datenow, 'status' => 3], ['trno' => $trno, 'line' => $line]);
-                    $assigned = $this->coreFunctions->datareader("select c.clientname as value from tmdetail as d
+                //galing TM
+                $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "rem=? and userid=? and statid=0", [$title, $adminid], '', true);
+                if ($existingtrno != 0) {
+                    $dtasktrno = $this->coreFunctions->getfieldvalue("dailytask", "tasktrno", "trno=? ", [$existingtrno], '', true);
+                    $dtaskline = $this->coreFunctions->getfieldvalue("dailytask", "taskline", "trno=? ", [$existingtrno], '', true);
+                    $label = 'Task is already in dailytask. Please refresh the page.';
+                    $this->coreFunctions->execqry("delete from pendingapp where doc='TM'  and trno=" . $dtasktrno . " and line=" . $dtaskline, 'delete');
+                } else {
+                    if ($status == 'A') { //start 3- ongoing stat
+                        $stat = $this->coreFunctions->sbcupdate('tmdetail', ['acceptdate' => $datenow, 'startdate' => $datenow, 'status' => 3], ['trno' => $trno, 'line' => $line]);
+                        $assigned = $this->coreFunctions->datareader("select c.clientname as value from tmdetail as d
                                                           left join client as c on c.clientid=d.userid
                                                           where d.line =? and d.trno = ?", [$line, $trno]);
 
 
-                    if ($stat) {
-                        $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $line, 'delete');
+                        if ($stat) {
+                            $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $line, 'delete');
+
+                            $data = [
+                                'tasktrno' => $trno,
+                                'taskline' => $line,
+                                'reftrno' => 0,
+                                'rem' => $config['params']['row']['title'],
+                                'amt' => 0,
+                                'clientid' =>  $config['params']['row']['clid'],
+                                'userid' => $adminid,
+                                'dateid' => $dateid,
+                                'donedate' => null,
+                                'statid' => 0,
+                                'apvtrno' => 0,
+                                'isprev' => 0,
+                                'createdate' => $datenow,
+                                'encodeddate' => $datenow,
+                                'empid' => $checkerid,
+                                'taskcatid' => $config['params']['row']['taskcatid'],
+                                'assignedid' => $config['params']['row']['userid'],
+                                'reseller' => $config['params']['row']['reseller']
+                            ];
+
+                            $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
+                            if ($dttrno != 0) {
+                                $config['params']['doc'] = 'DY';
+                                $this->logger->sbcmasterlog2($dttrno, $config, ' Daily task has been created and started by: ' . $assigned, 'task_log');  //($trno, $config, $task, $ptable, $istemp = 0)
+                                $config['params']['doc'] = $doc;
+
+                                $label = ' Successfully started.';
+
+                                $config['params']['doc'] = 'ENTRYTASK';
+                                $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' , Task started by: ' . $assigned);
+
+                                if ($checkerid != 0) {
+                                    $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$checkerid]);
+                                    $socketmsg = "Task accepted: " . $data['rem'];
+                                    if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
+                                } else {
+                                    $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$userid]);
+                                    $socketmsg = "Task accepted: " . $data['rem'];
+                                    if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $row['requestbycode']);
+                                }
+                            }
+                        }
+                    }
+                }
+            } elseif ($status1 == 4) { //for checking ng requestor
+                $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "rem=? and userid=? and ischecker=1 and statid=0", [$title, $adminid], '', true);
+                if ($existingtrno != 0) {
+                    $dtasktrno = $this->coreFunctions->getfieldvalue("dailytask", "tasktrno", "trno=? ", [$existingtrno], '', true);
+                    $dtaskline = $this->coreFunctions->getfieldvalue("dailytask", "taskline", "trno=? ", [$existingtrno], '', true);
+                    $label = 'Task is already in dailytask. Please refresh the page.';
+                    $this->coreFunctions->execqry("delete from pendingapp where doc='TM'  and trno=" . $dtasktrno . " and line=" . $dtaskline, 'delete');
+                } else {
+
+                    if ($status == 'A') { //start checking
+                        // $stat = $this->coreFunctions->sbcupdate('tmdetail', ['enddate' => $datenow, 'status' => 5], ['trno' => $trno, 'line' => $line]);
+                        $label = 'The task is now being checked.';
+                        $checkername = $this->coreFunctions->datareader("select c.clientname as value from client as c
+                                                          where c.clientid =?", [$checkerid]);
+                        $chname = '';
 
                         $data = [
                             'tasktrno' => $trno,
@@ -257,6 +326,8 @@ class pendingtask
                             'isprev' => 0,
                             'createdate' => $datenow,
                             'encodeddate' => $datenow,
+                            'ischecker' => 1,
+                            'startchecker' => $datenow,
                             'empid' => $checkerid,
                             'taskcatid' => $config['params']['row']['taskcatid'],
                             'assignedid' => $config['params']['row']['userid'],
@@ -265,93 +336,39 @@ class pendingtask
 
                         $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
                         if ($dttrno != 0) {
-                            $config['params']['doc'] = 'DY';
-                            $this->logger->sbcmasterlog2($dttrno, $config, ' Daily task has been created and started by: ' . $assigned, 'task_log');  //($trno, $config, $task, $ptable, $istemp = 0)
-                            $config['params']['doc'] = $doc;
-
-                            $label = ' Successfully started.';
+                            $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $line, 'delete');
 
                             $config['params']['doc'] = 'ENTRYTASK';
-                            $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' , Task started by: ' . $assigned);
+                            $requestorname = $row['requestorname'];
+
+                            if ($adminid != $checkerid) {
+                                $chname = $requestorname;
+                            } else {
+                                $chname = $checkername;
+                            }
 
                             if ($checkerid != 0) {
                                 $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$checkerid]);
-                                $socketmsg = "Task accepted: " . $data['rem'];
+                                $socketmsg = "Checking task: " . $data['rem'];
                                 if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
                             } else {
                                 $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$userid]);
-                                $socketmsg = "Task accepted: " . $data['rem'];
+                                $socketmsg = "Checking task: " . $data['rem'];
                                 if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $row['requestbycode']);
                             }
+
+                            $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' ' . $chname . ' ' . ' has started checking the task.');
+
+                            $config['params']['doc'] = 'DY';
+                            $this->logger->sbcmasterlog2($dttrno, $config, ' Daily checking task has been created and started by ' . $chname, 'task_log');
                         }
                     }
                 }
-            } elseif ($status1 == 4) { //for checking ng requestor
-                if ($status == 'A') { //start checking
-                    // $stat = $this->coreFunctions->sbcupdate('tmdetail', ['enddate' => $datenow, 'status' => 5], ['trno' => $trno, 'line' => $line]);
-                    $label = 'The task is now being checked.';
-                    $checkername = $this->coreFunctions->datareader("select c.clientname as value from client as c
-                                                          where c.clientid =?", [$checkerid]);
-                    $chname = '';
-
-                    $data = [
-                        'tasktrno' => $trno,
-                        'taskline' => $line,
-                        'reftrno' => 0,
-                        'rem' => $config['params']['row']['title'],
-                        'amt' => 0,
-                        'clientid' =>  $config['params']['row']['clid'],
-                        'userid' => $adminid,
-                        'dateid' => $datenow,
-                        'donedate' => null,
-                        'statid' => 0,
-                        'apvtrno' => 0,
-                        'isprev' => 0,
-                        'createdate' => $datenow,
-                        'encodeddate' => $datenow,
-                        'ischecker' => 1,
-                        'startchecker' => $datenow,
-                        'empid' => $checkerid,
-                        'taskcatid' => $config['params']['row']['taskcatid'],
-                        'assignedid' => $config['params']['row']['userid'],
-                        'reseller' => $config['params']['row']['reseller']
-                    ];
-
-                    $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
-                    if ($dttrno != 0) {
-                        $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $line, 'delete');
-
-                        $config['params']['doc'] = 'ENTRYTASK';
-                        $requestorname = $row['requestorname'];
-
-                        if ($adminid != $checkerid) {
-                            $chname = $requestorname;
-                        } else {
-                            $chname = $checkername;
-                        }
-
-                        if ($checkerid != 0) {
-                            $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$checkerid]);
-                            $socketmsg = "Checking task: " . $data['rem'];
-                            if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
-                        } else {
-                            $username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$userid]);
-                            $socketmsg = "Checking task: " . $data['rem'];
-                            if ($socketmsg != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
-                        }
-
-                        $this->logger->sbcmasterlog($trno, $config, ' Line: ' . $line . ' ' . $chname . ' ' . ' has started checking the task.');
-
-                        $config['params']['doc'] = 'DY';
-                        $this->logger->sbcmasterlog2($dttrno, $config, ' Daily checking task has been created and started by ' . $chname, 'task_log');
-                    }
-                }
-            } else { // nireturn galing sa checker  nasa pendingapp lang ito - connected sa TM
-
+            } else { // nireturn galing sa checker/requestor  nasa pendingapp lang ito - connected sa TM
                 $dailytasktrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "tasktrno=? and taskline=? ", [$trno, $line], '', true);
                 if ($dailytasktrno != 0) {
                     $label = 'Task is already in dailytask. Please refresh the page.';
-                    $this->coreFunctions->execqry("delete from pendingapp where  doc='TM' and trno=? AND line=?", 'delete', [$trno, $line]);
+                    $this->coreFunctions->execqry("delete from pendingapp where  doc='TM' and trno=? AND line=? and approver='RETURN'", 'delete', [$trno, $line]);
                 } else {
                     if ($approver == 'RETURN') {
                         $assigned = $this->coreFunctions->datareader("select c.clientname as value from tmdetail as d

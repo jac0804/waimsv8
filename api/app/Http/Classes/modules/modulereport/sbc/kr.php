@@ -258,96 +258,6 @@ class kr
     return $str;
   } //end fn
 
-  // public function default_KR_header_PDF($params, $data)
-  // {
-  //   $center = $params['params']['center'];
-  //   $username = $params['params']['user'];
-  //   //$width = 800; $height = 1000;
-
-  //   $qry = "select name,address,tel,code from center where code = '" . $center . "'";
-  //   $headerdata = $this->coreFunctions->opentable($qry);
-  //   $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-
-  //   $font = "";
-  //   $fontbold = "";
-  //   $fontsize = 11;
-  //   if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-  //     $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-  //     $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
-  //   }
-
-  //   //$width = PDF::pixelsToUnits($width);
-  //   //$height = PDF::pixelsToUnits($height);
-  //   PDF::SetTitle($this->modulename);
-  //   PDF::SetAuthor('Solutionbase Corp.');
-  //   PDF::SetCreator('Solutionbase Corp.');
-  //   PDF::SetSubject($this->modulename . ' Module Report');
-  //   PDF::setPageUnit('px');
-  //   PDF::AddPage('p', [800, 1000]);
-  //   PDF::SetMargins(40, 40);
-
-  //   // SetFont(family, style, size)
-  //   // MultiCell(width, height, txt, border, align, x, y)
-  //   // write2DBarcode(code, type, x, y, width, height, style, align)
-
-  //   PDF::SetFont($font, '', 9);
-  //   if ($params['params']['companyid'] != 10 && $params['params']['companyid'] != 12) {
-  //     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
-  //     PDF::SetFont($font, '', 9);
-  //     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-  //   }
-
-  //   $this->reportheader->getheader($params);
-
-  //   // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
-  //   PDF::SetFont($fontbold, '', 18);
-  //   PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
-  //   PDF::SetFont($fontbold, '', $fontsize);
-  //   PDF::MultiCell(80, 0, "Docno #: ", '', 'L', false, 0, '',  '');
-  //   PDF::SetFont($font, '', 10);
-  //   PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 0, '',  '');
-
-  //   PDF::SetFont($font, '', $fontsize);
-  //   PDF::MultiCell(0, 30, "", '', 'L');
-  //   PDF::SetFont($fontbold, '', $fontsize);
-  //   PDF::MultiCell(80, 0, "Customer: ", '', 'L', false, 0, '',  '');
-  //   PDF::SetFont($font, '', $fontsize);
-  //   PDF::MultiCell(470, 0, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '');
-  //   PDF::SetFont($fontbold, '', $fontsize);
-  //   PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
-  //   PDF::SetFont($font, '', $fontsize);
-  //   PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
-
-  //   PDF::MultiCell(0, 0, "\n");
-
-  //   PDF::SetFont($fontbold, '', $fontsize);
-  //   PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
-  //   PDF::SetFont($font, '', $fontsize);
-  //   PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'B', 'L', false, 0, '',  '');
-  //   PDF::SetFont($fontbold, '', $fontsize);
-  //   PDF::MultiCell(50, 0, "Ref: ", '', 'L', false, 0, '',  '');
-  //   PDF::SetFont($font, '', $fontsize);
-  //   PDF::MultiCell(100, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 0, '',  '');
-
-
-  //   PDF::MultiCell(0, 0, "\n\n\n");
-
-  //   PDF::SetFont($font, '', 5);
-  //   PDF::MultiCell(700, 0, '', 'T');
-
-  //   PDF::SetFont($font, 'B', 12);
-  //   PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
-  //   PDF::MultiCell(160, 0, "ACCOUNT NAME", '', 'C', false, 0);
-  //   PDF::MultiCell(100, 0, "REFERENCE #", '', 'L', false, 0);
-  //   PDF::MultiCell(75, 0, "DATE", '', 'C', false, 0);
-  //   PDF::MultiCell(85, 0, "DEBIT", '', 'R', false, 0);
-  //   PDF::MultiCell(85, 0, "CREDIT", '', 'R', false, 0);
-  //   PDF::MultiCell(10, 0, "", '', 'R', false, 0);
-  //   PDF::MultiCell(100, 0, "CLIENT", '', 'C', false);
-
-  //   PDF::SetFont($font, '', 5);
-  //   PDF::MultiCell(700, 0, '', 'B');
-  // }
 
   public function default_KR_header_PDF($params, $data)
   {
@@ -503,6 +413,8 @@ class kr
       
       $pos_adjust = 255 - $part_pos_adjust;
       PDF::MultiCell(720, 0, '', '', 'L', false, 1, '', $pos_adjust);
+
+      
   }
 
   public function default_KR_PDF($params, $data)
@@ -514,6 +426,10 @@ class kr
       $center = $params['params']['center'];
       $username = $params['params']['user'];
       $count = $page = 35;
+
+      
+      $head = 'krhead';
+      $hhead = 'hkrhead';
 
       $font = "";
       $fontbold = "";
@@ -638,9 +554,26 @@ class kr
       PDF::MultiCell(200, 10, '', 'B', 'L', false, 1, '', '');
       // PDF::MultiCell(420, 15, 'Prepared By:', 'B', 'L', false, 1, '', '');
       // PDF::MultiCell(300, 15, 'Received By:', 'B', 'L', false, 0, '', '');
+
+      $trno = $params['params']['dataid'];
+
+      $clientid = $this->coreFunctions->datareader("
+        select cl.clientid as value from " . $head . " as head
+        left join client as cl on cl.client = head.client
+        where trno = ?
+        union all 
+        select cl.clientid as value from " . $hhead . "  as head
+        left join client as cl on cl.client = head.client
+        where trno = ?", [$trno, $trno]);
       
-      
+      $this->logger->sbcsoareportlog($username, $clientid, 'soalog', $data[0]['dateid']);
 
       return PDF::Output($this->modulename . '.pdf', 'S');
+  }
+
+  
+  private function isQueryError($result)
+  {
+      return is_array($result) && isset($result['status']) && $result['status'] === false;
   }
 }

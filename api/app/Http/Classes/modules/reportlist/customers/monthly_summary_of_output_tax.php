@@ -77,6 +77,7 @@ class monthly_summary_of_output_tax
     data_set($col2, 'dateid.readonly', false);
     data_set($col2, 'due.label', 'EndDate');
     data_set($col2, 'due.readonly', false);
+    data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
 
     $fields = ['print'];

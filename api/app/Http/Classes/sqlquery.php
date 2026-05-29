@@ -1891,12 +1891,11 @@ class sqlquery
             break;
           case 40: //cdo
             if ($doc <> 'STOCKCARD') {
-              if(strtoupper($doc) == 'CI'){
+              if (strtoupper($doc) == 'CI') {
                 $criteria = " where item.isinactive = 0 and item.partno <>'' and item.groupid = 15 ";
-              }else{
+              } else {
                 $criteria = " where item.isinactive = 0 and item.partno <>'' ";
               }
-             
             } else {
               $criteria = " where item.isinactive = 0 ";
             }
@@ -2777,7 +2776,7 @@ class sqlquery
       case 'OQ':
         $addedfields .= ", cat.category";
         $addedjoin .= " left join reqcategory as cat on cat.line=hpr.ourref ";
-        $filter .= " and ((stock.qty-stock.voidqty)>stock.oqqa) and stock.status=1 and cat.isoracle=1";
+        $filter .= " and ((stock.qty-stock.voidqty)>stock.oqqa) and stock.status=1 and cat.isoracle=1 and stock.void = 0";
         $qafield = 'oqqa';
         $voidqtyfld = ' + stock.voidqty';
         break;
@@ -7924,8 +7923,17 @@ class sqlquery
   {
     $client = $config['params']['client'];
     $center = $config['params']['center'];
-    $table = 'hqshead';
-    if ($config['params']['companyid'] == 39 && $config['params']['doc'] == 'SO') $table = 'hqthead'; //cbbsi
+    $table = '';
+    switch ($config['params']['companyid']) {
+      case 39: //cbbsi
+      case 64: //excelin
+        $table = 'hqthead';
+        break;
+      default:
+        $table = 'hqshead';
+        break;
+    }
+
     $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
               FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
               FORMAT(stock.iss," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,

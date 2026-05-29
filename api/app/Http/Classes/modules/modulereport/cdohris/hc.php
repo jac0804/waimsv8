@@ -79,7 +79,7 @@ class hc
                         date(head.hired) as hired,date(head.lastdate) as lastday,head.jobtitle,
                         cl.client as emphead,cl.clientname as empheadname,
                         head.cause, ifnull(em.mobileno,'') as contactno,d.clientname as deptname,
-                        br.clientname as brname, witness.clientname as witnessname,divi.divcode,
+                        br.clientname as brname, witness.clientname as witnessname,divi.divcode,divi.divname,divi.address as divaddress,
                         ifnull(cl.addr,'') as address,head.amount as lastpay,head.deduction,
                         ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2, head.rem, client.addr as empaddress
                 from clearance as head
@@ -99,7 +99,7 @@ class hc
                        date(head.hired) as hired,date(head.lastdate) as lastday,head.jobtitle,
                        cl.client as emphead,cl.clientname as empheadname,
                        head.cause,ifnull(em.mobileno,'') as contactno,d.clientname as deptname,
-                       br.clientname as brname, witness.clientname as witnessname,divi.divcode,
+                       br.clientname as brname, witness.clientname as witnessname,divi.divcode,divi.divname,divi.address as divaddress,
                        ifnull(cl.addr,'') as address,head.amount as lastpay,head.deduction,
                        ifnull(em.empfirst,'') as name,ifnull(em.empmiddle,'') as mname,ifnull(em.emplast,'') as lname,witness2.clientname as witnessname2, head.rem, client.addr as empaddress
                 from hclearance as head
@@ -3296,7 +3296,8 @@ class hc
         $employee = isset($data[0]) ? $data[0] : [];
         $employee_name = isset($employee['empname']) ? $employee['empname'] : '';
         $address = isset($employee['empaddress']) ? $employee['empaddress'] : '';
-        $company_name = 'CDO 2 CYCLES MARKETING CORPORATION';
+        $company_name = isset($employee['divname']) ? $employee['divname'] : '';
+        $company_address = isset($employee['divaddress']) ? $employee['divaddress'] : '';
 
         $lastday = isset($employee['lastday']) ? $employee['lastday'] : '';
         $effectdate = date('F d, Y', strtotime($lastday));
@@ -3323,7 +3324,7 @@ class hc
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(620, 0, 'KNOW ALL MEN BY THESE PRESENTS:', '', 'L', 0, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-        $html_content = '<br />That I, <strong>' . $fname . '' . $mname . '' . $lname . '</strong> legal age, Filipino ,and with address at <strong><u>' . $address . '</u></strong> on my own free will, and for valuable consideration, hereby declare and manifest:';
+        $html_content = '<br />That I, <strong>' . $fname . ' ' . $mname . ' ' . $lname . '</strong> legal age, Filipino ,and with address at <strong><u>' . $address . '</u></strong> on my own free will, and for valuable consideration, hereby declare and manifest:';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
@@ -3351,8 +3352,7 @@ class hc
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
 
-        $html_content = '<br />In WITNESS WHEREOF, I have hereunto set my hand this ________________________________ day of ____________________ , ______________ at ' . $company_name . ', 
-    Western Kolambog Lapasan, Cagayan de Oro City.';
+        $html_content = '<br />In WITNESS WHEREOF, I have hereunto set my hand this ________________________________ day of ____________________ , ______________ at ' . $company_name . ', ' . $company_address . '.';
 
         PDF::writeHTMLCell(620, 0, '', '', '<p style="text-align: justify; line-height: 1.5; text-indent: 50px;font-size:' . $fontsize2 . 'px; font-family:' . $font . '; ">' . $html_content . '</p>', 0, 1);
 
@@ -3362,8 +3362,7 @@ class hc
             $fname = '';
         }
         if ($mname != '') {
-            // $mname=ucwords(strtolower(trim($mname)));
-
+            $mname = ucwords(strtolower(trim($mname)));
         } else {
             $mname = '';
         }

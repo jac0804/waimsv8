@@ -160,7 +160,7 @@ class viewleaveapplication
     $obj[0][$this->gridname]['columns'][$effectivity]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $obj[0][$this->gridname]['columns'][$adays]['style'] = 'width:60px;whiteSpace: normal;min-width:60px;';
     $obj[0][$this->gridname]['columns'][$supervisorstatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-    $obj[0][$this->gridname]['columns'][$status]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $obj[0][$this->gridname]['columns'][$status]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     $obj[0][$this->gridname]['columns'][$daytype]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $obj[0][$this->gridname]['columns'][$remarks]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     $obj[0][$this->gridname]['columns'][$date_approved_disapprovedsup]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
@@ -229,7 +229,9 @@ class viewleaveapplication
             $obj[0][$this->gridname]['columns'][$void_date]['type'] = 'label';
             $obj[0][$this->gridname]['columns'][$void_approver]['type'] = 'label';
 
-            $obj[0][$this->gridname]['columns'][$action]['btns']['addattachments']['lookupclass'] = 'payrollattachments';
+            if ($addattachments) {
+              $obj[0][$this->gridname]['columns'][$action]['btns']['addattachments']['lookupclass'] = 'payrollattachments';
+            }
           }
           if ($companyid == 51) {
             $obj[0][$this->gridname]['columns'][$approvedby_disapprovedbysup]['label'] = 'APPROVED/DISAPPROVED BY';

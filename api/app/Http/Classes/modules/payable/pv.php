@@ -260,11 +260,11 @@ class pv
         $laref = ",'' as ref";
         $glref = ",(select h.docno as  ref from lahead as h
             left join ladetail as d on d.trno = h.trno
-            where h.doc = 'cv' and d.refx <> 0 and d.refx = head.trno
+            where d.refx <> 0 and d.refx = head.trno
             union all
 	          select h.docno as  ref from glhead as h
             left join gldetail as d on d.trno = h.trno
-            where h.doc = 'cv' and d.refx <> 0 and d.refx = head.trno limit 1) as ref";
+            where d.refx <> 0 and d.refx = head.trno limit 1) as ref";
         $dateid = "left(head.dateid,10) as dateid";
         if ($searchfilter == "") $limit = 'limit 150';
         $orderby =  "order by  dateid desc, docno desc";

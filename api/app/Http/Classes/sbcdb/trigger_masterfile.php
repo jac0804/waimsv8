@@ -235,6 +235,12 @@ class trigger_masterfile
 		$this->emp_req_triggers($config);
 
 		$this->batchsetup_triggers($config);
+
+		$this->tenantlocation_triggers($config);
+
+		$this->entrytasklabor_triggers($config);
+		$this->entrycommission_triggers($config);
+		$this->entrymultiapproversetup_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -2703,5 +2709,49 @@ class trigger_masterfile
 		];
 
 		$this->settriggermasterfilelogs($config, 'batchsetup', 'batch', 'masterfile_log', $fields, 'line');
+	}
+
+	private function tenantlocation_triggers($config)
+	{
+		$fields = [
+			'Isinactive' => ['isinactive' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'locationentry_tab', 'tenantloc', 'masterfile_log', $fields, 'locid', 'clientid');
+	}
+
+	private function entrytasklabor_triggers($config)
+	{
+		$fields = [
+			'Description' => ['description' => []],
+			'Code' => ['code' => []],
+			'Job Code' => ['jobcode' => []],
+			'Labor 1' => ['labor1' => []],
+			'Labor 2' => ['labor2' => []],
+			'Labor 3' => ['labor3' => []],
+			'Labor 4' => ['labor4' => []],
+			'Labor 5' => ['labor5' => []],
+		];
+		$this->settriggermasterfilelogs($config, 'entrytasklabor', 'jobtask', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entrycommission_triggers($config)
+	{
+		$fields = [
+			'Start Amount' => ['startamt' => []],
+			'End Amount' => ['endamt' => []],
+			'Commission Rate' => ['commrate' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'entrycommission', 'specialcomm', 'masterfile_log', $fields, 'line');
+	}
+	private function entrymultiapproversetup_triggers($config)
+	{
+		$fields = [
+			'Employee ID' => ['empid' => []],
+			'Approver ID' => ['approverid' => []],
+			'Doc' => ['doc' => []],
+			'Approver' => ['isapprover' => []],
+			'Supervisor' => ['issupervisor' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'APPROVER_SETUP', 'multiapprover', 'payroll_log', $fields, 'line', 'empid');
 	}
 }// end class

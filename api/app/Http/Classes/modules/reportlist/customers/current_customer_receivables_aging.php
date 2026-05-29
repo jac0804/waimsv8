@@ -115,6 +115,7 @@ class current_customer_receivables_aging
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
+            data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
             break;
         }
 

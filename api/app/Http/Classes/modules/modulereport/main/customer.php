@@ -35,7 +35,7 @@ class customer
     private $othersClass;
     private $logger;
     private $reporter;
-    
+
     public function __construct()
     {
         $this->fieldClass = new txtfieldClass;
@@ -54,6 +54,18 @@ class customer
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
         ]);
+
+        if ($config['params']['companyid'] == 59) { //roosevelt
+            data_set($col1, 'radiocustreporttype.options', [
+                ["label" => "Accounts Receivable", "value" => "ar", 'color' => 'red'],
+                ["label" => "Accounts Payable", "value" => "ap", 'color' => 'red'],
+                ["label" => "Postdated Checks", "value" => "pdc", 'color' => 'red'],
+                ["label" => "Return Checks", "value" => "rc", 'color' => 'red'],
+                ["label" => "Inventory", "value" => "stock", 'color' => 'red'],
+                ["label" => "Profile", "value" => "profile", 'color' => 'red'],
+            ]);
+        }
+
         if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { // afti
             data_set($col1, 'prepared.readonly', true);
             data_set($col1, 'prepared.type', 'lookup');
@@ -121,8 +133,10 @@ class customer
             case 'stock':
                 $query = $this->default_STOCK_QUERY($config);
                 break;
+            case 'profile':
+                $query = $this->default_PROFILE_QUERY($config);
+                break;
         }
-
         return $this->coreFunctions->opentable($query);
     }
 
@@ -166,6 +180,9 @@ class customer
                     break;
                 case 'stock':
                     $str = $this->reportdefaultSTOCK_PDF($config, $data);
+                    break;
+                case 'profile':
+                    $str = $this->reportdefault_PROFILE_PDF($config, $data);
                     break;
             }
         }
@@ -1430,9 +1447,9 @@ class customer
                 break;
         }
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);
@@ -1711,9 +1728,9 @@ class customer
         }
 
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);
@@ -1948,9 +1965,9 @@ class customer
         }
 
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);
@@ -2578,6 +2595,154 @@ class customer
         PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
         PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
         PDF::MultiCell(254, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    public function default_PROFILE_QUERY($config)
+    {
+        $clientid = $config['params']['dataid'];
+        $query = "select cl.client,cl.clientname,cl.area,if(cl.contact !='',cl.contact,cl.ship) as contact,cl.addr,cl.rem,cl.tel,cl.tel2,
+                    ifnull(category.cat_name, '') as categoryname,a.clientname as agentname,'' as forwarder,cl.province as salesarea
+                    from client as cl
+                    left join category_masterfile as category on cl.category = category.cat_id
+                    left join client as a on a.client=cl.agent
+                    where cl.clientid=$clientid";
+        return $query;
+    }
+
+
+    public function reportdefault_PROFILE_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $clientid = $config['params']['dataid'];
+        $username = $config['params']['user'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $count = 55;
+        $page = 54;
+        $fontsize = 14;
+        $font = "Courier";
+        $fontbold = "CourierB";
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [800, 1000]);
+        PDF::SetMargins(20, 20);
+
+        PDF::SetFont($font, '', 9);
+
+        PDF::MultiCell(0, 0, "\n");
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel, '', 'C');
+
+
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(760, 30, "CUSTOMER PROFILE", '', 'C', false);
+
+
+        PDF::setCellHeightRatio(2);
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "CODE", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->client) ? $data[0]->client : ''), '', 'L', false, 1);
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "NAME", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "AREA", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->area) ? $data[0]->area : ''), '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "SALES AREA", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->salesarea) ? $data[0]->salesarea : ''), '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "SALESMAN", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->agentname) ? $data[0]->agentname : ''), '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "CONTACT", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false, 1);
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "FORWARDER", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, '', '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "ADDRESS", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false, 1);
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "TEL1", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->tel) ? $data[0]->tel : ''), '', 'L', false, 1);
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "TEL2", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, '', '', 'L', false, 1);
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "TYPE", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->categoryname) ? $data[0]->categoryname : ''), '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 15);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(95, 20, "REMARKS", '', 'L', false, 0);
+        PDF::MultiCell(15, 20, ":", '', 'L', false, 0);
+        PDF::MultiCell(620, 20, (isset($data[0]->rem) ? $data[0]->rem : ''), '', 'L', false, 1);
+
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(243, 0, 'Prepared By : ', '', 'L', false, 0);
+        PDF::MultiCell(243, 0, 'Received By : ', '', 'L', false, 0);
+        PDF::MultiCell(244, 0, 'Approved By : ', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n");
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(30, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(243, 0, $prepared, '', 'L', false, 0);
+        PDF::MultiCell(243, 0, $received, '', 'L', false, 0);
+        PDF::MultiCell(244, 0, $approved, '', 'L');
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }

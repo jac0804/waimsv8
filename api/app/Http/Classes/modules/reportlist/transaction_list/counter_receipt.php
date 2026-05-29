@@ -25,6 +25,7 @@ class counter_receipt
   private $fieldClass;
   private $othersClass;
   private $reporter;
+  private $logger;
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
@@ -36,16 +37,33 @@ class counter_receipt
     $this->othersClass = new othersClass;
     $this->fieldClass = new txtfieldClass;
     $this->reporter = new SBCPDF;
+    $this->logger = new Logger;
   }
 
   public function createHeadField($config)
   {
+    $companyid = $config['params']['companyid'];
     $fields = ['radioprint', 'start', 'end', 'dcentername', 'reportusers', 'approved', 'dagentname'];
+    
+    // if ($companyid == 29) { //SBC MAIN
+    //   $fields = ['radioprint', 'dclientname', 'dcentername', 'reportusers', 'approved', 'dagentname'];
+    // }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'approved.label', 'Prefix');
     data_set($col1, 'dcentername.required', true);
-    data_set($col1, 'start.required', true);
-    data_set($col1, 'end.required', true);
+
+    // if ($companyid == 29) { //SBC MAIN
+    //   data_set($col1, 'dclientname.required', true);
+    //   data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+    //   data_set($col1, 'dclientname.label', 'Customer');
+    //   data_set($col1, 'dclientname.label', 'Customer');
+    // }else{
+      
+      data_set($col1, 'start.required', true);
+      data_set($col1, 'end.required', true);
+
+    // }
+    
 
     $fields = ['radioreporttype'];
     $col2 = $this->fieldClass->create($fields);
@@ -61,23 +79,37 @@ class counter_receipt
   {
     // NAME NG INPUT YUNG NAKA ALIAS
 
+    $companyid = $config['params']['companyid'];
     $center = $config['params']['center'];
     $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
 
+    $addedparams = "";
+    // if ($companyid == 29) { //SBC MAIN
+    //   $addedparams = ",
+    //   left(now(),10) as dateid,0 as clientid,
+    //   '' as client,
+    //   '' as clientname,
+    //   '' as dclientname";
+    // }else{
+      $addedparams = "adddate(left(now(),10),-360) as start,
+      left(now(),10) as end,";
+      
+    // }
+    
+
     return $this->coreFunctions->opentable("select 
-    'default' as print,
-    adddate(left(now(),10),-360) as start,
-    left(now(),10) as end,
-    '' as userid,
-    '' as username,
-    '' as approved,
-    '0' as reporttype,
-    '" . $defaultcenter[0]['center'] . "' as center,
-    '" . $defaultcenter[0]['centername'] . "' as centername,
-    '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
-    '' as reportusers,
-    '' as agent, '' as agentname,'0' as agentid,
-    '' as dagentname
+      'default' as print,
+      '' as userid,
+      '' as username,
+      '' as approved,
+      '0' as reporttype,
+      '" . $defaultcenter[0]['center'] . "' as center,
+      '" . $defaultcenter[0]['centername'] . "' as centername,
+      '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
+      '' as reportusers,
+      '' as agent, '' as agentname,'0' as agentid,
+      '' as dagentname
+      $addedparams
     ");
   }
 
@@ -89,8 +121,26 @@ class counter_receipt
 
   public function reportdata($config)
   {
+    $companyid = $config['params']['companyid'];
+    
     $str = $this->reportplotting($config);
-    return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+    
+    // if ($companyid == 29) { //SBC MAIN
+    //   // $str = $this->sbc_layout($config);
+    //   if (strpos($str, 'ERROR:') === 0) {
+    //       return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
+          
+    //   // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
+    //   }
+    //   if (!empty($str)) {
+    //       return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+    //   }
+    //   // return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+    // }else{
+      return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
+    // }
+
+    
   }
 
   public function reportplotting($config)
@@ -127,8 +177,7 @@ class counter_receipt
 
   public function default_QUERY_DETAILED($config)
   {
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
     $fcenter    = $config['params']['dataparams']['center'];
@@ -151,6 +200,29 @@ class counter_receipt
       $leftj .= " left join client as agent on agent.client=head.agent ";
       $filter .= " and agent.clientid = '$agentid' ";
     }
+
+
+    
+    $datefilter = "";
+    $companyid = $config['params']['companyid'];
+    // if ($companyid == 29) { //SBC MAIN
+
+    //   $asof        = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
+    //   $client      = $config['params']['dataparams']['client'];
+    //   $clientid    = $config['params']['dataparams']['clientid'];
+
+    //   $datefilter = " and DATE(head.dateid) <= '$asof'";
+    //   if ($client != "") {
+    //     $filter .= "and dclient.clientid='$clientid'";
+    //   }
+    // }else{
+        
+      $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+      $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+      $datefilter = " and head.dateid between '$start' and '$end'";
+    // }
+    
+    
 
     $query = "select head.docno,head.client as hclient,head.clientname as hclientname,
     date(head.dateid) as hdateid,date_format(ar.dateid,'%Y-%m-%d') as ddateid,coa.acno,coa.acnoname,concat(left(dclient.client,2),
@@ -161,7 +233,7 @@ class counter_receipt
     left join client as dclient on dclient.clientid=ar.clientid
     left join coa on coa.acnoid=ar.acnoid
     left join transnum on transnum.trno=head.trno  $leftj 
-    where head.doc='kr' and head.dateid between '$start' and '$end' $filter 
+    where head.doc='kr' $datefilter $filter 
     union all
     select head.docno,head.client as hclient,head.clientname as hclientname,
     date(head.dateid) as hdateid,date_format(ar.dateid,'%Y-%m-%d') as ddateid,coa.acno,coa.acnoname,concat(left(dclient.client,2),
@@ -172,7 +244,7 @@ class counter_receipt
     left join client as dclient on dclient.clientid=ar.clientid
     left join coa on coa.acnoid=ar.acnoid
     left join transnum on transnum.trno=head.trno  $leftj 
-    where head.doc='kr' and head.dateid between '$start' and '$end' $filter 
+    where head.doc='kr' $datefilter $filter 
     order by docno,cr";
 
     return $query;
@@ -180,8 +252,6 @@ class counter_receipt
 
   public function default_QUERY_SUMMARIZED($config)
   {
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
     $fcenter    = $config['params']['dataparams']['center'];
@@ -205,8 +275,29 @@ class counter_receipt
       $filter .= " and agent.clientid = '$agentid' ";
     }
 
+    $datefilter = "";
+    $companyid = $config['params']['companyid'];
+    // if ($companyid == 29) { //SBC MAIN
+
+    //   $asof        = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
+    //   $client      = $config['params']['dataparams']['client'];
+    //   $clientid    = $config['params']['dataparams']['clientid'];
+
+    //   $datefilter = " and DATE(head.dateid) <= '$asof'";
+
+    //   if ($client != "") {
+    //     $filter .= " and dclient.clientid='$clientid'";
+    //   }
+    // }else{
+        
+      $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+      $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+      $datefilter = " and head.dateid between '$start' and '$end'";
+    // }
+    
+
     $query = "select docno, date(hdateid) as dateid, GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, sum(db) as debit, sum(cr) as credit, rem, hclient
-  from(
+    from(
     select head.docno,head.client as hclient,head.clientname as hclientname,
     head.dateid as hdateid,date_format(ar.dateid,'%Y-%m-%d') as ddateid,coa.acno,coa.acnoname,concat(left(dclient.client,2),
     right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.checkno,
@@ -216,7 +307,7 @@ class counter_receipt
     left join client as dclient on dclient.clientid=ar.clientid
     left join coa on coa.acnoid=ar.acnoid
     left join transnum on transnum.trno=head.trno $leftj
-    where head.doc='kr' and head.dateid between '$start' and '$end' $filter 
+    where head.doc='kr' $datefilter $filter 
     union all
     select head.docno,head.client as hclient,head.clientname as hclientname,
     head.dateid as hdateid,date_format(ar.dateid,'%Y-%m-%d') as ddateid,coa.acno,coa.acnoname,concat(left(dclient.client,2),
@@ -227,7 +318,7 @@ class counter_receipt
     left join client as dclient on dclient.clientid=ar.clientid
     left join coa on coa.acnoid=ar.acnoid
     left join transnum on transnum.trno=head.trno $leftj
-    where head.doc='kr' and head.dateid between '$start' and '$end' $filter 
+    where head.doc='kr' $datefilter $filter 
     order by hdateid,docno) as t 
     group by docno, hdateid, rem, hclient order by docno";
     return $query;
@@ -239,8 +330,21 @@ class counter_receipt
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    // $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    // $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    
+    $date = "";
+    // if ($companyid == 29) { //SBC MAIN
+
+    //   $asof        = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
+    //   $date = "Date: ".$asof;
+    // }else{
+        
+      $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+      $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+      $date = 'Date Range: '. $start . ' to ' . $end;
+    // }
+
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
 
@@ -270,7 +374,7 @@ class counter_receipt
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow(NULL, null, false, $border, '', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col($date, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('User: ' . $user, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Prefix: ' . $prefix, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
     $str .= $this->reporter->endrow();
@@ -282,11 +386,12 @@ class counter_receipt
   public function reportDefaultLayout_DETAILED($config)
   {
     $result = $this->reportDefault($config);
+    if ($this->isQueryError($result)) {
+        return "ERROR: Unknown database error in sbcqry";
+    }
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
 
@@ -438,6 +543,10 @@ class counter_receipt
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
 
+    
+    $clientid = $config['params']['dataparams']['clientid'];
+    $this->logger->sbcsoareportlog($username, $clientid, 'soalog');
+
     return $str;
   }
 
@@ -447,8 +556,6 @@ class counter_receipt
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
 
@@ -526,6 +633,10 @@ class counter_receipt
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
 
+    
+    $clientid = $config['params']['dataparams']['clientid'];
+    $this->logger->sbcsoareportlog($username, $clientid, 'soalog');
+
     return $str;
   }
 
@@ -554,8 +665,21 @@ class counter_receipt
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    // $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    // $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+
+    $date = "";
+    // if ($companyid == 29) { //SBC MAIN
+
+    //   $asof        = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
+    //   $date = "Date: ".$asof;
+    // }else{
+        
+      $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+      $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+      $date = 'Date Range: '. $start . ' to ' . $end;
+    // }
+
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
 
@@ -584,7 +708,7 @@ class counter_receipt
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow(NULL, null, false, $border, '', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col($date, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('User: ' . $user, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Prefix: ' . $prefix, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
@@ -592,4 +716,10 @@ class counter_receipt
 
     return $str;
   }
+
+  
+  // private function isQueryError($result)
+  // {
+  //     return is_array($result) && isset($result['status']) && $result['status'] === false;
+  // }
 }//end class

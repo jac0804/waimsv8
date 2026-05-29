@@ -62,6 +62,7 @@ class imageuploader
       case 'item':
       case 'obapplication':
       case 'la_picture':
+      case 'cmake':
         $this->imageupload($request);
         break;
       case 'client_picture':
@@ -292,6 +293,9 @@ class imageuploader
           break;
         case 'item':
           $tablelog = 'item_log';
+          break;
+        case 'cmake':
+          $tablelog = 'masterfile_log';
           break;
         case 'cntnum_picture':
           $tablelog = 'table_log';

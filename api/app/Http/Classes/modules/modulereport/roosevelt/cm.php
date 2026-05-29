@@ -683,7 +683,8 @@ class cm
     $refString = implode(" ", array_unique($refs));
     PDF::SetY(740);
     PDF::SetCellPaddings(2, 2, 2, 1);
-    PDF::MultiCell(720, 0,  'Reason : ' . (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'L', false, 1);
+    // PDF::MultiCell(720, 0,  'Reason : ' . (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'L', false, 1);
+    PDF::MultiCell(720, 0,  '', '', 'L', false, 1);
     PDF::MultiCell(720, 0,  'Reference Document No.: ' . $refString, '', 'L', false, 1);
 
     $words = $this->reporter->ftNumberToWordsConverter($totalext,  false) . ' ONLY';

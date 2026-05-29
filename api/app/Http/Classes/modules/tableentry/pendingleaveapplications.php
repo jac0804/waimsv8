@@ -430,7 +430,7 @@ class pendingleaveapplications
                                     'disapproved_remarks2' => $row['rem2']
                                 ];
                                 if ($leavestatus == 'D') {
-                                    // $data['status'] = 'D'; //pag na disapproved update na din ito last status
+                                    $data['status'] = 'D'; //pag na disapproved update na din ito last status
                                     $lastapp = true;
                                 }
                                 $status2 = " and (status2 = 'A' or status2 = 'P') ";

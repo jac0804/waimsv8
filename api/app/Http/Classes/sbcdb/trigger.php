@@ -616,6 +616,8 @@ class trigger
       'Employee' => ['empid' =>  [true, 'concat(client,"~",clientname)', 'client', 'clientid']],
       'MOP' => ['modeofpayment' => []],
       'LC No.' => ['orderno' => []],
+      'rfno' => ['rfno' => []],
+      'conaddr' => ['conaddr' => []],
     ];
 
     $this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
@@ -5548,6 +5550,10 @@ class trigger
         delete from timesetup;
         delete from cljobs;
         delete from carton;
+        delete from tenantloc;
+        delete from jobtask;
+        delete from specialcomm;
+        delete from multiapprover;
 
       END";
 

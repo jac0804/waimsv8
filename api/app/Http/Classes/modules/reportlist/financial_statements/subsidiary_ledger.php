@@ -1343,7 +1343,7 @@ class subsidiary_ledger
     }
 
     $select = '';
-    $select_outer = '';
+    $select_outer = ",'' as project";
     $grpselect = '';
     if ($companyid == 68) { //jda
       $select = ', proj.name as project';
@@ -1390,7 +1390,7 @@ class subsidiary_ledger
                     ) as a
                 left join coa on a.acno=coa.acno left join client on client.client = a.client  
                 order by acno,dateid,docno";
-                
+
         break;
 
       case 1: // unposted
@@ -1763,7 +1763,7 @@ class subsidiary_ledger
               group by acno,acnoname
               union all
               select acno,acnoname,db,cr,sum(begbal) as begbal 
-              from (select '' as acno, 'Beginning Balance' as acnoname, 0 as db, 0 as cr, 
+              from (select CONVERT('' USING latin1) as acno, CONVERT('Beginning Balance' USING latin1) as acnoname, 0 as db, 0 as cr, 
                     " . $field . " as begbal
               from (select 'P' as Tr, head.trno, head.doc, head.docno, head.dateid, 
                           client.client, head.clientName, head.rem, detail.line,
@@ -1803,7 +1803,7 @@ class subsidiary_ledger
               group by acno,acnoname
               union all
               select acno, acnoname,db,cr,sum(begbal) as begbal from (
-              select '' as acno, 'Beginning Balance' as acnoname, 0 as db, 0 as cr, 
+              select CONVERT('' USING latin1) as acno, CONVERT('Beginning Balance' USING latin1) as acnoname, 0 as db, 0 as cr, 
               " . $field . " as begbal
               from (select 'U' as Tr, head.trno, head.doc, head.docno, head.dateid, 
                           client.client, head.clientName, head.rem, detail.line,
@@ -1857,7 +1857,7 @@ class subsidiary_ledger
               group by acno,acnoname
               
               union all
-              select '' as acno, 'Beginning Balance' as acnoname, 0 as db, 0 as cr, 
+              select CONVERT('' USING latin1) as acno, CONVERT('Beginning Balance' USING latin1) as acnoname, 0 as db, 0 as cr, 
               " . $field . " as begbal
               from (select 'U' as Tr, head.trno, head.doc, head.docno, head.dateid, 
                     client.client, head.clientName, head.rem, detail.line,
@@ -1895,7 +1895,11 @@ class subsidiary_ledger
         break;
     } // end switch
 
-    $this->coreFunctions->create_Elog($query);
+    //Notes: do not remove 2026 May 13 - FMM
+    // CONVERT('' USING latin1) as acno, CONVERT('Beginning Balance' USING latin1) as acnoname
+    // use convert to avoid encoding issue in case of empty string for union all, encounter in bytesize when acno is empty or ''
+    //error: Illegal mix of collations (latin1_swedish_ci,IMPLICIT) and (utf8mb4_unicode_ci,COERCIBLE) for operation 'UNION'
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
     return $result;
@@ -6181,7 +6185,7 @@ class subsidiary_ledger
 
     $filter = "";
     if ($companyid != 15) { //not nathina
-          $filter .= " and coa.acno='\\" . $acno . "'";
+      $filter .= " and coa.acno='\\" . $acno . "'";
     }
 
     if ($project != "") {
@@ -6244,11 +6248,11 @@ class subsidiary_ledger
       foreach ($data as $key => $data_) {
         if ($acno2 != $data_->acno) { // account groupings
           if ($acno2 != '') { // subtotal for accounts
-              $str .= $this->default_subtotal($params, $db, $cr, $bal, $companyid);
-            }
-            $db = 0;
-            $cr = 0;
-            $bal = 0;
+            $str .= $this->default_subtotal($params, $db, $cr, $bal, $companyid);
+          }
+          $db = 0;
+          $cr = 0;
+          $bal = 0;
 
           $value2 = array($data_->acno . '     -', $data_->acnoname, '', '', '', '', '', '');
           $str .= $this->reporter->startrow();

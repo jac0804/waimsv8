@@ -201,12 +201,15 @@ class entrymultiapprover
                     // $this->coreFunctions->sbcinsert($this->table, $data2);
                     $line = $this->coreFunctions->insertGetId($this->table, $data2);
 
+                    $label = $data[$key]['issupervisor'] == "true" ? "Supervisor" : "";
+                    $label2 = $data[$key]['isapprover'] == "true" ? "Approver" : "";
+
                     $config['params']['doc'] = strtoupper('approver_setup');
                     $this->logger->sbcmasterlog(
                         $tableid,
                         $config,
                         'CREATE - LINE: ' . $line
-                            . ' - APPROVER: ' . $data[$key]['approver']
+                            . ' - APPROVER: ' . $data[$key]['approver'] . 'Doc: ' . $data[$key]['doc'] . ' - Role: ' . $label . ' - ' . $label2
                     );
                 } else {
                     $checkup = $this->coreFunctions->opentable("select line,doc from multiapprover where empid=" . $data[$key]['empid'] . " and approverid=" . $data[$key]['approverid'] . "", [], '');
@@ -215,6 +218,17 @@ class entrymultiapprover
                         if ($value3->line != $data[$key]['line']) {
                             if ($value3->doc == $data[$key]['doc']) {
                                 return ['status' => false, 'msg' => 'Employee already exists with same module.'];
+                            }
+                        }
+                    }
+                    // current doc in multiapprover
+                    $mdoc = $this->coreFunctions->opentable("select doc,case when issupervisor = 1 then 'true' else 'false' end as issupervisor,case when isapprover = 1 then 'true' else 'false' end as isapprover from multiapprover where empid = " . $data[$key]['empid'] . " and line = '" . $data[$key]['line'] . "'");
+                    if (!empty($mdoc)) {
+                        if ($mdoc[0]->doc != $data[$key]['doc'] || $mdoc[0]->isapprover != $data[$key]['isapprover'] || $mdoc[0]->issupervisor != $data[$key]['issupervisor']) {
+                            $query = "select doc as value from pendingapp where clientid = '" . $data[$key]['approverid'] . "' and doc = '" . $mdoc[0]->doc . "' limit 1";
+                            $pending = $this->coreFunctions->datareader($query);
+                            if (!empty($pending)) {
+                                return ['status' => false, 'msg' => 'Cannot update approver setup because there are pending applications in ' . $mdoc[0]->doc];
                             }
                         }
                     }
@@ -253,14 +267,26 @@ class entrymultiapprover
     public function delete($config)
     {
         $row = $config['params']['row'];
+        $tableid = $config['params']['tableid'];
+
+        $query = "select doc as value from pendingapp where clientid = ? and doc = '" . $row['doc'] . "' limit 1";
+        $pending = $this->coreFunctions->datareader($query, [$row['approverid']]);
+
+        if (!empty($pending)) {
+            return ['status' => false, 'msg' => 'Cannot delete approver setup because there are pending applications'];
+        }
         $qry = "delete from " . $this->table . " where doc=? and empid =? and approverid = ?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['doc'], $row['empid'], $row['approverid']]);
-        $config['params']['doc'] = strtoupper('employee');
+
+        $label = $row['issupervisor'] == "true" ? "Supervisor" : "";
+        $label2 = $row['isapprover'] == "true" ? "Approver" : "";
+
+        $config['params']['doc'] = strtoupper('approver_setup');
         $this->logger->sbcmasterlog(
-            $row['line'],
+            $tableid,
             $config,
             'DELETE - LINE: ' . $row['line']
-                . ' - APPROVER: ' . $row['line']
+                . ' - APPROVER: ' . $row['approver'] . ' - Doc: ' . $row['doc'] . ' - Role: ' . $label . ' - ' . $label2
         );
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }

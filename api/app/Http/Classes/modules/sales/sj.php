@@ -97,7 +97,9 @@ class sj
     'bpo',
     'ctnsno',
     'invoiceno',
-    'plateno'
+    'plateno',
+    'rfno',
+    'conaddr'
   ];
 
   private $except = ['trno', 'dateid', 'due'];
@@ -219,7 +221,7 @@ class sj
     // $receivedate = 16;
 
     if ($companyid == 29) {
-      $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'terms', 'shipto', 'yourref', 'ourref', 'rem', 'total', 'ar', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby', 'receiveby', 'receivedate'];
+      $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'terms', 'shipto', 'yourref', 'ourref', 'rem', 'total', 'ref', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby', 'receiveby', 'receivedate'];
     } else {
       $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'terms', 'shipto', 'yourref', 'ourref', 'total', 'rem', 'ar', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby', 'receiveby', 'receivedate'];
     }
@@ -249,17 +251,17 @@ class sj
       $cols[$yourref]['label'] = 'Customer PO';
     }
     $cols[$total]['label'] = 'Total Amount';
-    $cols[$ar]['label'] = 'AR Balance';
+    if (isset($ar)) $cols[$ar]['label'] = 'AR Balance';
     $cols[$total]['align'] = 'text-left';
 
-    if ($companyid != 19 && $companyid != 28 && $companyid != 52) { //not housegem & not xcomp & not technolab
+    if ($companyid != 19 && $companyid != 28  && $companyid != 29 && $companyid != 52 && $companyid != 41) { //not housegem & not xcomp & not sbc & not technolab & not labsolmnla
       $cols[$total]['type'] = 'coldel';
     }
     if ($companyid != 28 && $companyid != 37 && $companyid != 29) { //not xcomp & mega crystal
       $cols[$rem]['type'] = 'coldel';
     }
     if ($companyid != 19) { //not housegem
-      $cols[$ar]['type'] = 'coldel';
+      if (isset($ar)) $cols[$ar]['type'] = 'coldel';
     }
 
     if ($companyid != 22) { //not eipi
@@ -335,6 +337,8 @@ class sj
     $gstat = "'POSTED'";
     $lstatcolor = "'blue'";
     $gstatcolor = "'grey'";
+    $larfield = '';
+    $garfield = '';
 
     $rem = '';
     $join = '';
@@ -512,13 +516,22 @@ class sj
          head.yourref, head.ourref,head.rem,head.shipto';
         break;
       case 37: //mega crystal
-      case 29: //sbc
         $rem = "head.rem,";
         if ($searchfilter == "") $limit = 'limit 150';
         $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
         $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
         break;
-      case 52://technolab
+      case 29: //sbc
+        $rem = "head.rem,";
+        if ($searchfilter == "") $limit = 'limit 150';
+        $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
+        $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
+        $larfield = ",0 as total, '' as ref";
+        $garfield = ",format(ar.db,2) as total, ar.ref";
+        $gjoin = "left join arledger as ar on ar.trno=head.trno";
+        break;
+      case 52:
+      case 41: //technolab, labsolmla
         if ($searchfilter == "") $limit = 'limit 150';
         $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
         $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
@@ -581,7 +594,7 @@ class sj
     }
     $qry = "select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, $lstat as status, $lstatcolor as statuscolor,$rem
     head.createby,head.editby,head.viewby,num.postedby,
-     head.yourref, head.ourref,head.shipto $lfield
+     head.yourref, head.ourref,head.shipto $lfield $larfield
      from " . $this->head . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno 
      $ljoin
@@ -593,7 +606,7 @@ class sj
      union all
      select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid,$gstat as status,$gstatcolor as statuscolor,$rem
      head.createby,head.editby,head.viewby, num.postedby,
-      head.yourref, head.ourref,head.shipto $gfield
+      head.yourref, head.ourref,head.shipto $gfield $garfield
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno 
      $gjoin
@@ -916,6 +929,14 @@ class sj
           $$value = $key;
         }
         break;
+      case 64: //excilin
+
+        $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'markup', 'wh', 'ref', 'rem'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'markup', 'wh', 'ref', 'rem'];
+        foreach ($column as $key => $value) {
+          $$value = $key;
+        }
+        break;
 
       case 65: //metrodragon
         $column = ['action', 'barcode', 'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
@@ -1231,6 +1252,13 @@ class sj
 
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'SALES INVOICE';
+        break;
+      case 64: //execilin
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$barcode]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
+        $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
+        $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
       case 65: //metrodragon
         $obj[0]['inventory']['columns'][$weight]['label'] = 'Weight';
@@ -1568,6 +1596,9 @@ class sj
       case 60: //transpower
         array_push($fields, 'dewt');
         break;
+      case 67: //yulick
+        array_push($fields, 'rfno', 'conaddr');
+        break;
     }
 
 
@@ -1594,6 +1625,12 @@ class sj
         break;
       case 59: //roosevelt 
         data_set($col3, 'ourref.label', 'SI#');
+        break;
+      case 67: //yulick
+        data_set($col3, 'yourref.label', 'PO#');
+        data_set($col3, 'rfno.label', 'Vendor Code');
+        data_set($col3, 'conaddr.label', 'Requestor');
+        data_set($col3, 'conaddr.class', 'csconaddr');
         break;
       default:
         data_set($col3, 'yourref.label', 'PO#');
@@ -1900,6 +1937,9 @@ class sj
 
     $data[0]['commamt'] = 0.00;
     $data[0]['commvat'] = 0.00;
+
+    $data[0]['frno'] = '';
+    $data[0]['conaddr'] = '';
     return $data;
   }
 
@@ -1997,7 +2037,7 @@ class sj
          hinfo.interestrate,hinfo.downpayment,  head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, 
            bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
            subamen.line as subamenityid, subamen.description as subamenityname, head.isreported,
-           head.bpo, head.ctnsno, head.invoiceno $plateno";
+           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2577,7 +2617,7 @@ class sj
     }
 
     $serialfield = '';
-
+    $color = "";
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
@@ -2595,6 +2635,12 @@ class sj
       case 60: //transpower
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
+      case 64: //execilin
+        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck";
+        $color = ",case when stock.limitcheck = 2  then 'bg-red-2'
+                          when stock.limitcheck = 1 then 'bg-yellow-2'
+                          else '' end as qacolor";
+        break;
       case 65: //metrodragon
         $serialfield = ",format(ifnull(stockinfo.weight,0), 2) as weight,head.projectid as hprojectid";
         break;
@@ -2602,6 +2648,10 @@ class sj
         $serialfield = ",format(ifnull(stock.isqty2,0), 2) as isqty2";
         break;
     }
+
+
+
+
 
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -2655,7 +2705,7 @@ class sj
 
     case when stock.noprint=0 then 'false' else 'true' end as noprint,
     concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription
-    " . $serialfield . ",ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp,stock.color";
+    " . $serialfield . ",ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp,stock.color " . $color . "";
 
     return $sqlselect;
   }
@@ -2685,6 +2735,9 @@ class sj
         break;
       case 60: //transpower
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
+        break;
+      case 64: //excilin
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck,';
         break;
       case 65: //metrodragon
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -2802,6 +2855,9 @@ class sj
         break;
       case 60: //transpower
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
+        break;
+      case 64: //excilin
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck,';
         break;
       case 65: //metrodragon  
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -3849,6 +3905,14 @@ class sj
       $hprojectid = $this->coreFunctions->datareader('select projectid as value from lahead where trno=?', [$trno], '', true);
     }
 
+    $consignmarkup = 0;
+    if ($companyid == 64) { //excilin
+      if (isset($config['params']['data']['consignpr'])) {
+        $consignmarkup = $config['params']['data']['consignpr'];
+      }
+    }
+
+
 
     $line = 0;
 
@@ -3893,17 +3957,24 @@ class sj
       $amenityid = $this->coreFunctions->getfieldvalue($this->head, "amenityid", "trno=?", [$trno]);
       $subamenityid = $this->coreFunctions->getfieldvalue($this->head, "subamenityid", "trno=?", [$trno]);
     }
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4 from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,lastpr,defcost from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
     $isnoninv = 0;
     $cost = 0;
+    $lastpr = 0;
+    $defcost = 0;
     if (!empty($item)) {
       $isnoninv = $item[0]->isnoninv;
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       if ($companyid == 60) { //transpower
         $cost = $item[0]->namt4;
+      }
+
+      if ($companyid == 64) { //excilin
+        $lastpr = $item[0]->lastpr;
+        $defcost = $item[0]->defcost;
       }
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
@@ -4023,6 +4094,14 @@ class sj
           $data['endwire'] = $this->othersClass->sanitizekeyfield('endwire', $endwire);
         }
         break;
+      case 64: //excelin
+        $data['consignpr'] = $consignmarkup;
+        if ($hamt < $lastpr) { //if the amount is less than last price
+          $data['limitcheck'] = 1;
+        } else {
+          $data['limitcheck'] = 0;
+        }
+        break;
       case 65: //metrodragon
         $data['projectid'] = $hprojectid;
         break;
@@ -4086,6 +4165,7 @@ class sj
         return ['status' => false, 'msg' => 'Add item Failed. Zero trno generated'];
       }
 
+
       if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
         $havestock = true;
         $msg = 'Item was successfully added.';
@@ -4148,6 +4228,13 @@ class sj
           if ($cost != -1) {
             $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
 
+            if ($companyid == 64) { //excilin
+              if ($data['limitcheck'] == 0) {
+                if ($cost < $defcost) {
+                  $this->coreFunctions->sbcupdate($this->stock, ['limitcheck' => 2], ['trno' => $trno, 'line' => $line]);
+                }
+              }
+            }
             //CHECK BELOW COST
             if ($this->companysetup->checkbelowcost($config['params'])) {
               $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
@@ -4228,6 +4315,12 @@ class sj
     } elseif ($action == 'update') {
       $return = true;
       $msg = '';
+
+      if ($companyid == 64) {
+        if ($data['amt'] < $lastpr) {
+          $data['limitcheck'] = 1;
+        }
+      }
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
 
       switch ($this->companysetup->getsystemtype($config['params'])) {
@@ -4272,6 +4365,13 @@ class sj
         if ($cost != -1) {
           $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
 
+          if ($companyid == 64) { //excilin
+            if ($data['limitcheck'] == 0) {
+              if ($cost < $defcost) {
+                $this->coreFunctions->sbcupdate($this->stock, ['limitcheck' => 2], ['trno' => $trno, 'line' => $line]);
+              }
+            }
+          }
           //CHECK BELOW COST
           if ($this->companysetup->checkbelowcost($config['params'])) {
             $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
@@ -6284,7 +6384,6 @@ class sj
 
   public function reportsetup($config)
   {
-
     $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
     $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
 
@@ -6334,6 +6433,40 @@ class sj
 
       case 59: //roosevelt
         $this->posttrans($config);
+        break;
+      case 64: //excelin
+        $trno = $config['params']['trno'];
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        $islocked = $this->othersClass->islocked($config);
+
+        $qry = "select limitcheck from (
+                          select stock.limitcheck from lastock as stock
+                          where trno=$trno
+                          union all
+                          select stock.limitcheck from glstock as stock
+                          where trno=$trno) as a";
+
+        $resultt = $this->coreFunctions->opentable($qry);
+        $locktransaction = true;
+        foreach ($resultt as $res) {
+          if ($res->limitcheck != 0) {
+            $locktransaction = false;
+            break;
+          }
+        }
+        if ($locktransaction) {
+          if (!$isposted) { //ilolock pag hindi posted
+            if (!$islocked) {
+              $config['params']['action'] = 'lock';
+              $config['params']['locktype'] = 'AUTO';
+
+              $result = $this->headClass->lockunlock($config);
+              if (!$result['status']) {
+                return ['status' => false, 'msg' => $result['msg']];
+              }
+            }
+          }
+        }
         break;
     }
 

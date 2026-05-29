@@ -95,7 +95,8 @@ class po
     'amenityid',
     'subamenityid',
     'expiryid',
-    'isfa'
+    'isfa',
+    'shipto'
   ];
   private $except = ['trno', 'dateid', 'due'];
   private $blnfields = ['isfa'];
@@ -349,7 +350,6 @@ class po
     $addparams = '';
 
 
-    /////
     $filterstat = " and num.statid = 0";
     if ($this->companysetup->linearapproval($config['params'])) {
       $itemfilter = isset($config['params']['doclistingparam']['typecode']) ? $config['params']['doclistingparam']['typecode'] : $itemfilter;
@@ -1153,6 +1153,9 @@ class po
             case 65: //metrodragon
               $fields = [['dateid', 'terms'], 'due', 'whname', 'ddeptname'];
               break;
+            case 67: //yulick
+              $fields = [['dateid', 'terms'], 'due', 'whname', 'shipto'];
+              break;
             default:
               $fields = [['dateid', 'terms'], 'due', 'whname'];
               break;
@@ -1198,6 +1201,9 @@ class po
           data_set($col2, 'ddeptname.label', 'Department');
           data_set($col2, 'ddeptname.type', 'input');
           break;
+        case 67: //yulick
+          data_set($col2, 'shipto.label', 'Delivery Address');
+          break;
       }
     }
 
@@ -1224,6 +1230,9 @@ class po
           break;
         case 56: // homeworks
           $fields = $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dewt', 'isfa'];
+          break;
+        case 67: // yulick
+          $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'deldate'];
           break;
         default:
           $fields = [['yourref', 'ourref'], ['cur', 'forex']];
@@ -1253,6 +1262,7 @@ class po
       data_set($col3, 'yourref.required', true);
       data_set($col3, 'yourref.label', 'SJ Ref');
     }
+
 
     $fields = ['rem'];
 
@@ -1435,6 +1445,7 @@ class po
     $data[0]['subamenityid'] = 0;
     $data[0]['subamenityname'] = '';
 
+    $data[0]['shipto'] = '';
     return $data;
   }
 
@@ -1539,6 +1550,8 @@ class po
     }
 
     $data[0]['isfa'] = '0';
+ 
+    $data[0]['shipto'] = '';
     return $data;
   }
 
@@ -2553,16 +2566,16 @@ class po
         $data = $this->coreFunctions->opentable($qry);
         if (!empty($data)) {
           foreach ($data as $key => $val) {
-            if ($data[0]->accessories == "") {
+            if ($data[$key]->accessories == "") {
               $accessories = ' ';
             } else {
-              $accessories = $data[0]->accessories;
+              $accessories = $data[$key]->accessories;
             }
 
-            if ($data[0]->itemdescription == "") {
+            if ($data[$key]->itemdescription == "") {
               $itemdescription = ' ';
             } else {
-              $itemdescription = $data[0]->itemdescription;
+              $itemdescription = $data[$key]->itemdescription;
             }
 
             $str = $str . $data[$key]->erp . $separator . $data[$key]->line . $separator . $data[$key]->ponum . $separator . round($data[$key]->pocustqty, 0) . $separator . $data[$key]->uom . $separator . $data[$key]->currency;

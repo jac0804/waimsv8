@@ -74,7 +74,7 @@ class entrycarton
     public function createTab($config)
     {
 
-        $columns = ['action', 'brandname', 'sizeid', 'qty', 'carton'];
+        $columns = ['action', 'brand_desc', 'sizeid', 'qty', 'carton', 'category'];
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $columns
@@ -92,10 +92,14 @@ class entrycarton
         $obj[0][$this->gridname]['columns'][$carton]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$sizeid]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$sizeid]['action'] = "lookupsetup";
-        $obj[0][$this->gridname]['columns'][$brandname]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-        $obj[0][$this->gridname]['columns'][$brandname]['action'] = "lookupsetup";
+        $obj[0][$this->gridname]['columns'][$brand_desc]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+        $obj[0][$this->gridname]['columns'][$brand_desc]['type'] = "lookup";
+        $obj[0][$this->gridname]['columns'][$brand_desc]['action'] = "lookupsetup";
+        $obj[0][$this->gridname]['columns'][$brand_desc]['lookupclass'] = "lookupbrand";
         $obj[0][$this->gridname]['columns'][$qty]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$qty]['label'] = "Quantity";
+        $obj[0][$this->gridname]['columns'][$category]['type'] = "hidden";
+        $obj[0][$this->gridname]['columns'][$category]['label'] = "";
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
         return $obj;
@@ -112,21 +116,19 @@ class entrycarton
     {
         $data = [];
         $data['line'] = 0;
-        $data['brandname'] = '';
+        $data['brand_desc'] = '';
         $data['brandid'] = 0;
         $data['sizeid'] = '';
         $data['qty'] = 0;
         $data['carton'] = 0;
         $data['bgcolor'] = 'bg-blue-2';
+        $data['category'] = '';
         return $data;
     }
 
     private function selectqry()
     {
-        $qry = "ct.line";
-        foreach ($this->fields as $key => $value) {
-            $qry = $qry . ',ct.' . $value;
-        }
+        $qry = "ct.line,ct.brandid,ct.qty,ct.sizeid,ct.carton,ct.sizeid as category ";
         return $qry;
     }
 
@@ -141,7 +143,7 @@ class entrycarton
                 }
                 if ($data[$key]['line'] == 0) {
                     $line = $this->coreFunctions->insertGetId($this->table, $data2);
-                    $this->logger->sbcmasterlog($line, $config, ' CREATE - Brand :' . $data[$key]['brandname'] . '' . ' , Size: ' . $data[$key]['sizeid'] . ' ,  Quantity: ' . $data[$key]['qty'] . ' Carton' . $data[$key]['carton']);
+                    $this->logger->sbcmasterlog($line, $config, ' CREATE - Brand :' . $data[$key]['brand_desc'] . '' . ' , Size: ' . $data[$key]['sizeid'] . ' ,  Quantity: ' . $data[$key]['qty'] . ' Carton' . $data[$key]['carton']);
                 } else {
                     $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
                     $data2['editby'] = $config['params']['user'];
@@ -166,7 +168,7 @@ class entrycarton
             $line = $this->coreFunctions->insertGetId($this->table, $data);
             if ($line != 0) {
                 $returnrow = $this->loaddataperrecord($line);
-                $this->logger->sbcmasterlog($line, $config, ' CREATE - Brand :' . $row['brandname'] . '' . ' , Size: ' . $row['sizeid'] . ' , Quantity: ' . $row['qty'] . ' Carton' . $row['carton']);
+                $this->logger->sbcmasterlog($line, $config, ' CREATE - Brand :' . $row['brand_desc'] . '' . ' , Size: ' . $row['sizeid'] . ' , Quantity: ' . $row['qty'] . ' Carton' . $row['carton']);
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
                 return ['status' => false, 'msg' => 'Saving failed.'];
@@ -189,7 +191,7 @@ class entrycarton
         $row = $config['params']['row'];
         $qry = "delete from " . $this->table . " where line=?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
-        $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['brandname'] . '' . ' , Size: ' . $row['sizeid'] . ' , Quantity: ' . $row['qty'] . ' Carton: ' . $row['carton']);
+        $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['brand_desc'] . '' . ' , Size: ' . $row['sizeid'] . ' , Quantity: ' . $row['qty'] . ' Carton: ' . $row['carton']);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 
@@ -198,7 +200,7 @@ class entrycarton
     {
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        $qry = "select " . $select . ",b.brand_desc as brandname from " . $this->table . " as ct 
+        $qry = "select " . $select . ",b.brand_desc from " . $this->table . " as ct 
         left join frontend_ebrands as b on b.brandid=ct.brandid
         where ct.line=?";
         $data = $this->coreFunctions->opentable($qry, [$line]);
@@ -212,16 +214,16 @@ class entrycarton
         $company = $config['params']['companyid'];
         $limit = '';
         $filtersearch = "";
-        $searcfield = $this->fields;
+        $searcfield =  ['ct.qty', 'ct.sizeid', 'ct.carton'];
         $search = '';
 
         if (isset($config['params']['filter'])) {
             $search = $config['params']['filter'];
             foreach ($searcfield as $key => $sfield) {
                 if ($filtersearch == "") {
-                    $filtersearch .= " and (" . $sfield . " like '%" . $search . "%'";
+                    $filtersearch .= " and (" . $sfield . " like '%" . $search . "%' or b.brand_desc like '%" . $search . "%'";
                 } else {
-                    $filtersearch .= " or " . $sfield . " like '%" . $search . "%'";
+                    $filtersearch .= " or " . $sfield . " like '%" . $search . "%' or b.brand_desc like '%" . $search . "%'";
                 } //end if
             }
             $filtersearch .= ")";
@@ -232,9 +234,9 @@ class entrycarton
         } else {
             $l = $limit;
         }
-        $qry = "select " . $select . ",b.brand_desc as brandname from " . $this->table . " as ct
+        $qry = "select " . $select . ",b.brand_desc from " . $this->table . " as ct
         left join frontend_ebrands as b on b.brandid=ct.brandid
-         " . $filtersearch . " order by ct.line $l";
+        where 1=1 $filtersearch order by ct.line $l";
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }
@@ -296,7 +298,7 @@ class entrycarton
     public function lookupbrand($config)
     {
 
-        $plotting = array('brandid' => 'brandid', 'brandname' => 'brand');
+        $plotting = array('brandid' => 'brandid', 'brand_desc' => 'brand');
         $plottype = 'plotgrid';
         $title = 'List of Brand';
 

@@ -640,7 +640,7 @@ class employee
         unset($return['Attachment']);
         break;
       case 68: //JDA
-        $return['REQUIREMENTS'] = ['icon' => 'fa fa-paste', 'tab' => $requirements]; 
+        $return['REQUIREMENTS'] = ['icon' => 'fa fa-paste', 'tab' => $requirements];
         break;
     }
 
@@ -702,14 +702,34 @@ class employee
       data_set($col1, 'floor.lookupclass', 'lookupfloor');
       data_set($col1, 'floor.required', false);
     }
-   
 
-    if($companyid==68){//JDA
-      $fields = ['maidname',['mstatus', 'child'], 'bday', ['age', 'gender'],['alias','bank'],
-    'supervisorcode', 'supervisor', 'email', 'lblTaxStatus', ['radioteu', 'nodeps']];
-    }else{
-        $fields = ['maidname',['mstatus', 'child'], 'bday', ['age', 'gender'],'alias',
-    'supervisorcode', 'supervisor', 'email', 'lblTaxStatus', ['radioteu', 'nodeps']];
+
+    if ($companyid == 68) { //JDA
+      $fields = [
+        'maidname',
+        ['mstatus', 'child'],
+        'bday',
+        ['age', 'gender'],
+        ['alias', 'bank'],
+        'supervisorcode',
+        'supervisor',
+        'email',
+        'lblTaxStatus',
+        ['radioteu', 'nodeps']
+      ];
+    } else {
+      $fields = [
+        'maidname',
+        ['mstatus', 'child'],
+        'bday',
+        ['age', 'gender'],
+        'alias',
+        'supervisorcode',
+        'supervisor',
+        'email',
+        'lblTaxStatus',
+        ['radioteu', 'nodeps']
+      ];
     }
 
     $col2 = $this->fieldClass->create($fields);
@@ -727,13 +747,13 @@ class employee
     data_set($col2, 'child.name', 'nochild');
     data_set($col2, 'radioteu.label', 'Tax Status');
     data_set($col2, 'nodeps.type', 'cinput');
-    
-  if($companyid==68){//JDA
+
+    if ($companyid == 68) { //JDA
       data_set($col2, 'bank.type', 'lookup');
       data_set($col2, 'bank.action', 'lookuppbank');
       data_set($col2, 'bank.lookupclass', 'lookupbanktype');
       data_set($col2, 'bank.class', 'csbank sbccsreadonly');
-  }
+    }
 
     $fields = ['paymode', 'classrate', ['level', 'hired'], ['idbarcode', 'isactive']];
 
@@ -765,6 +785,7 @@ class employee
     switch ($systemtype) {
       case 'PAYROLL':
       case 'HRISPAYROLL':
+      case 'AIMSPAYROLL':
         data_set($col3, 'tpaygroupname.type', 'lookup');
         data_set($col3, 'tpaygroupname.action', 'paygrouplookup');
         data_set($col3, 'tpaygroupname.lookupclass', 'tpaygrouplookup');

@@ -253,7 +253,7 @@ class ob_filling_reports
       cl.client, cl.clientname,
       if(ob.type = 'Official Business',concat(time_format(ob.dateid, '%H:%i '),' - ',time_format(ob.dateid2, '%H:%i ')),time_format(ifnull(ob.dateid,ob.dateid2), '%H:%i ')) as time,
 
-      time_format(ob.dateid2, '%H:%i ') as timeout
+      time_format(ob.dateid, '%H:%i ') as timein, time_format(ob.dateid2, '%H:%i ') as timeout
       ,ob.line,$jobtitle dept.clientname as department,date(ob.scheddate) as scheddate,
       ob.type, date(ifnull(ob.dateid,ob.dateid2)) as dateid, ob.rem as remarks,
       case
@@ -282,7 +282,7 @@ class ob_filling_reports
       left join client as iniapp2 on iniapp2.email = ob.initialapprovedby2 and iniapp2.email <> ''
       $leftjoin
        where $status date(ifnull(ob.dateid,ob.dateid2)) between '" . $start . "' and '" . $end . "' $filteremp $filter order by cl.clientname, date(ifnull(ob.dateid,ob.dateid2))";
-        return $query;
+       return $query;
     }
     public function ob_detailed($config, $line)
     {
@@ -496,7 +496,7 @@ class ob_filling_reports
         $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
 
         $str = '';
-        $layoutsize = '2620';
+        $layoutsize = '2750';
         $font = $this->companysetup->getrptfont($config['params']);
         $fontsize = "9";
         $border = "1px solid ";
@@ -522,21 +522,24 @@ class ob_filling_reports
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Applied Date', '90', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Employee Name', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Schedule Date', '90', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Employee Name', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Schedule Date', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Date', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Time In', '50', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Time Out', '60', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Type', '60', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Location', '80', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Purpose', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
 
         $str .= $this->reporter->col('First Initial Status', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Initail Date Approved/Disapproved', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Initial Date Approved/Disapproved', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Approved/ Disapproved By', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('initial Reason', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Initial Reason', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
 
         $str .= $this->reporter->col('Last Initial Status', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Initail Date Approved/Disapproved', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Initial Date Approved/Disapproved', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Approved/ Disapproved By', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('initial Reason', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Initial Reason', '100', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
 
         $str .= $this->reporter->col('First Approved Status', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Date Approved/Disapproved', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
@@ -571,7 +574,7 @@ class ob_filling_reports
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
-        $layoutsize = 2620;
+        $layoutsize = 2750;
         $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '10;margin-left:15px;');
         $str .= $this->camera_header($config);
 
@@ -581,8 +584,11 @@ class ob_filling_reports
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col($data->createdate, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($data->clientname, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($data->dateid, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->clientname, '130', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->dateid, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->dateid, '70', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->timein, '50', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->timeout, '60', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->type, '60', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->location, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col($data->remarks, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');

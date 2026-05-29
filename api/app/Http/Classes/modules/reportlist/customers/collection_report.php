@@ -207,6 +207,7 @@ class collection_report
         break;
 
       case 29: // SBC
+        $this->reportParams['format'] = 'letter';
         return $this->report_SBC_Layout($config);
         break;
 
@@ -1276,67 +1277,6 @@ class collection_report
     return $str;
   }
 
-  // Para sa New Report
-  public function displayHeader_SBC($config)
-  {
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
-    $companyid = $config['params']['companyid'];
-    $client     = $config['params']['dataparams']['client'];
-    $start     = $config['params']['dataparams']['start'];
-    $end     = $config['params']['dataparams']['end'];
-
-    if ($client == '') {
-      $client = 'ALL';
-    }
-
-    $str = '';
-    $layoutsize = '1200';
-    $font = $this->companysetup->getrptfont($config['params']);
-    $fontsize = "10";
-    $border = "1px solid ";
-
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->letterhead($center, $username, $config);
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= '<br/>';
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid ', '', 'C', $font, '18', 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '410', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('For the Period Beginning:', '170', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('' . date('m/d/Y', strtotime($start)), '80', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('Ending', '50', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('' . date('m/d/Y', strtotime($end)), '80', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('', '410', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= '<br/>';
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Date', '120', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Document No.', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Center', '210', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col("Client Name", '300', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col("Particular", '300', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-    return $str;
-  }
-
   public function report_Afli_Layout($config)
   {
     $result = $this->afli_query($config);
@@ -1515,6 +1455,68 @@ class collection_report
   }
 
   // Para sa New Report
+  public function displayHeader_SBC($config)
+  {
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+    $client     = $config['params']['dataparams']['client'];
+    $start     = $config['params']['dataparams']['start'];
+    $end     = $config['params']['dataparams']['end'];
+
+    if ($client == '') {
+      $client = 'ALL';
+    }
+
+    $str = '';
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid ', '', 'C', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '310', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('For the Period Beginning:', '170', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('' . date('m/d/Y', strtotime($start)), '80', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('Ending', '50', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('' . date('m/d/Y', strtotime($end)), '80', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '310', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+    $str .= '<br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Date', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Document No.', '140', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Center', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col("Client Name", '240', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col("Particular", '290', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  // Para sa New Report
   public function report_SBC_Layout($config)
   {
     $result = $this->sbc_query($config);
@@ -1522,17 +1524,16 @@ class collection_report
     $font = $this->companysetup->getrptfont($config['params']);
     $count = 25;
     $page = 25;
-    $layoutsize = '1200';
+    $layoutsize = '1000';
     $fontsize = "10";
     $border = "1px solid ";
     $str = '';
-
 
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
 
-    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '5px;margin-top:10px;');
+    $str .= $this->reporter->beginreport();
     $str .= $this->displayHeader_SBC($config);
 
     $str .= $this->reporter->begintable($layoutsize);
@@ -1540,24 +1541,36 @@ class collection_report
 
     // Month subtotal
     $subamount = $amount = 0;
+    $subcount = 0;
+
+    $grandtotal = 0;
+    $grandcount = 0;
 
     foreach ($result as $key => $data) {
 
-      // Month-Year format 
-      // $monthYear = date('F Y', strtotime($data->dateid));
       $monthYear = $data->monthlabel;
 
-      // Kapag magpapalit ng month, print month header
       if ($currentMonth !== '' && $currentMonth !== $monthYear) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($currentMonth . ' - SUB TOTAL', '850', null, false, $border, '', 'R', $font, $fontsize, 'B');
-        $str .= $this->reporter->col(number_format($subamount, 2), '150', null, false, $border, '', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('COUNT: ', '220', null, false, '2px dotted', 'B', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($subcount, '150', null, false, '2px dotted', 'B', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('', '240', null, false, '2px dotted', 'B', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($currentMonth . ' - SUB TOTAL: ', '290', null, false, '2px dotted', 'B', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col(number_format($subamount, 2), '100', null, false, '2px dotted', 'B', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', null, '20', false, '2px dotted', '', 'R', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $subamount = 0;
+        $subcount = 0;
       }
+
       if ($currentMonth !== $monthYear) {
         $currentMonth = $monthYear;
 
@@ -1571,70 +1584,63 @@ class collection_report
 
       // Compute subtotal per month
       $subamount += $data->amount;
+      $subcount++;
 
-      //  Transaction row
+      $grandtotal += $data->amount;
+      $grandcount++;
+
+      // Transaction row
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->dateid, '120', null, false, $border, '', 'C', $font, $fontsize);
-      $str .= $this->reporter->col($data->docno, '150', null, false, $border, '', 'C', $font, $fontsize);
-      $str .= $this->reporter->col($data->name, '210', null, false, $border, '', 'L', $font, $fontsize);
-      $str .= $this->reporter->col($data->clientname, '300', null, false, $border, '', 'L', $font, $fontsize);
-      $str .= $this->reporter->col($data->rem, '300', null, false, $border, '', 'L', $font, $fontsize);
-      $str .= $this->reporter->col(number_format($data->amount, 2), '100', null, false, $border, '', 'R', $font, $fontsize);
+      $str .= $this->reporter->col($data->dateid, '80', null, false, '2px dotted', 'B', 'CT', $font, $fontsize);
+      $str .= $this->reporter->col($data->docno, '140', null, false, '2px dotted', 'B', 'CT', $font, $fontsize);
+      $str .= $this->reporter->col($data->name, '150', null, false, '2px dotted', 'B', 'LT', $font, $fontsize);
+      $str .= $this->reporter->col($data->clientname, '240', null, false, '2px dotted', 'B', 'LT', $font, $fontsize);
+      $str .= $this->reporter->col($data->rem, '290', null, false, '2px dotted', 'B', 'LT', $font, $fontsize);
+      $str .= $this->reporter->col(number_format($data->amount, 2), '100', null, false, '2px dotted', 'B', 'RT', $font, $fontsize);
       $str .= $this->reporter->endtable();
 
-      // Page Break 
+      // Page Break
       if ($this->reporter->linecounter >= $page) {
-
-        $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-
         $str .= $this->displayHeader_SBC($config);
-        $str .= $this->reporter->begintable($layoutsize);
-
         $page += $count;
       }
     }
-    // Last Month 
+
+    // Last Month subtotal
     if ($currentMonth !== '') {
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($currentMonth . ' - SUB TOTAL', '850', null, false, $border, '', 'R', $font, $fontsize, 'B');
-      $str .= $this->reporter->col(number_format($subamount, 2), '150', null, false, $border, '', 'R', $font, $fontsize, 'B');
+      $str .= $this->reporter->col('COUNT: ', '220', null, false, $border, '', 'L', $font, $fontsize, 'B');
+      $str .= $this->reporter->col($subcount, '150', null, false, $border, '', 'L', $font, $fontsize, 'B');
+      $str .= $this->reporter->col('', '240', null, false, $border, '', 'R', $font, $fontsize, 'B');
+      $str .= $this->reporter->col($currentMonth . ' - SUB TOTAL: ', '290', null, false, $border, '', 'R', $font, $fontsize, 'B');
+      $str .= $this->reporter->col(number_format($subamount, 2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', null, null, false, '2px dotted', 'B', 'R', $font, $fontsize, 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
     }
 
-
-
-    // $totalccash += ($totalcprint + $totalcint + $totalcprofe + $totalcpen);
-    // $totalncash += ($totalncprint + $totalncint + $totalncprofe + $totalncpen);
+    // Grand Total
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', null, '10', false, '2px dotted', '', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('TOTAL COUNT: ', '220', null, false, '2px solid', 'TB', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col($grandcount, '150', null, false, '2px solid', 'TB', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('', '240', null, false, '2px solid', 'TB', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('GRAND TOTAL: ', '290', null, false, '2px solid', 'TB', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->col(number_format($grandtotal, 2), '100', null, false, '2px solid', 'TB', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-
-
-    // For footer but not needed for now
-    // $str .= '<br/><br/>';
-    // $config['params']['doc'] = $this->modulename;
-    // if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'posted', $dataparams['approved']);
-    // if (isset($dataparams['checked'])) $this->othersClass->writeSignatories($config, 'checked', $dataparams['checked']);
-
-    // $str .= $this->reporter->begintable($layoutsize);
-    // $str .= $this->reporter->startrow();
-    // $str .= $this->reporter->col('', '80', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('Prepared by: ', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('' . $config['params']['dataparams']['prepared'], '150', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('Checked by: ', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('' . $config['params']['dataparams']['checked'], '150', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('Posted By: ', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('' . $config['params']['dataparams']['approved'], '150', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    // $str .= $this->reporter->endrow();
-    // $str .= $this->reporter->endtable();
-
-
+    
     $str .= $this->reporter->endreport();
     return $str;
   }

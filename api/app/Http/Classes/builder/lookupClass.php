@@ -18,6 +18,7 @@ use App\Http\Classes\builder\txtfieldClass;
 use App\Http\Classes\lookup\poslookup;
 use App\Http\Classes\lookup\hmslookup;
 use App\Http\Classes\lookup\barangaylookup;
+use App\Http\Classes\lookup\autoservelookup;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Classes\Logger;
@@ -44,6 +45,7 @@ class lookupClass
   private $poslookup;
   private $hmslookup;
   private $barangaylookup;
+  private $autoservelookup;
 
 
   public function __construct()
@@ -64,6 +66,7 @@ class lookupClass
     $this->poslookup = new poslookup;
     $this->hmslookup = new hmslookup;
     $this->barangaylookup = new barangaylookup;
+    $this->autoservelookup = new autoservelookup;
   }
 
   //declaration of function to avoid double function
@@ -1880,6 +1883,15 @@ class lookupClass
         return $this->lookupopentask($config);
         break;
 
+        // lookup auto service
+        case 'getjobsetup':
+          return $this->getautojobsetup($config);
+          break;
+
+      case 'lookupcarmake':
+      return $this->autoservelookup->lookupcarmake($config);
+      break;
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
         break;
@@ -3503,7 +3515,12 @@ class lookupClass
             break;
           default:
             $plottype = 'plothead';
-            $plotting = array('wh' => 'client', 'whname' => 'clientname', 'whid' => 'clientid');
+             $plotting = array('wh' => 'client', 'whname' => 'clientname', 'whid' => 'clientid');
+
+            if ($config['params']['companyid'] == 67 && $config['params']['doc'] == 'PO') { //Yulick
+               $plotting = array('wh' => 'client', 'whname' => 'clientname', 'whid' => 'clientid', 'shipto' => 'addr');
+            }
+           
             break;
         }
         break;
@@ -7368,6 +7385,7 @@ class lookupClass
       case 'allowancesetup':
       case 'undertime':
       case 'changeshiftapplication':
+      case 'jobsetup':
         // case 'employee':
       case 'applicantledger':
       case 'applicantledger_acontacts':
@@ -8107,6 +8125,8 @@ class lookupClass
         } else {
           if ($alias == 'DUEMC' || $alias == 'DUESP' || $alias == 'DEPRECR' || $alias == 'DEPREDB') {
             $qry = "select acno,acnoname, acnoid from coa where detail=1";
+          } elseif ($alias == 'ASSET') {
+            $qry = "select acnoid, acno,acnoname from coa where cat='A' and detail=1";
           } elseif ($alias == 'lookupdepositto') {
             $qry = "select acnoid, acno,acnoname from coa where left(alias,2) in ('CR','CA','CB')";
           } else {
@@ -16816,7 +16836,7 @@ class lookupClass
     $lookupsetup = array(
       'type' => $type,
       'rowkey' => 'trno',
-      'title' => 'List of Pending Qoutation Summary',
+      'title' => 'List of Pending Quotation Summary',
       'style' => 'width:800px;max-width:800px;'
     );
 
@@ -17652,12 +17672,13 @@ class lookupClass
     );
 
     // lookup columns
-    $cols = array(
-      array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;')
-    );
-
-    $qry = "select clientid,client,clientname from client where iswarehouse=1 order by client asc";
+   
+      $cols = array(
+          array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
+          array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
+      
+    
+      $qry = "select clientid,client,clientname from client where iswarehouse=1 order by client asc";
 
     $data = $this->coreFunctions->opentable($qry);
 
@@ -23104,7 +23125,7 @@ class lookupClass
     ];
 
 
-    $qry = "select clientid, client, clientname from client where iswarehouse=1 ";
+    $qry = "select clientid, client, clientname from client where iswarehouse=1";
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
@@ -25524,10 +25545,36 @@ class lookupClass
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   } //end function
+  public function getautojobsetup($config)
+  {
+    $title = 'List of Auto Job Setup';
 
+    $lookupsetup = array(
+      'type' => 'multi',
+      'rowkey' => 'keyid',
+      'title' => $title,
+      'style' => 'width:100%;max-width:100%;'
+    );
 
+    $plotsetup = array(
+      'plottype' => 'callback',
+      'action' => 'getautojobsetup',
+    );
+    // lookup columns
+    $cols = array(
+      array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'description', 'label' => 'Job Description', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;')
+    );
+    $query = "select line as keyid,line,docno as code,jobtitle as description from jobthead";
+    $data = $this->coreFunctions->opentable($query);
+ 
 
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
 
+ 
+
+ 
 
 
 } // end class

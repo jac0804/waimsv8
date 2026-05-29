@@ -326,7 +326,12 @@ class dy
   public function newclient($config)
   {
     $data = $this->resetdata($config, $config['newclient']);
-    return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
+
+    $hideobj = [];
+    $hideobj['updatenotes'] = true;
+    $hideobj['updatetaskinfo'] = true;
+
+    return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger', 'hideobj' => $hideobj];
   }
 
   private function resetdata($config, $client = '')
@@ -404,6 +409,7 @@ class dy
     if (!empty($head)) {
       $hideobj = [];
       $hideobj['updatenotes'] = false; //nakashow 
+      $hideobj['updatetaskinfo'] = true; //nakashow 
       $tasktrno = $head[0]->tasktrno;
       $assignedid = $head[0]->assignedid;
 
@@ -412,6 +418,9 @@ class dy
       }
       if ($assignedid != 0) {
         $hideobj['updatenotes'] = true; //nakahide 
+      }
+      if ($head[0]->donedate != null) {
+        $hideobj['updatetaskinfo'] = false;
       }
 
       return  ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => '', 'islocked' => false, 'isposted' => false, 'qq' => $trno, 'hideobj' => $hideobj];

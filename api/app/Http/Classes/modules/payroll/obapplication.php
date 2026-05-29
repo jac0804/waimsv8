@@ -1030,13 +1030,13 @@ class obapplication
           case "LATE TIME IN":
             $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
             $data['dateid2'] = null;
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "DIRECT FIELD OUT ONLY":
           case "EARLY TIME OUT":
             $data['dateid'] = null;
             $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid2']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           // case "BLACK OUT (1 ATTLOG)":
           // case "BLACK OUT WHOLEDAY":
@@ -1060,29 +1060,29 @@ class obapplication
           case "Off-setting":
             $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
             $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "Time-In":
           case "Time-In at the Place Visited":
             $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
             $data['dateid2'] = null;
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "Time-Out":
           case "Time-Out at the Place Visited":
             $data['dateid'] = null;
             $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime1']);
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid2']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           default:
             $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
-            $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+            $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
         }
         break;
       default:
         $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
-        $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+        $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
         break;
     }
     $empname = $this->coreFunctions->datareader("select cl.clientname as value 

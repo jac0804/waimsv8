@@ -118,7 +118,6 @@ class reseller_status_summary_report
         $end = date("m-d-Y", strtotime($config['params']['dataparams']['end']));
         $dcentername     = $config['params']['dataparams']['dcentername'];
         $reporttype = $config['params']['dataparams']['reporttype'];
-        // $clientname = ($config['params']['dataparams']['clientname']);
         $str = '';
         $layoutsize = '1000';
         $font = "Tahoma";
@@ -128,30 +127,6 @@ class reseller_status_summary_report
 
         $qry = "select code,name,address,tel from center where code = '" . $center . "'";
         $headerdata = $this->coreFunctions->opentable($qry);
-
-        //main header
-        // if ($config['params']['dataparams']['dcentername'] == '') {
-        //     $dcentername = '-';
-        // }
-
-        // $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
-        // $str .= $this->reporter->begintable($layoutsize);
-        // $str .= $this->reporter->startrow();
-        // $str .= $this->reporter->col($reporttimestamp, '1000', null, false, '', '', 'L', $font, $fontsize);
-        // $str .= $this->reporter->endrow();
-        // $str .= $this->reporter->endtable();
-
-        // $str .= $this->reporter->begintable($layoutsize);
-        // $str .= $this->reporter->startrow();
-        // $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '', '', 'C', $font, '16', 'B', '', '');
-        // $str .= $this->reporter->endrow();
-        // $str .= $this->reporter->startrow();
-        // $str .= $this->reporter->col($headerdata[0]->tel, null, null, false, '', '', 'C', $font, '16', 'B', '', '');
-        // $str .= $this->reporter->endrow();
-        // $str .= $this->reporter->startrow();
-        // $str .= $this->reporter->col($headerdata[0]->address, null, null, false, '', '', 'C', $font, '16', 'B', '', '');
-        // $str .= $this->reporter->endrow();
-        // $str .= $this->reporter->endtable();
 
         $str .= '<br></br>';
 
@@ -227,6 +202,8 @@ class reseller_status_summary_report
                 foreach ($collectionMap[$row->trno] as $col) {
                     $summary[$key]['collection'] += abs((float)$col->collection);
                 }
+            } else {
+                $summary[$key]['collection'] += ($row->sales - $row->receivables);
             }
         }
 
@@ -410,6 +387,8 @@ class reseller_status_summary_report
                 foreach ($collectionMap[$row->trno] as $col) {
                     $summary[$key]['collection'] += abs((float)$col->collection);
                 }
+            } else {
+                $summary[$key]['collection'] += ($row->sales - $row->receivables);
             }
         }
 

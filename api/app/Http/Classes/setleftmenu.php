@@ -84,6 +84,9 @@ class setleftmenu
       case 'BMS':
         $masterfile = ['parentmasterfile', 'bg', 'bu', 'infra', 'tl', 'by', 'wl'];
         break;
+      case 'AUTOSERV':
+        $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'itemquery', 'ml'];
+        break;
       default:
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'itemquery'];
         break;
@@ -163,7 +166,7 @@ class setleftmenu
         array_push($masterfile, 'role');
         break;
       case 'MMS':
-        $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'tenant', 'location_ledger'];
+        $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'tenant', 'location_ledger', 'locationinventory'];
         break;
       case 'FAMS':
         array_push($masterfile, 'facard'); //, 'generalitem', 'genericitem'
@@ -220,6 +223,7 @@ class setleftmenu
       case 48: // seastar
         $itemmaster = ['parentitemmaster', 'clientcategories', 'project'];
         break;
+
       default:
         $itemmaster = ['parentitemmaster', 'model', 'part', 'stockgroup', 'brand', 'itemclass', 'clientcategories', 'project', 'itemcategory', 'itemsubcategory', 'ordertype', 'channel'];
         if ($params['companyid'] == 19) { //housegem
@@ -262,6 +266,11 @@ class setleftmenu
         break;
     }
 
+    $isautoservice = $this->companysetup->getisautoservice($params);
+    if ($isautoservice) { // autoservice
+      array_push($itemmaster, 'jobsetup', 'carmake');
+    }
+
     return ['itemmaster' => ['parent' => 2, 'modules' => $itemmaster]];
   } //end function
 
@@ -293,7 +302,7 @@ class setleftmenu
         $purchase = ['parentpurchase', 'po', 'rr', 'sn', 'dm'];
         break;
       case 16: //ati
-        $purchase = ['parentpurchase', 'prlisting', 'barcodeassigning', 'mm', 'pr', 'cd', 'cdsummary', 'cdapprovalsummary', 'cd2', 'cd3', 'oq', 'om', 'lq', 'po', 'rr', 'dm', 'cv'];
+        $purchase = ['parentpurchase', 'prlisting', 'barcodeassigning', 'pr', 'cd', 'cdsummary', 'cdapprovalsummary', 'cd2', 'cd3', 'oq', 'om', 'lq', 'po', 'rr', 'dm', 'cv']; // , 'mm' - not used in actual (offset Billing to bad accounts)
         break;
       case 24: // goodfound
         $purchase = ['parentpurchase', 'pr', 'po', 'rr', 'dm', 'pu', 'ru'];
@@ -388,6 +397,9 @@ class setleftmenu
 
       case 67: //yulick 
         $sales = ['parentsales', 'so', 'sl', 'sj', 'cm'];
+        break;
+      case 64: //execilin 
+        $sales = ['parentsales', 'qt', 'so', 'sj', 'cm'];
         break;
       case 65: //metro dragon - aims
         $sales = ['parentsales', 'so', 'sj', 'cm', 'mi'];
@@ -1314,6 +1326,19 @@ class setleftmenu
   {
     $barangay = ['parentbarangayjudiciary', 'ju', 'mn', 'mh'];
     return ['barangayjudiciary' => ['parent' => 46, 'modules' => $barangay]];
+  } //end function
+
+
+  public function autoservsetup($params)
+  {
+    $autoservsetup = ['parentautoservsetup', 'tasklabor'];
+    return ['autoservsetup' => ['parent' => 47, 'modules' => $autoservsetup]];
+  } //end function
+
+  public function autoservoperation($params)
+  {
+    $autoservoperation = ['parentautoservoperation', 'ak', 'am'];
+    return ['autoservoperation' => ['parent' => 48, 'modules' => $autoservoperation]];
   } //end function
 
 

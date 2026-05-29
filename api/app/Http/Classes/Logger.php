@@ -158,7 +158,51 @@ class Logger
     if ($istemp != 0) $data['istemp'] = $istemp;
     $this->coreFunctions->sbcinsert($table, $data);
     return true;
-  } //END WRITE LOG    
+  } //END WRITE LOG  
+
+  #user, clientid, table
+  public function sbcsoareportlog($user, $clientid, $table = 'soalog', $date = '')
+  { // added user encoded
+    // $current_timestamp = date("Y-m-d", strtotime('2026-11-10'));
+
+    #Sample text
+    // sbc - 2026-05-15 16:16:50
+    $current_timestamp = $this->getCurrentTimeStamp();
+    $current_year = $this->getCurrentYear();
+    $current_month = $this->getCurrentMonth();
+    $textlog = $user.' - '.$current_timestamp;
+
+    if (!empty($date)) {
+      $current_month = date("M", strtotime($date));
+    }
+
+    #For Testing
+    // $current_timestamp = '2026-01-20 16:16:50';
+    // $current_year = '2026';
+    // $current_month = 'Jan';
+    // $textlog = $user.' - '.$current_timestamp;
+
+    #one line per year per client
+    #if existing, dont need to update/insert
+    
+    $checkqry = "select line as value from $table where clientid = $clientid and year = $current_year and $current_month <> '' limit 1";
+    $check = $this->coreFunctions->datareader($checkqry);
+    
+    $data = ['clientid' => $clientid, 'year' => $current_year, $current_month => $textlog];
+    if(empty($check)){
+
+      $onelineqry = "select line as value from $table where clientid = $clientid and year = $current_year limit 1";
+      $onelineexist = $this->coreFunctions->datareader($onelineqry);
+      if(!empty($onelineexist)){
+        $this->coreFunctions->sbcupdate($table, $data, ['clientid' => $clientid,'year' => $current_year]);
+      }else{
+        $this->coreFunctions->sbcinsert($table, $data);
+
+      }
+    }
+    
+    return true;
+  } //END WRITE LOG  
 
   public function sbcviewreportlog($config, $msg = 'View Printing...')
   {
@@ -262,6 +306,21 @@ class Logger
     return $current_timestamp;
   } //end function
 
+  public function getCurrentYear()
+  {
+    //SETS DEFAULT TIME ZONE ** REQUIRED **
+    $this->setDefaultTimeZone();
+    $current_year = date('Y');
+    return $current_year;
+  } //end function
+
+  public function getCurrentMonth()
+  {
+    //SETS DEFAULT TIME ZONE ** REQUIRED **
+    $this->setDefaultTimeZone();
+    $current_month = date('M');
+    return $current_month;
+  } //end function
 
 
 

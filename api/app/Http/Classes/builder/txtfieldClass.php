@@ -13517,7 +13517,6 @@ class txtfieldClass
                 'required' => false
             ),
 
-
             'invoicedate' => array(
                 'name' => 'invoicedate',
                 'type' => 'date',
@@ -20606,6 +20605,77 @@ class txtfieldClass
                 'required' => false
             ),
 
+            'lastpr' => array(
+                'name' => 'lastpr',
+                'type' => 'input',
+                'label' => 'Last Price Limit Allow',
+                'class' => 'cslastpr',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'defcost' => array(
+                'name' => 'defcost',
+                'type' => 'input',
+                'label' => 'Default Cost',
+                'class' => 'csdefcost',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'commrate' => array(
+                'name' => 'commrate',
+                'type' => 'input',
+                'label' => 'Commission Rate',
+                'class' => 'cscommrate',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'submodel' => array(
+                'name' => 'submodel',
+                'type' => 'input',
+                'label' => 'Submodel',
+                'class' => 'cssubmodel',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+            'transmission' => array(
+                'name' => 'transmission',
+                'type' => 'input',
+                'label' => 'Transmission',
+                'class' => 'cstransmission',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+            'mvno' => array(
+                'name' => 'mvno',
+                'type' => 'input',
+                'label' => 'MV #',
+                'class' => 'csmvno',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+            'kmno' => array(
+                'name' => 'kmno',
+                'type' => 'input',
+                'label' => 'Kilometer No',
+                'class' => 'cskmno',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+            
         );
     }
 

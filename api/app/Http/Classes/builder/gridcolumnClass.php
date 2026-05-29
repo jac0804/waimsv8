@@ -3352,6 +3352,15 @@ class gridcolumnClass
                             'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
                             'readonly' => false
                      ),
+                     'sub_model' => array(
+                            'name' => 'sub_model',
+                            'field' => 'sub_model',
+                            'type' => 'input',
+                            'label' => 'Sub Model',
+                            'align' => 'text-left',
+                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
+                            'readonly' => false
+                     ),
                      'part_code' => array(
                             'name' => 'part_code',
                             'field' => 'part_code',
@@ -11809,6 +11818,120 @@ class gridcolumnClass
                             'readonly' => false
                      ),
 
+                     'consignpr' => array(
+                            'name' => 'consignpr',
+                            'type' => 'input',
+                            'label' => 'Consign Markup Price',
+                            'field' => 'consignpr',
+                            'align' => 'text-right',
+                            'style' => 'width:130px;whiteSpace: normal;min-width:130px;',
+                            'readonly' => false
+                     ),
+
+                     'other_info' => array(
+                            'name' => 'other_info',
+                            'field' => 'other_info',
+                            'type' => 'input',
+                            'label' => 'Other Information',
+                            'align' => 'text-left',
+                            'style' => 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;',
+                            'readonly' => false
+                     ),
+                     'mechanic' => array(
+                            'name' => 'mechanic',
+                            'field' => 'mechanic',
+                            'type' => 'input',
+                            'label' => 'Mechanic',
+                            'align' => 'text-left',
+                            'style' => 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;',
+                            'readonly' => false
+                     ),
+
+                     'labor1' => array(
+                            'name' => 'labor1',
+                            'type' => 'input',
+                            'label' => 'Labor 1',
+                            'field' => 'labor1',
+                            'align' => 'text-left',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'labor2' => array(
+                            'name' => 'labor2',
+                            'type' => 'input',
+                            'label' => 'Labor 2',
+                            'field' => 'labor2',
+                            'align' => 'text-left',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'labor3' => array(
+                            'name' => 'labor3',
+                            'type' => 'input',
+                            'label' => 'Labor 3',
+                            'field' => 'labor3',
+                            'align' => 'text-left',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'labor4' => array(
+                            'name' => 'labor4',
+                            'type' => 'input',
+                            'label' => 'Labor 4',
+                            'field' => 'labor4',
+                            'align' => 'text-left',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'labor5' => array(
+                            'name' => 'labor5',
+                            'type' => 'input',
+                            'label' => 'Labor 5',
+                            'field' => 'labor5',
+                            'align' => 'text-left',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+
+                     'jobcode' => array(
+                            'name' => 'jobcode',
+                            'field' => 'jobcode',
+                            'type' => 'input',
+                            'label' => 'Job Code',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+
+                     'startamt' => array(
+                            'name' => 'startamt',
+                            'type' => 'input',
+                            'label' => 'Start Amount',
+                            'field' => 'startamt',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
+                            'readonly' => false
+                     ),
+
+                     'endamt' => array(
+                            'name' => 'endamt',
+                            'type' => 'input',
+                            'label' => 'End Amount',
+                            'field' => 'endamt',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
+                            'readonly' => false
+                     ),
+
+                     'commrate' => array(
+                            'name' => 'commrate',
+                            'type' => 'input',
+                            'label' => 'Commission Rate',
+                            'field' => 'commrate',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
+                            'readonly' => false
+                     ),
 
               );
 

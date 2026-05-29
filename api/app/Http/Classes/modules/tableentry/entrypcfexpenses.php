@@ -185,6 +185,10 @@ class entrypcfexpenses
     }   
 
     foreach ($data as $key => $value) {
+      if($data[$key]['expenseid'] == 94){
+        goto nextfor;
+      }
+      
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
@@ -216,6 +220,7 @@ class entrypcfexpenses
           $this->logger->sbcmasterlog($tableid, $config, ' Update - ' . $data[$key]['expensename']. '~ BUDGET: ' . $data[$key]['budget']. '~ACTUAL: ' . $data[$key]['actual']. '~REMARKS: ' . $data[$key]['rem']);
         }
       } // end if
+      nextfor:
     } // foreach
     $returndata = $this->loaddata($config);
     return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
@@ -311,16 +316,22 @@ class entrypcfexpenses
         return ['status' => false, 'msg' => 'Saving failed.'];
       }
     } else {
-      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-      $data['editby'] = $config['params']['user'];
-      $data['actual'] = $data['budget'];
-      if ($this->coreFunctions->sbcupdate($table, $data, ['trno'=>$tableid,'line' => $row['line']]) == 1) {
+      if($data['expenseid'] == 94){
         $returnrow = $this->loaddataperrecord($config, $row['line']);
-        $this->logger->sbcmasterlog($tableid, $config, ' Update - ' . $row['expensename']. '~BUDGET: ' . $row['budget']. '~ACTUAL: ' . $row['actual']. '~REMARKS: ' . $row['rem']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
-      } else {
-        return ['status' => false, 'msg' => 'Saving failed.'];
+      }else{
+        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+        $data['editby'] = $config['params']['user'];
+        $data['actual'] = $data['budget'];
+        if ($this->coreFunctions->sbcupdate($table, $data, ['trno'=>$tableid,'line' => $row['line']]) == 1) {
+          $returnrow = $this->loaddataperrecord($config, $row['line']);
+          $this->logger->sbcmasterlog($tableid, $config, ' Update - ' . $row['expensename']. '~BUDGET: ' . $row['budget']. '~ACTUAL: ' . $row['actual']. '~REMARKS: ' . $row['rem']);
+          return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+        } else {
+          return ['status' => false, 'msg' => 'Saving failed.'];
+        }
       }
+      
     }
   }
 
@@ -708,7 +719,7 @@ class entrypcfexpenses
   
       );
 
-    $qry = "select line,category from reqcategory where ispexp =1";
+    $qry = "select line,category from reqcategory where ispexp =1 and line <> 94";
     $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

@@ -2221,6 +2221,17 @@ class gridbuttonClass
         'visible' => true,
         'color' => 'primary'
       ],
+      'addtask' => [
+        'name' => 'tableentry',
+        'label' => 'Add Task',
+        'icon' => 'add',
+        'action' => 'tableentry',
+        'class' => 'btnaddtask',
+        'lookupclass' => 'addtask',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
+      ],
 
     ];
   }

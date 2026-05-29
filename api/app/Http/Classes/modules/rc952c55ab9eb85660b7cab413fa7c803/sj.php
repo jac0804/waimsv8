@@ -2528,8 +2528,8 @@ class sj
 
 
                     $headupdate = [
-                        'ourref' => $data[0]->ourref,
-                        'yourref' => $data[0]->yourref,
+                        'ourref' => '',
+                        'yourref' => $data[0]->ourref,
                         'terms' => $data[0]->terms,
                         'agent' => $data[0]->agent,
                         'rem' => $data[0]->rem,

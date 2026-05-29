@@ -789,7 +789,7 @@ class sj
                     $vatsales = $vatsales + $linetotal;
                     $totalext = $totalext + $linetotal;
                 } else {
-                    $vatsales = 0;
+                    $vatsales = $totalext + $linetotal;
                     $totalext = $totalext + $linetotal;
                 }
 
@@ -816,6 +816,7 @@ class sj
                 $tamtdue = round(($vatsales + $vat) - $ewt, 2);
             } else {
                 $vat = 0;
+                $tamtdue = round(($tamtdue - $ewt), 2);
             }
 
             

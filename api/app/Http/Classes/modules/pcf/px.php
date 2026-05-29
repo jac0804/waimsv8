@@ -51,6 +51,7 @@ class px
   public $showcreatebtn = true;
   private $reporter;
   private $helpClass;
+  private $blnrecompute = false;
   public $showfilterlabel = [
     ['val' => 'draft', 'label' => 'Draft', 'color' => 'Primary'],
     ['val' => 'locked', 'label' => 'Locked', 'color' => 'cyan'],
@@ -493,6 +494,11 @@ class px
     data_set($col2, 'poref.addedparams', ['client']);
     data_set($col2, 'poref.class', 'csporef sbccsreadonly');
 
+    if ($noeditdate == 1) {
+      data_set($col2, 'termsdetails.type', 'input');
+      data_set($col2, 'termsdetails.class', 'sbccsreadonly');
+    }
+
     $fields = ['checkdate', 'rem', 'oandaphpusd', 'oandausdphp', 'osphpusd', 'aftistock'];
     // if ($noeditdate == 0) {
     //   $fields = ['rem'];
@@ -781,7 +787,6 @@ class px
       unset($head['docno']);
     }
     $head['project'] = $head['projectname'];
-    $blnrecompute = false;
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -811,7 +816,7 @@ class px
         }
 
         if ($origosphpusd <> $osphpusd) {
-          $blnrecompute = true;
+          $this->blnrecompute  = true;
         }
 
         if (empty($osphpusd)) {
@@ -828,8 +833,9 @@ class px
         $this->loadinv($config);
       }
 
-      if ($blnrecompute) {
+      if ($this->blnrecompute) {
         $this->recomputehiokitp($config);
+        $this->blnrecompute  = false;
       }
 
       //check duty
@@ -868,6 +874,7 @@ class px
   {
     $trno = $config['params']['trno'];
     $data = $this->openstock($trno, $config);
+    
     $data2 = json_decode(json_encode($data), true);
     if ($osphpusd == 0) {
       $osphpusd = $this->coreFunctions->getfieldvalue($this->head, "osphpusd", "trno=?", [$trno]);
@@ -910,6 +917,7 @@ class px
     }
 
     $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
+    $this->logger->sbcwritelog($poref, $config, 'QTNREF', 'REMOVE LINK TO QTN-delete transaction');
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
@@ -953,7 +961,16 @@ class px
     if ($this->checkRequiredFields($config, $fieldsToCheck, $trno)) {
       return ['status' => false, 'msg' => 'Posting failed. All Fields required before Posting.'];
     }
+    
+    $termsdet = $this->coreFunctions->datareader('select termsdetails as value from ' . $this->head . ' where trno=?', [$trno]);
+    if($termsdet == 'On going'){
+      return ['status' => false, 'msg' => 'Posting failed. Terms Details not yet approve.'];
+    }
 
+    $poref = $this->coreFunctions->datareader('select poref as value from ' . $this->head . ' where trno=?', [$trno]);
+    if($poref == 'NO PO YET'){
+      return ['status' => false, 'msg' => 'Posting failed. No PO yet.'];
+    }
     // $fullcomm = $this->coreFunctions->datareader('select fullcomm as value from ' . $this->head . ' where trno=?', [$trno]);
     // if($fullcomm =='Fixed Comm'){
     //   $commamt = $this->coreFunctions->datareader('select commamt as value from ' . $this->head . ' where trno=?', [$trno],'',true);
@@ -966,7 +983,7 @@ class px
     $date = $this->coreFunctions->datareader('select checkdate as value from ' . $this->head . ' where trno=?', [$trno]);
     $date = date("Y-m-d", strtotime($date));
     $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
-    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', '', true);
+    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '',  true);
     $oandaphpusd = 0;
     $oandausdphp = 0;
 
@@ -1391,6 +1408,7 @@ class px
             $tbl = 'hheadinfotrans';
           }
           $this->coreFunctions->sbcupdate($tbl, ['dtctrno' => $trno], ['trno' => $data[$key2]->trno]);
+          $this->logger->sbcwritelog($data[$key2]->trno, $config, 'QTNREF', 'ADD LINK TO QTN-loadinv');
         } else {
           return ['status' => false, 'msg' => 'Failed.'];
         }
@@ -1402,13 +1420,18 @@ class px
   {
     $config['params']['data'] = $config['params']['row'];
     $isupdate = $this->additem('update', $config);
-    $data = $this->openstockline($config);
+    if($this->blnrecompute){
+      $this->recomputehiokitp($config);
+      $this->blnrecompute = false;
+    }
+    $data = $this->openstockline($config);   
     $data2 = json_decode(json_encode($data), true);
+    
 
     $msg1 = '';
     $msg2 = '';
 
-    $msg = '';
+    $msg = '';    
     if (isset($isupdate['msg'])) {
       if ($isupdate['msg'] != '') {
         $msg = $isupdate['msg'];
@@ -1444,6 +1467,11 @@ class px
         }
       }
     }
+    if($this->blnrecompute){
+      $this->recomputehiokitp($config);     
+      $this->blnrecompute = false;
+    }
+
     $data = $this->openstock($config['params']['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $isupdate = true;
@@ -1625,6 +1653,10 @@ class px
       }
     } elseif ($action == 'update') {
       $return = true;
+      $tpold = $this->coreFunctions->getfieldvalue($this->stock,"tp","trno=? and line=?",[$trno,$line]);
+      if($tpold != $tp){
+        $this->blnrecompute  = false;
+      }
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
 
       //update duty
@@ -1670,7 +1702,7 @@ class px
     }
 
     $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
-
+    $this->logger->sbcwritelog($poref, $config, 'QTNREF', 'REMOVE LINK TO QTN-delete items');
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
   }

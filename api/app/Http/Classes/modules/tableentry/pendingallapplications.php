@@ -449,7 +449,8 @@ class pendingallapplications
                             'otstatus' => 3,
                             'void_by' => $config['params']['user'],
                             'void_date' => $this->othersClass->getCurrentTimeStamp(),
-                            'void_remarks' => $void_remark
+                            'void_remarks' => $void_remark,
+                            'disapprovedate' => $this->othersClass->getCurrentTimeStamp()
                         ];
                         break;
                     case 'OB':
@@ -461,7 +462,8 @@ class pendingallapplications
                             'status' => 'D',
                             'void_by' => $config['params']['user'],
                             'void_date' => $this->othersClass->getCurrentTimeStamp(),
-                            'void_remarks' => $void_remark
+                            'void_remarks' => $void_remark,
+                            'disapprovedate' => $this->othersClass->getCurrentTimeStamp()
                         ];
 
                         break;
@@ -474,7 +476,8 @@ class pendingallapplications
                             'status' => 'D',
                             'void_date' => $this->othersClass->getCurrentTimeStamp(),
                             'void_by' => $config['params']['user'],
-                            'void_remarks' => $void_remark
+                            'void_remarks' => $void_remark,
+                            'date_disapproved' => $this->othersClass->getCurrentTimeStamp()
                         ];
                         if ($row['status'] == 'A') {
                             $entitled = $this->coreFunctions->datareader("select sum(adays) as value from leavetrans where status in ('A') and empid=" . $row['empid'] . " and trno= " . $row['trno'] . "");
@@ -490,7 +493,8 @@ class pendingallapplications
                             'status' => 'D',
                             'void_date' => $this->othersClass->getCurrentTimeStamp(),
                             'void_by' => $config['params']['user'],
-                            'void_remarks' => $void_remark
+                            'void_remarks' => $void_remark,
+                            'date_disapproved' => $this->othersClass->getCurrentTimeStamp()
                         ];
                         break;
                     case 'CHANGESHIFT':
@@ -500,7 +504,8 @@ class pendingallapplications
                             'status' => 2,
                             'void_by' => $config['params']['user'],
                             'void_date' => $this->othersClass->getCurrentTimeStamp(),
-                            'void_remarks' => $void_remark
+                            'void_remarks' => $void_remark,
+                            'disapproveddate' => $this->othersClass->getCurrentTimeStamp()
                         ];
                         break;
                 }
@@ -606,7 +611,7 @@ class pendingallapplications
                         $params['approver'] = $data2[0]->approver;
                         $params['appname'] = $data2[0]->clientname;
                         $params['email'] = $email;
-                        $result = $this->linkemail->weblink($params,$config);
+                        $result = $this->linkemail->weblink($params, $config);
                         if (!$result['status']) {
                             return ['status' => false, 'msg' => '' . $result['msg']];
                         }

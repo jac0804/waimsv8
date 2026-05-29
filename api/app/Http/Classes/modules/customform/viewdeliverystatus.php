@@ -58,8 +58,8 @@ class viewdeliverystatus
     data_set($col1, 'remarks.readonly', false);
     data_set($col1, 'refresh.label', 'Save');
     data_set($col1, 'delcharge.label', 'Overall Expense');
-    data_set($col1, 'delcharge.readonly', true);
-    data_set($col1, 'delcharge.class', 'sbccsreadonly');
+    //data_set($col1, 'delcharge.readonly', true);
+    //data_set($col1, 'delcharge.class', 'sbccsreadonly');
 
     $fields = ['couriername', 'trackingno',  'releasedate'];
     $col2 = $this->fieldClass->create($fields);

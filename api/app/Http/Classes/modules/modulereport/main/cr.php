@@ -114,6 +114,7 @@ class cr
   public function report_default_query($filters)
   {
     $trno = $filters['params']['dataid'];
+
     $query = "
     select head.trno, date(head.dateid) as dateid, head.docno, head.clientname, head.address, head.yourref,head.ourref, left(coa.alias, 2) as alias, coa.acno, coa.acnoname, coa.alias as ali,
     client.client, detail.ref, date(detail.postdate) as postdate, detail.checkno, detail.db, detail.cr, detail.line
@@ -129,7 +130,8 @@ class cr
     left join gldetail as detail on detail.trno=head.trno) 
     left join coa on coa.acnoid=detail.acnoid)
     left join client on client.clientid=detail.clientid 
-    where head.doc='cr' and head.trno='$trno' order by line";
+    where head.doc='cr' and head.trno='$trno' 
+    order by line";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -461,7 +463,13 @@ class cr
         $maxrow = 1;
         $acno = $data[$i]['acno'];
         $acnoname = $data[$i]['acnoname'];
-        $ref = $data[$i]['ref'];
+        if ($companyid == 22) { // East Innovention Philippines Inc.
+          $ref = in_array($data[$i]['alias'], ['CB', 'CR', 'CA'])
+            ? $data[$i]['checkno']
+            : $data[$i]['ref'];
+        } else {
+          $ref = $data[$i]['ref'];
+        }
         $postdate = $data[$i]['postdate'];
         $debit = number_format($data[$i]['db'], $decimalcurr);
         $credit = number_format($data[$i]['cr'], $decimalcurr);

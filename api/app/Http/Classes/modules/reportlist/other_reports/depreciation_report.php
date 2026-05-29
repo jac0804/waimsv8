@@ -17,9 +17,9 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
 
-class amortization_report
+class depreciation_report
 {
-    public $modulename = 'Amortization Report';
+    public $modulename = 'Depreciation Report';
     private $companysetup;
     private $coreFunctions;
     private $fieldClass;
@@ -50,7 +50,7 @@ class amortization_report
         data_set($col1, 'start.required', true);
         data_set($col1, 'end.required', true);
         data_set($col1, 'dacnoname.label', 'Asset Account');
-        data_set($col1, 'dacnoname.lookupclass', 'IN');
+        data_set($col1, 'dacnoname.lookupclass', 'ASSET');
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -384,7 +384,7 @@ class amortization_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('AMORTIZATION REPORT', null, null, false, $border, '', 'C', $font, $fontsize14, 'B', '', '');
+        $str .= $this->reporter->col('DEPRECIATION REPORT', null, null, false, $border, '', 'C', $font, $fontsize14, 'B', '', '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();

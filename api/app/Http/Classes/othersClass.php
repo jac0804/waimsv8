@@ -520,7 +520,7 @@ class othersClass
     array_push($number, 'namt', 'namt2', 'nfamt', 'namt4', 'namt5', 'namt6', 'namt7', 'iseq', 'first', 'last', 'jobid', 'jobid2', 'branchid2', 'roleid2', 'loanlimit');
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
-    array_push($number, 'brandid', 'monthsno');
+    array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -591,6 +591,7 @@ class othersClass
         }
         break;
       case 46: //morningsteel
+      case 29: //sbc
         $toupper = [];
         $propercase = [];
 
@@ -1179,9 +1180,9 @@ class othersClass
         $addedfield = " ,rctrno,rcline,purposeid,acctname";
         $selectaddedfield = " ,rctrno,rcline,purposeid,acctname";
         break;
-      case 'BMS':
-        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh";
-        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh";
+      case 'AUTOSERV':
+        $addedfield = " ,carid,modelid";
+        $selectaddedfield = " ,carid,modelid";
         break;
     }
     switch ($config['params']['companyid']) {
@@ -1335,7 +1336,7 @@ class othersClass
                     salestype, sano,pono, deldate, crref, returndate, refunddate, sdate1,sdate2,empid,driver,
                     plateno,excess,excessrate,aftrno,checkno,checkdate,amount,refdate,istrip,voiddate,voidby,
                     orderno,strdate1,strdate2,trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,
-                    ista,layref,isfa,isnoentry,rrfactor,voyage " . $add . $addedfield  . ")
+                    ista,layref,isfa,isnoentry,rrfactor,voyage,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh " . $add . $addedfield  . ")
             SELECT head.trno,head.doc, head.docno,ifnull(client.clientid,0), ifnull(head.clientname,''), head.address,head.shipto,
                     head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
                     head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,
@@ -1349,7 +1350,7 @@ class othersClass
                     sdate1,sdate2,head.empid,head.driver,head.plateno,head.excess,head.excessrate,head.aftrno,
                     head.checkno,head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                     head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,head.fpid,head.crno,head.rfno,head.chsino,head.swsno,head.cotrno,
-                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage " . $select . $selectaddedfield  . "    
+                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh " . $select . $selectaddedfield  . "    
             FROM " . $config['docmodule']->head . " as head 
             left join cntnum on cntnum.trno=head.trno 
             left join client on client.client=head.client
@@ -2030,9 +2031,9 @@ class othersClass
         $addedfield = " ,rctrno,rcline,purposeid";
         $selectaddedfield = " ,rctrno,rcline,purposeid";
         break;
-      case 'BMS':
-        $addedfield = " ,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh";
-        $selectaddedfield = " ,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh";
+      case 'AUTOSERV':
+        $addedfield = " ,carid,modelid";
+        $selectaddedfield = " ,carid,modelid";
         break;
     }
 
@@ -2049,6 +2050,7 @@ class othersClass
       case 12: //afti usd
         switch ($config['params']['doc']) {
           case 'AI':
+          case 'SJ':
             $addedfield = ", sotrno";
             $selectaddedfield = ", head.sotrno";
             break;
@@ -2204,7 +2206,7 @@ class othersClass
                   deldate, crref, returndate,refunddate,sdate1,sdate2,empid,excess,excessrate,aftrno,
                   checkno,checkdate,amount,refdate,istrip,voiddate,voidby,orderno,strdate1,strdate2,
                   trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,ista,layref,
-                  isfa,isnoentry,rrfactor " . $add . $addedfield  . ")
+                  isfa,isnoentry,rrfactor,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh " . $add . $addedfield  . ")
             select head.trno,head.doc, head.docno, ifnull(client.client,'') as client, head.clientname,
                   head.address, head.shipto, head.dateid, head.terms, ifnull(warehouse.client,'') as wh, head.rem, head.forex,
                   head.yourref, head.ourref, head.contra, ifNull(agent.client,'') as agent, head.tax , head.createdate,head.createby,
@@ -2223,7 +2225,7 @@ class othersClass
                   head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                   head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,
                   head.fpid,head.crno, head.rfno,head.chsino,head.swsno,head.cotrno,head.petrno,
-                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor " . $select . $selectaddedfield  . "
+                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh " . $select . $selectaddedfield  . "
             from glhead as head left join cntnum on cntnum.trno=head.trno
             left join client  on head.clientid=client.clientid
             left join client  as warehouse on head.whid=warehouse.clientid
@@ -3320,6 +3322,7 @@ class othersClass
             case 'FA':
             case 'WO':
             case 'MI':
+            case 'AM':
               $cntnuminfo = $this->postcntnuminfo($config, true);
               if (!$cntnuminfo['status']) {
                 $msg = $cntnuminfo['msg'];
@@ -3648,6 +3651,7 @@ class othersClass
           case 'FA':
           case 'WO':
           case 'MI':
+          case 'AM':
             $cntnuminfo = $this->postcntnuminfo($config, false);
             if (!$cntnuminfo['status']) {
               $msg = $cntnuminfo['msg'];
@@ -4003,7 +4007,7 @@ class othersClass
     freight, reportedby, reportedby2, sdate1, sdate2, rem3,odometer,carrier,waybill,interestrate,downpayment, finterestrate, termsmonth, termspercentdp, termspercent, reservationdate, dueday, 
     reservationfee, farea, fpricesqm, ftcplot, ftcphouse, fsellingpricegross, fdiscount, fsellingpricenet, fcontractprice, fmiscfee, fmonthlydp, fmonthlyamortization, ffi, fmri, fma1, fma2, fma3,loanamt,transtype,
     isconfirmed,isacknowledged,ischqreleased,ispaid,penalty,rebate, strdate1, strdate2, tripdate, jotrno,
-    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat)
+    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno)
 
     select trno, status, checkerdate, checkerby, dispatchdate, dispatchby, logisticdate, logisticby, checkerid, checkerlocid, truckid, receivedate, receiveby, scheddate, checkerrcvdate, forloadby, forloaddate, checkerdone, 
     editby, editdate, rem2, releasedate, sono,instructions, itemid, uom2, batchsize, yield, lotno,dropoffwh,trnxtype, plateno, driverid, helperid, packdate, licenseno, hauler,termsyear, batchno,cwano,cwatime,
@@ -4011,7 +4015,7 @@ class othersClass
     ordate,orno,freight, reportedby, reportedby2, sdate1, sdate2, rem3,odometer,carrier,waybill,interestrate,downpayment,finterestrate, termsmonth, termspercentdp, termspercent, reservationdate, dueday, 
     reservationfee, farea, fpricesqm, ftcplot, ftcphouse, fsellingpricegross, fdiscount, fsellingpricenet, fcontractprice, fmiscfee, fmonthlydp, fmonthlyamortization, ffi, fmri, fma1, fma2, fma3,loanamt,transtype,
     isconfirmed,isacknowledged,ischqreleased,ispaid,penalty,rebate, strdate1, strdate2, tripdate, jotrno,
-    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat
+    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno
     from " . $table . " where trno=?";
 
 
@@ -5089,12 +5093,13 @@ class othersClass
         }
       }
     }
-    skipapprover:
+
     if (empty($filter)) {
       if ($approverid != 0) {
         $filter .= $condition;
       }
     }
+    skipapprover:
     if ($filterdataparams != "") {
       $filter .= $filterdataparams;
     }
@@ -5195,7 +5200,11 @@ class othersClass
         $pref = 'LA';
         break;
       case 'SJCR':
-        $path = 'App\Http\Classes\modules\sales\sj';
+        if ($companyid == 10) {
+          $path = 'App\Http\Classes\modules\afti\sj';
+        } else {
+          $path = 'App\Http\Classes\modules\sales\sj';
+        }
         $referencemodule = 'SALES JOURNAL';
         $pref = 'CR';
         break;
@@ -5644,7 +5653,11 @@ class othersClass
               if ($companyid == 47) { //kitchenstar
                 $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => $data[0]->dateid];
               } else {
-                $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
+                if ($sourcedoc == 'SJCR') {
+                  $head = ['trno' => $trno, 'doc' => $pref, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'dateid' => date('Y-m-d'), 'cur' => $data[0]->cur, 'forex' => $data[0]->forex, 'yourref' => $data[0]->yourref, 'branch' => $data[0]->branch];
+                } else {
+                  $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
+                }
               }
               break;
             default:
@@ -6009,8 +6022,6 @@ class othersClass
               break;
             case 'SJ':
             case 'DR':
-              $head['yourref'] = $data[0]->yourref;
-              $head['ourref'] = $data[0]->ourref;
               $head['agent'] = $data[0]->agent;
               $head['shipto'] = isset($data[0]->shipto) ? $data[0]->shipto : '';
               $head['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [app($path)->defaultContra]);
@@ -6027,6 +6038,14 @@ class othersClass
                 $head['vattype'] = 'NON-VATABLE';
                 $head['tax'] = 0;
                 $head['trnxtype'] =  $data[0]->trnxtype;
+              }
+
+              if ($companyid == 59 && $doc == 'SJ') { //roosevelt
+                $head['yourref'] = $data[0]->ourref;
+                $head['ourref'] = '';
+              } else {
+                $head['yourref'] = $data[0]->yourref;
+                $head['ourref'] = $data[0]->ourref;
               }
               break;
 
@@ -6574,54 +6593,84 @@ class othersClass
               case 'SJ':
               case 'JP':
               case 'DR':
-                $fifoexpiration = $this->companysetup->getfifoexpiration($config['params']);
-
-                $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - PICK ' . $referencemodule, app($path)->tablelogs);
-
-                foreach ($data as $key2 => $value) {
-                  if ($fifoexpiration) {
-                    $return_result = app($path)->insertfifoexpiration($config, $value, $head['wh'], true);
-                    if (empty($return_result)) {
-                      goto defaultsjentryhere;
+                if ($sourcedoc == 'SJCR') {
+                  $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - MAKE PAYMENT ' . $referencemodule, app($path)->tablelogs);
+                  foreach ($data as $key2 => $value) {
+                    $config['params']['data']['acno'] = $data[$key2]->acno;
+                    $config['params']['data']['acnoname'] = $data[$key2]->acnoname;
+                    if (floatval($data[$key2]->db) != 0) {
+                      $config['params']['data']['db'] = 0;
+                      $config['params']['data']['cr'] = $data[$key2]->bal;
+                      $config['params']['data']['fdb'] = 0;
+                      $config['params']['data']['fcr'] = abs($data[$key2]->fdb);
+                    } else {
+                      $config['params']['data']['db'] = $data[$key2]->bal;
+                      $config['params']['data']['cr'] = 0;
+                      $config['params']['data']['fdb'] = $data[$key2]->fdb;
+                      $config['params']['data']['fcr'] = 0;
                     }
-                  } else {
-                    defaultsjentryhere:
-                    $config['params']['trno'] = $trno;
-                    $config['params']['data']['itemid'] = $data[$key2]->itemid;
-                    $config['params']['data']['uom'] = $data[$key2]->uom;
-                    $config['params']['data']['disc'] = $data[$key2]->disc;
-                    $config['params']['data']['qty'] = $data[$key2]->isqty;
-                    if ($doc == 'JP') {
-                      $config['params']['data']['qty2'] = $data[$key2]->isqty;
-                    }
-                    $config['params']['data']['wh'] = $data[$key2]->swh;
-                    $config['params']['data']['loc'] = '';
-                    $config['params']['data']['expiry'] = '';
-                    $config['params']['data']['rem'] = '';
-
-                    if ($doc == 'SJ' || $doc == 'DR') {
-                      $config['params']['data']['refx'] = $data[$key2]->trno;
-                      $config['params']['data']['linex'] = $data[$key2]->line;
-                      $config['params']['data']['ref'] = $data[$key2]->docno;
-                    }
-
-                    $config['params']['data']['amt'] = $data[$key2]->isamt;
-                    $config['params']['data']['projectid'] = $data[$key2]->projectid;
-                    if (isset($data[$key2]->itemdesc)) $config['params']['data']['itemdesc'] = $data[$key2]->itemdesc;
-
+                    $config['params']['data']['postdate'] = $data[$key2]->postdate;
+                    $config['params']['data']['project'] = 0; //$data[$key2]->projectid;
+                    $config['params']['data']['deptid'] = 0; // $data[$key2]->deptid;
+                    $config['params']['data']['branch'] = 0; //$data[$key2]->branch;
+                    $config['params']['data']['client'] = $data[$key2]->client;
+                    $config['params']['data']['refx'] = $data[$key2]->trno;
+                    $config['params']['data']['linex'] = $data[$key2]->line;
+                    $config['params']['data']['ref'] = $data[$key2]->docno;
+                    $config['params']['data']['rem'] = $data[$key2]->drem;
                     $return = app($path)->additem('insert', $config, true);
-                    if ($return['status']) {
-                      if (app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line, 'qty') == 0) {
-                        $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-                        $line = $return['row'][0]->line;
-                        $config['params']['trno'] = $trno;
-                        $config['params']['line'] = $line;
-                        $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                        app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line, app($path)->hqty);
+                  }
+                } else {
+                  $fifoexpiration = $this->companysetup->getfifoexpiration($config['params']);
+
+                  $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - PICK ' . $referencemodule, app($path)->tablelogs);
+
+                  foreach ($data as $key2 => $value) {
+                    if ($fifoexpiration) {
+                      $return_result = app($path)->insertfifoexpiration($config, $value, $head['wh'], true);
+                      if (empty($return_result)) {
+                        goto defaultsjentryhere;
+                      }
+                    } else {
+                      defaultsjentryhere:
+                      $config['params']['trno'] = $trno;
+                      $config['params']['data']['itemid'] = $data[$key2]->itemid;
+                      $config['params']['data']['uom'] = $data[$key2]->uom;
+                      $config['params']['data']['disc'] = $data[$key2]->disc;
+                      $config['params']['data']['qty'] = $data[$key2]->isqty;
+                      if ($doc == 'JP') {
+                        $config['params']['data']['qty2'] = $data[$key2]->isqty;
+                      }
+                      $config['params']['data']['wh'] = $data[$key2]->swh;
+                      $config['params']['data']['loc'] = '';
+                      $config['params']['data']['expiry'] = '';
+                      $config['params']['data']['rem'] = '';
+
+                      if ($doc == 'SJ' || $doc == 'DR') {
+                        $config['params']['data']['refx'] = $data[$key2]->trno;
+                        $config['params']['data']['linex'] = $data[$key2]->line;
+                        $config['params']['data']['ref'] = $data[$key2]->docno;
+                      }
+
+                      $config['params']['data']['amt'] = $data[$key2]->isamt;
+                      $config['params']['data']['projectid'] = $data[$key2]->projectid;
+                      if (isset($data[$key2]->itemdesc)) $config['params']['data']['itemdesc'] = $data[$key2]->itemdesc;
+
+                      $return = app($path)->additem('insert', $config, true);
+                      if ($return['status']) {
+                        if (app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line, 'qty') == 0) {
+                          $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+                          $line = $return['row'][0]->line;
+                          $config['params']['trno'] = $trno;
+                          $config['params']['line'] = $line;
+                          $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                          app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line, app($path)->hqty);
+                        }
                       }
                     }
-                  }
-                } //end for loop
+                  } //end for loop
+                }
+
                 break;
               case 'TS':
                 $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - MAKE ' . $pref . ' ' . $referencemodule, app($path)->tablelogs);
@@ -10638,6 +10687,18 @@ class othersClass
   {
     $clean_string = str_replace(',', '', $formatted_number);
     return round((float)$clean_string, $precision, PHP_ROUND_HALF_UP);
+  }
+
+  public function isSBCProjectHead($userid)
+  {
+    $head = [3863, 3866, 3867, 3865, 3868, 3870];
+
+    foreach ($head as $item) {
+      if ($item == $userid) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public function getmultiitem($config)

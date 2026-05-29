@@ -187,7 +187,7 @@ class entrysku
   {
     $allow_update = $this->othersClass->checkAccess($config['params']['user'], 4876);
 
-    if ($config['params']['companyid'] == 63) { //ericco
+    if ($config['params']['companyid'] == 63 && $config['params']['doc'] == 'STOCKCARD') { //ericco
       $tbuttons = ['addoutlet', 'saveallentry', 'masterfilelogs'];
     } else {
       $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];

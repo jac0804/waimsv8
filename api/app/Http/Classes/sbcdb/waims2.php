@@ -3770,7 +3770,7 @@ class waims2
     $this->coreFunctions->sbccreatetable("hroso", $qry);
     $this->coreFunctions->sbcaddcolumn("client", "ishold", "tinyint(1) NOT NULL DEFAULT '0'", 0);
 
-    $this->coreFunctions->sbcaddcolumngrp(["item"], ["aveleadtime", "maxleadtime"], "int(11) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["aveleadtime", "maxleadtime", "commrate"], "int(11) NOT NULL DEFAULT '0'", 1);
 
     $qry = "CREATE TABLE  `rhhead` (
       `trno` bigint(20) NOT NULL DEFAULT '0',
@@ -4293,5 +4293,72 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(['sku'], ["itemname"], "VARCHAR(500) NOT NULL DEFAULT ''", 0);
 
     $this->coreFunctions->sbcaddcolumn("client", "registername", "varchar(500) NOT NULL DEFAULT ''", 1);
+    $qry = " CREATE TABLE  `tenantloc` (
+      `clientid` int(10) unsigned NOT NULL DEFAULT '0',
+      `locid` int(10) unsigned NOT NULL DEFAULT '0',
+      `isinactive` tinyint(1) NOT NULL DEFAULT '0',
+      `dateid` datetime DEFAULT NULL,
+      `encodeddate` datetime DEFAULT NULL,
+      `editdate` datetime DEFAULT NULL,
+      `encodedby` varchar(100) NOT NULL DEFAULT '',
+      `editby` varchar(100) NOT NULL DEFAULT '',
+      PRIMARY KEY (`clientid`,`locid`) USING BTREE
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("tenantloc", $qry);
+
+    $this->coreFunctions->sbcdropcolumn('tenantloc', 'inactive');
+
+    $qry = "CREATE TABLE `soalog` (
+            `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `clientid` INT(11) NOT NULL DEFAULT '0',
+            `year` INT(11) NOT NULL DEFAULT '0',
+            `jan` varchar(150) NOT NULL DEFAULT '',
+            `feb` varchar(150) NOT NULL DEFAULT '',
+            `mar` varchar(150) NOT NULL DEFAULT '',
+            `apr` varchar(150) NOT NULL DEFAULT '',
+
+            `may` varchar(150) NOT NULL DEFAULT '',
+            `jun` varchar(150) NOT NULL DEFAULT '',
+            `jul` varchar(150) NOT NULL DEFAULT '',
+            `aug` varchar(150) NOT NULL DEFAULT '',
+
+            `sep` varchar(150) NOT NULL DEFAULT '',
+            `oct` varchar(150) NOT NULL DEFAULT '',
+            `nov` varchar(150) NOT NULL DEFAULT '',
+            `dec` varchar(150) NOT NULL DEFAULT '',
+
+
+            PRIMARY KEY (`line`), 
+            KEY `IndexLine` (`line`)
+            
+            )
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("soalog", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["lastpr", "defcost"],  "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["consignpr"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(['loc'], ["isserve"], "tinyint(1) NOT NULL DEFAULT '0'");
+
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock", "sostock", "hsostock"], ["limitcheck"], "int(2) NOT NULL DEFAULT '0'", 1);
+
+
+   
+
+
+    $qry = "CREATE TABLE `specialcomm` (
+            `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `itemid` int(11) NOT NULL DEFAULT '0',
+            `startamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+            `endamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+            `commrate` int(11) NOT NULL DEFAULT '0',
+            `editby` varchar(100) NOT NULL DEFAULT '',
+            `editdate` datetime DEFAULT NULL,
+            `encodedby` varchar(100) NOT NULL DEFAULT '',
+            `encodeddate` datetime DEFAULT NULL,
+            PRIMARY KEY (`line`,`itemid`))
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("specialcomm", $qry);
+
+
   }
 }

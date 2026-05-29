@@ -552,6 +552,9 @@ class setreportlist
     $rep_yearly_sales_collected_and_uncollected = "";
     $rep_monthly_sales_collected_uncollected_report = "";
 
+    //excelin
+    $rep_profit_sales_report = "";
+
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
       case 'HRISPAYROLL':
@@ -693,6 +696,9 @@ class setreportlist
               break;
             case 63: // ericco
               $rep_collection_report = "('','\\905','','','',0,1,0,'Collection Report','\\90522',3553,'0'," . $params['levelid'] . ")";
+              break;
+            case 64:
+              $rep_profit_sales_report = "('','\\905','','','',0,1,0,'Profit Sales Report','\\90565',5857,'0'," . $params['levelid'] . ")";
               break;
           }
         }
@@ -905,6 +911,8 @@ class setreportlist
     $rep_task_monitoring_report = '';
     $rep_dailytask_report = '';
 
+    $rep_commission_report = '';
+
 
     if ($this->companysetup->getispos($params)) {
       $rep_outofstock_sj_pos = "('','\\908','','','',0,1,0,'Out of Stock Sales Journal POS','\\90823',4757,'0'," . $params['levelid'] . ")";
@@ -1036,6 +1044,9 @@ class setreportlist
               $rep_customer_registration_report = "('','\\908','','','',0,1,0,'Customer Registration Report','\\90837',5556,'0'," . $params['levelid'] . ")";
               $rep_dailytask_report = "('','\\908','','','',0,1,0,'DailyTask Report','\\90840',5586,'0'," . $params['levelid'] . ")";
               $rep_task_monitoring_report = "('','\\908','','','',0,1,0,'Task Monitoring Report','\\90839',5585,'0'," . $params['levelid'] . ")";
+              break;
+            case 64: //excelin
+              $rep_commission_report = "('','\\908','','','',0,1,0,'Commission Report by Agent','\\90841',5855,'0'," . $params['levelid'] . ")";
               break;
           }
         }
@@ -1823,7 +1834,7 @@ class setreportlist
     $rep_waybillreport = "";
     $rep_cargomanifestsum = "";
     $rep_loadingguide = "";
-    $rep_amortization = "";
+    $rep_depreciation = "";
 
     $parent_ticketingreports = "";
     $rep_ticketreports = "";
@@ -1874,11 +1885,11 @@ class setreportlist
           $rep_waybillreport = "('','\\910','','','',0,0,0,'Waybill Report','\\91001',4767,'0'," . $params['levelid'] . ")";
           $rep_cargomanifestsum = "('','\\910','','','',0,0,0,'Cargo Manifest Summary','\\91002',4770,'0'," . $params['levelid'] . ")";
           $rep_loadingguide = "('','\\910','','','',0,0,0,'Loading Guide','\\91003',4785,'0'," . $params['levelid'] . ")";
-          $rep_amortization = "('','\\910','','','',0,0,0,'Amortization Report','\\91004',4805,'0'," . $params['levelid'] . ")";
+          $rep_depreciation = "('','\\910','','','',0,0,0,'Depreciation Report','\\91004',4805,'0'," . $params['levelid'] . ")";
         }
 
         if ($params['companyid'] == 61) { //BYTESIZED
-          $rep_amortization = "('','\\908','','','',0,0,0,'Amortization Report','\\91004',4805,'0'," . $params['levelid'] . ")";
+          $rep_depreciation = "('','\\908','','','',0,0,0,'Depreciation Report','\\91004',4805,'0'," . $params['levelid'] . ")";
         }
 
         if ($this->companysetup->isticketing($params)) {
@@ -2599,7 +2610,7 @@ class setreportlist
           $rep_waybillreport,
           $rep_cargomanifestsum,
           $rep_loadingguide,
-          $rep_amortization,
+          $rep_depreciation,
 
           //TICKETING REPORTS
           $parent_ticketingreports,
@@ -2750,6 +2761,7 @@ class setreportlist
           $rep_yearly_sales_collected_and_uncollected,
           $rep_monthly_sales_collected_uncollected_report,
           $rep_salesreportdetail,
+          $rep_profit_sales_report,
 
           // SUPPLIER
           $parent_supplier,
@@ -2804,6 +2816,7 @@ class setreportlist
           $rep_so_and_ro_monitoring,
           $rep_inventorybal_with_pendingsalesorder,
           $rep_daily_sales_of_hgc,
+          $rep_commission_report,
 
 
 
@@ -4115,7 +4128,7 @@ class setreportlist
           $rep_reseller_status_summary_report,
           $rep_dailytask_report,
           $rep_task_monitoring_report,
-          $rep_amortization,
+          $rep_depreciation,
 
 
           // TRANSACTION LIST
@@ -4840,7 +4853,7 @@ class setreportlist
           $rep_waybillreport,
           $rep_cargomanifestsum,
           $rep_loadingguide,
-          $rep_amortization,
+          $rep_depreciation,
 
           //TICKETING REPORTS
           $parent_ticketingreports,

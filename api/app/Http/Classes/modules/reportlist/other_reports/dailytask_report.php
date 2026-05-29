@@ -44,16 +44,15 @@ class dailytask_report
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end', 'client', 'username', 'dystatus', 'radioreporttype', 'radioreportcustomerfilter'];
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'username', 'dystatus', 'radioreporttype', 'radioreportcustomerfilter'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'Default', 'value' => 'default', 'color' => 'red']
         ]);
         data_set($col1, 'start.required', true);
         data_set($col1, 'end.required', true);
-        data_set($col1, 'client.label', 'Customer');
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'client.required', false);
+        data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+        data_set($col1, 'dclientname.label', 'Customer');
         data_set($col1, 'username.lookupclass', 'lookupusers');
         data_set($col1, 'username.label', 'User');
         data_set($col1, 'dystatus.lookupclass', 'lookupstatus');
@@ -160,8 +159,11 @@ class dailytask_report
         $dcentername     = $config['params']['dataparams']['dcentername'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $customer = $config['params']['dataparams']['userid'];
-        $userid = $config['params']['dataparams']['clientid'];
+        $clientid = ($config['params']['dataparams']['clientid']);
+        $clientname = ($config['params']['dataparams']['clientname']);
+        $userid = $config['params']['dataparams']['userid'];
+        $username = $config['params']['dataparams']['username'];
+
         $filter = '';
         $filter2 = '';
         $option = $config['params']['dataparams']['dystatus'];
@@ -181,12 +183,15 @@ class dailytask_report
             $filter .= " and dt.statid = 4";
         }
 
-        if ($userid != "") {
-            $filter .= " and dt.clientid = $userid";
+        if ($username != "") {
+            $filter .= " and dt.userid = '$userid'";
         }
-        if ($customer != "") {
-            $filter .= " and dt.userid = $customer";
+
+
+        if ($clientname != '') {
+            $filter .= " and dt.clientid = '$clientid'";
         }
+
 
         if ($orderby1 == "user") {
             $filter2 .= " order by userr, createdate";
@@ -222,17 +227,26 @@ class dailytask_report
 
     public function history_detail_query($config, $refx, $trno, $isChecker = 1, $statid = null, $isprev = 0)
     {
-
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $isUndone = ($statid == 2);
+
         if ($refx == 0) {
-            if ($isChecker == 1) {
+            if ($isUndone) {
+                // Root undone task (refx=0, origtrno=0) — follow future continuations via origtrno
+                $whereClause = "(dt.trno = $trno OR dt.refx = $trno OR dt.origtrno = $trno)";
+            } elseif ($isChecker == 1) {
                 $whereClause = "(dt.trno = $trno OR dt.refx = $trno)";
             } else {
                 $whereClause = "dt.trno = $trno";
             }
         } else {
             if ($statid == 2 || ($statid == 0 && $isprev == 1)) {
-                $whereClause = "((dt.origtrno = $refx AND dt.trno <= $trno) OR dt.trno = $refx OR (dt.refx = $refx AND dt.trno <= $trno))";
+                // UNDONE: remove trno upper limit so future rows are included
+                if ($isUndone) {
+                    $whereClause = "((dt.origtrno = $refx) OR dt.trno = $refx OR (dt.refx = $refx))";
+                } else {
+                    $whereClause = "((dt.origtrno = $refx AND dt.trno <= $trno) OR dt.trno = $refx OR (dt.refx = $refx AND dt.trno <= $trno))";
+                }
             } elseif ($statid == 1) {
                 $whereClause = "((dt.origtrno = $refx AND dt.trno <= $trno) OR dt.trno = $refx OR (dt.refx = $refx AND dt.trno <= $trno))";
             } else {
@@ -272,14 +286,22 @@ class dailytask_report
     public function history_detail_task_query($config, $tasktrno, $taskline, $trno, $statid = null, $isprev = 0)
     {
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $isUndone = ($statid == 2);
 
         if ($statid == 1 || $statid == 2 || ($statid == 0 && $isprev == 1)) {
-            $whereClause = "(dt.origtrno = $tasktrno AND dt.taskline = $taskline AND dt.trno <= $trno)
+            if ($isUndone) {
+
+                $whereClause = "(dt.origtrno = $tasktrno AND dt.taskline = $taskline)
+                    OR (dt.tasktrno = $tasktrno AND dt.taskline = $taskline)
+                    OR (dt.trno = $tasktrno AND dt.taskline = $taskline)";
+            } else {
+                $whereClause = "(dt.origtrno = $tasktrno AND dt.taskline = $taskline AND dt.trno <= $trno)
                     OR (dt.tasktrno = $tasktrno AND dt.taskline = $taskline AND dt.trno <= $trno)
                     OR (dt.trno = $tasktrno AND dt.taskline = $taskline)";
+            }
         } else {
             $whereClause = "(dt.tasktrno = $tasktrno AND dt.taskline = $taskline AND dt.trno <= $trno)
-                    OR (dt.trno = $tasktrno AND dt.taskline = $taskline)";
+                OR (dt.trno = $tasktrno AND dt.taskline = $taskline)";
         }
 
         $query = "
@@ -314,100 +336,152 @@ class dailytask_report
     public function history_comment_query($config, $refx, $trno, $tasktrno = 0, $taskline = 0, $statid = null, $isprev = 0, $doctype = 'DY')
     {
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $isUndone = ($statid == 2);
 
         $limitQuery = "select donedate from dailytask where trno = $trno 
-               union 
-               select donedate from hdailytask where trno = $trno 
-               limit 1";
+           union 
+           select donedate from hdailytask where trno = $trno 
+           limit 1";
         $limitResult = json_decode(json_encode($this->coreFunctions->opentable($limitQuery)), true);
-        $limitDate = (!empty($limitResult) && !empty($limitResult[0]['donedate'])) ? $limitResult[0]['donedate'] : $end . ' 23:59:59';
+        $limitDate = (!empty($limitResult) && !empty($limitResult[0]['donedate']))
+            ? $limitResult[0]['donedate']
+            : $end . ' 23:59:59';
 
-        // ---- query 1: dytrno based (regular task comments) - skip for TM ----
+        $commentDateLimit = $isUndone ? ($end . ' 23:59:59') : $limitDate;
+
+
         $data1 = array();
         if ($doctype != 'TM') {
             if ($refx == 0) {
-                $whereClause = "hp.dytrno = $trno";
-            } else {
-                if ($statid == 1 || $statid == 2 || ($statid == 0 && $isprev == 1)) {
+                if ($isUndone) {
+
                     $whereClause = "hp.dytrno in (
                     select dt.trno from dailytask dt
-                    where (dt.origtrno = $refx and dt.trno <= $trno) or dt.trno = $refx
-                    or (dt.refx = $refx and dt.trno <= $trno)
+                    where dt.trno = $trno or dt.origtrno = $trno or dt.refx = $trno
 
                     union
 
                     select dt.trno from hdailytask dt
-                    where (dt.origtrno = $refx and dt.trno <= $trno) or dt.trno = $refx
-                    or (dt.refx = $refx and dt.trno <= $trno)
+                    where dt.trno = $trno or dt.origtrno = $trno or dt.refx = $trno
                 )";
                 } else {
+                    $whereClause = "hp.dytrno = $trno";
+                }
+            } else {
+                if ($statid == 1 || $statid == 2 || ($statid == 0 && $isprev == 1)) {
+                    if ($isUndone) {
+
+                        $whereClause = "hp.dytrno in (
+                        select dt.trno from dailytask dt
+                        where (dt.origtrno = $refx) or dt.trno = $refx
+                        or (dt.refx = $refx)
+
+                        union
+
+                        select dt.trno from hdailytask dt
+                        where (dt.origtrno = $refx) or dt.trno = $refx
+                        or (dt.refx = $refx)
+                    )";
+                    } else {
+                        $whereClause = "hp.dytrno in (
+                        select dt.trno from dailytask dt
+                        where (dt.origtrno = $refx and dt.trno <= $trno) or dt.trno = $refx
+                        or (dt.refx = $refx and dt.trno <= $trno)
+
+                        union
+
+                        select dt.trno from hdailytask dt
+                        where (dt.origtrno = $refx and dt.trno <= $trno) or dt.trno = $refx
+                        or (dt.refx = $refx and dt.trno <= $trno)
+                    )";
+                    }
+                } else {
+
                     $whereClause = "hp.dytrno in (
                     select dt.trno from dailytask dt
                     where (dt.refx = $refx and dt.trno <= $trno) or dt.trno = $refx
+                    or dt.refx = $trno
 
                     union
 
                     select dt.trno from hdailytask dt
                     where (dt.refx = $refx and dt.trno <= $trno) or dt.trno = $refx
+                    or dt.refx = $trno
                 )";
                 }
             }
 
             $query1 = "
-            select hp.rem as hprem, hp.dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst,hp.deadline2
-            from headprrem as hp
-            left join client as cl on cl.email = hp.createby
-            left join employee as emp on emp.empid = cl.clientid
-            where $whereClause
-            and date(hp.createdate) <= '$end'
-            and hp.createdate <= '$limitDate'
-            order by hp.createdate asc
-            ";
+        select hp.rem as hprem, hp.dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst, hp.deadline2
+        from headprrem as hp
+        left join client as cl on cl.email = hp.createby
+        left join employee as emp on emp.empid = cl.clientid
+        where $whereClause
+        and date(hp.createdate) <= '$end'
+        and hp.createdate <= '$commentDateLimit'
+        order by hp.createdate asc
+        ";
 
             $data1 = json_decode(json_encode($this->coreFunctions->opentable($query1)), true);
         }
 
-        // ---- query 2: tmtrno/tmline based (task line comments) ----
         $data2 = array();
         if ($tasktrno > 0) {
             if ($statid == 1 || $statid == 2 || ($statid == 0 && $isprev == 1)) {
-                $taskWhereClause = "hp.tmtrno in (
-            select dt.tasktrno from dailytask dt
-            where (dt.origtrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.trno = $tasktrno and dt.taskline = $taskline)
+                if ($isUndone) {
 
-            union
+                    $taskWhereClause = "hp.tmtrno in (
+                    select dt.tasktrno from dailytask dt
+                    where (dt.origtrno = $tasktrno and dt.taskline = $taskline)
+                    or (dt.tasktrno = $tasktrno and dt.taskline = $taskline)
+                    or (dt.trno = $tasktrno and dt.taskline = $taskline)
 
-            select dt.tasktrno from hdailytask dt
-            where (dt.origtrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.trno = $tasktrno and dt.taskline = $taskline)
-             ) and hp.tmline = $taskline";
+                    union
+
+                    select dt.tasktrno from hdailytask dt
+                    where (dt.origtrno = $tasktrno and dt.taskline = $taskline)
+                    or (dt.tasktrno = $tasktrno and dt.taskline = $taskline)
+                    or (dt.trno = $tasktrno and dt.taskline = $taskline)
+                ) and hp.tmline = $taskline";
+                } else {
+                    $taskWhereClause = "hp.tmtrno in (
+                    select dt.tasktrno from dailytask dt
+                    where (dt.origtrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                    or (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                    or (dt.trno = $tasktrno and dt.taskline = $taskline)
+
+                    union
+
+                    select dt.tasktrno from hdailytask dt
+                    where (dt.origtrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                    or (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                    or (dt.trno = $tasktrno and dt.taskline = $taskline)
+                ) and hp.tmline = $taskline";
+                }
             } else {
                 $taskWhereClause = "hp.tmtrno in (
-            select dt.tasktrno from dailytask dt
-            where (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.trno = $tasktrno and dt.taskline = $taskline)
+                select dt.tasktrno from dailytask dt
+                where (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                or (dt.trno = $tasktrno and dt.taskline = $taskline)
 
-            union
+                union
 
-            select dt.tasktrno from hdailytask dt
-            where (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
-            or (dt.trno = $tasktrno and dt.taskline = $taskline)
-             ) and hp.tmline = $taskline";
+                select dt.tasktrno from hdailytask dt
+                where (dt.tasktrno = $tasktrno and dt.taskline = $taskline and dt.trno <= $trno)
+                or (dt.trno = $tasktrno and dt.taskline = $taskline)
+            ) and hp.tmline = $taskline";
             }
 
             $query2 = "
-            select hp.rem as hprem, hp.tmtrno as dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst, hp.deadline2
-            from headprrem as hp
-            left join client as cl on cl.email = hp.createby
-            left join employee as emp on emp.empid = cl.clientid
-            where $taskWhereClause
-            and date(hp.createdate) <= '$end'
-            and hp.createdate <= '$limitDate'
-            order by hp.createdate asc
-            ";
+        select hp.rem as hprem, hp.tmtrno as dytrno, hp.createdate, hp.createby, cl.clientname as createbyname, emp.empfirst, hp.deadline2
+        from headprrem as hp
+        left join client as cl on cl.email = hp.createby
+        left join employee as emp on emp.empid = cl.clientid
+        where $taskWhereClause
+        and date(hp.createdate) <= '$end'
+        and hp.createdate <= '$commentDateLimit'
+        order by hp.createdate asc
+        ";
 
             $data2 = json_decode(json_encode($this->coreFunctions->opentable($query2)), true);
         }
@@ -464,7 +538,7 @@ class dailytask_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DAILY TASK REPORT', '1206', null, false, $border, '', 'C', $font, '12', 'B', 'Blue', '');
+        $str .= $this->reporter->col('DAILY TASK REPORT', '1000', null, false, $border, '', 'C', $font, '12', 'B', 'Blue', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -937,7 +1011,7 @@ class dailytask_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DAILY TASK REPORT', '1206', null, false, $border, '', 'C', $font, '12', 'B', 'Blue', '');
+        $str .= $this->reporter->col('DAILY TASK REPORT', '1000', null, false, $border, '', 'C', $font, '12', 'B', 'Blue', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 

@@ -98,21 +98,42 @@ class updatetaskinfo
         $amount = $config['params']['dataparams']['amount'];
         $jono = $config['params']['dataparams']['jono'];
         $apvtrno = $config['params']['dataparams']['apvtrno'];
+        $userid = $config['params']['dataparams']['userid'];
 
-
-        if ($apvtrno == 0) {
-            $data = [
-                'jono' => $jono,
-                'amt' => $amount,
-            ];
-            $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $clientid]);
-            return ['status' => true, 'msg' => 'Task info updated successfully.', 'closecustomform' => true, 'reloadhead' => true];
-            $this->logger->sbcmasterlog($clientid, $config, ' Amount: ' . $amount . ' JO#: ' . $jono);
+        $status = true;
+        $data = [
+            'jono' => $jono,
+            'amt' => $amount,
+        ];
+        //task lang ng user na nag create ang pwede mag update
+        $apptrno = $this->coreFunctions->datareader("select trno as value from hdailytask where refx = ? ", [$clientid], '', true);
+        $checkuser = $this->coreFunctions->datareader("select userid as value from hdailytask where trno = ? and userid = ? ", [$clientid, $userid], '', true);
+        $msg = 'Task info updated successfully.';
+        if ($apptrno == 0) { // hindi pa na done ni checker
+            if ($apvtrno == 0) {
+                if ($checkuser == $userid) $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $clientid]);
+            }
         } else {
-            return ['status' => false, 'msg' => 'Error assigning user, Please try again.'];
+            if ($apvtrno == 0) {
+                if ($checkuser == $userid) {
+                    $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $clientid]);
+                    $this->coreFunctions->execqry("delete from pendingapp where trno=? and approver = 'REIMBURSEMENT'", 'delete', [$apptrno]);
+                    if ($amount != 0) {
+                        $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'dy';
+                        $r =  $this->othersClass->insertUpdatePendingapp($apptrno, 0, 'DY', [], $url, $config, 3863, false, true, 'REIMBURSEMENT');
+                        if (!$r['status']) {
+                            $msg = $r['msg'];
+                            $status = false;
+                        } else {
+                            $msg .= ' and created pendingapp.';
+                        }
+                    }
+                }
+            } else {
+                $msg = 'Cannot update task info. Already have the PV.';
+            }
         }
-
-        // return [];
-
+        $this->logger->sbcmasterlog($clientid, $config, ' Amount: ' . $amount . ' JO#: ' . $jono . ' - ' . $msg);
+        return ['status' => $status, 'msg' => $msg, 'closecustomform' => $status, 'reloadhead' => $status];
     }
 }

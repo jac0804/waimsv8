@@ -852,8 +852,8 @@ class customer
       case 55: //AFLI Lending
         $fields = ['client', 'fname', 'mname', 'lname', 'addr', 'tel'];
         break;
-      case 63://ericco
-        $fields = ['client', 'clientname','registername', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
+      case 63: //ericco
+        $fields = ['client', 'clientname', 'registername', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
         break;
       default:
         $fields = ['client', 'clientname', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
@@ -957,6 +957,7 @@ class customer
                 break;
               case 3: //conti
               case 0: //main
+              case 67: //yulick
                 array_push($fields, 'tin', 'bstyle', 'purchaser', 'registername');
                 break;
               case 15: //nathina
@@ -974,8 +975,6 @@ class customer
                 break;
               case 27: //NTE
               case 36: //ROZLAB
-                array_push($fields, 'tin', 'bstyle');
-                break;
               case 28: //xcomp
                 array_push($fields, 'tin', 'bstyle');
                 break;

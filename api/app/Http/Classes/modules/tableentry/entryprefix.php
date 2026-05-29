@@ -27,6 +27,7 @@ use App\Http\Classes\sbcdb\hms;
 use App\Http\Classes\sbcdb\hris;
 use App\Http\Classes\sbcdb\pos;
 use App\Http\Classes\sbcdb\bms;
+use App\Http\Classes\sbcdb\autoserv;
 use App\Http\Classes\sbcdb\payroll;
 use App\Http\Classes\sbcdb\warehousing;
 use App\Http\Classes\sbcdb\documentmanagement;
@@ -61,6 +62,7 @@ class entryprefix
   private $hris;
   private $pos;
   private $bms;
+  private $autoserv;
   private $payroll;
   private $warehousing;
   private $documentmanagement;
@@ -86,6 +88,7 @@ class entryprefix
     $this->hms = new hms;
     $this->pos = new pos;
     $this->bms = new bms;
+    $this->autoserv = new autoserv;
     $this->hris = new hris;
     $this->payroll = new payroll;
     $this->warehousing = new warehousing;
@@ -140,12 +143,20 @@ class entryprefix
     //   if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
     // }
 
+    if ($config['params']['companyid'] == 60) {//transpower
+      if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
+    }
+
     //2023.05.31
     $obj = $this->tabClass->createtabbutton($tbuttons);
     $obj[0]['label'] = "CHECK FIELDS";
 
 
-
+    if ($config['params']['companyid'] == 60) {//transpower
+      $obj[2]['label'] = "UPDATE LOWEST PRICE";
+      $obj[2]['action'] = "updatelowestprice";
+      $obj[2]['lookupclass'] = "updatelowestprice";
+    }
     //2023.05.31
     // if ($config['params']['companyid'] == 21) {
     // $obj[2]['label'] = "REDISTRIBUTE MERCH INV";
@@ -153,7 +164,6 @@ class entryprefix
     // $obj[2]['lookupclass'] = "redistributeinvcost";
 
     //2023.10.25
-    // $obj[2]['label'] = "TAG UOM";
     // $obj[2]['action'] = "taguomforsales";
     // $obj[2]['lookupclass'] = "taguomforsales";
 
@@ -211,7 +221,7 @@ class entryprefix
       case 'tableupdatefams':
         $this->fams->tableupdatefams();
         break;
-        // 04.28.2022 jiks  
+      // 04.28.2022 jiks  
       case 'tableupdatevsched':
         $this->vsched->tableupdatevsched($config);
         break;
@@ -236,7 +246,7 @@ class entryprefix
         // 05.14.2021
         $this->warehousing->tableupdatewarehousing();
         break;
-        // GLEN 02.08.22
+      // GLEN 02.08.22
       case 'modifyLengthField':
         $this->waims->modifyLengthField($config);
         break;
@@ -246,6 +256,9 @@ class entryprefix
         break;
       case 'tableupdatebms':
         $this->bms->tableupdatebms($config);
+        break;
+      case 'tableupdateserv':
+        $this->autoserv->tableupdateserv($config);
         break;
       case 'reindex':
         $this->reindex->reindex($config);
@@ -305,11 +318,34 @@ class entryprefix
       case 'redistributenetp':
         return $this->redistributenetp($config);
         break;
+      case 'updatelowestprice':
+        return $this->updatelowestprice($config);
+        break;
     }
 
     $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
     $elapsed = $start->diffInSeconds($end);
     return ['status' => true, 'msg' => $config['params']['lookupclass2'] . ' - TABLES UPDATE. Execution time: ' . $elapsed . "sec(s)"];
+  }
+
+  private function updatelowestprice($config){
+    $lowitem = $this->coreFunctions->opentable("select itemid,amt6,disc6,namt6 from item where disc6<>'' and amt6<>0");
+    $i = 1;
+    if(!empty($lowitem)){
+      foreach($lowitem as $k =>$v){
+        $namt6 = $this->othersClass->Discount($lowitem[$k]->amt6,$lowitem[$k]->disc6);
+        $curnamt6 = $lowitem[$k]->namt6;
+
+        if($namt6 != $curnamt6){
+          $this->coreFunctions->sbclogger("update item set namt6 = ".$namt6." where itemid = ". $lowitem[$k]->itemid);
+          $this->coreFunctions->execqry("update item set namt6 = ".$namt6." where itemid = ". $lowitem[$k]->itemid);
+          $i+=1;
+        }
+      }
+     
+    }
+
+    return ['status' => true, 'msg' => $config['params']['lookupclass2'] . ' - Update Lowest Price. Execution time: ' . $i . "items(s)"];
   }
 
   public function redistributenetp($config)
@@ -641,12 +677,12 @@ class entryprefix
   function redistributeinvcost($config)
   {
 
-    $companyid= $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $acnoid = 377;
     $filter = " h.doc in ('SJ','RR', 'AJ', 'DM') ";
-    if($companyid == 60){//transpower
+    if ($companyid == 60) { //transpower
       $acnoid = 4940;
-      $filter =" s.iss<>0 and s.cost<>0 ";
+      $filter = " s.iss<>0 and s.cost<>0 ";
     }
     $qry = "select trno, docno, doc from ( 
             select (sum(round(s.qty * s.cost,2))-sum(round(s.iss * s.cost,2))) as cost, s.trno, h.docno, h.dateid, h.doc,
@@ -667,9 +703,7 @@ class entryprefix
     return ['status' => true, 'msg' => 'Finished updating'];
   }
 
-  function recalcamt($config)
-  {
-  }
+  function recalcamt($config) {}
 
   function recalc($config)
   {

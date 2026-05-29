@@ -126,16 +126,17 @@ class postdep
       case 48: //seastar
         $qry = "select fa.line,fa.rrtrno,fa.rrline,glhead.docno,fa.amt,'' as itemname,date(fa.dateid) as dateid,'false' as isposted, glhead.rem  ";
         break;
+      case 61: //bytesized
+        $qry = "select fa.line,fa.rrtrno,fa.rrline,glhead.docno,fa.amt,glhead.rem as itemname,date(fa.dateid) as dateid,'false' as isposted, glhead.rem  ";
+        break;
       default:
-        $qry = "select fa.line,fa.rrtrno,fa.rrline,glhead.docno,fa.amt,item.itemname,fa.dateid,false as isposted, glhead.rem  ";
+        $qry = "select fa.line,fa.rrtrno,fa.rrline,glhead.docno,fa.amt,item.itemname,fa.dateid,'false' as isposted, glhead.rem  ";
         break;
     }
     return $qry;
   }
 
-  public function save($config)
-  {
-  } //end function
+  public function save($config) {} //end function
 
   public function saveallentry($config)
   {
@@ -165,6 +166,7 @@ class postdep
     $revenue = 'item.revenue';
     switch ($companyid) {
       case 48: //seastar
+      case 61: //bytesized
         $expense = 'coa2.acno as expense';
         $revenue = 'coa.acno as revenue';
         $leftjoin = ' left join hcntnuminfo as info on info.trno=glhead.trno left join coa on coa.acnoid=info.depcr left join coa as coa2 on coa2.acnoid=info.depdb';
@@ -226,23 +228,26 @@ class postdep
           $ourref = $data[0]->docno;
           $remark = 'To record depreciation - ' . $data[0]->rem;
           break;
+        case 61: //bytesized
+          $remark = $data[0]->rem;
+          break;
       }
 
-      $qry = "insert into lahead (trno,doc,docno,dateid,client,clientname,yourref,ourref,rem,terms,cur,forex,projectid,subproject)
-                                      values('" . $newtrno . "','GJ','" . $newdocno . "', '" . $data[0]->dateid . "','" . $data[0]->client . "','" . $data[0]->clientname . "', '" . $yourref . "','" . $ourref . "', '" . $remark . "', '',
+      $qry = "insert into lahead (trno,doc,docno,dateid,client,clientname,yourref,ourref,rem,terms,cur,forex,projectid,subproject) 
+                                      values ('" . $newtrno . "','GJ','" . $newdocno . "', '" . $data[0]->dateid . "','" . $data[0]->client . "','" . $data[0]->clientname . "', '" . $yourref . "','" . $ourref . "', '" . $remark . "', '',
                                       'P', 1, " . $data[0]->projectid . "," . $data[0]->subproject . ")";
 
       if ($this->coreFunctions->execqry($qry, "insert")) { //lahead
 
         $this->logger->sbcwritelog($newtrno, $config, 'CREATE', $newdocno . ' FROM Dep.sched -' . $data[0]->docno, 'table_log');
 
-        $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno='\\\\" . $data[0]->expense . "'");
+        $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno='\\" . $data[0]->expense . "'", [], '', true);
         $qry = "insert into ladetail (trno,line,acnoid,client,db,cr,ref,fatrno,postdate,projectid,subproject,stageid)values
         (" . $newtrno . ",1," . $acnoid . ",'" . $data[0]->client . "'," . $data[0]->amt . ",0,'" . $data[0]->docno . "'," . $data[0]->line . ",'" . $data[0]->dateid . "'," . $data[0]->projectid . "," . $data[0]->subproject . "," . $data[0]->stageid . ")";
 
         if ($this->coreFunctions->execqry($qry, "insert")) {
-          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno='\\\\" . $data[0]->revenue . "'");
-          $qry = "insert into ladetail (trno,line,acnoid,client,db,cr,ref,fatrno,postdate,projectid,subproject,stageid)values
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno='\\" . $data[0]->revenue . "'", [], '', true);
+          $qry = "insert into ladetail (trno,line,acnoid,client,db,cr,ref,fatrno,postdate,projectid,subproject,stageid) values 
           (" . $newtrno . ",2," . $acnoid . ",'" . $data[0]->client . "',0," . $data[0]->amt . ",'" . $data[0]->docno . "'," . $data[0]->line . ",'" . $data[0]->dateid . "'," . $data[0]->projectid . "," . $data[0]->subproject . "," . $data[0]->stageid . ")";
           if ($this->coreFunctions->execqry($qry, "insert")) {
             $config['params']['trno'] = $newtrno;
@@ -276,9 +281,7 @@ class postdep
     }
   }
 
-  public function delete($config)
-  {
-  }
+  public function delete($config) {}
 
   public function loaddata($config)
   {

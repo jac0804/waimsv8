@@ -546,7 +546,19 @@ class sales_per_customer_per_item
     }
 
     $str = '';
-    $layoutsize = '1000';
+
+    switch ($companyid) {
+      case 41: // Labsol Manila
+        $layoutsize = '1100';
+        break;
+      case 22: // East Innovention Philippines Inc.
+        $layoutsize = '1250';
+        break;
+      default:
+        $layoutsize = '1000';
+        break;
+    }
+
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid";
@@ -607,12 +619,26 @@ class sales_per_customer_per_item
 
     switch ($companyid) {
       case 23: //labsol cebu
-      case 41: //labsol paranaque
       case 52: //technolab
         $str .= $this->reporter->col('CUSTOMER NAME', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('DOCUMENT # ', '150', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('AGENT NAME ', '150', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('ITEM NAME ', '200', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        break;
+
+      case 41: //labsol manila
+        $str .= $this->reporter->col('CUSTOMER NAME', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('DOCUMENT # ', '150', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('DATE', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('AGENT NAME ', '150', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('ITEM NAME ', '200', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        break;
+      case 22:
+        $str .= $this->reporter->col('CUSTOMER NAME', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('BRANCH', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('DOCUMENT # ', '200', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('DOC DATE', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->col('ITEM NAME ', '400', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
         break;
       default:
         $str .= $this->reporter->col('CUSTOMER NAME', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
@@ -671,7 +697,20 @@ class sales_per_customer_per_item
     $page = 50;
 
     $str = '';
-    $layoutsize = '1000';
+
+    switch ($company) {
+      case 41: // Labsol Manila
+        $layoutsize = '1100';
+        break;
+      case 22: // East Innovention Philippines Inc.
+        $layoutsize = '1250';
+        break;
+      default:
+        $layoutsize = '1000';
+        break;
+    }
+
+
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid";
@@ -731,7 +770,8 @@ class sales_per_customer_per_item
           if ($this->reporter->linecounter == $page) {
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->page_break();
-            $str .= $this->default_displayHeader($config);
+            $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+            if (!$isfirstpageheader) $str .= $this->default_displayHeader($config);
             $page = $page + $count;
           }
         }
@@ -749,7 +789,8 @@ class sales_per_customer_per_item
           if ($this->reporter->linecounter == $page) {
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->page_break();
-            $str .= $this->default_displayHeader($config);
+            $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+            if (!$isfirstpageheader) $str .= $this->default_displayHeader($config);
             $page = $page + $count;
           }
         }
@@ -761,14 +802,27 @@ class sales_per_customer_per_item
 
       switch ($company) {
         case 23:
-        case 41:
         case 52: //technolab
           $str .= $this->reporter->col('', '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col($data->docno, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col($data->agentname, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col($data->itemname, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           break;
+        case 41:
+          $str .= $this->reporter->col('', '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->docno, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col(date('Y-m-d', strtotime($data->dateid)), '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->agentname, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->itemname, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          break;
 
+        case 22: // East Innovention Philippines Inc.
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->shipto, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->docno, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->dateid, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data->itemname, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+          break;
         default:
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col($data->docno, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -815,7 +869,8 @@ class sales_per_customer_per_item
         if ($this->reporter->linecounter == $page) {
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
-          $str .= $this->default_displayHeader($config);
+          $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+          if (!$isfirstpageheader) $str .= $this->default_displayHeader($config);
           $page = $page + $count;
         }
       }

@@ -1029,6 +1029,12 @@ class dashboardClass
         $this->fordel();
       }
     }
+    if ($companyid == 64) { // excelin
+      if ($this->checksecurity(163) || $this->checksecurity(178)) { // pricelimit //SO and SJ
+        $this->pricelimit();
+      }
+    }
+
 
     switch ($systemtype) {
       case 'EAPPLICATION':
@@ -1685,16 +1691,27 @@ class dashboardClass
     $filteremp = " and emp.idbarcode='" . $this->config['params']['user'] . "'";
     $filteruserid = " userid='" . $this->config['params']['user'] . "'";
     $leavelabel = $this->companysetup->getleavelabel($this->config['params']);
+
+    $datanotice = [];
+
+    $month = date('m', strtotime($dateid));
+    $year = date('Y', strtotime($dateid));
+
     switch ($this->config['params']['companyid']) {
       case 44: //stonepro
         $idbarcode = $this->coreFunctions->datareader("select idbarcode as value from client as c join employee as emp on emp.empid=c.clientid where c.email=?", [$this->config['params']['user']]);
         $filteremp = " and emp.idbarcode='" . $idbarcode  . "'";
         $filteruserid = " userid='" . $idbarcode . "'";
         break;
-    }
 
-    $month = date('m', strtotime($dateid));
-    $year = date('Y', strtotime($dateid));
+      case 29: //sbc
+        $sql = "select 'n' as type, ob.line, ob.empid, emp.idbarcode, date(ob.dateid) as datestart, date(ob.dateid) as dateend, 
+            ob.title, '' as rem, '' as icon, 'blue' as color, '0' as reghrs, dateid as schedin 
+            from waims_notice as ob join employee as emp on emp.empid=ob.empid
+            where month(dateid)=" . $month . " and year(dateid)=" . $year . " " . $filteremp . " order by dateid";
+        $datanotice = $this->coreFunctions->opentable($sql);
+        break;
+    }
 
     $sql = "
     select 't' as type, md5(tc.line) as line, tc.empid, emp.idbarcode, tc.dateid as datestart, tc.dateid as dateend, 
@@ -1779,6 +1796,12 @@ class dashboardClass
     if (!empty($dataleave)) {
       foreach ($dataleave as $key => $vallev) {
         array_push($returndata, $vallev);
+      }
+    }
+
+    if (!empty($datanotice)) {
+      foreach ($datanotice as $key => $valnotice) {
+        array_push($returndata, $valnotice);
       }
     }
 
@@ -1952,19 +1975,35 @@ class dashboardClass
 
   public function notice()
   {
+    $companyid = $this->config['params']['companyid'];
+
     $getcols = ['action', 'title', 'rem'];
+
+    $label = 'NOTICE';
+    $filter = "";
+
+    switch ($companyid) {
+      case 53: //camera
+        $label = 'ADVISORY/MEMORANDUM';
+        break;
+      case 29: //sbc
+        $filter = " and dateid>='" . $this->othersClass->getCurrentDate() . "'";
+        $getcols = ['action', 'dateid', 'title', 'rem'];
+        break;
+    }
+
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
+
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-    $cols[0]['style'] = 'width:20px;whiteSpace: normal;min-width:20px;';
-    $cols[0]['btns']['view']['action'] = 'notice';
-    $cols[0]['btns']['view']['lookupclass'] = 'customform';
-    $cols[0]['btns']['view']['classid'] = 'posted';
-    $cols[1]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
-    $cols[2]['style'] = 'width:800px;whiteSpace: normal;min-width:800px;';
-    $label = 'NOTICE';
-    if ($this->config['params']['companyid'] == 53) { // camera
-      $label = 'ADVISORY/MEMORANDUM';
-    }
+    $cols[$action]['style'] = 'width:20px;whiteSpace: normal;min-width:20px;';
+    $cols[$action]['btns']['view']['action'] = 'notice';
+    $cols[$action]['btns']['view']['lookupclass'] = 'customform';
+    $cols[$action]['btns']['view']['classid'] = 'posted';
+    $cols[$title]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+    $cols[$rem]['style'] = 'width:800px;whiteSpace: normal;min-width:800px;';
 
     $accessid = $this->coreFunctions->getfieldvalue("client", "userid", "clientid=?", [$this->config['params']['adminid']]);
     if ($accessid == 0) {
@@ -1973,15 +2012,15 @@ class dashboardClass
 
     $qry = "select line,dateid,title,concat(left(rem,20),'....') as rem,users.username as clientname from waims_notice as notice
     left join users on users.idno =  '" . floatval($accessid) . "'
-    where notice.status=0 and notice.roleid = " . floatval($accessid) . " and notice.empid = 0
+    where notice.status=0 and notice.roleid = " . floatval($accessid) . " and notice.empid = 0 $filter
     union all 
     select line, dateid, title,concat(left(rem,20),'....') as rem,concat(emp.emplast,', ',emp.empfirst,' ',emp.empmiddle) as clientname from waims_notice as notice
     left join employee as emp on emp.empid = notice.empid 
-    where notice.status=0 and notice.roleid = 0 and notice.empid = " . $this->config['params']['adminid'] . "
+    where notice.status=0 and notice.roleid = 0 and notice.empid = " . $this->config['params']['adminid'] . " $filter
     union all 
     select line, dateid, title,concat(left(rem,20),'....') as rem,concat(emp.emplast,', ',emp.empfirst,' ',emp.empmiddle) as clientname from waims_notice as notice
     left join employee as emp on emp.empid = notice.empid 
-    where notice.status=0 and notice.roleid = 0 and notice.empid = 0
+    where notice.status=0 and notice.roleid = 0 and notice.empid = 0 $filter
     order by line";
     $data = $this->coreFunctions->opentable($qry);
     $this->config['sbclist']['notice'] = ['cols' => $cols, 'data' => $data, 'title' => $label, 'txtfield' => ['col1' => []], 'bgcolor' => 'bg-red-10', 'textcolor' => 'white', 'issearchshow' => true];
@@ -5667,7 +5706,7 @@ class dashboardClass
     $currentdate = date('Y-m-d', strtotime($this->othersClass->getCurrentTimeStamp()));
     $qry = "select dt.trno as clientid,dt.trno, if(dt.reseller<>'',concat(c.clientname,'/ ',dt.reseller),c.clientname) as clientname,date(dt.dateid) as dateid, dt.amt,dt.rem,dt.statid,
               (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when 4 then 'Neglect' when '5' then 'Cancelled'  when '6' then 'Returned' end) as statname,
-              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid 
+              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid,dt.tasktrno,dt.taskline 
               from dailytask as dt
               left join client as c on c.clientid = dt.clientid
               where dt.userid =" . $adminid . " and dt.reftrno=0  and dt.statid not in (2,4) and date(dt.dateid) ='" . $currentdate . "'
@@ -5675,7 +5714,7 @@ class dashboardClass
               
               select dt.trno as clientid,dt.trno, if(dt.reseller<>'',concat(c.clientname,'/ ',dt.reseller),c.clientname) as clientname,date(dt.dateid) as dateid, dt.amt,dt.rem,dt.statid,
               (case dt.statid when '0' then 'Pending' when '1' then 'Done' when '2' then 'Undone' when 4 then 'Neglect' when '5' then 'Cancelled' when '6' then 'Returned' end) as statname,
-              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid 
+              if(dt.tasktrno=0,'Daily Task','Task Monitoring') as modulename, dt.ischecker, dt.startchecker,dt.userid,dt.tasktrno,dt.taskline
               from hdailytask as dt
               left join client as c on c.clientid = dt.clientid
               where dt.userid =" . $adminid . " and dt.reftrno=0  and dt.statid not in (2,4)   and date(dt.dateid) ='" . $currentdate . "'
@@ -5869,5 +5908,48 @@ class dashboardClass
     where year(dateid) = " . $year . " and req.code is not null group by req.code) as a group by type order by served desc";
     $data = $this->coreFunctions->opentable($qry);
     $this->config['sbclist']['ticketsummaryperservice'] = ['cols' => $cols, 'data' => $data, 'title' => 'Ticket Summary Per Service', 'bgcolor' => 'bg-teal-9', 'textcolor' => 'white'];
+  }
+  public function pricelimit()
+  {
+    $getcols = ['action', 'docno', 'counts'];
+    $title = 'SO - SJ PRICE LIMIT';
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
+    $stockbuttons = ['jumpmodule'];
+    $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+    $cols[$action]['btns']['jumpmodule']['lookupclass'] = 'jumpmodule';
+
+    $cols[$action]['style'] = 'width:20px;whiteSpace: normal;min-width:20px;max-width:20px;';
+    $cols[$docno]['type'] = 'label';
+    $cols[$counts]['type'] = 'label';
+    $cols[$counts]['label'] = 'Item with Price Limit';
+
+    $so_access = $this->checksecurity(163);
+    $sj_access = $this->checksecurity(178);
+
+    $query = "";
+    if ($so_access) {
+      $query = "select sum(stock.limitcheck) as counts,head.trno,head.doc,head.docno,head.clientname,
+          date(head.dateid) as dateid,'/module/sales/' as url,'module' as moduletype , 'bg-red' as bgcolor
+          from sohead as head
+          left join sostock as stock on stock.trno = head.trno
+          where head.lockdate is not null and stock.limitcheck <> 0 group by head.doc,head.docno,head.trno,head.clientname,date(head.dateid),stock.limitcheck";
+    }
+
+    if ($sj_access) {
+      if ($query != "") {
+        $query .= " union all ";
+      }
+      $query = $query . "
+          select sum(stock.limitcheck) as counts,head.trno,head.doc,head.docno,head.clientname,
+          date(head.dateid) as dateid,'/module/sales/' as url,'module' as moduletype, 'bg-red' as bgcolor 
+          from lahead as head
+          left join lastock as stock on stock.trno = head.trno
+          where head.lockdate is not null and stock.limitcheck <> 0 group by head.doc,head.docno,head.trno,head.clientname,date(head.dateid),stock.limitcheck";
+    }
+
+    $data = $this->coreFunctions->opentable($query);
+    $this->config['sbclist']['gapplications'] = ['cols' => $cols, 'data' => $data, 'title' => $title, 'txtfield' => ['col1' => []], 'bgcolor' => 'bg-green-7', 'textcolor' => 'white'];
   }
 } // end class

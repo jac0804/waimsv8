@@ -493,7 +493,13 @@ class qt
         } //end if    
       }
     }
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    if ($data['terms'] == '') {
+      $data['due'] = $data['dateid'];
+    } else {
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+    }
+
+
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -548,18 +554,18 @@ class qt
     }
     //for glhead
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
-      terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,branch,deptid,shipid,billid)
+      terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,branch,deptid,shipid,billid,tin,agentcno)
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
-      head.due,head.cur,head.branch,head.deptid,head.shipid,head.billid FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
+      head.due,head.cur,head.branch,head.deptid,head.shipid,head.billid,head.tin,head.agentcno FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
     if ($posthead) {
 
-      if (!$this->othersClass->postingheadinfotrans($config)) {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'An error occurred while posting head data.'];
-      }
+      // if (!$this->othersClass->postingheadinfotrans($config)) {
+      //   return ['trno' => $trno, 'status' => false, 'msg' => 'An error occurred while posting head data.'];
+      // }
 
       if (!$this->othersClass->postingstockinfotrans($config)) {
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
@@ -606,18 +612,18 @@ class qt
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
-  yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,agent,shipid,billid)
+  yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,agent,shipid,billid,tin,agentcno)
   select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
   head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
-  head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.agent,head.shipid,head.billid
+  head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.agent,head.shipid,head.billid,head.tin,head.agentcno
   from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
   where head.trno=? limit 1";
     //head
     if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
 
-      if (!$this->othersClass->unpostingheadinfotrans($config)) {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'An error occurred while posting head data.'];
-      }
+      // if (!$this->othersClass->unpostingheadinfotrans($config)) {
+      //   return ['trno' => $trno, 'status' => false, 'msg' => 'An error occurred while posting head data.'];
+      // }
 
       if (!$this->othersClass->unpostingstockinfotrans($config)) {
         $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);

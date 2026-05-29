@@ -131,6 +131,8 @@ class companysetup
   public $ispayrollportal = false;
   public $isnavigation = false;
   public $isenterqty = false;
+  public $ismultiloc = false;
+  public $isautoservice = false;
 
 
   public function __construct()
@@ -230,6 +232,7 @@ class companysetup
     $this->isnavigation = false;
     $this->isenterqty = false;
     $this->isshortcutpr = false;
+    $this->isautoservice = false;
 
     switch ($params['companyid']) {
       case 68: //JDA
@@ -328,13 +331,13 @@ class companysetup
         $this->logopath = "public/images/md/";
         $this->ismysql8 = true;
         break;
-      case 64:  //excilin
+      case 64:  //excelin
         $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 0;
         $this->tax = 12;
         $this->serial = false;
-        $this->companyname = 'EXCILIN';
+        $this->companyname = 'EXCELIN';
         $this->systemtype = 'AIMS';
         $this->checkbelowcost = true;
         $this->isproject = false;
@@ -346,8 +349,8 @@ class companysetup
         $this->isglc = true;
         $this->branchaccess = 0;
         $this->multibranch = false;
-        $this->reportpath = "\Http\Classes\modules\modulereport\\excilin\\";
-        $this->logopath = "public/images/excilin/";
+        $this->reportpath = "\Http\Classes\modules\modulereport\\excelin\\";
+        $this->logopath = "public/images/excelin/";
         $this->ismysql8 = true;
         break;
       case 63:  //ericco
@@ -374,6 +377,7 @@ class companysetup
         $this->ismysql8 = true;
         $this->iseditsortline = true;
         $this->isenterqty = true;
+        $this->rptfont = 'Arial';
         break;
       case 62: //onesky
         $this->clientlength = 15;
@@ -1739,7 +1743,7 @@ class companysetup
         $this->tax = 12;
         $this->serial = false;
         $this->companyname = 'ABC Corp.';
-        $this->systemtype = 'MMS';
+        $this->systemtype = 'AUTOSERV';
         $this->isexpiry = false;
         $this->checkbelowcost = true;
         $this->isproject = false;
@@ -1773,6 +1777,7 @@ class companysetup
         $this->showloading = true;
         $this->socketserver = 'https://op.sbc.ph:25384'; //'http://localhost:3000';//http://demo.queuing.solutionbasecorp.com:25763
         $this->socketnotify = true;
+        $this->isautoservice = true;
         break;
     }
   }
@@ -1976,6 +1981,9 @@ class companysetup
             break;
           case 'BMS':
             $modulelist = ['masterfile', 'itemmaster', 'barangaysetup', 'barangayoperation', 'barangayjudiciary', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
+            break;
+          case 'AUTOSERV':
+            $modulelist = ['masterfile', 'itemmaster', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'EAPPLICATION':
             $modulelist = ['operation', 'receivable', 'reportlist', 'masterfile', 'announcement', 'dashboard'];
@@ -2970,5 +2978,17 @@ class companysetup
   {
     $this->companylist($params);
     return $this->isshortcutpr;
+  }
+
+  public function getismultiloc($params)
+  {
+    $this->companylist($params);
+    return $this->ismultiloc;
+  }
+
+  public function getisautoservice($params)
+  {
+    $this->companylist($params);
+    return $this->isautoservice;
   }
 }

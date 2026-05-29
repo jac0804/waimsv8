@@ -838,6 +838,19 @@ class viewstockcardtransactionledger
 
         $amt = " ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
         $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
+        $ext =" FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, ";
+        $isamt = " FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalcurr . ") as isamt,";
+        if($companyid == 47){//kstar
+          $amt = " , case head.doc when 'TS' then 0.00 else FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") end as amt ";
+          $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";  
+          $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
+          if($viewcost == 0){
+            $ext =" case head.doc when 'TS' then 0.00 else FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") end as ext, ";
+            $isamt = " 0.00 as isamt,";
+          }
+          
+        }
+        
         switch ($companyid) {
           case 43: //mighty
             $addfield = ",wh.clientname as whref";
@@ -854,10 +867,10 @@ class viewstockcardtransactionledger
                 select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, 
                 head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,
                 wh.client as wh,wh.clientname as whname,
-                FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, 
+                $ext
                 FORMAT(ifnull($rrcost,0)," . $decimalprice . ") as rrcost,
                 FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalqty . ") as rrqty,
-                FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalcurr . ") as isamt,
+                $isamt
                 FORMAT(ifnull((stock.iss / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalqty . ") as isqty,stock.isqty2,
                 stock.disc, head.yourref, head.ourref, ifnull(head.cur,'P') as cur, ifnull(head.forex,1) as forex,
                 (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, item.itemid,
@@ -876,10 +889,10 @@ class viewstockcardtransactionledger
                 select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, 
                 head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,
                 wh.client as wh,wh.clientname as whname,
-                FORMAT(ifnull(stock.ext,0)," . $decimalprice . "), 
+                $ext
                 FORMAT(ifnull($rrcost,0)," . $decimalprice . ") as rrcost,
                 FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as rrqty,
-                FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalcurr . ") as isamt,
+                $isamt
                 FORMAT(ifnull((stock.iss / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as isqty,stock.isqty2,
                 stock.disc, head.yourref, head.ourref, ifnull(head.cur,'P') as cur, ifnull(head.forex,1) as forex,
                 (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, stock.itemid,

@@ -1523,12 +1523,14 @@ class linkemail
                 $lstatus = '';
                 $response = [];
                 $status2 = "";
+                $appmsg =  $data[0]->appname != "" ? $data[0]->appname : $data[0]->appname2;
                 switch ($data[0]->status) {
                     case 'A':
                         $response = ['msg' => 'Already approved by ' . $data[0]->appname . '.', 'status' => 'F'];
                         break;
                     case 'D':
-                        $response = ['msg' => 'Already disapproved by ' . $data[0]->appname . '.', 'status' => 'F'];
+                        $response = ['msg' => 'Already disapproved by ' .  $appmsg, 'status' => 'F'];
+
                         break;
                     case 'P':
                         $response = ['msg' => 'Already approved without pay by ' . $data[0]->appname . '.', 'status' => 'F'];
@@ -1555,6 +1557,7 @@ class linkemail
                                         }
                                         $appdata = ['status2' => $status];
                                         if ($status == 'D') {
+                                            $appdata['status'] = $status; //disapproved na din yung last
                                             $lastapp = true;
                                         }
                                         $status2 = " and (status2 = 'A' or status2 = 'P') ";

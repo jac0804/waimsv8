@@ -1554,6 +1554,7 @@ class dm
     $links = [];
     $data['width'] = 1500;
     $startx = 100;
+    $rrtrno =0;
 
     //DM
     $qry = "
@@ -1571,8 +1572,10 @@ class dm
     where head.trno = ?
     group by head.trno,head.docno,head.dateid,stock.refx";
     $t = $this->coreFunctions->opentable($qry, [$config['params']['trno'], $config['params']['trno']]);
-    if (!empty($t)) {
-      $startx = 550;
+    if (!empty($t)) {     
+      if(floatval($t[0]->refx) != 0){
+        $startx = 550;
+      }
       $a = 0;
       foreach ($t as $key => $value) {
         data_set(
@@ -1580,13 +1583,13 @@ class dm
           $t[$key]->docno,
           [
             'align' => 'left',
-            'x' => $startx + 400,
+            'x' => $startx ,
             'y' => 200,
             'w' => 250,
             'h' => 80,
             'type' => $t[$key]->docno,
             'label' => $t[$key]->rem,
-            'color' => 'red',
+            'color' => 'orange',
             'details' => [$t[$key]->dateid]
           ]
         );
@@ -1717,12 +1720,16 @@ class dm
                   $a = $a + 100;
                 }
               }
+              
+            }
 
-              //CV
+            //CV for RR
               if (!empty($apvdata)) {
                 $apvtrno = $apvdata[0]->trno;
+                $startx = $startx + 800;
               } else {
                 $apvtrno = $rrtrno;
+                $startx = $startx + 600;         
               }
               $cvqry = "
               select head.docno, date(head.dateid) as dateid, head.trno,
@@ -1738,27 +1745,71 @@ class dm
               where detail.refx = ?";
               $cvdata = $this->coreFunctions->opentable($cvqry, [$apvtrno, $apvtrno]);
               if (!empty($cvdata)) {
-                foreach ($cvdata as $key2 => $value2) {
+                foreach ($cvdata as $k2 => $value2) {
                   data_set(
                     $nodes,
-                    $cvdata[$key2]->docno,
+                    $cvdata[$k2]->docno,
                     [
                       'align' => 'left',
-                      'x' => $startx + 800,
+                      'x' => $startx,
                       'y' => 100,
                       'w' => 250,
                       'h' => 80,
-                      'type' => $cvdata[$key2]->docno,
-                      'label' => $cvdata[$key2]->rem,
+                      'type' => $cvdata[$k2]->docno,
+                      'label' => $cvdata[$k2]->rem,
                       'color' => 'red',
-                      'details' => [$cvdata[$key2]->dateid]
+                      'details' => [$cvdata[$k2]->dateid]
                     ]
                   );
-                  array_push($links, ['from' => 'apv', 'to' => $cvdata[$key2]->docno]);
+                  if(empty($apvdata)){
+                    array_push($links, ['from' => $x[$key2]->docno, 'to' => $cvdata[$k2]->docno]); 
+                  }else{
+                    array_push($links, ['from' => 'apv', 'to' => $cvdata[$k2]->docno]);
+                  }
+                  
                   $a = $a + 100;
                 }
               }
-            }
+          }          
+        }
+
+        //CV for DM
+        $apvtrno = $t[$key]->trno;
+        $startx = 950;
+        $y = 200;
+        $cvqry = "
+        select head.docno, date(head.dateid) as dateid, head.trno,
+        CAST(concat('Applied Amount: ', round(detail.db+detail.cr,2)) as CHAR) as rem
+        from glhead as head
+        left join gldetail as detail on head.trno = detail.trno
+        where detail.refx = ?
+        union all
+        select head.docno, date(head.dateid) as dateid, head.trno,
+        CAST(concat('Applied Amount: ', round(detail.db+detail.cr,2)) as CHAR) as rem
+        from lahead as head
+        left join ladetail as detail on head.trno = detail.trno
+        where detail.refx = ?";
+        $cvdata = $this->coreFunctions->opentable($cvqry, [$apvtrno, $apvtrno]);
+        if (!empty($cvdata)) {
+          foreach ($cvdata as $k2 => $value2) {
+            data_set(
+              $nodes,
+              $cvdata[$k2]->docno,
+              [
+                'align' => 'left',
+                'x' => $startx,
+                'y' => $y,
+                'w' => 250,
+                'h' => 80,
+                'type' => $cvdata[$k2]->docno,
+                'label' => $cvdata[$k2]->rem,
+                'color' => 'red',
+                'details' => [$cvdata[$k2]->dateid]
+              ]
+            );
+            array_push($links, ['from' => $t[$key]->docno, 'to' => $cvdata[$k2]->docno]);  
+            
+            $a = $a + 100;
           }
         }
       }

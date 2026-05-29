@@ -70,7 +70,17 @@ class pdailytask
 
         if ($config['params']['row']['ischecker'] == 1) {
             if ($allowaddcredit) {
-                $stockbuttons = ['completetask',  'disapprove', 'undone', 'commenthistory'];
+                if ($config['params']['row']['tasktrno'] != 0) {
+                    $requestor = $this->coreFunctions->getfieldvalue("tmhead", "requestby", "trno=?", [$config['params']['row']['tasktrno']], '', true);
+                    if ($requestor == $config['params']['adminid']) {
+                        $stockbuttons = ['completetask',  'disapprove', 'undone', 'commenthistory'];
+                    } else {
+                        $stockbuttons = ['approve',  'disapprove', 'undone', 'commenthistory'];
+                        $allowaddcredit = false;
+                    }
+                } else {
+                    $stockbuttons = ['completetask',  'disapprove', 'undone', 'commenthistory'];
+                }
             } else {
                 $stockbuttons = ['approve',  'disapprove', 'undone', 'commenthistory'];
             }
@@ -199,7 +209,7 @@ class pdailytask
                    left join client as c on c.clientid = dt.clientid
                    left join tmdetail as tm on tm.trno=dt.tasktrno and tm.line=dt.taskline
                    left join client as assigned on assigned.clientid=tm.userid
-                   left join reqcategory as req on req.line=tm.taskcatid
+                   left join reqcategory as req on req.line=dt.taskcatid
                    where dt.trno=" . $trno . " and  dt.userid=" . $adminid . "  and date(dt.dateid) ='" . $currentdate . "' 
 
                    union all
@@ -222,7 +232,7 @@ class pdailytask
                    left join client as c on c.clientid = dt.clientid
                    left join tmdetail as tm on tm.trno=dt.tasktrno and tm.line=dt.taskline
                    left join client as assigned on assigned.clientid=tm.userid
-                   left join reqcategory as req on req.line=tm.taskcatid
+                   left join reqcategory as req on req.line=dt.taskcatid
                    where dt.trno=" . $trno . " and  dt.userid=" . $adminid . " and date(dt.dateid) ='" . $currentdate . "'  
             
                    $orderby";
@@ -328,6 +338,7 @@ class pdailytask
                                         $socketmsg = "Task checked and completed: " . $row['rem'];
                                         if ($socketmsg != '' && $username != '') $this->othersClass->socketmsg($config, $socketmsg, '', $username);
                                     }
+
                                     // REIMBURSEMENT
                                     if ($config['params']['doc'] == 'DY') {
                                         if ($amount != 0) {

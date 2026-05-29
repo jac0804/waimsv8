@@ -37,76 +37,7 @@ class stockcard
   public $tablelogs_del = 'del_item_log';
   private $stockselect;
 
-  private $fields = [
-    'barcode',
-    'picture',
-    'itemname',
-    'uom',
-    'cost',
-    'itemrem',
-    'shortname',
-    'part',
-    'model',
-    'class',
-    'brand',
-    'groupid',
-    'critical',
-    'reorder',
-    'category',
-    'subcat',
-    'body',
-    'sizeid',
-    'color',
-    'asset',
-    'liability',
-    'revenue',
-    'expense',
-    'salesreturn',
-    'isinactive',
-    'isvat',
-    'isimport',
-    'fg_isfinishedgood',
-    'fg_isequipmenttool',
-    'isnoninv',
-    'isserial',
-    'markup',
-    'foramt',
-    'supplier',
-    'partno',
-    'subcode',
-    'packaging',
-    'islabor',
-    'dqty',
-    'ispositem',
-    'isprintable',
-    'projectid',
-    'moq',
-    'mmoq',
-    'linkdept',
-    'tqty',
-    'isofficesupplies',
-    'noncomm',
-    'isgeneric',
-    'othcode',
-    'item_length',
-    'item_width',
-    'item_height',
-    'israwmat',
-    'barcodeid',
-    'avecost',
-    'channel',
-    'isnonserial',
-    'iswireitem',
-    'startwire',
-    'endwire',
-    'maximum',
-    'aveleadtime',
-    'maxleadtime',
-    'minimum',
-    'isreversewireitem',
-    'isfg'
-  ];
-
+  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate'];
   private $iteminfo = ['volume', 'weight', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
 
   private $except = ['itemid', 'itemrem'];
@@ -884,6 +815,12 @@ class stockcard
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewpromoperitem', 'label' => 'PROMO PER ITEM']];
     $pospromoperitem = $this->tabClass->createtab($tab, []);
 
+    $commissionrate = [];
+    if ($companyid == 64) { //yulick
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycommission', 'label' => 'SPECIAL COMMISSION RATE BRACKET']];
+      $commissionrate = $this->tabClass->createtab($tab, []);
+    }
+
     $return = [];
     if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti & afti usd
       $return['ITEM INFORMATION'] = ['icon' => 'fa fa-address-book', 'customform' => $iteminfod];
@@ -1001,6 +938,11 @@ class stockcard
             } else {
               $return['EQUIVALENT SKU'] = ['icon' => 'fa fa-equals', 'tab' => $sku];
             }
+
+
+            if ($companyid == 64) { //yulick
+              $return['SPECIAL COMMISSION RATE BRACKET'] = ['icon' => 'fa fa-equals', 'tab' => $commissionrate];
+            }
           }
         }
         break;
@@ -1093,6 +1035,9 @@ class stockcard
           }
         }
         break;
+      case 64: //excilin
+        array_push($fields, 'partname', 'modelname');
+        break;
     }
 
     $col1 = $this->fieldClass->create($fields);
@@ -1152,6 +1097,9 @@ class stockcard
             break;
           case 47: //kitchenstar
             $fields = ['modelname', 'classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];
+            break;
+          case 64: //excilin
+            $fields = ['classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname', 'lastpr', 'defcost', 'commrate'];
             break;
           default:
             $fields = ['partname', 'modelname', 'classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];
@@ -1497,6 +1445,10 @@ class stockcard
     $data[0]['isfg'] = '0';
     $data[0]['dlock'] = null;
 
+    $data[0]['lastpr'] = 0;
+    $data[0]['defcost'] = 0;
+    $data[0]['commrate'] = 0;
+
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -1752,6 +1704,7 @@ class stockcard
       switch ($companyid) {
         case 43: //mighty
         case 50: //unitech
+        case 64: //excilin
           $exist = $this->coreFunctions->getfieldvalue("iteminfo", "itemid", "itemid=?", [$itemid], '', true);
           if ($exist == 0) {
             $iteminfo['itemid'] = $itemid;
@@ -1779,8 +1732,9 @@ class stockcard
       $this->coreFunctions->execqry('insert into uom(itemid,uom,factor,isdefault) values(?,?,1,?)', 'INSERT', [$itemid, $data['uom'], $default1]);
 
       switch ($companyid) {
-        case 43:
-        case 50:
+        case 43: //mighty
+        case 50: //unitech
+        case 64: //excilin  
           $iteminfo['itemid'] = $itemid;
           $this->coreFunctions->sbcinsert("iteminfo", $iteminfo);
           break;

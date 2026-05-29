@@ -421,7 +421,7 @@ class uploadingutility
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadsupplierexcel', 'downloadagentexcel', 'downloaditemexcelmaster'];
         break;
       case 63: //ericco
-        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadbarcodelist', 'downloadsupplieritemexcel'];
+        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadbarcodelist', 'downloadsupplieritemexcel','downloadcustomerexcelmaster','downloaditemexcelmaster'];
         break;
 
       case 66: //  metro dragon payroll
@@ -1272,6 +1272,35 @@ class uploadingutility
                 'Status' => '',
                 'RegisteredName' => '',
                 'Tel2/Other' => ''
+              ]],
+              'filename' => 'customerTemplate'
+            ];
+            break;
+          case 63://ericco
+            return [
+              'status' => true,
+              'msg' => 'Customer template ready to Download',
+              'name' => 'customer',
+              'data' => [[
+                'CustomerCode' => '',
+                'CustomerName' => '',
+                'registeredname' => '',
+                'Address' => '',
+                'Address2' => '',
+                'TelephoneNumber' => '',
+                'FaxNumber' => '',
+                'Email' => '',
+                'Agent' => '',
+                'Group' => '',
+                'ContactPerson' => '',
+                'Area' => '',
+                'Province' => '',
+                'Region' => '',
+                'CreditLimit' => '',
+                'TIN' => '',
+                'Terms' => '',
+                'PriceGroup' => '',
+                'Status' => 'ACTIVE'
               ]],
               'filename' => 'customerTemplate'
             ];
@@ -3015,22 +3044,26 @@ class uploadingutility
 
 
             if ($uniqueval == '') {
-              // continue;
+              // continue;            
               if ($type == 'newfams' || $type == 'updatefams') {
                 $msg .= "Invalid Tag Code for " . $value['Itemname'] . ' - ' . $value['SKU/Part No.'] . '<br>';
                 $status = false;
               }
 
               if ($tabletype == 'customer' || $tabletype == 'supplier') {
-                if ($companyid != 47) {
+                switch ($companyid){
+                  case 47: case 63:
+                    break;
+                  default:
                   goto NextLoopHere;
+                  break;
                 }
               } else {
                 // if ($tabletype != 'contactperson') {
                 //   goto NextLoopHere;
                 // }
               }
-            }
+            }         
 
 
             if ($fieldname == 'agent_name' && $companyid == 47) {
@@ -3044,6 +3077,7 @@ class uploadingutility
             }
 
             // $this->othersClass->logConsole('valtoinsert -- ' . json_encode($valtoinsert));
+            
 
             if ($type == 'updateitem' && $blnIsert == false) {
               $valtoinsert['itemid'] = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode=?", [$valtoinsert['barcode']], '', true);
@@ -3070,7 +3104,7 @@ class uploadingutility
 
           }
         } //end looping of fields
-
+      
         switch ($tabletype) {
           case 'customer':
             $valtoinsert['iscustomer'] = 1;
@@ -3133,7 +3167,7 @@ class uploadingutility
           case 'item':
           case 'truck':
           case 'branch':
-            $valtoinsert['editby'] = $config['params']['user'];
+            $valtoinsert['editby'] = $config['params']['user'].'(UPLOADING)';
             $valtoinsert['editdate'] = $currentdate;
             $valtoinsert['dlock'] = $currentdate;
             if ($tabletype == 'item') {
@@ -3236,6 +3270,8 @@ class uploadingutility
         }
 
         $tempvaltoinsert = $valtoinsert;
+
+        
 
         foreach ($tempvaltoinsert as $vi => $viv) {
           $valtoinsert[$vi] = $this->othersClass->sanitizekeyfield($vi, $viv, '', $companyid, $exceptpropercase);
@@ -3440,8 +3476,8 @@ class uploadingutility
                   break;
               }
               break;
-            case 'client':
-              if ($companyid == 47 || $companyid == 40) { //kstar
+            case 'client':              
+              if ($companyid == 47 || $companyid == 40 || $companyid == 63) { //kstar //cdoaims //ericco
                 if ($tabletype == 'customer' || $tabletype == 'supplier') {
                   $clientcode = $this->generateclient($config, $valtoinsert, $tabletype);
                   $valtoinsert['client'] = $clientcode;
@@ -3449,6 +3485,7 @@ class uploadingutility
               }
               break;
           }
+
 
           $fieldfilter = $unique . '=?';
           $valuefilter = [$uniqueval];
@@ -3604,7 +3641,7 @@ class uploadingutility
           $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, [$unique => $valtoinsert[$unique]]);
         }
 
-
+        
         if ($insert != 0) {
           if ($tabletype == 'item') {
             if ($type == 'newitem' || $type == 'newfams') {

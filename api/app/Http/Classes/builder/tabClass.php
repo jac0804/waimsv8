@@ -1197,7 +1197,7 @@ class tabClass
         'label' => 'multiaction',
         'icon' => 'add_box',
         'class' => 'btntableentry btnaddrecord',
-        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
+        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'tableupdateserv', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
         'action' => 'multiaction',
         'access' => 'additem',
         'visible' => true
@@ -2767,6 +2767,28 @@ class tabClass
         'access' => 'additem',
         'visible' => true
       ),
+
+      'addloc' => array(
+        'label' => 'ADD',
+        'icon' => 'batch_prediction',
+        'class' => 'btnaddloc',
+        'lookupclass' => 'addloc',
+        'action' => 'lookupsetup',
+        'access' => 'additem',
+        'visible' => true
+      ),
+      // auto service
+      'jobsetup' => array(
+        'label' => 'Job Setup',
+        'icon' => 'batch_prediction',
+        'class' => 'btnjobsetup',
+        'lookupclass' => 'getjobsetup',
+        'action' => 'getjobsetup',
+        'access' => 'additem',
+        'visible' => true
+      ),
+
+
 
     );
   }

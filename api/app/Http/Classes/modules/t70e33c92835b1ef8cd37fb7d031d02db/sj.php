@@ -2205,11 +2205,25 @@ class sj
 
     $itemstatus = '';
     $agentamt = 0;
+    $startwire = 0;
+    $endwire =0;
     if (isset($config['params']['data']['agentamt'])) {
       $agentamt = $config['params']['data']['agentamt'];
     }
 
     $line = 0;
+
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,startwire,endwire,iswireitem,isreversewireitem from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
+    $factor = 1;
+    $isnoninv = 0;
+    $cost = 0;
+    if (!empty($item)) {
+      $isnoninv = $item[0]->isnoninv;
+      $item[0]->factor = $this->othersClass->val($item[0]->factor);
+      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
+      $cost = $item[0]->namt4; 
+    }
 
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
@@ -2222,28 +2236,45 @@ class sj
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
+      $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+      if ($item[0]->iswireitem == 1){
+        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid, $itemid]);
+        if (!empty($lastitem)) {        
+          $startwire = $lastitem[0]->endwire ;
+          $endwire = $startwire + $qty;
+        } else {
+          $startwire = $item[0]->startwire;
+          $endwire = $item[0]->endwire;
+        }
+      } 
+
+      if ($item[0]->isreversewireitem == 1){
+        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid, $itemid]);
+        if (!empty($lastitem)) {        
+          $startwire = $lastitem[0]->endwire ;         
+          $endwire = $startwire - $qty;
+        } else {
+          $startwire = $item[0]->startwire;
+          $endwire = $item[0]->endwire;
+        }
+      }
+
     } elseif ($action == 'update') {
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
       $amt = $config['params']['data'][$this->damt];
       $qty = $config['params']['data'][$this->dqty];
+      $startwire = $config['params']['data']['startwire'];
+      $endwire = $config['params']['data']['endwire'];
       $config['params']['line'] = $line;
     }
+
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4 from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
-    $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
-    $factor = 1;
-    $isnoninv = 0;
-    $cost = 0;
-    if (!empty($item)) {
-      $isnoninv = $item[0]->isnoninv;
-      $item[0]->factor = $this->othersClass->val($item[0]->factor);
-      if ($item[0]->factor !== 0) $factor = $item[0]->factor;
-      $cost = $item[0]->namt4;
-    }
+    
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
     $curtopeso = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
@@ -2300,37 +2331,15 @@ class sj
       'locid' => $locid,
       'palletid' => $palletid,
       'rebate' => $rebate,
-      'noprint' => $noprint
+      'noprint' => $noprint,
+      'porefx' => $porefx,
+      'polinex' => $polinex,
+      'cost' =>$cost,
+      'agentamt'=>$agentamt,
+      'startwire' => $startwire,
+      'endwire'=>$endwire
     ];
-
-    $data['porefx'] = $porefx;
-    $data['polinex'] = $polinex;
-    $data['cost'] = $cost;
-    $data['agentamt'] = $agentamt;
-    if ($action == 'insert') {
-      $wireitem = $this->coreFunctions->opentable("select startwire, endwire from item where itemid=? and iswireitem=1", [$data['itemid']]);
-      if (!empty($wireitem)) {
-        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$data['itemid'], $data['itemid']]);
-        if (!empty($lastitem)) {
-          $range = ($lastitem[0]->endwire - $lastitem[0]->startwire);
-          $data['startwire'] = $lastitem[0]->endwire + 1;
-          $data['endwire'] = $data['startwire'] + $range;
-        } else {
-          $data['startwire'] = $wireitem[0]->startwire;
-          $data['endwire'] = $wireitem[0]->endwire;
-        }
-      } else {
-        // $data['agentamt'] = $data['startwire'] = $data['endwire'] = 0;
-        $data['startwire'] = $data['endwire'] = 0;
-      }
-    } else {
-      $agentamt = isset($config['params']['data']['agentamt']) ? $config['params']['data']['agentamt'] : 0;
-      $startwire = isset($config['params']['data']['startwire']) ? $config['params']['data']['startwire'] : 0;
-      $endwire = isset($config['params']['data']['endwire']) ? $config['params']['data']['endwire'] : 0;
-      $data['agentamt'] = $this->othersClass->sanitizekeyfield('amt', $agentamt);
-      $data['startwire'] = $this->othersClass->sanitizekeyfield('startwire', $startwire);
-      $data['endwire'] = $this->othersClass->sanitizekeyfield('endwire', $endwire);
-    }
+   
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

@@ -97,6 +97,7 @@ class analyze_customer_sales_monthly
 
     data_set($col1, 'dclientname.lookupclass', 'lookupclient');
     data_set($col1, 'dclientname.label', 'Customer');
+    data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
     if ($companyid == 34) { //evergreen
       data_set($col1, 'dclientname.label', 'Payor');
     }

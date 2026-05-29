@@ -57,6 +57,7 @@ class setprefixdoc
       'TL' => ['prefix' => 'TL', 'title' => 'Tenant'],
       'BH' => ['prefix' => 'BR', 'title' => 'Branch'],
       'EP' => ['prefix' => 'EM', 'title' => 'Employee Record'],
+      'ML' => ['prefix' => 'ML', 'title' => 'Mechanic Ledger'],
 
     ];
     //'EM' => ['prefix' => 'EM', 'title' => 'Employee'],
@@ -387,6 +388,11 @@ class setprefixdoc
         $menu['cashier']['TC'] = ['prefix' => 'TC', 'title' => 'Petty Cash Entry'];
         $menu['cashier']['DX'] = ['prefix' => 'DX', 'title' => 'Deposit Slip'];
         break;
+
+      case 61: //bytesized
+        $menu['accounting']['FA'] = ['prefix' => 'FA', 'title' => 'Fixed Asset Schedule'];
+        break;
+
       case 65: //metro dragon - aims
         $menu['inventory']['AN'] = ['prefix' => 'NCP', 'title' => 'NCP'];
         $menu['inventory']['AB'] = ['prefix' => 'BTF', 'title' => 'Billet to Finished Goods'];
@@ -431,6 +437,11 @@ class setprefixdoc
     ];
 
     $menu['accountutilities']['RG'] = ['prefix' => 'RG', 'title' => 'Company Rules and Guidelines'];
+
+    $menu['autoservoperation'] = [
+      'AK' => ['prefix' => 'AK', 'title' => 'Package Kits'],
+      'AM' => ['prefix' => 'AM', 'title' => 'Service Invoice']
+    ];
 
 
 

@@ -37,8 +37,22 @@ class tenant
   private $stockselect;
 
   private $fields = [
-    'client', 'clientname', 'addr', 'bstyle', 'category', 'email', 'locid', 'start', 'enddate',
-    'tin', 'tel', 'contact', 'isnonvat', 'type', 'istenant', 'isinactive'
+    'client',
+    'clientname',
+    'addr',
+    'bstyle',
+    'category',
+    'email',
+    'locid',
+    'start',
+    'enddate',
+    'tin',
+    'tel',
+    'contact',
+    'isnonvat',
+    'type',
+    'istenant',
+    'isinactive'
   ];
 
   private $except = ['clientid'];
@@ -108,8 +122,12 @@ class tenant
     $filtersearch = "";
     if (isset($config['params']['search'])) {
       $searchfield = [
-        'client.clientid', 'client.client', 'client.clientname',
-        'client.addr', 'category.cat_name', 'client.rem'
+        'client.clientid',
+        'client.client',
+        'client.clientname',
+        'client.addr',
+        'category.cat_name',
+        'client.rem'
       ];
       $search = $config['params']['search'];
       if ($search != "") {
@@ -188,13 +206,21 @@ class tenant
     return $return;
   }
 
+  // public function createTab($access, $config)
+  // {
+  //   $tab = [];
+  //   $stockbuttons = [];
+  //   //$obj = $this->tabClass->createtab($tab,$stockbuttons);
+  //   //return $obj;
+  //   return [];
+  // }
+
   public function createTab($access, $config)
   {
-    $tab = [];
+    $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'locationentry', 'label' => 'LOCATION'];
     $stockbuttons = [];
-    //$obj = $this->tabClass->createtab($tab,$stockbuttons);
-    //return $obj;
-    return [];
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
+    return $obj;
   }
 
   public function createtabbutton($config)
@@ -387,8 +413,6 @@ class tenant
     }
 
     return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];
-
-    
   } // end function
 
   public function getlastclient($pref)
@@ -477,6 +501,4 @@ class tenant
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
-
-
 } //end class

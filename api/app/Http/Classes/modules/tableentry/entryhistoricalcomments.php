@@ -68,9 +68,10 @@ class entryhistoricalcomments
     $tab = [$this->gridname => ['gridcolumns' => $gridcolumns]];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
-    $obj[0][$this->gridname]['columns'][$rem]['style'] =  'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
+    $obj[0][$this->gridname]['columns'][$rem]['style'] =  'text-align: left; width: 500px;whiteSpace: normal;min-width:500px;max-width:500px;';
     $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$createby]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][$createby]['style'] =  'text-align: left; width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;';
     $obj[0][$this->gridname]['columns'][$createdate]['readonly'] = true;
     if ($config['params']['companyid'] == 29) {
       $obj[0][$this->gridname]['columns'][$seendate]['readonly'] = true;
@@ -156,19 +157,21 @@ class entryhistoricalcomments
           break;
         case 'TM':
         case 'TK':
-          $qry = "select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr where pr.tmtrno=$trno and pr.tmline=$line
+          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr 
+                  left join client on client.email=pr.createby where pr.tmtrno=$trno and pr.tmline=$line
                   union all
-                  select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr
-                        left join dailytask as dy1 on dy1.trno=pr.dytrno
-                        where dy1.tasktrno=$trno and dy1.taskline=$line
-                        union all
-                  select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate from headprrem as pr
-                        left join hdailytask as dy1 on dy1.trno=pr.dytrno
-                        where dy1.tasktrno=$trno and dy1.taskline=$line
-                        order by createdate desc"; //para makita yung ni comment sa dailytask listing 
+                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr
+                  left join dailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
+                  where dy1.tasktrno=$trno and dy1.taskline=$line
+                  union all
+                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr
+                  left join hdailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
+                  where dy1.tasktrno=$trno and dy1.taskline=$line
+                  order by createdate desc"; //para makita yung ni comment sa dailytask listing 
           break;
         case 'DY':
-          $qry = "select ifnull(pr.rem,'') as rem,pr.createby,pr.createdate,pr.seendate,pr.touser from headprrem as pr where pr.dytrno=$trno order by pr.line desc";
+          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate,pr.touser from headprrem as pr  
+          left join client on client.email=pr.createby where pr.dytrno=$trno order by pr.line desc";
           break;
       }
       // var_dump($qry);

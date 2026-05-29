@@ -228,13 +228,13 @@ class entryserialout
     $trno = $this->othersClass->sanitizekeyfield('trno', $trno);
     $line = $this->othersClass->sanitizekeyfield('line', $line);
     $serial = $this->othersClass->sanitizekeyfield('serial', $serial);
-    $qry = "select itemid,whid,loc,expiry from lastock where trno=? and line=?";
+    $qry = "select itemid,whid,loc,ifnull(expiry,'') as expiry from lastock where trno=? and line=?";
     $item = $this->coreFunctions->opentable($qry, [$trno, $line]);
     $msg = 'Successfully updated.';
     $status = true;
     if (!empty($item)) {
       $qry = "select serialin.sline,serialin.chassis,serialin.color,serialin.pnp,serialin.csr from rrstatus left join serialin on serialin.trno=rrstatus.trno and
-            serialin.line=rrstatus.line where rrstatus.itemid=? and rrstatus.whid=? and rrstatus.loc=? and expiry=? and serialin.serial=? and serialin.outline=0";
+            serialin.line=rrstatus.line where rrstatus.itemid=? and rrstatus.whid=? and rrstatus.loc=? and ifnull(rrstatus.expiry,'')=? and serialin.serial=? and serialin.outline=0";
       $sline = $this->coreFunctions->opentable($qry, [$item[0]->itemid, $item[0]->whid, $item[0]->loc, $item[0]->expiry, $serial]);
       if ($sline[0]->sline != '') {
         $dinsert['trno'] = $trno;
@@ -270,7 +270,7 @@ class entryserialout
     $path = '';
 
     switch ($doc) {
-      case 'SJ':
+      case 'SJ': case 'SU':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
       case 'AJ':
@@ -324,7 +324,7 @@ class entryserialout
     $path = '';
 
     switch ($doc) {
-      case 'SJ':
+      case 'SJ': case 'SU':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
       case 'AJ':
@@ -428,6 +428,7 @@ class entryserialout
     switch ($doc) {
       case 'SJ':
       case 'RF':
+      case 'SU':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
       case 'AJ':

@@ -156,7 +156,9 @@ class sbcscript
             if (payload.field == "hours"){
                 if (payload.value == "0.5" || payload.value == ".5"){
                     state.headercols.col3.statrem.readonly = false
-               }
+               }else {
+               state.headercols.col3.statrem.readonly = true
+               }  
             }
           }else{
            state.headercols.col3.statrem.readonly = true

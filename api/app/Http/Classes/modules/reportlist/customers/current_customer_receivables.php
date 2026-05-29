@@ -114,6 +114,7 @@ class current_customer_receivables
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
+            data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
             break;
         }
@@ -2993,8 +2994,8 @@ class current_customer_receivables
   {
 
     $companyid = $config['params']['companyid'];
-    $count = 60;
-    $page = 60;
+    $count = 55;
+    $page = 55;
     $layoutsize = '1000';
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";

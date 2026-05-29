@@ -176,12 +176,12 @@ class pdailytask2
                     $addOnField = ",rem.touser";
 
                     $addOnQry = " union all
-                    select c.clientname, date(dt.dateid) as dateid,
+                    select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller) , c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,p.trno,p.doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, p.line as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, rem.rem as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller $addOnField
+                    dt.rem1, '' as carem, rem.rem as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
                    from pendingapp as p
                    left join dailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -209,12 +209,12 @@ class pdailytask2
         //4th qry = comment for current task
 
 
-        $qry = "select c.clientname, date(dt.dateid) as dateid,
+        $qry = "select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller) , c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,p.trno,p.doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     (case dt.statid when 0 then 'Pending' when '1' then 'Done' when '2' then 'Undone' when '4' then 'Neglect' end) as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, 0 as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
                    from pendingapp as p
                    left join dailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -224,12 +224,12 @@ class pdailytask2
                    where  p.clientid=" . $adminid . "  and dt.statid in (2,4) $filterapp
 
                    union all
-                   select c.clientname, date(dt.dateid) as dateid,
+                   select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller) , c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,p.trno,p.doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, p.line as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
                    from pendingapp as p
                    left join hdailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -238,12 +238,12 @@ class pdailytask2
                    $addOnLeftUser
                    where  p.clientid=" . $adminid . "  and dt.statid=1 and p.doc='DY' $filterapp
                     union all
-                   select c.clientname, date(dt.dateid) as dateid,
+                   select if(dt.reseller<>'',concat(c.clientname,' / ',dt.reseller) , c.clientname) as clientname, date(dt.dateid) as dateid,
                     dt.clientid,p.trno,p.doc,dt.userid, dt.amt, dt.statid,dt.rem,
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, 0 as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
                    from pendingapp as p
                    left join hdailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -350,7 +350,8 @@ class pdailytask2
                 return ['status' => false, 'msg' =>  'No existing comment', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
             }
 
-            if ($statid == 2 || $statid == 4) { //undone galing sa manual
+            if ($statid == 2 || $statid == 4) { //undone galing sa manual at tm
+
                 $pendingtm = $this->coreFunctions->datareader("select ifnull(count(trno),0) as value from dailytask where tasktrno<>0 and userid=" . $adminid . " and statid=0", [], '', true);
                 if ($pendingtm != 0) {
                     return ['status' => false, 'msg' => 'You cant start another task if you have pending or current task.', 'data' => []];
@@ -358,65 +359,79 @@ class pdailytask2
 
                 $currentdate = date('Y-m-d', strtotime($this->othersClass->getCurrentTimeStamp()));
                 // Logger($createdate . '  = ' . $currentdate);
-                if ($createdate != $currentdate) { //auto create new
-                    $label = 'Successfully restarted.';
-                    $data = [
-                        'tasktrno' => $row['tasktrno'],
-                        'taskline' => $row['taskline'],
-                        'reftrno' => 0,
-                        'rem' => $row['rem'],
-                        'amt' => $row['amt'],
-                        'clientid' => $row['clientid'],
-                        'userid' => $row['userid'],
-                        'dateid' => $dateid,
-                        'donedate' => null,
-                        'statid' => 0,
-                        'apvtrno' => $row['apvtrno'],
-                        'isprev' => 1,
-                        'createdate' => $datenow,
-                        'encodeddate' => $datenow,
-                        'empid' => $row['empid'],
-                        'taskcatid' => $row['taskcatid'],
-                        'assignedid' => $row['assignedid'],
-                        'reseller' => $row['reseller']
-                    ];
+                if ($createdate != $currentdate) { //auto create 
 
-                    if ($row['origtrno'] != 0) {
-                        $data['origtrno'] = $row['origtrno'];
+                    if ($tasktrno == 0 && $taskline == 0) {
+                        $condition = "date(dateid)='$currentdate' and rem='$rem' and statid=0 and userid=" . $adminid;
                     } else {
-                        $data['origtrno'] = $trno;
+                        $condition = "tasktrno=$tasktrno and taskline=$taskline and date(dateid)='$currentdate' and rem='$rem' and statid=0 and userid=" . $adminid;
                     }
+                    //undone from tm and dailytask
+                    $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "origtrno", "$condition", [], '', true);
+                    if ($existingtrno != 0) {
+                        $label = 'Task is already in dailytask. Please refresh the page.';
+                        $this->coreFunctions->execqry("delete from pendingapp where doc='DY' and trno=" . $existingtrno, 'delete');
+                    } else {
+                        $label = 'Successfully restarted.';
+                        $data = [
+                            'tasktrno' => $row['tasktrno'],
+                            'taskline' => $row['taskline'],
+                            'reftrno' => 0,
+                            'rem' => $row['rem'],
+                            'amt' => $row['amt'],
+                            'clientid' => $row['clientid'],
+                            'userid' => $row['userid'],
+                            'dateid' => $dateid,
+                            'donedate' => null,
+                            'statid' => 0,
+                            'apvtrno' => $row['apvtrno'],
+                            'isprev' => 1,
+                            'createdate' => $datenow,
+                            'encodeddate' => $datenow,
+                            'empid' => $row['empid'],
+                            'taskcatid' => $row['taskcatid'],
+                            'assignedid' => $row['assignedid'],
+                            'reseller' => $row['reseller'],
+                            'jono' => $row['jono'],
+                        ];
 
-                    if ($row['ischecker'] == 1) {
-                        $data['startchecker'] = $this->othersClass->getCurrentTimeStamp();
-                        $data['ischecker'] = 1;
-
-                        if ($row['refx'] != 0) {
-                            $data['refx'] = $row['refx'];
+                        if ($row['origtrno'] != 0) {
+                            $data['origtrno'] = $row['origtrno'];
+                        } else {
+                            $data['origtrno'] = $trno;
                         }
+
+                        if ($row['ischecker'] == 1) {
+                            $data['startchecker'] = $this->othersClass->getCurrentTimeStamp();
+                            $data['ischecker'] = 1;
+
+                            if ($row['refx'] != 0) {
+                                $data['refx'] = $row['refx'];
+                            }
+                        }
+
+
+                        $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
+
+                        $this->coreFunctions->sbcupdate('dailytask', ['reftrno' => $dttrno], ['trno' => $trno]);
+
+
+                        if ($dttrno != 0) { //lipat sa history ang previous na task
+                            $urlHistory = 'App\Http\Classes\modules\tableentry\\' . 'pdailytask';
+                            $inserthistory = $this->coreFunctions->execqry(app($urlHistory)->transferhistoryquery(), 'insert', [$trno]);
+
+                            if ($inserthistory) {
+                                $this->coreFunctions->execqry("delete from dailytask where  trno=" . $trno, 'delete');
+                                $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno, 'delete');
+                            }
+                        }
+
+                        $config['params']['doc'] = 'DY';
+                        $this->logger->sbcmasterlog($dttrno, $config, 'Daily task has been re-created and started by: ' . $creator);
+
+                        $config['params']['doc'] = 'ENTRYTASK';
+                        $this->logger->sbcmasterlog2($row['tasktrno'], $config, ' Line: ' . $row['taskline'] . ' Task has been restarted by ' . $creator, 'masterfile_log');
                     }
-
-
-                    $dttrno = $this->coreFunctions->insertGetId('dailytask', $data);
-
-                    $this->coreFunctions->sbcupdate('dailytask', ['reftrno' => $dttrno], ['trno' => $trno]);
-
-
-                    if ($dttrno != 0) { //lipat sa history ang previous na task
-                        $urlHistory = 'App\Http\Classes\modules\tableentry\\' . 'pdailytask';
-                        $inserthistory = $this->coreFunctions->execqry(app($urlHistory)->transferhistoryquery(), 'insert', [$trno]);
-                    }
-
-                    if ($inserthistory) {
-                        $this->coreFunctions->execqry("delete from dailytask where  trno=" . $trno, 'delete');
-                        $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno, 'delete');
-                    }
-
-                    $config['params']['doc'] = 'DY';
-                    $this->logger->sbcmasterlog($dttrno, $config, 'Daily task has been re-created and started by: ' . $creator);
-
-                    $config['params']['doc'] = 'ENTRYTASK';
-                    $this->logger->sbcmasterlog2($row['tasktrno'], $config, ' Line: ' . $row['taskline'] . ' Task has been restarted by ' . $creator, 'masterfile_log');
                 } else { //same day ini undone at inistart stat -2  na i aaccept
                     $label = 'Pending daily task has been restarted.';
                     $update_dailytask =  $this->coreFunctions->sbcupdate('dailytask', ['statid' => 0, 'createdate' => $this->othersClass->getCurrentTimeStamp(), 'donedate' => null, 'isprev' => 1, 'rem1' => ''], ['trno' => $trno]); // makikita na yung  done or undone uli sa pending app - isprev is 1 para hindi nya madelete ang pending niya dapat cancel
@@ -431,7 +446,7 @@ class pdailytask2
                 }
             } else if ($statid == 1) { // start ng checker na may checkerid
 
-                $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "rem=? ", [$rem], '', true);
+                $existingtrno = $this->coreFunctions->getfieldvalue("dailytask", "trno", "statid=0 and rem=? and userid=? and ischecker=1", [$rem, $adminid], '', true);
                 if ($existingtrno != 0) {
                     $pendingapptrno = $this->coreFunctions->getfieldvalue("dailytask", "refx", "trno=? ", [$existingtrno], '', true);
                     $p1 = $this->coreFunctions->getfieldvalue("pendingapp", "trno", "trno=? and approver='FOR CHECKING' ", [$pendingapptrno], '', true);
@@ -469,7 +484,9 @@ class pdailytask2
                         'startchecker' => $this->othersClass->getCurrentTimeStamp(),
                         'empid' => $row['empid'],
                         'taskcatid' => $row['taskcatid'],
-                        'assignedid' => $row['assignedid']
+                        'assignedid' => $row['assignedid'],
+                        'reseller' => $row['reseller'],
+                        'jono' => $row['jono'],
                     ];
 
                     if ($row['refx'] != 0) {
@@ -521,7 +538,8 @@ class pdailytask2
                     'empid' => $row['empid'],
                     'refx' => $row['refx'], //to sa manual DY
                     'taskcatid' => $row['taskcatid'],
-                    'assignedid' => $row['assignedid']
+                    'assignedid' => $row['assignedid'],
+                    'jono' => $row['jono'],
                 ];
 
 

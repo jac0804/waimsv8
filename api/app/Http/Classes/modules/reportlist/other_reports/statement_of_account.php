@@ -72,6 +72,10 @@ class statement_of_account
     if ($companyid == 59) { //roosevelt
       array_push($fields, 'area');
     }
+
+    if ($companyid == 29) { //SBC MAIN
+      $fields = ['radioprint', 'dclientname'];
+    }
     $col1 = $this->fieldClass->create($fields);
 
     switch ($companyid) {
@@ -83,11 +87,17 @@ class statement_of_account
         break;
     }
 
-    data_set($col1, 'dateid.label', 'Balance as of');
-    data_set($col1, 'dateid.readonly', false);
+    
+    if ($companyid != 29) { //SBC MAIN
+      data_set($col1, 'dateid.label', 'Balance as of');
+      data_set($col1, 'dateid.readonly', false);
+    }
+    
 
     data_set($col1, 'dclientname.lookupclass', 'lookupclient');
     data_set($col1, 'dclientname.label', 'Customer');
+    data_set($col1, 'dclientname.label', 'Customer');
+    
 
     switch ($companyid) {
       case 3: // conti
@@ -129,6 +139,7 @@ class statement_of_account
         ]);
         break;
       case 29: //sbc
+        data_set($col1, 'dclientname.required', true);
         $fields = ['radioreportcustomerfilter', 'radioreporttype', 'attention', 'certifby'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'radioreporttype.options', [
@@ -196,8 +207,7 @@ class statement_of_account
 
   public function reportdata($config)
   {
-    $str = $this->reportplotting($config);
-    return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+    return $this->reportplotting($config);
   }
 
   public function reportplotting($config)
@@ -245,19 +255,29 @@ class statement_of_account
         $reporttype = $config['params']['dataparams']['reporttype'];
         switch ($reporttype) {
           case '1': // default
-            return $this->reportDefaultLayout($config);
+            $str = $this->reportDefaultLayout($config);
+            return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
             break;
           case '0': // sbc format
-            return $this->sbc_layout($config);
+            
+            $str = $this->sbc_layout($config);
+            if (strpos($str, 'ERROR:') === 0) {
+                return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
+                
+      // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
+            }
+            if (!empty($str)) {
+                return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+            }
+            break;
+          }
+        break;
+      case 52: //technolab
+        switch ($config['params']['dataparams']['radiotechlabcomp']) {
+          case 'c0':
+            return $this->technolab_layout($config);
             break;
         }
-        break;
-        case 52: //technolab
-          switch ($config['params']['dataparams']['radiotechlabcomp']) {
-            case 'c0':
-            return $this->technolab_layout($config);
-              break;
-          }
       default:
         return $this->reportDefaultLayout($config);
         break;
@@ -2482,7 +2502,7 @@ class statement_of_account
     return $str;
   }
 
-    public function reportDefaultLayout($config)
+  public function reportDefaultLayout($config)
   {
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
@@ -6572,7 +6592,7 @@ class statement_of_account
     $str .= $this->reporter->col('Company Name:', '150', null, false, '2px solid', 'LT', 'LT', $font, $fontsize, '', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col($clientname, '550', null, false, '2px solid', 'LT', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col('Date: ', '100', null, false, '2px solid', 'TL', 'LT', $font, $fontsize, '', '', '', '', '', 'padding-left: 5px');
-    $str .= $this->reporter->col($printDate, '225', null, false, '2px solid', 'LTR', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
+    $str .= $this->reporter->col($printDate, '200', null, false, '2px solid', 'LTR', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->endrow();
     $this->reporter->linecounter++;
     $headerLines++;
@@ -6582,7 +6602,7 @@ class statement_of_account
     $str .= $this->reporter->col('Company Address:', '150', null, false, '2px solid', 'LT', 'LT', $font, $fontsize, '', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col($addr, '550', null, false, '2px solid', 'LT', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col('', '100', null, false, '2px solid', 'T', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('', '225', null, false, '2px solid', 'TR', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('', '200', null, false, '2px solid', 'TR', 'L', $font, $fontsize, 'B');
     $str .= $this->reporter->endrow();
     $this->reporter->linecounter++;
     $headerLines++;
@@ -6592,7 +6612,7 @@ class statement_of_account
     $str .= $this->reporter->col('Attention To: ', '150', null, false, '2px solid', 'LTB', 'LT', $font, $fontsize, '', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col($displayContact, '550', null, false, '2px solid', 'LTB', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->col('Contact No.: ', '100', null, false, '2px solid', 'TBL', 'LT', $font, $fontsize, '', '', '', '', '', 'padding-left: 5px');
-    $str .= $this->reporter->col($displayNumbers, '225', null, false, '2px solid', 'TRBL', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
+    $str .= $this->reporter->col($displayNumbers, '200', null, false, '2px solid', 'TRBL', 'LT', $font, $fontsize, 'B', '', '', '', '', 'padding-left: 5px');
     $str .= $this->reporter->endrow();
     $this->reporter->linecounter++;
     $headerLines++;
@@ -6629,8 +6649,22 @@ class statement_of_account
 
   public function sbc_layout($config)
   {
-    $result         = $this->sbcqry($config);
+    $username = $config['params']['user'];
+    // $result         = $this->sbcqry($config);
+    // $allCollections = $this->sbccollectionqry($config);
+
+
+    $result = $this->sbcqry($config);
+    if ($this->isQueryError($result)) {
+        return "ERROR: Unknown database error in sbcqry";
+    }
+
     $allCollections = $this->sbccollectionqry($config);
+    if ($this->isQueryError($allCollections)) {
+        return "ERROR: Unknown database error in sbccollectionqry";
+    }
+
+    
 
     // Group collections by sales_trno
     $collectionMap = array();
@@ -6718,7 +6752,7 @@ class statement_of_account
         $itemCount = 0;
         $this->fillBlankLines($str, $maxLinesPerPage, $this->reporter->linecounter, $layoutsize, $border, $font, $fontsize);
         $this->addClientTotals($str, $isClientVatable, $subtotal, $peso, $layoutsize, $border, $font, $fontsize);
-        $str .= $this->sbc_footer($layoutsize, $border, $font, $fontsize);
+        $str .= $this->sbc_footer($layoutsize, $border, $font, $fontsize, $username);
         $str .= $this->reporter->page_break();
         $str .= $this->sbc_header($config);
 
@@ -6924,8 +6958,12 @@ class statement_of_account
     // Final client totals
     $this->fillBlankLines($str, $maxLinesPerPage, $this->reporter->linecounter, $layoutsize, $border, $font, $fontsize);
     $this->addClientTotals($str, $isClientVatable, $subtotal, $peso, $layoutsize, $border, $font, $fontsize);
-    $str .= $this->sbc_footer($layoutsize, $border, $font, $fontsize);
+    $str .= $this->sbc_footer($layoutsize, $border, $font, $fontsize, $username);
     $str .= $this->reporter->endreport();
+
+            
+    $clientid = $config['params']['dataparams']['clientid'];
+    $this->logger->sbcsoareportlog($username, $clientid, 'soalog');
 
     return $str;
   }
@@ -7028,10 +7066,10 @@ class statement_of_account
       $filter
       and ifnull(ar.bal, 0) > 0
       and date(ar.dateid) <= '$asof'
-    group by head.trno, head.doc, client.client, client.clientname, client.addr,
+    group by head.trno,head.doc, client.client, client.clientname, client.addr,
              client.contact, cp.salutation, cp.fname, cp.mname, cp.lname, ar.bal,
              cp.contactno, cp.mobile, client.fax, client.tel, client.tel2,
-             head.yourref, head.vattype, (case when item.itemid in (22, 44) then 'Hardware' else item.itemname end), head.rem
+             head.yourref, head.vattype, item.itemid,item.itemname,(case when item.itemid in (22, 44) then 'Hardware' else item.itemname end), head.rem
 
     union all
 
@@ -7051,10 +7089,10 @@ class statement_of_account
       $filter
       and ifnull(ar.bal, 0) > 0
       and date(ar.dateid) <= '$asof'
-    group by head.trno, head.doc, client.client, client.clientname, client.addr,
+    group by head.trno,head.doc, client.client, client.clientname, client.addr,
              client.contact, cp.salutation, cp.fname, cp.mname, cp.lname, ar.bal,
              cp.contactno, cp.mobile, client.fax, client.tel, client.tel2,
-             head.yourref, head.vattype, (case when item.itemid in (22, 44) then 'Hardware' else item.itemname end), head.rem
+             head.yourref, head.vattype, item.itemid,item.itemname,(case when item.itemid in (22, 44) then 'Hardware' else item.itemname end), head.rem
     order by clientname, trno";
     return $this->coreFunctions->opentable($query);
   }
@@ -7124,7 +7162,7 @@ class statement_of_account
     return $this->coreFunctions->opentable($query);
   }
 
-  private function sbc_footer($layoutsize, $border, $font, $fontsize)
+  private function sbc_footer($layoutsize, $border, $font, $fontsize, $username = '')
   {
     $str = '';
 
@@ -7170,6 +7208,22 @@ class statement_of_account
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    $textlog = $username.' - '.$current_timestamp;
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($textlog, '200', null, false, $border, '', 'L', $font, $fontsize, '');
+    $str .= $this->reporter->col('', '600', null, false, $border, '', 'L', $font, $fontsize, '');
+    $str .= $this->reporter->col('', '200', null, false, $border, '', 'L', $font, $fontsize, '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     return $str;
+  }
+
+  private function isQueryError($result)
+  {
+      return is_array($result) && isset($result['status']) && $result['status'] === false;
   }
 }//end class

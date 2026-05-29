@@ -332,7 +332,7 @@ class leaveapplicationportal
 
       $fields = [['hours', 'end']];
       if ($companyid == 51) { // ulitc
-        array_push($fields, 'batch', 'ispickupdate', 'statrem', 'remarks'); #'selectprefix'
+        $fields = [['hours', 'type'], 'end', 'batch', 'ispickupdate', 'statrem', 'remarks'];
       } else {
         array_push($fields, 'remarks');
       }
@@ -368,6 +368,12 @@ class leaveapplicationportal
           ['label' => 'Morning Leave', 'value' => 'Morning Leave'],
           ['label' => 'Afternoon Leave', 'value' => 'Afternoon Leave']
         ));
+
+        data_set($col3, 'type.type', 'lookup');
+        data_set($col3, 'type.class', 'sbccsreadonly');
+        data_set($col3, 'type.action', 'lookupdays');
+        data_set($col3, 'type.lookupclass', 'lookupdaytype');
+        data_set($col3, 'hours.class', 'cshours sbccsreadonly');
       }
 
       $fields = [];
@@ -499,7 +505,7 @@ class leaveapplicationportal
       return ['status' => false, 'msg' => 'Remarks is Empty', 'clientid' => $config['params']['head']['trno']];
     }
 
-    $entrydays = $this->coreFunctions->getfieldvalue("leavetrans", "sum(adays)", "trno=? and status='E'", [$head['clientid']]);
+    $entrydays = $this->coreFunctions->getfieldvalue("leavetrans", "sum(adays)", "trno=? and status='E' and status2 <> 'D'", [$head['clientid']]);
     $bal = $this->coreFunctions->getfieldvalue("leavesetup", "bal", "trno=?", [$head['clientid']]);
     if ($bal == '') {
       $bal = 0;
@@ -624,33 +630,39 @@ class leaveapplicationportal
         }
         goto log;
       }
-      $url = 'App\Http\Classes\modules\payrollentry\leaveapplicationportalapproval';
-      $appstatus = $this->othersClass->insertUpdatePendingapp($data['trno'], $line, 'LEAVE', $data, $url, $config, 0, true, true);
-      if (!$appstatus['status']) {
-        $msg = $appstatus['msg'];
-        $status = $appstatus['status'];
-      } else {
-        if ($this->coreFunctions->sbcinsert($this->stock, $data)) {
-          $msg = 'Successfully applied';
-          if ($companyid == 53 || $companyid == 51) { // camera|ulitc
-            $result = $this->stockstatusposted($config, $line, $data['trno']);
-            if (!$result['status']) {
-              $status = false;
-            }
-            $msg = $result['msg'];
+
+      if ($this->coreFunctions->sbcinsert($this->stock, $data)) {
+        $msg = 'Successfully applied';
+        $url = 'App\Http\Classes\modules\payrollentry\leaveapplicationportalapproval';
+        $appstatus = $this->othersClass->insertUpdatePendingapp($data['trno'], $line, 'LEAVE', $data, $url, $config, 0, true, true);
+        if (!$appstatus['status']) {
+          $msg = $appstatus['msg'];
+          $status = $appstatus['status'];
+          $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$data['trno']]);
+          $this->coreFunctions->execqry("delete from pendingapp where doc='LEAVE' and trno=? and line =? ", 'delete', [$data['trno'], $data['line']]);
+          goto def;
+        }
+        if ($companyid == 53 || $companyid == 51) { // camera|ulitc
+          $result = $this->stockstatusposted($config, $line, $data['trno']);
+          if (!$result['status']) {
+            $status = false;
           }
-          log:
-          $empname = $this->coreFunctions->datareader("select cl.clientname as value
+          $msg = $result['msg'];
+        }
+        log:
+        $empname = $this->coreFunctions->datareader("select cl.clientname as value
           from employee as e
           left join client as cl on cl.clientid = e.empid
           where e.empid = ?", [$head['empid']]);
 
-          $this->logger->sbcmasterlog(
-            $data['trno'],
-            $config,
-            "CREATE - NAME: " . $empname . ", DATE: " . date('Y-m-d', strtotime($data['dateid'])) . " EFFECTIVITY: " . $date . "  LEAVE: " . $head['hours'] . ", STATUS: " . $head['status'] . ""
-          );
-        }
+        $this->logger->sbcmasterlog(
+          $data['trno'],
+          $config,
+          "CREATE - NAME: " . $empname . ", DATE: " . date('Y-m-d', strtotime($data['dateid'])) . " EFFECTIVITY: " . $date . "  LEAVE: " . $head['hours'] . ", STATUS: " . $head['status'] . ""
+        );
+      } else {
+        $msg = 'Failled to Insert';
+        $status = false;
       }
     }
 

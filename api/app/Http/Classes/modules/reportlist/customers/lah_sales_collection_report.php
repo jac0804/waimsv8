@@ -32,7 +32,7 @@ class lah_sales_collection_report
     private $reporter;
     public $style = 'width:1200px;max-width:3500px;';
     public $directprint = false;
-    public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
     public function __construct()
     {
@@ -45,7 +45,7 @@ class lah_sales_collection_report
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end', 'dclientname'];
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'dcentername'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'Default', 'value' => 'default', 'color' => 'red']
@@ -54,6 +54,7 @@ class lah_sales_collection_report
         data_set($col1, 'end.required', true);
         data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
         data_set($col1, 'dclientname.label', 'Customer');
+        data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -110,7 +111,7 @@ class lah_sales_collection_report
 
     public function reportDefault_query($config)
     {
-        $center = $config['params']['dataparams']['center'];
+        $dcenter = $config['params']['dataparams']['center'];
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $client       = $config['params']['dataparams']['client'];
@@ -119,6 +120,9 @@ class lah_sales_collection_report
 
         if ($client != "") {
             $filter = " and cl.clientid='$clientid'";
+        }
+        if ($dcenter != "0") {
+            $filter .= " and cntnum.center='$dcenter'";
         }
 
         $query = "   select d.refx, cl.clientname, head.docno, head.dateid, d.ref, head.rem, sum(d.cr) as amount, c.acnoName
@@ -149,10 +153,9 @@ class lah_sales_collection_report
         $end     = $config['params']['dataparams']['end'];
         $dcentername     = $config['params']['dataparams']['dcentername'];
         $result = $this->reportDefault_query($config);
-        $this->reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1000'];
         $str = '';
-        $layoutsize = '1500';
-        $font = "Roboto Mono";
+        $layoutsize = '1100';
+        $font = "Tahoma";
         $fontsize = "10";
         $border = "1px solid ";
 
@@ -168,13 +171,13 @@ class lah_sales_collection_report
         $str .= $this->reporter->endtable();
 
         // $logopath = URL::to($this->companysetup->getlogopath($config['params']) . 'sbclogo1.jpg');
-        $path = $this->companysetup->getlogopath($config['params']);
-        $path = str_replace('public/', '', $path);
-        $logopath = URL::to($path . 'sbclogo1.jpg');
+        // $path = $this->companysetup->getlogopath($config['params']);
+        // $path = str_replace('public/', '', $path);
+        // $logopath = URL::to($path . 'sbclogo1.jpg');
 
-        $str .= "<div style='margin-bottom:20px; text-align:left;margin-left:-110px;margin-top:-20px;'>"; //margin-top:-30px;
-        $str .= "<img src='{$logopath}' width='1750' height='250'>";
-        $str .= "</div>";
+        // $str .= "<div style='margin-bottom:20px; text-align:left;margin-left:-110px;margin-top:-20px;'>"; //margin-top:-30px;
+        // $str .= "<img src='{$logopath}' width='1750' height='250'>";
+        // $str .= "</div>";
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('LAH SALES COLLECTION REPORT', null, null, false, '10px solid ', '', 'C', $font, '18', 'B', '', '');
@@ -193,18 +196,12 @@ class lah_sales_collection_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('SALES NO', '250', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('COLLECT NO', '250', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('DATE', '150', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('CUSTOMER', '375', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('NOTES', '375', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('SALES NO', '150', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('COLLECT NO', '150', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('DATE', '100', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('CUSTOMER', '300', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('NOTES', '300', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
         $str .= $this->reporter->col('AMOUNT', '100', null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', null, null, false, '2px solid', 'B', 'C', $font, '12', 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -218,8 +215,8 @@ class lah_sales_collection_report
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $filter = "";
-        $layoutsize = '1500';
-        $font = 'Roboto';
+        $layoutsize = '1100';
+        $font = 'Tahoma';
         // $font = $this->companysetup->getrptfont($config['params']);
         // $font='Courier New';
         $fontsize = "12";
@@ -231,15 +228,27 @@ class lah_sales_collection_report
             return $this->othersClass->emptydata($config);
         }
 
-        $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '45px;margin-top:5px;');
         $str .= $this->displayHeader($config);
 
         $count = count($result);
         $currentMonth = '';
         $subtotal = 0;
         $grandtotal = 0;
+        $limitPerPage = 24;
+        $rowCount = 0;
 
         for ($i = 0; $i < $count; $i++) {
+
+            if ($rowCount > 0 && $rowCount % $limitPerPage == 0) {
+
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->page_break();
+
+                // Repeat header every time na nag next page
+                $str .= $this->displayHeader($config, count($result));
+                $str .= $this->reporter->begintable($layoutsize);
+            }
 
             $data = $result[$i];
             $month = date("Y-m", strtotime($data->dateid));
@@ -250,8 +259,8 @@ class lah_sales_collection_report
                     // print subtotal of previous month
                     $str .= $this->reporter->begintable($layoutsize);
                     $str .= $this->reporter->startrow();
-                    $str .= $this->reporter->col('Subtotal: ' . $currentMonth, '1400', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-                    $str .= $this->reporter->col(number_format($subtotal, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+                    $str .= $this->reporter->col('Subtotal: ' . $currentMonth, '1000', null, false, '1px dotted', 'B', 'L', $font, $fontsize, 'B', '', '');
+                    $str .= $this->reporter->col(number_format($subtotal, 2), '100', null, false, '1px dotted', 'B', 'R', $font, $fontsize, 'B', '', '');
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();
 
@@ -263,7 +272,7 @@ class lah_sales_collection_report
                 // print month header
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col(date("F Y", strtotime($data->dateid)), '1500', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col(date("F Y", strtotime($data->dateid)), '1100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
             }
@@ -271,24 +280,25 @@ class lah_sales_collection_report
             // ITEM ROW
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data->ref, '250', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->docno, '250', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col(date("Y-m-d", strtotime($data->dateid)), '150', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->clientname, '375', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->rem, '375', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->ref, '150', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->docno, '150', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(date("Y-m-d", strtotime($data->dateid)), '100', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->clientname, '300', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->rem, '300', null, false, '', '', 'LT', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col(number_format($data->amount, 2), '100', null, false, '', '', 'RT', $font, $fontsize, '', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
 
             $subtotal += $data->amount;
             $grandtotal += $data->amount;
+            $rowCount++;
         }
 
         // print last month subtotal
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Subtotal: ' . $currentMonth, '1400', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col(number_format($subtotal, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Subtotal: ' . $currentMonth, '1000', null, false, '1px dotted', 'B', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($subtotal, 2), '100', null, false, '1px dotted', 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
