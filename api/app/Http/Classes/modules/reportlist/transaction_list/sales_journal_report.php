@@ -153,6 +153,7 @@ class sales_journal_report
     '" . $defaultcenter[0]['center'] . "' as center,
     '" . $defaultcenter[0]['centername'] . "' as centername,
     '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
+    '' as dbranchname,
     '' as project, '' as projectid, '' as projectname, '' as ddeptname, '' as dept, '' as deptname,'' as branchid,'' as branchname,'' as branchcode,'' as branch,
     '' as wh,'' as whname,'' as dwhname,'0' as whid,
     '' as brgy, '' as region, '' as area, '' as salestype,'0' as deptid,
@@ -468,11 +469,12 @@ class sales_journal_report
       $deptid = $config['params']['dataparams']['deptid'];
       $projectid = $config['params']['dataparams']['projectid'];
       $dept = $config['params']['dataparams']['dept'];
+      $deptname = $config['params']['dataparams']['deptname'];
 
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -635,7 +637,7 @@ class sales_journal_report
           default:
             $query = "select head.yourref,head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom," . $isqty . " as iss,
               stock.isamt,stock.disc,stock.ext, wh.clientname,head.createby,stock.expiry,stock.loc,stock.rem,
-              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms " . $agentfield . "
+              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms,head.shipto " . $agentfield . "
               from glhead as head
               left join glstock as stock on stock.trno=head.trno
               left join item on item.itemid=stock.itemid
@@ -765,9 +767,10 @@ class sales_journal_report
             ) as a order by docno " . $sorting;
             break;
           default:
-            $query = "select status, docno, supplier, ext, clientname,trno, dateid, wh, deptcode, deptname, paidstat, rem, code " . $agentfield2 . " " . $addedfields2 . " 
+            $query = "select status, docno, supplier, ext, clientname,trno, dateid, wh, deptcode, deptname, paidstat, rem, code,shipto,ourref " . $agentfield2 . " " . $addedfields2 . " 
             from (select 'POSTED' as status, head.docno, head.clientname as supplier,head.trno, sum(stock.ext) as ext, wh.clientname, wh.client as wh,
-            ifnull((select max(case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) from arledger as ar where ar.trno = head.trno), 'OPEN') as paidstat, head.rem, date(head.dateid) as dateid, dept.client as deptcode, dept.clientname as deptname, client.client as code " . $agentfield . " " . $addedfields . "
+            ifnull((select max(case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) from arledger as ar where ar.trno = head.trno), 'OPEN') as paidstat, head.rem, 
+            date(head.dateid) as dateid, dept.client as deptcode, dept.clientname as deptname, client.client as code,head.shipto,head.ourref " . $agentfield . " " . $addedfields . "
             from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid
@@ -778,7 +781,7 @@ class sales_journal_report
             " . $agjoin . "
             " . $leftjoinproject . " 
             where head.doc in ('sj','mj') and date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . " " . $filter1 . " " . $filter2 . "  
-            group by head.docno, head.clientname, wh.clientname, wh.client, head.dateid, dept.client, dept.clientname, head.trno, head.rem, client.client" . $aggroupby . "  " . $addedfields . "
+            group by head.docno, head.clientname, wh.clientname, wh.client, head.dateid, dept.client, dept.clientname, head.trno, head.rem, client.client,head.shipto,head.ourref" . $aggroupby . "  " . $addedfields . "
             ) as a order by docno " . $sorting;
 
             break;
@@ -867,6 +870,7 @@ class sales_journal_report
       $dept = $config['params']['dataparams']['dept'];
       $projectid = $config['params']['dataparams']['projectid'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       // if ($deptid == "") {
       //   $dept = "";
       // } else {
@@ -875,7 +879,7 @@ class sales_journal_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -1044,7 +1048,7 @@ class sales_journal_report
           default:
             $query = "select head.yourref,head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom," . $isqty . " as iss,
               stock.isamt,stock.disc,stock.ext,wh.clientname,head.createby,stock.expiry,stock.loc,stock.rem,
-              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms " . $agentfield . "
+              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms,head.shipto " . $agentfield . "
               from lahead as head
               left join lastock as stock on stock.trno=head.trno
               left join cntnum on cntnum.trno=head.trno
@@ -1153,7 +1157,7 @@ class sales_journal_report
               head.docno,head.clientname as supplier,head.trno,
               sum(stock.ext) as ext, wh.clientname, wh.client as wh,
               ifnull((select (case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) from arledger as ar where ar.trno = head.trno),'OPEN') as paidstat,head.rem,
-              left(head.dateid,10) as dateid, dept.client as deptcode, dept.clientname as deptname,client.client as code" . $agentfield . " " . $addedfields . "
+              left(head.dateid,10) as dateid, dept.client as deptcode, dept.clientname as deptname,client.client as code,head.shipto,head.ourref" . $agentfield . " " . $addedfields . "
               from lahead as head
               left join lastock as stock on stock.trno=head.trno
               left join cntnum on cntnum.trno=head.trno
@@ -1164,7 +1168,7 @@ class sales_journal_report
               " . $agjoin . "
               where head.doc in ('sj','mj') and date(head.dateid) between '$start' and '$end' $filter $filter1 " . $filter2 . "
               group by head.docno,head.yourref,head.clientname,
-              wh.clientname,head.dateid, wh.client, dept.client, dept.clientname,head.trno, head.rem,client.client" . $aggroupby . " " . $addedfields . "
+              wh.clientname,head.dateid, wh.client, dept.client, dept.clientname,head.trno, head.rem,client.client,head.shipto,head.ourref" . $aggroupby . " " . $addedfields . "
               order by head.docno $sorting";
 
             break;
@@ -1251,6 +1255,7 @@ class sales_journal_report
       $dept = $config['params']['dataparams']['dept'];
       $projectid = $config['params']['dataparams']['projectid'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       // if ($deptid == "") {
       //   $dept = "";
       // } else {
@@ -1259,7 +1264,7 @@ class sales_journal_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -1555,7 +1560,7 @@ class sales_journal_report
             left(head.dateid,10) as dateid, dept.client as deptcode, dept.clientname as deptname,
             client.client as code " . $agentfield . " " . $addedfields . ", 
             ifnull((select max(case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) 
-            from arledger as ar where ar.trno = head.trno),'OPEN') as paidstat,head.rem
+            from arledger as ar where ar.trno = head.trno),'OPEN') as paidstat,head.rem,head.shipto,head.ourref
             from lahead as head
             left join lastock as stock on stock.trno=head.trno
             left join cntnum on cntnum.trno=head.trno
@@ -1566,11 +1571,11 @@ class sales_journal_report
             " . $agjoin1 . "
             where head.doc in ('sj','mj') and date(head.dateid) between '$start' and '$end' $filter $filter1 " . $agfilter1 . "
             group by head.docno,head.yourref,head.clientname,
-              wh.clientname,head.dateid, wh.client,dept.client,dept.clientname,head.trno,head.rem,client.client" . $aggroupby . "  " . $addedfields . "
+              wh.clientname,head.dateid, wh.client,dept.client,dept.clientname,head.trno,head.rem,client.client,head.shipto,head.ourref" . $aggroupby . "  " . $addedfields . "
             UNION ALL
             select 'POSTED' as status,head.docno,
             head.clientname as supplier,head.trno,sum(stock.ext) as ext, wh.clientname,  wh.client as wh,head.yourref,
-            left(head.dateid,10) as dateid, dept.client as deptcode, dept.clientname as deptname,client.client as code " . $agentfield . "  " . $addedfields . ", ifnull((select max(case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) from arledger as ar where ar.trno = head.trno),'OPEN') as paidstat,head.rem
+            left(head.dateid,10) as dateid, dept.client as deptcode, dept.clientname as deptname,client.client as code " . $agentfield . "  " . $addedfields . ", ifnull((select max(case when ar.docno = '' or ar.bal > 0 then 'OPEN' else 'CLOSE' end) from arledger as ar where ar.trno = head.trno),'OPEN') as paidstat,head.rem,head.shipto,head.ourref
             from glhead as head
             left join glstock as stock on stock.trno=head.trno
             left join item on item.itemid=stock.itemid
@@ -1583,7 +1588,7 @@ class sales_journal_report
             where head.doc in ('sj','mj')
             and date(head.dateid) between '$start' and '$end' $filter $filter1 " . $agfilter2 . "
             group by head.docno,head.yourref,head.clientname,
-              wh.clientname,head.dateid, wh.client,dept.client, dept.clientname,head.trno,head.rem,client.client" . $aggroupby . "  " . $addedfields . ") as g order by g.docno $sorting";
+              wh.clientname,head.dateid, wh.client,dept.client, dept.clientname,head.trno,head.rem,client.client,head.shipto,head.ourref" . $aggroupby . "  " . $addedfields . ") as g order by g.docno $sorting";
             break;
         }
         break;
@@ -1799,7 +1804,7 @@ class sales_journal_report
           default:
             $query = "select head.yourref,head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom," . $isqty . " as iss,
               stock.isamt,stock.disc,stock.ext,wh.clientname,head.createby,stock.expiry,stock.loc,stock.rem,
-              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms
+              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms,head.shipto
               " . $agentfield . "
               from lahead as head
               left join lastock as stock on stock.trno=head.trno
@@ -1816,7 +1821,7 @@ class sales_journal_report
               union all
               select head.yourref,head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom," . $isqty . " as iss,
               stock.isamt,stock.disc,stock.ext, wh.clientname,head.createby,stock.expiry,stock.loc,stock.rem,
-              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms
+              left(head.dateid,10) as dateid,stock.ref, dept.client as deptcode, dept.clientname as deptname,head.terms,head.shipto
               " . $agentfield . "
               from glhead as head
               left join glstock as stock on stock.trno=head.trno
@@ -3025,6 +3030,14 @@ class sales_journal_report
             $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             break;
+          case 22://eipi
+            $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->supplier.'-'.$data->shipto, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->ourref, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+          break;
           default:
             $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->supplier, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -3832,6 +3845,15 @@ class sales_journal_report
         $str .= $this->reporter->col('NET SALES', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('AMOUNT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('STATUS', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        break;
+      case 22://eipi
+        $str .= $this->reporter->col('DATE', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('CUSTOMER NAME', '300', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT NO.', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('SI NO.', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('AMOUNT', '125', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('STATUS', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+
         break;
       default:
         $str .= $this->reporter->col('DATE', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');

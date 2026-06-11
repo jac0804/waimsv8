@@ -103,6 +103,7 @@ class notice_to_explain
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -112,9 +113,11 @@ class notice_to_explain
     if ($client != "") {
       $filter .= " and emp.client = '$client'";
     }
-    if ($deptid != $filter1) {
-      $filter .= " and dept.clientid = $deptid";
-    }
+
+    if ($deptname !=''){
+    if ($deptid != 0) {
+      $filter1 .= " and dept.clientid = $deptid";
+    }}
     // head.fempjob,
     $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,
                     head.artid,femp.client as fempcode, femp.clientname as fempname,

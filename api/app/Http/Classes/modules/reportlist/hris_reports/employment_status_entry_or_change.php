@@ -112,6 +112,7 @@ class employment_status_entry_or_change
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -121,9 +122,14 @@ class employment_status_entry_or_change
     if ($client != "") {
       $filter .= " and c.client = '$client'";
     }
+    // if ($deptid != 0) {
+    //   $filter1 .= " and dept.clientid = $deptid";
+    // }
+
+    if ($deptname !=''){
     if ($deptid != 0) {
       $filter1 .= " and dept.clientid = $deptid";
-    }
+    }}
 
     $query = "SELECT head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       concat(emp.empfirst, ' ', emp.empmiddle, ' ', emp.emplast) as empname,
@@ -181,6 +187,7 @@ class employment_status_entry_or_change
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -190,9 +197,13 @@ class employment_status_entry_or_change
     if ($client != "") {
       $filter .= " and c.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter1 .= " and dept.clientid = $deptid";
-    }
+    // if ($deptid != 0) {
+    //   $filter1 .= " and dept.clientid = $deptid";
+    // }
+    if ($deptname !=''){
+      if ($deptid != 0) {
+        $filter1 .= " and dept.clientid = $deptid";
+    }}
 
     $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       concat(emp.empfirst, ' ', emp.empmiddle, ' ', emp.emplast) as empname,

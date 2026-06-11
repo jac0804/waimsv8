@@ -2145,7 +2145,7 @@ class wm
             'sano' => $data[0]->sano,
             'pono' => $data[0]->pono
           ];
-          if ($companyid == 24) { //goodfound
+          if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             if (substr($data[0]->docno, 0, 2) == 'SO') {
               $headupdate['tax'] = 12;
               $headupdate['vattype'] = 'VATABLE';
@@ -2235,6 +2235,7 @@ class wm
     } //end foreach
     switch ($companyid) {
       case 19: //HOUESGEM
+      case 69: //cemphil
       case 24: //goodfound
         return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
         break;
@@ -2502,7 +2503,7 @@ class wm
               'pono' => $data[0]->pono
             ];
 
-            if ($companyid == 24) { //goodfound
+            if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
               if (substr($data[0]->docno, 0, 2) == 'SO') {
                 $headupdate['tax'] = 12;
                 $headupdate['vattype'] = 'VATABLE';
@@ -2585,6 +2586,7 @@ class wm
     } //end foreach
     switch ($companyid) {
       case 19: //HOUSEGEM
+      case 69: //cemphil
       case 24: //goodfound
         return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
         break;

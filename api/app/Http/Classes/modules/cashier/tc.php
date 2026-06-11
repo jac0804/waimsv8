@@ -431,6 +431,7 @@ class tc
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
+        $center = $config['params']['center'];
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
@@ -451,7 +452,7 @@ class tc
             $data['amount'] = $data['petty'];
         }
 
-        $prevbal = $this->coreFunctions->datareader("select endingbal as value from htchead where date(dateid) < '" . $data['dateid'] . "' and trno <> " . $head['trno'] . " order by dateid desc limit 1");
+        $prevbal = $this->coreFunctions->datareader("select endingbal as value from htchead left join cntnum on cntnum.trno = htchead.trno where date(htchead.dateid) < '" . $data['dateid'] . "' and htchead.trno <> " . $head['trno'] . " and cntnum.center ='".$center."' order by dateid desc limit 1");
 
         if ($prevbal != 0) {
             $data['amount'] = $prevbal;

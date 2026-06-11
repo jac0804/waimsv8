@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\URL;
 class mr
 {
 
-    private $modulename;
+    private $modulename = "Material Request";
     private $fieldClass;
     private $companysetup;
     private $coreFunctions;
@@ -70,13 +70,18 @@ class mr
     head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
     item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
     item.sizeid, ag.clientname as agname, item.brand,
-    wh.client as whcode, wh.clientname as whname 
+    wh.client as whcode, wh.clientname as whname  ,concat(ifnull(project.name,''),' ',
+    ph.code,' ',hm.model,' ', bl.blk,' ' , bl.lot) as pname
     from mrhead as head
     left join mrstock as stock on stock.trno=head.trno
     left join client on client.client=head.client
     left join item on item.itemid=stock.itemid
     left join client as ag on ag.client=head.agent
     left join client as wh on wh.client=head.wh
+    left join projectmasterfile as project on project.line=head.projectid 
+        left join phase as ph on ph.line = head.phaseid
+        left join housemodel as hm on hm.line = head.modelid
+        left join blklot as bl on bl.line = head.blklotid
     where head.doc='MR' and head.trno='$trno'
     UNION ALL
     select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
@@ -84,13 +89,18 @@ class mr
     head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
     item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
     item.sizeid, ag.clientname as agname, item.brand,
-    wh.client as whcode, wh.clientname as whname 
+    wh.client as whcode, wh.clientname as whname ,concat(ifnull(project.name,''),' ',
+    ph.code,' ',hm.model,' ', bl.blk,' ' , bl.lot) as pname
     from hmrhead as head
     left join hmrstock as stock on stock.trno=head.trno
     left join client on client.client=head.client
     left join item on item.itemid=stock.itemid
     left join client as ag on ag.client=head.agent
     left join client as wh on wh.client=head.wh
+    left join projectmasterfile as project on project.line=head.projectid 
+        left join phase as ph on ph.line = head.phaseid
+        left join housemodel as hm on hm.line = head.modelid
+        left join blklot as bl on bl.line = head.blklotid
     where head.doc='MR' and head.trno='$trno' order by line";
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;
@@ -121,7 +131,7 @@ class mr
             $str .= $this->reporter->addline();
             $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'])), '50px', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
             $str .= $this->reporter->col($data[$i]['uom'], '50px', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
-            $str .= $this->reporter->col($data[$i]['itemname'], '500px', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+            $str .= $this->reporter->col($data[$i]['itemname'], '500px', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
             $totalext = $totalext + $data[$i]['ext'];
 
             if ($this->reporter->linecounter == $page) {
@@ -186,27 +196,30 @@ class mr
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($this->modulename, '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
-        $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, '13', 'B', '', '');
-        $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
+        $str .= $this->reporter->col($this->modulename, '400', null, false, $border, '', 'L', $font, '18', 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT # :', '150', null, false, $border, '', 'L', $font, '13', 'B', '', '');
+        $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '200', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('CUSTOMER : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-        $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
-        $str .= $this->reporter->col('DATE : ', '40', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+        $str .= $this->reporter->col('CUSTOMER : ', '110', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+        $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '490', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+        $str .= $this->reporter->col('DATE : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '120', null, false, $border, 'B', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('ADDRESS : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-        $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
-        $str .= $this->reporter->col('TERMS : ', '50', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col((isset($data[0]['terms']) ? $data[0]['terms'] : ''), '150', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+        $str .= $this->reporter->col('PROJECT : ', '110', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+        $str .= $this->reporter->col((isset($data[0]['pname']) ? $data[0]['pname'] : ''), '490', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+        // $str .= $this->reporter->col('TERMS : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+        // $str .= $this->reporter->col((isset($data[0]['terms']) ? $data[0]['terms'] : ''), '120', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+        $str .= $this->reporter->col('', '120', null, false, $border, '', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 

@@ -171,17 +171,36 @@ class paygroup
       $qry = "select code as value from " . $this->table . " where code = '" . $data['code'] . "' and line = '" . $row['line'] . "'";
       $checking = $this->coreFunctions->datareader($qry);
 
+      $qry = "select paygroup as value from employee where paygroup = '" . $data['paygroup'] . "'";
+      $checkingEmployee = $this->coreFunctions->datareader($qry);
+
+      $qry = "select pgline as value from timecard where pgline = '" . $row['line'] . "'";
+      $checkingTimecard = $this->coreFunctions->datareader($qry);
+
       if (!empty($checking)) {
         unset($data["code"]);
       } else {
-        $qry = "select code as value from " . $this->table . " where code = '" . $data['code'] . "'";
-        $checking1 = $this->coreFunctions->datareader($qry);
+        if (empty($checking)) {
+          $qry = "select code as value from " . $this->table . " where code = '" . $data['code'] . "' and line != '" . $row['line'] . "'";
+          $checking1 = $this->coreFunctions->datareader($qry);
 
-        if (!empty($checking1)) {
-          $returndata = $this->loaddata($config);
-          return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data['code'], 'data' => $data];
+          if (!empty($checking1)) {
+            $returndata = $this->loaddata($config);
+            return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data['code'], 'data' => $data];
+          }
         }
       }
+
+      if (!empty($checkingTimecard)) {
+        $returndata = $this->loaddata($config);
+        return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data['paygroup'], 'data' => $data];
+      }
+
+      if (!empty($checkingEmployee)) {
+        $returndata = $this->loaddata($config);
+        return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data['paygroup'], 'data' => $data];
+      }
+
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
@@ -227,17 +246,37 @@ class paygroup
           $qry = "select code as value from " . $this->table . " where code = '" . $data[$key]['code'] . "' and line = '" . $data[$key]['line'] . "'";
           $checking = $this->coreFunctions->datareader($qry);
 
+          $qry = "select paygroup as value from employee where paygroup = '" . $data[$key]['paygroup'] . "'";
+          $checkingEmployee = $this->coreFunctions->datareader($qry);
+
+          $qry = "select pgline as value from timecard where pgline = '" . $data[$key]['line'] . "'";
+          $checkingTimecard = $this->coreFunctions->datareader($qry);
+
           if (!empty($checking)) {
             unset($data[$key]["code"]);
           } else {
-            $qry = "select code as value from " . $this->table . " where code = '" . $data[$key]['code'] . "'";
-            $checking1 = $this->coreFunctions->datareader($qry);
+            if (empty($checking)) {
+              $qry = "select code as value from " . $this->table . " where code = '" . $data[$key]['code'] . "' and line != '" . $data[$key]['line'] . "'";
+              $checking1 = $this->coreFunctions->datareader($qry);
 
-            if (!empty($checking1)) {
-              $returndata = $this->loaddata($config);
-              return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data[$key]['code'], 'data' => $data];
+              if (!empty($checking1)) {
+                $returndata = $this->loaddata($config);
+                return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data[$key]['code'], 'data' => $data];
+              }
             }
           }
+
+          if (!empty($checkingTimecard)) {
+            $returndata = $this->loaddata($config);
+            return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data[$key]['paygroup'], 'data' => $data];
+          }
+
+          if (!empty($checkingEmployee)) {
+            $returndata = $this->loaddata($config);
+            return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data[$key]['paygroup'], 'data' => $data];
+          }
+
+
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
           $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
@@ -262,6 +301,13 @@ class paygroup
 
     if ($count != '') {
       return ['clientid' => $row['paygroup'], 'status' => false, 'msg' => 'Already have transaction...'];
+    }
+
+    $qry2 = "select pgline as value from timecard where pgline=?";
+    $checkingTimecard = $this->coreFunctions->datareader($qry2, [$row['line']]);
+
+    if (!empty($checkingTimecard)) {
+      return ['clientid' => $row['paygroup'], 'status' => false, 'msg' => 'Cannot Be Deleted Because Paygroup Already Has a Transaction in Timecard. - ' . $row['paygroup']];
     }
 
     $qry = "delete from " . $this->table . " where line=?";

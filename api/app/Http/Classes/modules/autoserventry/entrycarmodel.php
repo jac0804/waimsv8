@@ -28,7 +28,7 @@ class entrycarmodel
     private $table = 'cmodel';
     private $othersClass;
     public $style = 'width:100%;';
-    private $fields = ['year', 'model', 'type', 'sub_model', 'other_info'];
+    private $fields = ['cryear', 'model', 'crtype', 'sub_model', 'other_info'];
     public $tablelogs = 'masterfile_log';
     public $showclosebtn = true;
     private $enrollmentlookup;
@@ -54,7 +54,7 @@ class entrycarmodel
     public function createTab($config)
     {
 
-        $getcols = ['action', 'description', 'model', 'year', 'type', 'sub_model', 'other_info', 'code'];
+        $getcols = ['action', 'description', 'model', 'cryear', 'crtype', 'sub_model', 'other_info', 'code'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -70,15 +70,12 @@ class entrycarmodel
         $obj[0][$this->gridname]['columns'][$description]['label'] = "";
         $obj[0][$this->gridname]['columns'][$description]['type'] = "hidden";
         $obj[0][$this->gridname]['columns'][$model]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-        $obj[0][$this->gridname]['columns'][$year]['label'] = "Year";
-        $obj[0][$this->gridname]['columns'][$year]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-        $obj[0][$this->gridname]['columns'][$type]['label'] = "Type";
-        $obj[0][$this->gridname]['columns'][$type]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+        $obj[0][$this->gridname]['columns'][$cryear]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+        $obj[0][$this->gridname]['columns'][$crtype]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$sub_model]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$other_info]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
         $obj[0][$this->gridname]['columns'][$code]['label'] = "";
         $obj[0][$this->gridname]['columns'][$code]['type'] = "hidden";
-        $obj[0][$this->gridname]['columns'][$code]['style'] = "width:900px;whiteSpace: normal;min-width:900px;";
         return $obj;
     }
 
@@ -120,9 +117,9 @@ class entrycarmodel
         $data = [];
         $data['carid'] = $config['params']['tableid'];
         $data['line'] = 0;
-        $data['year'] = '';
+        $data['cryear'] = '';
         $data['model'] = '';
-        $data['type'] = '';
+        $data['crtype'] = '';
         $data['sub_model'] = '';
         $data['other_info'] = '';
         $data['bgcolor'] = 'bg-blue-2';
@@ -162,7 +159,7 @@ class entrycarmodel
                 $this->logger->sbcmasterlog(
                     $data['carid'],
                     $config,
-                    'CREATE CAR MODEL' . ' - MODEL: ' . $data['model'] . ' - YEAR: ' . $data['year'] . ' - LINE' . $line
+                    'CREATE CAR MODEL' . ' - MODEL: ' . $data['model'] . ' - YEAR: ' . $data['cryear'] . ' - LINE' . $line
                 );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
@@ -178,7 +175,7 @@ class entrycarmodel
                 $this->logger->sbcmasterlog(
                     $data['carid'],
                     $config,
-                    'UPDATE CAR MODEL' . ' - MODEL: ' . $data['model'] . ' - YEAR: ' . $data['year'] . ' - LINE' . $row['line'],
+                    'UPDATE CAR MODEL' . ' - MODEL: ' . $data['model'] . ' - YEAR: ' . $data['cryear'] . ' - LINE' . $row['line'],
                     1
                 );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
@@ -196,7 +193,7 @@ class entrycarmodel
         $this->logger->sbcmasterlog(
             $carid,
             $config,
-            'DELETE CAR MODEL' . ' - MODEL: ' . $row['model'] . ' - YEAR: ' . $row['year'] . ' - LINE' . $row['line']
+            'DELETE CAR MODEL' . ' - MODEL: ' . $row['model'] . ' - YEAR: ' . $row['cryear'] . ' - LINE' . $row['line']
         );
 
         $qry = "delete from " . $this->table . " where carid=? and line=?";
@@ -243,7 +240,7 @@ class entrycarmodel
                     $this->logger->sbcmasterlog(
                         $config['params']['tableid'],
                         $config,
-                        'INSERT CAR MODEL' . ' - MODEL: ' . $data[$key]['model'] . ' - YEAR: ' . $data[$key]['year'] . ' - LINE' . $checkline
+                        'INSERT CAR MODEL' . ' - MODEL: ' . $data[$key]['model'] . ' - YEAR: ' . $data[$key]['cryear'] . ' - LINE' . $checkline
                     );
                 } else {
                     $data2['editby']     = $config['params']['user'];
@@ -253,7 +250,7 @@ class entrycarmodel
                     $this->logger->sbcmasterlog(
                         $config['params']['tableid'],
                         $config,
-                        'UPDATE CAR MODEL' . ' - MODEL: ' . $data[$key]['model'] . ' - YEAR: ' . $data[$key]['year'] . ' - LINE' . $data[$key]['line'],
+                        'UPDATE CAR MODEL' . ' - MODEL: ' . $data[$key]['model'] . ' - YEAR: ' . $data[$key]['cryear'] . ' - LINE' . $data[$key]['line'],
                         1
                     );
                 }

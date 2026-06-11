@@ -309,6 +309,8 @@ class pay_slip
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
     $filter   = "";
     $filter1   = "";
@@ -318,12 +320,15 @@ class pay_slip
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter1 .= " and emp.deptid = $deptid";
-    }
-    if ($divid != 0) {
-      $filter2 .= " and emp.divid = $divid";
-    }
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and emp.deptid = $deptid";
+    }}
+
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter .= " and emp.divid = $divid";
+    }}
 
     if ($batchid != 0) {
       $filter2 .= " and p.batchid = " . $batchid . " ";
@@ -528,6 +533,8 @@ class pay_slip
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
     $branch     = $config['params']['dataparams']['dbranchname'];
     $branchid     = $config['params']['dataparams']['branchid'];
@@ -545,10 +552,10 @@ class pay_slip
       $filter2 .= " and emp.branchid = $branchid";
     }
 
-    if ($deptid != 0 && $deptid != "") {
+    if ($deptid != 0 && $deptname != "") {
       $filter1 .= " and emp.deptid = $deptid";
     }
-    if ($divid != 0 && $divid != "") {
+    if ($divid != 0 && $divname != "") {
       $filter2 .= " and emp.divid = $divid";
     }
 
@@ -626,6 +633,8 @@ class pay_slip
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
     $filter   = "";
     $filter1   = "";
@@ -638,13 +647,13 @@ class pay_slip
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and emp.deptid = $deptid";
     }
     if ($batchid != 0) {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
-    if ($divid != '') {
+    if ($divid != 0  && $divname != '') {
       $filter1 .= " and emp.divid = " . $divid . " ";
     }
 
@@ -697,6 +706,8 @@ class pay_slip
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
     $filter   = "";
     $filter1   = "";
@@ -706,13 +717,13 @@ class pay_slip
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and emp.deptid = $deptid";
     }
     if ($batchid != 0) {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
-    if ($divid != '') {
+    if ($divid != 0 && $divname != '') {
       $filter1 .= " and emp.divid = " . $divid . " ";
     }
 
@@ -4268,9 +4279,9 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $Tot = 0;
     $Grandtot = 0;
 
-    if (empty($result)) {
-      return $this->othersClass->emptydata($config);
-    }
+    // if (empty($result)) {
+    //   return $this->othersClass->emptydata($config);
+    // }
 
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->DEFAULT_Header($config);

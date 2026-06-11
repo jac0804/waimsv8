@@ -275,6 +275,8 @@ class ap_setup
     $fcenter    = $config['params']['dataparams']['center'];
     $deptid = $config['params']['dataparams']['ddeptname'];
     $dept = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
+
 
     $filter = "";
 
@@ -288,9 +290,13 @@ class ap_setup
       $filter .= " and cntnum.center = '$fcenter'";
     }
 
-    if ($deptid != "") {
-      $filter .= " and head.deptid = $dept";
-    }
+    // if ($deptid != "") {
+    //   $filter .= " and head.deptid = $dept";
+    // }
+    if ($deptname != "") {
+        if ($deptid != 0) {
+            $filter .= " and head.deptid = $deptid";
+    }}
 
     $query = "select docno, createby, date(dateid) as dateid, postdate, 
                      GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, sum(db) as debit, sum(cr) as credit, rem

@@ -96,12 +96,14 @@ class employee_movement_report
         $filter   = "";
         $divid     = $config['params']['dataparams']['divid'];
         $divrep    = $config['params']['dataparams']['divrep'];
+        $divname   = $config['params']['dataparams']['divname'];
         $reporttype = $config['params']['dataparams']['reporttype'];
         $year = $config['params']['dataparams']['year'];
 
-        if ($divrep != '') {
+        if ($divname != '') {
+        if ($divid != 0) {
             $filter .= " and emp.divid = $divid";
-        }
+        }}
 
         if ($reporttype == 0) {
             $date = 'emp.hired';

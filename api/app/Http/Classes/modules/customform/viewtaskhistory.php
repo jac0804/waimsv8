@@ -162,7 +162,7 @@ class viewtaskhistory
     $qry = " select '$trno' as tmtrno, '$line' as tmline,    '' as createby, '' as createdate, 'Low' as selectprefix,
             (select sum(tothrs)
              FROM ( select round(timestampdiff(second,dt.createdate,if(dt.donedate is null, current_timestamp, dt.donedate)) / 3600,2) as tothrs
-             from hdailytask as dt  $filter  ) as hrs) as hours, " . $tmuserid . " as tmuserid,
+             from hdailytask as dt  $filter and dt.ischecker =0  ) as hrs) as hours, " . $tmuserid . " as tmuserid,
              date(dt.donedate) as donedate,
              (select count(dt.trno) as returncount
               from hdailytask as dt  $filter and dt.statid=6) as totalreturn,

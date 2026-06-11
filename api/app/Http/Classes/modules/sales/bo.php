@@ -144,7 +144,7 @@ class bo
 
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $cols[$liststatus]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     } else {
       $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
@@ -327,6 +327,7 @@ class bo
          head.yourref, head.ourref';
         $orderby = "order by docno desc, dateid desc";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $lstat = "ifnull(stat.status,'DRAFT')";
         $ljoin = 'left join trxstatus as stat on stat.line=num.statid';

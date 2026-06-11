@@ -50,7 +50,11 @@ class tm
     'rem',
     'amount',
     'checkerid',
-    'reseller'
+    'reseller',
+    'phperc',
+    'impperc',
+    'devperc',
+    'sjdate'
   ];
   private $except = ['systype', 'tasktype', 'requestby'];
   public $showfilteroption = true;
@@ -97,7 +101,7 @@ class tm
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'requestby', 'rem'];
+    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'requestby', 'category', 'rem'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -105,8 +109,11 @@ class tm
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
     $cols[$statname]['label'] = 'Status';
+    $cols[$statname]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listdate]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;';
-    $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+    $cols[$listclientname]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
+    $cols[$requestby]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+    $cols[$category]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
 
     return $cols;
   }
@@ -158,12 +165,13 @@ class tm
     }
 
     $qry = "select h.trno,h.trno as clientid,c.clientid as custid,
-            c.client,c.clientname,left(h.dateid,10) as dateid,
+            c.client,c.clientname,left(h.dateid,10) as dateid,r.category,
             u.clientname as requestby,case h.status when 0 then 'Draft' when 1 then 'Open' else 'Completed' end as statname, h.rem
             from tmhead as h 
              
           left join client as c on c.clientid = h.clientid 
-          left join client as u on u.clientid = h.requestby  
+          left join client as u on u.clientid = h.requestby
+          left join reqcategory as r on r.line = h.tasktype  
           where 1=1  $filter $filterdate $filtersearch order by h.dateid desc " . $l;
     $data = $this->coreFunctions->opentable($qry);
 
@@ -191,7 +199,9 @@ class tm
 
   public function createTab($access, $config)
   {
-    $tab = ['tableentry' => ['action' => 'taskentry', 'lookupclass' => 'entrytask', 'label' => 'DETAILS']];
+    $tab['tableentry'] = ['action' => 'taskentry', 'lookupclass' => 'entrytask', 'access' => 'view', 'label' => 'DETAILS'];
+    $tab['pendingso'] = ['action' => 'tableentry', 'lookupclass' => 'entrypendingso', 'access' => 'view', 'label' => 'PENDING SO'];
+    $tab['generatesj'] = ['action' => 'tableentry', 'lookupclass' => 'entrygeneratesj', 'access' => 'view', 'label' => 'GENERATED SJ'];
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
@@ -247,7 +257,10 @@ class tm
     data_set($col3, 'lblsubmit.label', 'CLOSED');
     data_set($col3, 'lblsubmit.style', 'font-weight:bold; font-size:30px;');
 
-    return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+    $fields = ['phperc', 'impperc', 'devperc', 'sjdate'];
+    $col4 = $this->fieldClass->create($fields);
+
+    return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
   public function newclient($config)
@@ -300,6 +313,11 @@ class tm
     $data[0]['checkerid'] = 0;
     $data[0]['reseller'] = '';
 
+    $data[0]['phperc'] = 50;
+    $data[0]['impperc'] = 40;
+    $data[0]['devperc'] = 10;
+    $data[0]['sjdate'] = null;
+
 
     return $data;
   }
@@ -311,7 +329,7 @@ class tm
     $trno = $config['params']['clientid'];
     $qry = "select h.trno as clientid,h.trno,c.client,c.clientname,h.dateid,ifnull(e.clientname,'') as empname,
     h.rem,i.itemid as sysid,i.itemname as systype,r.line as taskid,
-    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker,ifnull(h.reseller,'') as reseller
+    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker,ifnull(h.reseller,'') as reseller,format(h.phperc, 2) as phperc,format(h.impperc, 2) as impperc,format(h.devperc, 2) as devperc,date(h.sjdate) as sjdate
     from tmhead as h 
     left join client as c on c.clientid = h.clientid 
     left join client as e on e.clientid = h.requestby

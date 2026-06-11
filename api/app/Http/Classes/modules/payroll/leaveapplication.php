@@ -333,6 +333,13 @@ class leaveapplication
     $data['remarks'] = $head['remarks'];
 
 
+    $date = date('Y-m-d', strtotime($data['effectivity']));
+    $result = $this->checking($config, $date);
+
+    if ($result) {
+      return ['status' => false, 'msg' => 'You already have application at the same date - ' . $date];
+    }
+
     $bal = $this->coreFunctions->datareader("select bal as value from leavesetup where trno=" . $head['trno']);
 
     if ($head['hours'] <= $bal) {
@@ -401,6 +408,22 @@ class leaveapplication
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
-
-
+  public function checking($config, $date)
+  {
+    $empid = $config['params']['head']['empid'];
+    $dis = ['D'];
+    $status = ['A', 'E'];
+    $data =  $this->coreFunctions->opentable("select status,status2 from $this->stock where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
+    $s = false;
+    if (!empty($data)) {
+      if (!in_array($data[0]->status, $dis) || !in_array($data[0]->status2, $dis)) {
+        $s = true;
+      } else {
+        if (!in_array($data[0]->status, $status) && !in_array($data[0]->status2, $status)) {
+          $s = true;
+        }
+      }
+    }
+    return $s;
+  }
 } //end class

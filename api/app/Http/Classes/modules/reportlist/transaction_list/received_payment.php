@@ -441,7 +441,7 @@ class received_payment
 
     $query = "select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
     concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,detail.rem,detail.ref,
-    agent.client as agentcode, agent.clientname as agentname, head.terms " . $addfield . "
+    agent.client as agentcode, agent.clientname as agentname, head2.terms " . $addfield . "
     from lahead as head
     left join ladetail as detail on detail.trno=head.trno left join client as hclient on hclient.client=head.client
     left join client as dclient on dclient.client=detail.client
@@ -449,18 +449,20 @@ class received_payment
     left join cntnum on cntnum.trno=head.trno
     left join client as agent on agent.client = head.agent
     left join client as customer on customer.client = head.client
-    where head.doc='cr' and head.dateid between '$start' and '$end' $filter 
+    left join lahead as head2 on head2.trno = detail.refx
+    where head.doc='cr' and date(head.dateid) between '$start' and '$end' $filter 
     union all
     select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
     concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,detail.rem,detail.ref,
-    agent.client as agentcode, agent.clientname as agentname, head.terms " . $addfield . "
+    agent.client as agentcode, agent.clientname as agentname, head2.terms " . $addfield . "
     from glhead as head
     left join gldetail as detail on detail.trno=head.trno left join client as hclient on hclient.clientid=head.clientid
     left join client as dclient on dclient.clientid=detail.clientid left join coa on coa.acnoid=detail.acnoid
     left join cntnum on cntnum.trno=head.trno
     left join client as agent on agent.clientid = head.agentid
     left join client as customer on customer.clientid = head.clientid
-    where head.doc='cr' and head.dateid between '$start' and '$end' $filter
+    left join glhead as head2 on head2.trno = detail.refx
+    where head.doc='cr' and date(head.dateid) between '$start' and '$end' $filter
     order by docno,cr";
     // var_dump($query);
     return $query;
@@ -843,11 +845,8 @@ class received_payment
     $prefix     = $config['params']['dataparams']['approved'];
 
     $str = '';
-    if ($companyid == 21) { // kinggoerge
-      $layoutsize = '1500';
-    } else {
-      $layoutsize = '1200';
-    }
+    $layoutsize = '1200';
+
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid ";
@@ -881,17 +880,18 @@ class received_payment
     if ($companyid == 21) { //kinggeorge
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Transaction date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Docno', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Customer', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Agent', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Transaction date', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Docno', '110', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Customer', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Agent', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Date', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Check#', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Account', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Account', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Title', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Customer/Supplier', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Debit', '150', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('Credit', '150', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Debit', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Credit', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Notes', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Reference', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->endrow();
@@ -900,6 +900,8 @@ class received_payment
 
     return $str;
   }
+
+
 
   public function reportDefaultLayout_DETAILED($config)
   {
@@ -2160,6 +2162,74 @@ class received_payment
     return $str;
   }
 
+  public function kinggoerge_Header_detailed($config)
+  {
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $filterusername  = $config['params']['dataparams']['username'];
+    $prefix     = $config['params']['dataparams']['approved'];
+
+    $str = '';
+    $layoutsize = '1600';
+
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= '<br/><br/>';
+    $str .= $this->reporter->begintable($layoutsize);
+    if ($filterusername != "") {
+      $user = $filterusername;
+    } else {
+      $user = "ALL USERS";
+    }
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Received Payment Report Detailed', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow(NULL, null, false, $border, '', $font, $fontsize, '', '', '', '');
+    $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('User: ' . $user, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Prefix: ' . $prefix, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', 'false', '8px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Transaction date', '90', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Docno', '110', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Customer', '110', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Agent', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Date', '90', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Check#', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Account', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Title', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Customer/Supplier', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Debit', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Credit', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Notes', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Reference', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Terms', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
   public function reportKingGeorgeLayout_DETAILED($config)
   {
     $result = $this->reportDefault($config);
@@ -2177,7 +2247,7 @@ class received_payment
     $this->reporter->linecounter = 0;
 
     $str = '';
-    $layoutsize = '1500';
+    $layoutsize = '1600';
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid ";
@@ -2187,7 +2257,7 @@ class received_payment
     }
 
     $str .= $this->reporter->beginreport($layoutsize);
-    $str .= $this->default_header_detailed($config);
+    $str .= $this->kinggoerge_Header_detailed($config);
 
 
     // $str .= $this->reporter->printline();
@@ -2205,32 +2275,27 @@ class received_payment
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->dateid, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->docno, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->hclientname, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->agentname, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->postdate, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->dateid, '90', null, false, '10px solid ', '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->docno, '110', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '10', null, false, '10px solid ', '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->hclientname, '110', null, false, '10px solid ', '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->agentname, '120', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->postdate, '90', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->checkno, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->acno, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->acno, '70', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->acnoname, '200', null, false, '10px solid ', '', 'LT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->dclient, '120', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->db, 2), '150', null, false, '10px solid ', '', 'RT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->cr, 2), '150', null, false, '10px solid ', '', 'RT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($data->db, 2), '100', null, false, '10px solid ', '', 'RT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($data->cr, 2), '100', null, false, '10px solid ', '', 'RT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->rem, '150', null, false, '10px solid ', '', 'LT', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->ref . '/' . $data->terms, '130', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->ref, '130', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->terms, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();
 
 
         $str .= $this->reporter->endtable();
         $i++;
-        if ($this->reporter->linecounter == $page) {
-          $str .= $this->reporter->endtable();
-          $str .= $this->reporter->page_break();
-          $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
-          if (!$isfirstpageheader) $str .= $this->default_header_detailed($config);
-          $page = $page + $count;
-        } //end if
       }
     }
 

@@ -175,6 +175,9 @@ class daily_time_record
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $sectid = $config['params']['dataparams']['sectid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
+    $sectname     = $config['params']['dataparams']['sectname'];
     $reportlayout = $config['params']['dataparams']['reporttype'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -188,14 +191,14 @@ class daily_time_record
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0 && $deptid != "") {
+    if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and emp.deptid = $deptid";
     }
-    if ($divid != 0 && $divid != "") {
+    if ($divid != 0 && $divname != '') {
       $filter2 .= " and emp.divid = $divid";
     }
 
-    if ($sectid != "") {
+    if ($sectid != 0 && $sectname != '') {
       $filter3 .= " and emp.sectid = $sectid";
     }    
 

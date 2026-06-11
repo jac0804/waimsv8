@@ -146,8 +146,13 @@ class pl
 
 
     $fontsize = 15;
-    $font = "Courier";
-    $fontbold = "CourierB";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
 
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
@@ -225,12 +230,12 @@ class pl
       $y1 = (float)208; //184 //192
       PDF::SetXY($x, $y1);
       PDF::SetCellPaddings(4, 4, 4, 4);
-      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(30, 0, '', '', 'C', false, 0);
       PDF::MultiCell(85, 0, 'QTY', '', 'R', false, 0);
-      // PDF::MultiCell(5, 0, '', '', 'C', false, 0);
+      PDF::MultiCell(25, 0, '', '', 'C', false, 0);
       PDF::MultiCell(100, 0, 'UOM', '', 'L', false, 0);
-      PDF::MultiCell(505, 0, 'ITEMNAME', '', 'L', false, 1);
+      PDF::MultiCell(480, 0, 'ITEMNAME', '', 'L', false, 1);
     }
 
     PDF::SetCellPaddings(0, 0, 0, 0);
@@ -245,19 +250,25 @@ class pl
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $count = $page = 30; //30 45
+    $count = $page = 45; //30 45
     $totalext = 0;
 
 
     $border = "1px solid ";
     $fontsize = 15;
-    $font = "Courier";
-    $fontbold = "CourierB";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
 
     $this->roosevelt_pl_header_PDF($params, $data, $tablehead = 0);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
     // PDF::SetCellPaddings(0, 0, 0, 0); //left ,top, right,bottom
+    // PDF::SetCellPaddings(0, 1, 0, 0);
     $rowCount = 0;
     $countarr = 0;
     $y = (float)230;
@@ -269,7 +280,7 @@ class pl
         $maxrow = 1;
         $itemname = $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 2);
-        $uom = $data[$i]['uom'];
+        $uom = $data[$i]['uom']; //$data[$i]['uom']
         $sizeid = $data[$i]['sizeid'];
 
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
@@ -283,9 +294,9 @@ class pl
           PDF::SetXY($x, $y);
           PDF::MultiCell(30, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(85, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //(isset($arr_qty[$r]) ? $arr_qty[$r] : '')
-          // PDF::MultiCell(5, 0, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(25, 0, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(505, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(480, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           $y = PDF::getY();
           $rowCount++;
           if ($rowCount >= $page && $i < count($data) - 1) {
@@ -300,20 +311,21 @@ class pl
         }
       }
     }
-    // if ($rowCount > 36 && $rowCount <= $count) {
-    //   $this->continuation_footer($params, $data);
-    //   $this->default_footer3($params, $data);
-    //   $rowCount = 0;
-    //   $y = (float)230;
-    //   $tablehead = 1;
-    //   $this->roosevelt_pl_header_PDF($params, $data, $tablehead);
-    //   PDF::MultiCell(0, 0, "\n");
-    //   $this->default_footer1($params, $data);
-    //   $this->default_footer2($params, $data);
-    // } else { //36 pababa
-    $this->default_footer1($params, $data);
-    $this->default_footer2($params, $data);
-    // }
+    if ($rowCount > 30 && $rowCount <= $count) { //kapag > 30 and less then or equal 45 
+      $this->continuation_footer($params, $data);
+      $this->default_footer3($params, $data);
+      $rowCount = 0;
+      $y = (float)230;
+      $tablehead = 1;
+      $this->roosevelt_pl_header_PDF($params, $data, $tablehead);
+      // PDF::SetCellPaddings(0, 1, 0, 0);
+      PDF::MultiCell(0, 0, "\n");
+      $this->default_footer1($params, $data);
+      $this->default_footer2($params, $data);
+    } else { //36 pababa
+      $this->default_footer1($params, $data);
+      $this->default_footer2($params, $data);
+    }
 
 
     return PDF::Output($this->modulename . '.pdf', 'S');
@@ -324,8 +336,13 @@ class pl
   public function default_footer1($params, $data)
   {
     $fontsize = 15;
-    $font = "Courier";
-    $fontbold = "CourierB";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
 
     $invoices = [];
     $totalctns = 0;
@@ -339,24 +356,33 @@ class pl
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', ''); //space
 
+    PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
+    PDF::MultiCell(90, 0,  '', 'T', 'R', false, 0);
+    PDF::MultiCell(85, 0,  '', 'T', 'L', false, 0);
+    PDF::MultiCell(515, 0,  '', '', 'L', false, 1);
+
     PDF::SetFont($font, '', $fontsize);
     $invoicesstring = implode(" , ", array_unique($invoices));
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
-    PDF::MultiCell(90, 0,  number_format($totalctns, 2), 'T', 'R', false, 0);
-    PDF::MultiCell(85, 0,  ' ' . 'ctns.', 'T', 'L', false, 0);
-    PDF::MultiCell(515, 0,  '', '', 'L', false, 1);
+    PDF::MultiCell(80, 0,  number_format($totalctns, 2), '', 'R', false, 0);
+    PDF::MultiCell(25, 0,  '', '', 'L', false, 0);
+    PDF::MultiCell(85, 0,  ' ' . 'ctns.', '', 'L', false, 0);
+    PDF::MultiCell(500, 0,  '', '', 'L', false, 1);
 
 
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
-    PDF::MultiCell(690, 0, 'List of invoices', '', 'L', false, 1);
+    PDF::MultiCell(690, 0, 'List of Delivery Receipts', '', 'L', false, 1);
 
-    PDF::SetFont($font, '', 1);
+    PDF::SetFont($font, '', 8);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
     PDF::MultiCell(135, 0,  '', 'B', 'L', false, 0);
     PDF::MultiCell(555, 0,  '', '', 'L', false, 1);
+
+    PDF::SetFont($font, '', 5);
+    PDF::MultiCell(720, 0, '', ''); //space
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(30, 0,  '', '', 'L', false, 0);
@@ -366,18 +392,27 @@ class pl
   public function default_footer2($params, $data)
   {
     $fontsize = 15;
-    $font = "Courier";
-    $fontbold = "CourierB";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
 
     $totalext = 0;
     foreach ($data as $row) {
       $totalext += $row['ext'];
     }
 
-    PDF::SetY(870);
+    PDF::SetY(810);
+    //
+    PDF::SetLineStyle(array('width' => 0.4, 'cap' => 'butt', 'join' => 'miter', 'dash' => 3));
     PDF::MultiCell(720, 0, '', 'T', 'L', false, 1);
 
-    PDF::SetY(875);
+    PDF::SetLineStyle(array('width' => 0.4, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0));
+
+    PDF::SetY(825);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(170, 0, 'VIA : JADES CARGO', '', 'L', false, 0);
@@ -387,15 +422,20 @@ class pl
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(90, 0,  number_format($totalext, 2), '', 'R', false, 1);
 
-    PDF::SetY(890);
+    PDF::SetY(855);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(690, 0, 'Received in good order & condition', '', 'L', false, 1, '', '');
     // PDF::MultiCell(400, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::SetY(940);
+    PDF::SetY(920);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
-    PDF::MultiCell(250, 0, 'Signature over printed name', 'T', 'C', false, 0, '', '');
+    PDF::MultiCell(250, 0, '', 'T', 'C', false, 0, '', '');
+    PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
+
+    PDF::SetY(925);
+    PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
+    PDF::MultiCell(250, 0, 'Signature over printed name', '', 'C', false, 0, '', '');
     PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
 
     PDF::SetY(962);
@@ -411,7 +451,13 @@ class pl
   public function default_footer3($params, $data)
   {
     $fontsize = 15;
-    $font = "Courier";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
     // Format with AM/PM
     $printeddate = $this->othersClass->getCurrentTimeStamp();
     $datetime = new DateTime($printeddate);
@@ -433,10 +479,16 @@ class pl
   public function continuation_footer($params, $data)
   {
     $fontsize = 15;
-    $font = "Courier";
+    $font = "";
+    $fontbold = "";
+
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/centurygothic_bold.ttf');
+    }
     PDF::SetFont($font, '', $fontsize);
     // PDF::SetY(945);
     PDF::MultiCell(0, 0, "\n");
-    PDF::MultiCell(620, 0,  "**CONTINUED ON NEXT PAGE**", '', 'C', false, 1, '', '');
+    PDF::MultiCell(620, 0,  "* * * * * CONTINUATION ON NEXT PAGE * * * * *", '', 'C', false, 1, '', '');
   }
 }

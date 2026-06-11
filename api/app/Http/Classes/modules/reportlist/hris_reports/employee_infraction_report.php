@@ -103,18 +103,23 @@ class employee_infraction_report
   {
     // QUERY
     $divid     = $config['params']['dataparams']['divid'];
+    $divname   = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $year1       = $config['params']['dataparams']['year'];
 
     $filter   = "";
 
 
-    if ($divid != 0) {
-      $filter .= " and e.divid = $divid";
-    }
-    if ($deptid != 0) {
-      $filter .= " and dept.clientid = $deptid";
-    }
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter .= " and e.divid = $divid";
+    }}
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and e.deptid = $deptid";
+    }}
+
     if ($year1 != 0) {
       $filter .= " and year(dp.dateid) = $year1";
     }

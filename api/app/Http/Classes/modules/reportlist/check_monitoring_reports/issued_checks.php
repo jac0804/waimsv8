@@ -112,6 +112,7 @@ class issued_checks
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -651,14 +652,14 @@ class issued_checks
 
     $str = '';
 
-     
-      $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->letterhead($center1, $username, $params);
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
 
-    
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center1, $username, $params);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
 
     $str .= '<br/><br/>'; # new 
 
@@ -736,7 +737,7 @@ class issued_checks
     $str .= $this->reporter->begintable();
 
     foreach ($data as $key => $value) {
-      $amtt =0;
+      $amtt = 0;
       $cnt1 += 1;
       if ($value->amount != 0) {
         if ($value->amount > 0) {

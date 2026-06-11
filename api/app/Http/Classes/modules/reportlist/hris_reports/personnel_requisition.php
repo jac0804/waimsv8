@@ -212,14 +212,19 @@ class personnel_requisition
     } else {
       $client     = $config['params']['dataparams']['client'];
       $deptid     = $config['params']['dataparams']['deptid'];
+      $deptname   = $config['params']['dataparams']['deptname'];
       $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
       $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
       if ($client != "") {
         $filter .= " and em.client = '$client'";
       }
-      if ($deptid != 0) {
-        $filter1 .= " and d.clientid = $deptid";
-      }
+      // if ($deptid != 0) {
+      //   $filter1 .= " and d.clientid = $deptid";
+      // }
+      if ($deptname !=''){
+          if ($deptid != 0) {
+            $filter1 .= " and d.clientid = $deptid";
+      }}
       $query = "select '' as client,head.docno,date(head.dateid) as dateid, head.dept, personnel, dateneed, job, 
                      head.class, headcount, hpref, agerange,gpref, `rank`, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,d.clientname as deptname, em.clientname as personnelname, head.empid, jh.jobtitle 
               from personreq as head

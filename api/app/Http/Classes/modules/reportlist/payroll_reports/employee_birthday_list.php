@@ -123,23 +123,27 @@ class employee_birthday_list
     {
         $companyid = $config['params']['companyid'];
         $deptid = $config['params']['dataparams']['deptid'];
+        $deptname = $config['params']['dataparams']['department'];
         $month1 = $config['params']['dataparams']['bmonth'];
         $month2 = $config['params']['dataparams']['bmonth2'];
         $divid = $config['params']['dataparams']['divid'];
+        $divname = $config['params']['dataparams']['divname'];
         $sectid = $config['params']['dataparams']['sectid'];
         $sectname = $config['params']['dataparams']['sectname'];
         $emptype = $config['params']['dataparams']['type'];
 
         $filter = '';
         $query = '';
-        
-        if ($deptid != '') {
-            $filter .= " and e.deptid = $deptid";
-        }
 
-        if ($divid != '') {
-            $filter .= " and e.divid = $divid";
-        }
+        if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and e.deptid = $deptid";
+        }}
+
+        if ($divname != '') {
+            if ($divid != 0) {
+                $filter .= " and e.divid = $divid";
+        }}
 
         if ($sectname != '') {
         if ($sectid != 0) {

@@ -79,8 +79,14 @@ class MirrorMasters extends Command
                 $this->posClass->masterfilemirror("itemcategory", ["line"]);
                 $this->posClass->masterfilemirror("itemsubcategory", ["line"]);
 
-                if ($params['companyid'] == 59) { //roosevelt
-                    $this->posClass->transactionsmirror("sj");
+                switch ($params['companyid']) {
+                    case 59: //roosevelt
+                        $this->posClass->transactionsmirror("SJ");
+                        break;
+
+                    case 40: //cdo aims
+                        $this->posClass->transactionsmirror("");
+                        break;
                 }
 
                 $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
@@ -88,7 +94,7 @@ class MirrorMasters extends Command
                 $this->coreFunction->execqry("delete from pos_log where e_detail='DLOCK' and date(date_executed)<'" . $currentdate . "'");
             } else {
 
-                $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log where doc='MIRROR' order by e_id desc limit 1");
+                $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log where e_detail='MIRROR' order by e_id desc limit 1");
                 if ($lastlog != '') {
                     $lastlog = Carbon::parse($lastlog);
                     $current_logtime = date('Y-m-d H:i:s');

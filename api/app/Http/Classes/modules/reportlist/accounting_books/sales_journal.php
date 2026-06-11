@@ -84,6 +84,7 @@ class sales_journal
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -499,14 +500,14 @@ class sales_journal
     switch ($reporttype) {
       case 0:
 
-       
-          $str .= $this->reporter->begintable('800');
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->letterhead($center1, $username, $params);
-          $str .= $this->reporter->endrow();
-          $str .= $this->reporter->endtable();
 
-      
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center1, $username, $params);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+
         $str .= '<br/><br/>';
         $str .= $this->reporter->begintable('800', null, '', '1px solid ', '', '', $font, '', '', '', '');
         $str .= $this->reporter->startrow();
@@ -542,13 +543,13 @@ class sales_journal
 
       case 1:
 
-       
-         $str .= $this->reporter->begintable('800');
-         $str .= $this->reporter->startrow();
-         $str .= $this->reporter->letterhead($center1, $username, $params);
-         $str .= $this->reporter->endrow();
-         $str .= $this->reporter->endtable();
-        
+
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center1, $username, $params);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
 
         $str .= '<br/><br/>';
 
@@ -584,13 +585,13 @@ class sales_journal
 
       case 2:
 
-       
-            $str .= $this->reporter->begintable('800');
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->letterhead($center1, $username, $params);
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
-      
+
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center1, $username, $params);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
 
         $str .= '<br/><br/>';
 
@@ -1556,12 +1557,12 @@ class sales_journal
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($value->dateid, null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, '', '', '');
       $str .= $this->reporter->col($invoice, null, null, '', '1px solid', 'LTRB', 'C', $font, $fontsize10, '', '', '');
-      if($netamt ==0){
-        $str .= $this->reporter->col($value->clientname.'- CANCELLED', null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
-      }else{
+      if ($netamt == 0) {
+        $str .= $this->reporter->col($value->clientname . '- CANCELLED', null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
+      } else {
         $str .= $this->reporter->col($value->clientname, null, null, '', '1px solid', 'LTRB', 'L', $font, $fontsize10, '', '', '');
       }
-      
+
       $str .= $this->reporter->col($amt == 0 ? '-' : number_format($amt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
       $str .= $this->reporter->col($vatamt == 0 ? '-' : number_format($vatamt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
       $str .= $this->reporter->col($netamt == 0 ? '-' : number_format($netamt, 2), null, null, '', '1px solid', 'LTRB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);

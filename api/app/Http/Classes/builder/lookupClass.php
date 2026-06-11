@@ -18,11 +18,12 @@ use App\Http\Classes\builder\txtfieldClass;
 use App\Http\Classes\lookup\poslookup;
 use App\Http\Classes\lookup\hmslookup;
 use App\Http\Classes\lookup\barangaylookup;
-use App\Http\Classes\lookup\autoservelookup;
+use App\Http\Classes\lookup\autoservlookup;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Classes\Logger;
 use App\Http\Classes\filesaving;
+use App\Http\Classes\common\payrollcommon;
 use DateTime;
 use DateInterval;
 
@@ -45,7 +46,8 @@ class lookupClass
   private $poslookup;
   private $hmslookup;
   private $barangaylookup;
-  private $autoservelookup;
+  private $autoservlookup;
+  private $payrollcommon;
 
 
   public function __construct()
@@ -66,7 +68,8 @@ class lookupClass
     $this->poslookup = new poslookup;
     $this->hmslookup = new hmslookup;
     $this->barangaylookup = new barangaylookup;
-    $this->autoservelookup = new autoservelookup;
+    $this->autoservlookup = new autoservlookup;
+    $this->payrollcommon = new payrollcommon;
   }
 
   //declaration of function to avoid double function
@@ -86,14 +89,16 @@ class lookupClass
         break;
       case 'lookupclient':      
       case 'lookupsqsupplier':
+      case 'lookuphbranch':
         switch ($config['params']['lookupclass']) {
           case "hbranch":
+          case 'lookupbrancharea':
             if (strpos($systemtype, "HRIS") !== false) {
               return $this->hrislookup->lookuphbranch($config);
             } else {
               return $this->lookupclient($config);
             }
-
+            break;
           default:
             return $this->lookupclient($config);
             break;
@@ -1884,13 +1889,26 @@ class lookupClass
         break;
 
         // lookup auto service
-        case 'getjobsetup':
-          return $this->getautojobsetup($config);
-          break;
-
+        
       case 'lookupcarmake':
-      return $this->autoservelookup->lookupcarmake($config);
+      return $this->autoservlookup->lookupcarmake($config);
       break;
+
+      case 'lookupledgercarmake':
+      return $this->autoservlookup->lookupledgercarmake($config);
+      break;
+      case 'getjob':
+          return $this->autoservlookup->getautojob($config);
+      break;
+
+      case 'getvehicle':
+          return $this->autoservlookup->getvehicle($config);
+      break;
+
+      case 'lookupreimbursement':
+      return $this->lookupreimbursement($config);
+      break;
+
 
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
@@ -3998,7 +4016,7 @@ class lookupClass
                     $condition = " where emp.level IN $emplvl and emp.isactive=1 ";
                     if ($config['params']['companyid'] == 51 || $config['params']['companyid'] == 53) { // ulitc | camera
                       $adminid = $config['params']['adminid'];
-                      $check = $this->othersClass->checkapproversetup($config, $adminid, '', 'emp');
+                      $check = $this->payrollcommon->checkapproversetup($config, $adminid, '', 'emp');
 
                       if ($check['filter'] != "") {
                         $condition .= $check['filter'];
@@ -4158,7 +4176,7 @@ class lookupClass
             if ($config['params']['doc'] == '') {
               $adminid = $config['params']['adminid'];
               if ($config['params']['path'] == 'payroll_portal_reports' || $config['params']['name'] == 'employee_listing') {
-                $check = $this->othersClass->checkapproversetup($config, $adminid, '', 'employee');
+                $check = $this->payrollcommon->checkapproversetup($config, $adminid, '', 'employee');
                 if ($check['filter'] != "") {
                   $condition .= $check['filter'];
                 }
@@ -5212,6 +5230,16 @@ class lookupClass
         array_push($cols, array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'));
         array_push($cols, array('name' => 'client', 'label' => 'Customer Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'));
         array_push($cols, array('name' => 'clientname', 'label' => 'Customer Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
+        if ($config['params']['companyid'] == 63){ // ericco
+        array_push($cols, array('name' => 'registername', 'label' => 'Company Name', 'align' => 'left', 'field' => 'registername', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'tin', 'label' => 'TIN #', 'align' => 'left', 'field' => 'tin', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'groupid', 'label' => 'Group', 'align' => 'left', 'field' => 'groupid', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'agentname', 'label' => 'Agent Name', 'align' => 'left', 'field' => 'agentname', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'area', 'label' => 'Area', 'align' => 'left', 'field' => 'area', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'province', 'label' => 'Province', 'align' => 'left', 'field' => 'province', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'region', 'label' => 'Region', 'align' => 'left', 'field' => 'region', 'sortable' => true, 'style' => 'font-size:16px;'));
+        }
         break;
       case 'sqcustomer':
       case 'srcustomer':
@@ -5272,6 +5300,9 @@ class lookupClass
         array_push($cols, array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
         if ($config['params']['companyid'] == 63) { //ericco
           array_push($cols, array('name' => 'registername', 'label' => 'Company Name', 'align' => 'left', 'field' => 'registername', 'sortable' => true, 'style' => 'font-size:16px;'));
+          if ($config['params']['lookupclass'] == 'customer' || $config['params']['lookupclass'] == 'allclienthead') {
+            array_push($cols, array('name' => 'tin', 'label' => 'TIN #', 'align' => 'left', 'field' => 'tin', 'sortable' => true, 'style' => 'font-size:16px;'));
+          }
         }
         array_push($cols, array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'));
 
@@ -5340,7 +5371,7 @@ class lookupClass
     switch ($config['params']['lookupclass']) {
       case 'customerdr':
         $qry = "select head.trno,head.docno,left(head.dateid,10) as dateid,left(head.due,10) as due,
-            client.client,client.clientname,head.address,head.shipto,
+            client.client,client.clientname,head.address,head.shipto,client.tin,client.registername, client.province,client.region,client.area,
             head.yourref,head.ourref,head.terms,head.trnxtype,head.cur,head.forex,head.rem,head.vattype,
             head.agentid,head.tax,ifnull(agent.client,'') as agent,ifnull(agent.clientname,'') as agentname,ifnull(wh.client,'') as wh,head.contra
             from glhead as head
@@ -5350,7 +5381,8 @@ class lookupClass
             left join client as wh on wh.clientid=head.whid
             where head.doc in ('SJ') and cntnum.svnum=0
             group by head.trno,head.docno,head.dateid,client.client,client.clientname,head.address,head.shipto,head.yourref,head.ourref,head.terms,head.trnxtype,
-            head.cur,head.forex,head.rem,head.vattype,head.agentid,head.due,head.tax,agent.client,agent.clientname,wh.client,head.contra";
+            client.tin,client.registername, client.province,client.region,client.area,head.cur,head.forex,head.rem,head.vattype,head.agentid,head.due,head.tax,
+            agent.client,agent.clientname,wh.client,head.contra";
         break;
       case 'customercor':
         $qry = "select head.trno as keyid ,head.trno as cotrno,head.docno as codocno,client.client,client.clientid,left(head.dateid,10) as dateid,head.clientname,
@@ -5871,6 +5903,7 @@ class lookupClass
 
     $this->othersClass->logConsole('============');
     $this->othersClass->logConsole($qry);
+    
     $data = $this->coreFunctions->opentable($qry);
 
     if ($lookupclass == "customereapp") {
@@ -7400,6 +7433,7 @@ class lookupClass
       case 'ucc':
       case 'itinerary':
       case 'occ':
+      case 'carmakesetup':
 
         $cols = array(
           array('name' => 'user', 'label' => 'User', 'align' => 'left', 'field' => 'user', 'sortable' => true, 'style' => 'font-size:16px;'),
@@ -7740,6 +7774,7 @@ class lookupClass
           case 'px':
           case 'ju':
           case 'mh':
+          case 'ak':
             // case 'tm':
 
             // INVENTORY
@@ -11957,29 +11992,26 @@ class lookupClass
     $user = $config['params']['user'];
     if ($this->companysetup->getmultibranch($config['params'])) {
       switch ($config['params']['lookupclass']) {
-        case 'getmultibranch':
-          if ($config['params']['logintype'] == '62608e08adc29a8d6dbc9754e659f125') {
-            $userid = $this->coreFunctions->getfieldvalue("client", "clientid", "email=?", [$user]);
+        case 'stbranch':
+          $qry = "select center.line,center.code,center.name,center.shortname,center.warehouse,wh.clientname as whname 
+          from center left join client as wh on wh.client = center.warehouse where 1=1 $filter order by center.line";
+          break;
+        
+        default:
+        if ($config['params']['logintype'] == '62608e08adc29a8d6dbc9754e659f125') {
+          $userid = $this->coreFunctions->getfieldvalue("client", "clientid", "email=?", [$user]);
           $qry = "select access.center as code,center.name,center.shortname from center 
             left join centeraccess as access on access.center = center.code
             left join client as user on user.clientid = access.userid
             where user.clientid = $userid";
+            
           } else {
-            $userid = $this->coreFunctions->getfieldvalue("useraccess", "userid", "username=?", [$user]);
-            $qry = "select access.center as code,center.name,center.shortname from center 
-              left join centeraccess as access on access.center = center.code
-              left join useraccess as user on user.userid = access.userid
-              where access.userid = $userid";
-          }
-
-          break;
-        case 'stbranch':
-          $qry = "select center.line,center.code,center.name,center.shortname,center.warehouse,wh.clientname as whname from center left join client as wh on wh.client = center.warehouse where 1=1 $filter order by center.line";
-          break;
-        
-        default:
-          $qry = "select c.line,c.code,c.name,c.warehouse,wh.clientname as whname,c.shortname from center as c left join centeraccess as ca on ca.center=c.code 
-          left join useraccess as u on u.userid=ca.userid left join client as wh on wh.client = c.warehouse where u.username='$user' $filter order by c.line";
+          $userid = $this->coreFunctions->getfieldvalue("useraccess", "userid", "username=?", [$user]);
+          $qry = "select c.line,c.code,c.name,c.warehouse,wh.clientname as whname,c.shortname from center as c 
+          left join centeraccess as ca on ca.center=c.code 
+          left join useraccess as u on u.userid=ca.userid left join client as wh on wh.client = c.warehouse 
+          where u.username='$user' $filter order by c.line";
+           }
           break;
       }
     } else {
@@ -12516,9 +12548,13 @@ class lookupClass
       'plotting' => $plotting
     );
     // lookup columns
-    $cols = [
-      ['name' => 'createby', 'label' => 'Created By', 'align' => 'left', 'field' => 'createby', 'sortable' => true, 'style' => 'font-size:16px;']
-    ];
+    $cols = [['name' => 'createby', 'label' => 'Created By', 'align' => 'left', 'field' => 'createby', 'sortable' => true, 'style' => 'font-size:16px;']];
+     switch ($config['params']['lookupclass']) {
+      case 'lookuptmusers':
+        $cols = [['name' => 'createby', 'label' => 'Username', 'align' => 'left', 'field' => 'createby', 'sortable' => true, 'style' => 'font-size:16px;'],
+                 ['name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;']];
+        break; 
+     }
 
 
     switch ($config['params']['lookupclass']) {
@@ -12528,6 +12564,9 @@ class lookupClass
           select createby from cdhead
           union all
           select createby from hcdhead) as a";
+        break;
+      case 'lookuptmusers':
+        $qry="select  email as createby,clientname from client where isemployee=1";
         break;
       default:
         $qry = "select distinct createby from (
@@ -15745,7 +15784,6 @@ class lookupClass
       case 'lookupledgerempndahistory':
         return $this->lookupledgerempndahistory($config);
         break;
-
       case 'lookupledgerjobtitle':
         return $this->lookupledgerjobtitle($config);
         break;
@@ -15774,6 +15812,8 @@ class lookupClass
       case 'lookuplocationledger_mms':
         return $this->lookuplocationledger_mms($config);
         break;
+      case 'lookupledgercarmake':
+        return $this->autoservlookup->lookupledgercarmake($config);
     }
   } // end function
 
@@ -24866,13 +24906,19 @@ class lookupClass
           case 'SO':
           case 'CH':
           case 'CM':
+            $amt = "item.amt";
+            $disc = "item.disc,";
+            if($doc == 'SJ'){
+            $amt = "s.amt";
+            $disc = "s.disc,";
+            }
             $client = $this->coreFunctions->getfieldvalue(app($path)->head, "client", "trno=?", [$config['params']['trno']]);
             $outlet = $this->coreFunctions->getfieldvalue("client", "groupid", "client=?", [$client]);
             if ($outlet != "") {
               $data = $this->coreFunctions->opentable("select item.itemid as keyid, sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
-              item.itemname,s.uom2 as uom,uom1.factor,item.amt,brand,ifnull(cls.cl_name,'') as class,body,
-              ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
-              round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color
+              item.itemname,s.uom2 as uom,uom1.factor,brand,ifnull(cls.cl_name,'') as class,body,
+              ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,$disc item.partno,item.shortname,
+              round($amt - ($amt * (REPLACE($disc '%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color, $amt
               from sku as s join item on item.itemid = s.itemid and s.groupid = '" . $outlet . "' and s.issku = 1
               left join item_class as cls on cls.cl_id=item.class
               left join uom as uom1 on item.itemid = uom1.itemid and uom1.uom = s.uom2
@@ -25545,36 +25591,36 @@ class lookupClass
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   } //end function
-  public function getautojobsetup($config)
+  public function lookupreimbursement($config)
   {
-    $title = 'List of Auto Job Setup';
-
+    $title = 'List of Reimbursement Type';
     $lookupsetup = array(
-      'type' => 'multi',
-      'rowkey' => 'keyid',
+      'type' => 'single',
       'title' => $title,
       'style' => 'width:100%;max-width:100%;'
     );
-
+    $plotting = array('reimbursement' => 'reimbursement');
     $plotsetup = array(
-      'plottype' => 'callback',
-      'action' => 'getautojobsetup',
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
     );
     // lookup columns
     $cols = array(
-      array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'description', 'label' => 'Job Description', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;')
-    );
-    $query = "select line as keyid,line,docno as code,jobtitle as description from jobthead";
+      array('name' => 'reimbursement', 'label' => 'Reimbursement Type', 'align' => 'left', 'field' => 'reimbursement', 'sortable' => true, 'style' => 'font-size:16px;')
+    ); 
+    //TRANSPO, GAS, MEAL
+    $query = "select '' as reimbursement
+              union all
+              select 'TRANSPO' as reimbursement
+              union all 
+              select 'GAS' as reimbursement
+              union all
+              select 'MEAL' as reimbursement";
     $data = $this->coreFunctions->opentable($query);
  
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
-
- 
-
- 
-
 
 } // end class

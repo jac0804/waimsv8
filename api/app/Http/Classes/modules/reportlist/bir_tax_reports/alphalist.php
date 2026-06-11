@@ -116,8 +116,11 @@ class alphalist
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $sectname     = $config['params']['dataparams']['sectname'];
 
     $filter   = "";
     $filter1   = "";
@@ -127,15 +130,27 @@ class alphalist
     if ($client != "") {
       $filter .= " and cl.client = '$client'";
     }
-    if ($divid != "") {
-      $filter1 .= " and e.divid = $divid";
-    }
-    if ($deptid != "") {
-      $filter2 .= " and e.deptid = $deptid";
-    }
-    if ($sectid != "") {
-      $filter3 .= " and e.sectid = $sectid";
-    }
+    // if ($divid != "") {
+    //   $filter1 .= " and e.divid = $divid";
+    // }
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter1 .= " and e.divid = $divid";
+    }}
+    // if ($deptid != "") {
+    //   $filter2 .= " and e.deptid = $deptid";
+    // }
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter2 .= " and e.deptid = $deptid";
+    }}
+    // if ($sectid != "") {
+    //   $filter3 .= " and e.sectid = $sectid";
+    // }
+    if ($sectname != '') {
+        if ($sectid != 0) {
+            $filter3 .= " and e.sectid = $sectid";
+    }}
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

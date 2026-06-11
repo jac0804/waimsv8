@@ -9,6 +9,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\sqlquery;
 use Illuminate\Http\Request;
 use App\Http\Requests;
+use App\Http\Classes\common\payrollcommon;
 
 
 class hrislookup
@@ -16,12 +17,14 @@ class hrislookup
   private $coreFunctions;
   private $othersClass;
   private $sqlquery;
+  private $payrollcommon;
 
   public function __construct()
   {
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->sqlquery = new sqlquery;
+    $this->payrollcommon = new payrollcommon;
   }
 
   //HRIS
@@ -2437,7 +2440,7 @@ class hrislookup
         break;
       case 'TTC':
         $adminid = $config['params']['adminid'];
-        $approver = $this->othersClass->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'e');
+        $approver = $this->payrollcommon->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'e');
 
         $filter = "";
         $left = "";
@@ -2447,6 +2450,7 @@ class hrislookup
         if ($approver['leftjoin'] != "") {
           $left .= $approver['leftjoin'];
         }
+        
         $leftjoin = "left join section as sect on sect.sectid =e.sectid ";
         $fields = 'sect.sectname';
         if ($companyid == 53) { //camera
@@ -2463,6 +2467,7 @@ class hrislookup
          $left
          $leftjoin
         where e.isactive =1 $filter
+        group by e.empid,e.emplast,e.empfirst,e.empmiddle,dept.clientname,divi.divname,client.client,$fields
         order by e.emplast,e.empfirst,e.empmiddle";
         break;
       case 'CONTRACTMONITORING':
@@ -4266,8 +4271,17 @@ class hrislookup
     array_push($cols, array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
     array_push($cols, array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;'));
 
-    $qry = "select client.clientid,client.client,client.clientname,client.addr,'' as manpower, 0 as allocation
-            from client where client.isbranch=1";
+    switch ($config['params']['lookupclass']) {
+      case 'lookupbrancharea':
+          $area = !empty($config['params']['addedparams'][0])  ? " and client.area = '" . $config['params']['addedparams'][0] . "'"  : '';
+          $qry = "select client.clientid, client.client, client.clientname, client.addr, '' as manpower, 0 as allocation
+                  from client where client.isbranch = 1" . $area;
+        break;
+      default:
+        $qry = "select client.clientid, client.client, client.clientname, client.addr, '' as manpower, 0 as allocation
+                from client where client.isbranch = 1";
+        break;
+    }
 
     if ($config['params']['doc'] == 'APPLICANTLEDGER') {
       $cols = array();

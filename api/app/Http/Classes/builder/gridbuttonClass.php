@@ -2225,9 +2225,20 @@ class gridbuttonClass
         'name' => 'tableentry',
         'label' => 'Add Task',
         'icon' => 'add',
-        'action' => 'tableentry',
+        'action' => 'autoserventry',
         'class' => 'btnaddtask',
-        'lookupclass' => 'addtask',
+        'lookupclass' => 'entrytlabor',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
+      ],
+      'entryparts' => [
+        'name' => 'multigrid',
+        'label' => 'Add Parts',
+        'icon' => 'shopping_cart',
+        'action' => 'autoserventry',
+        'class' => 'btnaddpart',
+        'lookupclass' => 'entryparts',
         'access' => 'view',
         'visible' => true,
         'color' => 'primary'

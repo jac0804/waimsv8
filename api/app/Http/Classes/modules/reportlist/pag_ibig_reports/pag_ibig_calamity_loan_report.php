@@ -110,7 +110,9 @@ class pag_ibig_calamity_loan_report
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $month = intval($config['params']['dataparams']['month']);
     $year = intval($config['params']['dataparams']['year']);
 
@@ -119,17 +121,22 @@ class pag_ibig_calamity_loan_report
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter .= " and emp.deptid = $deptid";
-    }
+    // if ($deptid != 0) {
+    //   $filter .= " and emp.deptid = $deptid";
+    // }
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and emp.deptid = $deptid";
+    }}
 
+    if ($divname !="") {
     if ($divid != 0) {
       if ($config['params']['companyid'] == 58) { //cdo
         $filter .= " and emp.contricompid = $divid";
       } else {
         $filter .= " and emp.divid = $divid";
       }
-    }
+    }}
 
 
     $emplvl = $this->othersClass->checksecuritylevel($config);

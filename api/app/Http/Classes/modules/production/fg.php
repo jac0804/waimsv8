@@ -354,7 +354,7 @@ class fg
       $obj[0][$this->gridname]['columns'][$disc]['readonly'] = true;
     }
 
-    if ($config['params']['companyid'] == 24) {
+    if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
       $obj[0][$this->gridname]['columns'][$itemdesc]['type'] = 'coldel';
       $obj[0][$this->gridname]['columns'][$loc]['type'] = 'input';
       $obj[0][$this->gridname]['columns'][$loc]['label'] = 'Batch No';
@@ -368,13 +368,13 @@ class fg
 
   public function createtabbutton($config)
   {
-    if ($config['params']['companyid'] == 24) { //goodfound
+    if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
       $tbuttons = ['additem', 'saveitem', 'deleteallitem'];
     } else {
       $tbuttons = ['saveitem', 'deleteallitem'];
     }
     $obj = $this->tabClass->createtabbutton($tbuttons);
-    if ($config['params']['companyid'] != 24) { //not goodfound
+    if ($config['params']['companyid'] != 24 && $config['params']['companyid'] != 69) { //not goodfound, not cemphil
       $obj[0]['label'] = "SAVE ALL";
       $obj[1]['label'] = "DELETE ALL";
     }
@@ -384,6 +384,7 @@ class fg
   public function createHeadField($config)
   {
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         $fields = ['docno', 'wh'];
         break;
@@ -398,6 +399,7 @@ class fg
     data_set($col1, 'pdprocess.condition', ['checkstock']);
 
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         $fields = ['dateid', ['yourref', 'ourref']];
         break;
@@ -431,7 +433,7 @@ class fg
     $data[0]['pdprocess'] = '';
     $data[0]['stageid'] = 0;
     $data[0]['itemid'] = 0;
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -642,7 +644,7 @@ class fg
       return $this->othersClass->posttranstock($config);
     } else {
 
-      if ($companyid != 24) { //not goodfound
+      if ($companyid != 24 && $companyid != 69) { //not goodfound, not cemphil
         $checkacct = $this->othersClass->checkcoaacct(['RM1', 'IN1']);
 
         if ($checkacct != '') {
@@ -665,7 +667,7 @@ class fg
     $trno = $config['params']['trno'];
     $companyid =  $config['params']['companyid'];
 
-    if ($companyid == 24)  return true; //goodfound
+    if ($companyid == 24 || $companyid == 69)  return true; //goodfound, cemphil
 
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -1120,6 +1122,7 @@ class fg
     } elseif ($action == 'update') {
       if ($this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]) == 1) {
         switch ($companyid) {
+          case 69: //cemphil
           case 24: //goodfound
             break;
           default:

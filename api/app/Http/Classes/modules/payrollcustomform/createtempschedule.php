@@ -213,7 +213,7 @@ class createtempschedule
         $adminid  = $config['params']['adminid'];
         $companyid  = $config['params']['companyid'];
         $checkall = $config['params']['dataparams']['checkall'];
-        $approver = $this->othersClass->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'emp');
+        $approver = $this->payrollcommon->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'emp');
         $emplvl = $this->othersClass->checksecuritylevel($config);
         $ispickup = " 'true' as ispicked,";
         if ($companyid == 53) { //camera

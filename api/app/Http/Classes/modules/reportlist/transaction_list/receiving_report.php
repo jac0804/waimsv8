@@ -221,7 +221,7 @@ class receiving_report
     $dept = $config['params']['dataparams']['dept'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
-
+    $deptname = $config['params']['dataparams']['deptname'];
 
     $filter = "";
     $filter1 = "";
@@ -246,7 +246,7 @@ class receiving_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
       $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
@@ -457,6 +457,7 @@ class receiving_report
     $dept = $config['params']['dataparams']['dept'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
 
     $filter = "";
     $filter1 = "";
@@ -480,7 +481,7 @@ class receiving_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
     } else {

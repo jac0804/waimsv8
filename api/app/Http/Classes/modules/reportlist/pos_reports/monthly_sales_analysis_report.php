@@ -42,7 +42,6 @@ class monthly_sales_analysis_report
             // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
         ]);
         data_set($col1, 'month.label', 'Month');
-        data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
         data_set($col1, 'dcentername.class', 'cscsdcentername sbccsreadonly');
 
         // data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');

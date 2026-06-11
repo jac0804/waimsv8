@@ -72,6 +72,7 @@ class analyze_customer_sales_monthly
         data_set($col1, 'groupid.class', 'csgroup');
         data_set($col1, 'groupid.readonly', false);
         break;
+      case 69: //cemphil
       case 24: //goodfound
         array_push($fields, 'radioreportanalyzedby');
         $col1 = $this->fieldClass->create($fields);
@@ -97,7 +98,6 @@ class analyze_customer_sales_monthly
 
     data_set($col1, 'dclientname.lookupclass', 'lookupclient');
     data_set($col1, 'dclientname.label', 'Customer');
-    data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
     if ($companyid == 34) { //evergreen
       data_set($col1, 'dclientname.label', 'Payor');
     }

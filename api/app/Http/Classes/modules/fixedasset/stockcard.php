@@ -614,7 +614,7 @@ class stockcard
     }
 
 
-    $add = ", cat.name as categoryname, ifnull(genitem.othcode,'') as othcode ";
+    $add = ", cat.name as categoryname, item.othcode ";
     $join = "left join itemcategory as cat on cat.line = item.category left join item as genitem on genitem.barcode=item.subcode";
 
     $qryselect = "select " . $fields . ", ifnull(pmaster.part_name,'') as partname, item.part as partid,

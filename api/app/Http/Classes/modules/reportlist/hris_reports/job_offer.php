@@ -110,6 +110,7 @@ class job_offer
     // QUERY
     $jobcode     = $config['params']['dataparams']['jobtitle'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -118,9 +119,14 @@ class job_offer
     if ($jobcode != "") {
       $filter .= " and head.emptitle = '$jobcode'";
     }
+    // if ($deptid != 0) {
+    //   $filter .= " and dept.clientid = $deptid";
+    // }
+
+    if ($deptname !=''){
     if ($deptid != 0) {
       $filter .= " and dept.clientid = $deptid";
-    }
+    }}
 
     if ($config['params']['companyid'] == 58) { //cdo
       $branchid     = $config['params']['dataparams']['branchid'];

@@ -58,6 +58,7 @@ class updatepostedinfo
         $companyid = $config['params']['companyid'];
 
         switch ($companyid) {
+            case 69: //cemphil
             case 24: //goodfound
                 switch ($doc) {
                     case 'PACKHOUSELOADING':
@@ -235,6 +236,7 @@ class updatepostedinfo
         $doc = $config['params']['doc'];
         $companyid = $config['params']['companyid'];
         switch ($companyid) {
+            case 69: //cemphil
             case 24: //goodfound
                 switch ($doc) {
                     case 'PACKHOUSELOADING':
@@ -358,6 +360,7 @@ class updatepostedinfo
         $systemtype = $this->companysetup->getsystemtype($config['params']);
 
         switch ($companyid) {
+            case 69: //cemphil
             case 24: //goodfound
                 $backlisting = false;
                 switch ($doc) {

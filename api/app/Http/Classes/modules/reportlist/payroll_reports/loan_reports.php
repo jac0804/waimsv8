@@ -42,30 +42,28 @@ class loan_reports
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-    $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'tpaygroup', 'dloantype', 'start', 'end'];
-    $col1 = $this->fieldClass->create($fields);
-    data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
-    data_set($col1, 'divrep.label', 'Company');
-    data_set($col1, 'deptrep.action', 'lookupdepartments');
-    data_set($col1, 'deptrep.lookupclass', 'lookupdepartments');
-    data_set($col1, 'deptrep.label', 'Department');
-    data_set($col1, 'deptrep.name', 'department');
-    data_set($col1, 'sectrep.action', 'lookupempsection');
-    data_set($col1, 'sectrep.lookupclass', 'lookupempsection');
-    data_set($col1, 'tpaygroup.lookupclass', 'tpaygrouplookup');
-    data_set($col1, 'tpaygroup.action', 'paygrouplookup');
-    data_set($col1, 'dloantype.lookupclass', 'lookuploantype');
-    array_set($col1, 'start.type', 'date');
-    array_set($col1, 'end.type', 'date');
+        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'tpaygroup', 'dloantype', 'start', 'end'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+        data_set($col1, 'divrep.label', 'Company');
+        data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
+        data_set($col1, 'deptrep.label', 'Department');
+        data_set($col1, 'sectrep.action', 'lookupempsection');
+        data_set($col1, 'sectrep.lookupclass', 'lookupempsection');
+        data_set($col1, 'tpaygroup.lookupclass', 'tpaygrouplookup');
+        data_set($col1, 'tpaygroup.action', 'paygrouplookup');
+        data_set($col1, 'dloantype.lookupclass', 'lookuploantype');
+        array_set($col1, 'start.type', 'date');
+        array_set($col1, 'end.type', 'date');
 
 
-    $fields = ['print'];
-    $col2 = $this->fieldClass->create($fields);
+        $fields = ['print'];
+        $col2 = $this->fieldClass->create($fields);
 
-    return array('col1' => $col1, 'col2' => $col2);
+        return array('col1' => $col1, 'col2' => $col2);
     }
 
-     public function paramsdata($config)
+    public function paramsdata($config)
     {
         // NAME NG INPUT YUNG NAKA ALIAS
         return $this->coreFunctions->opentable("select 
@@ -75,7 +73,11 @@ class loan_reports
         '' as divid,
         '' as divname,
         '' as deptid,
+        '' as deptrep,
+        '' as deptname,
         '' as department,
+        '' as deptname,
+        '' as divrep,
         '' as orgsection,
         '' as sectname,
         '' as sectrep,
@@ -83,6 +85,7 @@ class loan_reports
         '' as paygroup,
         '' as tpaygroup,
         '' as paygroupid,
+        '' as dloantype,
         '' as code,
         '' as codename,
         '' as prepared,
@@ -101,7 +104,7 @@ class loan_reports
     {
         return [];
     }
-    
+
     public function reportplotting($config)
     {
         $data = $this->data_query($config);
@@ -114,8 +117,12 @@ class loan_reports
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $deptid = $config['params']['dataparams']['deptid'];
+        $deptname = $config['params']['dataparams']['deptname'];
         $divid = $config['params']['dataparams']['divid'];
+        $divname = $config['params']['dataparams']['divname'];
         $sectid = $config['params']['dataparams']['sectid'];
+        $divname = $config['params']['dataparams']['divname'];
+        $deptname = $config['params']['dataparams']['deptname'];
         $sectname = $config['params']['dataparams']['sectname'];
         $code = $config['params']['dataparams']['code'];
         $codename = $config['params']['dataparams']['codename'];
@@ -123,20 +130,25 @@ class loan_reports
 
         $filter = '';
         $query = '';
-        
-        if ($deptid != '') {
-            $filter .= " and emp.deptid = $deptid";
+
+        if ($deptname != '') {
+            if ($deptid != 0) {
+                $filter .= " and emp.deptid = $deptid";
+            }
         }
 
-        if ($divid != '') {
-            $filter .= " and emp.divid = $divid";
+        if ($divname != '') {
+            if ($divid != 0) {
+                $filter .= " and emp.divid = $divid";
+            }
         }
 
         if ($sectname != '') {
-        if ($sectid != 0) {
-            $filter .= " and emp.sectid = $sectid";
-        }}
-        
+            if ($sectid != 0) {
+                $filter .= " and emp.sectid = $sectid";
+            }
+        }
+
         if ($codename != '') {
             $filter .= " and pa.codename = '$codename'";
         }
@@ -165,7 +177,7 @@ class loan_reports
         return $this->coreFunctions->opentable($query);
     }
 
-     public function displayHeader($config, $recordCount)
+    public function displayHeader($config, $recordCount)
     {
         $center     = $config['params']['center'];
         $username   = $config['params']['user'];
@@ -177,11 +189,11 @@ class loan_reports
         $groupname  = $config['params']['dataparams']['tpaygroup'];
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $printDate  = date("l, F j, Y");  
+        $printDate  = date("l, F j, Y");
         $printTime  = date("g:i:s A");
         $startFormatted = date("F j", strtotime($start));
         $endFormatted = date("F j", strtotime($end));
-      
+
         $str = '';
         $layoutsize = '1000';
         $font = 'Tahoma';
@@ -196,32 +208,32 @@ class loan_reports
 
         $str .= '<br/><br/>';
 
-      
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Loan Reports', '800', null, false, '', '', 'C', $font, '14', 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Date From :  ' . date("d-M-Y", strtotime($start)) . ' to ' . date("d-M-Y", strtotime($end)),'800',null,false,'','','C',$font,'11','');
+        $str .= $this->reporter->col('Date From :  ' . date("d-M-Y", strtotime($start)) . ' to ' . date("d-M-Y", strtotime($end)), '800', null, false, '', '', 'C', $font, '11', '');
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');   
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $division = ($divname == '') ? 'ALL COMPANY' : strtoupper($divname);
         $department = ($deptname == '') ? 'ALL DEPARTMENTS' : strtoupper($deptname);
         $section = ($sectname == '') ? 'ALL SECTIONS' : strtoupper($sectname);
-        $str .= $this->reporter->col('Division: <b>' . $division .'</b>   Department: <b>' . $department . 
-        '</b>   Section: <b>' . $section . '</b>','1000',null,false,'','','C', $font,'11','');
+        $str .= $this->reporter->col('Division: <b>' . $division . '</b>   Department: <b>' . $department .
+            '</b>   Section: <b>' . $section . '</b>', '1000', null, false, '', '', 'C', $font, '11', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');   
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $loanname = ($codename == '') ? 'ALL LOAN TYPE' : strtoupper($codename);
         $groupname = ($groupname == '') ? 'ALL PAY GROUP' : strtoupper($groupname);
-        $str .= $this->reporter->col('Pay Group: <b>' . $groupname .'</b>   Loan Type: <b>' . $loanname . '</b>','1000',null,false,'','','C', $font,'11','');
+        $str .= $this->reporter->col('Pay Group: <b>' . $groupname . '</b>   Loan Type: <b>' . $loanname . '</b>', '1000', null, false, '', '', 'C', $font, '11', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -233,16 +245,15 @@ class loan_reports
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '50', null, false, $border, 'TB', 'R', $font, $fontsize, '', '', '');   
+        $str .= $this->reporter->col('', '50', null, false, $border, 'TB', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col('ID NO.', '150', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('EMPLOYEE NAME', '300', null, false, $border, 'TB', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col('PAYMENT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('', '50', null, false, $border, 'TB', 'R', $font, $fontsize, '', '', '');   
+        $str .= $this->reporter->col('', '50', null, false, $border, 'TB', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         return $str;
-
     }
 
     public function reportDefaultLayout($config, $result)
@@ -280,11 +291,11 @@ class loan_reports
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');   
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->employee, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data-> empstatus . ',' . $data->clientname, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->empstatus . ',' . $data->clientname, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->payment, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');    
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->endrow();
 
             $rowCount++;
@@ -296,13 +307,12 @@ class loan_reports
         $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'R', $font, $fontsize);
         $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'R', $font, $fontsize);
         $str .= $this->reporter->col('GRAND TOTAL :', '300', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
-        $str .= $this->reporter->col(number_format($grandTotal,2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col(number_format($grandTotal, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
         $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'R', $font, $fontsize);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
         $str .= $this->reporter->endreport();
         return $str;
     }
-  
 }//end class

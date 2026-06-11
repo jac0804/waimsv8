@@ -745,7 +745,6 @@ class mobileCommonFunctions
       }
     }';
     $downloadOthers = 'function() {
-      console.log("'.$downloadOthers.'");
       const config = "' . $this->config . '";
       let idate = "";
       let colorsCount = 0;

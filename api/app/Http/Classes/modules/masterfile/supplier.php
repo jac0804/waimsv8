@@ -157,7 +157,7 @@ class supplier
       $cols[$businessnature]['type'] = 'coldel';
     }
 
-    if ($config['params']['companyid'] != 24) { //not goodfound
+    if ($config['params']['companyid'] != 24 && $config['params']['companyid'] != 69) { //not goodfound, not cemphil
       $cols[$tel]['type'] = 'coldel';
       $cols[$fax]['type'] = 'coldel';
       $cols[$contact]['type'] = 'coldel';
@@ -197,6 +197,7 @@ class supplier
       case 16: //ati
         $addedfields = ", (select ifnull(group_concat(businessnature separator ',\n\r'),'') from othermaster where isbusinessnature=1 and clientid=client.clientid) as businessnature";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $addedfields = ",client.tel,client.fax,client.contact";
         break;

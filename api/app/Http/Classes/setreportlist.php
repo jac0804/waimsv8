@@ -38,6 +38,7 @@ class setreportlist
     $rep_chartofaccounts = "";
 
     $rep_trucklist = "";
+    $rep_carmake_list = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -67,6 +68,10 @@ class setreportlist
 
         if ($params['companyid'] == 19) { //housegem
           $rep_trucklist = "('','\\900','','','',0,1,0,'Truck List','\\90015',5116,'0'," . $params['levelid'] . ")";
+        }
+
+        if ($this->companysetup->getisautoservice($params)) {
+          $rep_carmake_list = "('','\\900','','','',0,1,0,'Car Make List','\\90016',5882,'0'," . $params['levelid'] . ")";
         }
 
         if ($params['companyid'] == 57) {
@@ -209,7 +214,7 @@ class setreportlist
           $rep_monthlyincomestatement = "('','\\903','','','',0,1,0,'Monthly Income Statement','\\90308',3085,'0'," . $params['levelid'] . ")";
           $rep_invvssubsidiary  = "('','\\903','','','',0,1,0,'Inventory Cost Vs Subsidiary Ledger','\\90319',5809,'0'," . $params['levelid'] . ")";
 
-          if ($params['companyid'] == 24) { //goodfound
+          if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, Cemphil
             $rep_perCostCenterReport = "('','\\903','','','',0,1,0,'Per Cost Center Report','\\90314',4032,'0'," . $params['levelid'] . ")";
             $rep_detailedPerAccountReport = "('','\\903','','','',0,1,0,'Detailed Per Account Report','\\90315',4033,'0'," . $params['levelid'] . ")";
           }
@@ -436,7 +441,7 @@ class setreportlist
             $rep_fastmovingitems = "('','\\904','','','',0,1,0,'Best Seller Report','\\90427',3024,'0'," . $params['levelid'] . ")";
             $rep_item_group_performance_report = "('','\\904','','','',0,1,0,'Item Group Performance Report','\\90405',3707,'0'," . $params['levelid'] . ")";
           }
-          if ($params['companyid'] == 24) { //goodfound
+          if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound,. Cemphil
             $rep_daily_cement_withdrawal_with_total_form_report = "('','\\904','','','',0,1,0,'Daily Cement Withdrawal With Total Form Report','\\90431',3958,'0'," . $params['levelid'] . ")";
             $rep_daily_cement_withdrawal_without_total_form_report = "('','\\904','','','',0,1,0,'Daily Cement Withdrawal Without Total Form Report','\\90433',4034,'0'," . $params['levelid'] . ")";
             $rep_withdrawal_summary_as_per_cost_center_report = "('','\\904','','','',0,1,0,'Withdrawal Summary As Per Cost Center Report','\\90434',4053,'0'," . $params['levelid'] . ")";
@@ -510,6 +515,9 @@ class setreportlist
     $rep_ar_vs_collection = "";
     $rep_lah_sales_collection_report = "";
     $rep_paid_accounts_report = "";
+    $rep_sales_report_by_invoicedate = "";
+    $rep_sales_report_monthly_by_salesdate = "";
+    $rep_sales_report_yearly_by_salesdate = "";
 
     $parent_customers = "";
     $rep_customerlist = "";
@@ -623,6 +631,7 @@ class setreportlist
               $rep_customer_transaction_history = "('','\\905','','','',0,1,0,'Customer Transaction History','\\90531',3812,'0'," . $params['levelid'] . ")";
               $rep_pendingsomonitoring = "('','\\905','','','',0,1,0,'Pending Sales Order Monitoring','\\90542',5023,'0'," . $params['levelid'] . ")";
               break;
+            case 69: // Cemphil
             case 24: // good found cement
               $rep_provisional_receipt_report = "('','\\905','','','',0,1,0,'Provisional Receipt Report','\\90532',3962,'0'," . $params['levelid'] . ")";
               $rep_sales_monitoring_breakdown_output_report = "('','\\905','','','',0,1,0,'Sales Monitoring Breakdown Output Report','\\90533',3963,'0'," . $params['levelid'] . ")";
@@ -696,6 +705,9 @@ class setreportlist
               break;
             case 63: // ericco
               $rep_collection_report = "('','\\905','','','',0,1,0,'Collection Report','\\90522',3553,'0'," . $params['levelid'] . ")";
+              $rep_sales_report_by_invoicedate = "('','\\905','','','',0,1,0,'Sales Report By Invoice Date','\\90566',5883,'0'," . $params['levelid'] . ")";
+              $rep_sales_report_monthly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Monthly By Sales Date','\\90567',5884,'0'," . $params['levelid'] . ")";
+              $rep_sales_report_yearly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Yearly By Sales Date','\\90568',5896,'0'," . $params['levelid'] . ")";
               break;
             case 64:
               $rep_profit_sales_report = "('','\\905','','','',0,1,0,'Profit Sales Report','\\90565',5857,'0'," . $params['levelid'] . ")";
@@ -910,8 +922,8 @@ class setreportlist
     $rep_reseller_status_summary_report = '';
     $rep_task_monitoring_report = '';
     $rep_dailytask_report = '';
-
     $rep_commission_report = '';
+    $rep_soalog_report = '';
 
 
     if ($this->companysetup->getispos($params)) {
@@ -1026,6 +1038,7 @@ class setreportlist
               $homeworks_for_sir_jon_report = "('','\\908','','','',0,1,0,'Homeworks For Sir Jon Report','\\90829',5120,'0'," . $params['levelid'] . ")";
 
               break;
+            case 69: // Cemphil
             case 24: //goodfound
               $power_consumption_daily_report = "('','\\908','','','',0,1,0,'Power Consumption Daily Report','\\908015',4091,'0'," . $params['levelid'] . ")";
               break;
@@ -1044,6 +1057,7 @@ class setreportlist
               $rep_customer_registration_report = "('','\\908','','','',0,1,0,'Customer Registration Report','\\90837',5556,'0'," . $params['levelid'] . ")";
               $rep_dailytask_report = "('','\\908','','','',0,1,0,'DailyTask Report','\\90840',5586,'0'," . $params['levelid'] . ")";
               $rep_task_monitoring_report = "('','\\908','','','',0,1,0,'Task Monitoring Report','\\90839',5585,'0'," . $params['levelid'] . ")";
+              $rep_soalog_report = "('','\\908','','','',0,1,0,'SOALog Report','\\90842',5881,'0'," . $params['levelid'] . ")";
               break;
             case 64: //excelin
               $rep_commission_report = "('','\\908','','','',0,1,0,'Commission Report by Agent','\\90841',5855,'0'," . $params['levelid'] . ")";
@@ -1351,7 +1365,7 @@ class setreportlist
 
 
 
-          if ($params['companyid'] == 24) { //goodfound
+          if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, Cemphil
             $subparent_production = "('','\\909','','','',0,0,0,'Production','\\90911',3954,'0'," . $params['levelid'] . ")";
             $rep_material_issuance_report_list = "('','\\90911','','\\\\909','',0,1,0,'Material Issuance Report List','\\9091101',3955,'0'," . $params['levelid'] . ")";
             $rep_supplies_issuance_report_list = "('','\\90911','','\\\\909','',0,1,0,'Supplies Issuance Report List','\\9091102',3956,'0'," . $params['levelid'] . ")";
@@ -1745,6 +1759,7 @@ class setreportlist
     $rep_wage_and_career_history_report = "";
     $rep_end_of_contract_report = "";
     $rep_applicant_status_report = "";
+    $rep_mode_of_application = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -1803,6 +1818,10 @@ class setreportlist
         if ($params['companyid'] == 62) { //onesky
           $rep_end_of_contract_report = "('','\\A01','','','',0,1,0,'End of Contract Report','\\A01031',5823,'0'," . $params['levelid'] . ")";
         }
+
+        if ($params['companyid'] == 58) { //cdohris
+          $rep_mode_of_application = "('','\\A01','','','',0,1,0,'Mode of Application','\\A01033',5897,'0'," . $params['levelid'] . ")";
+        }
         break;
     }
 
@@ -1838,6 +1857,7 @@ class setreportlist
 
     $parent_ticketingreports = "";
     $rep_ticketreports = "";
+
 
     switch ($params['companyid']) {
       case 8: //maxipro
@@ -2762,6 +2782,9 @@ class setreportlist
           $rep_monthly_sales_collected_uncollected_report,
           $rep_salesreportdetail,
           $rep_profit_sales_report,
+          $rep_sales_report_by_invoicedate,
+          $rep_sales_report_monthly_by_salesdate,
+          $rep_sales_report_yearly_by_salesdate,
 
           // SUPPLIER
           $parent_supplier,
@@ -3190,6 +3213,7 @@ class setreportlist
           $rep_wage_and_career_history_report,
           $rep_end_of_contract_report,
           $rep_applicant_status_report,
+          $rep_mode_of_application,
 
           // PAYROLL
           $subparent_other_report,
@@ -3841,6 +3865,7 @@ class setreportlist
           $rep_reseller_status_summary_report,
           $rep_dailytask_report,
           $rep_task_monitoring_report,
+          $rep_soalog_report,
 
 
           // TRANSACTION LIST
@@ -4480,6 +4505,7 @@ class setreportlist
           $tenant_list,
           $location_list,
           $general_item_list,
+          $rep_carmake_list,
           // ACCOUNTING BOOKS
           $parent_accountingbooks,
           $rep_cashdisbursementbook,

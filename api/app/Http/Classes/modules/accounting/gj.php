@@ -286,6 +286,7 @@ class gj
     ];
 
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         $buttons['others']['items']['uploadexcel'] = ['label' => 'Upload Accounts', 'todo' => ['type' => 'uploadexcel', 'action' => 'uploadexcel', 'lookupclass' => 'uploadexcel', 'access' => 'save']];
         break;
@@ -435,7 +436,7 @@ class gj
         if ($companyid != 8) { // not maxipro
           $obj[0]['accounting']['columns'][$project]['type'] = 'coldel';
         }
-        if ($companyid != 24) { // not goodfound
+        if ($companyid != 24 && $companyid != 69) { // not goodfound, not cemphil
           $obj[0]['accounting']['columns'][$dept]['type'] = 'coldel';
           $obj[0]['accounting']['columns'][$type]['type'] = 'coldel';
         } else {
@@ -499,6 +500,7 @@ class gj
         array_push($tbuttons, 'closeentry');
         break;
 
+      case 69: //cemphil
       case 24: //goodfound
         array_push($tbuttons, 'generateewt', 'pendingca', 'pendingca', 'closeentry');
         break;
@@ -512,7 +514,7 @@ class gj
     }
 
     $obj = $this->tabClass->createtabbutton($tbuttons);
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $obj[6]['label'] = "WTAX";
       $obj[6]['action'] = "pendingwtax";
       $obj[7]['label'] = "EXCISE TAX";
@@ -536,6 +538,7 @@ class gj
       case 32: //3m
         array_push($fields, 'empname');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         array_push($fields, 'dexcess');
         break;
@@ -568,7 +571,7 @@ class gj
     if ($companyid != 10 && $companyid == 12) { //not afti & afti usd
       array_push($fields, 'address');
     }
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       array_push($fields, 'ddeptname');
     }
     if ($systype == 'REALESTATE') {

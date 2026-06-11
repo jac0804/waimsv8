@@ -108,6 +108,7 @@ class cash_disbursement_book
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -932,7 +933,7 @@ class cash_disbursement_book
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-    
+
 
       $str .= '<br><br>';
 

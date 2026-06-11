@@ -66,8 +66,6 @@ class transaction_pos_report
         // for filter
         $fields = ['dcentername'];
         $col4 = $this->fieldClass->create($fields);
-        // Branch
-        data_set($col4, 'dcentername.lookupclass', 'getmultibranch');
 
         $fields = ['print'];
         $col5 = $this->fieldClass->create($fields);

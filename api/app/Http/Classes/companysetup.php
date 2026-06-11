@@ -235,6 +235,31 @@ class companysetup
     $this->isautoservice = false;
 
     switch ($params['companyid']) {
+      case 69: //CEMPHIL
+        $this->clientlength = 15;
+        $this->documentlength = 15;
+        $this->barcodelength = 0;
+        $this->tax = 12;
+        $this->companyname = 'CEMPHIL';
+        $this->systemtype = 'AIMS';
+        $this->isexpiry = false;
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->istodo = false;
+        $this->ispurchasedisc = false;
+        $this->iseditsortline = true;
+        $this->isdefaultuominout = true;
+        $this->multibranch = true;
+        $this->branchaccess = 1;
+        $this->masterlimit = 500;
+        $this->isglc = true;
+        $this->ispr = true;
+        $this->reportpath = "\Http\Classes\modules\modulereport\cemphil\\";
+        $this->isfirstpageheader = true;
+        $this->ismysql8 = true;
+        break;
       case 68: //JDA
         $this->clientlength = 15;
         $this->documentlength = 15;
@@ -804,8 +829,8 @@ class companysetup
         $this->isfa = false;
         break;
       case 44: //STONEPRO "loginlogostyle":"width:250px;","mainlogostyle":"width:240px;margin:auto;","mainlogodivmargin":"margin-top:80px;","mainlogodivheight":"height:55px"
-        $this->clientlength = 10;
-        $this->documentlength = 0;
+        $this->clientlength = 0;
+        $this->documentlength = 15;
         $this->barcodelength = 15;
         $this->tax = 12;
         $this->companyname = 'STONEPRO TRADING CORP.';
@@ -1932,6 +1957,7 @@ class companysetup
       case 57:
         $modulelist = ['masterfile', 'cashier', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $modulelist = ['masterfile', 'purchase', 'sales', 'production', 'inventory', 'payable', 'receivable', 'accounting', 'kwhmonitoring', 'itemmaster', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
         break;
@@ -1983,7 +2009,7 @@ class companysetup
             $modulelist = ['masterfile', 'itemmaster', 'barangaysetup', 'barangayoperation', 'barangayjudiciary', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'AUTOSERV':
-            $modulelist = ['masterfile', 'itemmaster', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
+            $modulelist = ['masterfile', 'itemmaster', 'autoinquiry', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'EAPPLICATION':
             $modulelist = ['operation', 'receivable', 'reportlist', 'masterfile', 'announcement', 'dashboard'];
@@ -2334,6 +2360,7 @@ class companysetup
             break;
         }
         break;
+      case 69: //cemphil
       case 24: // good found cement
         switch ($action) {
           case 'price':

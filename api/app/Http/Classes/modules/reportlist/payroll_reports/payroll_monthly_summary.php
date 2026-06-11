@@ -110,7 +110,9 @@ class payroll_monthly_summary
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
 
     $month = intval($config['params']['dataparams']['month']);
     $year = intval($config['params']['dataparams']['year']);
@@ -124,12 +126,17 @@ class payroll_monthly_summary
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter1 .= " and emp.deptid = $deptid";
-    }
-    if ($divid != 0) {
-      $filter2 .= " and emp.divid = $divid";
-    }
+
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and emp.deptid = $deptid";
+    }}
+
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter .= " and emp.divid = $divid";
+    }}
+
     $filter3 = " and pa.alias not in ('YIS','YIM','YIP','YSR','YER','YMR','YPR','MPF','MPFER')";
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

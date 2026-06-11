@@ -259,17 +259,48 @@ class pdailytask
         $tmstat = '';
         $solutionrem = $row['rem1'];
         $amount = $row['amt'];
+        $genmsg = "";
+
+
         //user
         $creator = $this->coreFunctions->datareader("select c.clientname as value from dailytask as d
                                                           left join client as c on c.clientid=d.userid
                                                           where  d.trno = ?", [$trno]);
 
         if ($status == 'A') { //done
-
             $requestorid = 0;
             if ($row['tasktrno'] != 0) $requestorid = $this->coreFunctions->getfieldvalue("tmhead", "requestby", "trno=?", [$row['tasktrno']]);
 
             if ($statid == 0) {
+
+                if ($solutionrem == '') {
+                    return ['status' => false, 'msg' => 'Please input valid solution remarks or findings for this task before tagged as completed', 'data' => []];
+                }
+
+                $username = $this->coreFunctions->datareader("select email as value from client where clientid = ? ", [$adminid]);
+                $qry = "select i.itemid as value from hsohead as head
+                    left join hsostock as stock on stock.trno = head.trno
+                    left join item as i on i.itemid = stock.itemid
+                    where stock.dytrno = ? and head.createby = ? limit 1";
+
+                $soitem = $this->coreFunctions->opentable($qry, [$trno, $username]);
+
+                //  Walang SO
+                if (empty($soitem)) {
+                    goto startprocess;
+                }
+
+                $sjgeneration = $this->generatesj($config);
+
+                // Failed ang generation
+                if ($sjgeneration['status'] == false) {
+                    return ['status' => false, 'msg' => $sjgeneration['msg'], 'data' => []];
+                }
+
+                // Success ang generation
+                $genmsg = $sjgeneration['msg'];
+
+                startprocess:
 
                 if ($ischecker == 1 && $startchecker != null) { // Complete ni checker - stat5 - complete
 
@@ -310,14 +341,12 @@ class pdailytask
                     }
                 } else {
 
-                    if ($solutionrem == '') {
-                        return ['status' => false, 'msg' => 'Please input valid solution remarks or findings for this task before tagged as completed', 'data' => []];
-                    }
+
 
                     ///MANUAL DONE
                     ManualDoneHere:
                     $update_dailytask =  $this->coreFunctions->sbcupdate('dailytask', ['statid' => 1, 'donedate' => $datenow, 'rem1' => $solutionrem], ['trno' => $trno]);
-                    $label =  'Successfully done.';
+                    $label =  'Successfully done.' . ' ' . $genmsg;
                     if ($update_dailytask) {
                         $dtinsert = $this->coreFunctions->execqry($this->transferhistoryquery(), 'insert', [$trno]);
 
@@ -496,9 +525,156 @@ class pdailytask
 
     public function transferhistoryquery()
     {
-        return "insert into hdailytask (trno,tasktrno,taskline,reftrno,rem,amt,clientid,userid,dateid,donedate,statid,apvtrno,jono,createdate,ischecker,startchecker,empid,origtrno,reseller,refx,rem1,taskcatid,encodeddate,assignedid)
+        return "insert into hdailytask (trno,tasktrno,taskline,reftrno,rem,amt,clientid,userid,dateid,donedate,statid,apvtrno,jono,createdate,ischecker,startchecker,empid,origtrno,reseller,refx,rem1,taskcatid,encodeddate,assignedid,reimbursement)
         SELECT dt.trno,dt.tasktrno,dt.taskline,dt.reftrno,dt.rem,dt.amt,dt.clientid,dt.userid,dt.dateid,dt.donedate,dt.statid,dt.apvtrno,dt.jono,dt.createdate,dt.ischecker,dt.startchecker, dt.empid, 
-        dt.origtrno, dt.reseller, dt.refx,dt.rem1,dt.taskcatid,dt.encodeddate,dt.assignedid
+        dt.origtrno, dt.reseller, dt.refx,dt.rem1,dt.taskcatid,dt.encodeddate,dt.assignedid,dt.reimbursement
         FROM dailytask as dt  where dt.trno=?";
+    }
+
+    public function generatesj($config)
+    {
+        $msg = "Failed to generate SJ.";
+        $stat = false;
+        $adminid = $config['params']['adminid'];
+        $sourceTrno = $config['params']['row']['trno'];
+
+        $username = $this->coreFunctions->datareader("select email as value from client where clientid = ? ", [$adminid]);
+        $createdate = $this->othersClass->getCurrentTimeStamp();
+        $dateid = $this->othersClass->getCurrentDate();
+
+        $doc = 'SJ';
+        $pvref = 'SJ';
+        $sjref = 'SJ';
+        $table = 'cntnum';
+        $center = $config['params']['center'];
+        $docnolength = $this->companysetup->getdocumentlength($config['params']);
+        $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
+        $defaultContra = 'AR1';
+
+        $qry = "select head.client, head.clientname, i.itemname, i.itemid, head.cur, head.forex, head.address, 
+                       head.terms, date(head.due) as due, head.wh, head.agent, head.yourref, head.ourref, 
+                       head.projectid, head.vattype, head.tax, head.rem, head.trno, stock.line,
+                       stock.uom,stock.disc,stock.rem as srem,stock.amt,stock.isqty,stock.isamt,stock.iss,stock.ext,stock.qa,
+                       stock.void,stock.loc,stock.expiry,stock.kgs,stock.whid,stock.ref,stock.projectid as sprojid,
+                       head.docno,wh.client as swh,sinfo.itemdesc
+                       from hsohead as head 
+                       left join hsostock as stock on stock.trno = head.trno 
+                       left join client as wh on wh.clientid=stock.whid
+                       left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
+                       left join item as i on i.itemid = stock.itemid where stock.dytrno = ? and head.createby = ? and not exists (select 1 from lahead as sj left join lastock as lst on lst.trno = sj.trno where sj.doc = 'SJ' and lst.refx = head.trno and lst.linex = stock.line)";
+        $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
+
+
+
+        if (empty($soitem)) {
+            return ['status' => false, 'msg' => 'Failed to generate SJ. SJ document already exists for all selected SO item(s).'];
+        }
+
+        $getdoc = $this->coreFunctions->getfieldvalue($table, 'doc', 'bref=?', [$sjref]);
+        $seq = $this->othersClass->getlastseq($sjref, $config, $table);
+
+        if ($getdoc == '') {
+            $seq = $this->othersClass->getlastseq($pvref, $config, $table);
+        }
+
+        $mrseq = $sjref . $seq;
+        $newdocno = $this->othersClass->PadJ($mrseq, $docnolength);
+
+        $col = ['doc' => $doc, 'docno' => $newdocno, 'seq' => $seq, 'bref' => $sjref, 'center' => $center];
+        $this->coreFunctions->insertGetId($table, $col);
+
+        $cntdata = $this->coreFunctions->opentable("select trno, docno from cntnum where doc = ? and docno = ? and center = ? limit 1", [$doc, $newdocno, $center]);
+
+        if (empty($cntdata)) {
+            $stat = false;
+            return ['status' => false, 'msg' => 'Failed to generate SJ document number.'];
+        }
+
+
+        $sjTrno = $cntdata[0]->trno;
+        $docno = $cntdata[0]->docno;
+
+        $head = [
+            'trno' => $sjTrno,
+            'doc' => $doc,
+            'docno' => $docno,
+            'client' => $soitem[0]->client,
+            'clientname' => $soitem[0]->clientname,
+            'address' => $soitem[0]->address,
+            'projectid' => $soitem[0]->projectid,
+            'dateid' => $dateid,
+            'terms' => $soitem[0]->terms,
+            'due' => $soitem[0]->due,
+            'yourref' => $soitem[0]->yourref,
+            'ourref' => $soitem[0]->ourref,
+            'cur' => $soitem[0]->cur,
+            'forex' => $soitem[0]->forex,
+            'vattype' => $soitem[0]->vattype,
+            'tax' => $soitem[0]->tax,
+            'rem' => $soitem[0]->rem,
+            'wh' => $soitem[0]->wh,
+            'agent' => $soitem[0]->agent,
+            'createdate' => $createdate,
+            'createby' => $config['params']['user'],
+            'contra' => $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$defaultContra])
+        ];
+
+        $lahead = $this->coreFunctions->sbcinsert('lahead', $head);
+
+        if ($lahead == 0) {
+            return ['status' => false, 'msg' => 'Failed to insert SJ header.'];
+        }
+
+        foreach ($soitem as $key2 => $value) {
+            $exists = $this->coreFunctions->datareader("select head.trno as value from lahead as head left join lastock as stock on stock.trno = head.trno where head.doc = 'SJ' and stock.refx = ? and stock.linex = ? limit 1", [$value->trno, $value->line]);
+
+            if ($exists != '') {
+                $stat = false;
+                $msg =  $soitem[$key2]->itemname . ' already exists in SJ.';
+                continue;
+            }
+            $config['params']['trno'] = $sjTrno;
+            $config['params']['data']['itemid'] = $soitem[$key2]->itemid;
+            $config['params']['data']['uom'] = $soitem[$key2]->uom;
+            $config['params']['data']['disc'] = $soitem[$key2]->disc;
+            $config['params']['data']['qty'] = $soitem[$key2]->isqty;
+
+            $config['params']['data']['wh'] = $soitem[$key2]->swh;
+            $config['params']['data']['loc'] = '';
+            $config['params']['data']['expiry'] = '';
+            $config['params']['data']['rem'] = '';
+
+            $config['params']['data']['refx'] = $soitem[$key2]->trno;
+            $config['params']['data']['linex'] = $soitem[$key2]->line;
+            $config['params']['data']['ref'] = $soitem[$key2]->docno;
+
+            $config['params']['data']['amt'] = $soitem[$key2]->isamt;
+            $config['params']['data']['projectid'] = $soitem[$key2]->sprojid;
+            if (isset($soitem[$key2]->itemdesc)) $config['params']['data']['itemdesc'] = $soitem[$key2]->itemdesc;
+            $return = app($path)->additem('insert', $config, true);
+            if ($return['status']) {
+                if (app($path)->setserveditems($soitem[$key2]->trno, $soitem[$key2]->line, 'qty') == 0) {
+                    $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+                    $line = $return['row'][0]->line;
+                    $config['params']['trno'] = $sjTrno;
+                    $config['params']['line'] = $line;
+                    $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $sjTrno, 'line' => $line]);
+                    app($path)->setserveditems($soitem[$key2]->trno, $soitem[$key2]->line, app($path)->hqty);
+                }
+            } else {
+                $msg = "Error generating SJ. Please review transaction.";
+                $stat = false;
+                //delete
+                $cntnum = $this->coreFunctions->execqry("delete from cntnum where  trno=" . $sjTrno, 'delete');
+                $sjhead = $this->coreFunctions->execqry("delete from lahead where  trno=" . $sjTrno, 'delete');
+                $sjstock = $this->coreFunctions->execqry("delete from lastock where  trno=" . $sjTrno, 'delete');
+                $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
+            }
+
+            $stat = true;
+            $msg = "Generated. Doc No: ' . $docno";
+        }
+
+        return ['status' => $stat, 'msg' => $msg];
     }
 }

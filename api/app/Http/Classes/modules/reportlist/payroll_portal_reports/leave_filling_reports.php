@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class leave_filling_reports
 {
@@ -27,6 +28,7 @@ class leave_filling_reports
     private $reporter;
     public $month;
     public $year;
+    private $payrollcommon;
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
 
@@ -42,6 +44,7 @@ class leave_filling_reports
         $this->othersClass = new othersClass;
         $this->fieldClass = new txtfieldClass;
         $this->reporter = new SBCPDF;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function createHeadField($config)
@@ -180,7 +183,7 @@ class leave_filling_reports
         }
 
 
-        $check = $this->othersClass->checkapproversetup($config, $adminid, 'LEAVE', 'e');
+        $check = $this->payrollcommon->checkapproversetup($config, $adminid, 'LEAVE', 'e');
         if ($check['filter'] != "") {
             $filteremp .= $check['filter'];
         }
@@ -201,10 +204,10 @@ class leave_filling_reports
                 app.clientname as appname,app2.clientname as appname2,lt.remarks,
                 lt.date_approved_disapproved as fdate,lt.date_approved_disapproved2 as sdate,
                 (case when lt.status2 = 'E' then 'ENTRY'
-                when lt.status2 = 'A' then 'APPROVED'
+                when (lt.status2 = 'A' or lt.status2 = 'P') then 'APPROVED'
                 else 'DISAPPROVED' end) as status2,
                 (case when lt.status = 'E' then 'ENTRY'
-                when lt.status = 'A' then 'APPROVED'
+                when (lt.status = 'A' or lt.status = 'P') then 'APPROVED'
                 else 'DISAPPROVED' end) as status,
                 lt.disapproved_remarks2 as reason2,lt.disapproved_remarks as reason,b.batch,lt.fillingtype,p.codename
 
@@ -553,8 +556,8 @@ class leave_filling_reports
         $border = '1px solid';
         $font = $this->companysetup->getrptfont($config['params']);
         $font_size = '7';
-        $count = 55;
-        $page = 55;
+        $count = 23;
+        $page = 24;
         $str = '';
 
         $this->reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1400'];
@@ -585,15 +588,15 @@ class leave_filling_reports
             }
         }
 
-        $layoutsize = 2150;
-        $seqcount = count($approversetup);
-        if (count($approversetup) == 1 || $both) {
-            $seqcount = 1;
-            $layoutsize = 1700;
-        }
+        // $layoutsize = 2150;
+        // $seqcount = count($approversetup);
+        // if (count($approversetup) == 1 || $both) {
+        // $seqcount = 1;
+        //     $layoutsize = 1700;
+        // }
         // $str .= $this->reporter->beginreport($layoutsize);
-        $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25;margin-top:10px;margin-left:10px;');
-        $str .= $this->camera_header($config, $layoutsize, $seqcount);
+        $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '10;margin-top:10px;margin-left:10px;');
+        $str .= $this->camera_header($config, $layoutsize);
         $daysbal = 0;
         $i = 0;
         $totalday = 0;
@@ -620,7 +623,7 @@ class leave_filling_reports
 
             if ($this->reporter->linecounter == $page) {
                 $str .= $this->reporter->page_break();
-                $str .= $this->camera_header($config, $layoutsize, $seqcount);
+                $str .= $this->camera_header($config, $layoutsize);
                 $page = $page + $count;
             }
         }

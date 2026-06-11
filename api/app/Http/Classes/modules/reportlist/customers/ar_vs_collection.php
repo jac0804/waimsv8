@@ -48,7 +48,6 @@ class ar_vs_collection
     data_set($col1, 'radioprint.options', [
       ['label' => 'Default', 'value' => 'default', 'color' => 'red'],
     ]);
-    data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
     data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
     data_set($col1, 'dclientname.label', 'Customer');
 

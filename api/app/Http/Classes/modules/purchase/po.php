@@ -944,7 +944,7 @@ class po
       $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
     }
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $obj[0]['inventory']['columns'][$cost]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px';
       $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
       $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
@@ -1118,14 +1118,21 @@ class po
       if ($config['params']['companyid'] == 8) { //maxipro
         $fields = [['dateid', 'terms'], 'due', 'dvattype', 'tin', 'dwhname', 'dprojectname'];
       } else {
-        $fields = [['dateid', 'terms'], 'due', 'dvattype', 'dwhname', 'dprojectname'];
+        if ($systype == 'REALESTATE') {
+          $fields = [['dateid', 'terms'], 'due', 'dvattype', 'dwhname', ['yourref', 'ourref']];
+        } else {
+          $fields = [['dateid', 'terms'], 'due', 'dvattype', 'dwhname', 'dprojectname'];
+        }
       }
 
       $col2 = $this->fieldClass->create($fields);
-      data_set($col2, 'dprojectname.required', true);
-      data_set($col2, 'dprojectname.lookupclass', 'projectcode');
-      data_set($col2, 'dprojectname.condition', ['checkstock']);
-      data_set($col2, 'dprojectname.addedparams', []);
+      if ($systype != 'REALESTATE') {
+        data_set($col2, 'dprojectname.required', true);
+        data_set($col2, 'dprojectname.lookupclass', 'projectcode');
+        data_set($col2, 'dprojectname.condition', ['checkstock']);
+        data_set($col2, 'dprojectname.addedparams', []);
+      }
+
       if ($config['params']['companyid'] == 8) { //maxipro
         data_set($col2, 'tin.readonly', true);
       }
@@ -1140,6 +1147,7 @@ class po
           break;
         default:
           switch ($config['params']['companyid']) {
+            case 69: //cemphil
             case 24: //goodfound
               $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'whname'];
               array_push($fields, 'ddeptname');
@@ -1173,6 +1181,7 @@ class po
       switch ($config['params']['companyid']) {
         case 10: //afti
         case 12: //afti usd
+        case 69: //cemphil
         case 24: //goodfound
           data_set($col2, 'ddeptname.label', 'Department');
           break;
@@ -1208,9 +1217,22 @@ class po
     }
 
     if ($this->companysetup->getisproject($config['params'])) {
-      $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'subprojectname'];
+      if ($systype == 'REALESTATE') {
+        $fields = ['dprojectname', 'phase', 'housemodel', ['blklot', 'lot'], 'amenityname', 'subamenityname'];
+      } else {
+        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'subprojectname'];
+      }
       $col3 = $this->fieldClass->create($fields);
-      data_set($col3, 'subprojectname.required', true);
+      if ($systype == 'REALESTATE') {
+        data_set($col3, 'dprojectname.lookupclass', 'project');
+        data_set($col3, 'phase.addedparams', ['projectid']);
+        data_set($col3, 'housemodel.addedparams', ['projectid']);
+        data_set($col3, 'blklot.addedparams', ['projectid', 'phaseid', 'modelid', 'fpricesqm']);
+        data_set($col3, 'subamenityname.addedparams', ['amenityid']);
+        data_set($col3, 'lot.readonly', true);
+      } else {
+        data_set($col3, 'subprojectname.required', true);
+      }
     } else {
       switch ($config['params']['companyid']) {
         case 10: //afti
@@ -1222,6 +1244,7 @@ class po
         case 36: //rozlab
           $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype'];
           break;
+        case 69: //cemphil
         case 24: //good found cement 
           $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dewt'];
           break;
@@ -1280,17 +1303,17 @@ class po
       }
     }
     switch ($systype) {
-      case 'REALESTATE':
-        $fields = ['dprojectname', 'phase', 'housemodel', ['blklot', 'lot'], 'amenityname', 'subamenityname'];
+      // case 'REALESTATE':
+      //   $fields = ['dprojectname', 'phase', 'housemodel', ['blklot', 'lot'], 'amenityname', 'subamenityname'];
 
-        $col4 = $this->fieldClass->create($fields);
-        data_set($col4, 'dprojectname.lookupclass', 'project');
-        data_set($col4, 'phase.addedparams', ['projectid']);
-        data_set($col4, 'housemodel.addedparams', ['projectid']);
-        data_set($col4, 'blklot.addedparams', ['projectid', 'phaseid', 'modelid', 'fpricesqm']);
-        data_set($col4, 'subamenityname.addedparams', ['amenityid']);
-        data_set($col4, 'lot.readonly', true);
-        break;
+      //   $col4 = $this->fieldClass->create($fields);
+      //   data_set($col4, 'dprojectname.lookupclass', 'project');
+      //   data_set($col4, 'phase.addedparams', ['projectid']);
+      //   data_set($col4, 'housemodel.addedparams', ['projectid']);
+      //   data_set($col4, 'blklot.addedparams', ['projectid', 'phaseid', 'modelid', 'fpricesqm']);
+      //   data_set($col4, 'subamenityname.addedparams', ['amenityid']);
+      //   data_set($col4, 'lot.readonly', true);
+      //   break;
       default:
         if ($this->companysetup->linearapproval($config['params'])) {
           array_push($fields, 'forapproval', 'doneapproved', 'lblapproved');
@@ -1550,7 +1573,7 @@ class po
     }
 
     $data[0]['isfa'] = '0';
- 
+
     $data[0]['shipto'] = '';
     return $data;
   }
@@ -3385,9 +3408,11 @@ class po
 
 
       if ($isproject) {
-        if ($data['stageid'] == 0) {
-          $msg = 'Stage cannot be blank -' . $item[0]->barcode;
-          return ['status' => false, 'msg' => $msg];
+        if ($this->companysetup->getsystemtype($config['params']) != 'REALESTATE') {
+          if ($data['stageid'] == 0) {
+            $msg = 'Stage cannot be blank -' . $item[0]->barcode;
+            return ['status' => false, 'msg' => $msg];
+          }
         }
       }
 
@@ -4034,6 +4059,18 @@ class po
     $trno = $config['params']['trno'];
     $forex = $this->coreFunctions->getfieldvalue($this->head, "forex", "trno=?", [$trno]);
 
+    $data2 = [];
+
+    if ($config['params']['companyid'] == 60) { //transpower
+      $data2 = $this->coreFunctions->opentable("select 'Invoice Price' as pricegrp, format(amt5,2) as amt,format(disc5,2) as disc,format(namt5,2) as netamt from item where barcode =?
+      union all 
+      select 'DR Price' as pricegrp, format(amt7,2) as amt,format(disc7,2) as disc,format(namt7,2) as netamt from item where barcode =?
+      union all
+      select 'Wholesale Price' as pricegrp, format(amt2,2) as amt ,format(disc2,2) as disc, format(namt2,2) as netamt from item where barcode =?
+      union all
+      select 'Base Price' as pricegrp, format(amt,2), format(disc,2), format(namt,2) as netamt  from item where barcode =?", [$barcode, $barcode, $barcode, $barcode]);
+    }
+
     switch ($config['params']['companyid']) {
       case 10:
       case 12:
@@ -4093,13 +4130,20 @@ class po
             and stock.rrcost <> 0
             order by dateid desc limit 5) as tbl order by dateid desc limit 1";
         $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
+
+        if ($config['params']['companyid'] == 60) { //transpower
+          if (empty($data)) {
+            $qry = "select 'Retail Price' as docno, amt,amt as defamt,disc,uom from item where barcode=?";
+            $data = $this->coreFunctions->opentable($qry, [$barcode]);
+          }
+        }
         break;
     }
 
     if (!empty($data)) {
-      return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data];
+      return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data, 'pricelevel' => $data2];
     } else {
-      return ['status' => false, 'msg' => 'No Latest price found...'];
+      return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data, 'pricelevel' => $data2];
     }
   } // end function
 

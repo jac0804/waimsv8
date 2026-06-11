@@ -65,6 +65,7 @@ class provisional_receipt_report
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);

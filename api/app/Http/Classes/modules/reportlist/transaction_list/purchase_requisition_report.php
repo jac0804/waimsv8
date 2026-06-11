@@ -223,12 +223,13 @@ class purchase_requisition_report
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptcode = $config['params']['dataparams']['dept'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       // if ($deptid == "") {
       //   $dept = "";
       // } else {
       //   $dept = $config['params']['dataparams']['dept'];
       // }
-      if ($deptcode != "") {
+      if ($deptcode != "" && $deptname != '') {
         $filter1 .= " and head.deptid = '$deptid'";
       }
       $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
@@ -794,12 +795,13 @@ class purchase_requisition_report
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptcode = $config['params']['dataparams']['dept'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       // if ($deptname == "") {
       //   $dept = "";
       // } else {
       //   $dept = $config['params']['dataparams']['dept'];
       // }
-      if ($deptcode != "") {
+      if ($deptcode != "" && $deptname != '') {
         $filter1 .= " and head.deptid = '$deptid'";
       }
     } else {

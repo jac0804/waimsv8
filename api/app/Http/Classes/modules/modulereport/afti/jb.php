@@ -162,7 +162,7 @@ class jb
             left join client as whreceiver on whreceiver.clientid = head.whreceiver
             left join hsrhead as sr on sr.trno = stock.refx
             left join transnum as num on num.trno=head.trno
-            where head.doc='jb' and stock.void<>1  and head.trno='$trno'";
+            where head.doc='jb' and stock.void<>1  and head.trno='$trno' order by stock.sortline";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;

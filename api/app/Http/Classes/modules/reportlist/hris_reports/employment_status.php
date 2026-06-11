@@ -111,6 +111,7 @@ class employment_status
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $divid     = $config['params']['dataparams']['divid'];
+        $divname     = $config['params']['dataparams']['divname'];
         $resigned     = $config['params']['dataparams']['resigned'];
 
         $filter   = "";
@@ -121,9 +122,10 @@ class employment_status
         if ($resigned != "") {
             $filter .= " and emp.resignedtype = '$resigned'";
         }
+        if ($divname != '') {
         if ($divid != 0) {
-            $filter .= " and emp.divid = '$divid'";
-        }
+            $filter .= " and emp.divid = $divid";
+        }}
 
         $query = "select concat(emp.emplast,', ',emp.empfirst,' ',emp.empmiddle) as employee,
            jt.jobtitle,clr.resignedtype as empstatus,date(clr.dateid) as dateid,branch.clientname as branch

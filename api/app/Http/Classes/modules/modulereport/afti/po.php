@@ -809,7 +809,7 @@ class po
     PDF::MultiCell(20, 50, '', '', 'L', false, 0);
     PDF::MultiCell(150, 50, 'Procurement', '', 'C', false, 0);
     PDF::MultiCell(200, 50, '', '', 'L', false, 0);
-    PDF::MultiCell(150, 50, 'O.P.L.P Head', '', 'C', false, 0);
+    PDF::MultiCell(150, 50, 'Operations Head', '', 'C', false, 0);
     PDF::MultiCell(20, 50, '', '', 'R');
   }
 
@@ -857,7 +857,7 @@ class po
 
     PDF::SetFont($font, 'R', $fontsize9);
     PDF::MultiCell(170, 50, '', '', 'L', false, 0);
-    PDF::MultiCell(150, 50, 'O.P.L.P. Head', '', 'C', false, 0);
+    PDF::MultiCell(150, 50, 'Operations Head', '', 'C', false, 0);
     PDF::MultiCell(170, 50, '', '', 'R');
   }
 
@@ -888,7 +888,7 @@ class po
     PDF::MultiCell(20, 50, '', '', 'L', false, 0);
     PDF::MultiCell(150, 50, 'Procurement', '', 'C', false, 0);
     PDF::MultiCell(200, 50, '', '', 'L', false, 0);
-    PDF::MultiCell(150, 50, 'O.P.L.P Head', '', 'C', false, 0);
+    PDF::MultiCell(150, 50, 'Operations Head', '', 'C', false, 0);
     PDF::MultiCell(20, 50, '', '', 'R');
 
     PDF::MultiCell(0, 0, "\n");

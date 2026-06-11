@@ -88,6 +88,7 @@ class daily_time_record_absent_report
                 '' as sectname,
                 '' as sectid,
                 '' as sectcode,
+                '' as sectrep,
                 '0' as 'reporttype'
                 ");
     }
@@ -116,6 +117,9 @@ class daily_time_record_absent_report
         $divid     = $config['params']['dataparams']['divid'];
         $deptid     = $config['params']['dataparams']['deptid'];
         $sectid     = $config['params']['dataparams']['sectid'];
+        $divname     = $config['params']['dataparams']['divname'];
+        $deptname     = $config['params']['dataparams']['deptname'];
+        $sectname     = $config['params']['dataparams']['sectname'];
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $reporttype = $config['params']['dataparams']['reporttype'];
@@ -123,13 +127,13 @@ class daily_time_record_absent_report
         if ($client != "") {
             $filter .= " and e.client = '$client'";
         }
-        if ($deptid != 0) {
+        if ($deptid != 0 && $deptname != '') {
             $filter .= " and emp.deptid = $deptid";
         }
-        if ($divid != 0) {
+        if ($divid != 0 && $divname != '') {
             $filter .= " and emp.divid = $divid";
         }
-        if ($sectid != 0) {
+        if ($sectid != 0 && $sectname != '') {
             $filter .= " and emp.sectid = $sectid";
         }
         // for summary

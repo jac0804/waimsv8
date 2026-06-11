@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sbcscript\sbcscript;
 
 class carmakesetup
 {
@@ -32,13 +33,14 @@ class carmakesetup
     public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => true];
     public $head = 'cmake';
     public $detail = 'cmodel';
-    public $prefix = '';
+    public $prefix = 'CAR';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = '';
     private $stockselect;
     private $tablenum;
 
     private $fields = [
+        'carcode',
         'carname',
         'picture',
     ];
@@ -49,6 +51,7 @@ class carmakesetup
     public $showfilter = false;
     public $showcreatebtn = true;
     private $reporter;
+    private $scbscript;
 
     public function __construct()
     {
@@ -61,6 +64,7 @@ class carmakesetup
         $this->logger = new Logger;
         $this->sqlquery = new sqlquery;
         $this->reporter = new SBCPDF;
+        $this->scbscript = new sbcscript;
     }
 
     public function getAttrib()
@@ -96,12 +100,15 @@ class carmakesetup
 
     public function createHeadField($config)
     {
-        $fields = ['name', 'client'];
+        $fields = ['client', 'name'];
         $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'name.label', 'Car Make');
-        data_set($col1, 'client.type', 'hidden');
-        data_set($col1, 'client.label', '');
-        data_set($col1, 'client.required', false);
+        data_set($col1, 'name.label', 'Description');
+
+        data_set($col1, 'client.class', 'csclient sbccsenablealways');
+        data_set($col1, 'client.lookupclass', 'lookupledgercarmake');
+        data_set($col1, 'client.action', 'lookupledger');
+        data_set($col1, 'client.required', true);
+        data_set($col1, 'client.label', 'Code');
 
         $fields = ['picture'];
         $col2 = $this->fieldClass->create($fields);
@@ -134,7 +141,6 @@ class carmakesetup
 
     public function createtabbutton($config)
     {
-
         $tbuttons = [];
         $obj = $this->tabClass->createtabbutton($tbuttons);
 
@@ -177,7 +183,11 @@ class carmakesetup
     {
         $clientid = $this->othersClass->val($config['params']['clientid']);
 
-        $fields = "id as clientid, carname as name, carname as client, picture";
+        if ($clientid == 0) {
+            $clientid = $this->coreFunctions->datareader("select id as value from cmake order by id desc limit 1");
+        }
+
+        $fields = "id as clientid, carname as name, carcode as client, picture";
 
         $qry = "select " . $fields . "
                 from cmake
@@ -197,19 +207,20 @@ class carmakesetup
 
     public function openstock($id, $config)
     {
-        $qry = 'select line, carid, year, model, type, sub_model, other_info, "" as bgcolor 
+        $qry = 'select line, carid, cryear, model, crtype, sub_model, other_info, "" as bgcolor 
             from cmodel 
             where carid = ?';
 
         return $this->coreFunctions->opentable($qry, [$id]);
     }
 
-    private function resetdata($carname = '')
+    private function resetdata($carcode = '', $carname = '')
     {
         $data = [];
         $data[0]['clientid'] = 0;
         $data[0]['name'] = $carname;
-        $data[0]['client'] = $carname;
+        $data[0]['client'] = $carcode;
+        $data[0]['carcode'] = $carcode;
         $data[0]['picture'] = '';
 
         return $data;
@@ -220,11 +231,11 @@ class carmakesetup
         $length = strlen($pref);
         if ($length == 0) {
             $last_id = $this->coreFunctions->datareader(
-                "select carname as value from " . $this->head . " order by id desc limit 1"
+                "select carcode as value from " . $this->head . " order by id desc limit 1"
             );
         } else {
             $last_id = $this->coreFunctions->datareader(
-                "select carname as value from " . $this->head . " where left(carname, ?) = ? order by id desc limit 1",
+                "select carcode as value from " . $this->head . " where left(carcode, ?) = ? order by id desc limit 1",
                 [$length, $pref]
             );
         }
@@ -237,6 +248,13 @@ class carmakesetup
         $data = [];
         $clientid = 0;
         $msg = '';
+
+        if ($isupdate) {
+            unset($this->fields[array_search('carcode', $this->fields)]);
+        } else {
+            $data['carcode'] = $head['client']; 
+            $head['carcode'] = $head['client'];
+        }
 
         if (isset($head['name'])) {
             $head['carname'] = $head['name'];
@@ -256,10 +274,12 @@ class carmakesetup
             $data['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->head, $data, ['id' => $head['clientid']]);
             $clientid = $head['clientid'];
+            $this->logger->sbcmasterlog($clientid, $config, 'UPDATE CAR MAKE - CODE: ' . $head['client'] . ' - NAME: ' . $head['name']);
         } else {
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $clientid = $this->coreFunctions->insertGetId($this->head, $data);
+            $this->logger->sbcmasterlog($clientid, $config, 'CREATE CAR MAKE - CODE: ' . $head['client'] . ' - NAME: ' . $head['name']);
         }
 
         $stock = $this->openstock($clientid, $config);
@@ -268,7 +288,7 @@ class carmakesetup
 
     public function newclient($config)
     {
-        $data = $this->resetdata();
+        $data = $this->resetdata($config['newclient']);
         return ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Car Make'];
     }
 
@@ -289,4 +309,9 @@ class carmakesetup
 
         return ['clientid' => 0, 'status' => true, 'msg' => 'Successfully deleted.'];
     } // end function
+
+    public function sbcscript($config)
+    {
+      return $this->scbscript->carmakesetup($config);
+    }
 }

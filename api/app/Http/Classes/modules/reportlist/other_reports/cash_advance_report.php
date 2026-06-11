@@ -124,6 +124,7 @@ class cash_advance_report
     $start = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
     $end = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
     $center = $filters['params']['dataparams']['center'];
+    $centername = $filters['params']['dataparams']['centername'];
     $costcenter = isset($filters['params']['dataparams']['costcenter']) ? $filters['params']['dataparams']['costcenter'] : "";
     $costcenterid = isset($filters['params']['dataparams']['costcenterid']) ? $filters['params']['dataparams']['costcenterid'] : 0;
     $companyid = $filters['params']['companyid'];
@@ -133,6 +134,7 @@ class cash_advance_report
 
     $deptcode = $filters['params']['dataparams']['dept'];
     $deptid = $filters['params']['dataparams']['deptid'];
+    $deptname = $filters['params']['dataparams']['deptname'];
 
     $filter = "";
 
@@ -144,11 +146,11 @@ class cash_advance_report
       $filter .= " and head.projectid = '" . $costcenterid . "' ";
     }
 
-    if ($center != "") {
+    if ($center != "" && $centername != '') {
       $filter .= " and cntnum.center='" . $center . "' ";
     }
 
-    if ($deptcode != "") {
+    if ($deptcode != "" && $deptname != '') {
       $filter .= " and head.deptid = $deptid";
     }
 

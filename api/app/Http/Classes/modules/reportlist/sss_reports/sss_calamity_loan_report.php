@@ -108,6 +108,8 @@ class sss_calamity_loan_report
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $month = intval($config['params']['dataparams']['month']);
     $year = intval($config['params']['dataparams']['year']);
 
@@ -116,10 +118,10 @@ class sss_calamity_loan_report
     if ($client != "") {
       $filter .= " and client.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter .= " and e.deptid = $deptid";
     }
-    if ($divid != 0) {
+    if ($divid != 0 && $divname != '') {
       $filter .= " and e.divid = $divid";
     }
 

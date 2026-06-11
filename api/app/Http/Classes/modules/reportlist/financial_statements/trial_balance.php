@@ -95,6 +95,7 @@ class trial_balance
   {
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -433,6 +434,7 @@ class trial_balance
         $result = $this->aftechdefault_query($config, $company);
         $reportdata =  $this->AFTECH_DEFAULT_TRIAL_BALANCE_LAYOUT($config, $result);
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $result = $this->gfc_query($config);
         $reportdata =  $this->GFC_TRIAL_BALANCE_LAYOUT($config, $result);
@@ -1860,27 +1862,27 @@ class trial_balance
         $db = 0;
       }
 
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
-        $str .= $this->reporter->col($data[$i]['acno'], '40', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . $data[$i]['acnoname'], '250', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data[$i]['acno'], '40', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . $data[$i]['acnoname'], '250', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
 
-        if ($db == 0) {
-          $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
-        } else {
-          $str .= $this->reporter->col(number_format($db, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
-        }
+      if ($db == 0) {
+        $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($db, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+      }
 
-        $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('     ', '20', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
 
-        if ($cr == 0) {
-          $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
-        } else {
-          $str .= $this->reporter->col(number_format($cr, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
-        }
-        $str .= $this->reporter->endrow();
+      if ($cr == 0) {
+        $str .= $this->reporter->col('-', '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($cr, 2), '50', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+      }
+      $str .= $this->reporter->endrow();
 
       $totaldb = $totaldb + $cr;
       $totalcr = $totalcr + $db;

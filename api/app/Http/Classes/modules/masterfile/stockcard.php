@@ -218,7 +218,8 @@ class stockcard
         return $cols;
         break;
 
-      case 24:
+      case 69: //cemphil
+      case 24: //goodfound
         $action = 0;
         $barcode = 1;
         $itemname = 2;
@@ -497,6 +498,7 @@ class stockcard
         $joins = "left join client as dept on dept.clientid = item.linkdept";
         break;
 
+      case 69: //cemphil
       case 24: //goodfound
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt'];
         $condition .= "where 1=1 and item.isfa=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
@@ -940,8 +942,8 @@ class stockcard
             }
 
 
-            if ($companyid == 64) { //yulick
-              $return['SPECIAL COMMISSION RATE BRACKET'] = ['icon' => 'fa fa-equals', 'tab' => $commissionrate];
+            if ($companyid == 64) { //excilin
+              $return['SPECIAL COMMISSION RATE BRACKET'] = ['icon' => 'fa fa-percent', 'tab' => $commissionrate];
             }
           }
         }
@@ -1260,6 +1262,7 @@ class stockcard
         array_push($fields, 'isgeneric');
         break;
       case 19: //housegem
+      case 69: //cemphil
       case 24: //goodfound
         array_push($fields, 'isofficesupplies');
         break;
@@ -1279,7 +1282,7 @@ class stockcard
 
 
     $col4 = $this->fieldClass->create($fields);
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       data_set($col4, 'fg_isequipmenttool.label', 'Materials Item');
       data_set($col4, 'isofficesupplies.label', 'Supplies Item');
     }

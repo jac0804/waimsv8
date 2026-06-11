@@ -120,7 +120,7 @@ class ch
   {
     $userid = $config['params']['adminid'];
     $dept = '';
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'total', 'rem', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'amount', 'rem', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -131,12 +131,16 @@ class ch
 
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$listdate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
-    $cols[$total]['label'] = 'Total Amount';
-    $cols[$total]['align'] = 'text-left';
-    $cols[$liststatus]['name'] = 'statuscolor';
+    $cols[$ourref]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
+
+    $cols[$amount]['label'] = 'Total Amount';
+    $cols[$amount]['align'] = 'text-left';
+    $cols[$amount]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
 
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -190,16 +194,18 @@ class ch
       }
     }
 
+
+
     $qry = "select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, $lstat as status, $lstatcolor as statuscolor,head.rem as rem,
     head.createby,head.editby,head.viewby,num.postedby,
-    head.yourref, head.ourref,head.amount
+    head.yourref, head.ourref,format(if(head.amount != 0, head.amount, (select ifnull(sum(stock.ext),0) from " . $this->stock . " as stock where stock.trno=head.trno)), 2) as amount
     from " . $this->head . " as head left join " . $this->tablenum . " as num on num.trno=head.trno 
     left join trxstatus as stat on stat.line=num.statid
     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
     union all
     select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid,$gstat as status,$gstatcolor as statuscolor,head.rem as rem,
     head.createby,head.editby,head.viewby, num.postedby,
-    head.yourref, head.ourref ,head.amount
+    head.yourref, head.ourref ,format(if(head.amount != 0, head.amount, (select ifnull(sum(stock.ext),0) from " . $this->hstock . " as stock where stock.trno=head.trno)), 2) as amount
     from " . $this->hhead . " as head left join " . $this->tablenum . " as num on num.trno=head.trno 
     left join trxstatus as stat on stat.line=num.statid
     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
@@ -658,7 +664,8 @@ class ch
     '' as bgcolor,
     '' as errcolor,
     case when stock.noprint=0 then 'false' else 'true' end as noprint,
-    item.itemname as itemdescription, stock.itemname";
+    item.itemname as itemdescription, stock.itemname,
+    round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa";
     return $sqlselect;
   }
 
@@ -684,7 +691,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint, stock.itemname
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname,stock.qa
     UNION ALL
     " . $sqlselect . "
     FROM $this->hstock as stock
@@ -700,7 +707,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint, stock.itemname order by sortline, line";
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname,stock.qa order by sortline, line";
 
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
@@ -729,7 +736,7 @@ class ch
     stock." . $this->damt . ",
     stock.isqty,stock.ext ,uom.factor,
     stock.encodeddate,stock.disc,stock.void,stock.whid,warehouse.client,
-    warehouse.clientname,stock.rem,stock.noprint, stock.itemname";
+    warehouse.clientname,stock.rem,stock.noprint, stock.itemname,stock.qa";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -1477,11 +1484,10 @@ class ch
     $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
-
     if (isset($dataparams['checked'])) $this->othersClass->writeSignatories($config, 'checked', $dataparams['checked']);
     if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
     if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
-
+    if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'reloadhead' => true];
   }
 

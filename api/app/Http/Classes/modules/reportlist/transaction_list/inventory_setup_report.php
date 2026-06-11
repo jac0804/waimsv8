@@ -388,6 +388,7 @@ class inventory_setup_report
     $deptid = $config['params']['dataparams']['deptid'];
     $project = $config['params']['dataparams']['projectid'];
     $dept = $config['params']['dataparams']['dept']; //deptcode
+    $deptname = $config['params']['dataparams']['deptname'];
 
     $filter = "";
     if ($prefix != "") {
@@ -408,7 +409,7 @@ class inventory_setup_report
     if ($prjid != "") {
       $filter .= " and stock.projectid = $project";
     }
-    if ($dept != "") {
+    if ($dept != "" && $deptname != '') {
       $filter .= " and head.deptid = $deptid";
     }
 

@@ -50,7 +50,6 @@ class outstanding_customer_receivables
         ]);
         data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
         data_set($col1, 'dclientname.label', 'Customer');
-        data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
         $fields = ['radioreporttype'];
         $col2 = $this->fieldClass->create($fields);

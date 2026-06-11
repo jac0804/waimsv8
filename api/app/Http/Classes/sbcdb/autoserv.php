@@ -76,36 +76,41 @@ class autoserv
 
 
         $qry = " CREATE TABLE  `ptjobs` (
-        `line` int(10) unsigned NOT NULL DEFAULT AUTO_INCREMENT,
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
         `jobid` int(10) unsigned NOT NULL DEFAULT '0',
-        `pttrno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
         `rem` varchar(200) NOT NULL DEFAULT '',
         `encodeddate` datetime DEFAULT NULL,
         `encodedby` varchar(100) NOT NULL DEFAULT '',
         `editdate` datetime DEFAULT NULL,
         `editby` varchar(100) NOT NULL DEFAULT '',
-         PRIMARY KEY (`line`) USING BTREE
+         PRIMARY KEY (`trno`,`line`) USING BTREE
          ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         $this->coreFunctions->sbccreatetable("ptjobs", $qry);
 
         $qry = " CREATE TABLE  `pttask` (
-        `line` int(10) unsigned NOT NULL DEFAULT AUTO_INCREMENT,
-        `pttrno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
         `jobline` int(10) unsigned NOT NULL DEFAULT '0',
+        `laborline` int(10) unsigned NOT NULL DEFAULT '0',
+        `mecline` int(10) unsigned NOT NULL DEFAULT '0',
         `cost` decimal(18,2) NOT NULL DEFAULT '0.00',
-        `mechanic` varchar(200) NOT NULL DEFAULT '',
+        `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
         `rem` varchar(200) NOT NULL DEFAULT '',
         `encodeddate` datetime DEFAULT NULL,
         `encodedby` varchar(100) NOT NULL DEFAULT '',
         `editdate` datetime DEFAULT NULL,   
         `editby` varchar(100) NOT NULL DEFAULT '',
-        PRIMARY KEY (`line`) USING BTREE
+        PRIMARY KEY (`trno`,`line`) USING BTREE
         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         $this->coreFunctions->sbccreatetable("pttask", $qry);
 
         $qry = "CREATE TABLE ptstock like sostock";
         $this->coreFunctions->sbccreatetable("ptstock", $qry);
 
+
+        // $this->coreFunctions->sbcdroptable("ptjobs");
+        // $this->coreFunctions->sbcdroptable("pttask");
 
         $qry = "CREATE TABLE `jobtask` (
             `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -133,5 +138,130 @@ class autoserv
         $this->coreFunctions->sbcaddcolumngrp(["cntnuminfo", "hcntnuminfo"], ["kmno"], "varchar(100) NOT NULL DEFAULT ''", 0);
 
 
+
+        $this->coreFunctions->sbcdropcolumngrp(["jobthead"], ['isjobdt']);
+        $this->coreFunctions->sbcdropcolumngrp(["jobtask"], ['istlabor']);
+
+        $this->coreFunctions->sbcaddcolumngrp(["pttask"], ["laborline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["ptstock"], ["jobline", "taskline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["ptstock"], ["extension"], "varchar(200) NOT NULL DEFAULT ''", 0);
+
+
+
+        $qry = " CREATE TABLE  `amjobs` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `jobid` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `packageline` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        `editby` varchar(100) NOT NULL DEFAULT '',
+         PRIMARY KEY (`trno`,`line`) USING BTREE
+         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("amjobs", $qry);
+
+        $qry = " CREATE TABLE  `hamjobs` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `jobid` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `packageline` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        `editby` varchar(100) NOT NULL DEFAULT '',
+         PRIMARY KEY (`trno`,`line`) USING BTREE
+         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("hamjobs", $qry);
+
+
+        $qry = " CREATE TABLE  `amtask` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `jobline` int(10) unsigned NOT NULL DEFAULT '0',
+        `laborline` int(10) unsigned NOT NULL DEFAULT '0',
+        `mecline` int(10) unsigned NOT NULL DEFAULT '0',
+        `cost` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,   
+        `editby` varchar(100) NOT NULL DEFAULT '',
+        PRIMARY KEY (`trno`,`line`) USING BTREE
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("amtask", $qry);
+
+
+        $qry = " CREATE TABLE  `hamtask` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `jobline` int(10) unsigned NOT NULL DEFAULT '0',
+        `laborline` int(10) unsigned NOT NULL DEFAULT '0',
+        `mecline` int(10) unsigned NOT NULL DEFAULT '0',
+        `cost` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,   
+        `editby` varchar(100) NOT NULL DEFAULT '',
+        PRIMARY KEY (`trno`,`line`) USING BTREE
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("hamtask", $qry);
+
+        $qry = "CREATE TABLE awhead like sohead";
+        $this->coreFunctions->sbccreatetable("awhead", $qry);
+
+        $this->coreFunctions->execqrynolog("ALTER TABLE cmodel CHANGE year cryear INTEGER UNSIGNED NOT NULL DEFAULT 0");
+        $this->coreFunctions->execqrynolog("ALTER TABLE cmodel CHANGE type crtype VARCHAR(150) NOT NULL DEFAULT ''");
+
+        $qry = "CREATE TABLE `cvehicle` (
+        `line` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+        `clientid` INTEGER(11) UNSIGNED NOT NULL DEFAULT 0,
+        `cmodelline` INTEGER(11) UNSIGNED NOT NULL DEFAULT 0,
+        `carid` INTEGER(11) UNSIGNED NOT NULL DEFAULT 0,
+        `cmake` VARCHAR(150) not null default '',
+        `licenseno` VARCHAR(50) NOT NULL DEFAULT '',
+        `mileage` DECIMAL(10,2) DEFAULT 0,
+        `carengine` VARCHAR(150) not null default '',
+        `transmission` VARCHAR(150) not null default '',
+        `motorno` VARCHAR(50) not null default '',
+        `chassis` VARCHAR(50) not null default '',
+        `mvno` VARCHAR(50) not null default '',
+        `insurance` VARCHAR(150) not null default '',
+        `labor` DECIMAL(10,2) DEFAULT 0,
+        `createby` VARCHAR(150) NOT NULL DEFAULT '',
+        `createdate` datetime DEFAULT NULL,
+        `editby` VARCHAR(150) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        PRIMARY KEY (`line`),
+        INDEX `Index_Carid`(`carid`),
+        INDEX `Index_Cmodelline`(`cmodelline`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+        $this->coreFunctions->sbccreatetable("cvehicle", $qry);
+
+        $this->coreFunctions->sbcaddcolumn("cmake", "carcode", "varchar(20) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['client'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['clientname'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['address'], "varchar(255) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['ref'], "varchar(100) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['kmno'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['recommend'], "varchar(500) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['cryear'], "int(10) unsigned NOT NULL DEFAULT 0", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['licenseno'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['make'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['modelname'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['crtype'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['submodel'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['carengine'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['transmission'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mvno'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mileage'], "decimal(10,2) DEFAULT 0", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['manufacturer'], "varchar(100) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['chassisno'], "varchar(50) NOT NULL DEFAULT ''", 0);
     } //end function
+
 } // end class

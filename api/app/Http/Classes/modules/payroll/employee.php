@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class employee
 {
@@ -38,6 +39,7 @@ class employee
   public $tablelogs_del = 'del_client_log';
   public $tagging = "isemployee";
   private $stockselect;
+  private $payrollcommon;
 
   private $fields = [
     'client',
@@ -157,6 +159,7 @@ class employee
     $this->logger = new Logger;
     $this->sqlquery = new sqlquery;
     $this->reporter = new SBCPDF;
+    $this->payrollcommon = new payrollcommon;
   }
 
   public function getAttrib()
@@ -205,7 +208,7 @@ class employee
     $companyid = $config['params']['companyid'];
     $center = $config['params']['center'];
     $emplvl = $this->othersClass->checksecuritylevel($config, true);
-    $check = $this->othersClass->checkapproversetup($config, $id, '', 'emp');
+    $check = $this->payrollcommon->checkapproversetup($config, $id, '', 'emp');
     $searchfield = [];
     $filtersearch = "";
     $search = $config['params']['search'];

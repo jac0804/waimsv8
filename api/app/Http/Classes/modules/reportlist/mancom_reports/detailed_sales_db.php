@@ -139,7 +139,7 @@ class detailed_sales_db
       (hqsstock.amt*(ifnull(uom.factor,1))) as itemrate,
       ifnull(hqshead.agent, '') as agcode, ifnull(ag.clientname, '1') as agname,
       hqshead.yourref as ponum, date(hqshead.due) as podate, item.partno as skuno,
-      if(hqshead.cur = 'P', 'PHP', hqshead.cur ) as cur, ifnull(sg.groupname,' NO SALES GROUP') as leader, branch.clientname as branchname,hqsstock.sgdrate,client.industry
+      if(hqshead.cur = 'P', 'PHP', hqshead.cur ) as cur, ifnull(sg.groupname,' NO SALES GROUP') as leader, branch.clientname as branchname,hqsstock.sgdrate,r.category as industry,r.reqtype as subindustry, r.description as category
       from hsqhead as sohead
       left join hqshead as hqshead on hqshead.sotrno = sohead.trno
       left join hqsstock as hqsstock on hqsstock.trno = hqshead.trno
@@ -150,6 +150,7 @@ class detailed_sales_db
       left join client on client.client=hqshead.client
       left join salesgroup as sg on sg.line = ag.salesgroupid
       left join uom on uom.itemid = item.itemid and uom.uom = hqsstock.uom
+      left join reqcategory as r on r.line=client.industryid
       where hqsstock.void<>1 and date(sohead.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
       union all
       select 'SSO' as ttype, sohead.trno, ifnull(sohead.docno,hqshead.docno) as sodocno,
@@ -158,7 +159,7 @@ class detailed_sales_db
       item.barcode, item.itemname, (hqtstock.isqty-(hqtstock.voidqty/case ifnull(uom.factor,0) when 0 then 1 else uom.factor end)) as qty, (hqtstock.amt*(ifnull(uom.factor,1))) as itemrate,
       ifnull(hqshead.agent, '') as agcode, ifnull(ag.clientname, '1') as agname,
       hqshead.yourref as ponum, date(hqshead.due) as podate, item.partno as skuno, 
-      if(hqshead.cur = 'p', 'php', hqshead.cur ) as cur, ifnull(sg.groupname,' no sales group') as leader, branch.clientname as branchname,hqtstock.sgdrate,client.industry
+      if(hqshead.cur = 'p', 'php', hqshead.cur ) as cur, ifnull(sg.groupname,' no sales group') as leader, branch.clientname as branchname,hqtstock.sgdrate,r.category as industry,r.reqtype as subindustry, r.description as category
       from hqshead as hqshead
       left join hqtstock as hqtstock on hqshead.trno = hqtstock.trno
       left join hsrhead on hsrhead.qtrno = hqshead.trno
@@ -170,6 +171,7 @@ class detailed_sales_db
       left join client as ag on ag.client = hqshead.agent
       left join client on client.client=hqshead.client
       left join salesgroup as sg on sg.line = ag.salesgroupid
+      left join reqcategory as r on r.line=client.industryid
       where item.islabor =1 and hqtstock.void<>1 and date(hqshead.due) between '" . $start . "' and '" . $end . "' " . $filter . "
       order by leader, agname, dateid desc, ponum";
 
@@ -221,6 +223,8 @@ class detailed_sales_db
     $str .= $this->reporter->col('BRANCH', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('DATE', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('INDUSTRY', '50', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('SUB INDUSTRY', '50', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('CATEGORY', '50', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('CUSTOMER', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('SO NUMBER', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('PO NUMBER', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
@@ -294,6 +298,8 @@ class detailed_sales_db
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -319,6 +325,8 @@ class detailed_sales_db
               $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -348,6 +356,8 @@ class detailed_sales_db
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -381,6 +391,8 @@ class detailed_sales_db
       $str .= $this->reporter->col($data->branchname, '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->dateid, '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->industry, '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->subindustry, '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->category, '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->clientname, '120', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->sodocno, '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->ponum, '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -426,6 +438,8 @@ class detailed_sales_db
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -447,6 +461,8 @@ class detailed_sales_db
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -470,6 +486,8 @@ class detailed_sales_db
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -491,6 +509,8 @@ class detailed_sales_db
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');

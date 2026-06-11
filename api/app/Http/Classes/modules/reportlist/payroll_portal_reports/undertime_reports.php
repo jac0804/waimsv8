@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class undertime_reports
 {
@@ -27,6 +28,7 @@ class undertime_reports
     private $reporter;
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
+    private $payrollcommon;
     public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1370'];
 
     public function __construct()
@@ -36,6 +38,7 @@ class undertime_reports
         $this->othersClass = new othersClass;
         $this->fieldClass = new txtfieldClass;
         $this->reporter = new SBCPDF;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function createHeadField($config)
@@ -134,6 +137,7 @@ class undertime_reports
         $start = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
         $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
         $divid = $config['params']['dataparams']['divid'];
+        $divname = $config['params']['dataparams']['divname'];
         $client     = $config['params']['dataparams']['client'];
         $paymode     = $config['params']['dataparams']['paymenttype'];
         $posttype     = $config['params']['dataparams']['posttype'];
@@ -141,9 +145,13 @@ class undertime_reports
         $companyid = $config['params']['companyid'];
         $filter = "";
         $status = "";
-        if ($divid != 0) {
-            $filter .= " and e.divid = " . $divid . "";
-        }
+        // if ($divid != 0) {
+        //     $filter .= " and e.divid = " . $divid . "";
+        // }
+        if ($divname != '') {
+            if ($divid != 0) {
+                $filter .= " and e.divid = " . $divid . "";
+        }}
         if ($client != "") {
             $filter .= " and client.client = '$client' ";
         }
@@ -155,7 +163,7 @@ class undertime_reports
         $filteremp = "";
         $leftjoin = "";
 
-        $check = $this->othersClass->checkapproversetup($config, $userid, 'UNDERTIME', 'e');
+        $check = $this->payrollcommon->checkapproversetup($config, $userid, 'UNDERTIME', 'e');
         if ($check['filter'] != "") {
             $filteremp .= $check['filter'];
         }

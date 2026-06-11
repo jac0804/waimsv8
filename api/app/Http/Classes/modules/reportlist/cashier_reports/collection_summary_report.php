@@ -250,7 +250,6 @@ class collection_summary_report
     }
 
 
-
     public function count_all_bankname($config, $data)
     {
         $count = 0;
@@ -260,13 +259,11 @@ class collection_summary_report
         return $count;
     }
 
-
     private function displayHeader($layoutsize, $border, $font, $fontsize, $config)
     {
         $center     = $config['params']['center'];
         $username   = $config['params']['user'];
         $reporttype = $config['params']['dataparams']['reporttype'];
-
         $bankname = $this->banknames($config);
         $bankname_count = $this->count_all_bankname($config, $bankname);
         $layoutsize = 480 + ($bankname_count * 100);
@@ -276,6 +273,8 @@ class collection_summary_report
             $lookupKey = $array->center . '_' . $array->datenow;
             $bankLookup[$lookupKey][$array->bankname] = $array->bankname;
         }
+
+        // var_dump($bankLookup);
 
         $str = '';
         $font = $this->companysetup->getrptfont($config['params']);
@@ -327,111 +326,6 @@ class collection_summary_report
         }
         $str .= $this->reporter->endrow();
 
-
-        return $str;
-    }
-
-    public function reportDefaultLayout($config)
-    {
-        $result = $this->reportDefault($config);
-        $count = 10;
-        $page = 10;
-        $font = $this->companysetup->getrptfont($config['params']);
-        $fontsize = "10";
-        $border = "1px solid ";
-
-        if (empty($result)) {
-            return $this->othersClass->emptydata($config);
-        }
-        $bankname = $this->banknames($config);
-        $bankname_count = $this->count_all_bankname($config, $bankname);
-        $layoutsize = 480 + ($bankname_count * 100);
-
-        $bankLookup = [];
-        foreach ($bankname as $array_index => $array) {
-            // Combine center and datenow as a unique key
-            $lookupKey = $array->center . '_' . $array->datenow;
-            $bankLookup[$lookupKey][$array->bankname] = isset($array->amount) ? number_format($array->amount, 2) : '0.00';
-        }
-
-        $str = '';
-        $str .= $this->reporter->beginreport($layoutsize);
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->displayHeader($this->reportParams['layoutSize'], $border, $font, $fontsize, $config);
-        $grandTotals = [];
-        $totalbal = 0;
-        foreach ($result as $key => $data) {
-
-            $dateid = $data->datenow;
-            $branch = $data->branch;
-            $center = $data->center;
-            $amount = $data->amount;
-            $arr_dateid = $this->reporter->fixcolumn([$dateid], '20', 0);
-            $arr_branch = $this->reporter->fixcolumn([$branch], '24', 0);
-            $arr_amount = $this->reporter->fixcolumn([$amount], '20', 0);
-
-            $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_branch]);
-            for ($r = 0; $r < $maxrow; $r++) {
-                $str .= $this->reporter->startrow();
-                $str .= $this->reporter->addline();
-                $str .= $this->reporter->col(' ' . (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '80', null, false, '1px solid ', '', 'L', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col(' ' . (isset($arr_branch[$r]) ? $arr_branch[$r] : ''), '100', null, false, '1px solid ', '', 'C', $font, $fontsize, '', '', '');
-                $amountValue = isset($arr_amount[$r]) ? $arr_amount[$r] : '';
-                $amountValue = (float) $amountValue;
-                // Round the value to 2 decimal places
-                $amountValue = round($amountValue, 2);
-                $amt = number_format($amountValue, 2);
-
-                if ($r == 0) {
-                    $str .= $this->reporter->col($amt, '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                } else {
-                    $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                }
-                $lookupKey = $center . '_' . $dateid;
-                $totalBankAmount = 0;
-
-                if ($r == 0) {
-                    if (isset($bankLookup[$lookupKey])) {
-                        foreach ($bankLookup[$lookupKey] as $bankname => $bankTotal) {
-                            $bankTotal = str_replace(',', '', $bankTotal);
-                            $bankTotal = (float) $bankTotal;
-                            $totalBankAmount += $bankTotal;
-
-                            if (!isset($grandTotals[$bankname])) {
-                                $grandTotals[$bankname] = 0;
-                            }
-                            $grandTotals[$bankname] += $bankTotal;
-                            // var_dump($grandTotals);
-
-                            $str .= $this->reporter->col(number_format($bankTotal, 2), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                        }
-                        $balance = $amount - $totalBankAmount;
-                        $totalbal += $balance;
-                        $str .= $this->reporter->col(number_format($balance, 2), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                    } else {
-                        $str .= $this->reporter->col('-', '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                    }
-                } else {
-                    $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $fontsize, '', '', '');
-                }
-            }
-        }
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'T', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('TOTAL: ', '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize, 'B', '', '');
-        foreach ($grandTotals as $bankname => $total) {
-            $str .= $this->reporter->col(number_format($total, 2), '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize, 'B', '', '');
-        }
-        $str .= $this->reporter->col(number_format($totalbal, 2), '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize, 'B', '', '');
-
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->endreport();
 
         return $str;
     }
@@ -489,7 +383,7 @@ class collection_summary_report
 
         foreach ($groupedByUser as $username => $branches) {
 
-  
+
             if ($isUserReport) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
@@ -546,7 +440,7 @@ class collection_summary_report
                         $grandTotalBal += $balance;
                         $str .= $this->reporter->col(number_format($balance, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-      
+
                         if ($isUserReport) {
                             $str .= $this->reporter->col($cashiers, '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
                         }
@@ -556,7 +450,7 @@ class collection_summary_report
                         }
                         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-               
+
                         if ($isUserReport) {
                             $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
                         }
@@ -606,6 +500,182 @@ class collection_summary_report
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->endreport();
+        return $str;
+    }
+
+
+    private function default_displayHeader($layoutsize, $border, $font, $fontsize, $config, $bankColumns = [])
+    {
+        $center = $config['params']['center'];
+        $username = $config['params']['user'];
+        $reporttype = $config['params']['dataparams']['reporttype'];
+
+        $layoutsize = 480 + (count($bankColumns) * 100);
+
+        $str = '';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $fontsize = "10";
+        $border = "1px solid ";
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username, $config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= '<br/><br/>';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('COLLECTION REPORT', null, null, false, '10px solid ', '', '', $font, '18', 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('DATED', '80', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('BRANCHES', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('TOTAL COLLECTIONS', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+
+        foreach ($bankColumns as $bankname) {
+            $str .= $this->reporter->col(strtoupper($bankname), '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        }
+
+        $str .= $this->reporter->col('BALANCE', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+
+        if ($reporttype == 'user') {
+            $str .= $this->reporter->col('Cashier', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        }
+
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        return $str;
+    }
+
+    public function reportDefaultLayout($config)
+    {
+        $result = $this->reportDefault($config);
+        $font = $this->companysetup->getrptfont($config['params']);
+        $fontsize = "10";
+        $border = "1px solid ";
+
+        if (empty($result)) {
+            return $this->othersClass->emptydata($config);
+        }
+
+        $bankname = $this->banknames($config);
+
+        $bankColumns = [];
+        $bankLookup = [];
+
+        foreach ($bankname as $array) {
+            $cleanBank = trim($array->bankname);
+
+            if (strtoupper($cleanBank) != 'CASH IN BANK' && strtoupper($cleanBank) != 'CASH') {
+                $cleanBank = preg_replace('/^CASH IN BANK[\s-]*/i', '', $cleanBank);
+            }
+
+            $bankColumns[$cleanBank] = $cleanBank;
+
+            $lookupKey = $array->center . '_' . $array->datenow;
+
+            if (!isset($bankLookup[$lookupKey])) {
+                $bankLookup[$lookupKey] = [];
+            }
+
+            if (!isset($bankLookup[$lookupKey][$cleanBank])) {
+                $bankLookup[$lookupKey][$cleanBank] = 0;
+            }
+
+            $bankLookup[$lookupKey][$cleanBank] += isset($array->amount) ? (float) str_replace(',', '', $array->amount) : 0;
+        }
+
+        $bankColumns = array_values($bankColumns);
+        $layoutsize = 480 + (count($bankColumns) * 100);
+
+        $str = '';
+        $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->default_displayHeader($layoutsize, $border, $font, $fontsize, $config, $bankColumns);
+
+        $str .= $this->reporter->begintable($layoutsize);
+
+        $grandTotals = [];
+        $totalbal = 0;
+
+        foreach ($result as $key => $data) {
+            $dateid = $data->datenow;
+            $branch = $data->branch;
+            $center = $data->center;
+            $amount = isset($data->amount) ? (float) str_replace(',', '', $data->amount) : 0;
+
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '20', 0);
+            $arr_branch = $this->reporter->fixcolumn([$branch], '24', 0);
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_branch]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->addline();
+                $str .= $this->reporter->col(' ' . (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '80', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col(' ' . (isset($arr_branch[$r]) ? $arr_branch[$r] : ''), '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
+                if ($r == 0) {
+                    $str .= $this->reporter->col(number_format($amount, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+                    $lookupKey2 = $center . '_' . $dateid;
+                    $totalBankAmount = 0;
+
+                    foreach ($bankColumns as $bankname) {
+                        $bankTotal = isset($bankLookup[$lookupKey2][$bankname]) ? (float) $bankLookup[$lookupKey2][$bankname] : 0;
+                        $totalBankAmount += $bankTotal;
+
+                        if (!isset($grandTotals[$bankname])) {
+                            $grandTotals[$bankname] = 0;
+                        }
+
+                        $grandTotals[$bankname] += $bankTotal;
+
+                        $str .= $this->reporter->col($bankTotal == 0 ? '' : number_format($bankTotal, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                    }
+
+                    $balance = $amount - $totalBankAmount;
+                    $totalbal += $balance;
+
+                    $str .= $this->reporter->col(number_format($balance, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                } else {
+                    $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+                    foreach ($bankColumns as $bankname) {
+                        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                    }
+
+                    $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                }
+
+                $str .= $this->reporter->endrow();
+            }
+        }
+
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '80', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('TOTAL: ', '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+
+        foreach ($bankColumns as $bankname) {
+            $total = isset($grandTotals[$bankname]) ? $grandTotals[$bankname] : 0;
+            $str .= $this->reporter->col($total == 0 ? '' : number_format($total, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+        }
+
+        $str .= $this->reporter->col(number_format($totalbal, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->endreport();
+
         return $str;
     }
 }//end class

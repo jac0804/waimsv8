@@ -361,7 +361,7 @@ class rm
       $obj[0][$this->gridname]['columns'][$disc]['readonly'] = true;
     }
 
-    if ($config['params']['companyid'] == 24) { //goodfound
+    if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
       $obj[0][$this->gridname]['columns'][$itemdesc]['type'] = 'coldel';
     }
 
@@ -383,6 +383,7 @@ class rm
   {
     $tbuttons = [];
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         array_push($tbuttons, 'additem');
         break;
@@ -398,7 +399,8 @@ class rm
   public function createHeadField($config)
   {
     switch ($config['params']['companyid']) {
-      case 24:
+      case 69: //cemphil
+      case 24: //godfound
         $fields = ['docno', 'wh', 'ddeptname'];
         break;
       default:
@@ -676,7 +678,7 @@ class rm
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
-      if ($companyid != 24) { // not goodfound
+      if ($companyid != 24 && $companyid != 69) { // not goodfound, not cemphil
         $checkacct = $this->othersClass->checkcoaacct(['RM1', 'WIP']);
 
         if ($checkacct != '') {
@@ -722,7 +724,7 @@ class rm
     $fieldasset = 'item.asset';
     $fieldrevenue = 'item.revenue';
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $fieldasset = 'inv.acno';
       $fieldrevenue = 'exp.acno';
     }

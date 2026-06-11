@@ -6238,6 +6238,33 @@ class gridcolumnClass
                             'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
                             'readonly' => false
                      ),
+                     'hdmfmulti2' => array(
+                            'name' => 'hdmfmulti2',
+                            'field' => 'hdmfmulti2',
+                            'type' => 'input',
+                            'label' => 'ER MULTIPLIER (%)',
+                            'align' => 'text-left',
+                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
+                            'readonly' => false
+                     ),
+                     'hdmfee' => array(
+                            'name' => 'hdmfee',
+                            'field' => 'hdmfee',
+                            'type' => 'input',
+                            'label' => 'HDMF EE',
+                            'align' => 'text-left',
+                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
+                            'readonly' => false
+                     ),
+                     'hdmfer' => array(
+                            'name' => 'hdmfer',
+                            'field' => 'hdmfer',
+                            'type' => 'input',
+                            'label' => 'HDMF ER',
+                            'align' => 'text-left',
+                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
+                            'readonly' => false
+                     ),
                      //PAYROLL SETUP - WITHHOLDING TAX
                      'paymode' => array(
                             'name' => 'paymode',
@@ -11594,6 +11621,15 @@ class gridcolumnClass
                             'style' => 'width: 280px;whiteSpace: normal;min-width:280px;max-width:290px;text-align:left;',
                             'readonly' => false
                      ),
+                     'assigntype' => array(
+                            'name' => 'assigntype',
+                            'field' => 'assigntype',
+                            'type' => 'input',
+                            'label' => 'Assigned Type',
+                            'align' => 'text-left',
+                            'style' => 'width: 280px;whiteSpace: normal;min-width:280px;max-width:290px;text-align:left;',
+                            'readonly' => false
+                     ),
                      'iscomm' => array(
                             'name' => 'iscomm',
                             'type' => 'toggle',
@@ -11847,6 +11883,16 @@ class gridcolumnClass
                             'readonly' => false
                      ),
 
+                     'labor' => array(
+                            'name' => 'labor',
+                            'type' => 'input',
+                            'label' => 'Labor',
+                            'field' => 'labor',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
                      'labor1' => array(
                             'name' => 'labor1',
                             'type' => 'input',
@@ -11928,6 +11974,105 @@ class gridcolumnClass
                             'type' => 'input',
                             'label' => 'Commission Rate',
                             'field' => 'commrate',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
+                            'readonly' => false
+                     ),
+
+                     'crtype' => array(
+                            'name' => 'crtype',
+                            'field' => 'crtype',
+                            'type' => 'input',
+                            'label' => 'Type',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => true
+                     ),
+
+                     'cryear' => array(
+                            'name' => 'cryear',
+                            'field' => 'cryear',
+                            'type' => 'input',
+                            'label' => 'Year',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => true
+                     ),
+
+                     'licenseno' => array(
+                            'name' => 'licenseno',
+                            'type' => 'input',
+                            'label' => 'License No.',
+                            'field' => 'licenseno',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+                     
+                     'mileage' => array(
+                            'name' => 'mileage',
+                            'type' => 'input',
+                            'label' => 'Mileage',
+                            'field' => 'mileage',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
+                     'carengine' => array(
+                            'name' => 'carengine',
+                            'type' => 'input',
+                            'label' => 'Engine',
+                            'field' => 'carengine',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
+                     'transmission' => array(
+                            'name' => 'transmission',
+                            'type' => 'input',
+                            'label' => 'Transmission',
+                            'field' => 'transmission',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
+                     'motorno' => array(
+                            'name' => 'motorno',
+                            'type' => 'input',
+                            'label' => 'Motors#',
+                            'field' => 'motorno',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
+                     'mvno' => array(
+                            'name' => 'mvno',
+                            'type' => 'input',
+                            'label' => 'MV#',
+                            'field' => 'mvno',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
+                     'cmake' => array(
+                            'name' => 'cmake',
+                            'type' => 'input',
+                            'label' => 'Make',
+                            'field' => 'cmake',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => true
+                     ),
+                     'isprio' => array(
+                            'name' => 'isprio',
+                            'type' => 'toggle',
+                            'label' => 'Priority',
+                            'field' => 'isprio',
                             'align' => 'text-left',
                             'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
                             'readonly' => false

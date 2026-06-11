@@ -35,7 +35,7 @@ class pagibig
   public $tablelogs_del = 'del_masterfile_log';
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['bracket', 'range1', 'range2', 'hdmfmulti'];
+  private $fields = ['bracket', 'range1', 'range2', 'hdmfee', 'hdmfer', 'hdmfmulti', 'hdmfmulti2'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
@@ -62,7 +62,9 @@ class pagibig
 
   public function createTab($config)
   {
-    $columns = ['action', 'bracket', 'range1', 'range2', 'hdmfmulti'];
+    $companyid = $config['params']['companyid'];
+
+    $columns = ['action', 'bracket', 'range1', 'range2', 'hdmfee', 'hdmfer', 'hdmfmulti', 'hdmfmulti2'];
 
     foreach ($columns as $key => $value) {
       $$value = $key;
@@ -74,12 +76,22 @@ class pagibig
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
-    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
+    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
     $obj[0][$this->gridname]['columns'][$bracket]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$range1]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$range2]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$hdmfmulti]['style'] = "width:450px;whiteSpace: normal;min-width:450px;";
+    $obj[0][$this->gridname]['columns'][$range1]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
+    $obj[0][$this->gridname]['columns'][$range2]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
+    $obj[0][$this->gridname]['columns'][$hdmfee]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+    $obj[0][$this->gridname]['columns'][$hdmfer]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+    $obj[0][$this->gridname]['columns'][$hdmfmulti]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+    $obj[0][$this->gridname]['columns'][$hdmfmulti2]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
 
+    if ($companyid != 68) {
+      $obj[0][$this->gridname]['columns'][$hdmfee]['style'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$hdmfer]['style'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$hdmfmulti2]['style'] = 'coldel';
+    }
+
+    $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
 

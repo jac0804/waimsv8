@@ -29,7 +29,7 @@ class entrytask
   public $style = 'width:100%;';
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
-  private $fields = ['task', 'title', 'userid', 'startdate', 'enddate', 'percentage', 'taskcatid'];
+  private $fields = ['task', 'title', 'userid', 'startdate', 'enddate', 'percentage', 'taskcatid', 'isassigntype'];
   public $showclosebtn = false;
   private $reporter;
   public $logger;
@@ -58,10 +58,10 @@ class entrytask
   {
     $viewrate = $this->othersClass->checkAccess($config['params']['user'], 5480);
 
-    $columns = ['action', 'title', 'user', 'taskcategory', 'startdate', 'enddate'];
+    $columns = ['action', 'title', 'assigntype', 'isprio', 'user', 'taskcategory', 'startdate', 'enddate'];
 
     if ($viewrate != '0') {
-      $columns = ['action', 'title', 'user', 'percentage',  'taskcategory', 'startdate', 'enddate'];
+      $columns = ['action', 'title', 'user', 'assigntype', 'isprio', 'percentage',  'taskcategory', 'startdate', 'enddate'];
     }
 
     $tab = [
@@ -118,6 +118,13 @@ class entrytask
     $obj[0][$this->gridname]['columns'][$enddate]['label'] = 'End Date';
     $obj[0][$this->gridname]['columns'][$startdate]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$enddate]['readonly'] = true;
+
+    $obj[0][$this->gridname]['columns'][$assigntype]['label'] = 'Assigned Type';
+    $obj[0][$this->gridname]['columns'][$assigntype]['type'] = 'lookup';
+    $obj[0][$this->gridname]['columns'][$assigntype]['lookupclass'] = 'lookupassignedtype';
+    $obj[0][$this->gridname]['columns'][$assigntype]['action'] = 'lookupsetup';
+    $obj[0][$this->gridname]['columns'][$assigntype]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+
     // $obj[0][$this->gridname]['columns'][$action]['btns']['viewhistoricalcomments']['checkfield'] = 'iscomment';
 
     if ($viewrate != '0') {
@@ -186,12 +193,16 @@ class entrytask
     $data['isdelete'] = 'true';
     $data['taskcatid'] = 0;
     $data['taskcategory'] = '';
+    $data['isassigntype'] = 0;
+    $data['assigntype'] = '';
+    $data['isprio'] = 'false';
     return $data;
   }
 
   private function selectqry()
   {
-    $qry = "r.trno,r.line,c.client,c.clientname as user,'false' as istaskdetails,'false' as isattachment,'false' as isreassign,'false' as isdelete, req.category as taskcategory "; //'false' as iscomment,
+    $qry = "r.trno,r.line,c.client,c.clientname as user,'false' as istaskdetails,'false' as isattachment,'false' as isreassign,'false' as isdelete, req.category as taskcategory,case when isassigntype = 1 then 'Project Head' when isassigntype = 2 then 'Implementor' else '' end as assigntype,
+    case when r.isprio = 0 then 'false' else 'true' end as isprio"; //'false' as iscomment,
     foreach ($this->fields as $key => $value) {
       $qry = $qry . ',r.' . $value;
     }
@@ -220,16 +231,17 @@ class entrytask
         foreach ($this->fields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
         }
-
-        if ($data[$key]['taskcatid'] == 0) {
-          return ['status' => false, 'msg' => 'Task category is empty'];
+        if ($data[$key]['isassigntype'] == 0) {
+          if ($data[$key]['taskcatid'] == 0) {
+            return ['status' => false, 'msg' => 'Task category is empty'];
+          }
         }
 
 
         if (trim($data[$key]['title'] == '')) {
           return ['status' => false, 'msg' => 'Task is empty'];
         }
-
+        $data2['isprio'] = $data[$key]['isprio'] == 'true' ? 1 : 0;
         if ($data[$key]['line'] == 0) {
           $data2['trno'] = $trno;
           $data2['status'] = $isopen;
@@ -253,8 +265,12 @@ class entrytask
           if ($isdailytask == 0) {
             if ($isopen == 1) {
               if ($data2['userid'] != 0) {
-                $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
-                $this->othersClass->insertUpdatePendingapp($trno, $line, 'TM', [], $url, $config, $data2['userid'], false, true); //insert sa pendingapp
+                if ($data[$key]['isassigntype'] != 0) {
+                  $this->computeassignedtype($config, $line);
+                } else {
+                  $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
+                  $this->othersClass->insertUpdatePendingapp($trno, $line, 'TM', [], $url, $config, $data2['userid'], false, true); //insert sa pendingapp
+                }
               }
             }
           }
@@ -286,12 +302,17 @@ class entrytask
               } else { //wala pa sa pending app
                 if ($data2['userid'] != 0) {
                   $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
-                  $this->othersClass->insertUpdatePendingapp($trno, $data[$key]['line'], 'TM', [], $url, $config, $data2['userid'], false, true); //insert sa pendingapp
+                  if ($data2['isassigntype'] == 0) $this->othersClass->insertUpdatePendingapp($trno, $data[$key]['line'], 'TM', [], $url, $config, $data2['userid'], false, true); //insert sa pendingapp
                 }
               }
             }
           }
-          $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $trno, 'line' => $data[$key]['line']]);
+          $update = $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $trno, 'line' => $data[$key]['line']]);
+          if ($update) {
+            if ($data2['isassigntype'] != 0) {
+              $this->computeassignedtype($config, $data[$key]['line']);
+            }
+          }
         }
       } // end if
     } // foreach
@@ -322,11 +343,13 @@ class entrytask
     if (trim($row['title']) == '') {
       return ['status' => false, 'msg' => 'Task is empty'];
     }
-
-    if ($row['taskcatid'] == 0) {
-      return ['status' => false, 'msg' => 'Task category is empty'];
+    if ($data['isassigntype'] == 0) {
+      if ($row['taskcatid'] == 0) {
+        return ['status' => false, 'msg' => 'Task category is empty'];
+      }
     }
 
+    $data['isprio'] = $row['isprio'] == 'true' ? 1 : 0;
     if ($row['line'] == 0) {
       $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
       $data['encodedby'] = $config['params']['user'];
@@ -346,11 +369,16 @@ class entrytask
       $data['line'] = $line;
       $insert = $this->coreFunctions->sbcinsert($tbl, $data);
       if ($insert) {
+
         if ($isdailytask == 0) {
           if ($isopen == 1) {
             if ($data['userid'] != 0) {
-              $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
-              $this->othersClass->insertUpdatePendingapp($trno, $line, 'TM', [], $url, $config, $data['userid'], false, true); //insert sa pendingapp
+              if ($data['isassigntype'] != 0) {
+                $this->computeassignedtype($config, $line);
+              } else {
+                $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
+                $this->othersClass->insertUpdatePendingapp($trno, $line, 'TM', [], $url, $config, $data['userid'], false, true); //insert sa pendingapp
+              }
             }
           }
         }
@@ -444,12 +472,15 @@ class entrytask
             } else { //wala pa sa pending app
               if ($data['userid'] != 0) {
                 $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
-                $this->othersClass->insertUpdatePendingapp($trno, $row['line'], 'TM', [], $url, $config, $data['userid'], false, true); //insert sa pendingapp
+                if ($data['isassigntype'] == 0) $this->othersClass->insertUpdatePendingapp($trno, $row['line'], 'TM', [], $url, $config, $data['userid'], false, true); //insert sa pendingapp
               }
             }
           }
         }
         if ($this->coreFunctions->sbcupdate($tbl, $data, ['trno' => $trno, 'line' => $row['line']]) == 1) {
+          if ($data['isassigntype'] != 0) {
+            $this->computeassignedtype($config, $row['line']);
+          }
           $returnrow = $this->loaddataperrecord($trno, $row['line']);
           // $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['title']);
           return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
@@ -464,8 +495,10 @@ class entrytask
   {
     $row = $config['params']['row'];
     $startdate = $config['params']['row']['startdate'];
+    $isassigntype = $config['params']['row']['isassigntype'];
 
     if ($startdate == null) {
+      deleteHere:
       $qry = "delete from " . $this->table . " where trno= ? and line=?";
       $try =  $this->coreFunctions->execqry($qry, 'delete', [$row['trno'], $row['line']]);
       if ($try == 1) {
@@ -477,7 +510,11 @@ class entrytask
       }
       return ['status' => true, 'msg' => 'Successfully deleted.'];
     } else {
-      return ['status' => false, 'msg' => 'Delete Failed. This task has already been started.'];
+      if ($isassigntype != 0) {
+        goto deleteHere;
+      } else {
+        return ['status' => false, 'msg' => 'Delete Failed. This task has already been started.'];
+      }
     }
   }
 
@@ -540,7 +577,7 @@ class entrytask
       left  join client as c on c.clientid = r.userid
       left join reqcategory as req on req.line=r.taskcatid
       where r.trno =?  " . $filtersearch . " order by sort $l";
-    // var_dump($qry);
+
     $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $data;
   }
@@ -555,11 +592,14 @@ class entrytask
       case 'lookupusers':
         return $this->lookupusers($config);
         break;
-      case 'lookupcomplex';
+      case 'lookupcomplex':
         return $this->lookupcomplexity($config);
         break;
-      case 'lookuptaskcategory';
+      case 'lookuptaskcategory':
         return $this->lookuptaskcategory($config);
+        break;
+      case 'lookupassignedtype':
+        return $this->lookupassignedtype($config);
         break;
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under WH documents'];
@@ -593,6 +633,36 @@ class entrytask
     union all
     select clientid as userid, 0 as accessid, email as username, clientname as name, '' as project
     from client where isemployee=1 and email <> ''";
+    $data = $this->coreFunctions->opentable($qry);
+    $index = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
+  } // end function
+
+  public function lookupassignedtype($config)
+  {
+    //default
+    $plotting = array('isassigntype' => 'isassigntype', 'assigntype' => 'assigntype');
+    $plottype = 'plotgrid';
+    $title = 'List of Assigned Type';
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => $plottype,
+      'action' => '',
+      'plotting' => $plotting
+    );
+    // lookup columns
+    $cols = [
+      ['name' => 'assigntype', 'label' => 'Assigned Type', 'align' => 'left', 'field' => 'assigntype', 'sortable' => true, 'style' => 'font-size:16px;']
+    ];
+
+    $qry = "
+    select 1 as isassigntype,'Project Head' as assigntype
+    union all
+    select 2 as isassigntype, 'Implementor' as assigntype";
     $data = $this->coreFunctions->opentable($qry);
     $index = $config['params']['index'];
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
@@ -714,6 +784,36 @@ class entrytask
   public function tableentrystatus($config)
   {
     return $this->save($config, true);
+  }
+  public function computeassignedtype($config, $line)
+  {
+    $trno = $config['params']['tableid'];
+    $query = "select sum(case when isassigntype = 1 then 1 else 0 end) as phcount,
+    sum(case when isassigntype = 2 then 1 else 0 end) as impcount 
+    from tmdetail where trno=? and isassigntype <> 0";
+    $data = $this->coreFunctions->opentable($query, [$trno]);
+
+    if (!empty($data)) {
+      foreach ($data as $key => $value) {
+        if ($value->phcount > 0) {
+          $phpercent = 100 / $value->phcount;
+          $this->coreFunctions->sbcupdate('tmdetail', ['percentage' => $phpercent], ['trno' => $trno, 'isassigntype' => 1]);
+        }
+        if ($value->impcount > 0) {
+          $imppercent = 100 / $value->impcount;
+          $this->coreFunctions->sbcupdate('tmdetail', ['percentage' => $imppercent], ['trno' => $trno, 'isassigntype' => 2]);
+        }
+      }
+      $date =  $this->othersClass->getCurrentTimeStamp();
+
+      $data2 = [
+        'startdate' => $date,
+        'enddate' => $date,
+        'status' => 5 //completed
+      ];
+
+      $this->coreFunctions->sbcupdate('tmdetail', $data2, ['trno' => $trno, 'line' => $line]);
+    }
   }
 
   // // -> Print Function

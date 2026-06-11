@@ -49,7 +49,7 @@ class signature_sheet
     data_set($col1, 'dclientname.label', 'Employee');
     data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
     data_set($col1, 'divrep.label', 'Company');
-    data_set($col1, 'deptrep.lookupclass', 'lookupearndedaccounts');
+    data_set($col1, 'deptrep.lookupclass', 'lookupddeptname'); //lookupearndedaccounts
     data_set($col1, 'deptrep.label', 'Department');
     data_set($col1, 'batchrep.lookupclass', 'lookupbatchrep');
     data_set($col1, 'batchrep.required', true);
@@ -107,6 +107,8 @@ class signature_sheet
     $client     = $config['params']['dataparams']['client'];
     $divid = $config['params']['dataparams']['divid'];
     $deptid = $config['params']['dataparams']['deptid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];  
     $batchid      = $config['params']['dataparams']['line'];
 
 
@@ -117,10 +119,10 @@ class signature_sheet
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter .= " and dept.clientid = $deptid";
     }
-    if ($divid != 0) {
+    if ($divid != 0 && $divname != '') {
       $filter .= " and emp.divid = $divid";
     }
 
@@ -259,7 +261,7 @@ class signature_sheet
   {
     $result = $this->reportDefault($config);
 
-
+    $border = '';
     $border_line = '';
     $alignment = '';
     $font = $this->companysetup->getrptfont($config['params']);

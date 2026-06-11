@@ -74,6 +74,11 @@ class monthly_analyze_item_sales
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'area.readonly', true);
         break;
+      case 60: //transpower
+        $fields = ['radioprint', 'dclientname', 'ditemname', 'divsion', 'brandname', 'brandid', 'model', 'class', 'categoryname', 'subcatname', 'part', 'dwhname'];
+        
+        $col1 = $this->fieldClass->create($fields);
+        break;
       default:
         $col1 = $this->fieldClass->create($fields);
         break;
@@ -154,7 +159,9 @@ class monthly_analyze_item_sales
           '' as dept, 
           '' as deptname,
           '' as industry,
-          '' as area";
+          '' as area,
+          '' as modelid, '' as modelname, 
+          '' as classic, '' as classid";
 
     return $this->coreFunctions->opentable($paramstr);
   }
@@ -189,6 +196,9 @@ class monthly_analyze_item_sales
       case 59: //roosevelt
         $result = $this->reportDefaultLayoutRoosevelt($config);
         break;
+      case 60:
+        $result = $this->reportDefaultLayoutTranspower($config);
+        break;
       default:
         $result = $this->reportDefaultLayout($config);
         break;
@@ -212,6 +222,7 @@ class monthly_analyze_item_sales
         $query = $this->DEFAULT_QUERY_ALL($config);
         break;
     }
+
 
     return $this->coreFunctions->opentable($query);
   }
@@ -297,6 +308,33 @@ class monthly_analyze_item_sales
       $filter1 = "";
     }
 
+
+    $classid = '';
+    $modelid = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+
+    if($companyid == 60){
+      $classid        = $config['params']['dataparams']['classid'];
+      $modelid        = $config['params']['dataparams']['modelid'];
+
+      $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class';
+      
+      $transpowerfield        = ',ic.cl_name as classname';
+      $transpowerfield2        = 'x.classname,';
+
+      $gtranspowerfield        = ',ic.cl_name';
+      
+      if ($classid != "") {
+        $filter1 .= " and ic.cl_id=" . $classid;
+      }
+      if ($modelid != "") {
+        $filter1 .= " and mm.model_id=" . $modelid;
+      }
+    }
+
     $agfield = '';
     $agfield2 = '';
     $grpagent = '';
@@ -315,7 +353,7 @@ class monthly_analyze_item_sales
       $sort = "order by itemname,barcode,part, brand";
     }
 
-    $query = "select $agfield barcode,size,uom,category,groupid,category1, subcatname, part, brand, model,body, itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+    $query = "select $agfield $transpowerfield2 barcode,size,uom,category,groupid,category1, subcatname, part, brand, model,body, itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
       sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
       sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
       select $agfield2 item.barcode, client.clientname, item.sizeid as size,'p' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
@@ -334,7 +372,7 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, item.uom
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, item.uom $transpowerfield
       from ((glhead as head left join glstock as stock on stock.trno=head.trno)
       left join client on client.clientid=head.clientid)
       left join item on item.itemid=stock.itemid
@@ -346,6 +384,7 @@ class monthly_analyze_item_sales
       left join itemcategory as cat on cat.line = item.category
       left join itemsubcategory as subcat on subcat.line = item.subcat
       left join client as agent on agent.clientid = head.agentid
+      $leftjoin_class
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
       group by $grpagent
       item.barcode, client.clientname,item.sizeid,
@@ -354,8 +393,8 @@ class monthly_analyze_item_sales
       ifnull(mm.model_name,'NO MODEL'),
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname, item.uom) as x
-      group by $agfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
+      item.category,frontend_ebrands.brand_desc,category1,subcatname, item.uom $gtranspowerfield) as x
+      group by $agfield $transpowerfield2 part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
       $sort";
 
     return $query;
@@ -461,7 +500,34 @@ class monthly_analyze_item_sales
       $sort = "order by itemname,barcode,part, brand";
     }
 
-    $query = "select $agfield barcode, size, uom,category, groupid, part, brand,category1, subcatname, model,body, 
+    
+    $classid = '';
+    $modelid = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+
+    if($companyid == 60){
+      $classid        = $config['params']['dataparams']['classid'];
+      $modelid        = $config['params']['dataparams']['modelid'];
+
+      $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class';
+      
+      $transpowerfield        = ',ic.cl_name as classname';
+      $transpowerfield2        = 'x.classname,';
+
+      $gtranspowerfield        = ',ic.cl_name';
+      
+      if ($classid != "") {
+        $filter1 .= " and ic.cl_id=" . $classid;
+      }
+      if ($modelid != "") {
+        $filter1 .= " and mm.model_id=" . $modelid;
+      }
+    }
+
+    $query = "select $agfield $transpowerfield2 barcode, size, uom,category, groupid, part, brand,category1, subcatname, model,body, 
     itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
       sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
       sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
@@ -481,7 +547,7 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom $transpowerfield
       from ((lahead as head left join lastock as stock on stock.trno=head.trno)
       left join client on client.client=head.client)
       left join item on item.itemid=stock.itemid
@@ -493,6 +559,7 @@ class monthly_analyze_item_sales
       left join itemcategory as cat on cat.line = item.category
       left join client as agent on agent.client = head.agent
       left join itemsubcategory as subcat on subcat.line = item.subcat
+      $leftjoin_class
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
       group by $grpagent
       item.barcode, client.clientname,item.sizeid,
@@ -501,8 +568,8 @@ class monthly_analyze_item_sales
       ifnull(mm.model_name,'NO MODEL'),
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname,item.uom) as x 
-      group by $agfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
+      item.category,frontend_ebrands.brand_desc,category1,subcatname,item.uom $gtranspowerfield) as x 
+      group by $agfield $transpowerfield2 part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
       $sort";
 
     return $query;
@@ -603,12 +670,41 @@ class monthly_analyze_item_sales
       }
     }
 
+    
+
     $sort = "order by $agfield part, brand, barcode, itemname";
     if ($companyid == 60) { //transpower
       $sort = "order by itemname,barcode,part, brand";
     }
 
-    $query = "select $agfield barcode,size,uom,category, groupid,category1, subcatname, part, brand, model,body, itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+    
+    $classid = '';
+    $modelid = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+
+    if($companyid == 60){
+      $classid        = $config['params']['dataparams']['classid'];
+      $modelid        = $config['params']['dataparams']['modelid'];
+
+      $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class';
+      
+      $transpowerfield        = ',ic.cl_name as classname';
+      $transpowerfield2        = 'x.classname,';
+
+      $gtranspowerfield        = ',ic.cl_name';
+      
+      if ($classid != "") {
+        $filter1 .= " and ic.cl_id=" . $classid;
+      }
+      if ($modelid != "") {
+        $filter1 .= " and mm.model_id=" . $modelid;
+      }
+    }
+
+    $query = "select $agfield $transpowerfield2 barcode,size,uom,category, groupid,category1, subcatname, part, brand, model,body, itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
       sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
       sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
       from (
@@ -628,7 +724,7 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom $transpowerfield
       from ((lahead as head left join lastock as stock on stock.trno=head.trno)
       left join client on client.client=head.client)
       left join item on item.itemid=stock.itemid
@@ -640,6 +736,7 @@ class monthly_analyze_item_sales
       left join itemcategory as cat on cat.line = item.category
       left join itemsubcategory as subcat on subcat.line = item.subcat
       left join client as agent on agent.client = head.agent
+      $leftjoin_class
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)= $year and item.isimport in $itemtype $filter $filter1  and item.isofficesupplies=0
       group by $grpagent
       item.barcode, client.clientname,item.sizeid,
@@ -648,7 +745,7 @@ class monthly_analyze_item_sales
       ifnull(mm.model_name,'NO MODEL'),
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname, item.uom
+      item.category,frontend_ebrands.brand_desc,category1,subcatname, item.uom $gtranspowerfield
 
       UNION ALL
 
@@ -668,7 +765,7 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, item.uom $transpowerfield
       from ((glhead as head left join glstock as stock on stock.trno=head.trno)
       left join client on client.clientid=head.clientid)
       left join item on item.itemid=stock.itemid
@@ -680,6 +777,7 @@ class monthly_analyze_item_sales
       left join itemcategory as cat on cat.line = item.category
       left join itemsubcategory as subcat on subcat.line = item.subcat
       left join client as agent on agent.clientid = head.agentid
+      $leftjoin_class
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)= $year and item.isimport in $itemtype $filter $filter1  and item.isofficesupplies=0
       group by $grpagent
       item.barcode, client.clientname,item.sizeid,
@@ -688,8 +786,8 @@ class monthly_analyze_item_sales
       ifnull(mm.model_name,'NO MODEL'),
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname,item.uom) as x
-      group by $agfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
+      item.category,frontend_ebrands.brand_desc,category1,subcatname,item.uom $gtranspowerfield) as x
+      group by $agfield $transpowerfield2 part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
       $sort";
 
     return $query;
@@ -3506,4 +3604,618 @@ class monthly_analyze_item_sales
 
     return $str;
   }
+
+  //transpower
+    private function transpower_displayHeader($config)
+    {
+      $border = '1px solid';
+      $font = $this->companysetup->getrptfont($config['params']);
+      $font_size = '10';
+      $padding = '';
+      $margin = '';
+
+      $center     = $config['params']['center'];
+      $username   = $config['params']['user'];
+      $companyid = $config['params']['companyid'];
+      $client     = $config['params']['dataparams']['client'];
+      $clientname = $config['params']['dataparams']['clientname'];
+      $barcode    = $config['params']['dataparams']['barcode'];
+      $partname   = $config['params']['dataparams']['partname'];
+      $categoryname  = $config['params']['dataparams']['categoryname'];
+      $subcatname =  $config['params']['dataparams']['subcat'];
+      $groupname  = $config['params']['dataparams']['stockgrp'];
+      $brandname  = $config['params']['dataparams']['brandname'];
+      $whname     = $config['params']['dataparams']['whname'];
+      $year       = $config['params']['dataparams']['year'];
+      $posttype   = $config['params']['dataparams']['posttype'];
+      $analyzedby = $config['params']['dataparams']['analyzedby'];
+      $itemtype   = $config['params']['dataparams']['itemtype'];
+      $agent   = $config['params']['dataparams']['agent'];
+
+
+      if ($whname == "") {
+        $whname = "ALL";
+      }
+      if ($client == "") {
+        $client = "ALL";
+      }
+      if ($clientname == "") {
+        $clientname = "ALL";
+      }
+      if ($barcode == "") {
+        $barcode = "ALL";
+      }
+      if ($groupname == "") {
+        $groupname = "ALL";
+      }
+      if ($brandname == "") {
+        $brandname = "ALL";
+      }
+
+      if ($posttype == '0') {
+        $posttype = 'Posted';
+      } else if ($posttype == '1') {
+        $posttype = 'Unposted';
+      } else {
+        $posttype = "ALL";
+      }
+
+      if ($itemtype == '(0)') {
+        $itemtype = 'Local';
+      } elseif ($itemtype == '(1)') {
+        $itemtype = 'Import';
+      } else {
+        $itemtype = 'Both';
+      }
+
+      
+      $class        = $config['params']['dataparams']['classic'];
+      $model        = $config['params']['dataparams']['modelname'];
+
+      $str = '';
+      $layoutsize = '1000';
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->letterhead($center, $username, $config);
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= '<br/><br/>';
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+      $str .= $this->reporter->col('ANALYZE ITEM SALES (MONTHLY)', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      
+      $str .= $this->reporter->startrow();
+      
+      $str .= $this->reporter->col('Customer : ' . strtoupper($client), NULL, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      
+      $str .= $this->reporter->col('Item :' . strtoupper($barcode), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Group :' . strtoupper($groupname), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Brand : ' . strtoupper($brandname), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Part :' . strtoupper($partname), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      if ($categoryname == '') {
+        $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      } else {
+        $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      }
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Transaction : ' . strtoupper($posttype), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Analyze By : ' . strtoupper($analyzedby), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), null, null, false, $border, '', 'L', $font, $font_size, '', '', '');
+
+      if ($subcatname == '') {
+        $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      } else {
+        $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      }
+      if ($agent == '') {
+        $str .= $this->reporter->col('Agent : ALL', null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      } else {
+        $str .= $this->reporter->col('Agent : ' . $agent, null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      }
+      $str .= $this->reporter->pagenumber('Page');
+      $str .= $this->reporter->endrow();
+      
+
+      $str .= $this->reporter->endtable();
+
+      
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+      if ($class == '') {
+        $str .= $this->reporter->col('Class : ALL', null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      } else {
+        $str .= $this->reporter->col('Class : ' . $class, null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      }
+      if ($model == '') {
+        $str .= $this->reporter->col('Model : ALL', null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      } else {
+        $str .= $this->reporter->col('Model : ' . $model, null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      }
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      return $str;
+    }
+
+    private function transpower_table_cols($layoutsize, $border, $font, $fontsize, $config)
+    {
+      $str = '';
+      $companyid = $config['params']['companyid'];
+      $analyzedby = $config['params']['dataparams']['analyzedby'];
+
+      $str .= $this->reporter->printline();
+      //($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+
+
+      $str .= $this->reporter->col('BARCODE', '60', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('ITEM DESCRIPTION', '90', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('JAN', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('FEB', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('MAR', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('APR', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('MAY', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('JUN', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('JUL', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('AUG', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('SEP', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('OCT', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('NOV', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('DEC', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      if (strtoupper($analyzedby) == "UNIT") {
+        $str .= $this->reporter->col('QUANTITY', '70', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      } else {
+        $str .= $this->reporter->col('AMOUNT', '70', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      }
+
+
+      return $str;
+    }
+    
+    public function reportDefaultLayoutTranspower($config)
+    {
+      $border = '1px solid';
+      $font = $this->companysetup->getrptfont($config['params']);
+      $font_size9 = '9';
+      $fontsize11 = 11;
+
+      $result = $this->reportDefault($config);
+      $analyzedby = $config['params']['dataparams']['analyzedby'];
+
+      $count = 36;
+      $page = 37;
+      $this->reporter->linecounter = 0;
+
+      if (empty($result)) {
+        return $this->othersClass->emptydata($config);
+      }
+      $str = '';
+      $layoutsize = '1000';
+      $str .= $this->reporter->beginreport($layoutsize);
+      $str .= $this->transpower_displayHeader($config);
+
+      $str .= $this->transpower_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+      if (strtoupper($analyzedby) == "UNIT") {
+        $ab = 2;
+      } else {
+        $ab = 2;
+      }
+
+      $totalmojan = 0;
+      $totalmofeb = 0;
+      $totalmomar = 0;
+      $totalmoapr = 0;
+      $totalmomay = 0;
+      $totalmojun = 0;
+      $totalmojul = 0;
+      $totalmoaug = 0;
+      $totalmosep = 0;
+      $totalmooct = 0;
+      $totalmonov = 0;
+      $totalmodec = 0;
+      $amt = 0;
+      $totalamt = 0;
+
+      $part = "";
+      $brand = "";
+      //brand
+      $subjan = 0;
+      $subfeb = 0;
+      $submar = 0;
+      $subapr = 0;
+      $submay = 0;
+      $subjun = 0;
+      $subjul = 0;
+      $subaug = 0;
+      $subsep = 0;
+      $suboct = 0;
+      $subnov = 0;
+      $subdec = 0;
+      $subamt = 0;
+      //part
+      $gsubjan = 0;
+      $gsubfeb = 0;
+      $gsubmar = 0;
+      $gsubapr = 0;
+      $gsubmay = 0;
+      $gsubjun = 0;
+      $gsubjul = 0;
+      $gsubaug = 0;
+      $gsubsep = 0;
+      $gsuboct = 0;
+      $gsubnov = 0;
+      $gsubdec = 0;
+      $gsubamt = 0;
+      foreach ($result as $key => $data) {
+        $mojan = number_format($data->mojan, $ab);
+        if ($mojan == 0) {
+          $mojan = '-';
+        }
+        $mofeb = number_format($data->mofeb, $ab);
+        if ($mofeb == 0) {
+          $mofeb = '-';
+        }
+        $momar = number_format($data->momar, $ab);
+        if ($momar == 0) {
+          $momar = '-';
+        }
+        $moapr = number_format($data->moapr, $ab);
+        if ($moapr == 0) {
+          $moapr = '-';
+        }
+        $momay = number_format($data->momay, $ab);
+        if ($momay == 0) {
+          $momay = '-';
+        }
+        $mojun = number_format($data->mojun, $ab);
+        if ($mojun == 0) {
+          $mojun = '-';
+        }
+        $mojul = number_format($data->mojul, $ab);
+        if ($mojul == 0) {
+          $mojul = '-';
+        }
+        $moaug = number_format($data->moaug, $ab);
+        if ($moaug == 0) {
+          $moaug = '-';
+        }
+        $mosep = number_format($data->mosep, $ab);
+        if ($mosep == 0) {
+          $mosep = '-';
+        }
+        $mooct = number_format($data->mooct, $ab);
+        if ($mooct == 0) {
+          $mooct = '-';
+        }
+        $monov = number_format($data->monov, $ab);
+        if ($monov == 0) {
+          $monov = '-';
+        }
+        $modec = number_format($data->modec, $ab);
+        if ($modec == 0) {
+          $modec = '-';
+        }
+
+        $amt = $data->mojan + $data->mofeb + $data->momar + $data->moapr + $data->momay + $data->mojun + $data->mojul + $data->moaug + $data->mosep + $data->mooct + $data->monov + $data->modec;
+        if ($part == strtoupper($data->part)) {
+          $part = "";
+          if (strtoupper($brand) == strtoupper($data->brand)) {
+            $brand = "";
+          } else {
+            if ($brand != '') {
+              $str .= $this->reporter->startrow();
+              $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+              $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '90', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
+              $str .= $this->reporter->col(number_format($subjan, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subfeb, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($submar, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subapr, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($submay, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subjun, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subjul, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subaug, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subsep, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($suboct, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subnov, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subdec, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->col(number_format($subamt, $ab), '70', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+              $str .= $this->reporter->endrow();
+            }
+            //brand
+            $subjan = 0;
+            $subfeb = 0;
+            $submar = 0;
+            $subapr = 0;
+            $submay = 0;
+            $subjun = 0;
+            $subjul = 0;
+            $subaug = 0;
+            $subsep = 0;
+            $suboct = 0;
+            $subnov = 0;
+            $subdec = 0;
+            $subamt = 0;
+            //part
+            $gsubjan = 0;
+            $gsubfeb = 0;
+            $gsubmar = 0;
+            $gsubapr = 0;
+            $gsubmay = 0;
+            $gsubjun = 0;
+            $gsubjul = 0;
+            $gsubaug = 0;
+            $gsubsep = 0;
+            $gsuboct = 0;
+            $gsubnov = 0;
+            $gsubdec = 0;
+            $gsubamt = 0;
+            $brand = strtoupper($data->brand);
+          }
+        } else {
+          if ($brand != '') {
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+            $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '90', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
+            $str .= $this->reporter->col(number_format($subjan, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subfeb, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($submar, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subapr, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($submay, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subjun, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subjul, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subaug, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subsep, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($suboct, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subnov, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subdec, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($subamt, $ab), '70', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->endrow();
+          }
+          if ($part != '') {
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+            $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '90', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubjan, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubfeb, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubmar, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubapr, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubmay, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubjun, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubjul, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubaug, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubsep, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsuboct, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubnov, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubdec, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->col(number_format($gsubamt, $ab), '70', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+            $str .= $this->reporter->endrow();
+          }
+          $part = $data->part;
+          if (strtoupper($brand) == strtoupper($data->brand)) {
+            $brand = "";
+          } else {
+            //brand
+            $subjan = 0;
+            $subfeb = 0;
+            $submar = 0;
+            $subapr = 0;
+            $submay = 0;
+            $subjun = 0;
+            $subjul = 0;
+            $subaug = 0;
+            $subsep = 0;
+            $suboct = 0;
+            $subnov = 0;
+            $subdec = 0;
+            $subamt = 0;
+            //part
+            $gsubjan = 0;
+            $gsubfeb = 0;
+            $gsubmar = 0;
+            $gsubapr = 0;
+            $gsubmay = 0;
+            $gsubjun = 0;
+            $gsubjul = 0;
+            $gsubaug = 0;
+            $gsubsep = 0;
+            $gsuboct = 0;
+            $gsubnov = 0;
+            $gsubdec = 0;
+            $gsubamt = 0;
+            $brand = strtoupper($data->brand);
+          }
+        }
+        $str .= $this->reporter->startrow();
+        //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->col($part, '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+        $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '70', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+
+        $str .= $this->reporter->startrow();
+        //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->col($brand, '60', null, false, $border, '', 'L', $font, $font_size9, 'Bi', '', '', '');
+        $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col('', '70', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+
+        //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->col($data->barcode, '60', null, false, $border, '', 'L', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($data->itemname, '90', null, false, $border, '', 'L', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mojan, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mofeb, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($momar, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($moapr, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($momay, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mojun, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mojul, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($moaug, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mosep, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($mooct, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($monov, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col($modec, '65', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($amt, $ab), '70', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+
+        $subjan = $subjan + $data->mojan;
+        $subfeb = $subfeb + $data->mofeb;
+        $submar = $submar + $data->momar;
+        $subapr = $subapr + $data->moapr;
+        $submay = $submay + $data->momay;
+        $subjun = $subjun + $data->mojun;
+        $subjul = $subjul + $data->mojul;
+        $subaug = $subaug + $data->moaug;
+        $subsep = $subsep + $data->mosep;
+        $suboct = $suboct + $data->mooct;
+        $subnov = $subnov + $data->monov;
+        $subdec = $subdec + $data->modec;
+        $subamt = $subamt + $data->mojan + $data->mofeb + $data->momar + $data->moapr + $data->momay + $data->mojun + $data->mojul + $data->moaug + $data->mosep + $data->mooct + $data->monov + $data->modec;
+
+        //part
+        $gsubjan = $gsubjan + $data->mojan;
+        $gsubfeb = $gsubfeb + $data->mofeb;
+        $gsubmar = $gsubmar + $data->momar;
+        $gsubapr = $gsubapr + $data->moapr;
+        $gsubmay = $gsubmay + $data->momay;
+        $gsubjun = $gsubjun + $data->mojun;
+        $gsubjul = $gsubjul + $data->mojul;
+        $gsubaug = $gsubaug + $data->moaug;
+        $gsubsep = $gsubsep + $data->mosep;
+        $gsuboct = $gsuboct + $data->mooct;
+        $gsubnov = $gsubnov + $data->monov;
+        $gsubdec = $gsubdec + $data->modec;
+        $gsubamt = $gsubamt + $data->mojan + $data->mofeb + $data->momar + $data->moapr + $data->momay + $data->mojun + $data->mojul + $data->moaug + $data->mosep + $data->mooct + $data->monov + $data->modec;
+
+        $totalmojan = $totalmojan + $data->mojan;
+        $totalmofeb = $totalmofeb + $data->mofeb;
+        $totalmomar = $totalmomar + $data->momar;
+        $totalmoapr = $totalmoapr + $data->moapr;
+        $totalmomay = $totalmomay + $data->momay;
+        $totalmojun = $totalmojun + $data->mojun;
+        $totalmojul = $totalmojul + $data->mojul;
+        $totalmoaug = $totalmoaug + $data->moaug;
+        $totalmosep = $totalmosep + $data->mosep;
+        $totalmooct = $totalmooct + $data->mooct;
+        $totalmonov = $totalmonov + $data->monov;
+        $totalmodec = $totalmodec + $data->modec;
+        $totalamt = $totalamt + $amt;
+
+        $brand = strtoupper($data->brand);
+        $part = $data->part;
+
+        $str .= $this->reporter->endrow();
+
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+
+          $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+          if (!$allowfirstpage) {
+            $str .= $this->transpower_displayHeader($config);
+          }
+          $str .= $this->transpower_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+
+          $page = $page + $count;
+        }
+      }
+
+      $str .= $this->reporter->startrow();
+
+      $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+      $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '90', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
+      $str .= $this->reporter->col(number_format($subjan, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subfeb, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($submar, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subapr, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($submay, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subjun, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subjul, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subaug, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subsep, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($suboct, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subnov, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subdec, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($subamt, $ab), '70', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+      $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '90', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubjan, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubfeb, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubmar, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubapr, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubmay, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubjun, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubjul, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubaug, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubsep, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsuboct, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubnov, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubdec, $ab), '65', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($gsubamt, $ab), '70', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '60', null, false, $border, '', 'L', $font, $font_size9, 'B', '', '', '');
+      $str .= $this->reporter->col('GRAND TOTAL :', '90', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmojan, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmofeb, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmomar, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmoapr, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmomay, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmojun, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmojul, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmoaug, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmosep, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmooct, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmonov, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalmodec, $ab), '65', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalamt, $ab), '70', null, false, $border, 'TB', 'R', $font, $font_size9, 'B', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->endtable();
+      $str .= $this->reporter->printline();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->endreport();
+
+      return $str;
+    }
+  //transpower
 }//end class

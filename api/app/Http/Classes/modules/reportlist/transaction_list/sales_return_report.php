@@ -267,6 +267,7 @@ class sales_return_report
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $prjid = $config['params']['dataparams']['project'];
       $deptid = $config['params']['dataparams']['ddeptname'];
+      $deptname = $config['params']['dataparams']['deptname'];
       $project = $config['params']['dataparams']['projectid'];
       if ($deptid == "") {
         $dept = "";
@@ -276,7 +277,7 @@ class sales_return_report
       if ($prjid != "") {
         $filter3 .= " and stock.projectid = $project";
       }
-      if ($deptid != "") {
+      if ($deptid != "" && $deptname != '') {
         $filter3 .= " and head.deptid = $dept";
       }
 
@@ -450,6 +451,7 @@ class sales_return_report
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $projectcode = $config['params']['dataparams']['project'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       $projectid = $config['params']['dataparams']['projectid'];
       $deptid = $config['params']['dataparams']['deptid'];
       // if ($deptid == "") {
@@ -460,7 +462,7 @@ class sales_return_report
       if ($projectcode != "") {
         $filter3 .= " and stock.projectid = $projectid";
       }
-      if ($deptid != "") {
+      if ($deptid != "" && $deptname != '') {
         $filter3 .= " and head.deptid = $deptid";
       }
     } else {
@@ -625,10 +627,11 @@ class sales_return_report
       $dept = $config['params']['dataparams']['dept'];
       $projectid = $config['params']['dataparams']['projectid'];
       $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
       if ($projectcode != "") {
         $filter3 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter3 .= " and head.deptid = $deptid";
       }
 

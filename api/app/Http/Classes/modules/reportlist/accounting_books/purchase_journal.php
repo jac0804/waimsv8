@@ -68,6 +68,7 @@ class purchase_journal
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -703,12 +704,12 @@ class purchase_journal
     $username = $params['params']['user'];
     $companyid = $params['params']['companyid'];
     if ($reporttype == 1) {
-          $str .= $this->reporter->begintable('1200');
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->letterhead($center1, $username, $params);
-          $str .= $this->reporter->endrow();
-          $str .= $this->reporter->endtable();
-    
+      $str .= $this->reporter->begintable('1200');
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->letterhead($center1, $username, $params);
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
 
       $str .= '<br>';
 
@@ -739,12 +740,12 @@ class purchase_journal
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
     } else {
-      
-          $str .= $this->reporter->begintable('800');
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->letterhead($center1, $username, $params);
-          $str .= $this->reporter->endrow();
-          $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable('800');
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->letterhead($center1, $username, $params);
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
 
       $str .= '<br>';
       $str .= $this->reporter->begintable('800');

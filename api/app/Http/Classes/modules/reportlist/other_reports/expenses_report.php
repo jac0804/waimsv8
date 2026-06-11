@@ -89,6 +89,7 @@ class expenses_report
     '" . $defaultcenter[0]['centername'] . "' as centername,
     '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
     0 as deptid,
+    '' as divname,
     '' as ddeptname, '' as dept, '' as deptname";
 
     // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
@@ -172,6 +173,8 @@ class expenses_report
 
 
     $deptid      = $config['params']['dataparams']['deptid']; //afti
+    $deptname = $config['params']['dataparams']['deptname'];
+    $divname = $config['params']['dataparams']['divname'];
     $dept = $config['params']['dataparams']['dept']; //afti
 
     $filter = "";
@@ -181,7 +184,7 @@ class expenses_report
     }
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
     }
@@ -226,6 +229,7 @@ class expenses_report
 
     $deptid      = $config['params']['dataparams']['deptid']; //afti
     $dept = $config['params']['dataparams']['dept']; //afti
+    $deptname = $config['params']['dataparams']['deptname'];
     $filter = "";
     $filter1 = "";
     if ($center != '') {
@@ -233,7 +237,7 @@ class expenses_report
     }
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
     }
@@ -288,12 +292,13 @@ class expenses_report
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptid = $config['params']['dataparams']['ddeptname'];
+      $deptname = $config['params']['dataparams']['deptname'];
       if ($deptid == "") {
         $dept = "";
       } else {
         $dept = $config['params']['dataparams']['deptid'];
       }
-      if ($deptid != "") {
+      if ($deptid != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $dept";
       }
     } else {
@@ -493,12 +498,13 @@ class expenses_report
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptid = $config['params']['dataparams']['ddeptname'];
+      $deptname = $config['params']['dataparams']['deptname'];
       if ($deptid == "") {
         $dept = "";
       } else {
         $dept = $config['params']['dataparams']['deptid'];
       }
-      if ($deptid != "") {
+      if ($deptid != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $dept";
       }
     } else {
@@ -571,12 +577,13 @@ class expenses_report
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptid = $config['params']['dataparams']['ddeptname'];
+      $deptname = $config['params']['dataparams']['deptname'];
       if ($deptid == "") {
         $dept = "";
       } else {
         $dept = $config['params']['dataparams']['deptid'];
       }
-      if ($deptid != "") {
+      if ($deptid != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $dept";
       }
     } else {

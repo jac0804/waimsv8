@@ -113,7 +113,7 @@ class accounts_receivable_reports
               left join lastock as stock on stock.trno=head.trno
               left join client on client.client=head.client
               left join cntnum on cntnum.trno=head.trno
-              where head.doc ='cm' and head.dateid <= '" . $asof . "' " . $filter . " 
+              where head.doc ='cm' and head.dateid <= '" . $asof . "' " . $filter . "   
               group by client.clientname
               union all
               select client.clientname,sum(detail.db-detail.cr) as balance
@@ -122,7 +122,7 @@ class accounts_receivable_reports
               left join client on client.client=head.client
               left join coa on coa.acnoid=detail.acnoid
               left join cntnum on cntnum.trno=head.trno
-              where left(coa.alias,2)='AR' and head.dateid <= '" . $asof . "' " . $filter . " 
+              where left(coa.alias,2)='AR' and head.dateid <= '" . $asof . "' " . $filter . "    
               group by client.clientname
               union all
               select client.clientname,
@@ -175,6 +175,12 @@ class accounts_receivable_reports
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '4px');
+        $str .= $this->reporter->pagenumber('Page ', '400', null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
         $str .= $this->reporter->printline();
 
         $str .= $this->reporter->begintable($layoutsize);
@@ -192,6 +198,7 @@ class accounts_receivable_reports
 
         $font = $this->companysetup->getrptfont($config['params']);
         $font_size = '11';
+        $border = "1px solid";
 
         $result = $this->reportDefault($config);
         $count = 50;
@@ -205,13 +212,13 @@ class accounts_receivable_reports
         $layoutsize = '1000';
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->default_displayHeader($config);
-
+        $grandtotal = 0;
         foreach ($result as $key => $data) {
             $str .= $this->reporter->addline();
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data->clientname, '500', null, false, '1px dotted ', '', 'L', $font, $font_size, '', '', '', '');
-            $str .= $this->reporter->col(number_format($data->balance, 2), '250', null, false, '1px dotted ', '', 'R', $font, $font_size, '', '', '', '');
-            $str .= $this->reporter->col(number_format($data->balance, 2), '250', null, false, '1px dotted ', '', 'R', $font, $font_size, '', '', '', '');
+            $str .= $this->reporter->col($data->clientname, '500', null, false, '1px dotted', '', 'L', $font, $font_size, '', '', '', '');
+            $str .= $this->reporter->col(number_format($data->balance, 2), '250', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
+            $str .= $this->reporter->col(number_format($data->balance, 2), '250', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
             $str .= $this->reporter->endrow();
 
             if ($this->reporter->linecounter == $page) {
@@ -220,7 +227,16 @@ class accounts_receivable_reports
                 $str .= $this->default_displayHeader($config);
                 $page = $page + $count;
             }
+
+            $grandtotal += $data->balance;
         }
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '500', null, false,  $border, 'TB', 'L', $font, $font_size, '', '', '', '');
+        $str .= $this->reporter->col('GRANDTOTAL: ', '250', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->col(number_format($grandtotal, 2), '250', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->endrow();
+
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->endreport();
 

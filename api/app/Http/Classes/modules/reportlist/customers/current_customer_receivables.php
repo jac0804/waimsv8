@@ -108,13 +108,24 @@ class current_customer_receivables
             );
             break;
 
+          case 21: //kinggoerge 
+            array_push($fields, 'dclientname', 'dcentername', 'contra', 'terms');
+            $col1 = $this->fieldClass->create($fields);
+            data_set($col1, 'contra.lookupclass', 'AR');
+            data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+            data_set($col1, 'dclientname.label', 'Customer');
+            data_set($col1, 'terms.type', 'lookup');
+            data_set($col1, 'terms.action', 'lookupterms');
+            data_set($col1, 'terms.lookupclass', 'ledgerterms');
+            data_set($col1, 'terms.label', 'Terms');
+            break;
+
           default:
             array_push($fields, 'dclientname', 'dcentername', 'contra');
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
-            data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
             break;
         }
@@ -177,7 +188,7 @@ class current_customer_receivables
 
                       '' as dagentname,'' as agent,'' as agentname,'' as agentid,'0' as posttype,
 
-                      '' as category_name, '' as category_id, '' as customerfilter
+                      '' as category_name, '' as category_id, '' as customerfilter, '' as terms
                       ";
 
 
@@ -368,6 +379,8 @@ class current_customer_receivables
     $reporttype   = $config['params']['dataparams']['reporttype'];
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
+    $terms       = $config['params']['dataparams']['terms'];
+
 
 
 
@@ -385,17 +398,23 @@ class current_customer_receivables
       $filter .= " and coa.acnoid='$acnoid'";
     }
 
+
     switch ($companyid) {
       case 32: //3m
       case 36: //rozlab
         $agentid = $config['params']['dataparams']['agentid'];
         if ($agentid != '' && $agentid != 0) $filter1 .= " and head.agentid=" . $agentid;
         break;
+      case 21: //kinggoerge
+        if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+        break;
     }
 
     $addfield = '';
     $addfield2 = '';
     $addleftjoin = '';
+    $elapseP = "case when terms.days = 0 then 0 else datediff(now(), detail.dateid) end as elapse";
+
     switch ($companyid) {
       case 19: //housegem
         $addfield = ', gdetail.rem as drem ';
@@ -405,6 +424,11 @@ class current_customer_receivables
         $addfield = ",ag.clientname as agentname, client.brgy, client.area";
         $addfield2 = ',agentname,brgy,area';
         $addleftjoin = "left join client as ag on ag.clientid=head.agentid";
+        break;
+      case 21: //kinggeorge
+        $addfield = ",head.terms as terms";
+        $addfield2 = ',terms';
+        $addleftjoin = "left join terms on terms.terms=head.terms";
         break;
     }
 
@@ -428,7 +452,7 @@ class current_customer_receivables
 
           default:
             $query = "select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-                    date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+                    date(detail.dateid) as dateid, detail.docno,$elapseP,
                     (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref " . $addfield . "
                     from (arledger as detail 
                     left join client on client.clientid=detail.clientid)
@@ -436,10 +460,12 @@ class current_customer_receivables
                     left join glhead as head on head.trno=detail.trno
                     left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
                     left join coa on coa.acnoid=gdetail.acnoid
-                    " . $addleftjoin . "
+                    " . $addleftjoin . " 
                     where detail.bal<>0 and left(coa.alias,2)='AR'  
                     $filter $filter1
                     order by client.clientname, detail.dateid, detail.docno,head.yourref";
+
+
             break;
         }
 
@@ -447,18 +473,19 @@ class current_customer_receivables
       case '0': // SUMMARIZED
         $query = "select clientname, name, sum(balance) as balance " . $addfield2 . "
           from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-          date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
+          date(detail.dateid) as dateid, detail.docno, $elapseP,
           (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref " . $addfield . "
           from (arledger as detail left join client on client.clientid=detail.clientid)
           left join cntnum on cntnum.trno=detail.trno
           left join glhead as head on head.trno=detail.trno
           left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
           left join coa on coa.acnoid=gdetail.acnoid
-          " . $addleftjoin . "
+          " . $addleftjoin . "  
           where detail.bal<>0 and left(coa.alias,2)='AR'  
           $filter $filter1
           ) as x
           group by clientname, name " . $addfield2 . " order by clientname";
+        // var_dump($query);
         break;
     } //end switch
 
@@ -474,6 +501,7 @@ class current_customer_receivables
     $reporttype   = $config['params']['dataparams']['reporttype'];
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
+    $terms       = $config['params']['dataparams']['terms'];
 
     $filter = "";
     $filter1 = "";
@@ -491,9 +519,14 @@ class current_customer_receivables
       $acnoid       = $config['params']['dataparams']['acnoid'];
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
+    if ($companyid == 21) { //kinggoerge
+      if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+    }
+
     $addfield = "";
     $addfield2 = '';
     $addleftjoin = "";
+    $elapseU = "case when terms.days = 0 then 0 else datediff(now(), head.dateid) end as elapse";
 
     switch ($companyid) {
       case 32: //3m
@@ -504,6 +537,17 @@ class current_customer_receivables
         $addfield = ",ag.clientname as agentname, client.brgy, client.area";
         $addfield2 = ',agentname,brgy,area';
         $addleftjoin = "left join client as ag on ag.client=head.agent";
+        break;
+      case 21: //kinggoerge
+        if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+        break;
+    }
+
+    switch ($companyid) {
+      case 21: //kinggeorge
+        $addfield = ",head.terms as terms";
+        $addfield2 = ',terms';
+        $addleftjoin = "left join terms on terms.terms=head.terms";
         break;
     }
 
@@ -530,17 +574,17 @@ class current_customer_receivables
 
 
         $query = "select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      date(head.dateid) as dateid, head.docno, $elapseU,
       detail.db as balance,head.yourref,head.doc,$ref1 " . $addfield . "
       from (((lahead as head left join ladetail as detail on detail.trno=head.trno)
       left join client on client.client=head.client)
       left join coa on coa.acnoid=detail.acnoid)
       left join cntnum on cntnum.trno=head.trno
-      " . $addleftjoin . "
+      " . $addleftjoin . " 
       where head.doc in ('ar','gj') and left(coa.alias,2)='AR' and detail.refx = 0  $filter $filter1 $filter2 $filter3
       union all
       select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-      date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+      date(head.dateid) as dateid, head.docno, $elapseU,
       sum(stock.ext) as balance, head.yourref,head.doc,$ref2 " . $addfield . "
       from (((lahead as head left join lastock as stock on stock.trno=head.trno)
       left join client on client.client=head.client))
@@ -554,7 +598,7 @@ class current_customer_receivables
       case '0': // SUMMARIZED
         $query = "select clientname, name, sum(balance) as balance " . $addfield2 . "
          from ( select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name, 
-         date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse, detail.db as balance,
+         date(head.dateid) as dateid, head.docno, $elapseU, detail.db as balance,
          head.yourref " . $addfield . " 
          from (((lahead as head left join ladetail as detail on detail.trno=head.trno) 
          left join client on client.client=head.client) left join coa on coa.acnoid=detail.acnoid)
@@ -562,7 +606,7 @@ class current_customer_receivables
          left(coa.alias,2)='AR' and detail.refx = 0 $filter $filter1 $filter2 $filter3 
          union all 
          select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name, 
-         date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse, sum(stock.ext) as balance, 
+         date(head.dateid) as dateid, head.docno, $elapseU, sum(stock.ext) as balance, 
          head.yourref " . $addfield . " 
          from (((lahead as head left join lastock as stock on stock.trno=head.trno) 
          left join client on client.client=head.client)) 
@@ -585,6 +629,7 @@ class current_customer_receivables
     $reporttype   = $config['params']['dataparams']['reporttype'];
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
+    $terms      = $config['params']['dataparams']['terms'];
 
 
 
@@ -605,8 +650,15 @@ class current_customer_receivables
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
 
-    if ($companyid == 32) { //3m
+    if ($companyid == 21) { //kinggoerge
+      if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+    }
 
+    switch ($companyid) {
+      case 32: //3m
+      case 36: //rozlab
+        if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+        break;
     }
 
 
@@ -615,6 +667,8 @@ class current_customer_receivables
     $addleftjoin = "";
     $addleftjoin2 = "";
     $addgrp3m = '';
+    $elapseU = "case when terms.days = 0 then 0 else datediff(now(), head.dateid) end as elapse";
+    $elapseP = "case when terms.days = 0 then 0 else datediff(now(), ar.dateid) end as elapse";
 
     switch ($companyid) {
       case 32: //3m
@@ -630,6 +684,13 @@ class current_customer_receivables
         $addgrp3m = ',ag.clientname,client.brgy,client.area';
         $addleftjoin = "left join client as ag on ag.client=head.agent";
         $addleftjoin2 = "left join client as ag on ag.clientid=head.agentid";
+
+        break;
+      case 21: //kinggeorge
+        $addfield = ",head.terms as terms";
+        $addfield2 = ',terms';
+        $addleftjoin = "left join terms on terms.terms=head.terms";
+        $addleftjoin2 = "left join terms on terms.terms=head.terms";
         break;
     }
 
@@ -646,7 +707,6 @@ class current_customer_receivables
             if ($companyid == 19) { //housegem
               $ref1 = " detail.ref, detail.rem as drem ";
               $ref2 = " '' as ref, stock.rem as drem ";
-              $grp = " , stock.rem ";
             } else {
               $ref1 = " detail.ref ";
               $ref2 = " '' as ref ";
@@ -656,21 +716,21 @@ class current_customer_receivables
         }
 
         $query = "select cntnum.center, 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-                         date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
-                        (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref, 
-                        head.doc,$ref2 " . $addfield . "
-                  from (arledger as detail 
-                  left join client on client.clientid=detail.clientid)
-                  left join cntnum on cntnum.trno=detail.trno
-                  left join glhead as head on head.trno=detail.trno
-                  left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
-                  left join coa on coa.acnoid=gdetail.acnoid
+                         date(ar.dateid) as dateid, ar.docno, $elapseP,
+                        (case when ar.db>0 then ar.bal else (ar.bal*-1) end) as balance,head.yourref, 
+                        head.doc,$ref1 " . $addfield . "
+                  from (arledger as ar 
+                  left join client on client.clientid=ar.clientid)
+                  left join cntnum on cntnum.trno=ar.trno
+                  left join glhead as head on head.trno=ar.trno
+                  left join gldetail as detail on detail.trno=ar.trno and detail.line=ar.line
+                  left join coa on coa.acnoid=detail.acnoid
                   " . $addleftjoin2 . "
-                  where detail.bal<>0 and left(coa.alias,2)='AR'
-                  $filter $filter1
+                  where ar.bal<>0 and left(coa.alias,2)='AR'
+                  $filter $filter1 
                   union all
                   select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-                         date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+                         date(head.dateid) as dateid, head.docno, $elapseU,
                          detail.db as balance,head.yourref, head.doc,$ref1 " . $addfield . "
                   from (((lahead as head 
                   left join ladetail as detail on detail.trno=head.trno)
@@ -682,15 +742,15 @@ class current_customer_receivables
                         and detail.refx = 0  $filter $filter1 $filter2 $filter3
                   union all
                   select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-                         date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
-                         sum(stock.ext) as balance, head.yourref, head.doc,$ref2  " . $addfield . "
+                         date(head.dateid) as dateid, head.docno, $elapseU,
+                         sum(stock.ext) as balance, head.yourref, head.doc,$ref2 " . $addfield . "
                   from (((lahead as head 
                   left join lastock as stock on stock.trno=head.trno)
                   left join client on client.client=head.client))
                   left join cntnum on cntnum.trno=head.trno
                   " . $addleftjoin . "
                   where head.doc in ('sj','mj') $filter $filter1 $filter3
-                  group by center, tr,doc, clientname, name, head.dateid, docno, elapse, yourref $addgrp3m
+                  group by center, tr,doc, clientname, name, head.dateid, docno, elapse, yourref,head.terms $addgrp3m
                   order by clientname, dateid, docno,yourref";
         break;
 
@@ -701,22 +761,22 @@ class current_customer_receivables
         
             from (
           select  cntnum.center, 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-          date(detail.dateid) as dateid, detail.docno, datediff(now(), detail.dateid) as elapse,
-          (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref " . $addfield . "
-          from (arledger as detail left join client on client.clientid=detail.clientid)
-          left join cntnum on cntnum.trno=detail.trno
-          left join glhead as head on head.trno=detail.trno
-          left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
-          left join coa on coa.acnoid=gdetail.acnoid
+          date(ar.dateid) as dateid, ar.docno, $elapseP,
+          (case when ar.db>0 then ar.bal else (ar.bal*-1) end) as balance,head.yourref " . $addfield . "
+          from (arledger as ar left join client on client.clientid=ar.clientid)
+          left join cntnum on cntnum.trno=ar.trno
+          left join glhead as head on head.trno=ar.trno
+          left join gldetail as detail on detail.trno=ar.trno and detail.line=ar.line
+          left join coa on coa.acnoid=detail.acnoid
            " . $addleftjoin2 . "
-          where detail.bal<>0 and left(coa.alias,2)='AR'
+          where ar.bal<>0 and left(coa.alias,2)='AR'
            $filter $filter1
 
         union all
 
           select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-          date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
-           detail.db as balance,head.yourref " . $addfield . "
+          date(head.dateid) as dateid, head.docno, $elapseU,
+          detail.db as balance,head.yourref " . $addfield . "
           from (((lahead as head left join ladetail as detail on detail.trno=head.trno)
           left join client on client.client=head.client)
           left join coa on coa.acnoid=detail.acnoid)
@@ -726,7 +786,7 @@ class current_customer_receivables
           
           union all
           select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
-          date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
+          date(head.dateid) as dateid, head.docno, $elapseU,
           sum(stock.ext) as balance, head.yourref " . $addfield . "
         
           from (((lahead as head left join lastock as stock on stock.trno=head.trno)
@@ -2231,6 +2291,9 @@ class current_customer_receivables
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         break;
+      case 21: //kinggoerge
+        $terms      = $config['params']['dataparams']['terms'];
+        break;
       default:
         $contra   = $config['params']['dataparams']['contra'];
         break;
@@ -2296,9 +2359,17 @@ class current_customer_receivables
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
 
     if ($client == '') {
-      $str .= $this->reporter->col('Customer : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Customer : ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
-      $str .= $this->reporter->col('Customer : ' . strtoupper($client), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Customer : ' . strtoupper($client), '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    }
+
+    if ($companyid == 21) { //kinggoerge
+      if ($terms == '') {
+        $str .= $this->reporter->col('Terms : ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      } else {
+        $str .= $this->reporter->col('Terms : ' . strtoupper($terms), '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      }
     }
 
     // Added 2026-02-25 - Elmer
@@ -2317,12 +2388,14 @@ class current_customer_receivables
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $str .= $this->reporter->col('Account : ' . strtoupper($contra), '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     } else {
-      $str .= $this->reporter->col('Transaction : ' . strtoupper($reporttype), '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+      $str .= $this->reporter->col('Transaction : ' . strtoupper($reporttype), '150', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     }
+
+    $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     if ($contra == '') {
-      $str .= $this->reporter->col('Account: ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Account: ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
-      $str .= $this->reporter->col('Account: ' . $contra, '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Account: ' . $contra, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     }
 
     switch ($companyid) {
@@ -2341,8 +2414,8 @@ class current_customer_receivables
 
 
 
-    $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('Center : ' . $filtercenter, '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+
+    $str .= $this->reporter->col('Center : ' . $filtercenter, '110', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $str .= $this->reporter->col('Department : ' . $deptname, '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -2836,6 +2909,8 @@ class current_customer_receivables
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         break;
+      case 21: //kinggoerge
+        $terms = $config['params']['dataparams']['terms'];
       default:
         $contra   = $config['params']['dataparams']['contra'];
         break;
@@ -2902,27 +2977,34 @@ class current_customer_receivables
 
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     if ($client == '') {
-      $str .= $this->reporter->col('Customer : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Customer : ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
-      $str .= $this->reporter->col('Customer : ' . strtoupper($client), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Customer : ' . strtoupper($client), '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     }
+
+
+
+    if ($companyid == 21) { //kinggeorge
+      if ($terms == '') {
+        $str .= $this->reporter->col('Terms: ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      } else {
+        $str .= $this->reporter->col('Terms: ' . strtoupper($terms), '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      }
+    }
+
+
+
     if ($contra == '') {
-      $str .= $this->reporter->col('Account: ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Account: ALL', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
-      $str .= $this->reporter->col('Account: ' . $contra, '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('Account: ' . $contra, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     }
-    $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-
-
-
-
 
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $str .= $this->reporter->col('Account : ' . strtoupper($contra), '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     } else {
-      $str .= $this->reporter->col('Transaction : ' . strtoupper($reporttype), '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+      $str .= $this->reporter->col('Transaction : ' . strtoupper($reporttype), '150', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     }
 
 

@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class ot_filling_reports
 {
@@ -27,6 +28,7 @@ class ot_filling_reports
     private $reporter;
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
+    private $payrollcommon;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1500'];
 
     public function __construct()
@@ -36,6 +38,7 @@ class ot_filling_reports
         $this->othersClass = new othersClass;
         $this->fieldClass = new txtfieldClass;
         $this->reporter = new SBCPDF;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function createHeadField($config)
@@ -230,7 +233,7 @@ class ot_filling_reports
         $filteremp = "";
         $leftjoin = "";
 
-        $check = $this->othersClass->checkapproversetup($config, $userid, 'OT', 'emp');
+        $check = $this->payrollcommon->checkapproversetup($config, $userid, 'OT', 'emp');
         if ($check['filter'] != "") {
             $filteremp .= $check['filter'];
         }

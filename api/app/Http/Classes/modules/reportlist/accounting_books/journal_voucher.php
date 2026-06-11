@@ -51,6 +51,7 @@ class journal_voucher
       case 19: //housegem
         array_push($fields, 'dclientname');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         array_push($fields, 'dacnoname');
         break;
@@ -92,6 +93,7 @@ class journal_voucher
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
 
@@ -711,7 +713,7 @@ class journal_voucher
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-     $companyid = $params['params']['companyid'];
+    $companyid = $params['params']['companyid'];
     $font = $this->companysetup->getrptfont($params['params']);
     $fontsize10 = '10';
 
@@ -750,7 +752,7 @@ class journal_voucher
 
     if ($reporttype == 1) {
 
-      
+
       $str .= $this->reporter->begintable('1200');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center, $username, $params);
@@ -786,7 +788,7 @@ class journal_voucher
       $str .= $this->reporter->letterhead($center, $username, $params);
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-    
+
       $str .= '<br><br>';
 
       $str .= $this->reporter->begintable('800', null, '', '1px solid ', '', '', $font, '', '', '', '');

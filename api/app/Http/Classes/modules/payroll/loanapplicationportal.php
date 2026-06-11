@@ -746,7 +746,7 @@ class loanapplicationportal
       $data['apamt'] = $data['amt'];
       $data['apamortization'] = $data['amortization'];
     }
-
+    $data['balance'] = $data['amt'];
     if ($isupdate) {
       if ($companyid != 53) { // not camera
         if (substr($head['status'], 0, 1) != 'E') {
@@ -755,7 +755,6 @@ class loanapplicationportal
       }
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
-
       if (!empty($this->checking($config, $date))) {
         $msg = "Already Exist";
         $head['clientid'] = 0;
@@ -767,7 +766,6 @@ class loanapplicationportal
 
       $data['empid'] = $config['params']['adminid'];
       $data['status'] = "E";
-      $data['balance'] = $data['amt'];
       $data['status2'] = "E";
 
       if (!empty($this->checking($config, $date))) {

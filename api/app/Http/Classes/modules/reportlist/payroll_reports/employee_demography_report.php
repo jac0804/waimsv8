@@ -85,7 +85,9 @@ class employee_demography_report
         0 clientid, '' client, '' as clientname, '' as dclientname,
         0 as divid, '' as company,
         0 as deptid, '' as deptname,
+        '' as deptrep,
         0 as sectid, '' as sectname,
+        '' as sectrep,
         '' as type, '' as prepared, '' as checked, '' as approved
       ";
         return $this->coreFunctions->opentable($paramstr);
@@ -113,7 +115,7 @@ class employee_demography_report
         $username = $config['params']['user'];
         $companyid = $config['params']['companyid'];
         return $this->employee_demography_layout($config);
-        break;
+        // break;
     }
 
     // QUERY

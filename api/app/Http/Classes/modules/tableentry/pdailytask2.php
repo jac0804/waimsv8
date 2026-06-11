@@ -154,7 +154,7 @@ class pdailytask2
 
         $addOnQry = '';
         $addOnLeft = '';
-        $addOnField = '';
+        $addOnField = ",'' as touser";
         $addOnLeftUser = ' left join client as c2 on c2.clientid = dt.userid';
         $comment = "''";
 
@@ -181,7 +181,7 @@ class pdailytask2
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, p.line as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, rem.rem as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
+                    dt.rem1, '' as carem, rem.rem as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono,dt.reimbursement $addOnField
                    from pendingapp as p
                    left join dailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -214,7 +214,7 @@ class pdailytask2
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     (case dt.statid when 0 then 'Pending' when '1' then 'Done' when '2' then 'Undone' when '4' then 'Neglect' end) as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, 0 as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono,dt.reimbursement $addOnField
                    from pendingapp as p
                    left join dailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -229,7 +229,7 @@ class pdailytask2
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, p.line as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono,dt.reimbursement $addOnField
                    from pendingapp as p
                    left join hdailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -243,7 +243,7 @@ class pdailytask2
                     dt.tasktrno,dt.taskline,dt.reftrno,dt.userid,dt.donedate,dt.apvtrno,
                     " . $statname . " as statname,
                     m.modulename as doc, m.sbcpendingapp,'' as lblforapp, '' as approver, dt.empid, dt.origtrno, 0 as cline, dt.refx, c2.email as fruser, c2.clientname as username,dt.ischecker,
-                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono $addOnField
+                    dt.rem1, '' as carem, " . $comment . " as comment,dt.taskcatid,ifnull(dt.assignedid,0) as assignedid,dt.reseller,dt.jono,dt.reimbursement $addOnField
                    from pendingapp as p
                    left join hdailytask as dt on dt.trno=p.trno 
                    left join client as c on c.clientid = dt.clientid
@@ -393,6 +393,7 @@ class pdailytask2
                             'assignedid' => $row['assignedid'],
                             'reseller' => $row['reseller'],
                             'jono' => $row['jono'],
+                            'reimbursement' => $row['reimbursement']
                         ];
 
                         if ($row['origtrno'] != 0) {
@@ -487,6 +488,7 @@ class pdailytask2
                         'assignedid' => $row['assignedid'],
                         'reseller' => $row['reseller'],
                         'jono' => $row['jono'],
+                        'reimbursement' => $row['reimbursement']
                     ];
 
                     if ($row['refx'] != 0) {
@@ -540,6 +542,7 @@ class pdailytask2
                     'taskcatid' => $row['taskcatid'],
                     'assignedid' => $row['assignedid'],
                     'jono' => $row['jono'],
+                    'reimbursement' => $row['reimbursement']
                 ];
 
 

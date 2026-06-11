@@ -1401,6 +1401,7 @@ class hris
       `range1` decimal(9,2) NOT NULL DEFAULT '0.00',
       `range2` decimal(9,2) NOT NULL DEFAULT '0.00',
       `hdmfmulti` decimal(9,2) NOT NULL DEFAULT '0.00',
+      `hdmfmulti2` decimal(9,2) NOT NULL DEFAULT '0.00',
       PRIMARY KEY (`bracket`) USING BTREE,
       KEY `Index_2` (`line`)
     ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;";

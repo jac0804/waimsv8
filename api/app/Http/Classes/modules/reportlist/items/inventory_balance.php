@@ -684,6 +684,7 @@ class inventory_balance
       case 49: //hotmix
         $order = " order by itemname,category";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $order = " order by stockgrp_name,itemname";
         break;
@@ -842,7 +843,7 @@ class inventory_balance
         $addfield = ', loc';
         break;
     }
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $addfield .= ',stockgrp.stockgrp_name';
     }
 
@@ -1417,7 +1418,7 @@ class inventory_balance
       partgrp.part_name as part,item.groupid, item.brand, item.sizeid,item.body, item.class, uom.uom, wh.client as swh,
       wh.clientname as whname, (case when uom.factor>1 then stock.qty/uom.factor else stock.qty end) as qty,(case when uom.factor>1 then stock.iss/uom.factor else stock.iss end) as iss,
       ifnull((select cost from rrstatus where itemid=item.itemid order by dateid desc limit 1),0) as cost,
-      item.amt, stock.loc, stock.expiry, iinfo.serialno $proj1
+      item.amt, stock.loc, ifnull(stock.expiry,'') as expiry, iinfo.serialno $proj1
       from (((lahead as head
       left join lastock as stock on stock.trno=head.trno)
       left join item on item.itemid=stock.itemid
@@ -1441,7 +1442,7 @@ class inventory_balance
       partgrp.part_name as part,item.groupid, item.brand, item.sizeid,item.body, item.class, uom.uom, wh.client as swh,
       wh.clientname as whname, (case when uom.factor>1 then stock.qty/uom.factor else stock.qty end) as qty,(case when uom.factor>1 then stock.iss/uom.factor else stock.iss end) as iss,
       ifnull((select cost from rrstatus where itemid=item.itemid order by dateid desc limit 1),0) as cost,
-      item.amt, stock.loc, stock.expiry, iinfo.serialno $proj1
+      item.amt, stock.loc, ifnull(stock.expiry,'') as expiry, iinfo.serialno $proj1
       from (((glhead as head
       left join glstock as stock on stock.trno=head.trno)
       left join item on item.itemid=stock.itemid
@@ -2069,6 +2070,7 @@ class inventory_balance
         $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
         $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
         break;
@@ -2186,7 +2188,7 @@ class inventory_balance
 
         $discounted = $this->othersClass->Discount($data->amt, $data->disc);
         //oks
-        if ($companyid != 14 && $companyid != 17 && $companyid != 24) { //not majesty,unihome,goodfound
+        if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) { //not majesty,unihome,goodfound,cemphil
           if ($data->part != 0 || $data->part != null) {
             if (strtoupper($part) == strtoupper($data->part)) {
               $part = "";
@@ -2224,7 +2226,7 @@ class inventory_balance
           }
         }
 
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
 
           if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
             if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
@@ -2316,6 +2318,7 @@ class inventory_balance
             $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $str .= $this->reporter->col($data->subcatname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
             break;
@@ -2645,6 +2648,7 @@ class inventory_balance
         $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
@@ -2758,8 +2762,8 @@ class inventory_balance
       }
       $cost = $this->getLatestCost($data->itemid);
 
-      //not majesty, unihome & goodfound
-      if ($companyid != 14 && $companyid != 17 && $companyid != 24) {
+      //not majesty, unihome & goodfound, cemphil
+      if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) {
         if ($data->part != 0 || $data->part != null) {
           if (strtoupper($part) == strtoupper($data->part)) {
             $part = "";
@@ -2798,7 +2802,7 @@ class inventory_balance
       }
 
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
 
         if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
           if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
@@ -2889,6 +2893,7 @@ class inventory_balance
           $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
           $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
           break;
+        case 69: //cemphil
         case 24: //goodfound
           $str .= $this->reporter->col($data->subcatname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
           break;
@@ -3242,6 +3247,7 @@ class inventory_balance
         $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
@@ -3374,8 +3380,8 @@ class inventory_balance
           $data->amt = 0;
         }
 
-        //not majesty,unihome & goodfound
-        if ($companyid != 14 && $companyid != 17 && $companyid != 24) {
+        //not majesty,unihome & goodfound, cemphil
+        if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) {
 
           if ($data->part != 0 || $data->part != null) {
             if (strtoupper($part) == strtoupper($data->part)) {
@@ -3414,7 +3420,7 @@ class inventory_balance
           }
         }
 
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
             if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
               $igrp = "";
@@ -3509,6 +3515,7 @@ class inventory_balance
             $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $str .= $this->reporter->col($data->subcatname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
             break;
@@ -8250,8 +8257,8 @@ class inventory_balance
       $str .= $this->reporter->col('SRP', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
       $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
     } else {
-      $str .= $this->reporter->col('MAX', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
       $str .= $this->reporter->col('MIN', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('MAX', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     }
     $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
@@ -8373,8 +8380,8 @@ class inventory_balance
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
           $str .= $this->reporter->col($isamt, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
         } else {
-          $str .= $this->reporter->col(number_format($data->maximum, 2), '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
           $str .= $this->reporter->col(number_format($data->minimum, 2), '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col(number_format($data->maximum, 2), '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
         }
         $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'B', 'CT', $font, $font_size, '', '', '');

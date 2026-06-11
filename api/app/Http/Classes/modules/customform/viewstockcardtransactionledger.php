@@ -130,6 +130,8 @@ class viewstockcardtransactionledger
           'yourref',
           'ourref',
           'rem',
+          'startwire',
+          'endwire',
           'ref',
           'center',
           'loc',
@@ -366,6 +368,10 @@ class viewstockcardtransactionledger
 
       $obj[0][$this->gridname]['columns'][$isamt]['type'] = 'coldel';
       $obj[0][$this->gridname]['columns'][$rrcost]['type'] = 'coldel';
+
+      $obj[0][$this->gridname]['columns'][$action]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;';
+      $obj[0][$this->gridname]['columns'][$startwire]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;text-align:right;';
+      $obj[0][$this->gridname]['columns'][$endwire]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;text-align:right;';
     }
 
     if (!$ispos) {
@@ -860,6 +866,7 @@ class viewstockcardtransactionledger
             $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
             $baseamt = ", (case when stock.iss<>0 then stock.isamt else stock.rrcost end) as baseamt";
             $itemj = "  left join item on item.itemid=stock.itemid";
+            $addfield = ",whref.clientname as whref, format(stock.startwire,2) as startwire, format(stock.endwire,2) as endwire ";
             break;
         }
 

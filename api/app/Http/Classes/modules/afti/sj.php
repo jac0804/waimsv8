@@ -409,6 +409,7 @@ class sj
          head.yourref, head.ourref,head.shipto';
         $orderby = "order by docno desc, dateid desc";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $lstat = "ifnull(stat.status,'DRAFT')";
         break;
@@ -1069,6 +1070,7 @@ class sj
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
@@ -1253,6 +1255,7 @@ class sj
         data_set($col1, 'address.addedparams', ['client']);
         break;
 
+      case 69: //cemphil
       case 24: // goodfound
         array_push($fields, 'dprojectname', ['hauler', 'driver'], ['weightin', 'weightintime']);
         $col1 = $this->fieldClass->create($fields);
@@ -1306,6 +1309,7 @@ class sj
       case 19: //hosegem
         $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'deldate', 'crref'];
         break;
+      case 69: //cemphil
       case 24: //goofound
         array_push($fields, 'statname', ['plateno', 'licenseno'], ['weightout', 'weightouttime']);
         break;
@@ -1345,6 +1349,7 @@ class sj
       case 22: //eipi
         data_set($col2, 'shipto.label', 'Delivered To');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         data_set($col2, 'statname.required', false);
         break;
@@ -1375,6 +1380,7 @@ class sj
       case 10: //afti
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], ['dvattype', 'taxdef'], 'dagentname', 'dewt'];
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', ['batchno', 'cwano'], 'cwatime', ['kilo', 'assignedlane']];
         break;
@@ -1422,6 +1428,7 @@ class sj
       case 19:
         data_set($col3, 'shipto.label', 'Deliver To');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         data_set($col3, 'yourref.label', 'DR No.#');
         data_set($col3, 'ourref.label', 'SI No.#');
@@ -1529,7 +1536,7 @@ class sj
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -1649,7 +1656,7 @@ class sj
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -2025,7 +2032,7 @@ class sj
       unset($this->fields[1]);
       unset($head['docno']);
     }
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       array_push($this->fields, 'driver');
     }
 
@@ -2049,7 +2056,7 @@ class sj
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $info = [];
       $info['trno'] = $head['trno'];
       $info['plateno'] = $head['plateno'];
@@ -2073,6 +2080,7 @@ class sj
       $this->recomputestock($head, $config);
 
       switch ($companyid) {
+        case 69: //cemphil
         case 24: //goodfound
           $trno = $head['trno'];
           $info['trno'] = $head['trno'];
@@ -2142,6 +2150,7 @@ class sj
         case 10: //afti
           $this->autocreatestock($config, $data, $head['sotrno']);
           break;
+        case 69: //cemphil
         case 24: //goodfound
           $this->coreFunctions->sbcinsert('cntnuminfo', $info);
           break;
@@ -2304,7 +2313,7 @@ class sj
         }
       }
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $statid = $this->coreFunctions->getfieldvalue($this->head, "statid", "trno=?", [$trno]);
         $pack = $this->coreFunctions->getfieldvalue('cntnuminfo', "packdate", "trno=?", [$trno]);
         $release = $this->coreFunctions->getfieldvalue('cntnuminfo', "releasedate", "trno=?", [$trno]);
@@ -3907,7 +3916,7 @@ class sj
         }
       }
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));
         $weightout = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightout', 'trno=?', [$trno]));
         $qry = "select sum(stock.iss) as value from lastock as stock
@@ -4422,7 +4431,7 @@ class sj
       $qry = $this->getsosummaryqry($config);
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
       if (!empty($data)) {
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           $overwritedue = $this->othersClass->checkAccess($config['params']['user'], 4219);
           if (!$overwritedue) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -4444,7 +4453,7 @@ class sj
             'sano' => $data[0]->sano,
             'pono' => $data[0]->pono
           ];
-          if ($companyid == 24) { //goodfound
+          if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             if (substr($data[0]->docno, 0, 2) == 'SO') {
               $headupdate['tax'] = 12;
               $headupdate['vattype'] = 'VATABLE';
@@ -4509,7 +4518,7 @@ class sj
             }
             $return = $this->additem('insert', $config);
 
-            if ($msg = '') {
+            if ($msg == '') {
               $msg = $return['msg'];
             } else {
               $msg = $msg . $return['msg'];
@@ -4772,7 +4781,7 @@ class sj
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       if (!empty($data)) {
         $updatehead = 0;
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           $overwritedue = $this->othersClass->checkAccess($config['params']['user'], 4219);
           if (!$overwritedue) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -4797,7 +4806,7 @@ class sj
               'pono' => $data[0]->pono
             ];
 
-            if ($companyid == 24) { //goodfound
+            if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
               if (substr($data[0]->docno, 0, 2) == 'SO') {
                 $headupdate['tax'] = 12;
                 $headupdate['vattype'] = 'VATABLE';
@@ -4880,6 +4889,7 @@ class sj
     } //end foreach
     switch ($companyid) {
       case 19: //housegem
+      case 69: //cemphil
       case 24: //goodfound
         return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
         break;
@@ -4932,7 +4942,7 @@ class sj
           $config['params']['data']['sortline'] = $data[$key2]->sortline;
           $return = $this->additem('insert', $config);
 
-          if ($msg = '') {
+          if ($msg == '') {
             $msg = $return['msg'];
           } else {
             $msg = $msg . $return['msg'];
@@ -5835,7 +5845,7 @@ class sj
         $config['params']['data']['sgdrate'] = $data[$key2]->sgdrate;
         $return = $this->additem('insert', $config);
 
-        if ($msg = '') {
+        if ($msg == '') {
           $msg = $return['msg'];
         } else {
           $msg = $msg . $return['msg'];

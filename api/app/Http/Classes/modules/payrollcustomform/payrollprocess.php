@@ -496,6 +496,9 @@ class payrollprocess
           case 62: //onesky
             return $this->computetimecard_onesky($config);
             break;
+          case 68: //jda
+            return $this->computetimecard_jda($config);
+            break;
           default:
             return $this->computetimecard($config);
             break;
@@ -2268,6 +2271,454 @@ class payrollprocess
     return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
   }
 
+  public function computetimecard_jda($config, $blnExtract = false)
+  {
+
+    //legal ot/sp ot/ndiff multiplier is set in paygroup (timecard fields: legotmulti,spotmulti,ndiffmulti)
+
+    ini_set('max_execution_time', 0);
+    set_time_limit(0);
+    ini_set('memory_limit', '-1');
+
+    $empid = $config['params']['dataparams']['empid'];
+    $start = $config['params']['dataparams']['startdate'];
+    $end = $config['params']['dataparams']['enddate'];
+    $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
+    $check_access = $this->othersClass->checkAccess($config['params']['user'], 2483);
+
+    $paygroupsetup = $this->coreFunctions->opentable("select line, othrs, spot, ndiffhrs, s3maxbracket from paygroup");
+    $paygroupsetup = json_decode(json_encode($paygroupsetup), true);
+    // Logger("paygroupsetup: " . json_encode($paygroupsetup));
+
+    if (!$check_access) {
+      return ['status' => false, 'msg' => 'Invalid Access, Compute Timecard'];
+    }
+
+    $emplog = 'all employees';
+
+    if ($checkall) {
+      $empid = 0;
+    } else {
+      $emplog = $config['params']['dataparams']['empname'];
+    }
+
+    $start = date('Y-m-d', strtotime($start));
+    $end = date('Y-m-d', strtotime($end));
+
+    $filteremplvl = '';
+    if ($blnExtract) {
+    } else {
+      $emplvl = $this->othersClass->checksecuritylevel($config);
+      $filteremplvl = " and e.level in $emplvl";
+    }
+
+    $this->logger->sbcmasterlog2(0, $config, 'Compute timecard for ' . $emplog . '. From ' . $start . '  to ' . $end, 'payroll_log', 1);
+
+
+    $this->coreFunctions->LogConsole('->computetimecard-resetdays');
+    //RESET DAYTYPE
+    $qry = "update timecard as t left join employee as e on e.empid = t.empid 
+      set t.daytype ='WORKING' 
+      where t.daytype not in('WORKING','RESTDAY') and date(t.DateID) between '" . $start . "' and '"  . $end . "' and e.isactive=1 " . $filteremplvl;
+
+    if (!$checkall) {
+      $qry .= " and e.empid=" . $empid;
+    }
+
+    $this->coreFunctions->execqry($qry);
+
+    $this->coreFunctions->LogConsole('->computetimecard-holiday');
+    $qry = "select date(dateid) as dateid,daytype,divcode from holiday where date(dateid) between '" . $start . "' and '" . $end . "' order by dateid";
+    $holiday = $this->coreFunctions->opentable($qry);
+
+    if (!empty($holiday)) {
+      $this->coreFunctions->LogConsole('->computetimecard-holidays');
+      foreach ($holiday as $k => $val) {
+        $qry = "update timecard  as t left join employee as e on e.empid = t.empid ";
+        $qry .= "set t.daytype = case when t.daytype = 'WORKING' then '" . $val->daytype . "' ";
+        if ($val->daytype == 'LEG') {
+          $qry .= "when daytype = 'RESTDAY' then 'LEG' ";
+        }
+        $qry .= "else t.daytype end ";
+
+        $qry .= "where t.dateid='" . $val->dateid . "' and e.isactive=1 " . $filteremplvl;
+        if (!$checkall) {
+          $qry .= "and t.empid=" . $empid;
+        }
+        $this->coreFunctions->execqry($qry);
+      }
+    }
+
+    $this->coreFunctions->LogConsole('->computetimecard-resetOT');
+    //reset OT
+    $qry = "update timecard as t left join employee as e on e.empid = t.empid 
+      set otapproved = 0, ndiffapproved = 0, isprevwork =0, RDapprvd=0, 
+      RDOTapprvd=0, LEGapprvd=0, LEGOTapprvd=0, SPapprvd=0, SPOTapprvd=0, ndiffsapprvd=0 
+      where t.dateid between '" . $start . "' and '" . $end . "' and e.isactive=1 " . $filteremplvl;
+    if (!$checkall) {
+      $qry .= "and e.empid=" . $empid;
+    }
+    $this->coreFunctions->execqry($qry);
+
+    $qry = "select schedin, schedout from timecard as t";
+    if (!$checkall) {
+      $qry .= "and e.empid=" . $empid;
+    }
+
+    $this->coreFunctions->LogConsole('->computetimecard-getschedule');
+    $data = $this->getempschedule($empid, $start, $end);
+
+    if (empty($data)) {
+      $this->coreFunctions->LogConsole('No schedule');
+    }
+
+    foreach ($data as $key => $val) {
+
+      $shift = $this->payrollcommon->getShiftDetails($val->empid);
+
+      unset($val->bgcolor);
+
+      $pgline = $val->pgline;
+      $tmpaygroup = array_filter($paygroupsetup, function ($row) use ($pgline) {
+        return $row['line'] === $pgline;
+      });
+
+      $firstRowPG = reset($tmpaygroup);
+
+      $absent = 0;
+      $late = 0;
+      $late2 = 0;
+      $breakoutlate = 0;
+      $breakinlate = 0;
+      $undertime = 0;
+      $overtime = 0;
+      $ndiffot = 0;
+      $ndiff = 0;
+      $ambreak = 0;
+
+      $blnCheckOT = false;
+      $blnWorkingDay = true;
+
+      $schedin = $val->schedin == null ? $val->schedin : Carbon::parse($val->schedin);
+      $actualin = $val->actualin == null ? $val->actualin : Carbon::parse($val->actualin);
+
+      $schedout = $val->schedout == null ? $val->schedout : Carbon::parse($val->schedout);
+      $actualout = $val->actualout == null ? $val->actualout : Carbon::parse($val->actualout);
+
+      $schedbrkout = $val->schedbrkout == null ? $val->schedbrkout : Carbon::parse($val->schedbrkout);
+      $actualbrkout = $val->actualbrkout == null ? $val->actualbrkout : Carbon::parse($val->actualbrkout);
+
+      $schedbrkin = $val->schedbrkin == null ? $val->schedbrkin : Carbon::parse($val->schedbrkin);
+      $actualbrkin = $val->actualbrkin == null ? $val->actualbrkin : Carbon::parse($val->actualbrkin);
+
+      $brk1stin = $val->brk1stin == null ? $val->brk1stin : Carbon::parse($val->brk1stin);
+      $brk1stout = $val->brk1stout == null ? $val->brk1stout : Carbon::parse($val->brk1stout);
+
+      if ($brk1stin  != null) {
+        $ambreak = $brk1stout->diffInMinutes($brk1stin, false);
+        if ($ambreak > 0) {
+          $ambreak = $ambreak / 60;
+        }
+      }
+
+      switch ($val->daytype) {
+        case 'RESTDAY':
+        case 'LEG':
+        case 'SP':
+          if ($val->actualin == null && $val->actualout == null) {
+            $val->reghrs = 0;
+          } else {
+            $val->reghrs = $schedin->diffInMinutes($schedout, false);
+            if ($val->reghrs > 0) {
+              $val->reghrs = round($val->reghrs / 60, 2);
+            } else {
+              $val->reghrs = 0;
+            }
+          }
+          $blnWorkingDay = false;
+          if ($val->daytype == 'LEG') {
+            $val->isprevwork = $this->checkvalidleghrs($val->empid, $val->dateid);
+          }
+          break;
+      }
+
+      if ($val->actualin == null && $val->actualout == null) {
+        $absent = $val->reghrs;
+      } else {
+        // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
+        $late = $schedin->diffInMinutes($actualin, false);
+
+        if ($shift[0]->gtin != 0) {
+          if ($late > 0) {
+            $late -= $shift[0]->gtin;
+          }
+        }
+
+        if ($late > 0) {
+          $late = $schedin->diffInMinutes($actualin, false);
+        }
+
+        if ($schedbrkout != null) {
+          if ($actualin >= $schedbrkout && $actualin <= $schedbrkin) {
+            $late = $schedin->diffInMinutes($schedbrkout, false);
+          }
+        }
+
+        if ($late > 0) {
+
+          if ($config['params']['companyid'] == 43) { //mighty
+            if ($late > 0 && $late <= 5) {
+              $late2 = 0.08;
+            } elseif ($late > 5 && $late <= 10) {
+              $late2 = 0.5;
+            } elseif ($late > 10 && $late <= 45) {
+              $late2 = 1;
+            } elseif ($late > 45 && $late <= 120) {
+              $late2 = 2;
+            }
+          }
+
+          $late = round($late / 60, 2);
+        } else {
+          $late = 0;
+          $late2 = 0;
+        }
+
+        //EARLY BREAKOUT
+        if ($actualbrkout != null) {
+          $breakoutlate = $actualbrkout->diffInMinutes($schedbrkout, false);
+          if ($breakoutlate > 0) {
+            $breakoutlate = round($breakoutlate / 60, 2);
+          } else {
+            $breakoutlate = 0;
+          }
+          $late += $breakoutlate;
+        }
+
+        //LATE BREAKIN
+        if ($actualbrkin != null && $schedbrkin != null) {
+          $breakinlate = $schedbrkin->diffInMinutes($actualbrkin, false);
+          if ($breakinlate > 0) {
+            $breakinlate = round($breakinlate / 60, 2);
+          } else {
+            $breakinlate = 0;
+          }
+          $late += $breakinlate;
+        }
+
+        //not include AM break
+        if ($brk1stin  != null) {
+          if ($actualin > $brk1stout) {
+            $late -= $ambreak;
+          }
+        }
+
+        //UNDERTIME
+        $blnActualOutInBrk = false;
+        if ($schedbrkin != null) {
+          if ($actualout != null) {
+            if (date('Y-m-d H:i', strtotime($actualout)) <= date('Y-m-d H:i', strtotime($schedbrkin))) {
+              $blnActualOutInBrk = true;
+
+              if (date('Y-m-d H:i', strtotime($actualout)) <= date('Y-m-d H:i', strtotime($schedbrkout))) {
+                $undertime = $actualout->diffInMinutes($schedout, false);
+                $undertime = $undertime - 60;
+              } else {
+                $undertime = $schedbrkin->diffInMinutes($schedout, false);
+              }
+
+              if ($undertime > 0) {
+                $undertime = round($undertime / 60, 2);
+              } else {
+                $undertime = 0;
+              }
+            }
+          }
+        }
+
+        if ($actualout != null) {
+          if (!$blnActualOutInBrk) {
+            $undertime = $actualout->diffInMinutes($schedout, false);
+            if ($undertime > 0) {
+              $undertime = round($undertime / 60, 2);
+            } else {
+              $undertime = 0;
+            }
+          }
+        }
+
+        $startndifftime = date('Y-m-d', strtotime($val->schedin)) . " " . date('H:i', strtotime($shift[0]->ndifffrom));
+        $endif = Carbon::parse($val->schedout);
+        $endndifftime = date('Y-m-d', strtotime($endif)) . " " . date('H:i', strtotime($shift[0]->ndiffto));
+
+        // when schedule is set between night diff hrs
+        $actualin = Carbon::parse($val->actualin);
+        if (date('Y-m-d H:i', strtotime($actualin)) >= $startndifftime) {
+          computendiffhere:
+          $startndifftime = Carbon::parse($startndifftime);
+
+          if ($actualout < $endndifftime) {
+            if ($actualout != null) {
+              $ndiff = $startndifftime->diffInMinutes($actualout, false);
+            }
+          } else {
+            $ndiff = $startndifftime->diffInMinutes($endndifftime, false);
+            goto computendiffothere;
+          }
+
+          $blnCheckOT = true;
+        } elseif (date('Y-m-d H:i', strtotime($actualout)) >= $startndifftime) {
+          goto  computendiffhere;
+        } else {
+
+          computendiffothere:
+          // checking of night diff OT
+          $blnCheckOT = true;
+          if (date('Y-m-d H:i', strtotime($actualout)) > $startndifftime) {
+
+            if ($schedout <  $startndifftime) {
+              $endot = $startndifftime;
+              $overtime = $schedout->diffInMinutes($endot, false);
+
+              $endif = Carbon::parse($val->schedout);
+              $endif->addDays(1);
+              $endndifftime = date('Y-m-d', strtotime($endif)) . " " . date('H:i', strtotime($shift[0]->ndiffto));
+
+              if ($actualout <= $endndifftime) {
+                $startndifftime = Carbon::parse($startndifftime);
+                $ndiffot = $startndifftime->diffInMinutes($actualout, false);
+              }
+
+              if ($ndiffot > 0) {
+                $ndiffot = round($ndiffot / 60, 2);
+              } else {
+                $ndiffot = 0;
+              }
+              $blnCheckOT = false;
+            }
+          }
+        }
+
+        if ($actualout != null) {
+          if ($blnCheckOT) {
+            $schedout->addMinute($shift[0]->gbrkin);
+            $overtime = $schedout->diffInMinutes($actualout, false);
+
+            if ($overtime > 0) {
+              $schedout = Carbon::parse($val->schedout);
+              $overtime = $schedout->diffInMinutes($actualout, false);
+            }
+          }
+        }
+
+        if ($overtime > 0) {
+          $overtime = round($overtime / 60, 2);
+        } else {
+          $overtime = 0;
+        }
+
+        if ($ndiff > 0) {
+          $ndiff = round($ndiff / 60, 2);
+        } else {
+          $ndiff = 0;
+        }
+      }
+
+      // ACTUAL-IN AFTER THE SCHEDULED BREAK-IN
+      if ($schedbrkin != null && $schedbrkout != null) {
+        if ($actualin > $schedbrkin) {
+          $breakhrs = $schedbrkout->diffInMinutes(Carbon::parse($schedbrkin), false);
+          if ($breakhrs > 0) {
+            $breakhrs = round($breakhrs / 60, 2);
+            $late -= $breakhrs;
+          }
+        }
+      }
+
+
+      // from OT application
+      $sql = "select apothrs, apndiffhrs, apndiffothrs, apothrsextra, daytype, ottimein, ottimeout from otapplication where empid=" . $val->empid . " and otstatus=2 and date(scheddate)='" . date('Y-m-d', strtotime($val->dateid)) . "'";
+      $dataOT = $this->coreFunctions->opentable($sql);
+      if (!empty($dataOT)) {
+
+        switch ($dataOT[0]->daytype) {
+          case 'LEG':
+          case 'SP':
+            $val->actualin = $dataOT[0]->ottimein;
+            $val->actualout = $dataOT[0]->ottimeout;
+            if ($dataOT[0]->apothrsextra != 0) {
+              $overtime = $dataOT[0]->apothrsextra;
+              if ($dataOT[0]->daytype == 'LEG') $val->legotapprvd = 1;
+              if ($dataOT[0]->daytype == 'SP') $val->spotapprvd = 1;
+            }
+            if ($dataOT[0]->daytype == 'LEG') $val->legapprvd = 1;
+            if ($dataOT[0]->daytype == 'SP') $val->spapprvd = 1;
+
+            break;
+          default:
+            $overtime = $dataOT[0]->apothrs;
+            $val->otapproved = 1;
+            break;
+        }
+
+        if ($dataOT[0]->apndiffothrs != 0) {
+          $ndiffot = $dataOT[0]->apndiffothrs;
+          $val->Ndiffapproved = 1;
+        }
+      }
+
+      if ($blnWorkingDay) {
+        $val->latehrs = $late;
+        $val->latehrs2 = $late2;
+        $val->underhrs = $undertime;
+        $val->absdays = $absent;
+        $val->othrs = $overtime;
+        $val->ndiffot = $ndiffot;
+        $val->ndiffhrs = $ndiff;
+      } else {
+        if ($val->reghrs > 8) {
+          $val->reghrs = 8;
+        }
+        $val->reghrs = $val->reghrs - $late - $undertime;
+        $val->latehrs = 0;
+        $val->latehrs2 = 0;
+        $val->underhrs = 0;
+        $val->absdays = $absent;
+        $val->othrs = $overtime;
+        $val->ndiffot = $ndiffot;
+        $val->ndiffhrs = $ndiff;
+      }
+
+      if ($val->ndiffhrs != 0) {
+        $val->ndiffmulti = $firstRowPG['ndiffhrs'];
+      }
+
+      if ($val->othrs != 0) {
+        if ($val->daytype == 'LEG') {
+          $val->legotmulti = $firstRowPG['othrs'];
+        } else if ($val->daytype == 'SP') {
+          $val->spotmulti = $firstRowPG['spot'];
+        }
+      }
+
+      $val->maxsss = $firstRowPG['s3maxbracket'];
+
+      unset($val->issupervisor);
+      unset($val->isapprover);
+      unset($val->classrate);
+
+      $val = json_decode(json_encode($val), true);
+
+      $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
+
+      // $this->coreFunctions->LogConsole(json_encode($val));
+
+      $this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]]);
+    }
+
+    return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+  }
+
   private function convertOneskyOT($totalOT)
   {
     if ($totalOT  > 0) {
@@ -2386,7 +2837,7 @@ class payrollprocess
       date_format(t.brk1stin,'%Y-%m-%d %H:%i') as brk1stin,date_format(t.brk1stout,'%Y-%m-%d %H:%i') as brk1stout,
       date_format(t.brk2ndin,'%Y-%m-%d %H:%i') as brk2ndin,date_format(t.brk2ndout,'%Y-%m-%d %H:%i') as brk2ndout,
       t.otapproved, t.ndiffsapprvd, t.Ndiffapproved, t.legapprvd, t.legotapprvd,  t.spapprvd, t.spotapprvd, e.issupervisor, e.isapprover, t.earlyothrs,e.classrate,
-      t.sphrs, '' as bgcolor
+      t.sphrs, t.pgline, t.legotmulti, t.spotmulti, t.ndiffmulti, t.maxsss, '' as bgcolor
       from timecard as t left join employee as e on e.empid=t.empid
       where date(t.dateid)>='" . $start . "' and date(t.dateid)<='" . $end . "'" . $filter  . $filteremplvl . " order by t.dateid";
     // $this->coreFunctions->LogConsole($qry);
@@ -2468,6 +2919,9 @@ class payrollprocess
           case 62: //onesky
             $result = $this->payrollcommon->computeemptimesheet_onesky($batchid, $batchdate, $val->empid, $start, $end, $user, $batch, $config['params'], false);
             break;
+          case 68: //jda
+            $result = $this->payrollcommon->computeemptimesheet_jda($batchid, $batchdate, $val->empid, $start, $end, $user, $batch, $config['params']);
+            break;
           default:
             $result = $this->payrollcommon->computeemptimesheet($batchid, $batchdate, $val->empid, $start, $end, $user, $batch, $config['params']);
             break;
@@ -2490,6 +2944,9 @@ class payrollprocess
           break;
         case 62: //onesky
           $result =  $this->payrollcommon->computeemptimesheet_onesky($batchid, $batchdate, $empid, $start, $end, $user, $batch, $config['params'], false);
+          break;
+        case 68: //jda
+          $result =  $this->payrollcommon->computeemptimesheet_jda($batchid, $batchdate, $empid, $start, $end, $user, $batch, $config['params']);
           break;
         default:
           $result =  $this->payrollcommon->computeemptimesheet($batchid, $batchdate, $empid, $start, $end, $user, $batch, $config['params']);

@@ -61,6 +61,7 @@ class sales_monitoring_breakdown_output_report
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $paramstr = "select 'default' as print,left(now(),10) as `end`";
         break;

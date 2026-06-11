@@ -83,6 +83,7 @@ class coagrouping
         }
 
         switch ($companyid) {
+            case 69: //cemphil
             case 24: //goodfound
                 $obj[0][$this->gridname]['columns'][$incomegrp]['type'] = 'coldel';
                 $obj[0][$this->gridname]['columns'][$isshow]['type'] = 'coldel';
@@ -159,7 +160,7 @@ class coagrouping
         $limit = '';
 
         $addonfilter = '';
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             $addonfilter = " and detail=0 and parent<>'\\\'";
         }
 

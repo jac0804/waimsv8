@@ -211,6 +211,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -225,9 +226,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -383,6 +388,7 @@ class summarized_sales_report
     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $station = $config['params']['dataparams']['pos_station'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $station = $config['params']['dataparams']['pos_station'];
     $brandid = $config['params']['dataparams']['brandid'];
@@ -396,9 +402,13 @@ class summarized_sales_report
     $filter = '';
     $leftjoin = "";
 
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -580,6 +590,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -594,9 +605,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -787,6 +802,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -802,9 +818,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -945,6 +965,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -960,9 +981,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -1044,6 +1069,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -1059,9 +1085,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and c.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and c.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -1142,6 +1172,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -1157,9 +1188,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and c.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and c.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if (
       $cashier != ""
     ) {
@@ -1267,6 +1302,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $client = $config['params']['dataparams']['customer'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
@@ -1284,9 +1320,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter2 .= " and c.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter2 .= " and c.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter2 .= " and client.clientid = '$clientid'";
+    }}
     if ($client != "0") {
       $filter3 .= " and c.client = '$client'";
     }
@@ -1369,6 +1409,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $client = $config['params']['dataparams']['customer'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
@@ -1386,9 +1427,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter2 .= " and c.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter2 .= " and c.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter2 .= " and client.clientid = '$clientid'";
+    }}
     if ($client != "0") {
       $filter3 .= " and c.client = '$client'";
     }
@@ -1469,6 +1514,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -1483,9 +1529,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }
@@ -1544,6 +1594,7 @@ class summarized_sales_report
     $station = $config['params']['dataparams']['pos_station'];
     $stationname = $config['params']['dataparams']['stationname'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $cashier = $config['params']['dataparams']['lookup_cashier'];
     $brandid = $config['params']['dataparams']['brandid'];
     $groupid = $config['params']['dataparams']['groupid'];
@@ -1558,9 +1609,13 @@ class summarized_sales_report
     if ($station != "") {
       $filter .= " and cntnum.station = '$station'";
     }
-    if ($clientid != "0") {
-      $filter .= " and client.clientid = '$clientid'";
-    }
+    // if ($clientid != "0") {
+    //   $filter .= " and client.clientid = '$clientid'";
+    // }
+    if ($clientname !='') {
+      if ($clientid != "0") {
+          $filter .= " and client.clientid = '$clientid'";
+    }}
     if ($cashier != "") {
       $filter .= " and h.openby = '$cashier'";
     }

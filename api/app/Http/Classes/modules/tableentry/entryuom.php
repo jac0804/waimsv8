@@ -114,6 +114,7 @@ class entryuom
         $obj[0][$this->gridname]['columns'][$isdefault2]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$printuom]['type'] = "coldel";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $obj[0][$this->gridname]['columns'][$isdefault]['label'] = "Default IN";
         $obj[0][$this->gridname]['columns'][$isdefault2]['label'] = "Default OUT";

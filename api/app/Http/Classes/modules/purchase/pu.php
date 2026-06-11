@@ -972,6 +972,7 @@ class pu
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //goodfound
         $qty_dec = 3;
         break;

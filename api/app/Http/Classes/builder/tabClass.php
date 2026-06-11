@@ -441,6 +441,18 @@ class tabClass
         'obj' => 'tableentry',
         'columns' => ''
       ),
+      'pendingso' => array(
+        'label' => 'Penidng SO',
+        'name' => 'tableentry',
+        'obj' => 'tableentry',
+        'columns' => ''
+      ),
+      'generatesj' => array(
+        'label' => 'Geneate SJ',
+        'name' => 'tableentry',
+        'obj' => 'tableentry',
+        'columns' => ''
+      ),
     );
 
 
@@ -2778,18 +2790,25 @@ class tabClass
         'visible' => true
       ),
       // auto service
-      'jobsetup' => array(
-        'label' => 'Job Setup',
+      'addjob' => array(
+        'label' => 'Add Job',
         'icon' => 'batch_prediction',
-        'class' => 'btnjobsetup',
-        'lookupclass' => 'getjobsetup',
-        'action' => 'getjobsetup',
+        'class' => 'btnaddjob',
+        'lookupclass' => 'getjob',
+        'action' => 'getjob',
         'access' => 'additem',
         'visible' => true
       ),
 
-
-
+        'addvehicle' => array(
+        'label' => 'Add Vehicle',
+        'icon' => 'add_box',
+        'class' => 'btnaddvehicle',
+        'lookupclass' => 'getvehicle',
+        'action' => 'getvehicle',
+        'access' => 'additem',
+        'visible' => true
+      ),
     );
   }
 

@@ -186,6 +186,7 @@ class purchase_return_report
     $posttype   = $config['params']['dataparams']['posttype'];
     $prjcode = $config['params']['dataparams']['project'];
     $deptcode = $config['params']['dataparams']['dept'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
     $fcenter    = $config['params']['dataparams']['center'];
@@ -232,7 +233,7 @@ class purchase_return_report
       if ($prjcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($deptcode != "") {
+      if ($deptcode != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
       $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
@@ -356,7 +357,8 @@ class purchase_return_report
             left join cntnum on cntnum.trno=head.trno left join client as wh on wh.clientid=stock.whid 
             left join client as supp on supp.clientid=head.clientid left join client as dept on dept.clientid = head.deptid
             left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline 
-            left join hprhead as pr on pr.trno=prinfo.trno " . $addjoin . "
+            left join hprhead as pr on pr.trno=prinfo.trno 
+            left join apledger as ap on ap.trno = head.trno " . $addjoin . "
             where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
             union all
             select head.docno, head.clientname as supplier " . $barcodeitemnamefield . ", stock.uom, stock.rrqty, 
@@ -368,8 +370,7 @@ class purchase_return_report
             left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid 
             left join client as supp on supp.client = head.client left join client as dept on dept.clientid = head.deptid
             left join hstockinfotrans as prinfo on prinfo.trno=stock.reqtrno and prinfo.line=stock.reqline 
-            left join hprhead as pr on pr.trno=prinfo.trno
-            left join apledger as ap on ap.trno = head.trno " . $addjoin . "
+            left join hprhead as pr on pr.trno=prinfo.trno " . $addjoin . "
             where head.doc='DM' and head.dateid between '$start' and '$end' $filter $filter1 
             ) as x
             where $statusFilter1

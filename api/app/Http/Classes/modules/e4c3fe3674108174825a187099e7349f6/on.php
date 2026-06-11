@@ -56,7 +56,7 @@ class on
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype', 'sotrno', 'sdate1'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'taxdef', 'billcontactid', 'shipcontactid', 'ms_freight', 'mlcp_freight', 'shipto', 'salestype', 'sotrno', 'statid', 'deldate', 'crref', 'trnxtype', 'sotrno', 'sdate1', 'amount'];
   private $except = ['trno', 'dateid', 'due', 'creditinfo'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -118,7 +118,7 @@ class on
     $userid = $config['params']['adminid'];
 
 
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref',  'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref', 'amount', 'rem',  'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -130,10 +130,16 @@ class on
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
 
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-
+    $cols[$listdate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
+    $cols[$ourref]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
+
+    $cols[$amount]['label'] = 'Total Amount';
+    $cols[$amount]['align'] = 'text-left';
+    $cols[$amount]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
 
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -200,21 +206,17 @@ class on
 
     $qry = "select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, $lstat as status, $lstatcolor as statuscolor,$rem
     head.createby,head.editby,head.viewby,num.postedby,
-    head.yourref, head.ourref $lfield
-    from " . $this->head . " as head left join " . $this->tablenum . " as num
-    on num.trno=head.trno 
-    $ljoin
-    " . $join . "
+    head.yourref, head.ourref,format(if(head.amount != 0, head.amount, 
+                   (select ifnull(sum(stock.ext),0) from glstock as stock left join cntnum as num2 on num2.trno=stock.trno where num2.svnum=head.trno)), 2) as amount
+    from " . $this->head . " as head left join " . $this->tablenum . " as num on num.trno=head.trno 
     left join trxstatus as stat on stat.line=num.statid
     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
     union all
     select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid,$gstat as status,$gstatcolor as statuscolor,$rem
     head.createby,head.editby,head.viewby, num.postedby,
-    head.yourref, head.ourref $gfield
-    from " . $this->hhead . " as head left join " . $this->tablenum . " as num
-    on num.trno=head.trno 
-    $gjoin
-    " . $hjoin . "
+    head.yourref, head.ourref,format(if(head.amount != 0, head.amount, 
+                   (select ifnull(sum(stock.ext),0) from glstock as stock left join cntnum as num2 on num2.trno=stock.trno where num2.svnum=head.trno)), 2) as amount
+    from " . $this->hhead . " as head left join " . $this->tablenum . " as num on num.trno=head.trno 
     left join trxstatus as stat on stat.line=num.statid
     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
     $orderby $limit";
@@ -413,7 +415,7 @@ class on
     data_set($col2, 'dacnoname.lookupclass', 'AR');
     data_set($col2, 'dateid.label', 'Invoice Date');
 
-    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname'];
+    $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', 'amount'];
 
     $col3 = $this->fieldClass->create($fields);
 
@@ -459,6 +461,7 @@ class on
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
     $data[0]['sdate1'] = $this->othersClass->getCurrentDate();
+    $data[0]['amount'] = 0;
     return $data;
   }
 
@@ -522,7 +525,7 @@ class on
       '' as dwhname,
       left(head.due,10) as due,
       date(head.deldate) as deldate,
-      head.creditinfo,num.statid as numstatid,head.sotrno, date(head.sdate1) as sdate1
+      head.creditinfo,num.statid as numstatid,head.sotrno, date(head.sdate1) as sdate1, head.amount
     ";
 
     $qry = $qryselect . " from $table as head
@@ -542,7 +545,6 @@ class on
       left join $hinfo as hinfo on hinfo.trno = head.trno
       where head.trno = ? and num.doc=? and num.center=? 
     ";
-
     $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
     if (!empty($head)) {

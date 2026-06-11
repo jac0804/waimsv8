@@ -3231,11 +3231,11 @@ class dashboardClass
   {
 
     $adminid = $config['params']['adminid'];
-    $checking_leave = $this->othersClass->checkapproversetup($config, $adminid, 'LEAVE', 'emp', true);
-    $checking_ob = $this->othersClass->checkapproversetup($config, $adminid, 'OB', 'emp', true);
-    $checking_ot = $this->othersClass->checkapproversetup($config, $adminid, 'OT', 'emp', true);
-    $checking_loan = $this->othersClass->checkapproversetup($config, $adminid, 'LOAN', 'emp', true);
-    $checking_sched = $this->othersClass->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp', true);
+    $checking_leave = $this->payrollcommon->checkapproversetup($config, $adminid, 'LEAVE', 'emp', true);
+    $checking_ob = $this->payrollcommon->checkapproversetup($config, $adminid, 'OB', 'emp', true);
+    $checking_ot = $this->payrollcommon->checkapproversetup($config, $adminid, 'OT', 'emp', true);
+    $checking_loan = $this->payrollcommon->checkapproversetup($config, $adminid, 'LOAN', 'emp', true);
+    $checking_sched = $this->payrollcommon->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp', true);
 
     $filter_ob = "";
     $leftjoin_ob = "";
@@ -3407,7 +3407,7 @@ class dashboardClass
   public function changeshiftapproved($config)
   {
     $adminid = $config['params']['adminid'];
-    $checking = $this->othersClass->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp');
+    $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp');
 
     $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='CHANGESHIFT'");
     $approversetup = explode(',', $approversetup);
@@ -3434,7 +3434,7 @@ class dashboardClass
   public function leaveapproved($config)
   {
     $adminid = $config['params']['adminid'];
-    $checking = $this->othersClass->checkapproversetup($config, $adminid, 'LEAVE', 'emp');
+    $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'LEAVE', 'emp');
     $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LEAVE'");
     $approversetup = explode(',', $approversetup);
     $countsetup = count($approversetup);
@@ -3460,7 +3460,7 @@ class dashboardClass
   public function obapproved($config)
   {
     $adminid = $config['params']['adminid'];
-    $checking = $this->othersClass->checkapproversetup($config, $adminid, 'OB', 'emp');
+    $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'OB', 'emp');
 
     $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='OB'");
     $approversetup = explode(',', $approversetup);
@@ -3487,7 +3487,7 @@ class dashboardClass
   public function otapproved($config)
   {
     $adminid = $config['params']['adminid'];
-    $checking = $this->othersClass->checkapproversetup($config, $adminid, 'OT', 'emp');
+    $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'OT', 'emp');
     $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='OT'");
     $approversetup = explode(',', $approversetup);
     $countsetup = count($approversetup);
@@ -3513,7 +3513,7 @@ class dashboardClass
   public function loanapproved($config)
   {
     $adminid = $config['params']['adminid'];
-    $checking = $this->othersClass->checkapproversetup($config, $adminid, 'LOAN', 'emp');
+    $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'LOAN', 'emp');
     $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LOAN'");
     $approversetup = explode(',', $approversetup);
     $countsetup = count($approversetup);

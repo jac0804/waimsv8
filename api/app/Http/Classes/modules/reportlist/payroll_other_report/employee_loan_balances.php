@@ -105,6 +105,8 @@ class employee_loan_balances
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname   = $config['params']['dataparams']['deptname'];
 
     $filter   = "";
     $filter1   = "";
@@ -113,12 +115,16 @@ class employee_loan_balances
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter1 .= " and emp.deptid = $deptid";
-    }
-    if ($divid != 0) {
-      $filter2 .= " and emp.divid = $divid";
-    }
+
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filter .= " and emp.deptid = $deptid";
+    }}
+
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter .= " and emp.divid = $divid";
+    }}
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

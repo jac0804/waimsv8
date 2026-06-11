@@ -46,8 +46,19 @@ class commission_report_by_agent
     data_set($col1, 'start.required', true);
     data_set($col1, 'end.required', true);
 
-    $fields = ['print'];
+
+    $fields = ['radioposttype', 'print'];
     $col2 = $this->fieldClass->create($fields);
+
+    data_set(
+      $col2,
+      'radioposttype.options',
+      [
+        ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
+        ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
+        ['label' => 'All', 'value' => '2', 'color' => 'teal']
+      ]
+    );
 
     return array('col1' => $col1, 'col2' => $col2);
   }
@@ -62,7 +73,8 @@ class commission_report_by_agent
       0 as agentid,
       '' as dagentname,
       '' as agent,
-      '' as agentname");
+      '' as agentname,
+      '0' as posttype");
   }
 
   public function getloaddata($config)
@@ -98,14 +110,51 @@ class commission_report_by_agent
     $end       = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $agentid  = $config['params']['dataparams']['agentid'];
     $agent     = $config['params']['dataparams']['agent'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
-
+    $query = "";
     if ($agent != "") {
       $filter .= " and a.clientid =$agentid ";
     }
 
-    $query = " select  a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
+    switch ($posttype) {
+      case '0': //posted
+
+        $query = " select  a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
+         from (
+          select concat(left(head.docno,2),right(head.docno,8)) as docno,date(head.dateid) as dateid,cust.clientname as customer,
+          ifnull(i.itemname,'') as itemname,stock.amt as amount, i.commrate,
+          ifnull(a.clientname,'') as agname,stock.isamt,ifnull(a.client,'') as agcode
+          from glhead as head
+          left join glstock as stock on stock.trno=head.trno
+          left join client as a on a.clientid=head.agentid
+          left join client as cust on cust.clientid=head.clientid
+          left join item as i on i.itemid=stock.itemid
+          where head.doc ='SJ'  and  i.itemname <>'' and a.clientname<>'' and a.client <> '' and date(head.dateid) between  '$start' and '$end' $filter ) as a
+      group by a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
+      order by a.agname desc";
+
+        break;
+      case '1': //unposted
+
+        $query = " select  a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
+         from (
+          select concat(left(head.docno,2),right(head.docno,8)) as docno,date(head.dateid) as dateid,cust.clientname as customer,
+          ifnull(i.itemname,'') as itemname,stock.amt as amount, i.commrate,
+          ifnull(a.clientname,'') as agname,stock.isamt,ifnull(a.client,'') as agcode
+          from lahead as head
+          left join lastock as stock on stock.trno=head.trno
+          left join client as a on a.client=head.agent
+          left join client as cust on cust.client=head.client
+          left join item as i on i.itemid=stock.itemid
+          where head.doc ='SJ'  and  i.itemname <>'' and a.clientname<>''  and a.client <> '' and date(head.dateid) between  '$start' and '$end' $filter ) as a
+      group by a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
+      order by a.agname desc";
+
+        break;
+      default; //all
+        $query = " select  a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
          from (
           select concat(left(head.docno,2),right(head.docno,8)) as docno,date(head.dateid) as dateid,cust.clientname as customer,
           ifnull(i.itemname,'') as itemname,stock.amt as amount, i.commrate,
@@ -128,8 +177,11 @@ class commission_report_by_agent
           where head.doc ='SJ'  and  i.itemname <>'' and a.clientname<>'' and a.client <> '' and date(head.dateid) between  '$start' and '$end' $filter ) as a
       group by a.agname, a.docno, a.dateid, a.customer,a.itemname,a.amount,a.commrate,a.agcode
       order by a.agname desc";
+        break;
+    }
     return $query;
   }
+
 
   public function report_Detail_Header($config)
   {
@@ -143,7 +195,7 @@ class commission_report_by_agent
 
     $str = '';
     $layoutsize = '1000';
-    $font = $this->companysetup->getrptfont($config['params']);
+    $font = "Tahoma";
     $fontsize = "11";
     $border = "1px solid ";
 
@@ -200,11 +252,11 @@ class commission_report_by_agent
 
     $str .= $this->reporter->col('Document#', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Date', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Customer', '260', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Item Description', '300', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Amount', '80', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('%', '70', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Commission', '90', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Customer', '250', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Item Description', '270', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Amount', '100', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('%', '80', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Commission', '100', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -222,7 +274,7 @@ class commission_report_by_agent
 
     $str = '';
     $layoutsize = '1000';
-    $font = $this->companysetup->getrptfont($config['params']);
+    $font = "Tahoma";
     $fontsize = "11";
     $border = "1px solid ";
     $subborder = "1px dotted ";
@@ -250,10 +302,14 @@ class commission_report_by_agent
         if ($agname != '') {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '760', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col(number_format($subtotalamt, 2), '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col('', '70', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col(number_format($subtotalcomm, 2), '90', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
@@ -267,9 +323,11 @@ class commission_report_by_agent
         $subtotalcomm = 0;
 
         // agent header
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->agname, '1000', null, false, $border, '', '', $font, $fontsize - 1, '', '', '');
+        $str .= $this->reporter->col($data->agname, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
         $count++;
       }
@@ -283,7 +341,7 @@ class commission_report_by_agent
       $arr_docno = $this->reporter->fixcolumn([$docno], '15', 0);
       $arr_date = $this->reporter->fixcolumn([$date], '15', 0);
       $arr_customer = $this->reporter->fixcolumn([$customer], '30', 0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '33', 0);
       $arr_amount = $this->reporter->fixcolumn([$amount], '15', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_date, $arr_customer, $arr_itemname, $arr_amount]);
@@ -316,10 +374,11 @@ class commission_report_by_agent
           $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $config);
 
           // ulit agent name kada new page
+          $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          // $str .= $this->reporter->col($data->agname, '1000', null, false, $border, 'yellow', 'L', $font, $fontsize - 1, '', '', '');
-          $str .= $this->reporter->col($data->agname, '1000', null, false, $border, '', '', $font, $fontsize - 1, '', '', '');
+          $str .= $this->reporter->col($data->agname, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
 
 
           $count = 1;
@@ -329,11 +388,11 @@ class commission_report_by_agent
         $str .= $this->reporter->addline();
         $str .= $this->reporter->col(isset($arr_docno[$r]) ? $arr_docno[$r] : '', 100, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($arr_date[$r]) ? $arr_date[$r] : '', 100, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($arr_customer[$r]) ? $arr_customer[$r] : '', 260, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', 300, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($arr_amount[$r]) ? $arr_amount[$r] : '', 80, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($r != 0 ? '' : $rate, 70, null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($r != 0 ? '' : $comm, 90, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($arr_customer[$r]) ? $arr_customer[$r] : '', 250, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', 270, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($arr_amount[$r]) ? $arr_amount[$r] : '', 100, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($r != 0 ? '' : $rate, 80, null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($r != 0 ? '' : $comm, 100, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -344,19 +403,29 @@ class commission_report_by_agent
     // last agent subtotal
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '760', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($subtotalamt, 2), '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '70', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($subtotalcomm, 2), '90', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     // grand total amount
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('GRAND TOTAL : ', '760', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($grandtotalamt, 2), '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '70', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($grandtotalcomm, 2), '90', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col(number_format($grandtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col(number_format($grandtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+
+
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();

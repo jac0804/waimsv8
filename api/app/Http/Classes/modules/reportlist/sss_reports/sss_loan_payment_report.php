@@ -108,6 +108,8 @@ class sss_loan_payment_report
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $month = intval($config['params']['dataparams']['month']);
     $year = intval($config['params']['dataparams']['year']);
 
@@ -116,10 +118,10 @@ class sss_loan_payment_report
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter .= " and emp.deptid = $deptid";
     }
-    if ($divid != 0) {
+    if ($divid != 0 && $divname != '') {
       if ($config['params']['companyid'] == 58) { //cdo
         $filter .= " and emp.contricompid = $divid";
       } else {

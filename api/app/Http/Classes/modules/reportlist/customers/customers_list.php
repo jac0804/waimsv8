@@ -62,9 +62,6 @@ class customers_list
       case 12: //afti usd
         $fields = ['radioprint', 'area', 'region', 'province', 'cur', 'industry'];
         break;
-      case 29:
-        $fields = ['radioprint', 'area', 'region', 'province','dcentername'];
-        break;
       default:
         $fields = ['radioprint', 'area', 'region', 'province','dcentername'];
         break;

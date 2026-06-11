@@ -170,7 +170,11 @@ class Logger
     $current_timestamp = $this->getCurrentTimeStamp();
     $current_year = $this->getCurrentYear();
     $current_month = $this->getCurrentMonth();
-    $textlog = $user.' - '.$current_timestamp;
+    $username = $this->coreFunctions->datareader("select case e.alias when '' then SUBSTRING_INDEX(e.empfirst, ' ', 1) else e.alias end AS value from  employee as e where e.idbarcode ='".$user."'");
+    if($username == ''){
+      $username = $user;
+    }
+    $textlog = $username.' - '.$current_timestamp;
 
     if (!empty($date)) {
       $current_month = date("M", strtotime($date));

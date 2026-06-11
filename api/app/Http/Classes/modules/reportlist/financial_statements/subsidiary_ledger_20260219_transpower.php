@@ -125,6 +125,7 @@ class subsidiary_ledger
             data_set($col2, 'dclientname.lookupclass', 'lookupgjclient');
             data_set($col2, 'dclientname.label', 'Customer/Supplier');
             break;
+          case 69: //cemphil
           case 24: //goodfound
             array_push($fields, 'dcentername');
             $col2 = $this->fieldClass->create($fields);
@@ -145,7 +146,6 @@ class subsidiary_ledger
             $col2 = $this->fieldClass->create($fields);
             break;
         }
-        data_set($col2, 'dcentername.lookupclass', 'getmultibranch');
         data_set($col2, 'dateid.label', 'StartDate');
         data_set($col2, 'dateid.readonly', false);
         data_set($col2, 'dacnoname.action', 'lookupcoa');
@@ -308,6 +308,7 @@ class subsidiary_ledger
           case 12: //afti usd
             $paramstr .= ",'' as center,'' as centername,'' as dcentername,'' as code,'' as name,'' as costcenter,'0' as costcenterid, '' as ddeptname, '' as dept, '' as deptname ";
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $paramstr .= ",'' as dprojectname, '' as projectname, '' as projectcode,
             '" . $defaultcenter[0]['center'] . "' as center,
@@ -1166,6 +1167,7 @@ class subsidiary_ledger
         $costcenter = isset($filters['params']['dataparams']['costcenter']) ? $filters['params']['dataparams']['costcenter'] : "";
         $costcenterid = isset($filters['params']['dataparams']['costcenterid']) ? $filters['params']['dataparams']['costcenterid'] : 0;
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $center = $filters['params']['dataparams']['center'];
         $project = $filters['params']['dataparams']['dprojectname'];
@@ -1269,6 +1271,7 @@ class subsidiary_ledger
           $filter .= " and cntnum.center='" . $center . "' ";
         }
         break;
+      case 69: //cemphil
       case 24: //goodfound
         if ($center != '' && $center != '0') {
           $filter .= " and cntnum.center='" . $center . "' ";
@@ -1648,7 +1651,7 @@ class subsidiary_ledger
         }
         if ($this->companysetup->getmultibranch($filters['params'])) {
           $center = $filters['params']['dataparams']['center'];
-          if ($companyid != 24) $filter .= " and cntnum.center='" . $center . "' "; //not goodfound
+          if ($companyid != 24 && $companyid != 69) $filter .= " and cntnum.center='" . $center . "' "; //not goodfound/cemphil
         }
         break;
     }
@@ -3425,6 +3428,7 @@ class subsidiary_ledger
         $costcenter = isset($params['params']['dataparams']['costcenter']) ? $params['params']['dataparams']['costcenter'] : "";
         $costcenterid = isset($params['params']['dataparams']['costcenterid']) ? $params['params']['dataparams']['costcenterid'] : 0;
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $center = $params['params']['dataparams']['center'];
         $project = $params['params']['dataparams']['dprojectname'];
@@ -3536,6 +3540,7 @@ class subsidiary_ledger
 
         break;
 
+      case 69: //cemphil
       case 24: //goodfound
         if ($center != '' && $center != '0') {
           $filter .= " and cntnum.center='" . $center . "' ";

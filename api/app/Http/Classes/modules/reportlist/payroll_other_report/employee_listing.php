@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class employee_listing
 {
@@ -25,6 +26,7 @@ class employee_listing
   private $fieldClass;
   private $othersClass;
   private $reporter;
+  private $payrollcommon;
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
 
@@ -40,6 +42,7 @@ class employee_listing
     $this->othersClass = new othersClass;
     $this->fieldClass = new txtfieldClass;
     $this->reporter = new SBCPDF;
+    $this->payrollcommon = new payrollcommon; 
   }
 
   public function createHeadField($config)
@@ -146,6 +149,9 @@ class employee_listing
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];
+    $sectname = $config['params']['dataparams']['sectname'];
     $empstatus = $config['params']['dataparams']['empstatus'];
     $emploc = $config['params']['dataparams']['emploc'];
     $paygroup = $config['params']['dataparams']['tpaygroup'];
@@ -163,13 +169,13 @@ class employee_listing
     if ($client != "") {
       $filters .= " and client.client = '$client'";
     }
-    if ($divid != "") {
+    if ($divid != 0 && $divname != '') {
       $filters .= " and e.divid = $divid";
     }
-    if ($deptid != "") {
+    if ($deptid != 0 && $deptname != '') {
       $filters .= " and e.deptid = $deptid";
     }
-    if ($sectid != "") {
+    if ($sectid != 0 && $sectname != '') {
       $filters .= " and e.sectid = $sectid";
     }
 
@@ -194,7 +200,7 @@ class employee_listing
 
     // testing
     $leftjoin = "";
-    $check = $this->othersClass->checkapproversetup($config, $adminid, '','e');
+    $check = $this->payrollcommon->checkapproversetup($config, $adminid, '','e');
     if ($check['filter'] != "") {
       $filters .= $check['filter'];
     }

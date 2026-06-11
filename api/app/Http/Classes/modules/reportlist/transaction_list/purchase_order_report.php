@@ -182,6 +182,7 @@ class purchase_order_report
     switch ($reporttype) {
       case 0: // summarized
         switch ($companyid) {
+          case 69: //cemphil
           case 24: // goodfound
             $result = $this->gfc_summarized_layout($config);
             break;
@@ -204,6 +205,7 @@ class purchase_order_report
             $result = $this->reportmaxiproLayout_DETAILED($config);
             break;
 
+          case 69: //cemphil
           case 24: // goodfound
             $result = $this->gfc_detailed_layout($config);
             break;
@@ -278,6 +280,7 @@ class purchase_order_report
             $query = $this->housegem_QUERY($config);
             break;
 
+          case 69: //cemphil
           case 24: //goodfound
             $query = $this->gfc_QUERY($config);
             break;
@@ -579,14 +582,15 @@ class purchase_order_report
     }
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $prjname = $config['params']['dataparams']['project'];
-      $deptid = $config['params']['dataparams']['ddeptname'];
+      $deptid = $config['params']['dataparams']['deptid']; //ddeptname
       $deptcode = $config['params']['dataparams']['dept'];
+      $deptname = $config['params']['dataparams']['deptname'];
       $projectid = $config['params']['dataparams']['projectid'];
 
       if ($prjname != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($deptcode != "") {
+      if ($deptcode != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 

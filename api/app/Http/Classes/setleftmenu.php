@@ -268,7 +268,7 @@ class setleftmenu
 
     $isautoservice = $this->companysetup->getisautoservice($params);
     if ($isautoservice) { // autoservice
-      array_push($itemmaster, 'jobsetup', 'carmake');
+      array_push($itemmaster, 'jobsetup', 'carmake', 'taskhistory', 'itemhistory');
     }
 
     return ['itemmaster' => ['parent' => 2, 'modules' => $itemmaster]];
@@ -304,6 +304,7 @@ class setleftmenu
       case 16: //ati
         $purchase = ['parentpurchase', 'prlisting', 'barcodeassigning', 'pr', 'cd', 'cdsummary', 'cdapprovalsummary', 'cd2', 'cd3', 'oq', 'om', 'lq', 'po', 'rr', 'dm', 'cv']; // , 'mm' - not used in actual (offset Billing to bad accounts)
         break;
+      case 69: // Cemphil
       case 24: // goodfound
         $purchase = ['parentpurchase', 'pr', 'po', 'rr', 'dm', 'pu', 'ru'];
         break;
@@ -373,6 +374,7 @@ class setleftmenu
       case 40: //cdocycles
         $sales = ['parentsales', 'so', 'sj', 'cm', 'ci', 'mc', 'closingmccollection', 'dx'];
         break;
+      case 69: // Cemphil
       case 24: //goodfound
         $sales = ['parentsales', 'so', 'sj', 'bo', 'cm', 'packhouseloading', 'released'];
         break;
@@ -1134,6 +1136,7 @@ class setleftmenu
         array_push($transactionutilities, 'qtybracket', 'pricelist');
         break;
       case 19: //housegem
+      case 69: // Cemphil
       case 24: //goodfound
       case 40: //cdo
       case 8: //maxipro
@@ -1231,6 +1234,7 @@ class setleftmenu
   public function production($params)
   {
     switch ($params['companyid']) {
+      case 69: // Cemphil
       case 24: //goodfound
         $prod = ['parentproduction', 'rm', 'rn', 'finishgoodsentry'];
         break;
@@ -1337,9 +1341,12 @@ class setleftmenu
 
   public function autoservoperation($params)
   {
-    $autoservoperation = ['parentautoservoperation', 'ak', 'am'];
+    $autoservoperation = ['parentautoservoperation', 'aq', 'ak', 'am', 'aw'];
     return ['autoservoperation' => ['parent' => 48, 'modules' => $autoservoperation]];
   } //end function
-
-
+  public function autoinquiry($config)
+  {
+    $autoinquiry = ['parentautoinquiry', 'jobhistory'];
+    return ['autoinquiry' => ['parent' => 49, 'modules' => $autoinquiry]];
+  }
 } // end class

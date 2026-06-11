@@ -377,6 +377,7 @@ class opportunity_module_report
 
     $deptcode = $config['params']['dataparams']['dept'];
     $deptid = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
 
     $filter = "";
 
@@ -393,7 +394,7 @@ class opportunity_module_report
       $filter .= " and transnum.center = '$fcenter'";
     }
 
-    if ($deptcode != "") {
+    if ($deptcode != "" && $deptname != '') {
       $filter .= " and head.deptid = $deptid";
     }
 

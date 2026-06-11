@@ -72,6 +72,7 @@ class comparative_balance_sheet
 
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -177,8 +178,12 @@ class comparative_balance_sheet
     $this->PLANTTREE($coa, '\\\\', 'C', $year1, $year2, $view, $monthC, $monthC2, $filter, $filter1, $filter2, $company, $params);
 
     $coa[] = array(
-      'acno' => '//4999', 'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY',
-      'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'detail' => 2,
+      'acno' => '//4999',
+      'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY',
+      'levelid' => 1,
+      'cat' => 'X',
+      'parent' => 'X',
+      'detail' => 2,
       'year1' => $monthL2['year1'] + $monthC2['year1'],
       'year2' => $monthL2['year2'] + $monthC2['year2'],
       'year3' => $monthL2['year3'] + $monthC2['year3']
@@ -407,10 +412,15 @@ class comparative_balance_sheet
 
                 case '3YEARS':
                   $a[] = array(
-                    'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                    'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                    'parent' => $result2[$b]['parent'], 'detail' => 2,
-                    'year1' => $month2['year1'], 'year2' => $month2['year2'], 'year3' => $month2['year3']
+                    'acno' => $result2[$b]['acno'],
+                    'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                    'levelid' => $result2[$b]['levelid'],
+                    'cat' => $result2[$b]['cat'],
+                    'parent' => $result2[$b]['parent'],
+                    'detail' => 2,
+                    'year1' => $month2['year1'],
+                    'year2' => $month2['year2'],
+                    'year3' => $month2['year3']
                   );
                   break;
               }

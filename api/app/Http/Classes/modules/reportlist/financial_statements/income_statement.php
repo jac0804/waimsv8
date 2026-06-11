@@ -90,6 +90,7 @@ class income_statement
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -394,7 +395,7 @@ class income_statement
     $amt1234_lessadmin = 0;
 
     //arrays for excluding/including
-    $acno_R = ['', '\\40602', '\\40603', '\\40604', '\\40605', '\\40606', '\\40607', '\\40609', '\\409', '\\410', '\\412', '\\413', '\\414', '\\415', '\\416', '\\417', '\\418', '\\419','\\420'];
+    $acno_R = ['', '\\40602', '\\40603', '\\40604', '\\40605', '\\40606', '\\40607', '\\40609', '\\409', '\\410', '\\412', '\\413', '\\414', '\\415', '\\416', '\\417', '\\418', '\\419', '\\420'];
     $acno_E = ['', '\\501', '\\502', '\\503', '\\504'];
     $inex_clude_acno = $acno_R;
     //aaa
@@ -409,7 +410,7 @@ class income_statement
     $coa[] = array('acno' => '//666', 'acnoname' => '<b>GROSS MARGIN</b> ', 'levelid' => 1, 'cat' => 'E', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt1b_less2b);
     $inex_clude_acno = $acno_E;
     $this->CDO_PLANTTREE($coa, '\\\\', 'E', $amt3, $amt3b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, ["complex_acno" => $inex_clude_acno, "inex_clude" => 0], 0, $amtgrp, $prev_incomegrp2, "TOTAL OPERATING EXPENSE");
-    
+
     $coa[] = array('acno' => '//666', 'acnoname' => '<b>TOTAL OPERATING EXPENSE</b> ', 'levelid' => 1, 'cat' => 'R', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt3b);
     $amt1b_less2b_less3b = $amt1b_less2b - $amt3b;
 
@@ -417,7 +418,7 @@ class income_statement
     $inex_clude_acno = $acno_R;
     foreach ($inex_clude_acno as $key => $value) {
       if ($key != 0) {
-        $this->CDO_GET_BRANCH($coa, '\\'.$value, 'R', $amt4, $amt4b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, ["defaultfield_filter" => "acno"]);
+        $this->CDO_GET_BRANCH($coa, '\\' . $value, 'R', $amt4, $amt4b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, ["defaultfield_filter" => "acno"]);
       }
     }
     $amt1b_less2b_less3b_less4b = $amt1b_less2b_less3b + $amt4b;
@@ -520,9 +521,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $prev_incomegrp_amt,
+              'detail' => $value->detail,
+              'total' => 0,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
             $prev_incomegrp_amt = 0;
           }
@@ -530,9 +536,16 @@ class income_statement
       }
 
       $a[] = array(
-        'acno' => $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-        'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-        'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+        'acno' => $value->acno,
+        'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+        'levelid' => $value->levelid,
+        'cat' => $value->cat,
+        'parent' => $value->parent,
+        'amt' => $value->amt,
+        'detail' => $value->detail,
+        'total' => $value->amt,
+        'alias' => '',
+        'isshow' => $value->isshow
       );
 
       $prev_incomegrp_amt += $value->amt;
@@ -550,18 +563,32 @@ class income_statement
               $level2amt = $amt9 - $prevamt9;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $level2amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $level2amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
               );
 
               $prev_incomegrp_amt += $level2amt;
             } else {
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
               );
               $prev_incomegrp_amt += $amt;
             } //end if
@@ -575,9 +602,16 @@ class income_statement
               $amt9 = $amt9 + $loss;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $loss, 'detail' => $value->detail, 'total' => $loss, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'acno' => '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $value->levelid + 1,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $loss,
+                'detail' => $value->detail,
+                'total' => $loss,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
             } //end if
 
@@ -591,9 +625,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>' . strtoupper($parentname) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $amt2, 'detail' => $value->detail, 'total' => $totalamt9, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $amt2,
+              'detail' => $value->detail,
+              'total' => $totalamt9,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
           } //end if IF LEVELID = 1
 
@@ -617,9 +656,14 @@ class income_statement
               $a[] = array(
                 'acno' => $value->acno,
                 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat,
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
                 'parent' => $value->parent,
-                'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'amt' => $prev_incomegrp_amt,
+                'detail' => $value->detail,
+                'total' => 0,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
               $prev_incomegrp_amt = 0;
             }
@@ -668,9 +712,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $prev_incomegrp_amt,
+              'detail' => $value->detail,
+              'total' => 0,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
             $prev_incomegrp_amt = 0;
           }
@@ -679,9 +728,16 @@ class income_statement
 
 
       $a[] = array(
-        'acno' => $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-        'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-        'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+        'acno' => $value->acno,
+        'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+        'levelid' => $value->levelid,
+        'cat' => $value->cat,
+        'parent' => $value->parent,
+        'amt' => $value->amt,
+        'detail' => $value->detail,
+        'total' => $value->amt,
+        'alias' => '',
+        'isshow' => $value->isshow
       );
 
 
@@ -700,18 +756,32 @@ class income_statement
               $level2amt = $amt9 - $prevamt9;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $level2amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $level2amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
               );
 
               $prev_incomegrp_amt += $level2amt;
             } else {
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
               );
               $prev_incomegrp_amt += $amt;
             } //end if
@@ -725,9 +795,16 @@ class income_statement
               $amt9 = $amt9 + $loss;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $loss, 'detail' => $value->detail, 'total' => $loss, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'acno' => '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $value->levelid + 1,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $loss,
+                'detail' => $value->detail,
+                'total' => $loss,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
             } //end if
 
@@ -745,9 +822,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>' . strtoupper($parentname) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $amt2, 'detail' => $value->detail, 'total' => $totalamt9, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $amt2,
+              'detail' => $value->detail,
+              'total' => $totalamt9,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
           } //end if IF LEVELID = 1
 
@@ -771,9 +853,14 @@ class income_statement
               $a[] = array(
                 'acno' => $value->acno,
                 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat,
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
                 'parent' => $value->parent,
-                'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'amt' => $prev_incomegrp_amt,
+                'detail' => $value->detail,
+                'total' => 0,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
               $prev_incomegrp_amt = 0;
             }
@@ -822,9 +909,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $prev_incomegrp_amt,
+              'detail' => $value->detail,
+              'total' => 0,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
             $prev_incomegrp_amt = 0;
           }
@@ -832,9 +924,16 @@ class income_statement
       }
 
       $a[] = array(
-        'acno' => $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-        'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-        'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+        'acno' => $value->acno,
+        'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+        'levelid' => $value->levelid,
+        'cat' => $value->cat,
+        'parent' => $value->parent,
+        'amt' => $value->amt,
+        'detail' => $value->detail,
+        'total' => $value->amt,
+        'alias' => '',
+        'isshow' => $value->isshow
       );
 
       $prev_incomegrp_amt += $value->amt;
@@ -854,9 +953,16 @@ class income_statement
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               if ($level2amt != 0) {
                 $a[] = array(
-                  'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                  'levelid' => $value->levelid - 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => 0, 'detail' => $value->detail, 'total' => $level2amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
+                  'acno' => $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid - 1,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => 0,
+                  'detail' => $value->detail,
+                  'total' => $level2amt,
+                  'alias' => $value->alias,
+                  'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
                 );
 
 
@@ -869,25 +975,40 @@ class income_statement
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b></b>',
-                    'levelid' => $value->levelid, 'cat' => $value->cat,
+                    'levelid' => $value->levelid,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => '-',
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
 
                   $a[] = array(
                     'acno' => '\5',
                     'acnoname' => '<b>GROSS PROFIT</b>',
-                    'levelid' => $value->levelid - 1, 'cat' => $value->cat,
+                    'levelid' => $value->levelid - 1,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => $gpsx, 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => $gpsx,
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
 
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b></b>',
-                    'levelid' => $value->levelid, 'cat' => $value->cat,
+                    'levelid' => $value->levelid,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => '-',
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
                 }
 
@@ -896,25 +1017,40 @@ class income_statement
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b></b>',
-                    'levelid' => $value->levelid, 'cat' => $value->cat,
+                    'levelid' => $value->levelid,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => '-',
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
 
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b>NET INCOME/LOSS BEFORE OTHER GAINS AND LOSSES</b>',
-                    'levelid' => $value->levelid - 1, 'cat' => $value->cat,
+                    'levelid' => $value->levelid - 1,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => $netloss, 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => $netloss,
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
 
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b></b>',
-                    'levelid' => $value->levelid, 'cat' => $value->cat,
+                    'levelid' => $value->levelid,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => '-',
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
                 }
 
@@ -923,17 +1059,27 @@ class income_statement
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b></b>',
-                    'levelid' => $value->levelid, 'cat' => $value->cat,
+                    'levelid' => $value->levelid,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => '-',
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
 
                   $a[] = array(
                     'acno' => $value->acno,
                     'acnoname' => '<b>NET INCOME/LOSS AFTER OTHER GAINS & LOSSES & BEFORE TAX</b>',
-                    'levelid' => $value->levelid - 1, 'cat' => $value->cat,
+                    'levelid' => $value->levelid - 1,
+                    'cat' => $value->cat,
                     'parent' => $value->parent,
-                    'amt' => $amt2, 'detail' => $value->detail, 'total' => $netloss + $level2amt, 'alias' => $value->alias, 'isshow' => $value->isshow
+                    'amt' => $amt2,
+                    'detail' => $value->detail,
+                    'total' => $netloss + $level2amt,
+                    'alias' => $value->alias,
+                    'isshow' => $value->isshow
                   );
                 }
               }
@@ -942,9 +1088,16 @@ class income_statement
             } else {
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
               );
               $prev_incomegrp_amt += $amt;
             } //end if
@@ -958,9 +1111,16 @@ class income_statement
               $amt9 = $amt9 + $loss;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $loss, 'detail' => $value->detail, 'total' => $loss, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'acno' => '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $value->levelid + 1,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $loss,
+                'detail' => $value->detail,
+                'total' => $loss,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
             } //end if
 
@@ -974,9 +1134,14 @@ class income_statement
             $a[] = array(
               'acno' => $value->acno,
               'acnoname' => '<b>' . strtoupper($parentname) . '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $amt2, 'detail' => $value->detail, 'total' => '-', 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $amt2,
+              'detail' => $value->detail,
+              'total' => '-',
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
           } //end if IF LEVELID = 1
 
@@ -999,9 +1164,14 @@ class income_statement
               $a[] = array(
                 'acno' => $value->acno,
                 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat,
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
                 'parent' => $value->parent,
-                'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'amt' => $prev_incomegrp_amt,
+                'detail' => $value->detail,
+                'total' => 0,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
               $prev_incomegrp_amt = 0;
             }
@@ -1047,8 +1217,17 @@ class income_statement
             }
 
             $a[] = array(
-              'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>', 'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-              'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow, 'istotal' => true
+              'acno' => $value->acno,
+              'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
+              'parent' => $value->parent,
+              'amt' => $prev_incomegrp_amt,
+              'detail' => $value->detail,
+              'total' => 0,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow,
+              'istotal' => true
             );
             $prev_incomegrp_amt = 0;
           }
@@ -1069,9 +1248,16 @@ class income_statement
       }
 
       $a[] = array(
-        'acno' => $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-        'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $displayamt,
-        'detail' => $value->detail, 'total' => $displaytotal, 'alias' => '', 'isshow' => $value->isshow
+        'acno' => $value->acno,
+        'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+        'levelid' => $value->levelid,
+        'cat' => $value->cat,
+        'parent' => $value->parent,
+        'amt' => $displayamt,
+        'detail' => $value->detail,
+        'total' => $displaytotal,
+        'alias' => '',
+        'isshow' => $value->isshow
       );
 
       $prev_incomegrp_amt += $value->amt;
@@ -1090,8 +1276,18 @@ class income_statement
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               if (!$value->iscompute) {
                 $a[] = array(
-                  'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>', 'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => $level2amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow, 'isparenttotal' => $value->isparenttotal, 'istotal' => true
+                  'acno' => $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => $level2amt,
+                  'detail' => $value->detail,
+                  'total' => 0,
+                  'alias' => $value->alias,
+                  'isshow' => $value->isshow,
+                  'isparenttotal' => $value->isparenttotal,
+                  'istotal' => true
                 );
               }
 
@@ -1100,8 +1296,18 @@ class income_statement
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               if (!$value->iscompute) {
                 $a[] = array(
-                  'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>', 'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => $amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow, 'isparenttotal' => $value->isparenttotal, 'istotal' => true
+                  'acno' => $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => $amt,
+                  'detail' => $value->detail,
+                  'total' => 0,
+                  'alias' => $value->alias,
+                  'isshow' => $value->isshow,
+                  'isparenttotal' => $value->isparenttotal,
+                  'istotal' => true
                 );
               }
               $prev_incomegrp_amt += $amt;
@@ -1116,8 +1322,18 @@ class income_statement
               $amt9 = $amt9 + $loss;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET', 'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $loss, 'detail' => $value->detail, 'total' => $loss, 'alias' => $value->alias, 'isshow' => $value->isshow, 'isparenttotal' => $value->isparenttotal, 'istotal' => true
+                'acno' => '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $value->levelid + 1,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $loss,
+                'detail' => $value->detail,
+                'total' => $loss,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow,
+                'isparenttotal' => $value->isparenttotal,
+                'istotal' => true
               );
             } //end if
 
@@ -1129,8 +1345,18 @@ class income_statement
               $totalamt9 = $amt9 - $prevamt9;
             }
             $a[] = array(
-              'acno' => $value->acno, 'acnoname' => '<b>' . strtoupper($parentname) . '</b>', 'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-              'amt' => $amt2, 'detail' => $value->detail, 'total' => $totalamt9, 'alias' => $value->alias, 'isshow' => $value->isshow, 'isparenttotal' => $value->isparenttotal, 'istotal' => true
+              'acno' => $value->acno,
+              'acnoname' => '<b>' . strtoupper($parentname) . '</b>',
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
+              'parent' => $value->parent,
+              'amt' => $amt2,
+              'detail' => $value->detail,
+              'total' => $totalamt9,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow,
+              'isparenttotal' => $value->isparenttotal,
+              'istotal' => true
             );
           } //end if IF LEVELID = 1
 
@@ -1152,8 +1378,17 @@ class income_statement
               }
 
               $a[] = array(
-                'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>', 'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow, 'istotal' => true
+                'acno' => $value->acno,
+                'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $prev_incomegrp_amt,
+                'detail' => $value->detail,
+                'total' => 0,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow,
+                'istotal' => true
               );
               $prev_incomegrp_amt = 0;
             }
@@ -1183,7 +1418,7 @@ class income_statement
     if (isset($addtionalparams['defaultfield_filter'])) {
       $defaultfield_filter = $addtionalparams['defaultfield_filter'];
     }
-//bbb
+    //bbb
     $query2 = $this->INCOME_STATEMENT_INNER_QUERY($cat, $acno, $date1, $date2, $center, $status, $cc, $filter, $company, $defaultfield_filter);
     $result2 = $this->coreFunctions->opentable($query2);
 
@@ -1207,10 +1442,15 @@ class income_statement
 
             $a[] = array(
               'acno' => 'aaa ' . $value->acno,
-              'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup). '</b>',
-              'levelid' => $value->levelid, 'cat' => $value->cat,
+              'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
               'parent' => $value->parent,
-              'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+              'amt' => $prev_incomegrp_amt,
+              'detail' => $value->detail,
+              'total' => 0,
+              'alias' => $value->alias,
+              'isshow' => $value->isshow
             );
             $prev_incomegrp_amt = 0;
           }
@@ -1227,8 +1467,13 @@ class income_statement
               'acno' => 'bbb ' . $value->acno,
               'acnoname' => $value->levelid == 1 ? '<b>' . ($value->acnoname == 'EXPENSES' ? 'LESS OPERATING EXPENSES: ' : $value->acnoname) . '</b>' : $value->acnoname,
               'levelid' => $value->levelid,
-              'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-              'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+              'cat' => $value->cat,
+              'parent' => $value->parent,
+              'amt' => $value->amt,
+              'detail' => $value->detail,
+              'total' => $value->amt,
+              'alias' => '',
+              'isshow' => $value->isshow
             );
 
             $prev_incomegrp_amt += $value->amt;
@@ -1237,14 +1482,21 @@ class income_statement
             $amt = $amt + $value->amt;
             $amt1 = $amt1 + $amt;
             $amt9 = $amt9 + $value->amt;
-            $amt = 0; 
+            $amt = 0;
           }
         } else {
           if (array_search($value->acno, $addtionalparams['complex_acno']) != false) { //if not false, returns all revenue inside the array only
             $a[] = array(
-              'acno' => 'ccc ' . $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-              'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-              'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+              'acno' => 'ccc ' . $value->acno,
+              'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+              'levelid' => $value->levelid,
+              'cat' => $value->cat,
+              'parent' => $value->parent,
+              'amt' => $value->amt,
+              'detail' => $value->detail,
+              'total' => $value->amt,
+              'alias' => '',
+              'isshow' => $value->isshow
             );
 
             $prev_incomegrp_amt += $value->amt;
@@ -1261,8 +1513,13 @@ class income_statement
           'acno' => 'ddd ' . $value->acno,
           'acnoname' => $value->levelid == 1 ? '<b>' . ($value->acnoname == 'Expenses' ? 'LESS OPERATING EXPENSES: ' : $value->acnoname) . '</b>' : $value->acnoname,
           'levelid' => $value->levelid,
-          'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-          'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+          'cat' => $value->cat,
+          'parent' => $value->parent,
+          'amt' => $value->amt,
+          'detail' => $value->detail,
+          'total' => $value->amt,
+          'alias' => '',
+          'isshow' => $value->isshow
         );
 
         $prev_incomegrp_amt += $value->amt;
@@ -1281,24 +1538,36 @@ class income_statement
             if ($value->levelid == 2) { //for titles
               $level2amt = $amt9 - $prevamt9;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
-   
+
 
               if (array_search($value->acno, $addtionalparams['complex_acno']) == false) { //if false, returns all revenue except the ones in array
                 $a[] = array(
-                'acno' => 'eee ' . $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname.'</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $level2amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
-              );
+                  'acno' => 'eee ' . $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => 0,
+                  'detail' => $value->detail,
+                  'total' => $level2amt,
+                  'alias' => $value->alias,
+                  'isshow' => $value->isshow // original 'amt' => $amt2 , 'total' => $level2amt
+                );
                 $prev_incomegrp_amt += $level2amt;
               }
-              
-              
             } else { //levelid 3 or more is detail or the lowest(with value)
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => 'fff ' . $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => 0, 'detail' => $value->detail, 'total' => $amt, 'alias' => $value->alias, 'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
+                'acno' => 'fff ' . $value->acno,
+                'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => 0,
+                'detail' => $value->detail,
+                'total' => $amt,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow // original 'amt' => $amt2, 'total' => $amt
               );
               $prev_incomegrp_amt += $amt;
             } //end if
@@ -1312,9 +1581,16 @@ class income_statement
               $amt9 = $amt9 + $loss;
               //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
               $a[] = array(
-                'acno' => 'ggg ' . '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                'amt' => $loss, 'detail' => $value->detail, 'total' => $loss, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'acno' => 'ggg ' . '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $value->levelid + 1,
+                'cat' => $value->cat,
+                'parent' => $value->parent,
+                'amt' => $loss,
+                'detail' => $value->detail,
+                'total' => $loss,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
             } //end if
           } //end if IF LEVELID = 1
@@ -1339,9 +1615,14 @@ class income_statement
               $a[] = array(
                 'acno' => 'hhh ' . $value->acno,
                 'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat,
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
                 'parent' => $value->parent,
-                'amt' => $prev_incomegrp_amt, 'detail' => $value->detail, 'total' => 0, 'alias' => $value->alias, 'isshow' => $value->isshow
+                'amt' => $prev_incomegrp_amt,
+                'detail' => $value->detail,
+                'total' => 0,
+                'alias' => $value->alias,
+                'isshow' => $value->isshow
               );
               $prev_incomegrp_amt = 0;
             }
@@ -1382,8 +1663,13 @@ class income_statement
 
         'acnoname' => ($value->acnoname == 'COST OF SALE' ? 'LESS : COST OF SALES ' : ($value->acnoname == 'INTEREST INCOME' ? 'ADD: ' . $value->acnoname : $value->acnoname)),
         'levelid' => $value->levelid,
-        'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-        'detail' => $value->detail, 'total' => $value->amt, 'alias' => '', 'isshow' => $value->isshow
+        'cat' => $value->cat,
+        'parent' => $value->parent,
+        'amt' => $value->amt,
+        'detail' => $value->detail,
+        'total' => $value->amt,
+        'alias' => '',
+        'isshow' => $value->isshow
       );
 
       // $prevamt9 = $amt9;
@@ -1724,7 +2010,7 @@ class income_statement
             }
           }
           break;
-          // to follow
+        // to follow
         default:
 
           $totgrp = $this->CHECK_TOTALPARENT($data[$i]['acno'], $isposted, $start, $end, $filters['params']['dataparams']['branchcode'], $costcenter);
@@ -2771,7 +3057,7 @@ class income_statement
     if ($defaultfield_filter == '') {
       $filters = " where coa.parent='$acno' and coa.cat='$cat' "; // default filters
     } else {
-        $filters = " where coa." . $defaultfield_filter . "='$acno' and coa.cat='$cat'"; // default filters
+      $filters = " where coa." . $defaultfield_filter . "='$acno' and coa.cat='$cat'"; // default filters
     }
 
     $addedfilters = '';

@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\common\payrollcommon;
 
 class change_shift_schedules_reports
 {
@@ -27,6 +28,7 @@ class change_shift_schedules_reports
     private $reporter;
     public $month;
     public $year;
+    private $payrollcommon;
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
 
@@ -42,6 +44,7 @@ class change_shift_schedules_reports
         $this->othersClass = new othersClass;
         $this->fieldClass = new txtfieldClass;
         $this->reporter = new SBCPDF;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function createHeadField($config)
@@ -166,7 +169,7 @@ class change_shift_schedules_reports
         $filteremp = "";
         $leftjoin = "";
 
-        $check = $this->othersClass->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp');
+        $check = $this->payrollcommon->checkapproversetup($config, $adminid, 'CHANGESHIFT', 'emp');
         if ($check['filter'] != "") {
             $filteremp .= $check['filter'];
         }

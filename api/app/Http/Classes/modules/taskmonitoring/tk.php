@@ -236,20 +236,20 @@ class tk
     }
 
     //if(d.userid = $userid and d.status = 3 and d.fcheckingdate is null ,'false','true') as isforchecking,
-    $qry = "select h.trno as clientid,h.trno,date(h.dateid) as dateid, c.clientname,c.clientid as clid,
+    $qry = "select h.trno as clientid,h.trno,date(d.encodeddate) as dateid, c.clientname,c.clientid as clid,
        d.title,ifnull(cla.clientname,'') as assignto,
        ifnull(e.clientname,'') as requestby,date(d.startdate) as startdate, date(d.enddate) as enddate,
        if(d.userid = 0,'false', if(d.userid = $userid and d.startdate is null and d.status not in (2,4),'false','true')) as isassigned,
        if(d.enddate is null and d.status = 4,'false','true') as iscompleted,h.requestby as reqid,d.status,h.amount,
        '../taskmonitoring/' as url,'ledgergrid' as moduletype, if(d.userid = 0 and d.startdate is null and d.status not in (2,4),'false','true') as ismine,
 
-       'TM' as doc,d.line,d.userid as assignedid,h.rem $stat
+       'TM' as doc,d.line,d.userid as assignedid,h.rem,case when d.isprio = 1 then 'bg-red-3' else '' end as bgcolor $stat
     from tmhead as h
     left join client as c on c.clientid = h.clientid
     left join client as e on e.clientid = h.requestby
     left join tmdetail as d on d.trno=h.trno
     left join trxstatus as stat on stat.line=d.status
-    left join client as cla on cla.clientid = d.userid where ''='' $filter $filterdate $filtersearch order by d.encodeddate desc " . $l;
+    left join client as cla on cla.clientid = d.userid where isassigntype=0 $filter $filterdate $filtersearch order by d.isprio desc,d.encodeddate desc " . $l;
     //h.status=1
 
     // var_dump($qry);  if(d.status = 0 ,'true','false') as iscomment,
@@ -470,7 +470,7 @@ class tk
     if ($updatetm) {
       $qry = "insert into pendingapp (trno,line,doc,clientid)
                         SELECT $trno, $line, 'TM', " . $adminid . "
-                        FROM pendingapp as p  where p.trno=? limit 1";
+                        FROM pendingapp as p  where p.trno=? and isassigntype=0 limit 1";
       $dtinsert = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
 
       $config['params']['doc'] = 'ENTRYTASK';

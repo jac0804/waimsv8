@@ -191,11 +191,14 @@ class jobsetup
             $fields = $fields . ',' . $value;
         }
 
-        if ($clientid == 0) $clientid = $this->getlastclient();
-
         $qryselect = "select " . $fields;
-        $qry = $qryselect . " from jobthead
-        where line = ? ";
+
+        if ($clientid == 0) {
+            $clientid = $this->getlastclient();
+            $qry = $qryselect . " from jobthead where docno = ? ";
+        } else {
+            $qry = $qryselect . " from jobthead where line = ? ";
+        }
 
         $head = $this->coreFunctions->opentable($qry, [$clientid]);
         if (!empty($head)) {
@@ -203,11 +206,9 @@ class jobsetup
             if (isset($config['msg'])) {
                 $msg = $config['msg'];
             }
-
-            return  ['reloadtableentry' => true, 'head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid']];
+            return ['reloadtableentry' => true, 'head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid']];
         } else {
             $head = $this->resetdata();
-
             return ['reloadtableentry' => true, 'status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
         }
     }
@@ -238,14 +239,18 @@ class jobsetup
             $data['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->head, $data, ['line' => $head['clientid']]);
             $clientid = $head['clientid'];
+            $this->logger->sbcmasterlog($clientid, $config, 'UPDATE JOB - DOCNO: ' . $head['client'] . ' - JOB: ' . $head['jobtitle']);
         } else {
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby']   = $config['params']['user'];
             $clientid = $this->coreFunctions->insertGetId($this->head, $data);
+            $this->logger->sbcmasterlog($clientid, $config, 'ADD JOB - DOCNO: ' . $head['client'] . ' - JOB: ' . $head['jobtitle']);
         }
 
         return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];
     } // end function
+
+
 
     public function getlastclient($pref = '')
     {
@@ -262,23 +267,10 @@ class jobsetup
     {
         $clientid = $config['params']['clientid'];
         $docn = $this->coreFunctions->getfieldvalue('jobthead', 'docno', 'line=?', [$clientid]);
-        $qry1 = "select job as value from personreq where job=? limit 1";
-        $count = $this->coreFunctions->datareader($qry1, [$docn]);
-        $qry1 = "select job as value from hpersonreq where job=? limit 1 ";
-        $count1 = $this->coreFunctions->datareader($qry1, [$docn]);
-        $qry1 = "select emptitle as value from joboffer where emptitle=? limit 1";
-        $count2 = $this->coreFunctions->datareader($qry1, [$docn]);
-        $qry1 = "select emptitle as value from hjoboffer where emptitle=? limit 1";
-        $count3 = $this->coreFunctions->datareader($qry1, [$docn]);
-
-
-        if ($count != '' || $count1 != '' || $count2 != '' || $count3 != '') {
-            return ['clientid' => $clientid, 'status' => false, 'msg' => 'Already have transaction...'];
-        }
+        $jobtitle = $this->coreFunctions->getfieldvalue('jobthead', 'jobttitle', 'line=?', [$clientid]);
 
         $this->coreFunctions->execqry('delete from ' . $this->head . ' where line=?', 'delete', [$clientid]);
-        $this->coreFunctions->execqry('delete from jobtskills where trno=?', 'delete', [$clientid]);
-        $this->coreFunctions->execqry('delete from jobtdesc where trno=?', 'delete', [$clientid]);
+        $this->logger->sbcmasterlog($clientid, $config, 'DELETE JOB TITLE - DOCNO: ' . $docn . ' - TITLE: ' . $jobtitle);
 
         return ['clientid' => 0, 'status' => true, 'msg' => 'Successfully deleted.'];
     } //end function

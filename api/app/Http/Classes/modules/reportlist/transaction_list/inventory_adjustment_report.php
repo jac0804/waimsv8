@@ -758,6 +758,7 @@ class inventory_adjustment_report
     $deptcode = $config['params']['dataparams']['dept'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
 
     $filter = "";
 
@@ -775,7 +776,7 @@ class inventory_adjustment_report
     if ($prjcode != "") {
       $filter .= " and stock.projectid = $projectid";
     }
-    if ($deptcode != "") {
+    if ($deptcode != "" && $deptname != '') {
       $filter .= " and head.deptid = $deptid";
     }
 

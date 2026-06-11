@@ -1755,6 +1755,7 @@ class stockcard
         PDF::MultiCell(65, 0, "BALANCE", 'TLB', 'C', false, 0);
         PDF::MultiCell(70, 0, "PARTICULAR", 'TLRB', 'C', false);
         break;
+      case '69': //cemphil
       case '24': //GFC
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(65, 0, "DATE", 'TLB', 'C', false, 0);
@@ -1823,7 +1824,7 @@ class stockcard
     foreach ($data as $key => $value) {
       $qty = $value->qty;
       $iss = $value->iss;
-    
+
       if ($i == 0) {
         $bal = $value->bal;
         if ($bal == 0) {
@@ -1877,6 +1878,7 @@ class stockcard
             PDF::MultiCell(65, 0, number_format($value->bal, 2), '', 'R', false, 0);
             PDF::MultiCell(70, 0, "", '', 'R', false);
             break;
+          case '69': //cemphil
           case '24': //GFC
             PDF::SetFont($font, '', 10);
             PDF::MultiCell(65, 0, "", '', 'C', false, 0);
@@ -1937,6 +1939,7 @@ class stockcard
             PDF::MultiCell(65, 0, number_format($tobal, $qtydec), '', 'R', false, 0);
             PDF::MultiCell(65, 0, $value->rem, '', 'R', false);
             break;
+          case '69': //cemphil
           case '24': //GFC
             PDF::SetFont($font, '', 10);
             PDF::MultiCell(65, 0, $value->dateid, '', 'C', false, 0);
@@ -1987,26 +1990,26 @@ class stockcard
             $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_balance, $arr_rem]);
 
             for ($r = 0; $r < $maxrow; $r++) {
-                PDF::SetFont($font, '', $fontsize);
-                // PDF::MultiCell(110, 15, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(70, 15, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(110, 15, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(100, 15, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(90, 15, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(90, 15, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(90, 15, (isset($arr_balance[$r]) ? $arr_balance[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
-                // PDF::MultiCell(95, 15, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', 0, 1, '', '', true, 0, false, false);
+              PDF::SetFont($font, '', $fontsize);
+              // PDF::MultiCell(110, 15, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(70, 15, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(110, 15, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(100, 15, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(90, 15, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(90, 15, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(90, 15, (isset($arr_balance[$r]) ? $arr_balance[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
+              // PDF::MultiCell(95, 15, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', 0, 1, '', '', true, 0, false, false);
 
-                // PDF::SetFont($font, '', 11);
-                PDF::MultiCell(75, 0, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0);
-                PDF::MultiCell(200, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
-                PDF::MultiCell(65, 0, (isset($arr_expiry[$r]) ? $arr_expiry[$r] : ''), '', 'C', false, 0);
-                PDF::MultiCell(100, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'C', false, 0);
-                PDF::MultiCell(70, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : '-'), '', 'R', false, 0);
-                PDF::MultiCell(70, 0, (isset($arr_iss[$r]) ? $arr_iss[$r] : '-'), '', 'R', false, 0);
-                PDF::MultiCell(70, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
-                PDF::MultiCell(70, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'R', false);
+              // PDF::SetFont($font, '', 11);
+              PDF::MultiCell(75, 0, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0);
+              PDF::MultiCell(200, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
+              PDF::MultiCell(65, 0, (isset($arr_expiry[$r]) ? $arr_expiry[$r] : ''), '', 'C', false, 0);
+              PDF::MultiCell(100, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'C', false, 0);
+              PDF::MultiCell(70, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : '-'), '', 'R', false, 0);
+              PDF::MultiCell(70, 0, (isset($arr_iss[$r]) ? $arr_iss[$r] : '-'), '', 'R', false, 0);
+              PDF::MultiCell(70, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
+              PDF::MultiCell(70, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'R', false);
             }
             break;
           default:
@@ -2027,6 +2030,7 @@ class stockcard
       $i++;
 
       switch ($companyid) {
+        case '69': //cemphil
         case '24': //GFC
           if (PDF::getY() > 850) {
             $this->PDF_LEDGER_HEADER($config, $data);
@@ -2064,6 +2068,7 @@ class stockcard
         PDF::MultiCell(65, 0, number_format($tobal, $qtydec), 'T', 'R', false, 0);
         PDF::MultiCell(65, 0, "", '', 'R', false);
         break;
+      case '69': //cemphil
       case '24': //GFC
         PDF::SetFont($fontbold, '', 10);
         PDF::MultiCell(65, 0, "", '', 'C', false, 0);

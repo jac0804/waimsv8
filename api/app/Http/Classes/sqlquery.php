@@ -1870,6 +1870,7 @@ class sqlquery
             }
             break;
 
+          case 69: // Cemphil
           case 24: // good found
             switch (strtoupper($doc)) {
               case 'PO':
@@ -3214,6 +3215,7 @@ class sqlquery
 
           default:
             switch ($companyid) {
+              case 69: // Cemphil
               case 24: //goodfound
                 $filterclient = ' and head.client = ? ';
                 $arrfilter = [];
@@ -3578,6 +3580,7 @@ class sqlquery
 
         $filterx = "";
         switch ($companyid) {
+          case 69: // Cemphil
           case 24: //goodfound
             switch ($doc) {
               case 'RU':
@@ -6362,7 +6365,7 @@ class sqlquery
     $companyid = $config['params']['companyid'];
     $join = '';
     $addfield = '';
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, Cemphil
       $join = "   
       left join glstock as stock on stock.trno=glhead.trno and stock.refx<>0 and stock.linex<>0
       left join transnum as so on so.trno=stock.refx

@@ -55,18 +55,20 @@ class DLMirrorMasters extends Command
         try {
 
             $processSyncing = $this->coreFunction->getfieldvalue("profile", "pvalue", "doc='IOU' and psection='MIRROR'");
+            $this->coreFunction->sbclogger("Last log mirror", 'MIRROR');
+
             if ($processSyncing == '') {
 
                 $syncing = ['doc' => 'IOU', 'psection' => 'MIRROR', 'pvalue' => 1];
                 $this->coreFunction->sbcinsert("profile", $syncing);
 
-                $this->coreFunction->sbclogger("Mirror - Extract files", 'DLOCK');
+                $this->coreFunction->sbclogger("Mirror - Extract files", 'MIRROR');
                 $this->coreFunction->LogConsole("Mirror - Extract files...");
                 $this->posClass->ftpextractmirrorfiles();
 
                 $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
 
-                $this->coreFunction->execqry("delete from pos_log where e_detail='DLOCK' and date(date_executed)<'" . $currentdate . "'");
+                $this->coreFunction->execqry("delete from pos_log where e_detail in ('MIRROR','MIRROR2') and date(date_executed)<'" . $currentdate . "'");
             } else {
 
                 $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log order by e_id desc limit 1");
@@ -77,7 +79,7 @@ class DLMirrorMasters extends Command
 
                     $idletime =  $lastlog->diffInMinutes($current_logtime, false);
                     if (abs($idletime) >= 30) {
-                        $this->coreFunction->sbclogger("Reset mirror", 'DLOCK');
+                        $this->coreFunction->sbclogger("Reset mirror", 'MIRROR');
 
                         $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
                     }

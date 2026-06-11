@@ -17,6 +17,8 @@ use DateInterval;
 use Exception;
 use Illuminate\Support\Str;
 
+use Carbon\Carbon;
+
 class posClass
 {
   private $othersClass;
@@ -2051,7 +2053,17 @@ class posClass
 
   public function gettransdoc($doc, $table)
   {
-    $qry = "select trno, doc, docno from " . $table . " where doc='" . $doc . "' and postdate is not null and iscsv=0 order by trno";
+    $qry = "select trno, doc, docno from " . $table . " where doc='" . $doc . "' and postdate is not null and iscsv=0 order by postdate";
+    return $this->coreFunctions->opentable($qry);
+  }
+
+  public function getalltransdoc($doc, $table)
+  {
+    // $qry = "select trno, doc, docno, postdate from cntnum where postdate is not null and iscsv=0
+    //       union all
+    //       select trno, doc, docno, postdate from transnum where postdate is not null and iscsv=0 order by postdate";
+
+    $qry = "select trno, doc, docno, postdate from transnum where postdate is not null and iscsv=0 order by postdate";
     return $this->coreFunctions->opentable($qry);
   }
 
@@ -2078,7 +2090,7 @@ class posClass
           $arr1 = (array)$nn;
           foreach ($arr1 as $arrkey => $arr) {
             $arr1[$arrkey] = $this->removeNewlines(trim($arr1[$arrkey]));
-            $arr1[$arrkey] = $this->othersClass->sanitizekeyfield($arrkey, $arr1[$arrkey]);
+            $arr1[$arrkey] = $this->othersClass->sanitizekeyfield($arrkey, $arr1[$arrkey], $table);
             if ($arr1[$arrkey] === null) $arr1[$arrkey] = "NULL";
           }
           if ($nkey == 0) {
@@ -2093,6 +2105,7 @@ class posClass
     return '';
   }
 
+
   public function transactionsmirror($doc)
   {
     $this->coreFunctions->LogConsole("Mirror - Creating " . $doc . " transactions file");
@@ -2105,24 +2118,40 @@ class posClass
     $tables = [];
 
     try {
-      switch ($doc) {
-        case 'sj':
-          $numtable = 'cntnum';
-          $tables = ['cntnum', 'glhead', 'glstock', 'gldetail', 'arledger', 'costing', 'cntnuminfo', 'hstockinfo'];
-          break;
+
+      if ($doc == '') {
+        $docs = $this->getalltransdoc($doc, $numtable);
+      } else {
+        $docs = $this->gettransdoc($doc, $numtable);
       }
-      $docs = $this->gettransdoc($doc, $numtable);
+
       if (!empty($docs)) {
         foreach ($docs as $dkey => $doc1) {
+
+          $start = Carbon::parse($this->othersClass->getCurrentTimeStamp());
+
+          $postedTables = $this->getPostedTables($doc1->doc);
+          $numtable = $postedTables['numtable'];
+          $tables = $postedTables['tables'];
+
+          if ($numtable == '') {
+            $this->coreFunctions->LogConsole('No numtable found for doc:' . $doc1->doc);
+            continue;
+          }
+
           $queries = [];
           foreach ($tables as $t) {
             $qry = $this->gettransactionsqry($t, $doc1->trno);
             array_push($queries, $qry);
           }
           $csv = $this->createtranscsv($queries);
-          $this->coreFunctions->LogConsole('creating transaction csv doc:' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno);
+          // $this->coreFunctions->LogConsole('creating transaction csv doc:' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno);
           $this->ftpcreatefiletrans($csv, "MIRROR", "MIRROR1", 'download', $doc1->doc, $doc1->docno, $doc1->trno);
           $this->coreFunctions->sbcupdate($numtable, ['iscsv' => 1], ['trno' => $doc1->trno]);
+
+          $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
+          $elapsed = $start->diffInSeconds($end);
+          $this->coreFunctions->LogConsole('creating transaction csv:' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno . ' - ' . $elapsed . ' seconds');
         }
       } else {
         $this->coreFunctions->LogConsole('No transaction(s) found.');
@@ -2251,12 +2280,16 @@ class posClass
         $doc = $f[1];
         $numtable = '';
         $tables = [];
-        switch ($doc) {
-          case 'SJ':
-            $numtable = 'cntnum';
-            $tables = ['cntnum', 'glhead', 'gldetail', 'glstock', 'arledger', 'costing', 'cntnuminfo', 'hstockinfo'];
-            break;
+
+        $postedTables = $this->getPostedTables($doc);
+        $numtable = $postedTables['numtable'];
+        $tables = $postedTables['tables'];
+
+        if ($numtable == '') {
+          $this->coreFunctions->LogConsole('No numtable found for doc:' . $doc);
+          return ['status' => false];
         }
+
         $rec = $this->coreFunctions->opentable("select trno from $numtable where trno=" . $trno);
         if (!empty($rec)) {
           foreach ($tables as $t) {
@@ -2272,6 +2305,12 @@ class posClass
               $this->coreFunctions->LogConsole("failed insert");
               $status = false;
             }
+          }
+        }
+
+        if (!$status) {
+          foreach ($tables as $t) {
+            $this->coreFunctions->execqry("delete from $t where trno=" . $trno, 'delete');
           }
         }
       } else {
@@ -2301,10 +2340,14 @@ class posClass
               $uniquefield = ['cl_id'];
               break;
             case 'itemcategory':
+            case 'itemsubcategory':
               $uniquefield = ['line'];
               break;
             case 'frontend_ebrands':
               $uniquefield = ['brandid'];
+              break;
+            case 'category_masterfile':
+              $uniquefield = ['cat_id'];
               break;
           }
 
@@ -2405,6 +2448,48 @@ class posClass
 
     return $status;
   }
+
+  function getPostedTables($doc)
+  {
+    $numtable = '';
+    $tables = [];
+    switch ($doc) {
+      case 'MC':
+        $numtable = 'transnum';
+        $tables = ['transnum', 'hmchead', 'hmcdetail', 'hheadinfotrans'];
+        break;
+      case 'PR':
+        $numtable = 'transnum';
+        $tables = ['transnum', 'hpohead', 'hpostock', 'hheadinfotrans', 'hstockinfotrans'];
+        break;
+      case 'PO':
+        $numtable = 'transnum';
+        $tables = ['transnum', 'hprhead', 'hprstock', 'hheadinfotrans', 'hstockinfotrans'];
+        break;
+      case 'RR':
+      case 'DM':
+      case 'SJ':
+      case 'CM':
+      case 'IS':
+      case 'AJ':
+      case 'TS':
+        $numtable = 'cntnum';
+        $tables = ['cntnum', 'glhead', 'glstock', 'gldetail', 'arledger', 'apledger', 'caledger', 'cbledger', 'crledger', 'rrstatus', 'costing', 'hcntnuminfo', 'hstockinfo', 'hdetailinfo', 'serialin', 'serialout'];
+        break;
+      case 'AR':
+      case 'AP':
+      case 'PV':
+      case 'CV':
+      case 'CR':
+      case 'DS':
+        $numtable = 'cntnum';
+        $tables = ['cntnum', 'glhead', 'gldetail', 'arledger', 'apledger', 'caledger', 'cbledger', 'crledger', 'hdetailinfo', 'hcntnuminfo'];
+        break;
+    }
+
+    return ['numtable' => $numtable, 'tables' => $tables];
+  }
+
 
   function parseStringToArray($path, $mirror)
   {

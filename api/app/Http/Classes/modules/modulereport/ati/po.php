@@ -798,6 +798,7 @@ class po
       PDF::MultiCell(0, 0, isset($data[0]['rem']) ? $data[0]['rem'] : '', '', 'L', false, 0, '55', '770');
     }
 
+    PDF::SetFont($fontbold, '', ($fontsize - 2));
     PDF::MultiCell(175, 15, $config['params']['dataparams']['prepared'], '', 'C', false, 0, '-7', '880'); //-5,860
     PDF::MultiCell(175, 15, $config['params']['dataparams']['checked'], '', 'C', false, 0, '310', '880'); //268,860
     if (str_contains($config['params']['dataparams']['approved'], 'PATRICIA CO')) {
@@ -1140,6 +1141,8 @@ class po
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
+    PDF::SetFont($fontbold, '', ($fontsize - 2));
+
     PDF::MultiCell(125, 15, $config['params']['dataparams']['prepared'], '', 'C', false, 0, '65', '910');
 
     switch ($data[0]['categoryid']) {
@@ -1465,6 +1468,8 @@ class po
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
+
+    PDF::SetFont($fontbold, '', ($fontsize - 2));
 
     PDF::MultiCell(175, 15, $config['params']['dataparams']['prepared'], '', 'C', false, 0, '80', '940');
 
@@ -1800,6 +1805,8 @@ class po
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
+    PDF::SetFont($fontbold, '', ($fontsize - 2));
+
     PDF::MultiCell(125, 15, $config['params']['dataparams']['prepared'], '', 'C', false, 0, '65', '910');
 
     switch ($data[0]['categoryid']) {
@@ -2089,6 +2096,8 @@ class po
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
+
+    PDF::SetFont($fontbold, '', ($fontsize - 2));
 
     PDF::MultiCell(175, 15, $config['params']['dataparams']['prepared'], '', 'C', false, 0, '100', '810'); //795
 

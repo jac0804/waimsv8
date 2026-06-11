@@ -15,6 +15,7 @@ use App\Http\Classes\coreFunctions;
 use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
+use App\Http\Classes\common\payrollcommon;
 
 use DateTime;
 
@@ -31,6 +32,7 @@ class ttc
     public $style = 'width:100%;max-width:100%;';
     public $issearchshow = false;
     public $showclosebtn = false;
+    private $payrollcommon;
     public $fields = ['daytype', 'shiftcode', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'reghrs', 'shiftid', 'isok'];
 
     public function __construct()
@@ -41,6 +43,7 @@ class ttc
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function getAttrib()
@@ -299,7 +302,7 @@ class ttc
         $start = date('Y-m-d', strtotime($start));
         $end = date('Y-m-d', strtotime($end));
 
-        $approver = $this->othersClass->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'emp');
+        $approver = $this->payrollcommon->checkapproversetup($config, $adminid, 'PORTAL SCHEDULE', 'emp');
 
         $filter = "";
         $left = "";

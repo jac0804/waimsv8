@@ -519,7 +519,8 @@ class trigger
       case 19:
         $crref = 'Request Order No.';
         break;
-      case 24:
+      case 24: //goodfound
+      case 69: //cemphil
         $priority = 'type';
         break;
       case 43: //mighty
@@ -2799,6 +2800,7 @@ class trigger
     $this->rg_triggers();
     $this->si_triggers();
     $this->px_triggers();
+    $this->pt_triggers();
     // $this->pw_triggers();
     // $this->hpw_triggers();
     // ADD HERE-->
@@ -4781,6 +4783,25 @@ class trigger
     //END PXSTOCK TRIGGER ===================================================================================================================
   }
 
+  private function pt_triggers()
+  {
+    // PTHEAD TRIGGER ===================================================================================================================
+    $fields = [
+      'Notes' => ['rem' => []],
+      'Docno' => ['docno' => []],
+      'Description' => ['description' => []]
+    ];
+    $this->settriggerlogs('pthead_update', 'AFTER UPDATE', 'pthead', 'transnum_log', $fields, 'trno', 'HEAD');
+    //END PTHEAD TRIGGER ===================================================================================================================
+
+    // PTJOBS TRIGGER ===================================================================================================================
+    $fields = [
+      'Notes' => ['rem' => []]
+    ];
+    $this->settriggerlogs('ptjobs_update', 'AFTER UPDATE', 'ptjobs', 'transnum_log', $fields, 'trno', '');
+    //END PTJOBS TRIGGER ===================================================================================================================
+  }
+
   public function cleardb_proc()
   {
 
@@ -5554,6 +5575,12 @@ class trigger
         delete from jobtask;
         delete from specialcomm;
         delete from multiapprover;
+        // delete from jbdetail;
+        delete from cmodel;
+        delete from ptjobs;
+        delete from pttask;
+        delete from ptstock;
+        delete from cvehicle;
 
       END";
 

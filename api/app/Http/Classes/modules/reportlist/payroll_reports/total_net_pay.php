@@ -107,14 +107,17 @@ class total_net_pay
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptname     = $config['params']['dataparams']['deptname'];
+    $sectname     = $config['params']['dataparams']['sectname'];
     $batch     = $config['params']['dataparams']['line'];
 
     $filter = '';
 
     if ($client != "") $filter .= " and client.client = '$client'";
-    if ($deptid != 0) $filter .= " and emp.deptid = $deptid";
-    if ($divid != 0) $filter .= " and emp.divid = $divid";
-    if ($sectid != 0) $filter .= " and emp.sectid = $sectid";
+    if ($deptid != 0 && $deptname != '') $filter .= " and emp.deptid = $deptid";
+    if ($divid != 0 && $divname != '') $filter .= " and emp.divid = $divid";
+    if ($sectid != 0 && $sectname != '') $filter .= " and emp.sectid = $sectid";
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

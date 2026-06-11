@@ -854,7 +854,11 @@ class sj
         PDF::MultiCell(150, 10, '', 'T', 'R', false, 0);
         PDF::MultiCell(90, 10, 'VATable Sales ', 'TBLR', 'R', false, 0);
         PDF::MultiCell(30, 10, " " . $cur, 'T', 'L', false, 0);
-        PDF::MultiCell(85, 10, number_format($vatsales, 2), 'TBR', 'R', false, 0);
+        if ($datastock[0]['vattype'] == 'VATABLE') {
+            PDF::MultiCell(85, 10, number_format($vatsales, 2), 'TBR', 'R', false, 0);
+        }else{
+            PDF::MultiCell(85, 10, '0.00', 'TBR', 'R', false, 0);
+        }
         PDF::MultiCell(10, 10, '', 'T', 'R', false, 0);
         PDF::MultiCell(110, 10, 'Total Sales(VAT Inclusive) ', 'TBLR', 'R', false, 0);
         PDF::MultiCell(30, 10, " " . $cur, 'TB', 'L', false, 0);

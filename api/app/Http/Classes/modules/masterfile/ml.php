@@ -49,7 +49,14 @@ class ml
     'contact',
     'iscustomer',
     'ismechanic',
-    'isinactive'
+    'isinactive',
+    'start',
+    'status',
+    'area',
+    'province',
+    'region',
+    'picture',
+    'rate'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'ismechanic', 'isinactive'];
@@ -151,7 +158,32 @@ class ml
 
   public function createTab($access, $config)
   {
-    $tab = [];
+    $fields = ['picture'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'picture.lookupclass', 'client');
+    data_set($col1, 'picture.folder', 'ml');
+    data_set($col1, 'picture.table', 'client');
+    data_set($col1, 'picture.fieldid', 'clientid');
+    $fields = ['start', 'status', 'area', 'province', 'region'];
+    $col2 = $this->fieldClass->create($fields);
+
+    data_set($col2, 'status.type', 'input');
+    data_set($col2, 'status.class', 'csstatus');
+    data_set($col2, 'status.readonly', false);
+    data_set($col2, 'area.type', 'input');
+    data_set($col2, 'province.type', 'input');
+    data_set($col2, 'region.type', 'input');
+
+    $fields = ['rate'];
+    $col3 = $this->fieldClass->create($fields);
+
+
+
+    $tab = [
+      'multiinput1' => ['inputcolumn' => ['col3' => $col3], 'label' => 'Tasks'],
+      'multiinput2' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3], 'label' => 'Profile']
+    ];
+
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
@@ -207,6 +239,17 @@ class ml
     $data[0]['ismechanic'] = '1';
     $data[0]['isinactive'] = '0';
 
+    $data[0]['start'] = $this->othersClass->getCurrentDate();
+    $data[0]['status'] = '';
+
+    $data[0]['area'] = '';
+    $data[0]['province'] = '';
+    $data[0]['region'] = '';
+    $data[0]['status'] = '';
+    $data[0]['picture'] = '';
+
+    $data[0]['rate'] = '';
+
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -238,12 +281,12 @@ class ml
     }
     $center = $config['params']['center'];
     $head = [];
-    $fields = "client.client as docno,client.clientid, client.clientname, ifnull(client.addr, '') as addr,ifnull(client.tin, '') as tin,
-               ifnull(client.fax, '') as fax,ifnull(client.mobile, '') as mobile,ifnull(client.email, '') as email,ifnull(client.contact, '') as contact";
-    foreach ($this->fields as $key => $value) {
-      $fields = $fields . ',client.' . $value;
-    }
-    $qryselect = "select " . $fields . " ";
+    $qryselect = "select  client.client as docno,client.clientid, client.clientname, ifnull(client.addr, '') as addr,ifnull(client.tin, '') as tin,
+    ifnull(client.fax, '') as fax,ifnull(client.mobile, '') as mobile,ifnull(client.email, '') as email,ifnull(client.contact, '') as contact,
+    
+    client.client, client.clientname, client.addr, client.tin, client.tel,client.fax, 
+    client.mobile, client.email, client.contact,  client.iscustomer, client.ismechanic, client.isinactive,
+    date(client.start) as start, client.status, client.area, client.province, client.region, client.picture,client.rate ";
 
     $qry = $qryselect . " from client
       where client.clientid = ? and client.ismechanic = 1";

@@ -92,6 +92,7 @@ class cash_receipt_book
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -667,14 +668,14 @@ class cash_receipt_book
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     if ($params['params']['dataparams']['reporttype'] == 1) {
 
-    
+
       $str .= $this->reporter->begintable('1200');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center, $username, $params);
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-    
- 
+
+
 
       $str .= '<br><br>';
 
@@ -702,14 +703,14 @@ class cash_receipt_book
       $str .= $this->reporter->endtable();
     } else {
 
-     
+
       $str .= $this->reporter->begintable('800');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center, $username, $params);
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      
+
       $str .= '<br><br>';
 
       $str .= $this->reporter->begintable('800', null, '', $border, '', '', $font, '', '', '', '');
@@ -1378,7 +1379,7 @@ class cash_receipt_book
   {
     $str = '';
     $fontsize10 = '10';
-    
+
     if ($params['params']['dataparams']['reporttype'] == 2) {
       $str .= $this->reporter->begintable('800');
       $str .= $this->reporter->startrow();

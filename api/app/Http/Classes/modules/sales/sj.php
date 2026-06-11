@@ -237,7 +237,7 @@ class sj
 
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $cols[$liststatus]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     } else {
       $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
@@ -492,6 +492,7 @@ class sj
          head.yourref, head.ourref,head.shipto';
         $orderby = "order by docno desc, dateid desc";
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $lstat = "ifnull(stat.status,'DRAFT')";
         break;
@@ -1190,6 +1191,7 @@ class sj
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
@@ -1428,6 +1430,7 @@ class sj
         data_set($col1, 'address.addedparams', ['client']);
         break;
 
+      case 69: //cemphil
       case 24: // goodfound
         array_push($fields, 'dprojectname', ['hauler', 'driver'], ['weightin', 'weightintime']);
         $col1 = $this->fieldClass->create($fields);
@@ -1484,6 +1487,7 @@ class sj
       case 19: //hosegem
         $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'deldate', 'crref'];
         break;
+      case 69: //cemphil
       case 24: //goofound
         array_push($fields, 'statname', ['plateno', 'licenseno'], ['weightout', 'weightouttime']);
         break;
@@ -1526,6 +1530,7 @@ class sj
       case 22: //eipi
         data_set($col2, 'shipto.label', 'Delivered To');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         data_set($col2, 'statname.required', false);
         break;
@@ -1559,6 +1564,7 @@ class sj
       case 10: //afti
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], ['dvattype', 'taxdef'], 'dagentname', 'dewt'];
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', ['batchno', 'cwano'], 'cwatime', ['kilo', 'assignedlane']];
         break;
@@ -1612,6 +1618,7 @@ class sj
       case 19:
         data_set($col3, 'shipto.label', 'Deliver To');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         data_set($col3, 'yourref.label', 'DR No.#');
         data_set($col3, 'ourref.label', 'SI No.#');
@@ -1725,7 +1732,7 @@ class sj
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -1855,7 +1862,7 @@ class sj
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -2239,7 +2246,7 @@ class sj
       unset($this->fields[1]);
       unset($head['docno']);
     }
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       array_push($this->fields, 'driver');
     }
 
@@ -2271,7 +2278,7 @@ class sj
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $info = [];
       $info['trno'] = $head['trno'];
       $info['plateno'] = $head['plateno'];
@@ -2295,6 +2302,7 @@ class sj
       $this->recomputestock($head, $config);
 
       switch ($companyid) {
+        case 69: //cemphil
         case 24: //goodfound
           $trno = $head['trno'];
           $info['trno'] = $head['trno'];
@@ -2364,6 +2372,7 @@ class sj
         case 10: //afti
           $this->autocreatestock($config, $data, $head['sotrno']);
           break;
+        case 69: //cemphil
         case 24: //goodfound
           $this->coreFunctions->sbcinsert('cntnuminfo', $info);
           break;
@@ -2539,7 +2548,7 @@ class sj
         }
       }
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $statid = $this->coreFunctions->getfieldvalue($this->head, "statid", "trno=?", [$trno]);
         $pack = $this->coreFunctions->getfieldvalue('cntnuminfo', "packdate", "trno=?", [$trno]);
         $release = $this->coreFunctions->getfieldvalue('cntnuminfo', "releasedate", "trno=?", [$trno]);
@@ -4099,7 +4108,11 @@ class sj
         if ($hamt < $lastpr) { //if the amount is less than last price
           $data['limitcheck'] = 1;
         } else {
-          $data['limitcheck'] = 0;
+          if ($hamt < $defcost) { //if the amount is less than default cost
+            $data['limitcheck'] = 2;
+          } else {
+            $data['limitcheck'] = 0;
+          }
         }
         break;
       case 65: //metrodragon
@@ -4227,14 +4240,6 @@ class sj
           }
           if ($cost != -1) {
             $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
-
-            if ($companyid == 64) { //excilin
-              if ($data['limitcheck'] == 0) {
-                if ($cost < $defcost) {
-                  $this->coreFunctions->sbcupdate($this->stock, ['limitcheck' => 2], ['trno' => $trno, 'line' => $line]);
-                }
-              }
-            }
             //CHECK BELOW COST
             if ($this->companysetup->checkbelowcost($config['params'])) {
               $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
@@ -4316,9 +4321,15 @@ class sj
       $return = true;
       $msg = '';
 
-      if ($companyid == 64) {
-        if ($data['amt'] < $lastpr) {
+      if ($companyid == 64) { //excelin
+        if ($data['amt'] < $lastpr) { //if the amount is less than last price
           $data['limitcheck'] = 1;
+        } else {
+          if ($data['amt'] < $defcost) { //if the amount is less than default cost
+            $data['limitcheck'] = 2;
+          } else {
+            $data['limitcheck'] = 0;
+          }
         }
       }
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
@@ -4365,13 +4376,7 @@ class sj
         if ($cost != -1) {
           $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
 
-          if ($companyid == 64) { //excilin
-            if ($data['limitcheck'] == 0) {
-              if ($cost < $defcost) {
-                $this->coreFunctions->sbcupdate($this->stock, ['limitcheck' => 2], ['trno' => $trno, 'line' => $line]);
-              }
-            }
-          }
+
           //CHECK BELOW COST
           if ($this->companysetup->checkbelowcost($config['params'])) {
             $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
@@ -4450,7 +4455,7 @@ class sj
         }
       } //end
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));
         $weightout = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightout', 'trno=?', [$trno]));
         $qry = "select sum(stock.iss) as value from lastock as stock
@@ -5039,7 +5044,7 @@ class sj
       $qry = $this->getsosummaryqry($config);
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
       if (!empty($data)) {
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           $overwritedue = $this->othersClass->checkAccess($config['params']['user'], 4219);
           if (!$overwritedue) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -5081,7 +5086,7 @@ class sj
             ];
           }
 
-          if ($companyid == 24) { //goodfound
+          if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             if (substr($data[0]->docno, 0, 2) == 'SO') {
               $headupdate['tax'] = 12;
               $headupdate['vattype'] = 'VATABLE';
@@ -5429,7 +5434,7 @@ class sj
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       if (!empty($data)) {
         $updatehead = 0;
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           $overwritedue = $this->othersClass->checkAccess($config['params']['user'], 4219);
           if (!$overwritedue) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -5473,7 +5478,7 @@ class sj
             }
 
 
-            if ($companyid == 24) { //goodfound
+            if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
               if (substr($data[0]->docno, 0, 2) == 'SO') {
                 $headupdate['tax'] = 12;
                 $headupdate['vattype'] = 'VATABLE';
@@ -5566,6 +5571,7 @@ class sj
     } //end foreach
     switch ($companyid) {
       case 19: //housegem
+      case 69: //cemphil
       case 24: //goodfound
         return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
         break;
@@ -6389,6 +6395,8 @@ class sj
 
     $modulename = $this->modulename;
     $data = [];
+    $stat = true;
+    $msg = 'Loaded Success';
 
     $companyid = $config['params']['companyid'];
     switch ($companyid) {
@@ -6401,7 +6409,8 @@ class sj
 
           $result = $this->headClass->lockunlock($config);
           if (!$result['status']) {
-            return ['status' => false, 'msg' => $result['msg']];
+            $stat = false;
+            $msg = $result['msg'];
           }
         }
         break;
@@ -6415,7 +6424,8 @@ class sj
           $stocks = $this->coreFunctions->datareader("select stock.line as value from " . $tbl . " as stock left join item on item.itemid=stock.itemid where stock.trno=? and stock.amt<item.namt6", [$config['params']['trno']], '', true);
 
           if ($stocks != 0) {
-            return ['status' => false, 'msg' => 'Print failed, amount less than lowest net amount.'];
+            $stat = false;
+            $msg = "Print failed, amount less than lowest net amount.";
           }
         }
 
@@ -6426,7 +6436,8 @@ class sj
 
           $result = $this->headClass->lockunlock($config);
           if (!$result['status']) {
-            return ['status' => false, 'msg' => $result['msg']];
+            $stat = false;
+            $msg = $result['msg'];
           }
         }
         break;
@@ -6462,16 +6473,20 @@ class sj
 
               $result = $this->headClass->lockunlock($config);
               if (!$result['status']) {
-                return ['status' => false, 'msg' => $result['msg']];
+                $stat = false;
+                $msg = $result['msg'];
               }
             }
           }
+        } else {
+          $stat = false;
+          $msg = 'Print failed, there is an item with limit check. Please review the transaction.';
         }
         break;
     }
 
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => true];
+    return ['status' => $stat, 'msg' => $msg, 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => true];
   }
 
   public function reportdata($config)

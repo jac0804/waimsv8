@@ -38,9 +38,9 @@ class ak
     public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
     public $tablenum = 'transnum';
     public $head = 'pthead';
-    public $hhead = '';
+    public $hhead = 'pthead';
     public $stock = 'ptjobs';
-    public $hstock = '';
+    public $hstock = 'ptjobs';
     public $tablelogs = 'transnum_log';
     public $statlogs = 'transnum_stat';
     public $tablelogs_del = 'del_transnum_log';
@@ -141,7 +141,7 @@ class ak
     public function createTab($access, $config)
     {
 
-
+        // $tab['tableentry'] = ['action' => 'autoserventry', 'lookupclass' => 'entryjobs', 'label' => 'Jobs'];
         $column = ['action',  'code', 'description', 'rem'];
         foreach ($column as $key => $value) {
             $$value = $key;
@@ -155,16 +155,17 @@ class ak
         $stockbuttons = ['save', 'delete', 'addtask'];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         $obj[0]['inventory']['columns'][$code]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$code]['style'] = 'text-align: left; width: 125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0]['inventory']['columns'][$description]['type'] = 'label';
         $obj[0]['inventory']['columns'][$description]['label'] = 'Job Description';
+        $obj[0]['inventory']['columns'][$description]['style'] = 'text-align: left; width: 125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['descriptionrow'] = [];
-        $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
     public function createtabbutton($config)
     {
 
-        $tbuttons = ['jobsetup'];
+        $tbuttons = ['addjob'];
         $obj = $this->tabClass->createtabbutton($tbuttons);
         return $obj;
     }
@@ -273,7 +274,7 @@ class ak
     }
     public function getstockselect($config)
     {
-        $query = "select pt.line,pt.jobid,pt.pttrno as trno,pt.rem,jt.docno as code,jt.jobtitle as description,'' as bgcolor ";
+        $query = "select pt.line,pt.jobid,pt.trno as trno,pt.rem,jt.docno as code,jt.jobtitle as description,'' as bgcolor ";
         return $query;
     }
 
@@ -283,7 +284,7 @@ class ak
         $sqlselect = $this->getstockselect($config);
         $query = $sqlselect . " from ptjobs as pt
         left join jobthead as jt on jt.line = pt.jobid 
-        where pt.pttrno = ?";
+        where pt.trno = ?";
         $data = $this->coreFunctions->opentable($query, [$trno]);
         return $data;
     }
@@ -294,7 +295,7 @@ class ak
         $sqlselect = $this->getstockselect($config);
         $query = $sqlselect . " from ptjobs as pt 
         left join jobthead as jt on jt.line = pt.jobid 
-        where pt.pttrno = ? and pt.line = ?";
+        where pt.trno = ? and pt.line = ?";
         $data = $this->coreFunctions->opentable($query, [$trno, $line]);
         return $data;
     }
@@ -352,21 +353,21 @@ class ak
             // case 'saveitem': //save all item edited
             //     return $this->updateitem($config);
             //     break;
-            // case 'saveperitem':
-            //     return $this->updateperitem($config);
-            //     break;
+            case 'saveperitem':
+                return $this->updateperitem($config);
+                break;
             // case 'deleteallitem':
             //     return $this->deleteallitem($config);
-            //     break;
-            case 'getautojobsetup':
-                return $this->getautojobsetup($config);
+            //     break
+            case 'getautojob':
+                return $this->getautojob($config);
                 break;
             default:
                 return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
                 break;
         }
     }
-    public function getautojobsetup($config)
+    public function getautojob($config)
     {
         $trno = $config['params']['trno'];
         $rows = [];
@@ -395,6 +396,14 @@ class ak
         $this->coreFunctions->LogConsole(json_encode($rows));
         return ['row' => $rows, 'status' => true, 'msg' => 'Added Items Successful...'];
     }
+    public function updateperitem($config)
+    {
+        $config['params']['data'] = $config['params']['row'];
+        $this->additem('update', $config);
+
+        $data = $this->openstockline($config);
+        return ['row' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
+    }
     public function additem($action, $config)
     {
 
@@ -409,7 +418,7 @@ class ak
 
 
         $data = [
-            'pttrno' => $trno,
+            'trno' => $trno,
             'jobid' => $jobid,
             'rem' => $rem,
         ];
@@ -419,7 +428,7 @@ class ak
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         if ($action == 'insert') {
-            $qry = "select line as value from " . $this->stock . " where pttrno=? order by line desc limit 1";
+            $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
             $line = $this->coreFunctions->datareader($qry, [$trno]);
             if ($line == '') {
                 $line = 0;

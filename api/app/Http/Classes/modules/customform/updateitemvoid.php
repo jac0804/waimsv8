@@ -249,7 +249,7 @@ class updateitemvoid
               $cdqa = 0;
             }
             $this->coreFunctions->execqry("update hprstock set cdqa=" . $cdqa . " where trno=" . $cdstock[0]->refx . " and line=" . $cdstock[0]->linex);
-            $this->logger->sbcwritelog($cdstock[0]->refx, $config, 'STOCK', 'VOID CD' . ' CDLine:' . $key['line'] . ' Item Name:' . $key['itemname'] . ' isQTY:' . $key['isqty'], app($path)->tablelogs);
+            $this->logger->sbcwritelog($cdstock[0]->refx, $config, 'STOCK', 'VOID CD' . ' CDLine:' . $key['line'] . ' Item Name:' . $key['itemname'] . ' isQTY:' . $key['isqty'] . ', Applied CD: ' . $cdqa, app($path)->tablelogs);
 
             $chkcd = $this->coreFunctions->opentable("select stock.trno
                                                         from cdstock as stock

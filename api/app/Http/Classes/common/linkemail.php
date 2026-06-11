@@ -1504,7 +1504,8 @@ class linkemail
             $isapprover = $this->coreFunctions->getfieldvalue("employee", "$isapp", "empid=?", [$approver[0]->empid]);
             $data = $this->coreFunctions->opentable("select lt.status,lt.status2,lt.trno,lt.line,concat(lt.trno,'~',lt.line) as trline, date(lt.dateid) as dateid, lt.daytype,lt.remarks,
                     lt.adays, date(lt.effectivity) as effdate,cl.clientname,ls.bal,ls.days as entitled,lt.empid,e.email,app.clientname as appname,app2.clientname as appname2,
-                    lt.approvedby_disapprovedby,p.codename,e.supervisorid,lt.disapproved_remarks,lt.disapproved_remarks2,cl.email as username,lt.fillingtype
+                    lt.approvedby_disapprovedby,p.codename,e.supervisorid,lt.disapproved_remarks,lt.disapproved_remarks2,cl.email as username,lt.fillingtype,
+                    p.code as accode
                     from leavetrans lt
                     left join leavesetup as ls on lt.trno = ls.trno
                     left join paccount as p on p.line=ls.acnoid
@@ -1536,6 +1537,11 @@ class linkemail
                         $response = ['msg' => 'Already approved without pay by ' . $data[0]->appname . '.', 'status' => 'F'];
                         break;
                     case 'E':
+                        if ($data[0]->accode == 'PT122') { // leave wiothout pay
+                            if ($status == 'A') {
+                                $status = 'P';
+                            }
+                        }
 
                         foreach ($approversetup as $key => $value) {
                             if (count($approversetup) > 1) {
@@ -3109,36 +3115,12 @@ class linkemail
 
         $html = '<html lang="en">' . $this->constructMessageHead($params);
 
-        $btnprocess = '<a href="' . $host . '/linkEmail?func=' . $processfunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="process">Approved W/Out Pay</a>';
-        $btnlabelwop = 'W/Out Pay';
-        $btnlabelwp = 'With Pay';
-
-        if ($cid == 51) { // ulitc
-            $btnprocess = '';
-            $btnlabelwop = '';
-            $btnlabelwp = '';
-        }
         $buttons = '<div class="button-container">
-                        <a href="' . $host . '/linkEmail?func=' . $approvefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="approved">Approved ' . $btnlabelwp . '</a>
-                        ' . $btnprocess . '
+                        <a href="' . $host . '/linkEmail?func=' . $approvefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="approved">Approved</a>
                         <a href="' . $host . '/linkEmail?func=' . $disapprovefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="disapproved">Disapproved</a>
                     </div>';
         $approvedstatus = '';
-
         $approver = '';
-        if (isset($params['appstatus'])) {
-            if ($params['appstatus'] == 'Processed') {
-                $buttons = '<div class="button-container">
-                        <a href="' . $host . '/linkEmail?func=' . $processfunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="approved">Approved ' . $btnlabelwop . '</a>
-                        <a href="' . $host . '/linkEmail?func=' . $disapprovefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="disapproved">Disapproved</a>
-                    </div>';
-            } else {
-                $buttons = '<div class="button-container">
-                        <a href="' . $host . '/linkEmail?func=' . $approvefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="approved">Approved ' . $btnlabelwp . '</a>
-                        <a href="' . $host . '/linkEmail?func=' . $disapprovefunc . '&uname=' . $approverparams . '&id=' . $transid . '&cid=' . $cid . '&isapp=' . $isapp . '" class="disapproved">Disapproved</a>
-                    </div>';
-            }
-        }
 
         if ($isapp != "") {
             if ($approversetup[0] == $isapp || $both) {

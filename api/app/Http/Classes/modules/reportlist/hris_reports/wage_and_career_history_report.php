@@ -109,6 +109,7 @@ class wage_and_career_history_report
         $department = $config['params']['dataparams']['deptrep'];
         $deptid = $config['params']['dataparams']['deptid'];
         $sectid     = $config['params']['dataparams']['sectid'];
+        $sectname    = $config['params']['dataparams']['sectname'];
         $type     = $config['params']['dataparams']['type'];
 
 
@@ -122,9 +123,13 @@ class wage_and_career_history_report
             $filter .= " and emp.deptid=" . $deptid;
         }
 
-        if ($sectid != 0) {
-            $filter .= " and emp.sectid = $sectid";
-        }
+        // if ($sectid != 0) {
+        //     $filter .= " and emp.sectid = $sectid";
+        // }
+        if ($sectname != '') {
+                if ($sectid != 0) {
+                    $filter .= " and emp.sectid = $sectid";
+        }}
 
         if ($type != '') {
             $filter2 = " where emptype = '" . $type . "'";

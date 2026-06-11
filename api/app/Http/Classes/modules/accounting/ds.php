@@ -372,8 +372,10 @@ class ds
     $obj[0]['accounting']['columns'][$acnoname]['readonly'] = true;
     $obj[0]['accounting']['columns'][$clientname]['readonly'] = true;
     $obj[0]['accounting']['columns'][$clientname]['label'] = 'Customer Name';
+    $obj[0]['accounting']['columns'][$acno]['style'] = 'width:120px;whiteSpace: normal;min-width:120px;';
     $obj[0]['accounting']['columns'][$clientname]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     $obj[0]['accounting']['columns'][$postdate]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+    $obj[0]['accounting']['columns'][$checkno]['style'] = 'width:400px;whiteSpace: normal;min-width:400px;';
 
 
     switch ($systype) {

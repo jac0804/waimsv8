@@ -52,7 +52,7 @@ class customer_performance_report
     } else {
       $fields = ['radioprint', 'start', 'end', 'dcentername', 'categoryname', 'subcatname'];
       if ($companyid == 64) { //excelin
-        $fields = ['radioprint', 'start', 'end', 'dclientname', 'dagentname', 'ditemname', 'radioreporttype'];
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'dagentname', 'ditemname', 'radioposttype', 'radioreporttype'];
       }
     }
     switch ($companyid) {
@@ -75,6 +75,12 @@ class customer_performance_report
         data_set($col1, 'dclientname.label', 'Customer');
         data_set($col1, 'dclientname.lookupclass', 'customer');
         data_set($col1, 'dagentname.action', 'lookupagentreport');
+
+        data_set($col1, 'radioposttype.options', [
+          ['label' => 'Unposted', 'value' => 'unpost', 'color' => 'red'],
+          ['label' => 'Posted', 'value' => 'post', 'color' => 'red'],
+          ['label' => 'All', 'value' => 'all', 'color' => 'red']
+        ]);
         break;
       default:
         $col1 = $this->fieldClass->create($fields);
@@ -82,7 +88,6 @@ class customer_performance_report
     }
     // data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');
     data_set($col1, 'subcatname.action', 'lookupsubcatitemstockcard');
-    data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
     $fields = ['prepared', 'approved'];
     if ($companyid == 64) { //excelin
       $fields = [];
@@ -128,7 +133,8 @@ class customer_performance_report
     '' as agentid,
     '' as agentname,
     '' as itemid,
-    '' as itemname
+    '' as itemname,
+    'all' as posttype
      ";
     return $this->coreFunctions->opentable($paramstr);
   }
@@ -192,6 +198,7 @@ class customer_performance_report
 
     $itemid = $config['params']['dataparams']['itemid'];
     $itemname = $config['params']['dataparams']['itemname'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -214,13 +221,13 @@ class customer_performance_report
     switch ($companyid) {
       case 64: //excelin
         if ($client != "") {
-          $filter1 .= " and head.clientid = $clientid";
+          $filter1 .= " and client.client = '$client'";
         }
         if ($itemname != "") {
           $filter1 .= " and stock.itemid = $itemid";
         }
         if ($agent != "") {
-          $filter1 .= " and head.agentid = $agentid";
+          $filter1 .= " and agent.client = '$agent'";
         }
 
         break;
@@ -267,23 +274,111 @@ class customer_performance_report
         $addfield = ",client.brgy, client.area";
         $addfield2 = ',brgy,area';
       }
+
+      switch ($companyid) {
+        case 64: //excelin
+          switch ($posttype) {
+            case 'unpost':
+              $qry_in = "
+                select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+                (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+                client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+                cat.name as category, subcat.name as subcatname " . $addfield . "
+                from lahead as head 
+                left join lastock as stock on stock.trno=head.trno
+                left join client on client.client=head.client
+                left join client as agent on agent.client=head.agent
+                left join cntnum on cntnum.trno=head.trno
+                left join item on item.itemid=stock.itemid
+                left join itemcategory as cat on cat.line = item.category
+                left join itemsubcategory as subcat on subcat.line = item.subcat
+                where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+                $filter $filter1 and item.isofficesupplies=0
+                group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "";
+              break;
+            case 'post':
+              $qry_in = "
+                select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+                (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+                client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+                cat.name as category, subcat.name as subcatname " . $addfield . "
+                from glhead as head 
+                left join glstock as stock on stock.trno=head.trno
+                left join client on client.clientid=head.clientid
+                left join client as agent on agent.clientid=head.agentid
+                left join cntnum on cntnum.trno=head.trno
+                left join item on item.itemid=stock.itemid
+                left join itemcategory as cat on cat.line = item.category
+                left join itemsubcategory as subcat on subcat.line = item.subcat
+                where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+                $filter $filter1 and item.isofficesupplies=0
+                group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "";
+              break;
+
+            default:
+              $qry_in = "
+                select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+                (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+                client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+                cat.name as category, subcat.name as subcatname " . $addfield . "
+                from glhead as head 
+                left join glstock as stock on stock.trno=head.trno
+                left join client on client.clientid=head.clientid
+                left join client as agent on agent.clientid=head.agentid
+                left join cntnum on cntnum.trno=head.trno
+                left join item on item.itemid=stock.itemid
+                left join itemcategory as cat on cat.line = item.category
+                left join itemsubcategory as subcat on subcat.line = item.subcat
+                where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+                $filter $filter1 and item.isofficesupplies=0
+                group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "
+                
+                union all 
+
+                select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+                (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+                client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+                cat.name as category, subcat.name as subcatname " . $addfield . "
+                from lahead as head 
+                left join lastock as stock on stock.trno=head.trno
+                left join client on client.client=head.client
+                left join client as agent on agent.client=head.agent
+                left join cntnum on cntnum.trno=head.trno
+                left join item on item.itemid=stock.itemid
+                left join itemcategory as cat on cat.line = item.category
+                left join itemsubcategory as subcat on subcat.line = item.subcat
+                where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+                $filter $filter1 and item.isofficesupplies=0
+                group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "";
+              break;
+          }
+          break;
+
+        default:
+          $qry_in = "
+          select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+          (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+          client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+          cat.name as category, subcat.name as subcatname " . $addfield . "
+          from glhead as head 
+          left join glstock as stock on stock.trno=head.trno
+          left join client on client.clientid=head.clientid
+          left join client as agent on agent.clientid=head.agentid
+          left join cntnum on cntnum.trno=head.trno
+          left join item on item.itemid=stock.itemid
+          left join itemcategory as cat on cat.line = item.category
+          left join itemsubcategory as subcat on subcat.line = item.subcat
+          where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+          $filter $filter1 and item.isofficesupplies=0
+          group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "";
+          break;
+      }
+
+
       $query = "select client, clientname,sum(amount) as amount " . $addfield2 . "
       from (
-      select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
-      (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
-      client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
-      cat.name as category, subcat.name as subcatname " . $addfield . "
-      from glhead as head 
-      left join glstock as stock on stock.trno=head.trno
-      left join client on client.clientid=head.clientid
-      left join client as agent on agent.clientid=head.agentid
-      left join cntnum on cntnum.trno=head.trno
-      left join item on item.itemid=stock.itemid
-      left join itemcategory as cat on cat.line = item.category
-      left join itemsubcategory as subcat on subcat.line = item.subcat
-      where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
-      $filter $filter1 and item.isofficesupplies=0
-      group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . ") as s
+      $qry_in
+      ) as s
       group by client,clientname " . $addfield2 . "
       order by sum(s.amount) desc";
     }
@@ -313,6 +408,7 @@ class customer_performance_report
     $itemid = $config['params']['dataparams']['itemid'];
     $itemname = $config['params']['dataparams']['itemname'];
 
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
     if ($category != "") {
@@ -329,18 +425,16 @@ class customer_performance_report
       $filter .= " and cntnum.center='$center'";
     }
 
-    $group = "";
-
     switch ($companyid) {
       case 64: //excelin
         if ($itemname != "") {
           $filter .= " and stock.itemid = $itemid";
         }
         if ($client != "") {
-          $filter .= " and head.clientid = $clientid";
+          $filter .= " and client.client = '$client'";
         }
         if ($agent != "") {
-          $filter .= " and head.agentid = $agentid";
+          $filter .= " and agent.client = '$agent'";
         }
 
         break;
@@ -363,27 +457,122 @@ class customer_performance_report
         break;
     }
 
-    $query = "select sum(amount) as amount
+
+    switch ($companyid) {
+      case 64: //excelin
+        switch ($posttype) {
+          case 'unpost':
+            $query = "select sum(amount) as amount from
+            (select 'sales' as type, 'p' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+            (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+            client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+            cat.name as category, subcat.name as subcatname
+
+            from lahead as head 
+            left join lastock as stock on stock.trno=head.trno
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join cntnum on cntnum.trno=head.trno
+
+            left join item on item.itemid=stock.itemid
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+
+            where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+            $filter $filter1
+            group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s";
+            break;
+          case 'post':
+            $query = "select sum(amount) as amount
+            from ( select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+            (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+            client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+            cat.name as category, subcat.name as subcatname
+    
+            from glhead as head 
+            left join glstock as stock on stock.trno=head.trno
+            left join client on client.clientid=head.clientid
+            left join client as agent on agent.clientid=head.agentid
+            left join cntnum on cntnum.trno=head.trno
+    
+            left join item on item.itemid=stock.itemid
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+    
+            where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+            $filter $filter1
+            group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s";
+            break;
+
+          default:
+            $query = "select sum(amount) as amount from
+            (select 'sales' as type, 'p' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+            (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+            client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+            cat.name as category, subcat.name as subcatname
+
+            from lahead as head 
+            left join lastock as stock on stock.trno=head.trno
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join cntnum on cntnum.trno=head.trno
+
+            left join item on item.itemid=stock.itemid
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+
+            where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+            $filter $filter1
+            group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name
+
+            union all
+
+            select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+            (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+            client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+            cat.name as category, subcat.name as subcatname
+    
+            from glhead as head 
+            left join glstock as stock on stock.trno=head.trno
+            left join client on client.clientid=head.clientid
+            left join client as agent on agent.clientid=head.agentid
+            left join cntnum on cntnum.trno=head.trno
+    
+            left join item on item.itemid=stock.itemid
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+    
+            where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+            $filter $filter1
+            group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s";
+
+            break;
+        }
+        break;
+
+      default:
+        $query = "select sum(amount) as amount
    
-    from ( select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
-    (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
-    client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
-      cat.name as category, subcat.name as subcatname
+        from ( select 'sales' as type, 'u' as tr, (case when 'report'='date' then date(head.dateid) else head.docno end) as sort1,
+        (case when 'report'='doc' then date(head.dateid) else head.docno end) as sort2, date(head.dateid) as dateid, head.docno,
+        client.client, client.clientname, agent.client as agcode, agent.clientname as agent, sum(stock.ext) as amount,
+        cat.name as category, subcat.name as subcatname
     
-    from glhead as head 
-    left join glstock as stock on stock.trno=head.trno
-    left join client on client.clientid=head.clientid
-    left join client as agent on agent.clientid=head.agentid
-    left join cntnum on cntnum.trno=head.trno
+        from glhead as head 
+        left join glstock as stock on stock.trno=head.trno
+        left join client on client.clientid=head.clientid
+        left join client as agent on agent.clientid=head.agentid
+        left join cntnum on cntnum.trno=head.trno
     
-    left join item on item.itemid=stock.itemid
-    left join itemcategory as cat on cat.line = item.category
-    left join itemsubcategory as subcat on subcat.line = item.subcat
+        left join item on item.itemid=stock.itemid
+        left join itemcategory as cat on cat.line = item.category
+        left join itemsubcategory as subcat on subcat.line = item.subcat
     
-    where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
-    $filter $filter1
-    group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s
-    $group ";
+        where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+        $filter $filter1
+        group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s";
+        break;
+    }
     return $this->coreFunctions->opentable($query);
   }
 
@@ -401,16 +590,17 @@ class customer_performance_report
 
     $itemid = $config['params']['dataparams']['itemid'];
     $itemname = $config['params']['dataparams']['itemname'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
     if ($agent != "") {
-      $filter .= " and head.agentid = $agentid";
+      $filter .= " and ag.client = '$agent'";
     }
     if ($itemname != "") {
       $filter .= " and stock.itemid = $itemid";
     }
     if ($client != "") {
-      $filter .= " and head.clientid = $clientid";
+      $filter .= " and client.client= '$client'";
     }
     if ($center != "") {
       $filter .= " and cntnum.center='$center'";
@@ -422,19 +612,57 @@ class customer_performance_report
       $fields = "";
     }
 
+    switch ($posttype) {
+      case 'unpost':
+        $qry_in = "select head.dateid, head.docno, ag.client as agent, ag.clientname as agname,sum(stock.ext) as amount  
+             from client as ag 
+             left join lahead as head on head.agent=ag.client
+             left join lastock as stock on stock.trno=head.trno
+             left join cntnum on cntnum.trno=head.trno
+             left join item on item.itemid=stock.itemid
+             where ag.isagent=1 and head.doc in ('sj') and 
+             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
+             group by head.dateid, head.docno, ag.client, ag.clientname";
+        break;
+      case 'post':
+        $qry_in = "select head.dateid, head.docno, ag.client as agent, ag.clientname as agname,sum(stock.ext) as amount  
+             from client as ag 
+             left join glhead as head on head.agentid=ag.clientid
+             left join glstock as stock on stock.trno=head.trno
+             left join cntnum on cntnum.trno=head.trno
+             left join item on item.itemid=stock.itemid
+             where ag.isagent=1 and head.doc in ('sj') and 
+             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
+             group by head.dateid, head.docno, ag.client, ag.clientname";
+        break;
+
+      default:
+        $qry_in = "select head.dateid, head.docno, ag.client as agent, ag.clientname as agname,sum(stock.ext) as amount  
+             from client as ag 
+             left join glhead as head on head.agentid=ag.clientid
+             left join glstock as stock on stock.trno=head.trno
+             left join cntnum on cntnum.trno=head.trno
+             left join item on item.itemid=stock.itemid
+             where ag.isagent=1 and head.doc in ('sj') and 
+             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
+             group by head.dateid, head.docno, ag.client, ag.clientname
+             union all
+             select head.dateid, head.docno, ag.client as agent, ag.clientname as agname,sum(stock.ext) as amount  
+            from client as ag 
+             left join lahead as head on head.agent=ag.client
+             left join lastock as stock on stock.trno=head.trno
+             left join cntnum on cntnum.trno=head.trno
+             left join item on item.itemid=stock.itemid
+             where ag.isagent=1 and head.doc in ('sj') and 
+             date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
+             group by head.dateid, head.docno, ag.client, ag.clientname";
+        break;
+    }
+
 
     $query = "select sum(amount) as amount $fields from (
-
-    select head.dateid, head.docno, ag.client as agent, ag.clientname as agname,sum(stock.ext) as amount  from client as ag 
-    left join glhead as head on head.agentid=ag.clientid
-    left join glstock as stock on stock.trno=head.trno
-    left join cntnum on cntnum.trno=head.trno
-    left join item on item.itemid=stock.itemid
-    where ag.isagent=1 and head.doc in ('sj','mj','sd','se','sf') and 
-    date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
-    group by head.dateid, head.docno, ag.client, ag.clientname
+      $qry_in
     ) as v $groupby order by sum(amount) desc";
-
     return $this->coreFunctions->opentable($query);
   }
 
@@ -453,6 +681,7 @@ class customer_performance_report
 
     $itemid = $config['params']['dataparams']['itemid'];
     $itemname = $config['params']['dataparams']['itemname'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
 
@@ -465,58 +694,104 @@ class customer_performance_report
       $filter .= " and stock.itemid='$itemid'";
     }
     if ($client != "") {
-      $filter .= " and head.clientid='$clientid'";
+      $filter .= " and client.client='$client'";
     }
     if ($agent != "") {
-      $filter .= " and head.agentid='$agentid'";
+      $filter .= " and client.client='$agent'";
+    }
+    switch ($posttype) {
+      case 'unpost':
+        $qry_in = "select client.client,client.clientname,agent.clientname as agentname,date_format(head.dateid, '%Y-%m') as monyear,
+                sum(stock.ext) as amount
+
+                from lahead as head
+                left join lastock as stock on stock.trno=head.trno
+                left join client on head.client=client.client
+                left join client as agent on agent.client = head.agent
+                left join cntnum on head.trno=cntnum.trno
+                where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	              group by client.client,client.clientname,agent.clientname,head.dateid
+	              order by  clientname";
+        break;
+      case 'post':
+        $qry_in = "select client.client,client.clientname,agent.clientname as agentname,date_format(head.dateid, '%Y-%m') as monyear,
+                sum(stock.ext) as amount
+
+                from glhead as head
+                left join glstock as stock on stock.trno=head.trno
+                left join client on head.clientid=client.clientid
+                left join client as agent on agent.clientid = head.agentid
+                left join cntnum on head.trno=cntnum.trno
+                where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	              group by client.client,client.clientname,agent.clientname,head.dateid
+	              order by  clientname";
+        break;
+
+      default:
+        $qry_in = "
+                select client.client,client.clientname,agent.clientname as agentname,date_format(head.dateid, '%Y-%m') as monyear,
+                sum(stock.ext) as amount
+
+                from glhead as head
+                left join glstock as stock on stock.trno=head.trno
+                left join client on head.clientid=client.clientid
+                left join client as agent on agent.clientid = head.agentid
+                left join cntnum on head.trno=cntnum.trno
+                where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	              group by client.client,client.clientname,agent.clientname,head.dateid
+
+	              union all
+
+                select client.client,client.clientname,agent.clientname as agentname,date_format(head.dateid, '%Y-%m') as monyear,
+                sum(stock.ext) as amount
+                from lahead as head
+                left join lastock as stock on stock.trno=head.trno
+                left join client on head.client=client.client
+                left join client as agent on agent.client = head.agent
+                left join cntnum on head.trno=cntnum.trno
+                where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	              group by client.client,client.clientname,agent.clientname,head.dateid
+                order by  clientname";
+        break;
     }
 
     $query = "
     select 
-
-    clientname,agentname,
-    sum(mojan) as mojan, 
-    sum(mofeb) as mofeb, 
-    sum(momar) as momar,
-    sum(moapr) as moapr, 
-    sum(momay) as momay, 
-    sum(mojun) as mojun, 
-    sum(mojul) as mojul,
-    sum(moaug) as moaug,
-    sum(mosep) as mosep, 
-    sum(mooct) as mooct, 
-    sum(monov) as monov, 
-    sum(modec) as modec
-
+ 
+    clientname,agentname,client,monyear,
+    sum(amount) as amount
     from (
+        $qry_in
+    ) as v group by clientname,client,agentname,monyear order by clientname,monyear";
+    $data = $this->coreFunctions->opentable($query);
 
-    select client.client,client.clientname,agent.clientname as agentname,
-    sum(case when month(head.dateid)=1 then (stock.ext) else 0 end) as mojan,
-    sum(case when month(head.dateid)=2 then (stock.ext) else 0 end) as mofeb,
-    sum(case when month(head.dateid)=3 then (stock.ext) else 0 end) as momar,
-    sum(case when month(head.dateid)=4 then (stock.ext) else 0 end) as moapr,
-    sum(case when month(head.dateid)=5 then (stock.ext) else 0 end) as momay,
-    sum(case when month(head.dateid)=6 then (stock.ext) else 0 end) as mojun,
-    sum(case when month(head.dateid)=7 then (stock.ext) else 0 end) as mojul,
-    sum(case when month(head.dateid)=8 then (stock.ext) else 0 end) as moaug,
-    sum(case when month(head.dateid)=9 then (stock.ext) else 0 end) as mosep,
-    sum(case when month(head.dateid)=10 then (stock.ext) else 0 end) as mooct,
-    sum(case when month(head.dateid)=11 then (stock.ext) else 0 end) as monov,
-    sum(case when month(head.dateid)=12 then (stock.ext) else 0 end) as modec
+    $result = [];
+    if (!empty($data)) {
+      foreach ($data as $cl) {
+        $client = $cl->client;
+        $yrmonth = $cl->monyear;
 
-    from glhead as head
+        if (!isset($result[$client])) {
+          $result[$client] = [
+            'clientname'  => $cl->clientname,
+            'agentname'  => $cl->agentname,
+            'months'   => [],
+          ];
+        }
 
-    left join glstock as stock on stock.trno=head.trno
-    left join client on head.clientid=client.clientid
-    left join client as agent on agent.clientid = head.agentid
-    left join cntnum on head.trno=cntnum.trno
-  
-    where head.doc in ('SD','SE','SF', 'SJ','MJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
-	  group by client.client,client.clientname,agent.clientname
-	  order by  clientname
-    ) as v group by clientname,agentname order by clientname";
-
-    return $this->coreFunctions->opentable($query);
+        // If same month exists, sum the amount
+        if (isset($result[$client]['months'][$yrmonth])) {
+          $result[$client]['months'][$yrmonth]['amount'] += $cl->amount;
+        } else {
+          $result[$client]['months'][$yrmonth] = [
+            'monyear' => $yrmonth,
+            'amount'  => $cl->amount,
+          ];
+        }
+      }
+    }
+    $result = array_values($result);
+    return $result;
   }
   public function Item_Performance_Monthly_query($config)
   {
@@ -533,6 +808,7 @@ class customer_performance_report
 
     $itemid = $config['params']['dataparams']['itemid'];
     $itemname = $config['params']['dataparams']['itemname'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
 
@@ -543,10 +819,66 @@ class customer_performance_report
       $filter .= " and stock.itemid='$itemid'";
     }
     if ($client != "") {
-      $filter .= " and head.clientid='$clientid'";
+      $filter .= " and client.client='$client'";
     }
     if ($agent != "") {
-      $filter .= " and head.agentid='$agentid'";
+      $filter .= " and agent.client='$agent'";
+    }
+    switch ($posttype) {
+      case 'unpost':
+        $qry_in = "select item.barcode,item.itemname,date_format(head.dateid, '%Y-%m') as monyear,sum(stock.ext) as amount
+           from item 
+           left join lastock as stock on stock.itemid=item.itemid
+           left join lahead as head on head.trno =stock.trno
+           left join client on head.client=client.client
+           left join client as agent on agent.client = head.agent
+           left join cntnum on head.trno=cntnum.trno
+  
+           where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	         group by item.barcode,item.itemname,head.dateid
+	         order by  itemname";
+
+        break;
+      case 'post':
+        $qry_in = "select item.barcode,item.itemname,date_format(head.dateid, '%Y-%m') as monyear,sum(stock.ext) as amount
+           from item 
+           left join glstock as stock on stock.itemid=item.itemid
+           left join glhead as head on head.trno =stock.trno
+           left join client on head.clientid=client.clientid
+           left join client as agent on agent.clientid = head.agentid
+           left join cntnum on head.trno=cntnum.trno
+  
+           where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	         group by item.barcode,item.itemname,head.dateid
+	         order by  itemname";
+        break;
+
+      default:
+        $qry_in = "select item.barcode,item.itemname,date_format(head.dateid, '%Y-%m') as monyear,sum(stock.ext) as amount
+           from item 
+           left join glstock as stock on stock.itemid=item.itemid
+           left join glhead as head on head.trno =stock.trno
+           left join client on head.clientid=client.clientid
+           left join client as agent on agent.clientid = head.agentid
+           left join cntnum on head.trno=cntnum.trno
+  
+           where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	         group by item.barcode,item.itemname,head.dateid
+
+           union all 
+
+           select item.barcode,item.itemname,date_format(head.dateid, '%Y-%m') as monyear,sum(stock.ext) as amount
+           from item 
+           left join lastock as stock on stock.itemid=item.itemid
+           left join lahead as head on head.trno =stock.trno
+           left join client on head.client=client.client
+           left join client as agent on agent.client = head.agent
+           left join cntnum on head.trno=cntnum.trno
+  
+           where head.doc in ('SJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
+	         group by item.barcode,item.itemname,head.dateid
+	         order by  itemname";
+        break;
     }
 
     $query = "
@@ -555,39 +887,33 @@ class customer_performance_report
     barcode,itemname,monyear,
     sum(amount) as amount
     from (
-
-    select item.barcode,item.itemname,date_format(head.dateid, '%Y-%m') as monyear,sum(stock.ext) as amount
-
-    from glhead as head
-
-    left join glstock as stock on stock.trno=head.trno
-    left join client on head.clientid=client.clientid
-    left join client as agent on agent.clientid = head.agentid
-    left join item on item.itemid=stock.itemid
-    left join cntnum on head.trno=cntnum.trno
-  
-    where head.doc in ('SD','SE','SF', 'SJ','MJ') and date(head.dateid) between '" . $start . "' and '" . $end . "'  $filter 
-	  group by item.barcode,item.itemname,head.dateid 
-	  order by  itemname
+    $qry_in
     ) as v group by barcode,itemname,monyear order by itemname,monyear";
     $data =  $this->coreFunctions->opentable($query);
     $result = [];
 
-    foreach ($data as $item) {
-      $barcode = $item->barcode;
+    if (!empty($data)) {
+      foreach ($data as $item) {
+        $barcode = $item->barcode;
+        $yrmonth = $item->monyear;
 
-      if (!isset($result[$barcode])) {
-        $result[$barcode] = [
-          'barcode'  => $barcode,
-          'itemname' => $item->itemname,
-          'months'   => [],
-        ];
+        if (!isset($result[$barcode])) {
+          $result[$barcode] = [
+            'barcode'  => $barcode,
+            'itemname' => $item->itemname,
+            'months'   => [],
+          ];
+        }
+        // If same month exists, sum the amount
+        if (isset($result[$barcode]['months'][$yrmonth])) {
+          $result[$barcode]['months'][$yrmonth]['amount'] += $item->amount;
+        } else {
+          $result[$barcode]['months'][$yrmonth] = [
+            'monyear' => $yrmonth,
+            'amount'  => $item->amount,
+          ];
+        }
       }
-
-      $result[$barcode]['months'][] = [
-        'monyear' => $item->monyear,
-        'amount'  => $item->amount,
-      ];
     }
 
 
@@ -849,7 +1175,7 @@ class customer_performance_report
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CODE', '120', null, false, $border, 'TB', 'TL', $font, $fontsize, 'B', '', '3px');
-    $str .= $this->reporter->col('CUSTOMER NAME', '580', null, false, $border, 'TB', 'TL', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('AGENT NAME', '580', null, false, $border, 'TB', 'TL', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->col('AMOUNT', '150', null, false, $border, 'TB', 'RT', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->col('PERCENT', '150', null, false, $border, 'TB', 'RT', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->endrow();
@@ -962,20 +1288,12 @@ class customer_performance_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Customer Name', '160', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Agent Name', '160', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Jan', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Feb', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Mar', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Apr', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('May', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Jun', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Jul', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Aug', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Sep', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Oct', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Nov', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Dec', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Customer Name', '160', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Agent Name', '160', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '', '');
+
+
+    $r = $this->generateMonths($config, $start, $end);
+    $str .= $r['str'];
     $str .= $this->reporter->col('Total Amount', '100', '', '', $border, 'TB', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -985,6 +1303,8 @@ class customer_performance_report
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
     $result  = $this->Customer_Performance_Monthly_query($config);
 
@@ -1000,146 +1320,119 @@ class customer_performance_report
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
+    $r = $this->generateMonths($config, $start, $end);
+    if (!$r['status']) {
+      return $r['str'];
+    }
 
     // $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '25px;margin-top:5px;');
     $str .= $this->Monthly_Performance_header($config);
 
 
-    $jan = 0;
-    $feb = 0;
-    $mar = 0;
-    $apr = 0;
-    $may = 0;
-    $jun = 0;
-    $jul = 0;
-    $aug = 0;
-    $sep = 0;
-    $oct = 0;
-    $nov = 0;
-    $dec = 0;
+    $t1 = 0;
+    $t2 = 0;
+    $t3 = 0;
+    $t4 = 0;
+    $t5 = 0;
+    $t6 = 0;
+    $t7 = 0;
+    $t8 = 0;
+    $t9 = 0;
+    $t10 = 0;
+    $t11 = 0;
+    $t12 = 0;
 
 
     $gtotal = 0;
     $sumrow = 0;
 
-    foreach ($result as $key => $data) {
+    foreach ($result as $data) {
       $str .= $this->reporter->addline();
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
 
+      $str .= $this->reporter->col($data['clientname'], '160', '', '', $border, '', 'TL', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data['agentname'], '160', '', '', $border, '', 'TL', $font, $fontsize, '', '', '', '');
 
-      $str .= $this->reporter->col($data->clientname, '160', '', '', $border, '', 'TL', $font, $fontsize, '', '', '', '');
-      $str .= $this->reporter->col($data->agentname, '160', '', '', $border, '', 'TL', $font, $fontsize, '', '', '', '');
+      $countdisplay = 0;
+      $mcount = 0;
+      $continue = false;
 
-      if ($data->mojan != 0) {
-        $str .= $this->reporter->col(number_format($data->mojan, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mojan;
-        $jan = $jan + $data->mojan;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
+      foreach ($data['months'] as $month) {
+        $i = 0;
+        if ($continue) {
+          $i = $countdisplay;
+          $this->coreFunctions->LogConsole(' Display: ' . $countdisplay);
+        }
+        for ($i; $i < count($r['monthsyear']); $i++) {
+          $monyear = date('Y-m', strtotime($r['monthsyear'][$i]));
+          $countdisplay++;
+          if ($monyear == $month['monyear']) {
+            $mcount = $mcount + 1;
+            $str .= $this->reporter->col(number_format($month['amount'], 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
+            // $this->coreFunctions->LogConsole('barcode: ' . $data['barcode'] . ' ' . ' -- count: ' . count($data['months']) . ' mon: ' . $mcount . ' countdisplay: ' . $countdisplay);
+            switch ($month['monyear']) { // month number
+              case date('Y-m', strtotime($r['monthsyear'][0])):
+                $t1 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][1])):
+                $t2 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][2])):
+                $t3 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][3])):
+                $t4 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][4])):
+                $t5 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][5])):
+                $t6 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][6])):
+                $t7 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][7])):
+                $t8 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][8])):
+                $t9 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][9])):
+                $t10 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][10])):
+                $t11 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][11])):
+                $t12 += $month['amount'];
+                break;
+            }
+            $sumrow += $month['amount'];
+            if (count($data['months']) != $mcount) {
+              $continue = true;
+              $i = $countdisplay;
+              break;
+            }
+          } else {
+            $str .= $this->reporter->col('-', '65', '', '', '', '', 'RT', '', '', '', '', '', '');
+            // $this->coreFunctions->LogConsole('barcode: ' . $data['barcode'] . ' ' . ' -- count: ' . count($data['months']) . ' mon: ' . $mcount . ' countdisplay: ' . $countdisplay);
+          }
+          if ($i == 11) {
+            $countdisplay = 0;
+            break;
+          }
+        }
+        if ($countdisplay == 0) {
+          $str .= $this->reporter->col(number_format($sumrow, 2), '100', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
+          $str .= $this->reporter->endrow();
+          $gtotal = $gtotal + $sumrow;
+          $sumrow = 0;
+          $mcount = 0;
+        }
       }
-
-      if ($data->mofeb != 0) {
-        $str .= $this->reporter->col(number_format($data->mofeb, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mofeb;
-        $feb = $feb + $data->mofeb;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->momar != 0) {
-        $str .= $this->reporter->col(number_format($data->momar, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->momar;
-        $mar = $mar + $data->momar;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->moapr != 0) {
-        $str .= $this->reporter->col(number_format($data->moapr, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->moapr;
-        $apr = $apr + $data->moapr;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->momay != 0) {
-        $str .= $this->reporter->col(number_format($data->momay, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->momay;
-        $may = $may + $data->momay;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->mojun != 0) {
-        $str .= $this->reporter->col(number_format($data->mojun, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mojun;
-        $jun = $jun + $data->mojun;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->mojul != 0) {
-        $str .= $this->reporter->col(number_format($data->mojul, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mojul;
-        $jul = $jul + $data->mojul;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->moaug != 0) {
-        $str .= $this->reporter->col(number_format($data->moaug, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->moaug;
-        $aug = $aug + $data->moaug;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->mosep != 0) {
-        $str .= $this->reporter->col(number_format($data->mosep, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mosep;
-        $sep = $sep + $data->mosep;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->mooct != 0) {
-        $str .= $this->reporter->col(number_format($data->mooct, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->mooct;
-        $oct = $oct + $data->mooct;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->monov != 0) {
-        $str .= $this->reporter->col(number_format($data->monov, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->monov;
-        $nov = $nov + $data->monov;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($data->modec != 0) {
-        $str .= $this->reporter->col(number_format($data->modec, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $sumrow = $sumrow + $data->modec;
-        $dec = $dec + $data->modec;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-
-      if ($sumrow != 0) {
-        $str .= $this->reporter->col(number_format($sumrow, 2), '100', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-        $gtotal = $gtotal + $sumrow;
-      } else {
-        $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      }
-      $sumrow = 0;
-
-
-
-
-      $str .= $this->reporter->endrow();
 
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
@@ -1153,34 +1446,34 @@ class customer_performance_report
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('GRAND TOTAL :', '320', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col(number_format($jan, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t1, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($mar, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t3, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($may, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t5, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($jul, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t7, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($sep, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t9, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($nov, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t11, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col(number_format($gtotal, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '320', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($feb, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t2, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($apr, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t4, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($jun, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t6, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($aug, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t8, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($oct, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t10, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($dec, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t12, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -1206,13 +1499,13 @@ class customer_performance_report
 
     $totalmonths = ($toMonthIndex($end) - $toMonthIndex($start)) + 1;
 
-    if ($totalmonths > 12) {
+    if ($totalmonths != 12) {
       $str = "
           <div style='position:relative;'>
             <div class='text-center' style='position:absolute; top:150px; left:400px;'>
               <div><i class='far fa-frown' style='font-size:120px; color: #1E1E1E';></i></div>
               <br>
-              <div style='font-size:32px; color:#1E1E1E'>DATE RANGE FILTER EXCEEDS 1 YEAR..</div>
+              <div style='font-size:32px; color:#1E1E1E'>DATE RANGE MUST BE 1 YEAR OR 12 MONTHS</div>
             </div>
           </div>
         ";
@@ -1248,8 +1541,6 @@ class customer_performance_report
 
       $monthsyear[] = $dt->format('M - Y');
     }
-    // var_dump($monthsyear);
-
     return ['status' => true, 'str' => $str, 'monthsyear' => $monthsyear];
   }
   public function Item_Monthly_Performance_header($config)
@@ -1295,27 +1586,12 @@ class customer_performance_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Barcode', '160', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Item Name', '160', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Barcode', '160', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Item Name', '160', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '', '');
 
 
     $r = $this->generateMonths($config, $start, $end);
     $str .= $r['str'];
-
-
-
-    // $str .= $this->reporter->col('Jan', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Feb', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Mar', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Apr', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('May', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Jun', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Jul', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Aug', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Sep', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Oct', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Nov', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
-    // $str .= $this->reporter->col('Dec', '65', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('Total Amount', '100', '', '', $border, 'TB', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -1352,25 +1628,22 @@ class customer_performance_report
     $str .= $this->Item_Monthly_Performance_header($config);
 
 
-    $jan = 0;
-    $feb = 0;
-    $mar = 0;
-    $apr = 0;
-    $may = 0;
-    $jun = 0;
-    $jul = 0;
-    $aug = 0;
-    $sep = 0;
-    $oct = 0;
-    $nov = 0;
-    $dec = 0;
+    $t1 = 0;
+    $t2 = 0;
+    $t3 = 0;
+    $t4 = 0;
+    $t5 = 0;
+    $t6 = 0;
+    $t7 = 0;
+    $t8 = 0;
+    $t9 = 0;
+    $t10 = 0;
+    $t11 = 0;
+    $t12 = 0;
 
 
     $gtotal = 0;
     $sumrow = 0;
-    $barcode = "";
-
-
 
 
 
@@ -1400,64 +1673,62 @@ class customer_performance_report
 
         for ($i; $i < count($r['monthsyear']); $i++) {
           $monyear = date('Y-m', strtotime($r['monthsyear'][$i]));
-          if ($i == 12) {
-            $countdisplay = 0;
-            break; // break 
-          }
-
           $countdisplay++;
           if ($monyear == $month['monyear']) {
             $mcount = $mcount + 1;
             $str .= $this->reporter->col(number_format($month['amount'], 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
             // $this->coreFunctions->LogConsole('barcode: ' . $data['barcode'] . ' ' . ' -- count: ' . count($data['months']) . ' mon: ' . $mcount . ' countdisplay: ' . $countdisplay);
+            switch ($month['monyear']) { // month number
+              case date('Y-m', strtotime($r['monthsyear'][0])):
+                $t1 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][1])):
+                $t2 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][2])):
+                $t3 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][3])):
+                $t4 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][4])):
+                $t5 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][5])):
+                $t6 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][6])):
+                $t7 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][7])):
+                $t8 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][8])):
+                $t9 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][9])):
+                $t10 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][10])):
+                $t11 += $month['amount'];
+                break;
+              case date('Y-m', strtotime($r['monthsyear'][11])):
+                $t12 += $month['amount'];
+                break;
+            }
             $sumrow += $month['amount'];
             if (count($data['months']) != $mcount) {
               $continue = true;
               $i = $countdisplay;
               break;
             }
-            switch ($month['monyear']) { // month number
-              case date('Y-m', strtotime($r['monthsyear'][0])): //sample
-                $t1 += $month['amount'];
-                break;
-
-              case '02':
-                # code...
-                break;
-              case '03':
-                # code...
-                break;
-              case '04':
-                # code...
-                break;
-              case '05':
-                # code...
-                break;
-              case '06':
-                # code...
-                break;
-              case '07':
-                # code...
-                break;
-              case '08':
-                # code...
-                break;
-              case '09':
-                # code...
-                break;
-              case '10':
-                # code...
-                break;
-              case '11':
-                # code...
-                break;
-              case '12':
-                # code...
-                break;
-            }
           } else {
             $str .= $this->reporter->col('-', '65', '', '', '', '', 'RT', '', '', '', '', '', '');
             // $this->coreFunctions->LogConsole('barcode: ' . $data['barcode'] . ' ' . ' -- count: ' . count($data['months']) . ' mon: ' . $mcount . ' countdisplay: ' . $countdisplay);
+          }
+          if ($i == 11) {
+            $countdisplay = 0;
+            break;
           }
         }
         if ($countdisplay == 0 || $countdisplay == 12) {
@@ -1468,121 +1739,6 @@ class customer_performance_report
           $mcount = 0;
         }
       }
-
-
-
-
-
-
-
-      // if ($data->mojan != 0 && $mon == 1) {
-      //   $str .= $this->reporter->col(number_format($data->mojan, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mojan;
-      //   $jan = $jan + $data->mojan;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->mofeb != 0 && $mon == 2) {
-      //   $str .= $this->reporter->col(number_format($data->mofeb, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mofeb;
-      //   $feb = $feb + $data->mofeb;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->momar != 0 && $mon == 3) {
-      //   $str .= $this->reporter->col(number_format($data->momar, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->momar;
-      //   $mar = $mar + $data->momar;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->moapr != 0 && $mon == 4) {
-      //   $str .= $this->reporter->col(number_format($data->moapr, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->moapr;
-      //   $apr = $apr + $data->moapr;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->momay != 0 && $mon == 5) {
-      //   $str .= $this->reporter->col(number_format($data->momay, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->momay;
-      //   $may = $may + $data->momay;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->mojun != 0 && $mon == 6) {
-      //   $str .= $this->reporter->col(number_format($data->mojun, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mojun;
-      //   $jun = $jun + $data->mojun;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->mojul != 0 && $mon == 7) {
-      //   $str .= $this->reporter->col(number_format($data->mojul, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mojul;
-      //   $jul = $jul + $data->mojul;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->moaug != 0 && $mon == 8) {
-      //   $str .= $this->reporter->col(number_format($data->moaug, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->moaug;
-      //   $aug = $aug + $data->moaug;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->mosep != 0 && $mon == 9) {
-      //   $str .= $this->reporter->col(number_format($data->mosep, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mosep;
-      //   $sep = $sep + $data->mosep;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->mooct != 0 && $mon == 10) {
-      //   $str .= $this->reporter->col(number_format($data->mooct, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->mooct;
-      //   $oct = $oct + $data->mooct;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->monov != 0 && $mon == 11) {
-      //   $str .= $this->reporter->col(number_format($data->monov, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->monov;
-      //   $nov = $nov + $data->monov;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($data->modec != 0 && $mon == 12) {
-      //   $str .= $this->reporter->col(number_format($data->modec, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $sumrow = $sumrow + $data->modec;
-      //   $dec = $dec + $data->modec;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-
-      // if ($sumrow != 0) {
-      //   $str .= $this->reporter->col(number_format($sumrow, 2), '100', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-      //   $gtotal = $gtotal + $sumrow;
-      // } else {
-      //   $str .= $this->reporter->col('-', '', '', '', '', '', 'RT', '', '', '', '', '', '');
-      // }
-      // $sumrow = 0;
-
-
-
-
-      $str .= $this->reporter->endrow();
 
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
@@ -1596,34 +1752,34 @@ class customer_performance_report
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('GRAND TOTAL :', '320', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col(number_format($jan, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t1, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($mar, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t3, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($may, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t5, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($jul, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t7, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($sep, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t9, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($nov, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t11, 2), '65', '', '', $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, 'T', 'RT', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col(number_format($gtotal, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '320', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($feb, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t2, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($apr, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t4, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($jun, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t6, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($aug, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t8, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($oct, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t10, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '65', '', '', $border, '', 'RT', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col(number_format($dec, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($t12, 2), '65', '', '', $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();

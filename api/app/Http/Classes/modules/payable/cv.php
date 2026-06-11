@@ -589,7 +589,7 @@ class cv
         }
 
         $obj[0]['accounting']['columns'][$clientname]['type'] = 'coldel';
-        if ($config['params']['companyid'] != 24) {
+        if ($config['params']['companyid'] != 24 && $config['params']['companyid'] != 69) { //goodfound, cemphil
           $obj[0]['accounting']['columns'][$dept]['type'] = 'coldel';
         } else {
           $obj[0]['accounting']['columns'][$dept]['action'] = 'lookupclient';
@@ -777,7 +777,8 @@ class cv
       case 26:
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dcostcode'];
         break;
-      case 24:
+      case 69: //cemphil
+      case 24: //goodfound
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'ddeptname'];
         break;
       case 39:

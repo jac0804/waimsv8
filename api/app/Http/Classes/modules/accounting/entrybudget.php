@@ -88,7 +88,7 @@ class entrybudget
   public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['year', 'project', ['refresh', 'print'], 'radiooption'];
+    $fields = ['year', 'project', ['refresh', 'print'], ['update'], 'radiooption'];
     if ($companyid == 10) { //afti
       $fields = ['year', 'project', 'branchname', 'deptname', ['refresh'], 'radiooption'];
     }
@@ -109,7 +109,14 @@ class entrybudget
     data_set($col1, 'year.lookupclass', 'lookupyear');
     data_set($col1, 'year.action', 'lookupyear');
     data_set($col1, 'refresh.action', 'load');
+    data_set($col1, 'update.action', 'copyprevyear');
+    data_set($col1, 'update.label', 'Copy Previous Year');
     data_set($col1, 'print.action', 'print');
+    data_set($col1, 'refresh.style', 'width:100%;');
+    data_set($col1, 'update.style', 'width:100%;');
+    data_set($col1, 'update.confirm', true);
+    data_set($col1, 'update.confirmlabel', 'Are you sure you want to copy previous year budget?');
+    data_set($col1, 'print.style', 'width:100%;');
     return array('col1' => $col1);
   }
 
@@ -137,6 +144,10 @@ class entrybudget
     switch ($action) {
       case 'load':
         return $this->loadgrid($config);
+        break;
+
+      case 'copyprevyear':
+        return $this->copyprevyear($config);
         break;
 
       case 'saveallentry':
@@ -224,6 +235,88 @@ class entrybudget
       $this->coreFunctions->logconsole($qry);
       return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
     }
+  }
+
+  private function copyprevyear($config)
+  {
+    $companyid  = $config['params']['companyid'];
+    $year       = $config['params']['dataparams']['year'];
+    $projectid  = $config['params']['dataparams']['projectid'];
+    $project    = $config['params']['dataparams']['project'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $branchid   = $config['params']['dataparams']['branch'];
+    $branchname = $config['params']['dataparams']['branchname'];
+    $poption    = $config['params']['dataparams']['poption'];
+
+    if ($year == '' || $project == '') {
+      return ['status' => 'false', 'msg' => 'Please fill all fields.', 'griddata' => [], 'action' => 'load'];
+    }
+
+
+
+    $prevYear = $year - 1;
+
+    if ($poption == 1) {
+      $cat = "('R','E')";
+    } else {
+      $cat = "('A','L','C')";
+    }
+
+    $addonfilter = '';
+    if ($deptid != 0) $addonfilter .= " and b.deptid=" . $deptid;
+    if ($branchid != 0) $addonfilter .= " and b.branch=" . $branchid;
+
+
+    $qryPrev = "select b.acnoid, b.amt1, b.amt2, b.amt3, b.amt4, b.amt5, b.amt6,
+                       b.amt7, b.amt8, b.amt9, b.amt10, b.amt11, b.amt12
+                from budget as b
+                left join coa as c on c.acnoid = b.acnoid
+                where c.cat in " . $cat . " and b.projectid=? and b.year=?" . $addonfilter;
+
+    $prevData = $this->coreFunctions->opentable($qryPrev, [$projectid, $prevYear]);
+
+
+    if (empty($prevData)) {
+      $result = $this->loadgrid($config);
+      $result['msg'] = 'No data found for previous year (' . $prevYear . ').';
+      $result['status'] = 'false';
+      return $result;
+    }
+
+
+    foreach ($prevData as $row) {
+      $qryUpdate = "update budget set 
+            amt1=?, amt2=?, amt3=?, amt4=?, amt5=?, amt6=?,
+            amt7=?, amt8=?, amt9=?, amt10=?, amt11=?, amt12=?
+            where acnoid=? and projectid=? and year=? and deptid=? and branch=?";
+
+      $this->coreFunctions->opentable($qryUpdate, [
+        $row->amt1,
+        $row->amt2,
+        $row->amt3,
+        $row->amt4,
+        $row->amt5,
+        $row->amt6,
+        $row->amt7,
+        $row->amt8,
+        $row->amt9,
+        $row->amt10,
+        $row->amt11,
+        $row->amt12,
+        $row->acnoid,
+        $projectid,
+        $year,
+        $deptid,
+        $branchid
+      ]);
+    }
+
+
+    $result = $this->loadgrid($config);
+    $result['msg'] = 'Previous year (' . $prevYear . ') data copied successfully.';
+    $result['status'] = true;
+    return $result;
   }
 
 

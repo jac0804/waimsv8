@@ -521,6 +521,7 @@ class othersClass
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
+    array_push($number, 'amtrno', 'jobline', 'packageline', 'taskline', 'phperc', 'impperc', 'devperc');
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -566,7 +567,16 @@ class othersClass
       case 12: //afti usd
         break;
       default:
-        array_push($date, 'starttime', 'endtime', 'leadfrom', 'leadto');
+        array_push($date, 'starttime', 'endtime');
+        switch (strtolower($doc)) {
+          case 'hstockinfo':
+          case 'stockinfo':
+            break;
+          default:
+            array_push($date, 'leadfrom', 'leadto');
+            break;
+        }
+
         break;
     }
 
@@ -771,7 +781,7 @@ class othersClass
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
     array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate', 'expiry', 'promostart', 'promoend', 'lock', 'lasttrans');
+    array_push($date, 'regdate', 'expiry', 'promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
 
     return $date;
   }
@@ -1336,7 +1346,7 @@ class othersClass
                     salestype, sano,pono, deldate, crref, returndate, refunddate, sdate1,sdate2,empid,driver,
                     plateno,excess,excessrate,aftrno,checkno,checkdate,amount,refdate,istrip,voiddate,voidby,
                     orderno,strdate1,strdate2,trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,
-                    ista,layref,isfa,isnoentry,rrfactor,voyage,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh " . $add . $addedfield  . ")
+                    ista,layref,isfa,isnoentry,rrfactor,voyage" . $add . $addedfield  . ")
             SELECT head.trno,head.doc, head.docno,ifnull(client.clientid,0), ifnull(head.clientname,''), head.address,head.shipto,
                     head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
                     head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,
@@ -1350,7 +1360,7 @@ class othersClass
                     sdate1,sdate2,head.empid,head.driver,head.plateno,head.excess,head.excessrate,head.aftrno,
                     head.checkno,head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                     head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,head.fpid,head.crno,head.rfno,head.chsino,head.swsno,head.cotrno,
-                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh " . $select . $selectaddedfield  . "    
+                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage " . $select . $selectaddedfield  . "    
             FROM " . $config['docmodule']->head . " as head 
             left join cntnum on cntnum.trno=head.trno 
             left join client on client.client=head.client
@@ -1406,7 +1416,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1416,7 +1426,7 @@ class othersClass
                 stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,stock.poref, 
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2100,6 +2110,7 @@ class othersClass
             break;
         }
         break;
+      case 69: // Cemphil
       case 24: //goodfound
         switch ($config['params']['doc']) {
           case 'SJ':
@@ -2206,7 +2217,7 @@ class othersClass
                   deldate, crref, returndate,refunddate,sdate1,sdate2,empid,excess,excessrate,aftrno,
                   checkno,checkdate,amount,refdate,istrip,voiddate,voidby,orderno,strdate1,strdate2,
                   trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,ista,layref,
-                  isfa,isnoentry,rrfactor,contact,bstype,ownername,ownertype,owneraddr,conaddr,mtsofh " . $add . $addedfield  . ")
+                  isfa,isnoentry,rrfactor" . $add . $addedfield  . ")
             select head.trno,head.doc, head.docno, ifnull(client.client,'') as client, head.clientname,
                   head.address, head.shipto, head.dateid, head.terms, ifnull(warehouse.client,'') as wh, head.rem, head.forex,
                   head.yourref, head.ourref, head.contra, ifNull(agent.client,'') as agent, head.tax , head.createdate,head.createby,
@@ -2225,7 +2236,7 @@ class othersClass
                   head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                   head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,
                   head.fpid,head.crno, head.rfno,head.chsino,head.swsno,head.cotrno,head.petrno,
-                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.contact,head.bstype,head.ownername,head.ownertype,head.owneraddr,head.conaddr,head.mtsofh " . $select . $selectaddedfield  . "
+                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor" . $select . $selectaddedfield  . "
             from glhead as head left join cntnum on cntnum.trno=head.trno
             left join client  on head.clientid=client.clientid
             left join client  as warehouse on head.whid=warehouse.clientid
@@ -2281,7 +2292,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2290,7 +2301,7 @@ class othersClass
                 stock.isextract,stock.pickerid,stock.pickerstart,stock.pickerend,stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -4018,7 +4029,6 @@ class othersClass
     whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno
     from " . $table . " where trno=?";
 
-
     if (!$this->coreFunctions->execqry($qry, "insert", [$trno])) {
       $status = 0;
       $msg = 'Failed to post cntnuminfo details';
@@ -4890,227 +4900,6 @@ class othersClass
       return $r;
     }
     return " (0)";
-  }
-  public function checkapproversetup($config, $approverid, $doc, $alias, $isdashbord = false)
-  {
-
-    $dataparams = isset($config['params']['dataparams']);
-    $viewaccess = $this->checkAccess($config['params']['user'], 5228);
-    $companyid = $config['params']['companyid'];
-    $clientid = 0;
-    $filterdataparams = "";
-    $approverlist = [];
-    $roleidlist = [];
-    $filter = "";
-    $filtersup = "";
-    $leftjoin = "";
-    $filterself = "";
-    $posttype = "";
-    $condition = "";
-    $exist = false;
-    $showall = false;
-    $self = false;
-
-    if ($dataparams) {
-      if (isset($config['params']['dataparams']['clientid'])) {
-        $clientid = $config['params']['dataparams']['clientid'];
-        $clientname = $config['params']['dataparams']['clientname'];
-        if ($clientname != "") {
-          if ($clientid != 0) {
-            $self = true;
-            $filterdataparams .= " and cl.clientid = '$clientid' ";
-          }
-        }
-      }
-      if (isset($config['params']['dataparams']['divid'])) {
-        $divid = $config['params']['dataparams']['divid'];
-        $division = $config['params']['dataparams']['division'];
-        if ($division != "") {
-          if ($divid != 0) {
-            $self = true;
-            $filterdataparams .= " and " . $alias . ".divid = '$divid' ";
-          }
-        }
-      }
-      if (isset($config['params']['dataparams']['posttype'])) {
-        $posttype = $config['params']['dataparams']['posttype'];
-      }
-    }
-
-    $undersup = $this->coreFunctions->opentable("select * from employee where  supervisorid = '" . $approverid . "'");
-    if (!empty($undersup)) {
-      if ($undersup[0]->supervisorid != 0) {
-        $filtersup = "supervisorid";
-      }
-    }
-    // multiapp tagging
-    $addjoin = "";
-    $status = "";
-    switch ($doc) {
-      case 'LEAVE':
-        $addjoin = " and lt.empid = mul.empid";
-        $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        break;
-      case 'OB':
-        $addjoin = " and ob.empid = mul.empid";
-        $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        break;
-      case 'OT':
-        $addjoin = " and ot.empid = mul.empid";
-        $posttype = ($posttype === 'approved') ? '2' : '1';
-        break;
-      case 'LOAN':
-        $addjoin = " and loan.empid = mul.empid";
-        $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        break;
-      case 'CHANGESHIFT':
-        $addjoin = " and csapp.empid = mul.empid";
-        $posttype = ($posttype == 'approved') ? '1' : '0';
-        break;
-      case 'UNDERTIME':
-        $addjoin = " and u.empid = mul.empid";
-        $posttype = ($posttype == 'approved') ? 'A' : 'E';
-        break;
-    }
-
-    if (!empty($doc)) {
-      if (!$isdashbord && !$self) {
-        if ($doc != 'PORTAL SCHEDULE') {
-          $filterself = "empid";
-        }
-      }
-
-      $mulapp = $this->coreFunctions->opentable("select distinct approverid  from multiapprover where approverid = '" . $approverid . "' and doc = '" . $doc . "' ");
-    } else {
-      $mulapp = $this->coreFunctions->opentable("select distinct approverid  from multiapprover where approverid = '" . $approverid . "'");
-    }
-    if ($filtersup != "" && $filterself != "") {
-      // both self OR supervisor
-      $condition .= $doc != 'PORTAL SCHEDULE' ? " or " . $alias . ".empid = '$approverid'" : "";
-      $condition = " and (" . $alias . ".supervisorid = '$approverid' $condition)";
-    } else {
-      if (($filterself != "" && $doc != 'PORTAL SCHEDULE')) {
-        // self only
-        $condition = " and (" . $alias . ".empid = '$approverid')";
-      }
-      if ($filtersup != "") {
-        // supervisor only
-        $condition = " and (" . $alias . ".supervisorid = '$approverid')";
-      }
-    }
-
-    if ($viewaccess) {
-      $showall = true;
-      $exist = true;
-      goto skipapprover;
-    }
-
-    if (!empty($mulapp)) {
-      $exist = true;
-      if (!empty($doc)) {
-        #Use 
-        # Dashboard all application approved
-        #Module
-        # Create Schedule
-        #Report list
-
-        if (!empty($mulapp)) {
-          foreach ($mulapp as $mlapp) {
-            array_push($approverlist, $mlapp->approverid);
-          }
-          $approverlist = array_unique($approverlist);
-          $approver = implode(",", $approverlist);
-          $filter = " and ((mul.approverid in  (" . $approver . ") and mul.doc = '" . $doc . "') $condition)";
-          $leftjoin = " left join multiapprover as mul on mul.empid = " . $alias . ".empid and mul.doc = '" . $doc . "' $addjoin ";
-        }
-      } else {
-        //reports na hindi kailangan ng doc
-        #Use
-        # Employee listing
-
-        $leftjoin = "
-        left join (
-        select distinct approverid,empid
-        from multiapprover ) as mul on mul.empid = " . $alias . ".empid and mul.approverid = '" . $approverid . "'";
-
-        foreach ($mulapp as $mlapp) {
-          array_push($approverlist, $mlapp->approverid);
-        }
-        $approverlist = array_unique($approverlist);
-        $approver = implode(",", $approverlist);
-        if ($filtersup != "") {
-          $filter = " and (((mul.approverid in  (" . $approver . ") or " . $alias . ".supervisorid = '" . $approverid . "')) )";
-        } else {
-          $filter = " and (mul.approverid in  (" . $approver . ") )";
-        }
-      }
-    }
-
-    $role = $this->coreFunctions->opentable("select roleid from emprole where empid=" . $approverid);
-    if ($companyid != 58) {
-      if (!empty($role)) {
-        foreach ($role as $roleid) {
-          array_push($roleidlist, $roleid->roleid);
-        }
-        $exist = true;
-        $role_id = implode(",", $roleidlist);
-        if ($filter != "") {
-          $filter .= " or (" . $alias . ".roleid in (" . $role_id . ") or (" . $alias . ".empid = '$approverid')) ";
-        } else {
-          $filter = " and (( " . $alias . ".roleid in (" . $role_id . ") or (" . $alias . ".empid = '$approverid' or " . $alias . ".supervisorid = '$approverid'))) ";
-        }
-      }
-    }
-
-    if ($isdashbord && empty($role) && empty($mulapp)) {
-      if (!empty($doc)) {
-        $moduleapproval = $this->coreFunctions->opentable("select distinct(appro.clientid) as approverid,mval.approverseq,appro.isapprover,appro.issupervisor from moduleapproval as mval 
-	              left join approvers as appro on appro.trno = mval.line
-	              where mval.modulename = '$doc' and appro.clientid = '" . $approverid . "' ");
-        if (!empty($moduleapproval)) {
-          $exist = true;
-          $both = false;
-          if (str_contains($moduleapproval[0]->approverseq, ' or ')) {
-            $approversetup = explode(' or ', $moduleapproval[0]->approverseq);
-            $both = true;
-          } else {
-            $approversetup = explode(',', $moduleapproval[0]->approverseq);
-          }
-
-          foreach ($approversetup as $appkey => $appsetup) {
-            $approversetup[$appkey] = $appsetup == 'Supervisor' ? 'issupervisor' : 'isapprover';
-          }
-
-          if (count($approversetup) == 1 || $both) {
-            $showall = true;
-          } else {
-            if ($approversetup[1] == 'isapprover') {
-              $showall  = $moduleapproval[0]->isapprover == 1 ? true : false;
-            } else {
-              $showall = $moduleapproval[0]->issupervisor == 1 ? true : false;
-            }
-          }
-        }
-      }
-    }
-
-    if (empty($filter)) {
-      if ($approverid != 0) {
-        $filter .= $condition;
-      }
-    }
-    skipapprover:
-    if ($filterdataparams != "") {
-      $filter .= $filterdataparams;
-    }
-    if (empty($filter) || $viewaccess) {
-    } else {
-      if (!$exist) {
-        $filter = " and 1=0 ";
-      }
-    }
-
-    return ['filter' => $filter, 'leftjoin' => $leftjoin, 'exist' => $exist, 'ishowall' => $showall];
   }
 
   public function generatebarcode($config, $folder)
@@ -10767,7 +10556,11 @@ class othersClass
       $config['params']['trno'] = $trno;
       $config['params']['data']['qty'] = 1;
       $config['params']['data']['wh'] = $wh;
-      $config['params']['data']['disc'] = '';
+      if ($companyid == 63) {
+        $config['params']['data']['disc'] = $data[$key]['disc'];
+      } else {
+        $config['params']['data']['disc'] = '';
+      }
       $config['params']['data']['amt'] = $data[$key]['amt'];
       $return = app($path)->additem('insert', $config);
       if ($msg = '') {

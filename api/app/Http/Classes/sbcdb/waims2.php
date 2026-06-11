@@ -3770,7 +3770,7 @@ class waims2
     $this->coreFunctions->sbccreatetable("hroso", $qry);
     $this->coreFunctions->sbcaddcolumn("client", "ishold", "tinyint(1) NOT NULL DEFAULT '0'", 0);
 
-    $this->coreFunctions->sbcaddcolumngrp(["item"], ["aveleadtime", "maxleadtime", "commrate"], "int(11) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["aveleadtime", "maxleadtime"], "int(11) NOT NULL DEFAULT '0'", 1);
 
     $qry = "CREATE TABLE  `rhhead` (
       `trno` bigint(20) NOT NULL DEFAULT '0',
@@ -3904,7 +3904,7 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["rqtrno"], "int(11) NOT NULL DEFAULT '0'", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["invoicedate"], "DATETIME DEFAULT NULL", 1);
-    $this->coreFunctions->sbcaddcolumn("cntnum", 'iscsv', "tinyint(1) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["cntnum", "transnum"], ['iscsv'], "tinyint(1) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["ewtrate"], "decimal(18,2) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["ewtlist"], ["rate"], "decimal(18,2) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["krhead", "hkrhead"], ["disc"], "VARCHAR(15) NOT NULL DEFAULT ''", 0);
@@ -4335,14 +4335,11 @@ class waims2
             ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("soalog", $qry);
 
-    $this->coreFunctions->sbcaddcolumngrp(["item"], ["lastpr", "defcost"],  "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["lastpr", "defcost", "commrate"],  "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["consignpr"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
     $this->coreFunctions->sbcaddcolumngrp(['loc'], ["isserve"], "tinyint(1) NOT NULL DEFAULT '0'");
 
     $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock", "sostock", "hsostock"], ["limitcheck"], "int(2) NOT NULL DEFAULT '0'", 1);
-
-
-   
 
 
     $qry = "CREATE TABLE `specialcomm` (
@@ -4350,7 +4347,7 @@ class waims2
             `itemid` int(11) NOT NULL DEFAULT '0',
             `startamt` decimal(18,2) NOT NULL DEFAULT '0.00',
             `endamt` decimal(18,2) NOT NULL DEFAULT '0.00',
-            `commrate` int(11) NOT NULL DEFAULT '0',
+            `commrate` decimal(18,2) NOT NULL DEFAULT '0.00',
             `editby` varchar(100) NOT NULL DEFAULT '',
             `editdate` datetime DEFAULT NULL,
             `encodedby` varchar(100) NOT NULL DEFAULT '',
@@ -4359,6 +4356,16 @@ class waims2
             ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("specialcomm", $qry);
 
+    $this->coreFunctions->sbcaddcolumngrp(["dailytask", "hdailytask"], ["reimbursement"], "varchar(50) NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->execqrynolog("ALTER TABLE specialcomm CHANGE commrate commrate decimal(18,2) NOT NULL DEFAULT '0'");
 
+    $this->coreFunctions->sbcaddcolumngrp(["tmdetail"], ["isassigntype"], "int(2) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["voidtm"], ["isassigntype"], "int(2) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["tmhead"], ["phperc", "impperc", "devperc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["hsostock"], ["tmtrno"], "bigint(20) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["sostock", "hsostock"], ["dytrno"], "int(11) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["tmdetail", "voidtm"], ["isprio"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumn("tmhead", "sjdate", "datetime DEFAULT NULL", 0);
   }
 }

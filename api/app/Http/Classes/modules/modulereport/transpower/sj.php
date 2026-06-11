@@ -116,12 +116,20 @@ class sj
   {
 
     $trno = $config['params']['dataid'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
+    $itemname = ",  if(stock.rem != '',    concat(item.itemname, ' -', stock.rem), item.itemname) as itemname";
+    if ($reporttype == '7') {
+      $itemname = ", concat(item.itemname,if(stock.rem != '', concat(' -', stock.rem), ''),
+              if(stock.startwire != 0,concat(' -', replace(format(stock.startwire,0), ',', '')),''),
+              if(stock.endwire != 0,concat(' -', replace(format(stock.endwire,0), ',', '')), '')) as itemname";
+    }
+
     $query = "select head.trno,stock.rem as srem,head.rem,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,
             head.address, head.terms, item.barcode, client.tin, head.yourref, head.ourref,
-             if(stock.rem != '',    concat(item.itemname, ' -', stock.rem), item.itemname) as itemname,
             stock.isqty as qty,stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent, ag.clientname as agname,
             wh.client as whcode, wh.clientname as whname,if(client.tel !='',client.tel,client.tel2) as contact,head.createby, stock.agentamt as agtamt,
             ifnull(client.bstyle,'') as bstyle,head.vattype,ifnull(client.registername,'') as registername,head.ewtrate,head.cmtrno,cmref.docno as cmdocno
+            $itemname
             from lahead as head
             left join lastock as stock on stock.trno=head.trno
             left join client on client.client=head.client
@@ -133,10 +141,10 @@ class sj
             UNION ALL
             select head.trno,stock.rem as srem,head.rem,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,
             head.address, head.terms, item.barcode, client.tin, head.yourref, head.ourref,
-             if(stock.rem != '',    concat(item.itemname, '-', stock.rem), item.itemname) as itemname,
             stock.isqty as qty,stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent, ag.clientname as agname,
             wh.client as whcode, wh.clientname as whname,if(client.tel !='',client.tel,client.tel2) as contact,head.createby,  stock.agentamt as agtamt,
             ifnull(client.bstyle,'') as bstyle,head.vattype,ifnull(client.registername,'') as registername,head.ewtrate,head.cmtrno,cmref.docno as cmdocno
+            $itemname
             from glhead as head
             left join glstock as stock on stock.trno=head.trno
             left join client on client.clientid=head.clientid
@@ -147,7 +155,7 @@ class sj
             where head.doc='sj' and head.trno='$trno' 
           
             order by docno";
-    // var_dump($query);
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -10013,9 +10021,9 @@ class sj
             // PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
             PDF::MultiCell(70, 0, "QTY", '', 'C', false, 0);
             PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-            PDF::MultiCell(280, 0, "DESCRIPTION", '', 'L', false, 0);
-            PDF::MultiCell(100, 0, "UNIT PRICE", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "(+/-) %", '', 'C', false, 0);
+            PDF::MultiCell(300, 0, "DESCRIPTION", '', 'L', false, 0);
+            PDF::MultiCell(90, 0, "UNIT PRICE", '', 'C', false, 0);
+            PDF::MultiCell(90, 0, "(+/-) %", '', 'C', false, 0);
             PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
 
             break;
@@ -10023,9 +10031,9 @@ class sj
             PDF::SetFont($fontbold, '', 13);
             PDF::MultiCell(70, 0, "QTY", '', 'C', false, 0);
             PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-            PDF::MultiCell(280, 0, "DESCRIPTION", '', 'L', false, 0);
-            PDF::MultiCell(100, 0, "PRICE", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "UNIT PRICE", '', 'C', false, 0);
+            PDF::MultiCell(300, 0, "DESCRIPTION", '', 'L', false, 0);
+            PDF::MultiCell(90, 0, "PRICE", '', 'C', false, 0);
+            PDF::MultiCell(90, 0, "UNIT PRICE", '', 'C', false, 0);
             PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
             break;
         }
@@ -10046,9 +10054,9 @@ class sj
             PDF::SetFont($fontbold, '', 13);
             PDF::MultiCell(70, 0, "QTY", '', 'C', false, 0);
             PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-            PDF::MultiCell(280, 0, "DESCRIPTION", '', 'L', false, 0);
-            PDF::MultiCell(100, 0, "PRICE", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "UNIT PRICE", '', 'C', false, 0);
+            PDF::MultiCell(300, 0, "DESCRIPTION", '', 'L', false, 0);
+            PDF::MultiCell(90, 0, "PRICE", '', 'C', false, 0);
+            PDF::MultiCell(90, 0, "UNIT PRICE", '', 'C', false, 0);
             PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
             break;
         }
@@ -10117,7 +10125,7 @@ class sj
         $ext = number_format($data[$i]['ext'], 2);
 
         // $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '47', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '48', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
@@ -10132,10 +10140,10 @@ class sj
           PDF::MultiCell(70, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 10.5);
-          PDF::MultiCell(280, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(300, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 12);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(90, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(90, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
@@ -10314,7 +10322,7 @@ class sj
         }
 
         // $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '47', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '48', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
@@ -10329,12 +10337,12 @@ class sj
           PDF::MultiCell(70, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 10.5);
-          PDF::MultiCell(280, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(300, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 12);
           PDF::SetTextColor(7, 13, 246);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(99, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetTextColor(0, 0, 0);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(99, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
@@ -10524,7 +10532,7 @@ class sj
         }
 
         // $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '47', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '48', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
@@ -10701,7 +10709,7 @@ class sj
         }
 
         // $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '47', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '48', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
@@ -10719,12 +10727,12 @@ class sj
           PDF::MultiCell(70, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 10.5);
-          PDF::MultiCell(280, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(300, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 12);
           PDF::SetTextColor(7, 13, 246);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(90, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetTextColor(0, 0, 0);
-          PDF::MultiCell(100, 15, ' ' . (isset($arr_agt[$r]) ? $arr_agt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(90, 15, ' ' . (isset($arr_agt[$r]) ? $arr_agt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_agentext[$r]) ? $arr_agentext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 

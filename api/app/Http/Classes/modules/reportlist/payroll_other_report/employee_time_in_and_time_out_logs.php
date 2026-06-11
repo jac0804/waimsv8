@@ -126,6 +126,8 @@ class employee_time_in_and_time_out_logs
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -136,10 +138,10 @@ class employee_time_in_and_time_out_logs
     if ($client != "") {
       $filter .= " and c.client = '$client'";
     }
-    if ($deptid != 0) {
+    if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and e.deptid = $deptid";
     }
-    if ($divid != 0) {
+    if ($divid != 0 && $divname != '') {
       $filter2 .= " and e.divid = $divid";
     }
 

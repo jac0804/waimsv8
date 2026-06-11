@@ -80,7 +80,7 @@ class aging_of_accounts_receivable_report
 
     if ($companyid == 59) { // roosevelt
       unset($fields[0]);
-      unset($fields[1]);
+      // unset($fields[1]);
     }
 
     $col2 = $this->fieldClass->create($fields);
@@ -89,6 +89,15 @@ class aging_of_accounts_receivable_report
       ['label' => 'Posted', 'value' => '1', 'color' => 'orange'],
       ['label' => 'All', 'value' => '2', 'color' => 'orange'],
     ));
+
+    if ($companyid == 59) { // roosevelt
+      data_set($col2, 'radioreporttype.options', array(
+        ['label' => 'Group by Salesman', 'value' => '0', 'color' => 'orange'],
+        ['label' => 'Group by Area', 'value' => '1', 'color' => 'orange']
+      ));
+
+      data_set($col2, 'radioreporttype.label', 'Options');
+    }
 
     $fields = ['print'];
     $col3 = $this->fieldClass->create($fields);
@@ -169,7 +178,14 @@ class aging_of_accounts_receivable_report
         $result = $this->repor_Layout_AFLI_LAYOUT($config, $result);
         break;
       case 59: //roosevelt
-        $result = $this->roosevelt_LAYOUT($config, $result);
+        switch ($reporttype) {
+          case '0': // group by salesman
+            $result = $this->roosevelt_LAYOUT($config, $result);
+            break;
+          case '1': // group by area
+            $result = $this->roosevelt_area_LAYOUT($config, $result);
+            break;
+        }
         break;
       default:
         switch ($reporttype) {
@@ -769,6 +785,7 @@ class aging_of_accounts_receivable_report
     $asof   = $config['params']['dataparams']['start'];
     $agent    = $config['params']['dataparams']['agent'];
     $area = $config['params']['dataparams']['area'];
+    $reporttype   = $config['params']['dataparams']['reporttype'];
 
     $filter = "";
 
@@ -783,7 +800,15 @@ class aging_of_accounts_receivable_report
     // if ($filtercenter != "") {
     //   $filter .= " and cntnum.center='$filtercenter'";
     // }
-
+    $orderby = "";
+    switch ($reporttype) {
+      case '0': // group by salesman
+        $orderby = "order by agentname";
+        break;
+      case '1': //  group by area
+        $orderby = "order by area";
+        break;
+    }
 
     $qry = "
           select  clientname,elapse,sum(balance) as balance,agentname,area from (
@@ -827,7 +852,7 @@ class aging_of_accounts_receivable_report
               group by clientname,elapse,agentname,client.area
               order by clientname ) as x
               group by clientname,elapse,agentname,area
-              order by agentname,area";
+              $orderby";
     // var_dump($qry);
     return $qry;
   }
@@ -2138,6 +2163,315 @@ class aging_of_accounts_receivable_report
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '5', null, false,  $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');;
     $str .= $this->reporter->col(' SALESMAN TOTAL', '330', null, false,  $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '',  '5px');
+    $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($subtotds != 0 ? number_format($subtotd, 2) : '-', '115', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($subtotes != 0 ? number_format($subtote, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($subgts != 0 ? number_format($subgt, 2) : '-', '110', null, false, $border, 'LTBR', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '5', null, false,  $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col(' GRAND TOTAL', '335', null, false,  $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($tota != 0 ? number_format($tota, 2) : '-', '100', null, false,  $border, 'LTB', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($totb != 0 ? number_format($totb, 2) : '-', '100', null, false,  $border, 'LTB', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($totc != 0 ? number_format($totc, 2) : '-', '100', null, false,  $border, 'LTB', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($totd != 0 ? number_format($totd, 2) : '-', '115', null, false,  $border, 'LTB', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($tote != 0 ? number_format($tote, 2) : '-', '100', null, false,  $border, 'LTB', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col($gt != 0 ? number_format($gt, 2) : '-', '100', null, false,  $border, 'LTBR', 'r', 'Century Gothic', $font_size, 'B', '', '5px');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->printline();
+    $str .= $this->reporter->endreport();
+    return $str;
+  } //end fn
+
+
+  private function roosevelt_area_LAYOUT($params, $data)
+  {
+    $str = "";
+    $count = 30;
+    // $page = 40;
+
+    $layoutsize = '1000';
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->roosevelt_displayHeader($params, $data);
+    $str .= $this->reporter->begintable($layoutsize);
+    $border = "1px solid";
+    $font_size = '11';
+
+    $this->reporter->linecounter = 0;
+    // $rowCount = 0;
+
+    $a = 0;
+    $b = 0;
+    $c = 0;
+    $d = 0;
+    $e = 0;
+    $tota = 0;
+    $totb = 0;
+    $totc = 0;
+    $totd = 0;
+    $tote = 0;
+    $gt = 0;
+
+    //subtotal
+    $subtota = 0;
+    $subtotb = 0;
+    $subtotc = 0;
+    $subtotd = 0;
+    $subtote = 0;
+    $subgt = 0;
+
+
+    $area = "";
+    $subtotas = 0;
+    $subtotbs = 0;
+    $subtotcs = 0;
+    $subtotds = 0;
+    $subtotes = 0;
+    $subgts = 0;
+
+    for ($i = 0; $i < count($data); $i++) {
+
+      $str .= $this->reporter->addline();
+      if ($area != $data[$i]['area']) {
+        if ($area != '') {
+          $subtotas = $subtota;
+          $subtotbs = $subtotb;
+          $subtotcs = $subtotc;
+          $subtotds = $subtotd;
+          $subtotes = $subtote;
+          $subgts = $subgt;
+          $str .= $this->reporter->addline();
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '5', null, false, $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col('AREA TOTAL', '330', null, false, $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subtotds != 0 ? number_format($subtotd, 2) : '-', '115', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subtotes != 0 ? number_format($subtote, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->col($subgts != 0 ? number_format($subgt, 2) : '-', '110', null, false, $border, 'LTBR', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+          $str .= $this->reporter->endrow();
+
+          $subtota = 0;
+          $subtotb = 0;
+          $subtotc = 0;
+          $subtotd = 0;
+          $subtote = 0;
+          $subgt = 0;
+
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('&nbsp;', '5', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '330', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '110', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '110', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '110', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '115', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '110', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '110', null, false, '1px solid ', '', 'C', 'Century Gothic',  '4', 'B', '', '');
+          $str .= $this->reporter->endrow();
+
+          // $rowCount += 2; // subtotal + spacer
+        } //end if
+
+        $str .= $this->reporter->addline(); //space sa pagitan ng header
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '5', null, false, $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+
+        $str .= $this->reporter->col(strtoupper($data[$i]['area']), '330', null, false, $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+
+        $str .= $this->reporter->col('&nbsp', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp', '115', null, false, $border, 'TB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp', '110', null, false, $border, 'TBR', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->endrow();
+        // $rowCount++;
+        // var_dump($rowCount);
+      } //end if
+
+      // var_dump($rowCount);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '5', null, false, '1px solid ', 'L', 'L', 'Century Gothic', $font_size, '', '', '5px');
+      $str .= $this->reporter->col($data[$i]['clientname'], '330', null, false, '1px solid ', '', 'L', 'Century Gothic', $font_size, '', '', '5px');
+
+      if ($data[$i]['elapse'] >= 0 && $data[$i]['elapse'] <= 30) {
+        $a = $data[$i]['balance'];
+        $b = 0;
+        $c = 0;
+        $d = 0;
+        $e = 0;
+
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '115', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', 'R', 'r', 'Century Gothic', $font_size, '', '', '5px');
+
+        $subtota = $subtota + $a;
+        $subgt = $subgt + $data[$i]['balance'];
+      }
+      if ($data[$i]['elapse'] >= 31 && $data[$i]['elapse'] <= 60) {
+        $b = $data[$i]['balance'];
+        $a = 0;
+        $c = 0;
+        $d = 0;
+        $e = 0;
+
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '115', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', 'R', 'r', 'Century Gothic', $font_size, '', '', '5px');
+
+        $subtotb = $subtotb + $b;
+        $subgt = $subgt + $data[$i]['balance'];
+      }
+      if ($data[$i]['elapse'] >= 61 && $data[$i]['elapse'] <= 90) {
+        $c = $data[$i]['balance'];
+        $a = 0;
+        $b = 0;
+        $d = 0;
+        $e = 0;
+
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '115', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', 'R', 'r', 'Century Gothic', $font_size, '', '', '5px');
+
+        $subtotc = $subtotc + $c;
+        $subgt = $subgt + $data[$i]['balance'];
+      }
+      if ($data[$i]['elapse'] >= 91 && $data[$i]['elapse'] <= 120) {
+        $d = $data[$i]['balance'];
+        $a = 0;
+        $c = 0;
+        $b = 0;
+        $e = 0;
+
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '115', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', 'R', 'r', 'Century Gothic', $font_size, '', '', '5px');
+
+        $subtotd = $subtotd + $d;
+        $subgt = $subgt + $data[$i]['balance'];
+      }
+      if ($data[$i]['elapse'] > 120) {
+        $e = $data[$i]['balance'];
+        $a = 0;
+        $c = 0;
+        $d = 0;
+        $b = 0;
+
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col('-', '115', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', '', 'r', 'Century Gothic', $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data[$i]['balance'], 2), '110', null, false, '1px solid ', 'R', 'r', 'Century Gothic', $font_size, '', '', '5px');
+
+        $subtote = $subtote + $e;
+        $subgt = $subgt + $data[$i]['balance'];
+      }
+      $str .= $this->reporter->endrow();
+
+      // $rowCount++;
+      $area = $data[$i]['area'];
+
+
+
+      $tota = $tota + $a;
+      $totb = $totb + $b;
+      $totc = $totc + $c;
+      $totd = $totd + $d;
+      $tote = $tote + $e;
+      $gt = $gt + $data[$i]['balance'];
+      // if ($rowCount >= $count) {
+      //   $str .= $this->reporter->endtable();
+      //   $str .= $this->reporter->page_break();
+
+      //   // new header
+      //   $str .= $this->roosevelt_displayHeader($params, $data);
+      //   $str .= $this->reporter->begintable('1000');
+
+      //   // reprint current agent header
+      //   $str .= $this->reporter->startrow();
+      //   $str .= $this->reporter->col(strtoupper($agent), '335', null, false, $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '115', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TBR', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+      //   $str .= $this->reporter->endrow();
+
+      //   // reset
+      //   $rowCount = 1; // counted the reprinted agent row
+      // }
+      if ($this->reporter->linecounter >= $count) {
+
+        // close current page
+        // $str .= $this->reporter->endrow();
+        // $str .= $this->reporter->endtable();
+        // $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '5', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '330', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '115', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', 'Century Gothic', '7', '', '', '5px');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        // reset line counter
+        $this->reporter->linecounter = 0;
+
+        // print new header
+        $str .= $this->roosevelt_displayHeader($params, $data);
+        $str .= $this->reporter->begintable('1000');
+
+        // reprint current area name
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '5', null, false, $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col(strtoupper($area), '330', null, false, $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '115', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TBR', 'C', 'Century Gothic', $font_size, 'B', '', '5px');
+        $str .= $this->reporter->endrow();
+      }
+    }
+    $subtotas = $subtota;
+    $subtotbs = $subtotb;
+    $subtotcs = $subtotc;
+    $subtotds = $subtotd;
+    $subtotes = $subtote;
+    $subgts = $subgt;
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '5', null, false,  $border, 'TBL', 'L', 'Century Gothic', $font_size, 'B', '', '5px');;
+    $str .= $this->reporter->col('AREA TOTAL', '330', null, false,  $border, 'TB', 'L', 'Century Gothic', $font_size, 'B', '',  '5px');
     $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
     $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');
     $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '110', null, false, $border, 'LTB', 'R', 'Century Gothic', $font_size, 'B', '', '5px');

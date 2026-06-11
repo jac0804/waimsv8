@@ -172,11 +172,6 @@ class detailed_sales_report
       $filter .= " and client.clientid =" . $clientid;
     }
     $leftjoin = "";
-    $addfield = ",client.industry";
-    if ($companyid == 10 || $companyid == 12) { //afti
-      $addfield = ", rc.description as category";
-      $leftjoin = "left join reqcategory as rc on client.industryid = rc.line ";
-    }
 
     $query = "
       select 'SO' as ttype, sohead.trno, sohead.docno as sodocno,
@@ -186,7 +181,7 @@ class detailed_sales_report
       (stock.amt*(ifnull(uom.factor,1))) as itemrate,
       ifnull(head.agent, '') as agcode, ifnull(ag.clientname, '1') as agname,
       head.yourref as ponum, date(head.due) as podate, item.partno as skuno,
-      if(head.cur = 'P', 'PHP', head.cur ) as cur, ifnull(sg.groupname,' NO SALES GROUP') as leader, branch.clientname as branchname,stock.sgdrate,client.industry $addfield
+      if(head.cur = 'P', 'PHP', head.cur ) as cur, ifnull(sg.groupname,' NO SALES GROUP') as leader, branch.clientname as branchname,stock.sgdrate,r.category as industry,r.reqtype as subindustry , r.description as category
       from hsqhead as sohead
       left join hqshead as head on head.sotrno = sohead.trno
       left join hqsstock as stock on stock.trno = head.trno
@@ -196,6 +191,7 @@ class detailed_sales_report
       left join client as ag on ag.client = head.agent
       left join client on client.client=head.client
       left join salesgroup as sg on sg.line = ag.salesgroupid
+      left join reqcategory as r on r.line=client.industryid
       left join uom on uom.itemid = item.itemid and uom.uom = stock.uom " . $leftjoin . "
       where stock.void<>1 and date(sohead.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
       
@@ -207,7 +203,7 @@ class detailed_sales_report
       item.barcode, item.itemname, (stock.isqty-(stock.voidqty/case ifnull(uom.factor,0) when 0 then 1 else uom.factor end)) as qty, (stock.amt*(ifnull(uom.factor,1))) as itemrate,
       ifnull(head.agent, '') as agcode, ifnull(ag.clientname, '1') as agname,
       head.yourref as ponum, date(head.due) as podate, item.partno as skuno, 
-      if(head.cur = 'p', 'php', head.cur ) as cur, ifnull(sg.groupname,' no sales group') as leader, branch.clientname as branchname,stock.sgdrate,client.industry $addfield
+      if(head.cur = 'p', 'php', head.cur ) as cur, ifnull(sg.groupname,' no sales group') as leader, branch.clientname as branchname,stock.sgdrate,r.category as industry,r.reqtype as subindustry , r.description as category
       from hqshead as head
       left join hqtstock as stock on head.trno = stock.trno
       left join hsrhead on hsrhead.qtrno = head.trno
@@ -219,6 +215,7 @@ class detailed_sales_report
       left join client as ag on ag.client = head.agent
       left join client on client.client=head.client
       left join salesgroup as sg on sg.line = ag.salesgroupid " . $leftjoin . "
+      left join reqcategory as r on r.line=client.industryid
       where item.islabor =1 and stock.void<>1 and date(head.due) between '" . $start . "' and '" . $end . "' " . $filter . "
       order by leader, agname, dateid, ponum";
 
@@ -289,7 +286,8 @@ class detailed_sales_report
       $size = '50';
     }
     if ($companyid == 10 || $companyid == 12) {
-      $str .= $this->reporter->col('INDUSTRY/SUB-INDUSTRY', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('INDUSTRY', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('SUB-INDUSTRY', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('CATEGORY', '100', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     } else {
       $str .= $this->reporter->col('INDUSTRY', '50', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
@@ -381,6 +379,7 @@ class detailed_sales_report
 
       if ($companyid == 10 || $companyid == 12) { //afti
         $str .= $this->reporter->col($data->industry, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->subindustry, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->category, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       } else {
         $str .= $this->reporter->col($data->industry, '50', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
@@ -433,6 +432,9 @@ class detailed_sales_report
     if ($config['params']['dataparams']['layoutformat'] == 0) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     }
+    $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize, '', '', '');

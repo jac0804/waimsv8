@@ -110,9 +110,9 @@ class pendingleaveapplications
         $stockbuttons = ['approve', 'disapprove'];
 
         if ($companyid == 53) { // camera
-            if ($isapp != 'issupervisor') {
-                array_push($stockbuttons, 'process');
-            }
+            // if ($isapp != 'issupervisor') {
+            // array_push($stockbuttons, 'process');
+            // }
         }
 
         if ($companyid == 58) { // cdo
@@ -190,8 +190,8 @@ class pendingleaveapplications
                 $obj[0][$this->gridname]['columns'][$remarkslast]['type'] = 'coldel';
                 $obj[0][$this->gridname]['columns'][$contact]['type'] = 'coldel';
                 $obj[0][$this->gridname]['columns'][$date_approved_disapprovedsup]['type'] = 'coldel';
-                $obj[0][$this->gridname]['columns'][0]['btns']['process']['color'] = 'orange';
-                $obj[0][$this->gridname]['columns'][0]['btns']['process']['label'] = 'Approved w/out Pay';
+                // $obj[0][$this->gridname]['columns'][0]['btns']['process']['color'] = 'orange';
+                // $obj[0][$this->gridname]['columns'][0]['btns']['process']['label'] = 'Approved w/out Pay';
                 if ($both) {
                     if ($isapp == 'isapprover') {
                         $obj[0][$this->gridname]['columns'][$remarkslast]['label'] = 'Hr/Payroll Approver Reason';
@@ -344,6 +344,9 @@ class pendingleaveapplications
                     $entitled = $rowbal[0]->days;
                     $row['balance'] = $balance;
                     $row['entitled'] = $entitled;
+                    if ($status == 'A') {
+                        $status = 'P';
+                    }
                 }
                 break;
         }

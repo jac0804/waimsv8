@@ -369,7 +369,7 @@ class rn
       $obj[0][$this->gridname]['columns'][$disc]['readonly'] = true;
     }
 
-    if ($config['params']['companyid'] == 24) { //majesty
+    if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
       $obj[0][$this->gridname]['columns'][$itemdesc]['type'] = 'coldel';
     }
 
@@ -386,6 +386,7 @@ class rn
   {
     $tbuttons = [];
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         array_push($tbuttons, 'additem');
         break;
@@ -401,6 +402,7 @@ class rn
   public function createHeadField($config)
   {
     switch ($config['params']['companyid']) {
+      case 69: //cemphil
       case 24: //goodfound
         $fields = ['docno', 'wh', 'ddeptname'];
         break;
@@ -683,7 +685,7 @@ class rn
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
-      if ($companyid != 24) { //not goodfound
+      if ($companyid != 24 && $companyid != 69) { //not goodfound, not cemphil
         $checkacct = $this->othersClass->checkcoaacct(['RM1', 'WIP']);
 
         if ($checkacct != '') {
@@ -1031,7 +1033,7 @@ class rn
       return ['inventory' => $data, 'status' => true, 'msg' => $row['msg']];
     } else {
       $msg = 'Successfully saved.';
-      if ($config['params']['companyid'] == 24) { //goodfound
+      if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
         $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : '';
         $checkloc = json_decode(json_encode($this->coreFunctions->opentable("select distinct loc from rrstatus where loc='" . $loc . "'")), true);
 

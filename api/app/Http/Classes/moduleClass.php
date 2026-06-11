@@ -1024,6 +1024,7 @@ class moduleClass
 					switch ($this->config['params']['doc']) {
 						case 'SJ':
 						case 'SO':
+						case 'PO':
 							$historycol = [
 								['name' => 'status', 'label' => 'Status', 'align' => 'left', 'field' => 'status'],
 								['name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid'],
@@ -1154,6 +1155,7 @@ class moduleClass
 				}
 
 				break;
+			case 69: // Cemphil
 			case 24: //goodfound
 				switch ($this->config['params']['doc']) {
 					case 'RN':
@@ -1321,6 +1323,7 @@ class moduleClass
 						break;
 				}
 				break;
+			case 69: // Cemphil
 			case 24: //goodfound
 				switch ($this->config['params']['doc']) {
 					case 'PV':
@@ -1549,7 +1552,7 @@ class moduleClass
 				}
 
 				if ($this->config['params']['doc'] == 'TC') {
-					$unposted = $this->coreFunctions->getfieldvalue("tchead", "docno", "''=''", [], "dateid desc");
+					$unposted = $this->coreFunctions->getfieldvalue("transnum", "docno", "doc='TC' and center=?", [$this->config['params']['center']], "trno desc");
 					if ($unposted != '') {
 						$this->config['return'] = ['head' => [], 'griddata' => [], 'islocked' => false, 'isposted' => false, 'status' => false, 'msg' => 'There are unposted Petty Cash transaction. Post it first to continue.', 'clickobj' => [], 'backlisting' => false];
 						return $this;
@@ -1847,6 +1850,7 @@ class moduleClass
 							case 52: //technolab
 								$clickclient = [];
 								break;
+							case 69: // Cemphil
 							case 24: //goodfound
 							case 48: //seastar
 								if ($doc == 'SJ') {
@@ -1971,6 +1975,9 @@ class moduleClass
 	{
 		//return params @tableName, @fieldIncrement, @fieldCode
 		switch (strtoupper($doc)) {
+			case 'CARMAKESETUP': // AUTOSERV
+				return array('cmake', 'id', 'carcode');
+				break;
 			case 'TM':
 				return array('tmhead', 'trno', 'clientid');
 				break;

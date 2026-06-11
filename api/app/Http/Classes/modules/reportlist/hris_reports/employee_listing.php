@@ -117,8 +117,11 @@ class employee_listing
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $sectname   = $config['params']['dataparams']['sectname'];
     $empstatus = $config['params']['dataparams']['empstatus'];
     $branch = $config['params']['dataparams']['branch'];
     $branchname = $config['params']['dataparams']['branchname'];
@@ -127,15 +130,18 @@ class employee_listing
     if ($client != "") {
       $filters .= " and client.client = '$client'";
     }
-    if ($divid != "") {
-      $filters .= " and e.divid = $divid";
-    }
-    if ($deptid != "") {
-      $filters .= " and e.deptid = $deptid";
-    }
-    if ($sectid != "") {
-      $filters .= " and e.sectid = $sectid";
-    }
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filters .= " and e.divid = $divid";
+    }}
+    if ($deptname != '') {
+        if ($deptid != 0) {
+            $filters .= " and e.deptid = $deptid";
+    }}
+    if ($sectname != '') {
+        if ($sectid != 0) {
+            $filters .= " and e.sectid = $sectid";
+    }}
     if ($branchname != "") {
       if ($branch != 0) $filters .= " and e.branchid = '$branch'";
     }

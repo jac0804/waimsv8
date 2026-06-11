@@ -728,4 +728,69 @@ class sbcscript
         console.log("load",payload);'
     ];
   }
+  public function dy($config)
+  {
+    return [
+      'head' => '
+      if(payload.field !== undefined){
+         switch(payload.field){
+           case "reimbursement":
+             if(payload.value != ""){
+               if(Number(state.headerdata.amt)  != 0){
+                 state.headercols.col1.amt.required = false;
+               }else {
+               state.headerdata.amt = "";
+               state.headercols.col1.amt.required = true;
+               }
+             } else {
+               state.headercols.col1.amt.required = false;
+               if(Number(state.headerdata.amt)  != 0){
+                  state.headercols.col1.reimbursement.required = true;
+                } else {
+                  state.headercols.col1.reimbursement.required = false;
+                }
+             }
+           break;
+           case "amt":
+             if(Number(payload.value) != 0){
+               state.headercols.col1.reimbursement.required = true;
+             } else {
+              state.headercols.col1.reimbursement.required = false;
+
+              if(state.headerdata.reimbursement != ""){
+                state.headercols.col1.amt.required = true;
+              }else {
+                state.headercols.col1.amt.required = false;
+              }
+             }
+           break;
+         }
+       }
+      '
+    ];
+  }
+
+  public function carmakesetup($config)
+  {
+    return [
+      'headbtnclick' => ' 
+          if (payload.payload.name === "new") {
+            if (state.tableentryobject.tabbuttons !== undefined) {
+                for (var x in state.tableentryobject.tabbuttons) {
+                    state.tableentryobject.tabbuttons[x].visible = false;
+                }
+            }
+        }
+
+         if(payload.payload.name === "save" || payload.payload.name === "cancel") {
+            if (state.tableentryobject.tabbuttons !== undefined) {
+                for (var x in state.tableentryobject.tabbuttons) {
+                    state.tableentryobject.tabbuttons[x].visible = true;
+                }
+            }
+        }
+
+      '
+    ];
+  }
 } // end class

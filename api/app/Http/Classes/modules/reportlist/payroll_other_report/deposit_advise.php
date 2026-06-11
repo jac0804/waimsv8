@@ -137,7 +137,9 @@ class deposit_advise
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
     $bank     = $config['params']['dataparams']['bank'];
     $batch =  $config['params']['dataparams']['line'];
 
@@ -148,12 +150,20 @@ class deposit_advise
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    if ($deptid != 0 && $deptid != "") {
-      $filter1 .= " and emp.deptid = $deptid";
-    }
-    if ($divid != 0 && $divid != "") {
-      $filter2 .= " and emp.divid = $divid";
-    }
+    // if ($deptid != 0 && $deptid != "") {
+    //   $filter1 .= " and emp.deptid = $deptid";
+    // }
+    // if ($divid != 0 && $divid != "") {
+    //   $filter2 .= " and emp.divid = $divid";
+    // }
+    if ($deptname !=''){
+        if ($deptid != 0) {
+          $filter1 .= " and emp.deptid  = $deptid";
+    }}
+    if ($divname != '') {
+        if ($divid != 0) {
+            $filter2 .= " and emp.divid = $divid";
+    }}
     if ($bank != "") {
       $filter2 .= " and emp.bank = '" . $bank  . "'";
     }

@@ -81,7 +81,7 @@ class so
     'amenityid',
     'subamenityid',
     'tax',
-    'vattype'
+    'vattype' . 'createby'
   ];
 
   private $infoheadfields = ['trnxtype', 'approvalreason'];
@@ -784,6 +784,7 @@ class so
         $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$agentamt]['type'] = 'coldel';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $obj[0]['inventory']['columns'][$qa]['label'] = 'Served Qty';
         $obj[0]['inventory']['columns'][$weight]['type'] = 'coldel';
@@ -953,6 +954,7 @@ class so
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'ms_freight.label', 'Other Charges');
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //goodfound
         data_set($col2, 'due.label', 'Validity');
         break;
@@ -1001,6 +1003,7 @@ class so
         data_set($col3, 'podesc.lookupclass', 'lookuppodesc');
         break;
 
+      case 69: //cemphil
       case 24: //goodfound
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname', 'statname'];
         $col3 = $this->fieldClass->create($fields);
@@ -1028,7 +1031,7 @@ class so
         break;
     }
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       data_set($col3, 'statname.label', 'Type');
       data_set($col3, 'statname.lookupclass', 'lookup_sjtype');
     }
@@ -1042,6 +1045,10 @@ class so
 
     // col 4
     $fields = ['rem'];
+
+    if ($companyid == 29) { //sbc
+      $fields = ['createby', 'rem'];
+    }
     switch ($systemtype) {
       case 'MANUFACTURING':
         array_push($fields, 'sotype');
@@ -1060,7 +1067,6 @@ class so
       case 39: //cbbsi
         array_push($fields, 'approvalreason', 'rem2');
         break;
-
       default:
         if ($this->companysetup->linearapproval($config['params'])) {
           array_push($fields, 'forapproval', 'doneapproved', 'lblapproved');
@@ -1090,6 +1096,12 @@ class so
       data_set($col4, 'subamenityname.addedparams', ['amenityid']);
     }
 
+    if ($companyid == 29) { //sbc
+      data_set($col4, 'createby.lookupclass', 'lookuptmusers');
+      data_set($col4, 'createby.action', 'lookupcreateby');
+      data_set($col4, 'createby.label', 'Create By');
+    }
+
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
   }
 
@@ -1116,7 +1128,7 @@ class so
     $data[0]['creditinfo'] = '';
     $data[0]['rem2'] = '';
 
-    if ($params['companyid'] == 24) { //goodfound
+    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
       $data[0]['wh'] = $this->companysetup->getwh($params);
@@ -1176,6 +1188,9 @@ class so
     $data[0]['dvattype'] = '';
     $data[0]['tax'] = 0;
     $data[0]['vattype'] = 'NON-VATABLE';
+
+    $data[0]['createby'] = '';
+
     return $data;
   }
 
@@ -1432,7 +1447,7 @@ class so
       }
     }
 
-    if ($companyid != 24) { //not goodfound
+    if ($companyid != 24 && $companyid != 69) { //not goodfound,cemphil
       if ($data['terms'] == '') {
         $data['due'] =  $data['dateid'];
       } else {
@@ -1782,12 +1797,16 @@ class so
         $addfieldfilter = ",head.sotype";
         $addsfield = ",pdqa";
         break;
+      case 69: //cemphil
       case 24: //GFC
         $addfield = ",salestype";
         $addfieldfilter = ",head.salestype";
         break;
       case 22: //EIPI
         $addsfield = ",fstatus";
+        break;
+      case 64: //excelin 
+        $addsfield = ",limitcheck";
         break;
     }
 
@@ -1873,12 +1892,16 @@ class so
         $addfieldfilter = ",head.sotype";
         $addsfield = ",pdqa";
         break;
+      case 69: //cemphil
       case 24: //GFC
         $addfield = ",salestype";
         $addfieldfilter = ",head.salestype";
         break;
       case 22: //eipi
         $addsfield = ",fstatus";
+        break;
+      case 64: //excelin 
+        $addsfield = ",limitcheck";
         break;
     }
 

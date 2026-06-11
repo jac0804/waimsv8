@@ -180,6 +180,7 @@ class quotation_report
     $fcenter    = $config['params']['dataparams']['center'];
     $projectcode = $config['params']['dataparams']['project'];
     $dept = $config['params']['dataparams']['dept'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
 
@@ -204,7 +205,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '' ) {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -322,6 +323,7 @@ class quotation_report
     $fcenter    = $config['params']['dataparams']['center'];
     $projectcode = $config['params']['dataparams']['project'];
     $deptcode = $config['params']['dataparams']['dept'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
 
@@ -343,7 +345,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($deptcode != "") {
+      if ($deptcode != ""  && $deptname != '' ) {
         $filter1 .= " and head.deptid = $deptid";
       }
       $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
@@ -488,6 +490,7 @@ class quotation_report
           ) as a
           order by docno $sorting";
         }
+        // var_dump($query);
         break;
     }
     // var_dump($query);
@@ -509,6 +512,7 @@ class quotation_report
     $projectcode = $config['params']['dataparams']['project'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $dept = $config['params']['dataparams']['dept'];
 
     $filter = "";
@@ -530,7 +534,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -688,6 +692,7 @@ class quotation_report
     $fcenter    = $config['params']['dataparams']['center'];
     $projectcode = $config['params']['dataparams']['project'];
     $dept = $config['params']['dataparams']['dept'];
+    $deptname = $config['params']['dataparams']['deptname'];
     $projectid = $config['params']['dataparams']['projectid'];
     $deptid = $config['params']['dataparams']['deptid'];
 
@@ -710,7 +715,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "") {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 

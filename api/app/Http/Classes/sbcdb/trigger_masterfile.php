@@ -237,10 +237,21 @@ class trigger_masterfile
 		$this->batchsetup_triggers($config);
 
 		$this->tenantlocation_triggers($config);
+		$this->entrymultiapproversetup_triggers($config);
 
+		//AUTOSERVE TRIGGERS
 		$this->entrytasklabor_triggers($config);
 		$this->entrycommission_triggers($config);
-		$this->entrymultiapproversetup_triggers($config);
+
+		$this->entrycarmodel_triggers($config);
+
+		$this->entryamjob_triggers($config);
+		$this->entryamtask_triggers($config);
+
+		$this->entryjob_ak_triggers($config);
+		$this->entrycarmodel_triggers($config);
+		$this->entrytasklabor_ak_triggers($config);
+		$this->entryvehicle_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -663,7 +674,8 @@ class trigger_masterfile
 			'Bracket' => ['bracket' => []],
 			'Range 1' => ['range1' => []],
 			'Range 2' => ['range2' => []],
-			'Multiplier' => ['hdmfmulti' => []],
+			'EE % Multiplier' => ['hdmfmulti' => []],
+			'ER % Multiplier' => ['hdmfmulti2' => []],
 		];
 
 		$this->settriggermasterfilelogs($config, 'pagibig', 'hdmftab', 'masterfile_log', $fields, 'line');
@@ -2597,7 +2609,8 @@ class trigger_masterfile
 			'Percentage' => ['percentage' => []],
 			'Assigned To' => ['userid' => [true, "clientname", "client", "clientid"]],
 			'Start Date' => ['startdate' => []],
-			'End Date' => ['enddate' => []]
+			'End Date' => ['enddate' => []],
+			'Assigned Type' => ['isassigntype' => []]
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'tmdetail', 'masterfile_log', $fields, 'line', 'trno');
 	}
@@ -2612,7 +2625,10 @@ class trigger_masterfile
 			'Rate' => ['rate' => []],
 			'Date' => ['dateid' => []],
 			'Request by' => ['requestby' => [true, "username", "useraccess", "userid"]],
-			'Notes' => ['rem' => []]
+			'Project Head(%)' => ['phperc' => []],
+			'Implementor(%)' => ['impperc' => []],
+			'Dev(%)' => ['devperc' => []],
+			'SJ Date' => ['sjdate' => []]
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'tmhead', 'masterfile_log', $fields, 'trno');
 	}
@@ -2753,5 +2769,87 @@ class trigger_masterfile
 			'Supervisor' => ['issupervisor' => []]
 		];
 		$this->settriggermasterfilelogs($config, 'APPROVER_SETUP', 'multiapprover', 'payroll_log', $fields, 'line', 'empid');
+	}
+
+	private function entryjob_ak_triggers($config)
+	{
+		$doc = 'ENTRYJOB';
+		$fields = [
+			'Job Code' =>  ['jobid' => [true, "docno", "jobthead", "line"]],
+			'Job Description' =>  ['jobid' => [true, "jobtitle", "jobthead", "line"]],
+			'Notes' => ['rem' => []]
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'ptjobs', 'masterfile_log', $fields, 'line', 'trno');
+	}
+
+	private function entrycarmodel_triggers($config)
+	{
+		$fields = [
+			'Car'        => ['carid'      => [true, "carname", "cmake", "id"]],
+			'Year'       => ['year'       => []],
+			'Model'      => ['model'      => []],
+			'Type'       => ['type'       => []],
+			'Sub Model'  => ['sub_model'  => []],
+			'Other Info' => ['other_info' => []],
+		];
+		$this->settriggermasterfilelogs($config, 'carmakesetup', 'cmodel', 'masterfile_log', $fields, 'line', 'carid');
+	}
+
+	private function entrytasklabor_ak_triggers($config)
+	{
+		$doc = 'ENTRYLABOR';
+		$fields = [
+			'Task Code' =>  ['laborline' => [true, "code", "jobtask", "line"]],
+			'Task Description' =>  ['laborline' => [true, "description", "jobtask", "line"]],
+			'Cost' => ['cost' => []],
+			'Rate' => ['rate' => []],
+			'Notes' => ['rem' => []]
+		];
+		$this->settriggermasterfilelogs($config,  $doc, 'pttask', 'masterfile_log', $fields, 'line');
+	}
+
+	private function entryamjob_triggers($config)
+	{
+		$doc = 'ENTRYJOBDETAILS';
+		$fields = [
+			'Job Code' =>  ['jobid' => [true, "docno", "jobthead", "line"]],
+			'Job Description' =>  ['jobid' => [true, "jobtitle", "jobthead", "line"]],
+			'Notes' => ['rem' => []]
+			// 'Package' => ['packageline' => []]
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'amjobs', 'masterfile_log', $fields, 'line', 'trno');
+	}
+
+	private function entryamtask_triggers($config)
+	{
+		$doc = 'ENTRYAMTASK';
+		$fields = [
+			'Task Code' =>  ['laborline' => [true, "code", "jobtask", "line"]],
+			'Task Description' =>  ['laborline' => [true, "description", "jobtask", "line"]],
+			'Cost' => ['cost' => []],
+			'Rate' => ['rate' => []],
+			'Notes' => ['rem' => []]
+		];
+		$this->settriggermasterfilelogs($config,  $doc, 'amtask', 'masterfile_log', $fields, 'line', 'trno');
+	}
+
+	private function entryvehicle_triggers($config)
+	{
+	    $fields = [
+	        'Client ID'    => ['clientid'     => [true, "clientid",   "cvehicle", "line"]],
+	        'Car Make'     => ['cmake'        => []],
+	        'Car ID'       => ['carid'        => []],
+	        'Model Line'   => ['cmodelline'   => []],
+	        'License No'   => ['licenseno'    => []],
+	        'Mileage'      => ['mileage'      => []],
+	        'Engine'       => ['carengine'    => []],
+	        'Transmission' => ['transmission' => []],
+	        'Motor No'     => ['motorno'      => []],
+	        'Chassis'      => ['chassis'      => []],
+	        'MV No'        => ['mvno'         => []],
+	        'Insurance'    => ['insurance'    => []],
+	        'Labor'        => ['labor'        => []],
+	    ];
+	    $this->settriggermasterfilelogs($config, 'customer', 'cvehicle', 'masterfile_log', $fields, 'line', 'clientid');
 	}
 }// end class

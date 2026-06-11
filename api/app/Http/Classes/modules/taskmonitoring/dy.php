@@ -40,7 +40,7 @@ class dy
 
 
 
-  private $fields = ['clientid', 'tasktrno', 'taskline', 'reftrno', 'rem', 'amt', 'userid', 'dateid', 'donedate', 'statid', 'apvtrno', 'jono', 'createdate', 'empid', 'reseller', 'isprev', 'rem1', 'taskcatid', 'complexity', 'assignedid'];
+  private $fields = ['clientid', 'tasktrno', 'taskline', 'reftrno', 'rem', 'amt', 'userid', 'dateid', 'donedate', 'statid', 'apvtrno', 'jono', 'createdate', 'empid', 'reseller', 'isprev', 'rem1', 'taskcatid', 'complexity', 'assignedid', 'reimbursement'];
   private $except = [];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -107,7 +107,7 @@ class dy
     $cols[$checkerdate]['label'] = 'Done Date';
     $cols[$rem1]['label'] = 'Solution Remarks';
     $cols[$statname]['label'] = 'Status';
-    $cols[$amt]['label'] = 'Amount';
+    $cols[$amt]['label'] = 'Reimbursement Amount';
     $cols[$rem]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$jono]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;';
     $cols[$rem]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
@@ -260,6 +260,8 @@ class dy
   public function createTab($access, $config)
   {
     $tab = [];
+    $tab['tableentry'] = ['action' => 'taskentry', 'lookupclass' => 'viewpendingso', 'label' => 'PENDING SO'];
+    $tab['tableentry2'] = ['action' => 'taskentry', 'lookupclass' => 'viewassignedso', 'label' => 'ASSIGNED SO'];
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
@@ -283,12 +285,12 @@ class dy
   public function createHeadField($config)
   {
     $allowbypass = $this->othersClass->checkAccess($config['params']['user'], 5601);
-    $fields = ['client', 'clientname', 'reseller', 'rem', ['amt', 'jono']];
+    $fields = ['client', 'clientname', 'reseller', 'rem', ['amt', 'jono'], 'reimbursement'];
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'client.lookupclass', 'taskcustomerlookup');
     // data_set($col1, 'jono.label', 'JO#');
-    data_set($col1, 'amt.label', 'Amount');
+    data_set($col1, 'amt.label', 'Reimbursement Amount');
     data_set($col1, 'clientname.class', 'csclientname sbccsreadonly');
     data_set($col1, 'reseller.label', 'Reseller Customer');
     data_set($col1, 'rem.required', true);
@@ -373,6 +375,7 @@ class dy
     //3/24/2026 -rwen
     $data[0]['assignedid'] = 0;
     $data[0]['username'] = '';
+    $data[0]['reimbursement'] = '';
 
     return $data;
   }
@@ -385,7 +388,7 @@ class dy
            dt.tasktrno,dt.taskline,dt.reftrno, dt.rem, dt.amt,
            dt.userid,date(dt.dateid) as dateid, date(dt.donedate) as donedate, dt.statid, dt.apvtrno,dt.jono,
            dt.clientid as custid,dt.empid,ck.clientname as empname,dt.reseller,dt.isprev,dt.rem1,req.category,
-           dt.complexity,dt.assignedid, ifnull(assigned.clientname,'') as username,dt.taskcatid
+           dt.complexity,dt.assignedid, ifnull(assigned.clientname,'') as username,dt.taskcatid,dt.reimbursement
            from dailytask as dt
            left join client as cl on cl.clientid=dt.clientid 
            left join client as ck on ck.clientid=dt.empid 
@@ -397,7 +400,7 @@ class dy
            dt.tasktrno,dt.taskline,dt.reftrno, dt.rem, dt.amt,
            dt.userid,date(dt.dateid) as dateid, date(dt.donedate) as donedate, dt.statid, dt.apvtrno,dt.jono,
            dt.clientid as custid,dt.empid,ck.clientname as empname,dt.reseller,dt.isprev,dt.rem1,req.category,
-           dt.complexity,dt.assignedid, ifnull(assigned.clientname,'') as username,dt.taskcatid
+           dt.complexity,dt.assignedid, ifnull(assigned.clientname,'') as username,dt.taskcatid,dt.reimbursement
            from hdailytask as dt
            left join client as cl on cl.clientid=dt.clientid 
            left join client as ck on ck.clientid=dt.empid 
@@ -468,7 +471,9 @@ class dy
     } else {
       if ($data['isprev']) goto CantUpdateHere;
     }
-
+    // $data['reimbursement']
+    // var_dump($data);
+    // break;
     if ($isupdate) {
       if ($head['empid'] != $head['userid']) {
         $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
@@ -576,5 +581,9 @@ class dy
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+  }
+  public function sbcscript($config)
+  {
+    return $this->sbcscript->dy($config);
   }
 } //end class

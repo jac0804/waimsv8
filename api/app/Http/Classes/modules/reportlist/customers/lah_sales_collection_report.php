@@ -54,7 +54,6 @@ class lah_sales_collection_report
         data_set($col1, 'end.required', true);
         data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
         data_set($col1, 'dclientname.label', 'Customer');
-        data_set($col1, 'dcentername.lookupclass', 'getmultibranch');
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);

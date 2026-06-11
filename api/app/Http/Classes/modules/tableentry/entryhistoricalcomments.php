@@ -157,20 +157,29 @@ class entryhistoricalcomments
           break;
         case 'TM':
         case 'TK':
-          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr 
+          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
+                  from headprrem as pr 
                   left join client on client.email=pr.createby where pr.tmtrno=$trno and pr.tmline=$line
                   union all
-                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr
+                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
+                  from headprrem as pr
                   left join dailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
                   where dy1.tasktrno=$trno and dy1.taskline=$line
                   union all
-                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate from headprrem as pr
+                  select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
+                  from headprrem as pr  
                   left join hdailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
                   where dy1.tasktrno=$trno and dy1.taskline=$line
-                  order by createdate desc"; //para makita yung ni comment sa dailytask listing 
+                  union all
+                  select concat('Solution Remarks: ','\r\n',pr.rem1) as rem,cl.clientname as createby,pr.donedate as createdate,'' as seendate
+                  from hdailytask as pr
+                  left join client as cl on cl.clientid = pr.userid
+                  where pr.tasktrno=$trno and pr.taskline=$line
+                  order by createdate desc";  //para makita yung ni comment sa dailytask listing at solution remarks ng mga done
           break;
         case 'DY':
-          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate,pr.touser from headprrem as pr  
+          $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate,pr.touser 
+          from headprrem as pr  
           left join client on client.email=pr.createby where pr.dytrno=$trno order by pr.line desc";
           break;
       }

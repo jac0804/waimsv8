@@ -92,7 +92,7 @@ class counter_receipt
     //   '' as dclientname";
     // }else{
       $addedparams = "adddate(left(now(),10),-360) as start,
-      left(now(),10) as end,";
+      left(now(),10) as end";
       
     // }
     
@@ -108,7 +108,7 @@ class counter_receipt
       '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
       '' as reportusers,
       '' as agent, '' as agentname,'0' as agentid,
-      '' as dagentname
+      '' as dagentname, 
       $addedparams
     ");
   }

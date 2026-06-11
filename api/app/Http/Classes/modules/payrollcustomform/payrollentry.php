@@ -261,6 +261,12 @@ class payrollentry
             goto computepaytranhere;
           }
           break;
+        case 68: //jda
+          $paytran_success = $this->payrollcommon->computeemptimesheet_jda($batch, $config['params']['dataparams']['enddate'], $empid, $start, $end, $user, $batchcode, $config['params']);
+          if ($paytran_success['status']) {
+            goto computepaytranhere;
+          }
+          break;
         default:
           computepaytranhere:
           $paytran_success = $this->payrollcommon->generatePayTranCurrent($config);
@@ -306,7 +312,7 @@ class payrollentry
       union all
       select '2' as psort, pac.seq, date(ts.dateid) as dateid, pac.code as acno, pac.codename, ts.qty, ts.uom, ts.line, '' as 'bgcolor', ts.empid, ts.batchid, ts.acnoid
       from timesheet as ts left join paccount as pac on pac.line=ts.acnoid
-      where ts.batchid=" . $batch . " and ts.empid=" . $empid . " and ts.qty=0 
+      where ts.batchid=" . $batch . " and ts.empid=" . $empid . " and ts.qty=0 and ts.acnoid<>0
       order by psort, seq";
 
     $data = $this->coreFunctions->opentable($qry);

@@ -2212,7 +2212,7 @@ class sj
     }
 
     $line = 0;
-
+    $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,startwire,endwire,iswireitem,isreversewireitem from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -2239,26 +2239,26 @@ class sj
       $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
       if ($item[0]->iswireitem == 1){
-        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid, $itemid]);
+        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? and whid=? union all select trno, startwire, endwire from glstock where itemid=? and whid = ?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid,$whid, $itemid,$whid]);
         if (!empty($lastitem)) {        
           $startwire = $lastitem[0]->endwire ;
-          $endwire = $startwire + $qty;
+          if ($item[0]->isreversewireitem == 1){
+            $endwire = $startwire - $qty;
+          }else{
+            $endwire = $startwire + $qty;
+          }
+          
         } else {
           $startwire = $item[0]->startwire;
-          $endwire = $item[0]->endwire;
+          if ($item[0]->isreversewireitem == 1){
+            $endwire = $startwire - $qty;
+          }else{
+            $endwire = $startwire + $qty;
+          }
         }
-      } 
 
-      if ($item[0]->isreversewireitem == 1){
-        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid, $itemid]);
-        if (!empty($lastitem)) {        
-          $startwire = $lastitem[0]->endwire ;         
-          $endwire = $startwire - $qty;
-        } else {
-          $startwire = $item[0]->startwire;
-          $endwire = $item[0]->endwire;
-        }
-      }
+
+      } 
 
     } elseif ($action == 'update') {
       $config['params']['line'] = $config['params']['data']['line'];
@@ -2277,8 +2277,7 @@ class sj
     
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
-    $curtopeso = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
-    $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
+    $curtopeso = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);    
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
 
     if ($disc != "") {

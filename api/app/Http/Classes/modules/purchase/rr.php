@@ -879,6 +879,7 @@ class rr
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
 
     switch ($companyid) {
       case 59: //ROOSEVELT
@@ -980,6 +981,7 @@ class rr
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $obj[0]['inventory']['columns'][$cost]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px';
         $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
@@ -1053,7 +1055,7 @@ class rr
     }
 
 
-    if ($companyid != 24 && $companyid != 65) { //not goodfound/metro dragon
+    if ($companyid != 24 && $companyid != 69 && $companyid != 65) { //not goodfound/cemphil/metro dragon
       if ($viewcost == '0') {
         if ($viewcost == '0') {
           $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
@@ -1104,6 +1106,7 @@ class rr
       case 10: //afti
         $this->modulename = 'PURCHASE RECEIVING';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $this->modulename = 'SUPPLIES RECEIVING REPORT';
         break;
@@ -1201,6 +1204,7 @@ class rr
         data_set($col2, 'invoiceno.type', 'cinput');
         data_set($col2, 'invoiceno.maxlength', 25);
         break;
+      case 69: // cemphil
       case 24: //goodfound
         $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'dacnoname', 'dwhname', ['dewt', 'dexcess']];
         $col2 = $this->fieldClass->create($fields);
@@ -2051,7 +2055,7 @@ class rr
         $checkacct = $this->othersClass->checkcoaacct(['AP1', 'TX1']);
       }
 
-      if ($companyid == 24) $checkacct = $this->othersClass->checkcoaacct(['INS1']); //goodfound
+      if ($companyid == 24 || $companyid == 69) $checkacct = $this->othersClass->checkcoaacct(['INS1']); //goodfound, cemphil
 
       if ($checkacct != '') {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
@@ -3494,9 +3498,11 @@ class rr
       if ($isproject) {
         $isho = $this->coreFunctions->getfieldvalue("projectmasterfile", "isho", "line = " . $projectid);
         if (!$isho) {
-          if ($data['stageid'] == 0) {
-            $msg = 'Stage cannot be blank -' . $item[0]->barcode;
-            return ['status' => false, 'msg' => $msg];
+          if ($this->companysetup->getsystemtype($config['params']) != 'REALESTATE') {
+            if ($data['stageid'] == 0) {
+              $msg = 'Stage cannot be blank -' . $item[0]->barcode;
+              return ['status' => false, 'msg' => $msg];
+            }
           }
         }
       }
@@ -3787,6 +3793,7 @@ class rr
           case 39: //cbbsi
             $this->coreFunctions->execqry("update lahead set ourref='" . $data[0]->docno . "' where trno=" . $trno, "update");
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $this->coreFunctions->execqry("update lahead set terms='" . $data[0]->terms . "', vattype='" . $data[0]->vattype . "', tax=" . $data[0]->tax . ", 
                                                   yourref='" . $data[0]->yourref . "', ourref='" . $data[0]->ourref . "',ewt='" . $data[0]->ewt . "' ,
@@ -3814,7 +3821,7 @@ class rr
             $config['params']['data']['wh'] = $wh;
           }
 
-          if ($companyid == 24) { //goodfound
+          if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             $config['params']['data']['loc'] = $data[$key2]->loc;
             if ($data[$key2]->yourref != "") {
               $this->coreFunctions->execqry("update lahead set yourref='" . $data[$key2]->yourref . "' where trno = " . $trno, 'update');
@@ -3940,7 +3947,7 @@ class rr
         }
 
 
-        if ($companyid == 24) { //goodfound
+        if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
           $this->coreFunctions->execqry("update lahead set 
           terms='" . $data[0]->terms . "', 
           vattype='" . $data[0]->vattype . "', 
@@ -3975,7 +3982,7 @@ class rr
           $config['params']['data']['qty'] = $data[$key2]->rrqty;
           $config['params']['data']['wh'] = $wh;
 
-          if ($companyid == 24) { //goodfound
+          if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
             $config['params']['data']['loc'] = $data[$key2]->loc;
             if ($data[$key2]->yourref != "") {
               $this->coreFunctions->execqry("update lahead set yourref='" . $data[$key2]->yourref . "' where trno = " . $trno, 'update');
@@ -4077,6 +4084,7 @@ class rr
         left join item on item.itemid=stock.itemid left join projectmasterfile as p on p.line = stock.projectid 
         left join coa as a on a.acnoid = p.assetid left join coa as r on r.acnoid = p.revenueid where head.trno=?';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
         stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt,head.excess,head.excessrate
@@ -4122,7 +4130,7 @@ class rr
         $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['PS1']); //Purchases acct under asset 
       } else {
         $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN1']);
-        if ($companyid == 24) $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['INS1']); //goodfound        
+        if ($companyid == 24 || $companyid == 69) $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['INS1']); //goodfound, cemphil        
       }
 
       $vat = $stock[0]->tax;
@@ -4138,7 +4146,7 @@ class rr
         $ewt = $stock[0]->ewtrate / 100;
       }
 
-      if ($companyid == 24) { //goodfound
+      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         if ($stock[0]->excessrate != 0) {
           $excesstax = $stock[0]->excessrate / 100;
         }
@@ -4164,7 +4172,7 @@ class rr
         }
         $delcharge += $stock[$key]->freight;
 
-        if ($companyid == 24) $stock[$key]->asset = ''; //goodfound
+        if ($companyid == 24 || $companyid == 69) $stock[$key]->asset = ''; //goodfound, cemphil
         if ($companyid == 10) {
           if ($stock[$key]->asset == '') {
             return false;
@@ -4257,6 +4265,7 @@ class rr
             $params['ewt'] = $ewt;
             $params['ewtcode'] = $stock[$key]->ewt;
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $params['ewt'] = $ewt;
             $params['ewtcode'] = $stock[$key]->ewt;
@@ -4473,7 +4482,7 @@ class rr
       }
     }
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       if ($params['excesstax'] != 0) {
         if ($params['tax'] != 0) {
           $excesstax = round(($params['ext'] - $params['tax']) * $params['excesstax'], 2);
@@ -4682,7 +4691,7 @@ class rr
       }
     }
 
-    if ($companyid == 24) { //goodfound
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       if ($params['ewt'] != 0) {
         $ewt = round($params['ext'] * $params['ewt'], 2);
         $ext = round($params['ext'] - $ewt, 2);
@@ -4803,7 +4812,7 @@ class rr
     if (floatval($invamt) != 0) {
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
       $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $params['cost'], 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['cost'] / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
-      if ($companyid == 10 || $companyid == 24) { //afti,goodfound
+      if ($companyid == 10 || $companyid == 24 || $companyid == 69) { //afti,goodfound,cemphil
         $entry['branch'] = $params['branch'];
         $entry['deptid'] = $params['deptid'];
         if ($ewt != 0) {

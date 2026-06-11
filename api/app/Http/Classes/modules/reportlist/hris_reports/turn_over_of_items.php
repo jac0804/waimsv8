@@ -106,6 +106,7 @@ class turn_over_of_items
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptrep'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -115,9 +116,14 @@ class turn_over_of_items
     if ($client != "") {
       $filter .= " and em.client = '$client'";
     }
-    if ($deptid != 0) {
-      $filter1 .= " and d.clientid = $deptid";
-    }
+    // if ($deptid != 0) {
+    //   $filter1 .= " and d.clientid = $deptid";
+    // }
+
+    if ($deptname !=''){
+        if ($deptid != 0) {
+          $filter1 .= " and d.clientid = $deptid";
+    }}
 
     $query = "SELECT head.trno,'' as client,head.docno,head.empid,em.client as empcode,em.clientname as empname,
   head.deptid,d.client as dept,date(head.dateid) as dateid,head.jobtitle,head.rem,detail.itemname,

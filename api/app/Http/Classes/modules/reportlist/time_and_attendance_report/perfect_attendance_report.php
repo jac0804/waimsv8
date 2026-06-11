@@ -108,17 +108,20 @@ class perfect_attendance_report
 
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname     = $config['params']['dataparams']['deptname'];
     $sectid     = $config['params']['dataparams']['sectid'];
+    $sectname     = $config['params']['dataparams']['sectname'];
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
     $filter = '';
 
-    if ($client != "") $filter .= " and cl.client = '$client'";
-    if ($deptid != 0) $filter .= " and emp.deptid = $deptid";
-    if ($divid != 0) $filter .= " and emp.divid = $divid";
-    if ($sectid != 0) $filter .= " and emp.sectid = $sectid";
+    if ($client != "" ) $filter .= " and cl.client = '$client'";
+    if ($deptid != 0 && $deptname != '') $filter .= " and emp.deptid = $deptid";
+    if ($divid != 0 && $divname != '') $filter .= " and emp.divid = $divid";
+    if ($sectid != 0 && $sectname != '') $filter .= " and emp.sectid = $sectid";
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

@@ -239,15 +239,36 @@ class sj
       'Business Address' => $data[0]['address'],
     ];
     PDF::SetFont($font, '', 11);
-    foreach ($rows as $label => $value) {
-      PDF::Cell($indent, $lineHeight, '', 0, 0); // empty space
-      PDF::Cell($labelWidth, $lineHeight, $label != "" ? '' : '', 0, 0);
-      PDF::Cell($colonWidth, $lineHeight, '', 0, 0);
-      if ($label == 'Business Address') {
-        PDF::SetFont($font, '', 11);
-      }
-      PDF::Cell(0, $lineHeight, $value, 0, 1);
-    }
+    PDF::Cell(7, 24.5, '', 0, 0); // empty space
+    PDF::Cell(145, 24.5, '', 0, 0);
+    PDF::Cell(10, 24.5, '', 0, 0);
+
+    PDF::Cell(400, 24.5, $data[0]['clientname'], 0, 0);
+    PDF::Cell(0, 24.5, $data[0]['agname'], 0, 1);
+
+    PDF::Cell(7, 24.5, '', 0, 0); // empty space
+    PDF::Cell(145, 24.5, '', 0, 0);
+    PDF::Cell(10, 24.5, '', 0, 0);
+
+    PDF::Cell(400, 24.5, $data[0]['tin'], 0, 0);
+    PDF::Cell(0, 24.5, $data[0]['terms'], 0, 1);
+
+    PDF::Cell(7, 24.5, '', 0, 0); // empty space
+    PDF::Cell(145, 24.5, '', 0, 0);
+    PDF::Cell(10, 24.5, '', 0, 0);
+
+    PDF::Cell(400, 24.5, $data[0]['address'], 0, 0);
+    PDF::Cell(0, 24.5, $data[0]['yourref'], 0, 1);
+
+    // foreach ($rows as $label => $value) {
+    //   PDF::Cell($indent, $lineHeight, '', 0, 0); // empty space
+    //   PDF::Cell($labelWidth, $lineHeight, $label != "" ? '' : '', 0, 0);
+    //   PDF::Cell($colonWidth, $lineHeight, '', 0, 0);
+    //   if ($label == 'Business Address') {
+    //     PDF::SetFont($font, '', 11);
+    //   }
+    //   PDF::Cell(0, $lineHeight, $value, 0, 1);
+    // }
     PDF::SetFont('helvetica', 'B', $fontsize);
     // $h = 7; // row height
     // PDF::SetFont($fontbold, '', $fontsize);
@@ -259,6 +280,8 @@ class sj
     PDF::MultiCell(120, 0, '', '', 'C', false, 0); # UNIT PRICE
     PDF::MultiCell(120, 0, '', '', 'C', false, 1); # AMOOUNT P
   }
+
+
 
   public function default_SILabsol_PDF($params, $data)
   {
@@ -273,47 +296,83 @@ class sj
     $font = "";
     $fontbold = "";
     $border = "1px solid ";
-    $fontsize = "11";
+    $fontsize = "1";
+    $rowHeight = 12;
+
     if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
+
     $this->default_newsi_header_PDF($params, $data);
     PDF::SetFont($font, '', 5.5);
     PDF::MultiCell(0, 0, '', '', 'L', false, 1);
 
     $itemno = 0;
+
     if (!empty($data)) {
       $j = 0;
-      for ($i = 0; $i < count($data); $i++) {
-        $maxrow = 1;
 
+      for ($i = 0; $i < count($data); $i++) {
         $itemname = $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 0);
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
+        $disc = $data[$i]['disc'];
+        $total = $data[$i]['amt'] * $data[$i]['qty'];
 
-        $arr_uom      = $this->reporter->fixcolumn([$uom], '6', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '6', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '55', 0);
-        $arr_qty      = $this->reporter->fixcolumn([$qty], '13', 0);
-        $arr_amt      = $this->reporter->fixcolumn([$amt], '13', 0);
-        $arr_ext      = $this->reporter->fixcolumn([$ext], '15', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
+
         $itemno++;
         $maxrow = $this->othersClass->getmaxcolumn([$arr_uom, $arr_itemname, $arr_qty, $arr_amt, $arr_ext]);
 
         for ($r = 0; $r < $maxrow; $r++) {
           $j++;
           PDF::SetFont($font, '', 10);
-          PDF::MultiCell(7,   1, '',                                          '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(50,  1, $r == 0 ? $itemno : '',                     '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(55,  1, isset($arr_qty[$r])      ? $arr_qty[$r]      : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(60,  1, isset($arr_uom[$r])      ? $arr_uom[$r]      : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(333, 1, isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(110, 1, isset($arr_amt[$r])      ? $arr_amt[$r]      : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(110, 1, isset($arr_ext[$r])      ? $arr_ext[$r]      : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(5,   1, '',                                          '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(7, $rowHeight, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(50, $rowHeight, $r == 0 ? $itemno : '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(55, $rowHeight, isset($arr_qty[$r]) ? $arr_qty[$r] : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(60, $rowHeight, isset($arr_uom[$r]) ? $arr_uom[$r] : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(333, $rowHeight, isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(110, $rowHeight, isset($arr_amt[$r]) ? $arr_amt[$r] : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(110, $rowHeight, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(5, $rowHeight, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
         }
+
+        if ($disc != '') {
+          $j++;
+          $discamt = 0;
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d);
+            if (strpos($d, '%') !== false) {
+              $percent = floatval(str_replace('%', '', $d));
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
+          }
+
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(7,  $rowHeight, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(50,  $rowHeight, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(55,  $rowHeight, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(60,  $rowHeight, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(333, $rowHeight, 'Discount ' . $disc, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(110, $rowHeight, $disc, '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(110, $rowHeight, '-' . $discamt, '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(5,   $rowHeight, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+        }
+
         $totalext += $data[$i]['ext'];
 
         if (PDF::getY() > 560) {
@@ -323,7 +382,7 @@ class sj
       }
 
       PDF::MultiCell(0, 0, '', '', 'L', false, 1);
-      PDF::MultiCell(10,  23.5, '',                         '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(10, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(720, 23.5, 'Notes: ' . $data[0]['rem'], '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
 
       $this->getlines($j);
@@ -331,6 +390,7 @@ class sj
 
       $vat = 0;
       $vatsale = 0;
+
       if ($data[0]['vattype'] == 'VATABLE') {
         $vatsale = $totalext / 1.12;
         $vat = ($totalext / 1.12) * .12;
@@ -339,85 +399,75 @@ class sj
 
       PDF::SetFont($font, '', 4);
       PDF::MultiCell(0, 0, '', '', 'L', false, 1);
+      PDF::setAbsY(625);
 
-      // *** LOCK VAT SECTION TO FIXED POSITION ALWAYS ***
-      PDF::setAbsY(622); // adjust this number to move up or down
-
-      // VATable Sales / Total Sales (VAT Inclusive)
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, $vatsale != 0 ? number_format($vatsale, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, number_format($totalext, 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // VAT / Less: VAT
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, $vat != 0 ? number_format($vat, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, $vat != 0 ? number_format($vat, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // Zero-Rated Sales / Amount: Net of VAT
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, $vatsale != 0 ? number_format($vatsale, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // VAT-Exempt Sales / Less Discount
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::SetFont($font, '', 12);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // Add: VAT
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, '', false);
       PDF::MultiCell(140, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, $vat != 0 ? number_format($vat, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // Less: Withholding Tax
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
 
-      // Total Amount Due
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(7,   23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(7, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(190, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(140, 23.5, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(8,   23.5, '', '', '',  false, 0, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(8, 23.5, '', '', '', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(240, 23.5, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
       PDF::MultiCell(136, 23.5, number_format($totalext, 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(9,   23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
+      PDF::MultiCell(9, 23.5, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
     }
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
   public function default_sj_header_PDF($params, $data)
   {
     $center = $params['params']['center'];
@@ -532,6 +582,8 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
 
+        $disc = $data[$i]['disc'];
+
 
         $arr_c = $this->reporter->fixcolumn([number_format($c, 0)], '5', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '45', 0);
@@ -550,6 +602,8 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
+
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
@@ -557,13 +611,44 @@ class sj
           PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '190', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '260', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '624', '', false, 1);
+        }
 
-          if (PDF::getY() > 390) {
-            // $this->DR_footer_PDF($params, $data, $grandtotal);
-            $this->default_sj_header_PDF($params, $data);
-            PDF::MultiCell(0, 40, "");
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
           }
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(100, 0, '', '', 'C', false, 0, '15', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '55', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '190', '', false, 1);
+          PDF::MultiCell(300, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '260', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '520', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '624', '', false, 1);
+        }
+
+        if (PDF::getY() > 390) {
+          // $this->DR_footer_PDF($params, $data, $grandtotal);
+          $this->default_sj_header_PDF($params, $data);
+          PDF::MultiCell(0, 40, "");
         }
       }
     }
@@ -733,6 +818,8 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
 
+        $disc = $data[$i]['disc'];
+
 
         $arr_c = $this->reporter->fixcolumn([number_format($c, 0)], '5', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '45', 0);
@@ -751,6 +838,7 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
@@ -758,13 +846,44 @@ class sj
           PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '173', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '231', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '624', '', false, 1);
+        }
 
-          if (PDF::getY() > 390) {
-            // $this->DR2_footer_PDF($params, $data, $grandtotal);
-            $this->DR2_header_PDF($params, $data);
-            PDF::MultiCell(0, 40, "");
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
           }
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(100, 0, '', '', 'C', false, 0, '15', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '55', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '173', '', false, 1);
+          PDF::MultiCell(300, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '231', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '520', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '624', '', false, 1);
+        }
+
+        if (PDF::getY() > 390) {
+          // $this->DR2_footer_PDF($params, $data, $grandtotal);
+          $this->DR2_header_PDF($params, $data);
+          PDF::MultiCell(0, 40, "");
         }
       }
     }
@@ -967,6 +1086,7 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
         $uom = $data[$i]['uom'];
+        $disc = $data[$i]['disc'];
 
         $arr_uom = $this->reporter->fixcolumn([$uom], '10', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '150', 0);
@@ -982,20 +1102,50 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '-39', '', false, 1);
           PDF::MultiCell(100, 0, $uom, '', 'L', false, 0, '70', '', false, 1);
           PDF::MultiCell(450, 0, $item, '', 'L', false, 0, '120', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '545', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '658', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '658', '', false, 1);
+        }
 
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
 
-          if (PDF::getY() > 560) {
-            // $this->default_footer_PDF($params, $data, $grandtotal);
-            $this->default_siP_header_PDF($params, $data);
-            PDF::MultiCell(0, 35, "");
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
           }
+          $discamt = number_format($discamt, 2);
+          PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '-39', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '70', '', false, 1);
+          PDF::MultiCell(450, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '120', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '545', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '658', '', false, 1);
+        }
+
+
+        if (PDF::getY() > 560) {
+          // $this->default_footer_PDF($params, $data, $grandtotal);
+          $this->default_siP_header_PDF($params, $data);
+          PDF::MultiCell(0, 35, "");
         }
       }
     }
@@ -1174,6 +1324,7 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
         $uom = $data[$i]['uom'];
+        $disc = $data[$i]['disc'];
 
         $arr_uom = $this->reporter->fixcolumn([$uom], '10', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '60', 0);
@@ -1189,19 +1340,50 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(370, 0, $item, '', 'L', false, 0, '40', '', false, 1);
           PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '369', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '508', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '653', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '653', '', false, 1);
+        }
 
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
 
-          if (PDF::getY() > 560) {
-            // $this->default_footerNEW_PDF($params, $data, $grandtotal);
-            $this->default_siNEW_header_PDF($params, $data);
-            PDF::MultiCell(0, 35, "");
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
           }
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(370, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '40', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '369', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '508', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '653', '', false, 1);
+        }
+
+
+
+        if (PDF::getY() > 560) {
+          // $this->default_footerNEW_PDF($params, $data, $grandtotal);
+          $this->default_siNEW_header_PDF($params, $data);
+          PDF::MultiCell(0, 35, "");
         }
       }
     }
@@ -1385,6 +1567,7 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
         $uom = $data[$i]['uom'];
+        $disc = $data[$i]['disc'];
 
         $arr_uom = $this->reporter->fixcolumn([$uom], '10', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '60', 0);
@@ -1400,6 +1583,7 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(50, 0, $i + 1, '', 'C', false, 0, '40', '', false, 1);
@@ -1407,13 +1591,43 @@ class sj
           PDF::MultiCell(100, 0, $uom, '', 'L', false, 0, '193', '', false, 1);
           PDF::MultiCell(370, 0, $item, '', 'L', false, 0, '240', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '545', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '653', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '653', '', false, 1);
+        }
 
-          if (PDF::getY() > 560) {
-            // $this->default_footerDSI_PDF($params, $data, $grandtotal);
-            $this->default_DSI_header_PDF($params, $data);
-            PDF::MultiCell(0, 45, "");
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($total * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
           }
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(50, 0, '', '', 'C', false, 0, '40', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '60', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '193', '', false, 1);
+          PDF::MultiCell(370, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '240', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '545', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '653', '', false, 1);
+        }
+        if (PDF::getY() > 560) {
+          // $this->default_footerDSI_PDF($params, $data, $grandtotal);
+          $this->default_DSI_header_PDF($params, $data);
+          PDF::MultiCell(0, 45, "");
         }
       }
     }

@@ -17,6 +17,7 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use Illuminate\Support\Facades\Storage;
 use PhpParser\Node\Stmt\Break_;
+use App\Http\Classes\common\payrollcommon;
 
 class pendingallapplications
 {
@@ -33,6 +34,7 @@ class pendingallapplications
     public $style = 'width:90%;max-width:90%;';
     public $issearchshow = true;
     public $showclosebtn = true;
+    private $payrollcommon;
     public $fields = [
         'otstatus',
         'status',
@@ -63,6 +65,7 @@ class pendingallapplications
         $this->othersClass = new othersClass;
         $this->logger = new Logger;
         $this->linkemail = new linkemail;
+        $this->payrollcommon = new payrollcommon;
     }
 
     public function getAttrib()
@@ -292,7 +295,7 @@ class pendingallapplications
     {
         $doc = $config['params']['row']['moduletype'];
         $adminid = $config['params']['adminid'];
-        $checking = $this->othersClass->checkapproversetup($config, $adminid, $doc, 'emp', true);
+        $checking = $this->payrollcommon->checkapproversetup($config, $adminid, $doc, 'emp', true);
         $filter = "";
         $leftjoin = "";
 
@@ -306,7 +309,7 @@ class pendingallapplications
         switch ($doc) {
             case 'OT':
 
-                $checking = $this->othersClass->checkapproversetup($config, $adminid, 'OT', 'emp', true);
+                $checking = $this->payrollcommon->checkapproversetup($config, $adminid, 'OT', 'emp', true);
                 $query = "
                 select ot.line, client.clientname,emp.email,date(ot.createdate) as createdate,date(ot.dateid) as dateid,
                 ot.empid,'OT' as type,ot.rem as remarks,ot.disapproved_remarks2 as reason1,ot.remarks as remlast,ot.othrs,ot.apothrs,ot.ndiffhrs, ot.apndiffhrs,

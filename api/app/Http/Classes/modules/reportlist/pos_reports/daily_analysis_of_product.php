@@ -68,8 +68,6 @@ class daily_analysis_of_product
         // for filter
         $fields = ['dcentername', 'brand', 'stock_groupname', 'pos_station'];
         $col4 = $this->fieldClass->create($fields);
-        // Branch
-        data_set($col4, 'dcentername.lookupclass', 'getmultibranch');
         //brand
         data_set($col4, 'brand.lookupclass', 'brand');
         // Group

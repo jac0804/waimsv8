@@ -1680,5 +1680,11 @@ class payroll
 		$this->coreFunctions->createindex("timecard", "Index_Shift", ["shiftid"]);
 		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["editdate"],  "DATETIME DEFAULT NULL", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["editby"],  "VARCHAR(100) NOT NULL DEFAULT ''", 0);
+
+		$this->coreFunctions->sbcaddcolumngrp(["hdmftab"], ["hdmfmulti2", "hdmfee", "hdmfer"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+
+		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["legotmulti", "spotmulti", "ndiffmulti"], "DECIMAL(10,5) NOT NULL DEFAULT '0.00000'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["maxsss"], "INT(11) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["timesheet"], ["qtymulti"], "DECIMAL(10,5) NOT NULL DEFAULT '0.00000'", 0);
 	} //end function
 } // end class

@@ -440,7 +440,9 @@ class setprefixdoc
 
     $menu['autoservoperation'] = [
       'AK' => ['prefix' => 'AK', 'title' => 'Package Kits'],
-      'AM' => ['prefix' => 'AM', 'title' => 'Service Invoice']
+      'AM' => ['prefix' => 'ASI', 'title' => 'Service Invoice'],
+      'AQ' => ['prefix' => 'AQ', 'title' => 'Quotation'],
+      'AW' => ['prefix' => 'WO', 'title' => 'Work Order']
     ];
 
 

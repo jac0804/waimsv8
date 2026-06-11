@@ -57,10 +57,15 @@ class profit_sales_report
       ]
     );
 
-    $fields = ['print'];
-    $col3 = $this->fieldClass->create($fields);
+    $fields = ['radioposttype','print'];
+    $col2 = $this->fieldClass->create($fields);
+    data_set($col2, 'radioposttype.options', [
+      ['label' => 'Posted', 'value' => '0', 'color' => 'orange'],
+      ['label' => 'Unposted', 'value' => '1', 'color' => 'orange'],
+      ['label' => 'All', 'value' => '2', 'color' => 'orange']
+    ]);
 
-    return array('col1' => $col1,  'col3' => $col3);
+    return array('col1' => $col1,  'col2' => $col2);
   }
 
   public function paramsdata($config)
@@ -86,6 +91,7 @@ class profit_sales_report
       '' as agentname,
       '' as dagentname,
       '' as agent,
+      '0' as posttype,
       'client' as layoutformat
       ";
 
@@ -162,6 +168,7 @@ class profit_sales_report
     $agent    = $config['params']['dataparams']['agent'];
     $itemname    = $config['params']['dataparams']['itemname'];
     $itemid    = $config['params']['dataparams']['itemid'];
+    $posttype    = $config['params']['dataparams']['posttype'];
     $filter = "";
 
     // if ($groupid != "") {
@@ -180,31 +187,71 @@ class profit_sales_report
       $filter .= " and item.itemid='$itemid'";
     }
 
-    $query = "select client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
-    (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
-    from (
-      select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
-      sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-      from lahead as head
-      left join cntnum as num on num.trno=head.trno
-      left join lastock as stock on head.trno = stock.trno
-      left join item on item.itemid = stock.itemid
-      left join client as agent on agent.client = head.agent
-      left join client on client.client = head.client
-      where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
-      group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
-      union all
-      select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
-      sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-      from glhead as head
-      left join cntnum as num on num.trno=head.trno
-      left join glstock as stock on head.trno = stock.trno
-      left join item on item.itemid = stock.itemid
-      left join client as agent on agent.clientid = head.agentid
-      left join client on client.clientid = head.clientid
-      where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
-    group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
-    ) as x order by client,clientname,dateid,docno,barcode";
+    switch ($posttype) {
+      case '0': // POSTED
+        $query = "select client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            
+            select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+          group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+          ) as x order by client,clientname,dateid,docno,barcode";
+        break;
+      case '1': // UNPOSTED
+        $query = "select client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+            
+          ) as x order by client,clientname,dateid,docno,barcode";
+        break;
+      default:
+        $query = "select client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+            union all
+            select client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+            group by client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+          ) as x order by client,clientname,dateid,docno,barcode";
+        break;
+    }
+
+    
 
     return $query;
   }
@@ -238,35 +285,82 @@ class profit_sales_report
       $filter .= " and item.itemid='$itemid'";
     }
 
-    $query = "select agent,agentname,client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
-    (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
-    from (
-      select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
-      case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
-      client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
-      sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-      from lahead as head
-      left join cntnum as num on num.trno=head.trno
-      left join lastock as stock on head.trno = stock.trno
-      left join item on item.itemid = stock.itemid
-      left join client as agent on agent.client = head.agent
-      left join client on client.client = head.client
-      where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
-      group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
-      union all
-      select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
-      case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
-      client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
-      sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-      from glhead as head
-      left join cntnum as num on num.trno=head.trno
-      left join glstock as stock on head.trno = stock.trno
-      left join item on item.itemid = stock.itemid
-      left join client as agent on agent.clientid = head.agentid
-      left join client on client.clientid = head.clientid
-      where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
-    group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
-    ) as x order by agent,agentname,client,clientname,dateid,docno,barcode";
+    $posttype    = $config['params']['dataparams']['posttype'];
+    switch ($posttype) {
+      case '0': // POSTED
+        
+        $query = "select agent,agentname,client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            
+            select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
+            case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
+            client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+            group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+          ) as x order by agent,agentname,client,clientname,dateid,docno,barcode";
+        break;
+      case '1': // UNPOSTED
+        
+        $query = "select agent,agentname,client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
+            case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
+            client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+            
+          ) as x order by agent,agentname,client,clientname,dateid,docno,barcode";
+        break;
+      default:
+        
+        $query = "select agent,agentname,client,clientname,dateid, docno, barcode, itemname, ext as sales, (cost * qty) as cost, 
+          (ext-(cost*qty)) as profit,((ext / (cost * qty))*100)-100 as margin
+          from (
+            select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
+            case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
+            client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+            union all
+            select case when agent.client is null or agent.client = 0 then 'No Agent' else agent.client end as agent,
+            case when agent.clientname is null or agent.clientname = '' then 'No Agent' else agent.clientname end as agentname,
+            client.client,client.clientname,date(head.dateid) as dateid, head.docno, ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+            group by agent.client,agent.clientname,client.client,client.clientname,date(head.dateid), head.docno, item.itemname, item.barcode
+          ) as x order by agent,agentname,client,clientname,dateid,docno,barcode";
+        break;
+    }
+    
 
     return $query;
   }
@@ -300,33 +394,78 @@ class profit_sales_report
     if ($itemname != "") {
       $filter .= " and item.itemid='$itemid'";
     }
-
-    $query = "
-      select dateid, docno, agentname,barcode, itemname, qty, uom, amt, disc, ext, (cost * qty) as cost, (amt-cost) as markup,  (((amt-cost)/amt) * 100) as markupper  from (
-        select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(".$itemdesc.",'') as itemname,
-        sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-        from lahead as head
-        left join cntnum as num on num.trno=head.trno
-        left join lastock as stock on head.trno = stock.trno
-        left join item on item.itemid = stock.itemid
-        left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
-        left join client as agent on agent.client = head.agent
-        left join client on client.client = head.client
-        where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
-        group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode
-        union all
-        select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(item.itemname,'') as itemname,
-        sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
-        from glhead as head
-        left join cntnum as num on num.trno=head.trno
-        left join glstock as stock on head.trno = stock.trno
-        left join item on item.itemid = stock.itemid
-        left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
-        left join client as agent on agent.clientid = head.agentid
-        left join client on client.clientid = head.clientid
-        where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
-      group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode) as x order by dateid,docno,barcode
-    ";
+    
+    $posttype    = $config['params']['dataparams']['posttype'];
+    switch ($posttype) {
+      case '0': // POSTED
+        
+        $query = "
+          select dateid, docno, agentname,barcode, itemname, qty, uom, amt, disc, ext, (cost * qty) as cost, (amt-cost) as markup,  (((amt-cost)/amt) * 100) as markupper  from (
+            
+            select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+            group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode
+          ) as x order by dateid,docno,barcode
+        ";
+        break;
+      case '1': // UNPOSTED
+        
+        $query = "
+          select dateid, docno, agentname,barcode, itemname, qty, uom, amt, disc, ext, (cost * qty) as cost, (amt-cost) as markup,  (((amt-cost)/amt) * 100) as markupper  from (
+            select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(".$itemdesc.",'') as itemname,
+            sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode
+          ) as x order by dateid,docno,barcode
+        ";
+        break;
+      default:
+        
+        $query = "
+          select dateid, docno, agentname,barcode, itemname, qty, uom, amt, disc, ext, (cost * qty) as cost, (amt-cost) as markup,  (((amt-cost)/amt) * 100) as markupper  from (
+            select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(".$itemdesc.",'') as itemname,
+            sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from lahead as head
+            left join cntnum as num on num.trno=head.trno
+            left join lastock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
+            left join client as agent on agent.client = head.agent
+            left join client on client.client = head.client
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter
+            group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode
+            union all
+            select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(item.itemname,'') as itemname,
+            sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
+            from glhead as head
+            left join cntnum as num on num.trno=head.trno
+            left join glstock as stock on head.trno = stock.trno
+            left join item on item.itemid = stock.itemid
+            left join uom on uom.itemid = stock.itemid and uom.uom = stock.uom
+            left join client as agent on agent.clientid = head.agentid
+            left join client on client.clientid = head.clientid
+            where num.doc = 'SJ' and date(head.dateid) between '$start' and '$end' and stock.ext <> 0 $filter 
+            group by date(head.dateid), head.docno, agent.clientname, item.itemname, stock.uom, stock.disc,item.barcode
+          ) as x order by dateid,docno,barcode
+        ";
+        break;
+    }
+    
 
     return $query;
   }
@@ -352,8 +491,20 @@ class profit_sales_report
       $clientname = $config['params']['dataparams']['clientname'];
       // $groupname  = $config['params']['dataparams']['stockgrp'];
       $barcode    = $config['params']['dataparams']['barcode'];
+      $posttype    = $config['params']['dataparams']['posttype'];
 
-
+      switch ($posttype) {
+        case '0':
+          $posttype = 'Posted';
+          break;
+        case '1':
+          $posttype = 'Unposted';
+          break;
+        default:
+          $posttype = 'All';
+          break;
+      }
+      
       $str = '';
       $layoutsize = '1000';
 
@@ -374,6 +525,13 @@ class profit_sales_report
       $str .= $this->reporter->col('Date Period : ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, '10', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
+      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, '10', '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
 
       $str .= $this->reporter->printline();
 
@@ -568,7 +726,21 @@ class profit_sales_report
       $clientname = $config['params']['dataparams']['clientname'];
       // $groupname  = $config['params']['dataparams']['stockgrp'];
       $barcode    = $config['params']['dataparams']['barcode'];
+      
+      $posttype    = $config['params']['dataparams']['posttype'];
 
+      switch ($posttype) {
+        case '0':
+          $posttype = 'Posted';
+          break;
+        case '1':
+          $posttype = 'Unposted';
+          break;
+        default:
+          $posttype = 'All';
+          break;
+      }
+      
 
       $str = '';
       $layoutsize = '1000';
@@ -588,6 +760,12 @@ class profit_sales_report
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
       $str .= $this->reporter->col('Date Period : ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, '10', '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
+      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, '10', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -802,7 +980,19 @@ class profit_sales_report
       $clientname = $config['params']['dataparams']['clientname'];
       // $groupname  = $config['params']['dataparams']['stockgrp'];
       $barcode    = $config['params']['dataparams']['barcode'];
+      $posttype    = $config['params']['dataparams']['posttype'];
 
+      switch ($posttype) {
+        case '0':
+          $posttype = 'Posted';
+          break;
+        case '1':
+          $posttype = 'Unposted';
+          break;
+        default:
+          $posttype = 'All';
+          break;
+      }
 
       $str = '';
       $layoutsize = '1000';
@@ -824,6 +1014,14 @@ class profit_sales_report
       $str .= $this->reporter->col('Date Period : ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, '10', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
+
+      
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
+      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, '10', '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      
 
       $str .= $this->reporter->printline();
 

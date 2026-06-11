@@ -203,6 +203,7 @@ class customer
         $cols[$listaddr]['type'] = 'coldel';
         $cols[$agentname]['type'] = 'coldel';
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $cols[$listcategory]['type'] = 'coldel';
         $cols[$notes]['type'] = 'coldel';
@@ -335,6 +336,7 @@ class customer
           $limit = "";
         }
         break;
+      case 69: //cemphil
       case 24: //goodfound
         $address = "client.addr,client.tel,client.fax,client.contact,client.area,client.region,client.areacode,client.province";
         $leftjoin = "";
@@ -590,6 +592,11 @@ class customer
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku', 'label' => 'SKU']];
     $sku = $this->tabClass->createtab($tab, []);
 
+    // Customer Vehicle tab
+    $tab = ['tableentry' => ['action' => 'autoserventry', 'lookupclass' => 'entryvehicle', 'label' => 'CUSTOMER VEHICLE']];
+    $vehicle = $this->tabClass->createtab($tab, []);
+    $isAutoService = $this->companysetup->getisautoservice($config['params']);
+
     $ar = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewar']];
     $ap = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewap']];
     $pdc = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewpdc']];
@@ -615,6 +622,12 @@ class customer
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entryclientpicture', 'label' => 'Attachment', 'access' => 'view']];
     $attach = $this->tabClass->createtab($tab, []);
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $attach];
+
+    // if isautoservice
+    if ($isAutoService) {
+      $return['CUSTOMER VEHICLE'] = ['icon' => 'fa fa-car', 'tab' => $vehicle];
+    }
+
     if ($companyid != 55) { // AFLI Lending
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycustomercontactperson', 'label' => 'CONTACT PERSON']];
       $contactperson = $this->tabClass->createtab($tab, []);
@@ -853,7 +866,7 @@ class customer
         $fields = ['client', 'fname', 'mname', 'lname', 'addr', 'tel'];
         break;
       case 63: //ericco
-        $fields = ['client', 'clientname', 'registername', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
+        $fields = ['client', 'clientname', 'registername', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel']; //'fax', 'tel2'
         break;
       default:
         $fields = ['client', 'clientname', 'addr', 'ship', 'start', 'clientstatus', 'email', 'tel', 'fax', 'tel2'];
@@ -861,6 +874,7 @@ class customer
     }
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //goodfound
       case 29: //sbc main
         array_push($fields, 'contact');
@@ -892,8 +906,7 @@ class customer
     data_set($col1, 'addr.type', 'cinput');
     data_set($col1, 'email.type', 'cinput');
     data_set($col1, 'tel.type', 'cinput');
-    data_set($col1, 'fax.type', 'cinput');
-    data_set($col1, 'tel2.type', 'cinput');
+
 
     if ($companyid == 60) data_set($col1, 'tel.required', true);
 
@@ -970,6 +983,7 @@ class customer
               case 21: //kinggeorge
                 array_push($fields, 'tin', 'contact', 'position');
                 break;
+              case 69: //cemphil
               case 24: //goodfound
                 array_push($fields, 'owner', 'mobile', 'bstyle', 'tin');
                 break;
@@ -979,7 +993,7 @@ class customer
                 array_push($fields, 'tin', 'bstyle');
                 break;
               case 29: //sbc main
-                array_push($fields, 'tin', 'charge1');
+                array_push($fields, 'tin', 'charge1', 'alias');
                 break;
               case 43: //MIGHTY
               case 47: //kstar
@@ -992,6 +1006,9 @@ class customer
               case 59: //roosevelt
                 unset($fields[5]);
                 array_push($fields, 'dpricegroup', 'tin', 'dvattype', 'rem');
+                break;
+              case 63: //ericco
+                array_push($fields, 'fax', 'contact');
                 break;
               default:
                 array_push($fields, 'tin');
@@ -1030,6 +1047,11 @@ class customer
         break;
       case 60: //transpower
         array_push($fields, 'registername', 'dvattype');
+        $col2 = $this->fieldClass->create($fields);
+        break;
+      case 63:
+        data_set($col2, 'fax.type', 'cinput');
+        data_set($col2, 'contact.label', 'Contact Person');
         $col2 = $this->fieldClass->create($fields);
         break;
       default:
@@ -1072,6 +1094,9 @@ class customer
               data_set($col2, 'bal.class', 'sbccsreadonly');
             }
             break;
+          case 63: //ericco 
+            data_set($col2, 'fax.type', 'cinput');
+            break;
         }
 
         break;
@@ -1107,6 +1132,7 @@ class customer
           case 22: //eipi
             $fields = ['dcategory', 'owner', 'mobile', 'area', 'province', 'region', 'dparentcode', 'zipcode', 'addr2'];
             break;
+          case 69: //cemphil
           case 24: //goodfound
             $fields = ['dcategory', 'dcur', 'areacode', 'area', 'province', 'region', 'dparentcode', 'zipcode'];
             break;
@@ -1129,6 +1155,9 @@ class customer
             $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'dparentcode', 'zipcode', 'lasttrans'];
             $allowedit = $this->othersClass->checkAccess($config['params']['user'], 23);
             if (!$allowedit) array_push($fields, 'updatenotes');
+            break;
+          case 63: //ericco 
+            $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'dparentcode', 'zipcode', 'tel2'];
             break;
           default:
             $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'dparentcode', 'zipcode'];
@@ -1168,7 +1197,7 @@ class customer
       case 60: //TRANSPOWER
         array_push($fields, 'rem');
         break;
-      case '59': //roosevelt
+      case 59: //roosevelt
         array_push($fields, 'type', 'ar');
         break;
     }
@@ -1203,6 +1232,10 @@ class customer
         data_set($col3, 'type.lookupclass', 'lookuptype1');
         data_set($col3, 'type.class', 'sbccsreadonly');
         break;
+      case 63: //ericco
+        data_set($col3, 'tel2.type', 'cinput');
+        break;
+
       default:
         data_set($col3, 'disc.label', 'Mark Up');
         break;
@@ -1499,6 +1532,7 @@ class customer
       case 10: //afti
         array_push($this->fields, 'ewt', 'ewtrate', 'addr2');
         break;
+      case 69: //cemphil
       case 24: //goodfound
         array_push($this->fields, 'areacode');
         break;
@@ -1644,6 +1678,7 @@ class customer
       case 10: //afti
         array_push($this->fields,  'ewt', 'ewtrate', 'addr2');
         break;
+      case 69: //cemphil
       case 24: // goodfound
         array_push($this->fields, 'areacode');
         break;

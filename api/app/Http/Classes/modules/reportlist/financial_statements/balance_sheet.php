@@ -72,7 +72,7 @@ class balance_sheet
         break;
     }
 
-   
+
 
     if ($company == 10 || $company == 12) { //afti, afti usd
       $fields = ['forex', 'radioposttype'];
@@ -117,6 +117,7 @@ class balance_sheet
     $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
+      case 69: //cemphil
       case 24: //GOODFOUND CEMENT
         $center = $config['params']['center'];
         $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
@@ -284,9 +285,15 @@ class balance_sheet
     if (!empty($result2)) {
       foreach ($result2 as $key => $value) {
         $a[] = array(
-          'acno' => $value->acno, 'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname, 'levelid' => $value->levelid,
-          'cat' => $value->cat, 'parent' => $value->parent, 'amt' => $value->amt,
-          'detail' => $value->detail, 'total' => $value->amt, 'alias' => ''
+          'acno' => $value->acno,
+          'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+          'levelid' => $value->levelid,
+          'cat' => $value->cat,
+          'parent' => $value->parent,
+          'amt' => $value->amt,
+          'detail' => $value->detail,
+          'total' => $value->amt,
+          'alias' => ''
         );
 
         $prevamt9 = $amt9;
@@ -303,17 +310,29 @@ class balance_sheet
                 $level2amt = $amt9 - $prevamt9;
                 //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
                 $a[] = array(
-                  'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                  'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => $amt2, 'detail' => $value->detail, 'total' => ($mtotal != 0 ? $mtotal : $level2amt), 'alias' => $value->alias
+                  'acno' => $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => $amt2,
+                  'detail' => $value->detail,
+                  'total' => ($mtotal != 0 ? $mtotal : $level2amt),
+                  'alias' => $value->alias
                 );
                 $mtotal = 0;
               } else {
                 //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
                 $a[] = array(
-                  'acno' => $value->acno, 'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
-                  'levelid' => $value->levelid, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => $amt2, 'detail' => $value->detail, 'total' => $amt, 'alias' => $value->alias
+                  'acno' => $value->acno,
+                  'acnoname' => '<b>TOTAL ' . $value->acnoname . '</b>',
+                  'levelid' => $value->levelid,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => $amt2,
+                  'detail' => $value->detail,
+                  'total' => $amt,
+                  'alias' => $value->alias
                 );
                 $mtotal += $value->amt;
               } //end if
@@ -351,9 +370,15 @@ class balance_sheet
                 $amt9 = $amt9 + $loss;
                 //THIS NEXT 3 ROWS IS USED TO ADD NEW ROWS TO THE ARRAY (USED FOR PLOTTING NEW ROWS ON REPORT)
                 $a[] = array(
-                  'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                  'levelid' => $value->levelid + 1, 'cat' => $value->cat, 'parent' => $value->parent,
-                  'amt' => $loss, 'detail' => $value->detail + 1, 'total' => $loss, 'alias' => $value->alias
+                  'acno' => '\3999',
+                  'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                  'levelid' => $value->levelid + 1,
+                  'cat' => $value->cat,
+                  'parent' => $value->parent,
+                  'amt' => $loss,
+                  'detail' => $value->detail + 1,
+                  'total' => $loss,
+                  'alias' => $value->alias
                 );
               } //end if
 
@@ -361,9 +386,13 @@ class balance_sheet
               $a[] = array(
                 'acno' => $value->acno,
                 'acnoname' => '<b>TOTAL ' . strtoupper($value->acnoname) . '</b>',
-                'levelid' => $value->levelid, 'cat' => $value->cat,
+                'levelid' => $value->levelid,
+                'cat' => $value->cat,
                 'parent' => $value->parent,
-                'amt' => $amt2, 'detail' => $value->detail, 'total' => $amt9, 'alias' => $value->alias
+                'amt' => $amt2,
+                'detail' => $value->detail,
+                'total' => $amt9,
+                'alias' => $value->alias
               );
             } //end if IF LEVELID = 1
           }

@@ -20674,8 +20674,65 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => true
             ),
+            'reimbursement' => array(
+                'name' => 'reimbursement',
+                'type' => 'lookup',
+                'action' => 'lookupreimbursement',
+                'lookupclass' => 'lookupreimbursement',
+                'label' => 'Reimbursement Type',
+                'class' => 'csreimbursement sbccsreadonly',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'phperc' => array(
+                'name' => 'phperc',
+                'type' => 'input',
+                'label' => 'Project Head(%)',
+                'class' => 'csphperc',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+            'impperc' => array(
+                'name' => 'impperc',
+                'type' => 'input',
+                'label' => 'Implementor(%)',
+                'class' => 'csimpperc',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+            'devperc' => array(
+                'name' => 'devperc',
+                'type' => 'input',
+                'label' => 'Dev(%) ',
+                'class' => 'csdevperc',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+            'carengine' => array(
+                'name' => 'carengine',
+                'type' => 'input',
+                'label' => 'Car Engine',
+                'class' => 'cscarengine',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'sjdate' => array(
+                'name' => 'sjdate',
+                'type' => 'date',
+                'label' => 'SJ Date',
+                'class' => 'cssjdate',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
 
-            
+
+
         );
     }
 

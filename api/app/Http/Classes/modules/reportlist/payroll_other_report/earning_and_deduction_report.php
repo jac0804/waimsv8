@@ -47,7 +47,7 @@ class earning_and_deduction_report
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
     data_set($col1, 'divrep.label', 'Company');
-    data_set($col1, 'deptrep.lookupclass', 'lookupearndedaccounts');
+    data_set($col1, 'deptrep.lookupclass', 'lookupddeptname'); //lookupearndedaccounts
     data_set($col1, 'deptrep.label', 'Department');
     data_set($col1, 'tpaygroup.label', 'Pay Group');
     data_set($col1, 'repearnded.lookupclass', 'lookupearndedrpt');
@@ -107,15 +107,18 @@ class earning_and_deduction_report
     $divid = $config['params']['dataparams']['divid'];
     $deptid = $config['params']['dataparams']['deptid'];
     $sectid = $config['params']['dataparams']['sectid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];
+    $sectname = $config['params']['dataparams']['sectname'];
     $tpaygroup = $config['params']['dataparams']['tpaygroup'];
     $earndedid = $config['params']['dataparams']['earndedid'];
     $start = $config['params']['dataparams']['start'];
     $end = $config['params']['dataparams']['end'];
 
     $filter = "";
-    if ($divid != "") $filter .= " and e.divid='" . $divid . "' ";
-    if ($deptid != "") $filter .= " and e.dept='" . $deptid . "' ";
-    if ($sectid != "") $filter .= " and e.orgsection='" . $sectid . "' ";
+    if ($divid != 0 && $divname != '') $filter .= " and e.divid='" . $divid . "' ";
+    if ($deptid != 0 && $deptname != '') $filter .= " and e.deptid='" . $deptid . "' ";  //e.dept
+    if ($sectid != 0 && $sectname != '') $filter .= " and e.sectid='" . $sectid . "' "; //e.orgsection
     if ($tpaygroup != "") $filter .= " and e.paygroup='" . $tpaygroup . "' ";
     if ($earndedid != "") $filter .= " and ss.acnoid='" . $earndedid . "' ";
 
