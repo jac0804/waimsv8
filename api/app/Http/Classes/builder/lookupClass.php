@@ -1900,9 +1900,11 @@ class lookupClass
       case 'getjob':
           return $this->autoservlookup->getautojob($config);
       break;
-
       case 'getvehicle':
-          return $this->autoservlookup->getvehicle($config);
+          return $this->autoservlookup->getcvehicle($config);
+      break;
+      case 'addpackage':
+          return $this->autoservlookup->lookuppackage($config);
       break;
 
       case 'lookupreimbursement':
@@ -6612,6 +6614,7 @@ class lookupClass
         $cols,
         array('name' => 'othcode', 'label' => 'Barcode Name', 'align' => 'left', 'field' => 'othcode', 'sortable' => true, 'style' => 'font-size:16px;'),
         array('name' => 'specs', 'label' => 'Specifications', 'align' => 'left', 'field' => 'specs', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'serialno', 'label' => 'Serial Number', 'align' => 'left', 'field' => 'serialno', 'sortable' => true, 'style' => 'font-size:16px;'),
         array('name' => 'uom', 'label' => ' Uom', 'align' => 'left', 'field' => 'uom', 'sortable' => true, 'style' => 'font-size:16px;'),
         array('name' => 'categoty', 'label' => ' Category', 'align' => 'left', 'field' => 'category', 'sortable' => true, 'style' => 'font-size:16px;'),
         array('name' => 'subcategory', 'label' => 'Subcategory', 'align' => 'left', 'field' => 'subcategory', 'sortable' => true, 'style' => 'font-size:16px;')

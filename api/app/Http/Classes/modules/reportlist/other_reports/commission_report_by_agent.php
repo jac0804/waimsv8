@@ -210,20 +210,20 @@ class commission_report_by_agent
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), '1000', null, false, '1px solid', '', 'C', $font, '14', 'B', '', '');
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), '1000', null, false, '1px solid', '', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->address),  '1000', null, false, '1px solid', '', 'C', $font, '14', 'B', '', '');
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address),  '1000', null, false, '1px solid', '', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel),  '1000', null, false, '1px solid', '', 'C', $font, '14', 'B', '', '');
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel),  '1000', null, false, '1px solid', '', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($this->modulename, null, null, false, $border, '', 'C', $font, '18', 'B', '', '') . '<br />';
+    $str .= $this->reporter->col($this->modulename, null, null, false, $border, '', 'C', $font, '14', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -292,7 +292,7 @@ class commission_report_by_agent
 
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->report_Detail_Header($config);
-    $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $config);
+    $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize, $config);
 
     foreach ($result as $key => $data) {
 
@@ -302,19 +302,19 @@ class commission_report_by_agent
         if ($agname != '') {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-          $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
 
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
           $str .= $this->report_Detail_Header($config);
-          $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $config);
+          $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize, $config);
         }
 
         $agname = $data->agname;
@@ -371,7 +371,7 @@ class commission_report_by_agent
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
           $str .= $this->report_Detail_Header($config);
-          $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $config);
+          $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize, $config);
 
           // ulit agent name kada new page
           $str .= $this->reporter->begintable($layoutsize);
@@ -403,13 +403,13 @@ class commission_report_by_agent
     // last agent subtotal
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($subtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($subtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -417,13 +417,13 @@ class commission_report_by_agent
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL :', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($grandtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
-    $str .= $this->reporter->col(number_format($grandtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize - 1, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '270', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($grandtotalamt, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($grandtotalcomm, 2), '100', null, false, $subborder, 'BT', 'R', $font, $fontsize, 'B', '', '');
 
 
     $str .= $this->reporter->endrow();

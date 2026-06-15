@@ -159,9 +159,10 @@ class autoservlookup
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
     }
 
-    public function getvehicle($config)
+    public function getcvehicle($config)
     {
         $title = 'List of Customer Vehicle';
+        $client = $config['params']['client'];
 
         $lookupsetup = array(
             'type' => 'multi',
@@ -182,23 +183,51 @@ class autoservlookup
             ['name' => 'crtype', 'label' => 'Type', 'align' => 'left', 'field' => 'crtype', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'sub_model', 'label' => 'Sub Model', 'align' => 'left', 'field' => 'sub_model', 'sortable' => true, 'style' => 'font-size:16px;'],
         );
-         $filtersearch = "";
-        if (isset($config['params']['search'])) {
-            $search = $config['params']['search'];
-            if ($search != "") {
-                $filtersearch = $this->othersClass->multisearch(['carname'], $search);
-            }
-        }
 
-        $join = "";
-        $addfields = "";
-        $condition = " where 1=1";
+        $filter = "";
+        $filter = " and c.client = '" . $client ."'"; 
 
-        $join = " left join cmodel as model on model.carid=cmake.id ";
-        $addfields = ", model.model as model, model.cryear, model.crtype, model.sub_model, model.line as cmodelline";
+        $qry = "select cv.line as keyid, cv.carid, cv.cmodelline, cv.clientid, c.clientname, cv.cmake, cm.model, cm.cryear, cm. crtype, cm.sub_model, cv.licenseno, cv.carengine, cv.chassis,
+                cv.transmission, cv.mileage, cv.motorno, cv.mvno, cv.insurance, cv.labor
+                from
+                cvehicle as cv
+                left join cmodel as cm on cm.line = cv.cmodelline
+                left join client as c on c.clientid = cv.clientid
+                where 1= 1 $filter order by cmake";
 
-        $qry = "select cmake.id as carid, cmake.carname as cmake $addfields from cmake $join $condition " . $filtersearch . " order by carname";
         $data = $this->coreFunctions->opentable($qry);
+
+
+        return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+    }
+
+    public function lookuppackage($config)
+    {
+        $title = 'List of Package Kits';
+
+        $lookupsetup = array(
+            'type' => 'multi',
+            'rowkey' => 'keyid',
+            'title' => $title,
+            'style' => 'width:100%;max-width:100%;'
+        );
+
+        $plotsetup = array(
+            'plottype' => 'callback',
+            'action' => 'addpackage',
+        );
+        // lookup columns
+        $cols = array(
+            array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'description', 'label' => 'Package', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;')
+
+        );
+        $query = "select head.trno as keyid, head.docno as code, head.rem as description
+        from pthead as head
+        where head.doc = 'AK'
+        order by head.docno";
+
+        $data = $this->coreFunctions->opentable($query);
 
 
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

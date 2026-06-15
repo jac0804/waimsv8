@@ -72,6 +72,8 @@ class entrycarmodel
         $obj[0][$this->gridname]['columns'][$model]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$cryear]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$crtype]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+        $obj[0][$this->gridname]['columns'][$cryear]['readonly'] = false;
+        $obj[0][$this->gridname]['columns'][$crtype]['readonly'] = false;
         $obj[0][$this->gridname]['columns'][$sub_model]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$other_info]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
         $obj[0][$this->gridname]['columns'][$code]['label'] = "";
@@ -135,11 +137,11 @@ class entrycarmodel
         }
         $data['carid'] = $config['params']['tableid'];
 
-        if ($data['model'] == '') {
-            $data[0]['bgcolor'] = 'bg-red-2';
-            $data[0]['line'] = $row['line'];
-            return ['status' => false, 'msg' => 'Invalid model', 'row' => $data];
-        }
+        // if ($data['model'] == '') {
+        //     $data[0]['bgcolor'] = 'bg-red-2';
+        //     $data[0]['line'] = $row['line'];
+        //     return ['status' => false, 'msg' => 'Invalid model', 'row' => $data];
+        // }
 
         if ($row['line'] == 0) {
             $qry = "select line as value from " . $this->table . " where carid=? order by line desc limit 1";

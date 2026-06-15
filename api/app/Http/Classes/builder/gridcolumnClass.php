@@ -12068,6 +12068,17 @@ class gridcolumnClass
                             'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
                             'readonly' => true
                      ),
+
+                     'package' => array(
+                            'name' => 'package',
+                            'type' => 'input',
+                            'label' => 'Package',
+                            'field' => 'package',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
+                            'readonly' => false
+                     ),
+
                      'isprio' => array(
                             'name' => 'isprio',
                             'type' => 'toggle',

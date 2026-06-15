@@ -781,7 +781,7 @@ class othersClass
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
     array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate', 'expiry', 'promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
+    array_push($date, 'regdate','promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
 
     return $date;
   }
@@ -2826,6 +2826,12 @@ class othersClass
         break;
     }
 
+    $isnegative = $this->coreFunctions->opentable("select trno from " . $config['docmodule']->detail . " where trno=? and (db < 0 or cr < 0) limit 1", [$trno]);
+    if (!empty($isnegative)) {
+      return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Negative debit or credit are not allowed. Please check. '];
+    }
+
+
     $docno = $this->coreFunctions->getfieldvalue($config['docmodule']->tablenum, 'docno', 'trno=?', [$trno]);
 
     if ($this->isposted($config)) {
@@ -3199,6 +3205,13 @@ class othersClass
         $qry = "select s.trno from " . $config['docmodule']->stock . " as s left join item on item.itemid=s.itemid where s.trno=? and s.qty=0 and s.iss=0 and item.isnoninv=0 limit 1";
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
         break;
+    }
+    if ($doc != 'AJ') {
+      $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
+      $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
+      if ($isnegativetotal < 0) {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative'];
+      }
     }
 
 
@@ -9134,6 +9147,7 @@ class othersClass
       case 'LL':
       case 'CH':
       case 'ON':
+      case 'AM':
         $table = 'cntnum_picture';
         $trno = $config['params']['trno'];
         break;
@@ -10556,7 +10570,7 @@ class othersClass
       $config['params']['trno'] = $trno;
       $config['params']['data']['qty'] = 1;
       $config['params']['data']['wh'] = $wh;
-      if ($companyid == 63) {
+      if ($companyid == 63) { //ericco
         $config['params']['data']['disc'] = $data[$key]['disc'];
       } else {
         $config['params']['data']['disc'] = '';

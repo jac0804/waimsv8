@@ -7804,7 +7804,7 @@ class sqlquery
     }
 
     if ($company == 16 || $company == 39) {
-      $addfield = ",item.othcode,cat.name as category,subcat.name as subcategory,item.uom,(case when item.isgeneric = 1 then 'Yes' else 'No' end) as isgeneric,item.shortname as specs";
+      $addfield = ",item.othcode,cat.name as category,subcat.name as subcategory,item.uom,(case when item.isgeneric = 1 then 'Yes' else 'No' end) as isgeneric,item.shortname as specs,info.serialno";
       $leftjoin = "left join itemcategory as cat on cat.line = item.category
         left join itemsubcategory as subcat on subcat.line = item.subcat";
       if ($config['params']['doc'] == 'FI') {

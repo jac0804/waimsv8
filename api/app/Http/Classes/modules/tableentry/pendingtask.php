@@ -61,7 +61,7 @@ class pendingtask
         $row = $config['params']['row'];
         $approver = $row['approver'];
 
-        $cols = ['action', 'status', 'dateid2', 'title', 'clientname', 'dateid', 'requestorname', 'assignto'];
+        $cols = ['action', 'status', 'user', 'dateid2', 'title', 'clientname', 'dateid', 'requestorname', 'assignto'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
@@ -87,6 +87,7 @@ class pendingtask
         $obj[0][$this->gridname]['columns'][$assignto]['label'] = 'Assigned to';
         $obj[0][$this->gridname]['columns'][0]['btns']['approve']['label'] = 'Start';
         $obj[0][$this->gridname]['columns'][$status]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$user]['label'] = 'Submit by';
 
         // if ($approver != '' && $approver != 'COMMENT') {
         //     $obj[0][$this->gridname]['columns'][0]['btns']['disapprove']['label'] = 'Return';
@@ -162,13 +163,14 @@ class pendingtask
         $qry = "select c.clientid as clid,if(h.reseller<>'',concat(c.clientname,' / ',h.reseller),c.clientname) as clientname,e.clientid as request,e.clientname as requestorname,d.fcheckingdate as dateid2,
                 d.userid,n.clientname as assignto,p.approver,h.trno, d.line $stat  as status, date(h.dateid) as dateid,
                 d.title,h.amount,m.modulename as doc, m.sbcpendingapp,'' as lblforapp, h.checkerid, h.requestby, e.email as requestbycode, d.taskcatid,
-                ifnull(h.reseller,'') as reseller $addf
+                ifnull(h.reseller,'') as reseller, if(h.checkerid=0,n.clientname,ck.clientname) as user $addf
             from pendingapp as p
             $pjoin
             left join tmhead as h on h.trno=d.trno
             left join client as c on c.clientid = h.clientid
             left join client as e on e.clientid = h.requestby
             left join client as n on n.clientid = d.userid
+            left join client as ck on ck.clientid = h.checkerid
             left join moduleapproval as m on m.modulename=p.doc
              where p.doc='TM' and p.clientid=" . $adminid . "  " . $filter . " $orderby";
         // Logger($qry);

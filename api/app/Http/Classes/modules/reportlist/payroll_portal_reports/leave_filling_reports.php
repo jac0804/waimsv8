@@ -782,11 +782,11 @@ class leave_filling_reports
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
 
-            if ($this->reporter->linecounter == $page) {
-                $str .= $this->reporter->page_break();
-                $str .= $this->camera_header($config, $layoutsize);
-                $page = $page + $count;
-            }
+            // if ($this->reporter->linecounter == $page) {
+            //     $str .= $this->reporter->page_break();
+            //     $str .= $this->camera_header($config, $layoutsize);
+            //     $page = $page + $count;
+            // }
         }
         $str .= $this->reporter->endreport();
         return $str;

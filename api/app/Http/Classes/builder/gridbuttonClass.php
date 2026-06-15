@@ -2244,6 +2244,18 @@ class gridbuttonClass
         'color' => 'primary'
       ],
 
+      'entryamparts' => [
+        'name' => 'multigrid',
+        'label' => 'Add Parts',
+        'icon' => 'shopping_cart',
+        'action' => 'autoserventry',
+        'class' => 'btnaddpart',
+        'lookupclass' => 'entryamparts',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
+      ],
+
     ];
   }
 } // end class

@@ -283,7 +283,7 @@ class pcf_summary_report
     $selectFields = "
       select ag.clientname as salesperson,head.clientname as company,head.poref as pono,head.potrno,head.trno,
       $expensesField
-      head.dtcno as refno,head.oandausdphp,so.docno  as sodocno";
+      head.dtcno as refno,head.oandausdphp,so.docno  as sodocno,head.pcfno";
       $grp="";
       if($prodHeadAccess<=0 && $salesHeadAccess<=0 && $pcfAdminAccess <=0){
       $leftJoins = "left join client as ag on ag.clientid=head.agentid
@@ -298,7 +298,7 @@ class pcf_summary_report
       $grp=", s.ext, s.totaltp,s.totalsrp";
      }
      
-    $grouping = "group by ag.clientname,head.clientname,head.poref,head.dtcno,head.potrno,head.oandausdphp,head.trno,so.docno ";
+    $grouping = "group by ag.clientname,head.clientname,head.poref,head.dtcno,head.potrno,head.oandausdphp,head.trno,so.docno,head.pcfno ";
     $main_qry = "
       $selectFields $extcol ,'U' as stat
       from pxhead as head
@@ -340,7 +340,7 @@ class pcf_summary_report
     //  $expenses = $this->getExpensesList();
     // $exp= $this->count_exp($config, $validExpenses);
     // $layoutsize = 1500 + ($exp * 100);
-     $layoutsize = 1500 + (count($validExpenses) * 100);
+     $layoutsize = 1600 + (count($validExpenses) * 100);
 
 
     $font = $this->companysetup->getrptfont($config['params']);
@@ -389,6 +389,7 @@ class pcf_summary_report
     // }
     // $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     if($pcfAdminAccess){
+       $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
        $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
        $str .= $this->reporter->col('SO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
        $str .= $this->reporter->col('PO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');       
@@ -411,7 +412,7 @@ class pcf_summary_report
       $str .= $this->reporter->col('DR#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     }elseif($prodHeadAccess>0 && $salesHeadAccess >0 ){
 
-
+      $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('SO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('PO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -432,7 +433,7 @@ class pcf_summary_report
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     }else{
 
-
+      $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('SO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('PO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -773,7 +774,7 @@ class pcf_summary_report
         }
     }
 
-    $layoutsize = 1500 + (count($validExpenses) * 100);
+    $layoutsize = 1600 + (count($validExpenses) * 100);
 
     $str .= $this->reporter->beginreport($layoutsize);
   
@@ -806,6 +807,7 @@ class pcf_summary_report
           
         $totalexp = 0;
         $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col(isset($data->pcfno) ? $data->pcfno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->refno) ? $data->refno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->sodocno) ? $data->sodocno : '', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->pono) ? $data->pono : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
@@ -995,7 +997,7 @@ class pcf_summary_report
         }
     }
 
-    $layoutsize = 1500 + (count($validExpenses) * 100);
+    $layoutsize = 1600 + (count($validExpenses) * 100);
 
 
     
@@ -1041,6 +1043,7 @@ class pcf_summary_report
           
         $totalexp = 0;
         $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col(isset($data->pcfno) ? $data->pcfno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->refno) ? $data->refno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->sodocno) ? $data->sodocno : '', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->pono) ? $data->pono : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');

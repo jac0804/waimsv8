@@ -234,7 +234,7 @@ class waims2
     $this->coreFunctions->sbccreatetable("hqtaddons", $qry);
 
     $this->coreFunctions->sbcaddcolumngrp(["item"], ["noncomm", "isnsi"], "TINYINT(1) NOT NULL DEFAULT '0'", 1);
-    $this->coreFunctions->sbcaddcolumngrp(["item"], ["isnonserial"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
+    
     $this->coreFunctions->sbcaddcolumngrp(['item'], ["mmtrno", "barcodeid", "clientid", "itemseq"], "int(11) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["item"], ["delcharge"], "DECIMAL(18,2) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(['item'], ['amt16'], "decimal(19,6) not null default '0'", 1);
@@ -1607,6 +1607,7 @@ class waims2
 
 
     _20240917Here:
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["isnonserial"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
     $qry = "CREATE TABLE `tenancystatus` (
       `line` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
       `clientid` INTEGER UNSIGNED NOT NULL DEFAULT 0,

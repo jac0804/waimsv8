@@ -329,17 +329,20 @@ class sj
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
         $itemno++;
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_uom, $arr_itemname, $arr_qty, $arr_amt, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_uom, $arr_itemname, $arr_qty, $arr_amt]);
 
         for ($r = 0; $r < $maxrow; $r++) {
           $j++;
+          $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
+          $uom = isset($arr_uom[$r]) ? $arr_uom[$r] : '';
+          $qty = isset($arr_qty[$r]) ? $arr_qty[$r] : '';
           PDF::SetFont($font, '', 10);
           PDF::MultiCell(7, $rowHeight, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
           PDF::MultiCell(50, $rowHeight, $r == 0 ? $itemno : '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(55, $rowHeight, isset($arr_qty[$r]) ? $arr_qty[$r] : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(60, $rowHeight, isset($arr_uom[$r]) ? $arr_uom[$r] : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(55, $rowHeight,  $r == 0 ? $qty : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(60, $rowHeight, $uom, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
           PDF::MultiCell(333, $rowHeight, isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-          PDF::MultiCell(110, $rowHeight, isset($arr_amt[$r]) ? $arr_amt[$r] : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+          PDF::MultiCell(110, $rowHeight, $r == 0 ? $amt : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
           PDF::MultiCell(110, $rowHeight, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', false);
           PDF::MultiCell(5, $rowHeight, '', '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', false);
         }
@@ -606,12 +609,12 @@ class sj
 
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
-          PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
-          PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '55', '', false, 1);
-          PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '190', '', false, 1);
+          PDF::MultiCell(100, 0,  $r == 0 ? $itemno : '', '', 'C', false, 0, '15', '', false, 1);
+          PDF::MultiCell(100, 0,  $r == 0 ? $qty : '', '', 'R', false, 0, '55', '', false, 1);
+          PDF::MultiCell(100, 0,  $r == 0 ? $unit : '', '', 'L', false, 0, '190', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '260', '', false, 1);
-          PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $amt : '', '', 'R', false, 0, '520', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 1, '624', '', false, 1);
         }
 
         if ($disc != '') {
@@ -841,12 +844,12 @@ class sj
           $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
-          PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
-          PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '55', '', false, 1);
-          PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '173', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $itemno : '', '', 'C', false, 0, '15', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $qty : '', '', 'R', false, 0, '55', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $unit : '', '', 'L', false, 0, '173', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '231', '', false, 1);
-          PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $amt : '', '', 'R', false, 0, '520', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 1, '624', '', false, 1);
         }
 
         if ($disc != '') {
@@ -1105,11 +1108,11 @@ class sj
           $total = $data[$i]['amt'] * $data[$i]['qty']; // original na  total
 
           PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '', true, 1);
-          PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '-39', '', false, 1);
-          PDF::MultiCell(100, 0, $uom, '', 'L', false, 0, '70', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $qty : '', '', 'R', false, 0, '-39', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $uom : '', '', 'L', false, 0, '70', '', false, 1);
           PDF::MultiCell(450, 0, $item, '', 'L', false, 0, '120', '', false, 1);
-          PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '545', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '658', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $amt : '', '', 'R', false, 0, '545', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 1, '658', '', false, 1);
         }
 
         if ($disc != '') {
@@ -1344,9 +1347,9 @@ class sj
 
           PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(370, 0, $item, '', 'L', false, 0, '40', '', false, 1);
-          PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '369', '', false, 1);
-          PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '508', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '653', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $qty : '', '', 'R', false, 0, '369', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $amt : '', '', 'R', false, 0, '508', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 1, '653', '', false, 1);
         }
 
         if ($disc != '') {
@@ -1587,11 +1590,11 @@ class sj
 
           PDF::MultiCell(100, 19, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(50, 0, $i + 1, '', 'C', false, 0, '40', '', false, 1);
-          PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '60', '', false, 1);
-          PDF::MultiCell(100, 0, $uom, '', 'L', false, 0, '193', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $qty : '', '', 'R', false, 0, '60', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $uom : '', '', 'L', false, 0, '193', '', false, 1);
           PDF::MultiCell(370, 0, $item, '', 'L', false, 0, '240', '', false, 1);
-          PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '545', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($total, 2), '', 'R', false, 1, '653', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? $amt : '', '', 'R', false, 0, '545', '', false, 1);
+          PDF::MultiCell(100, 0, $r == 0 ? number_format($total, 2) : '', '', 'R', false, 1, '653', '', false, 1);
         }
 
         if ($disc != '') {

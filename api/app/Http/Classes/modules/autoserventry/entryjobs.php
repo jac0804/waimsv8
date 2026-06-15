@@ -312,19 +312,19 @@ class entryjobs
         $trno = $config['params']['tableid'];
 
         $qry = "
-         select log.trno, log.doc, log.task, log.user, log.dateid, 
-         if(u.pic='','blank_user.png',u.pic) as pic
-         from " . $this->tablelogs . " as log
-         left join useraccess as u on u.username=log.user
-         left join ptjobs as pt on pt.line = log.trno
-         where log.doc = '" . $doc . "'
-         union all
-         select log.trno, log.doc, log.task, log.user, log.dateid, 
-         if(u.pic='','blank_user.png',u.pic) as pic
-         from  " . $this->tablelogs_del . " as log
-         left join useraccess as u on u.username=log.user
-         left join ptjobs as pt on pt.line = log.trno 
-         where log.doc = '" . $doc . "' ";
+        select log.trno, log.doc, log.task, log.user, log.dateid, 
+        if(u.pic='','blank_user.png',u.pic) as pic
+        from " . $this->tablelogs . " as log
+        left join useraccess as u on u.username=log.user
+        left join ptjobs as pt on pt.line = log.trno
+        where log.doc = '" . $doc . "'
+        union all
+        select log.trno, log.doc, log.task, log.user, log.dateid, 
+        if(u.pic='','blank_user.png',u.pic) as pic
+        from  " . $this->tablelogs_del . " as log
+        left join useraccess as u on u.username=log.user
+        left join ptjobs as pt on pt.line = log.trno 
+        where log.doc = '" . $doc . "' ";
         $qry = $qry . " order by dateid desc";
         $data = $this->coreFunctions->opentable($qry);
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];

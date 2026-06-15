@@ -73,8 +73,7 @@ class am
     'tax',
     'vattype',
     'agent',
-    'carid',
-    'modelid'
+    'carid'
   ];
 
   private $except = ['trno', 'dateid', 'due'];
@@ -423,7 +422,7 @@ class am
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addjob']; //, 'pendingso' 'quickadd', 'saveitem', 'deleteallitem','additem',
+    $tbuttons = ['addvehicle', 'addjob']; //, 'pendingso' 'quickadd', 'saveitem', 'deleteallitem','additem',
     $obj = $this->tabClass->createtabbutton($tbuttons);
     return $obj;
   }
@@ -434,7 +433,7 @@ class am
     $fields = ['docno', 'client', 'clientname', 'dagentname', 'address', 'dwhname'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'docno.label', 'Transaction#');
-
+    data_set($col1, 'client.lookupclass', 'customer');
 
     $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dvattype', ['cur', 'forex'], ['yourref', 'ourref']];
     $col2 = $this->fieldClass->create($fields);
@@ -444,17 +443,16 @@ class am
     $fields = [['vehicle', 'year'], ['modelname', 'mileage'], ['licenseno', 'type'], ['motorno', 'chassisno'], ['submodel', 'engine'], ['transmission', 'mvno']];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'vehicle.readonly', true);
+    data_set($col3, 'vehicle.type', 'input');
     data_set($col3, 'vehicle.label', 'Car Make');
-    data_set($col3, 'vehicle.action', 'lookupcarmake');
-    data_set($col3, 'vehicle.lookupclass', 'lookupcarmake');
     data_set($col3, 'year.readonly', true);
-    data_set($col3, 'modelname.addedparams', ['carid']);
-    data_set($col3, 'modelname.action', 'lookupcarmake');
-    data_set($col3, 'modelname.lookupclass', 'lookupcarmodel');
     data_set($col3, 'modelname.readonly', true);
+    data_set($col3, 'modelname.type', 'input');
+
     data_set($col3, 'licenseno.label', 'License');
 
     data_set($col3, 'mileage.label', 'Mileage');
+    data_set($col3, 'mileage.readonly', true);
 
 
     data_set($col3, 'type.type', 'input');
@@ -463,7 +461,7 @@ class am
     data_set($col3, 'transmission.required', false);
     data_set($col3, 'mvno.required', false);
 
-
+    data_set($col3, 'year.class', 'csyear sbccsreadonly');
     data_set($col3, 'licenseno.class', 'cslicenseno sbccsreadonly');
     data_set($col3, 'motorno.class', 'csmotorno sbccsreadonly');
     data_set($col3, 'submodel.class', 'cssubmodel sbccsreadonly');
@@ -474,6 +472,10 @@ class am
     data_set($col3, 'chassisno.class', 'cschassisno sbccsreadonly');
     data_set($col3, 'engine.class', 'csengine sbccsreadonly');
     data_set($col3, 'mvno.class', 'csmvno sbccsreadonly');
+
+    data_set($col3, 'submodel.required', false);
+    data_set($col3, 'year.required', false);
+    data_set($col3, 'type.required', false);
 
 
     $fields = ['kmno', 'rem', 'rem1', 'porem'];
@@ -526,7 +528,6 @@ class am
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
     $data[0]['carid'] = 0;
-    $data[0]['modelid'] = 0;
 
     $data[0]['kmno'] = '';
     $data[0]['rem1'] = '';
@@ -565,7 +566,6 @@ class am
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
     $data[0]['carid'] = 0;
-    $data[0]['modelid'] = 0;
 
     $data[0]['kmno'] = '';
     $data[0]['rem1'] = '';
@@ -632,10 +632,15 @@ class am
          warehouse.clientname as whname,
          '' as dwhname,
          left(head.due,10) as due,
-         client.groupid,cmake.carname as vehicle,
-         model.model as modelname,model.cryear as year, model.crtype as type,model.sub_model as submodel,
+         client.groupid,
          ifnull(hinfo.kmno,'') as kmno,ifnull(hinfo.complaints,'') as rem1,
-         ifnull(hinfo.recomm,'') as porem";
+         ifnull(hinfo.recomm,'') as porem,
+         ifnull(cvh.cmake,'') as vehicle,ifnull(model.model,'') as modelname,
+         ifnull(cvh.licenseno,'') as licenseno,ifnull(cvh.motorno,'') as motorno,
+         ifnull(model.sub_model,'') as submodel, ifnull(cvh.transmission,'') as transmission,
+          model.cryear as year,ifnull(cvh.mileage,0) as mileage,ifnull(model.crtype,'') as type,
+          ifnull(cvh.chassis,'') as chassisno,ifnull(cvh.carengine,'') as engine,
+          ifnull(cvh.mvno,'') as mvno, cvh.line";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -643,8 +648,8 @@ class am
         left join client as warehouse on warehouse.client = head.wh
         left join client as agent on agent.client = head.agent
         left join coa on coa.acno=head.contra
-        left join cmake on cmake.id=head.carid
-        left join cmodel as model on model.carid=cmake.id
+        left join cvehicle as cvh on cvh.clientid=client.clientid and cvh.line = head.carid
+        left join cmodel as model on model.line=cvh.cmodelline
         left join cntnuminfo as hinfo on hinfo.trno = head.trno
         where head.trno = ? and num.doc=? and num.center = ? and left(num.bref,3) <> 'SJS'
         union all " . $qryselect . " from $htable as head
@@ -653,10 +658,12 @@ class am
         left join client as warehouse on warehouse.clientid = head.whid
         left join client as agent on agent.clientid = head.agentid
         left join coa on coa.acno=head.contra
-        left join cmake on cmake.id=head.carid
-        left join cmodel as model on model.carid=cmake.id
+        left join cvehicle as cvh on cvh.clientid=client.clientid
+        left join cmodel as model on model.line=cvh.cmodelline
         left join hcntnuminfo as hinfo on hinfo.trno = head.trno
         where head.trno = ? and num.doc=? and num.center=? and left(num.bref,3) <> 'SJS' ";
+
+
     $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
     if (!empty($head)) {
@@ -812,7 +819,8 @@ class am
 
   private function getstockselect($config)
   {
-    $sqlselect = "select  am.line,am.trno,am.jobid,am.packageline,am.rem, job.docno as code,job.jobtitle as description, '' as bgcolor ";
+    $sqlselect = "select  am.line,am.trno,am.jobid,am.packageline,am.rem,
+     job.docno as code,job.jobtitle as description, '' as bgcolor ";
     return $sqlselect;
   }
 
@@ -886,6 +894,10 @@ class am
         break;
       case 'getautojob':
         return $this->getautojob($config);
+        break;
+
+      case 'getvehicle':
+        return $this->getvehicle($config);
         break;
 
       default:
@@ -1116,14 +1128,13 @@ class am
   {
     $config['params']['data'] = $config['params']['row'];
     $isupdate = $this->additem('update', $config);
-    // $this->othersClass->getcreditinfo($config, $this->head);
     $data = $this->openstockline($config);
     $msg = '';
     if ($isupdate['msg'] != '') {
       $msg = $isupdate['msg'];
     }
     if (!$isupdate['status']) {
-      $data[0]->errcolor = 'bg-red-2';
+      $msg = 'Update failed.';
 
       return ['row' => $data, 'status' => true, 'msg' => $msg];
     } else {
@@ -1507,22 +1518,11 @@ class am
 
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
-    if ($this->companysetup->getserial($config['params'])) {
-      $this->othersClass->deleteserialout($trno, $line);
-    }
 
-    $qry = "delete from " . $this->stock . " where trno=? and line=?";
+    $qry = "delete from " . $this->amstock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
-    $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-    $this->coreFunctions->execqry('delete from stockinfo where trno=? and line=?', 'delete', [$trno, $line]);
-    // $this->logger->sbcwritelog($trno, $config,  'STOCKINFO',  'DELETE - Line:' . $line
-    //     . ' Notes:' . $config['params']['row']['rem']
-    // );
-
-    $this->setserveditems($data[0]->refx, $data[0]->linex, $config['params']['companyid']);
-
-
-    $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' barcode:' . $data[0]->barcode . ' Qty:' . $data[0]->isqty . ' Amt:' . $data[0]->isamt . ' Disc:' . $data[0]->disc . ' wh:' . $data[0]->wh . ' ext:' . $data[0]->ext);
+    $this->logger->sbcwritelog($trno, $config, 'JOB', 'REMOVED - Line:' . $line
+      . ' Description:' . ' ' . $data[0]->description);
     return ['status' => true, 'msg' => 'Item was successfully deleted.'];
   } // end function
 
@@ -2118,24 +2118,22 @@ class am
   {
 
     $trno = $config['params']['trno'];
-
     if (isset($config['params']['data']['jobid'])) {
       $jobid = $config['params']['data']['jobid'];
     }
     if (isset($config['params']['data']['rem'])) {
       $rem = $config['params']['data']['rem'];
     }
-
-
     $data = [
       'trno' => $trno,
       'jobid' => $jobid,
-      'rem' => $rem,
+      'rem' => $rem
     ];
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
     }
+
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->amstock . " where trno=? order by line desc limit 1";
@@ -2146,9 +2144,6 @@ class am
       $line = $line + 1;
       $config['params']['line'] = $line;
       $data['line'] = $line;
-
-
-
       $data['encodeddate'] = $current_timestamp;
       $data['encodedby'] = $config['params']['user'];
       if ($this->coreFunctions->sbcinsert($this->amstock, $data) == 1) {
@@ -2163,6 +2158,7 @@ class am
         return ['status' => false, 'msg' => 'Add item Failed'];
       }
     } elseif ($action == 'update') {
+      // var_dump($data);
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
 
@@ -2186,10 +2182,8 @@ class am
       $data = $this->coreFunctions->opentable($query, [$value['line']]);
 
       foreach ($data as $key2 => $value2) {
-
         $config['params']['data']['jobid'] = $value2->jobid;
         $config['params']['data']['rem'] = '';
-
         $config['params']['trno'] = $trno;
         $return = $this->additem('insert', $config);
         if ($return['status']) {
@@ -2204,5 +2198,23 @@ class am
     } //end foreach
     $this->coreFunctions->LogConsole(json_encode($rows));
     return ['row' => $rows, 'status' => true, 'msg' => 'Added Items Successful...'];
+  }
+
+  public function getvehicle($config)
+  {
+    $trno = $config['params']['trno'];
+    $vehicleline = $config['params']['rows'][0]['keyid'];
+    $data['carid'] = $vehicleline;
+    $updatehead = $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
+    $stat = true;
+    $msg = "Header updated successfully.";
+    $reload = true;
+
+    if ($updatehead != 1) {
+      $stat = false;
+      $msg = "'Failed to update the header";
+      $reload = false;
+    }
+    return ['status' => $stat, 'msg' => $msg, 'reloadhead' => $reload];
   }
 } //end class

@@ -477,6 +477,7 @@ class companysetup
         $this->pricetype = 'CustomerGroup';
         $this->istaskmonitoring = false;
         $this->ismysql8 = true;
+        $this->lookupclientpermodule = false;
         break;
       case 59:  //roosevelt
         $this->clientlength = 0;

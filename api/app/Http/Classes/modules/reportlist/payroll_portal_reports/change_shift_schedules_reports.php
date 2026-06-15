@@ -458,7 +458,7 @@ class change_shift_schedules_reports
     }
     public function camera_layout($config)
     {
-
+        $companyid = $config['params']['companyid'];
         $result = $this->reportDefault($config);
 
         $border = '1px solid';
@@ -540,10 +540,12 @@ class change_shift_schedules_reports
             $str .= $this->reporter->endrow();
         }
         $str .= $this->reporter->endtable();
-        if ($this->reporter->linecounter == $page) {
-            $str .= $this->reporter->page_break();
-            $str .= $this->camera_header($config, $layoutSize, $seqcount);
-            $page = $page + $count;
+        if ($companyid != 51) {
+            if ($this->reporter->linecounter == $page) {
+                $str .= $this->reporter->page_break();
+                $str .= $this->camera_header($config, $layoutSize, $seqcount);
+                $page = $page + $count;
+            }
         }
         $str .= $this->reporter->endreport();
         return $str;

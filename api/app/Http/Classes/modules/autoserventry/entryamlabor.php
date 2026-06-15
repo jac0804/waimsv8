@@ -59,14 +59,14 @@ class entryamlabor
       $$value = $key;
     }
 
-    $stockbuttons = ['save', 'delete', 'entryparts'];
+    $stockbuttons = ['save', 'delete', 'entryamparts'];
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
     $obj = $this->tabClass->createTab($tab, $stockbuttons);
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$code]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$cost]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
-    $obj[0][$this->gridname]['columns'][$rate]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
-    $obj[0][$this->gridname]['columns'][$description]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+    $obj[0][$this->gridname]['columns'][$rate]['style'] = "width:70px;whiteSpace: normal;min-width:70px;";
+    $obj[0][$this->gridname]['columns'][$description]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
     $obj[0][$this->gridname]['columns'][$rem]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";
 
     $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
@@ -178,8 +178,6 @@ class entryamlabor
           $data['line'] = $line;
           $insert = $this->coreFunctions->sbcinsert($this->table, $data2);
           if ($insert) {
-            // $line = $this->coreFunctions->insertGetId($this->table, $data2);
-
             $config['params']['doc'] = 'ENTRYAMTASK';
             $this->logger->sbcmasterlog($trno, $config, ' CREATE - Line: ' . $line . ' Code :' . $taskcode . ' ' . 'Task Desc : ' . $taskname);
           } else {
@@ -194,7 +192,6 @@ class entryamlabor
       }
     }
     $returndata = $this->loaddata($config);
-    // var_dump($returndata);
     return ['status' => $stat, 'msg' => $msg, 'data' => $returndata];
   }
 
@@ -232,7 +229,7 @@ class entryamlabor
     } else { // update
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
-      $update = $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]);
+      $update = $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line'], 'trno' => $trno]);
       if ($update) {
         $returnrow = $this->loaddataperrecord($config, $row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
@@ -369,13 +366,13 @@ class entryamlabor
     if(pic='','blank_user.png',pic) as pic
     from " . $this->tablelogs . " as log
     left join useraccess as u on u.username=log.user
-    where log.doc = '" . $doc . "'
+    where log.doc = '" . $doc . "'  and log.trno= $trno
     union all
     select trno, doc, task, log.user, dateid, 
     if(pic='','blank_user.png',pic) as pic
     from  " . $this->tablelogs_del . " as log
     left join useraccess as u on u.username=log.user
-    where log.doc = '" . $doc . "'";
+    where log.doc = '" . $doc . "'  and log.trno= $trno ";
 
     $qry = $qry . " order by dateid desc";
     $data = $this->coreFunctions->opentable($qry);

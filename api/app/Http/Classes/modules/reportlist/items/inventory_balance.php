@@ -2139,13 +2139,13 @@ class inventory_balance
       $skipnegative = false;
       switch ($companyid) {
         case 49: //hotmix
-          $count = 56;
+          $count = 33;
           $page = 56;
           $skipnegative = true;
           $font_size = 12;
           break;
         default:
-          $count = 51;
+          $count = 30;
           $page = 50;
           break;
       }
@@ -2717,13 +2717,13 @@ class inventory_balance
     $skipnegative = false;
     switch ($companyid) {
       case 49: //hotmix
-        $count = 56;
+        $count = 39;
         $page = 56;
         $skipnegative = true;
         $font_size = 12;
         break;
       default:
-        $count = 51;
+        $count = 34;
         $page = 50;
         break;
     }
@@ -3329,7 +3329,7 @@ class inventory_balance
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
       // $itemtype   = $config['params']['dataparams']['itemtype'];
 
-      $count = 51;
+      $count = 34;
       $page = 50;
 
       $this->reporter->linecounter = 0;
@@ -3692,7 +3692,7 @@ class inventory_balance
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
 
-    $count = 37;
+    $count = 30;
     $page = 37;
 
     $this->reporter->linecounter = 0;
@@ -4028,7 +4028,7 @@ class inventory_balance
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
 
-    $count = 51;
+    $count = 34;
     $page = 50;
     $this->reporter->linecounter = 0;
 
@@ -4336,7 +4336,7 @@ class inventory_balance
       $wh = 'ALL';
     }
 
-    $count = 46;
+    $count = 30;
     $page = 45;
     $this->reporter->linecounter = 0;
 
@@ -4628,7 +4628,7 @@ class inventory_balance
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
 
-    $count = 46;
+    $count = 30;
     $page = 45;
     $this->reporter->linecounter = 0;
 
@@ -4948,7 +4948,7 @@ class inventory_balance
       $wh = 'ALL';
     }
 
-    $count = 46;
+    $count = 30;
     $page = 45;
     $this->reporter->linecounter = 0;
 
@@ -5220,13 +5220,13 @@ class inventory_balance
 
     switch ($companyid) {
       case 49: //hotmix
-        $count = 45;
+        $count = 30;
         $page = 45;
         $skipnegative = true;
         $font_size = 12;
         break;
       default:
-        $count = 55;
+        $count = 38;
         $page = 55;
         break;
     }
@@ -5587,7 +5587,7 @@ class inventory_balance
 
     $amountformat   = $config['params']['dataparams']['amountformat'];
 
-    $count = 46;
+    $count = 30;
     $page = 45;
     $this->reporter->linecounter = 0;
 
@@ -5901,7 +5901,7 @@ class inventory_balance
     $filter = " and item.isimport in $itemtype";
     $excwh = isset($config['params']['dataparams']['layoutformat']) ? $config['params']['dataparams']['layoutformat'] : '';
 
-    $count = 51;
+    $count = 34;
     $page = 50;
 
     $this->reporter->linecounter = 0;
@@ -6813,7 +6813,7 @@ class inventory_balance
     if ($wh == '') {
       $wh = 'ALL';
     }
-    $count = 13;
+    $count = 10;
     $page = 13;
 
     $this->reporter->linecounter = 0;
@@ -7198,7 +7198,7 @@ class inventory_balance
       $itemtype   = $config['params']['dataparams']['itemtype'];
       $this->reportParams['orientation'] = 'l';
 
-      $count = 51;
+      $count = 34;
       $page = 50;
 
 
@@ -7743,7 +7743,7 @@ class inventory_balance
       $wh = 'ALL';
     }
 
-    $count = 51;
+    $count = 34;
     $page = 50;
 
     $this->reporter->linecounter = 0;
@@ -7881,7 +7881,7 @@ class inventory_balance
       $companyid = $config['params']['companyid'];
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
       $this->reportParams['orientation'] = 'l';
-      $count = 51;
+      $count = 34;
       $page = 50;
 
       $this->reporter->linecounter = 0;
@@ -8287,7 +8287,7 @@ class inventory_balance
 
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
 
-      $count = 51;
+      $count = 34;
       $page = 50;
 
       $this->reporter->linecounter = 0;
@@ -8618,7 +8618,7 @@ class inventory_balance
       $companyid  = $config['params']['companyid'];
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
 
-      $count = 51;
+      $count = 34;
       $page  = 50;
 
       $this->reporter->linecounter = 0;

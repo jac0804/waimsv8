@@ -1918,7 +1918,7 @@ class sj
 
     $data = [];
     //get from barcode list
-    $qry = "select 'Barcode List' as docno, left(now(),10) as dateid,s.amt,s.amt as defamt,s.disc,s.uom,'' as rem from sku as s 
+    $qry = "select 'Barcode List' as docno, left(now(),10) as dateid,s.amt,s.amt as defamt,s.disc,s.uom2 as uom,'' as rem from sku as s 
     left join item on item.itemid = s.itemid left join client on client.groupid = s.groupid where item.barcode =? and  client.client = ?
     union all
     select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,

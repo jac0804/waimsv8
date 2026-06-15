@@ -128,8 +128,8 @@ class aw
 
         $buttons = $this->btnClass->create($btns);
 
-        $buttons['others']['items']['first'] =  ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']];
-        $buttons['others']['items']['prev'] =  ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['first'] = ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']];
+        $buttons['others']['items']['prev'] = ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']];
         $buttons['others']['items']['next'] = ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']];
         $buttons['others']['items']['last'] = ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']];
 
@@ -230,7 +230,7 @@ class aw
     {
 
         // $tab['tableentry'] = ['action' => 'autoserventry', 'lookupclass' => 'entryjobs', 'label' => 'Jobs'];
-        $column = ['action',  'code', 'description', 'rem'];
+        $column = ['action', 'code', 'description', 'rem', 'package'];
         foreach ($column as $key => $value) {
             $$value = $key;
         }
@@ -242,19 +242,25 @@ class aw
         ];
         $stockbuttons = ['save', 'delete', 'addtask'];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
+        $obj[0]['inventory']['columns'][$package]['readonly'] = true;
         $obj[0]['inventory']['columns'][$code]['type'] = 'label';
         $obj[0]['inventory']['columns'][$code]['style'] = 'text-align: left; width: 125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0]['inventory']['columns'][$description]['type'] = 'label';
         $obj[0]['inventory']['columns'][$description]['label'] = 'Job Description';
         $obj[0]['inventory']['columns'][$description]['style'] = 'text-align: left; width: 125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['descriptionrow'] = [];
+        
         return $obj;
     } // end createTab
 
     public function createtabbutton($config)
     {
-        $tbuttons = ['addjob', 'addvehicle'];
+        $tbuttons = ['additem', 'addjob', 'addvehicle'];
         $obj = $this->tabClass->createtabbutton($tbuttons);
+        $obj[0]['icon'] = 'batch_prediction';
+        $obj[0]['label'] = 'Add Package';
+        $obj[0]['lookupclass'] = 'lookuppackage';
+        $obj[0]['action'] = 'addpackage';
         return $obj;
     } // end createtabbutton
 
@@ -287,7 +293,8 @@ class aw
         $search = $config['params']['search'];
 
         $status = "'draft'";
-        if ($search != "") $limit = 'limit 150';
+        if ($search != "")
+            $limit = 'limit 150';
         $orderby = "order by dateid desc, docno desc";
 
         if (isset($config['params']['search'])) {
@@ -344,16 +351,16 @@ class aw
             }
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
             return [
-                'head'       => $head,
-                'griddata'   => ['inventory' => $stock],
-                'islocked'   => false,
-                'isposted'   => false,
-                'isnew'      => false,
-                'status'     => true,
-                'msg'        => $msg,
-                'clickobj'   => [],
+                'head' => $head,
+                'griddata' => ['inventory' => $stock],
+                'islocked' => false,
+                'isposted' => false,
+                'isnew' => false,
+                'status' => true,
+                'msg' => $msg,
+                'clickobj' => [],
                 'hidetabbtn' => [],
-                'hideobj'    => []
+                'hideobj' => []
             ];
         } else {
             $head[0]['trno'] = 0;
@@ -367,6 +374,7 @@ class aw
         $sqlselect = $this->getstockselect($config);
         $query = $sqlselect . " from ptjobs as pt
         left join jobthead as jt on jt.line = pt.jobid 
+        left join pthead as pkgh on pkgh.trno = pt.packagetrno
         where pt.trno = ?";
         $data = $this->coreFunctions->opentable($query, [$trno]);
         return $data;
@@ -374,7 +382,11 @@ class aw
 
     public function getstockselect($config)
     {
-        $query = "select pt.line,pt.jobid,pt.trno as trno,pt.rem,jt.docno as code,jt.jobtitle as description,'' as bgcolor ";
+        $query = "select pt.line, pt.jobid, pt.trno as trno, pt.rem, pt.packagetrno,
+        jt.docno as code, jt.jobtitle as description,
+        pkgh.docno as package,
+        '' as bgcolor ";
+
         return $query;
     }
 
@@ -415,7 +427,7 @@ class aw
         }
 
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['editby']   = $config['params']['user'];
+        $data['editby'] = $config['params']['user'];
 
         if ($isupdate) {
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
@@ -426,9 +438,9 @@ class aw
                 $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']
             );
         } else {
-            $data['doc']        = $config['params']['doc'];
+            $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-            $data['createby']   = $config['params']['user'];
+            $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
             $this->logger->sbcwritelog(
                 $head['trno'],
@@ -437,6 +449,74 @@ class aw
                 $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']
             );
         }
+    }
+
+    public function stockstatus($config)
+    {
+        $this->coreFunctions->LogConsole('STOCKSTATUS ACTION: ' . $config['params']['action']);
+        switch ($config['params']['action']) {
+            case 'additem':
+                return $this->additem('insert', $config);
+                break;
+            // case 'addallitem': // save all item selected from lookup
+            //     return $this->addallitem($config);
+            //     break;
+            // case 'deleteitem':
+            //     return $this->deleteitem($config);
+            //     break;
+            // case 'saveitem': //save all item edited
+            //     return $this->updateitem($config);
+            //     break;
+            case 'saveperitem':
+                return $this->updateperitem($config);
+                break;
+            // case 'deleteallitem':
+            //     return $this->deleteallitem($config);
+            //     break
+            case 'getvehicle':
+                return $this->getcvehicle($config);
+                break;
+            case 'getautojob':
+                return $this->getautojob($config);
+                break;
+            case 'addpackage':
+                return $this->addpackage($config);
+                break;
+            default:
+                return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
+                break;
+        }
+    }
+
+    public function getcvehicle($config)
+    {
+        $trno = $config['params']['trno'];
+        $rows = $config['params']['rows'];
+        $returnhead = [];
+
+        foreach ($rows as $key => $value) {
+            $data = [];
+
+            // map from cvehicle fields to awhead columns
+            $data['cryear'] = $value['cryear'];
+            $data['licenseno'] = $value['licenseno'];
+            $data['make'] = $value['cmake'];
+            $data['modelname'] = $value['model'];
+            $data['crtype'] = $value['crtype'];
+            $data['submodel'] = $value['sub_model'];
+            $data['carengine'] = $value['carengine'];
+            $data['transmission'] = $value['transmission'];
+            $data['mvno'] = $value['mvno'];
+            $data['mileage'] = $value['mileage'];
+            $data['chassisno'] = $value['chassis'];
+            $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
+
+            $returnhead = $data;
+            $returnhead['byear'] = $value['cryear'];
+            unset($returnhead['cryear']);
+        } //end foreach
+
+        return ['status' => true, 'msg' => 'Vehicle details loaded...', 'head' => $returnhead, 'reloadhead' => true];
     }
 
     public function getautojob($config)
@@ -467,5 +547,202 @@ class aw
         } //end foreach
         $this->coreFunctions->LogConsole(json_encode($rows));
         return ['row' => $rows, 'status' => true, 'msg' => 'Added Items Successful...'];
+    }
+
+    public function additem($action, $config)
+    {
+
+        $trno = $config['params']['trno'];
+
+        if (isset($config['params']['data']['jobid'])) {
+            $jobid = $config['params']['data']['jobid'];
+        }
+        if (isset($config['params']['data']['rem'])) {
+            $rem = $config['params']['data']['rem'];
+        }
+
+
+        $data = [
+            'trno' => $trno,
+            'jobid' => $jobid,
+            'rem' => $rem,
+        ];
+
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        }
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        if ($action == 'insert') {
+            $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
+            $line = $this->coreFunctions->datareader($qry, [$trno]);
+            if ($line == '') {
+                $line = 0;
+            }
+            $line = $line + 1;
+            $config['params']['line'] = $line;
+            $data['line'] = $line;
+
+            $data['encodeddate'] = $current_timestamp;
+            $data['encodedby'] = $config['params']['user'];
+            if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
+                $query = "select line as jobid,docno as code,jobtitle as description from jobthead where line = ?";
+                $job = $this->coreFunctions->opentable($query, [$jobid]);
+
+                $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Code:' . $job[0]->code . ' ' . ' Description: ' . $job[0]->description);
+                $this->loadheaddata($config);
+                $row = $this->openstockline($config);
+                return ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.', 'line' => $line, 'reloaddata' => true];
+            } else {
+                return ['status' => false, 'msg' => 'Add item Failed'];
+            }
+        } elseif ($action == 'update') {
+            $config['params']['line'] = $config['params']['data']['line'];
+            $line = $config['params']['data']['line'];
+
+            $data['editdate'] = $current_timestamp;
+            $data['editby'] = $config['params']['user'];
+            $return = true;
+            $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
+            return $return;
+        }
+    }
+
+    public function addpackage($config)
+    {
+        $trno = $config['params']['trno'];
+        $rows = $config['params']['rows'];
+        $returnrows = [];
+
+        // get unique package trnos from selected rows
+        $packagetrnos = array_unique(array_column($rows, 'keyid'));
+
+        foreach ($packagetrnos as $packagetrno) {
+
+            // get package docno for display in package column
+            $package = $this->coreFunctions->opentable(
+                "select docno from pthead where trno = ?",
+                [$packagetrno]
+            );
+            $packagedocno = !empty($package) ? $package[0]->docno : '';
+
+            // get all jobs from the package
+            $pkgjobs = $this->coreFunctions->opentable(
+                "select * from ptjobs where trno = ? order by line",
+                [$packagetrno]
+            );
+
+            foreach ($pkgjobs as $job) {
+                $qry = "select line as value from ptjobs where trno=? order by line desc limit 1";
+                $line = $this->coreFunctions->datareader($qry, [$trno]);
+                if ($line == '')
+                    $line = 0;
+                $line = $line + 1;
+
+                $jobdata = [
+                    'line' => $line,
+                    'jobid' => $job->jobid,
+                    'trno' => $trno,
+                    'rem' => $job->rem,
+                    'packagetrno' => $packagetrno, 
+                    'encodeddate' => $this->othersClass->getCurrentTimeStamp(),
+                    'encodedby' => $config['params']['user'],
+                ];
+                $this->coreFunctions->sbcinsert('ptjobs', $jobdata);
+
+                $pkgtasks = $this->coreFunctions->opentable(
+                    "select * from pttask where trno = ? and jobline = ? order by line",
+                    [$packagetrno, $job->line]
+                );
+
+                foreach ($pkgtasks as $task) {
+
+                    $taskqry = "select line as value from pttask where trno=? order by line desc limit 1";
+                    $taskline = $this->coreFunctions->datareader($taskqry, [$trno]);
+                    if ($taskline == '')
+                        $taskline = 0;
+                    $taskline = $taskline + 1;
+
+                    $taskdata = [
+                        'line' => $taskline,
+                        'trno' => $trno,
+                        'jobline' => $line,
+                        'laborline' => $task->laborline,
+                        'cost' => $task->cost,
+                        'rate' => $task->rate,
+                        'rem' => $task->rem,
+                        'mecline' => $task->mecline,
+                        'encodeddate' => $this->othersClass->getCurrentTimeStamp(),
+                        'encodedby' => $config['params']['user'],
+                    ];
+                    $this->coreFunctions->sbcinsert('pttask', $taskdata);
+
+                    $pkgstock = $this->coreFunctions->opentable(
+                        "select * from ptstock where trno = ? and jobline = ? and taskline = ? order by line",
+                        [$packagetrno, $job->line, $task->line]
+                    );
+
+                    foreach ($pkgstock as $stock) {
+                        $stockqry = "select line as value from ptstock where trno=? order by line desc limit 1";
+                        $stockline = $this->coreFunctions->datareader($stockqry, [$trno]);
+                        if ($stockline == '')
+                            $stockline = 0;
+                        $stockline = $stockline + 1;
+
+                        $stockdata = [
+                            'line' => $stockline,
+                            'trno' => $trno,
+                            'jobline' => $line,        
+                            'taskline' => $taskline,   
+                            'itemid' => $stock->itemid,
+                            'uom' => $stock->uom,
+                            'isqty' => $stock->isqty,
+                            'isamt' => $stock->isamt,
+                            'disc' => $stock->disc,
+                            'ext' => $stock->ext,
+                            'rem' => $stock->rem,
+                            'encodeddate' => $this->othersClass->getCurrentTimeStamp(),
+                            'encodedby' => $config['params']['user'],
+                        ];
+                        $this->coreFunctions->sbcinsert('ptstock', $stockdata);
+                    }
+                }
+
+                // load the inserted job row for return
+                $config['params']['line'] = $line;
+                $row = $this->openstockline($config);
+                if (!empty($row)) {
+                    // add packagedocno for display in package column
+                    $rowarray = json_decode(json_encode($row[0]), true);
+                    $rowarray['package'] = $packagedocno;
+                    array_push($returnrows, $rowarray);
+                }
+            }
+
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD PACKAGE - ' . $packagedocno . ' from trno: ' . $packagetrno);
+        }
+
+        return ['status' => true, 'msg' => 'Package added successfully...', 'row' => $returnrows, 'reloaddata' => true];
+    }
+
+    public function updateperitem($config)
+    {
+        $config['params']['data'] = $config['params']['row'];
+        $this->additem('update', $config);
+
+        $data = $this->openstockline($config);
+        return ['row' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
+    }
+
+    public function openstockline($config)
+    {
+        $trno = $config['params']['trno'];
+        $line = $config['params']['line'];
+        $sqlselect = $this->getstockselect($config);
+        $query = $sqlselect . " from ptjobs as pt 
+        left join jobthead as jt on jt.line = pt.jobid
+        left join pthead as pkgh on pkgh.trno = pt.packagetrno 
+        where pt.trno = ? and pt.line = ?";
+        $data = $this->coreFunctions->opentable($query, [$trno, $line]);
+        return $data;
     }
 }

@@ -165,7 +165,7 @@ class entrytlabor
     } else { // update
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
-      $update = $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]);
+      $update = $this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $trno, 'line' => $row['line']]);
       if ($update) {
         $returnrow = $this->loaddataperrecord($config, $row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
