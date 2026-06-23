@@ -298,6 +298,9 @@ class pay_slip
       case 66: //metrodragon payroll
         return $this->metrodragon_layout($config);
         break;
+       case 68: //jda
+        return $this->jda_layout($config);
+        break;
       default:
         return $this->DEFAULT_Layout($config);
         break;
@@ -10804,4 +10807,572 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $str .= $this->reporter->endreport();
     return $str;
   }
+
+ 
+  private function jda_Header($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = 'Century Gothic';
+    $font_size = '11';
+    $padding = '';
+    $margin = '';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $batch      = $config['params']['dataparams']['batchid'];
+
+    $str = '';
+    $layoutsize = '1000';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+
+    return $str;
+  }
+
+  public function jda_Layout($config)
+  {
+    $result = $this->DEFAULT_qry($config);
+
+    $companyid = $config['params']['companyid'];
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = 'Century Gothic';
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $count = 55;
+    $page = 55;
+    $layoutsize = '1000';
+
+    $str = '';
+    $Tot = 0;
+    $Grandtot = 0;
+
+    // if (empty($result)) {
+    //   return $this->othersClass->emptydata($config);
+    // }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->jda_Header($config);
+    $emp = "";
+
+    $clientname = "";
+    $divname = "";
+    $deptname = "";
+    $basicpay = 0;
+    $absent = 0;
+    $late = 0;
+    $undertime = 0;
+    $rot = 0;
+    $ndiffhrs = 0;
+    $ndiffot = 0;
+    $leave = 0;
+    $restday = 0;
+    $restdayot = 0;
+    $special = 0;
+    $specialot = 0;
+    $specialun = 0;
+    $legal = 0;
+    $legalot = 0;
+    $legalun = 0;
+    $wht = 0;
+    $sss = 0;
+    $phic = 0;
+    $hdmf = 0;
+    $loan = 0;
+    $sssloan = 0;
+    $hdmfloan = 0;
+    $bonus = 0;
+    $otherearnings = 0;
+    $otherdeduction = 0;
+    $allowance = 0;
+    $tripping = 0;
+    $operator = 0;
+    $netpay = 0;
+    $totalearn = 0;
+    $totalded = 0;
+
+    $qtybasicpay = 0;
+    $qtyabsent = 0;
+    $qtylate = 0;
+    $qtyundertime = 0;
+    $qtyndiffhrs = 0;
+    $qtyrot = 0;
+    $qtyndiffot = 0;
+    $qtyleave = 0;
+    $qtyrestday = 0;
+    $qtyrestdayot = 0;
+    $qtyspecial = 0;
+    $qtyspecialot = 0;
+    $qtylegal = 0;
+    $qtylegalot = 0;
+    $qtyspecialun = 0;
+    $qtylegalun = 0;
+
+    $i = 0;
+    $c = 0;
+
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+
+
+      $clientname = $data->clientname;
+      $divname = $data->divname;
+      $deptname = $data->deptname;
+
+      if ($data->alias == 'BSA') {
+        $basicpay = $basicpay + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtybasicpay = $qtybasicpay + $data->qty;
+      } elseif ($data->alias == 'ABSENT') {
+        $absent = $absent + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+        $qtyabsent = $qtyabsent + $data->qty;
+      } elseif ($data->alias == 'LATE') {
+        $late = $late   + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'UNDERTIME') {
+        $undertime = $undertime  + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+        $qtyundertime = $qtyundertime + $data->qty;
+      } elseif ($data->alias == 'OTREG') {
+        $rot = $rot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrot = $qtyrot + $data->qty;
+      } elseif ($data->alias == 'NDIFF') {
+        $ndiffot = $ndiffot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyndiffot = $qtyndiffot + $data->qty;
+      } elseif ($data->alias == 'NDIFFS') {
+        $ndiffhrs = $ndiffhrs + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyndiffhrs = $qtyndiffhrs + $data->qty;
+      } elseif ($data->alias == 'ALLOWANCE') {
+        $allowance = $allowance + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'SL') {
+        $leave = $leave + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyleave = $qtyleave + $data->qty;
+      } elseif ($data->alias == 'VL') {
+        $leave = $leave + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyleave = $qtyleave + $data->qty;
+      } elseif ($data->alias == 'SIL') {
+        $leave = $leave + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyleave = $qtyleave + $data->qty;
+      } elseif ($data->alias == 'ML') {
+        $leave = $leave + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyleave = $qtyleave + $data->qty;
+      } elseif ($data->alias == '13PAY') {
+        $bonus = $bonus + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'PPBLE') {
+        $netpay = $netpay + $data->db - $data->cr;
+      } elseif ($data->alias == 'RESTDAY') {
+        $restday = $restday + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrestday = $qtyrestday + $data->qty;
+      } elseif ($data->alias == 'RESTDAYOT') {
+        $restdayot = $restdayot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrestdayot = $qtyrestdayot + $data->qty;
+      } elseif ($data->alias == 'OTRES') {
+        $restdayot = $restdayot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyrestdayot = $qtyrestdayot + $data->qty;
+      } elseif ($data->alias == 'SP') {
+        $special = $special + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecial = $qtyspecial + $data->qty;
+      } elseif ($data->alias == 'SPUN') {
+        $specialun = $specialun + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecialun = $qtyspecialun + $data->qty;
+      } elseif ($data->alias == 'SPECIALOT') {
+        $specialot = $specialot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtyspecialot = $qtyspecialot + $data->qty;
+      } elseif ($data->alias == 'LEG') {
+        $legal = $legal + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegal = $qtylegal + $data->qty;
+      } elseif ($data->alias == 'LEGUN') {
+        $legalun = $legalun + $data->db - $data->cr;
+        //$totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegalun = $qtylegalun + $data->qty;
+      } elseif ($data->alias == 'LEGALOT') {
+        $legalot = $legalot + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+        $qtylegalot = $qtylegalot + $data->qty;
+      } elseif ($data->alias == 'YWT') {
+        $wht = $wht + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YSE') {
+        $sss = $sss + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YME') {
+        $phic = $phic + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'YPE') {
+        $hdmf = $hdmf + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'LOAN') {
+        $loan = $loan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'SSSLOAN') {
+        $sssloan = $sssloan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'HDMFLOAN') {
+        $hdmfloan = $hdmfloan + $data->cr - $data->db;
+        $totalded = $totalded + $data->cr - $data->db;
+      } elseif ($data->alias == 'INCENTIVE1') {
+        $tripping = $legalun + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } elseif ($data->alias == 'INCENTIVE2') {
+        $operator = $legalun + $data->db - $data->cr;
+        $totalearn = $totalearn + $data->db - $data->cr;
+      } else {
+        if ($data->cr > 0) {
+          $otherdeduction = $otherdeduction + $data->cr;
+          $totalded = $totalded + $data->cr;
+        } elseif ($data->db > 0) {
+          $otherearnings = $otherearnings + $data->db;
+          $totalearn = $totalearn + $data->db;
+        }
+      }
+
+      if ($c == 0) {
+        $c = $this->getcount($config, $data->empid, $config['params']['dataparams']['line']);
+      }
+
+      $i = $i + 1;
+      if ($i == $c) {
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('P A Y &nbsp S L I P', null, null, false, $border, '', '', $font, '18', 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('EMPLOYEE : ' . strtoupper($clientname), '540', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('COMPANY : ' . strtoupper($divname), '460', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Payroll Period : ' . strtoupper($data->startdate) . ' to ' . strtoupper($data->enddate) . ' - ' . strtoupper($data->batch), '540', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('DEPARTMENT : ' . strtoupper($deptname), '460', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+
+        $loanbal = $this->coreFunctions->datareader("select sum(balance) as value from standardsetup where empid=? ", [$data->empid]);
+        $leavebal = $this->coreFunctions->datareader("select sum(bal) as value from leavesetup left join paccount on paccount.line=leavesetup.acnoid where paccount.alias='SIL' and year(dateid)= '$data->yr' and empid=? ", [$data->empid]);
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Current Loan Balance Amt : ' . number_format($loanbal, 2), '540', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Current Leave Balance Hrs : ' . number_format($leavebal, 2), '460', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endtable();
+
+
+        $str .= $this->reporter->begintable($layoutsize);
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('E A R N I N G S', '150', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='QTY'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='AMOUNT'>", '150', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('D E D U C T I O N S', '150', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='QTY'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='AMOUNT'>", '150', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col("Basic Pay :", '150', '', false, $border, '', 'L', $font, '11', 'QTY', 'QTY', 'QTY');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtybasicpay == 0 ? '-' : number_format($qtybasicpay, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($basicpay == 0 ? '-' : number_format($basicpay, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Absent : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyabsent == 0 ? '-' : number_format($qtyabsent, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($absent == 0 ? '-' : number_format($absent, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Allowance : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($allowance == 0 ? '-' : number_format($allowance, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Late : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtylate == 0 ? '-' : number_format($qtylate, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($late == 0 ? '-' : number_format($late, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Regular OT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyrot == 0 ? '-' : number_format($qtyrot, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($rot == 0 ? '-' : number_format($rot, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Undertime : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyundertime == 0 ? '-' : number_format($qtyundertime, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($undertime == 0 ? '-' : number_format($undertime, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Ndiff : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyndiffhrs == 0 ? '-' : number_format($qtyndiffhrs, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($ndiffhrs == 0 ? '-' : number_format($ndiffhrs, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('WHT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($wht == 0 ? '-' : number_format($wht, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Ndiff OT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyndiffot == 0 ? '-' : number_format($qtyndiffot, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($ndiffot == 0 ? '-' : number_format($ndiffot, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+         $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Pag-Ibig : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($hdmf == 0 ? '-' : number_format($hdmf, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Restday : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyrestday == 0 ? '-' : number_format($qtyrestday, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($restday == 0 ? '-' : number_format($restday, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Other Loans : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($loan == 0 ? '-' : number_format($loan, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Restday OT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyrestdayot == 0 ? '-' : number_format($qtyrestdayot, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($restdayot == 0 ? '-' : number_format($restdayot, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('SSS : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($sss == 0 ? '-' : number_format($sss, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Special Hol unwork : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyspecialun == 0 ? '-' : number_format($qtyspecialun, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($specialun == 0 ? '-' : number_format($specialun, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Other Deduction : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($otherdeduction == 0 ? '-' : number_format($otherdeduction, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Special Hol : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyspecial == 0 ? '-' : number_format($qtyspecial, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($special == 0 ? '-' : number_format($special, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('SSS Loan : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($sssloan == 0 ? '-' : number_format($sssloan, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Special OT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyspecialot == 0 ? '-' : number_format($qtyspecialot, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($specialot == 0 ? '-' : number_format($specialot, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Philhealth : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($phic == 0 ? '-' : number_format($phic, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Legal Hol unwork : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtylegalun == 0 ? '-' : number_format($qtylegalun, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($legalun == 0 ? '-' : number_format($legalun, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('Pagibig Loan : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($hdmfloan == 0 ? '-' : number_format($hdmfloan, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Legal Hol : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtylegal == 0 ? '-' : number_format($qtylegal, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($legal == 0 ? '-' : number_format($legal, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Legal OT : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtylegalot == 0 ? '-' : number_format($qtylegalot, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($legalot == 0 ? '-' : number_format($legalot, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Other Earnings : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($otherearnings == 0 ? '-' : number_format($otherearnings, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('13th Month : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($bonus == 0 ? '-' : number_format($bonus, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Leave : &nbsp', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col("<input readonly type='text' style='width: 20%; text-align:right; border: hidden;' value='" . ($qtyleave == 0 ? '-' : number_format($qtyleave, 2)) . "'> <input readonly type='text' style='width: 50%; text-align:right; border: hidden;' value='" . ($leave == 0 ? '-' : number_format($leave, 2)) . "'>", '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+
+
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('TOTAL EARNINGS', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($totalearn == 0 ? '-' : number_format($totalearn, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('TOTAL DEDUCTIONS', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col($totalded == 0 ? '-' : number_format($totalded, 2), '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        // here
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'R', $font, '11', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, '', 'L', $font, '11', '', '', '');
+        $str .= $this->reporter->col('NET PAY', '150', null, false, $border, '', 'L', $font, '14', '', '', '');
+        $str .= $this->reporter->col($netpay == 0 ? '-' : number_format($netpay, 2), '150', null, false, $border, '', 'R', $font, '14', '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->endtable();
+
+        $i = 0;
+        $c = 0;
+        $basicpay = 0;
+        $absent = 0;
+        $late = 0;
+        $undertime = 0;
+        $rot = 0;
+        $ndiffhrs  = 0;
+        $ndiffot = 0;
+        $leave = 0;
+        $restday = 0;
+        $restdayot = 0;
+        $special = 0;
+        $specialot = 0;
+        $legal = 0;
+        $legalot = 0;
+        $wht = 0;
+        $sss = 0;
+        $phic = 0;
+        $hdmf = 0;
+        $loan = 0;
+        $sssloan = 0;
+        $hdmfloan = 0;
+        $bonus = 0;
+        $otherearnings = 0;
+        $otherdeduction = 0;
+        $allowance = 0;
+        $tripping = 0;
+        $operator = 0;
+        $netpay = 0;
+        $totalearn = 0;
+        $totalded = 0;
+
+        $qtybasicpay = 0;
+        $qtyabsent = 0;
+        $qtylate = 0;
+        $qtyundertime = 0;
+        $qtyrot = 0;
+        $qtyndiffhrs = 0 ;
+        $qtyndiffot = 0;
+        $qtyleave = 0;
+        $qtyrestday = 0;
+        $qtyrestdayot = 0;
+        $qtyspecial = 0;
+        $qtyspecialot = 0;
+        $qtylegal = 0;
+        $qtylegalot = 0;
+      }
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        $str .= $this->DEFAULT_Header($config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+
+    return $str;
+  }
+
 }//end class

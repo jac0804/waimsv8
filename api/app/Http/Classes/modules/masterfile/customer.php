@@ -1008,7 +1008,7 @@ class customer
                 array_push($fields, 'dpricegroup', 'tin', 'dvattype', 'rem');
                 break;
               case 63: //ericco
-                array_push($fields, 'fax', 'contact','tin');
+                array_push($fields, 'fax', 'contact', 'tin');
                 break;
               default:
                 array_push($fields, 'tin');
@@ -1145,6 +1145,7 @@ class customer
           case 40: //cdo
             $fields = ['province', 'region',  'zipcode', 'clientstatus', 'dagentname', 'tin'];
             break;
+          case 29: //sbc
           case 39: //cbbsi
             $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'dparentcode', 'zipcode', 'rem'];
             break;

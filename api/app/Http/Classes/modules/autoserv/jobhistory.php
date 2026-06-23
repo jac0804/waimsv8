@@ -111,32 +111,36 @@ class jobhistory
             $fsearch = 'where 1=1 ' . $filtersearch;
         }
         $qry = "select trno,dateid,docno,jobcode,jobtitle,client,clientname,vehicle,mileage,format(sum(labor),2) as labor,format(sum(stocks),2) as amt from (
-            select head.trno,head.docno,date(head.dateid) as dateid,jt.docno as jobcode,jt.jobtitle,client.client,client.clientname,cmake.carname as vehicle,'' as mileage,
+            select head.trno,head.docno,date(head.dateid) as dateid,jt.docno as jobcode,jt.jobtitle,client.client,client.clientname,cmake.carname as vehicle,
+            cvh.mileage,
             ifnull(sum(am.cost),0) as labor,
-            ifnull((select sum(amt) from lastock AS s 
+            ifnull((select sum(amt) from lastock as s 
             where s.trno = head.trno and s.jobline = jobs.line and s.taskline = am.line),0) as stocks
             from amjobs as jobs 
-            left JOIN jobthead AS jt on jt.line = jobs.jobid
-            left JOIN lahead AS head on head.trno = jobs.trno
-            left JOIN client on client.client = head.client
+            left join jobthead as jt on jt.line = jobs.jobid
+            left join lahead as head on head.trno = jobs.trno
+            left join client on client.client = head.client
             left join cmake on cmake.id=head.carid
-            LEFT JOIN amtask as am on am.jobline = jobs.line
+            left join amtask as am on am.jobline = jobs.line
+            left join cvehicle as cvh on cvh.clientid = client.clientid
             where head.doc = 'AM' 
-            group by head.trno,head.docno,date(head.dateid),jt.docno,jt.jobtitle,client.client,client.clientname,cmake.carname,jobs.line,am.line
+            group by head.trno,head.docno,date(head.dateid),jt.docno,jt.jobtitle,client.client,client.clientname,cmake.carname,cvh.mileage,jobs.line,am.line
             union all 
-            select head.trno,head.docno,date(head.dateid) as dateid,jt.docno as jobcode,jt.jobtitle,client.client,client.clientname,cmake.carname as vehicle,'' as mileage,
+            select head.trno,head.docno,date(head.dateid) as dateid,jt.docno as jobcode,jt.jobtitle,client.client,client.clientname,cmake.carname as vehicle,
+            cvh.mileage,
             ifnull(sum(am.cost),0) as labor,
             ifnull(
             (select sum(amt) from glstock as s 
             where s.trno = head.trno and s.jobline = jobs.line and s.taskline = am.line),0) as stocks
             from hamjobs as jobs 
-            left JOIN jobthead as jt on jt.line = jobs.jobid
-            left JOIN glhead as head on head.trno = jobs.trno
-            left JOIN client on client.clientid = head.clientid
+            left join jobthead as jt on jt.line = jobs.jobid
+            left join glhead as head on head.trno = jobs.trno
+            left join client on client.clientid = head.clientid
             left join cmake on cmake.id=head.carid
-            LEFT JOIN hamtask as am on am.jobline = jobs.line
+            left join hamtask as am on am.jobline = jobs.line
+            left join cvehicle as cvh on cvh.clientid = client.clientid
             where head.doc = 'AM' 
-            group by head.trno,head.docno,date(head.dateid),jt.docno,jt.jobtitle,client.client,client.clientname,cmake.carname,jobs.line,am.line
+            group by head.trno,head.docno,date(head.dateid),jt.docno,jt.jobtitle,client.client,client.clientname,cmake.carname,cvh.mileage,jobs.line,am.line
             ) as  v $fsearch group by trno,dateid,docno,jobcode,jobtitle,client,clientname,vehicle,mileage order by dateid";
         $data = $this->coreFunctions->opentable($qry);
 

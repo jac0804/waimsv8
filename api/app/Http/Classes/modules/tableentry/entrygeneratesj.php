@@ -194,6 +194,12 @@ class entrygeneratesj
          left join lastock as lstock on lstock.refx = stock.trno and lstock.linex = stock.line
          left join lahead as head on head.trno =lstock.trno
          where stock.tmtrno = ? " . $filtersearch . "
+         group by lstock.ref,stock.tmtrno,head.docno,head.client,head.clientname,head.dateid
+         union all
+         select " . $select . ",'' as bgcolor from " . $this->table . " as stock
+         left join glstock as lstock on lstock.refx = stock.trno and lstock.linex = stock.line
+         left join glhead as head on head.trno =lstock.trno
+         where stock.tmtrno = ? " . $filtersearch . "
          group by lstock.ref,stock.tmtrno,head.docno,head.client,head.clientname,head.dateid";
         return $this->coreFunctions->opentable($qry, [$trno]);
     }

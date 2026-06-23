@@ -89,16 +89,18 @@ class uploadingutility
 
     $col1 = $this->fieldClass->create($fields);
     switch ($config['params']['companyid']) {
-      case 59://roosevelt
-        data_set($col1, 'optionuploading.options',  array(['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
-        ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
-        ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
-        ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
-        ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
-        ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
-        ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
-        ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
-        ['label' => 'Upload Brand Size', 'value' => 'uploadbrands', 'color' => 'green']));
+      case 59: //roosevelt
+        data_set($col1, 'optionuploading.options',  array(
+          ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
+          ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
+          ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
+          ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
+          ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
+          ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
+          ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
+          ['label' => 'Upload Brand Size', 'value' => 'uploadbrands', 'color' => 'green']
+        ));
         break;
       case 63: //ericco
         data_set($col1, 'optionuploading.options',  array(
@@ -297,6 +299,7 @@ class uploadingutility
         break;
 
       case 43: //mighty
+      case 68: //jda
         data_set($col1, 'optionuploading.options',  array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
           ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
@@ -402,6 +405,7 @@ class uploadingutility
         break;
 
       case 43: //mighty
+      case 68: //jda
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloademployeeexcel'];
         break;
       case 47: //kstar
@@ -421,7 +425,7 @@ class uploadingutility
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadsupplierexcel', 'downloadagentexcel', 'downloaditemexcelmaster'];
         break;
       case 63: //ericco
-        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadbarcodelist', 'downloadsupplieritemexcel','downloadcustomerexcelmaster','downloaditemexcelmaster'];
+        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadbarcodelist', 'downloadsupplieritemexcel', 'downloadcustomerexcelmaster', 'downloaditemexcelmaster'];
         break;
 
       case 66: //  metro dragon payroll
@@ -809,6 +813,7 @@ class uploadingutility
             ];
             break;
           case 43: //mighty
+          case 68: // jda
             return [
               'status' => true,
               'msg' => 'Item template ready to Download',
@@ -945,8 +950,9 @@ class uploadingutility
                   'MAIN_CATEGORY' => '',
                   'SUB_CATEGORY' => '',
                   'BRAND' => '',
-                  'DESCRIPTION_1' => '',
-                  'DESCRIPTION_2' => '',
+                  'GROUP' => '',
+                  'CLASS' => '',
+                  'MODEL' => '',
                   'UNIT' => '',
                   'INVOICE_PRICE' => '',
                   'INVOICE_DISC' => '',
@@ -1276,7 +1282,7 @@ class uploadingutility
               'filename' => 'customerTemplate'
             ];
             break;
-          case 63://ericco
+          case 63: //ericco
             return [
               'status' => true,
               'msg' => 'Customer template ready to Download',
@@ -1415,6 +1421,7 @@ class uploadingutility
             break;
           case 43: //mighty
           case 66: // metro dragon payroll
+          case 68: //jda
             $col = [
               'EmployeeCode' => '',
               'LastName' => '',
@@ -2530,7 +2537,7 @@ class uploadingutility
 
     foreach ($rawdata as $key => $value) {
       try {
-        $grp = $this->coreFunctions->getfieldvalue("frontend_ebrands", "brandid", "brand_desc = '" . trim($rawdata[$key]['brand']) . "'",[],'',true);
+        $grp = $this->coreFunctions->getfieldvalue("frontend_ebrands", "brandid", "brand_desc = '" . trim($rawdata[$key]['brand']) . "'", [], '', true);
         if ($grp == 0) {
           $status = false;
           $msg .= 'Failed to upload. Brand ' . trim($rawdata[$key]['brand']) . ' does not exist. ';
@@ -2547,7 +2554,7 @@ class uploadingutility
           $cartons = floatval($rawdata[$key]['cartons']);
         }
 
-        $brandline = $this->coreFunctions->getfieldvalue("carton", "line", "sizeid = '".trim($rawdata[$key]['sizeid'])."' and brandid = " . $grp, [], '', true);
+        $brandline = $this->coreFunctions->getfieldvalue("carton", "line", "sizeid = '" . trim($rawdata[$key]['sizeid']) . "' and brandid = " . $grp, [], '', true);
 
         $data['brandid'] = $grp;
         $data['sizeid'] = trim($rawdata[$key]['sizeid']);
@@ -3051,19 +3058,20 @@ class uploadingutility
               }
 
               if ($tabletype == 'customer' || $tabletype == 'supplier') {
-                switch ($companyid){
-                  case 47: case 63:
+                switch ($companyid) {
+                  case 47:
+                  case 63:
                     break;
                   default:
-                  goto NextLoopHere;
-                  break;
+                    goto NextLoopHere;
+                    break;
                 }
               } else {
                 // if ($tabletype != 'contactperson') {
                 //   goto NextLoopHere;
                 // }
               }
-            }         
+            }
 
 
             if ($fieldname == 'agent_name' && $companyid == 47) {
@@ -3077,7 +3085,7 @@ class uploadingutility
             }
 
             // $this->othersClass->logConsole('valtoinsert -- ' . json_encode($valtoinsert));
-            
+
 
             if ($type == 'updateitem' && $blnIsert == false) {
               $valtoinsert['itemid'] = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode=?", [$valtoinsert['barcode']], '', true);
@@ -3104,7 +3112,7 @@ class uploadingutility
 
           }
         } //end looping of fields
-      
+
         switch ($tabletype) {
           case 'customer':
             $valtoinsert['iscustomer'] = 1;
@@ -3167,7 +3175,7 @@ class uploadingutility
           case 'item':
           case 'truck':
           case 'branch':
-            $valtoinsert['editby'] = $config['params']['user'].'(UPLOADING)';
+            $valtoinsert['editby'] = $config['params']['user'] . '(UPLOADING)';
             $valtoinsert['editdate'] = $currentdate;
             $valtoinsert['dlock'] = $currentdate;
             if ($tabletype == 'item') {
@@ -3175,50 +3183,57 @@ class uploadingutility
                 if (isset($valtoinsert['disc'])) {
                   $namt = $this->othersClass->computestock($valtoinsert['amt'], $valtoinsert['disc'], 1, 1);
                   $valtoinsert['namt'] = $namt['ext'];
-                }else{
-                  $valtoinsert['namt'] =$valtoinsert['amt'];
+                } else {
+                  $valtoinsert['namt'] = $valtoinsert['amt'];
+                  $valtoinsert['disc'] = "";
                 }
 
                 if (isset($valtoinsert['disc2'])) {
                   $namt2 = $this->othersClass->computestock($valtoinsert['amt2'], $valtoinsert['disc2'], 1, 1);
                   $valtoinsert['namt2'] = $namt2['ext'];
-                }else{
-                  $valtoinsert['namt2'] =$valtoinsert['amt2'];
+                } else {
+                  $valtoinsert['namt2'] = $valtoinsert['amt2'];
+                  $valtoinsert['disc2'] = "";
                 }
 
                 if (isset($valtoinsert['disc3'])) {
                   $nfamt = $this->othersClass->computestock($valtoinsert['famt'], $valtoinsert['disc3'], 1, 1);
                   $valtoinsert['nfamt'] = $nfamt['ext'];
-                }else{
-                  $valtoinsert['nfamt'] =$valtoinsert['famt'];
+                } else {
+                  $valtoinsert['nfamt'] = $valtoinsert['famt'];
+                  $valtoinsert['disc3'] = "";
                 }
 
                 if (isset($valtoinsert['disc4'])) {
                   $namt4 = $this->othersClass->computestock($valtoinsert['amt4'], $valtoinsert['disc4'], 1, 1);
                   $valtoinsert['namt4'] = $namt4['ext'];
-                }else{
-                  $valtoinsert['namt4'] =$valtoinsert['amt4'];
-                }
-                
-                if(isset( $valtoinsert['disc5'])){
-                  $namt5 = $this->othersClass->computestock($valtoinsert['amt5'], $valtoinsert['disc5'], 1, 1);
-                  $valtoinsert['namt5'] = $namt5['ext'];
-                }else{
-                  $valtoinsert['namt5'] =$valtoinsert['amt5'];
+                } else {
+                  $valtoinsert['namt4'] = $valtoinsert['amt4'];
+                  $valtoinsert['disc4'] = "";
                 }
 
-                if(isset($valtoinsert['disc6'])){
+                if (isset($valtoinsert['disc5'])) {
+                  $namt5 = $this->othersClass->computestock($valtoinsert['amt5'], $valtoinsert['disc5'], 1, 1);
+                  $valtoinsert['namt5'] = $namt5['ext'];
+                } else {
+                  $valtoinsert['namt5'] = $valtoinsert['amt5'];
+                  $valtoinsert['disc5'] = "";
+                }
+
+                if (isset($valtoinsert['disc6'])) {
                   $namt6 = $this->othersClass->computestock($valtoinsert['amt6'], $valtoinsert['disc6'], 1, 1);
                   $valtoinsert['namt6'] = $namt6['ext'];
-                }else{
-                  $valtoinsert['namt6'] =$valtoinsert['amt6'];
+                } else {
+                  $valtoinsert['namt6'] = $valtoinsert['amt6'];
+                  $valtoinsert['disc6'] = "";
                 }
 
                 if (isset($valtoinsert['disc7'])) {
                   $namt7 = $this->othersClass->computestock($valtoinsert['amt7'], $valtoinsert['disc7'], 1, 1);
                   $valtoinsert['namt7'] = $namt7['ext'];
-                }else{
-                  $valtoinsert['namt7'] =$valtoinsert['amt7'];
+                } else {
+                  $valtoinsert['namt7'] = $valtoinsert['amt7'];
+                  $valtoinsert['disc7'] = "";
                 }
               }
             }
@@ -3271,7 +3286,7 @@ class uploadingutility
 
         $tempvaltoinsert = $valtoinsert;
 
-        
+
 
         foreach ($tempvaltoinsert as $vi => $viv) {
           $valtoinsert[$vi] = $this->othersClass->sanitizekeyfield($vi, $viv, '', $companyid, $exceptpropercase);
@@ -3476,7 +3491,7 @@ class uploadingutility
                   break;
               }
               break;
-            case 'client':              
+            case 'client':
               if ($companyid == 47 || $companyid == 40 || $companyid == 63) { //kstar //cdoaims //ericco
                 if ($tabletype == 'customer' || $tabletype == 'supplier') {
                   $clientcode = $this->generateclient($config, $valtoinsert, $tabletype);
@@ -3641,7 +3656,7 @@ class uploadingutility
           $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, [$unique => $valtoinsert[$unique]]);
         }
 
-        
+
         if ($insert != 0) {
           if ($tabletype == 'item') {
             if ($type == 'newitem' || $type == 'newfams') {

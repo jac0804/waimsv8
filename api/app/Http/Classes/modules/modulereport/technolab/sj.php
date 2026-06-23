@@ -296,7 +296,7 @@ class sj
     $font = "";
     $fontbold = "";
     $border = "1px solid ";
-    $fontsize = "1";
+    $fontsize = "10";
     $rowHeight = 12;
 
     if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {

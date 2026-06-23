@@ -97,7 +97,13 @@ class tableentryClass
 		if ($id !== 0) {
 			$this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id - 1];
 			if ($this->config['verifyaccess'] == 0) {
-				$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access'];
+				$access_desc = $accessid;
+				switch ($accessid) {
+					case 'load':
+						$access_desc = 'view';
+						break;
+				}
+				$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access (' . $access_desc . ')'];
 			}
 		}
 		return $this;

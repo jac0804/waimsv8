@@ -193,6 +193,7 @@ class hrislookup
     );
 
     switch ($config['params']['lookupclass']) {
+      case 'lookupjobs':
       case 'empstatlookup':
         $plotting = array(
           'tjobcode' => 'docno',
@@ -2450,7 +2451,7 @@ class hrislookup
         if ($approver['leftjoin'] != "") {
           $left .= $approver['leftjoin'];
         }
-        
+
         $leftjoin = "left join section as sect on sect.sectid =e.sectid ";
         $fields = 'sect.sectname';
         if ($companyid == 53) { //camera
@@ -4273,8 +4274,8 @@ class hrislookup
 
     switch ($config['params']['lookupclass']) {
       case 'lookupbrancharea':
-          $area = !empty($config['params']['addedparams'][0])  ? " and client.area = '" . $config['params']['addedparams'][0] . "'"  : '';
-          $qry = "select client.clientid, client.client, client.clientname, client.addr, '' as manpower, 0 as allocation
+        $area = !empty($config['params']['addedparams'][0])  ? " and client.area = '" . $config['params']['addedparams'][0] . "'"  : '';
+        $qry = "select client.clientid, client.client, client.clientname, client.addr, '' as manpower, 0 as allocation
                   from client where client.isbranch = 1" . $area;
         break;
       default:

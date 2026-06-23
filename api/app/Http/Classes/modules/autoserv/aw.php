@@ -406,6 +406,7 @@ class aw
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
         $data = [];
+        $docno = $head['docno'];
 
         if ($isupdate) {
             unset($this->fields[array_search('docno', $this->fields)]);
@@ -435,7 +436,7 @@ class aw
                 $head['trno'],
                 $config,
                 'UPDATE',
-                $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']
+                $docno . ' - ' . $head['client'] . ' - ' . $head['clientname']
             );
         } else {
             $data['doc'] = $config['params']['doc'];
@@ -446,7 +447,7 @@ class aw
                 $head['trno'],
                 $config,
                 'CREATE',
-                $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']
+                $docno . ' - ' . $head['client'] . ' - ' . $head['clientname']
             );
         }
     }
@@ -745,4 +746,27 @@ class aw
         $data = $this->coreFunctions->opentable($query, [$trno, $line]);
         return $data;
     }
+
+    public function reportsetup($config)
+    {
+        $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
+        $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
+
+        $modulename = $this->modulename;
+        $data = [];
+        $style = 'width:500px;max-width:500px;';
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => true];
+    }
+
+    public function reportdata($config)
+    {
+        $this->logger->sbcviewreportlog($config);
+
+        $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+        $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+
+
+        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'reloadhead' => true];
+    }
+
 }

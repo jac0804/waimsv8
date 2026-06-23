@@ -244,24 +244,13 @@ class autoserv
         $this->coreFunctions->sbccreatetable("cvehicle", $qry);
 
         $this->coreFunctions->sbcaddcolumn("cmake", "carcode", "varchar(20) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['client'], "varchar(50) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['clientname'], "varchar(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['client', 'kmno', 'licenseno', 'mvno', 'chassisno'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['clientname', 'make', 'modelname', 'crtype', 'submodel', 'carengine', 'transmission'], "varchar(150) NOT NULL DEFAULT ''", 0);
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['address'], "varchar(255) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['ref'], "varchar(100) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['kmno'], "varchar(50) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['ref', 'manufacturer'], "varchar(100) NOT NULL DEFAULT ''", 0);
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['recommend'], "varchar(500) NOT NULL DEFAULT ''", 0);
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['cryear'], "int(10) unsigned NOT NULL DEFAULT 0", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['licenseno'], "varchar(50) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['make'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['modelname'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['crtype'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['submodel'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['carengine'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['transmission'], "varchar(150) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mvno'], "varchar(50) NOT NULL DEFAULT ''", 0);
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mileage'], "decimal(10,2) DEFAULT 0", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['manufacturer'], "varchar(100) NOT NULL DEFAULT ''", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['chassisno'], "varchar(50) NOT NULL DEFAULT ''", 0);
 
         $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["taskline", "jobline"], "INT(11) NOT NULL DEFAULT '0'", 0);
         $this->coreFunctions->sbcaddcolumngrp(['ptjobs'], ['packagetrno'], "bigint(20) unsigned NOT NULL DEFAULT 0", 0);

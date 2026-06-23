@@ -206,7 +206,7 @@ class dashboardClass
     }
 
     if ($companyid == 29) { //sbc
-      if ($this->checkapprover($this->config)) {
+      if ($this->checkapprover($this->config) || $this->othersClass->isSBCProjectHead($this->config['params']['adminid'])) {
         $this->currenttimerec($this->config);
       }
     }

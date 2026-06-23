@@ -477,21 +477,20 @@ class aj
     }
 
     if ($viewcost == '0') {
-      if($companyid == 50){
+      if ($companyid == 50) {
         if (!$access['changeamt']) {
           $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
-        }else{
+        } else {
           $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
         }
-      }else{
+      } else {
         $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
       }
-      
     }
 
     switch ($companyid) {
@@ -607,15 +606,23 @@ class aj
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
 
         if (!$isexpiry) {
-          if ($companyid == 8) { // maxipro
-            $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
-            $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-            $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
-          } else {
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-            $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-            $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
+          $obj[0][$this->gridname]['columns'][$expiry]['type'] = 'coldel';
+          switch ($companyid) {
+            case 8: //maxipro
+              $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+              $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+              $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
+              break;
+            case 28: //xcomp - with loc
+              $obj[0][$this->gridname]['columns'][$loc]['class'] = 'sbccsenablealways';
+              $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
+              $obj[0][$this->gridname]['columns'][$loc]['type'] = 'editlookup';
+              $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'coldel';
+              break;
+            default:
+              $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+              $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
+              break;
           }
         } else {
           $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
@@ -1060,14 +1067,14 @@ class aj
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
-      if($companyid != 10){
+      if ($companyid != 10) {
         $checkacct = $this->othersClass->checkcoaacct(['IN1', 'IS1']);
 
         if ($checkacct != '') {
           return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
         }
       }
-      
+
 
       $stock = $this->openstock($trno, $config);
       $checkcosting = $this->othersClass->checkcosting($stock);

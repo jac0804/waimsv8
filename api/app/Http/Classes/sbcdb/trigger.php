@@ -2801,6 +2801,7 @@ class trigger
     $this->si_triggers();
     $this->px_triggers();
     $this->pt_triggers();
+    $this->amjob_triggers();
     // $this->pw_triggers();
     // $this->hpw_triggers();
     // ADD HERE-->
@@ -4796,11 +4797,36 @@ class trigger
 
     // PTJOBS TRIGGER ===================================================================================================================
     $fields = [
+      'Job Code' =>  ['jobid' => [true, "docno", "jobthead", "line"]],
+      'Job Description' =>  ['jobid' => [true, "jobtitle", "jobthead", "line"]],
       'Notes' => ['rem' => []]
     ];
+
     $this->settriggerlogs('ptjobs_update', 'AFTER UPDATE', 'ptjobs', 'transnum_log', $fields, 'trno', '');
     //END PTJOBS TRIGGER ===================================================================================================================
+
+    // PTSTOCK TRIGGER ===================================================================================================================
+    $fields = [
+      'total' => ['ext' => []],
+      'barcode' => ['itemid' => [true, 'barcode', 'item', 'itemid']],
+      'item name' => ['itemid' => [true, 'itemname', 'item', 'itemid']],
+      'discount' => ['disc' => []],
+      'qty' => ['isqty' => []],
+      'amount' => ['isamt' => []],
+      'uom' => ['uom' => []],
+      'notes' => ['rem' => []]
+    ];
+    $this->settriggerlogs('ptstock_update', 'AFTER UPDATE', 'ptstock', 'transnum_log', $fields, 'trno', 'STOCK');
+    //END PTSTOCK TRIGGER ===================================================================================================================
   }
+
+  private function amjob_triggers()
+  {
+    $fields = ['Job Notes' => ['rem' => []]];
+    $this->settriggerlogs('amjobs_update', 'AFTER UPDATE', 'amjobs', 'table_log', $fields, 'trno', '');
+    //END AMJOBs TRIGGER ===================================================================================================================
+  }
+
 
   public function cleardb_proc()
   {
@@ -5581,6 +5607,7 @@ class trigger
         delete from pttask;
         delete from ptstock;
         delete from cvehicle;
+        delete from amjobs;
 
       END";
 

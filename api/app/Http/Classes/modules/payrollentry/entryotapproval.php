@@ -94,7 +94,16 @@ class entryotapproval
 
   public function createHeadField($config)
   {
-    $fields = ['start', 'end', 'ottype', 'refresh', 'create']; //, ['create', 'refresh', 'print']
+    $companyid = $config['params']['companyid'];
+
+    $fields = [['start', 'end'], 'ottype']; //, ['create', 'refresh', 'print']
+
+    if ($companyid == 68) { //jda
+      array_push($fields, 'apothrs');
+    }
+
+    array_push($fields, 'refresh', 'create');
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'start.label', 'From');
     data_set($col1, 'end.label', 'To');
@@ -103,6 +112,12 @@ class entryotapproval
     data_set($col1, 'refresh.action', 'load');
     data_set($col1, 'refresh.style', 'width:100%');
     data_set($col1, 'create.style', 'width:100%');
+
+    if (isset($col1['apothrs'])) {
+      data_set($col1, 'apothrs.label', 'Maximum OT Hours');
+      data_set($col1, 'apothrs.readonly', false);
+      data_set($col1, 'apothrs.class', 'csapothrs');
+    }
 
     $fields = [];
     $col2 = $this->fieldClass->create($fields);
@@ -125,7 +140,8 @@ class entryotapproval
       adddate(left(now(),10),-30) as start,
       left(now(),10) as end,
       '' as ottype,
-      '' as checkall
+      '' as checkall,
+      0 as apothrs
     ");
 
     if (!empty($data)) {
@@ -273,8 +289,12 @@ class entryotapproval
 
   private function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $ottype  = $config['params']['dataparams']['ottype'];
     $rows = $config['params']['rows'];
+
+    $maxOTHrs = isset($config['params']['dataparams']['apothrs']) ? $config['params']['dataparams']['apothrs'] : 0;
+    $maxOTHrs = $this->othersClass->sanitizekeyfield("qty", $maxOTHrs);
 
     switch ($ottype) {
       case 'EARLY OT':
@@ -343,6 +363,16 @@ class entryotapproval
         // unset($val["empname"]);
         // $val[$fields] = 1;
         $data[$field_approved] = 1;
+
+        if ($companyid == 68) { //jda - maximum of 4hrs only
+          if ($ottype == 'REGULAR OT') {
+            if ($maxOTHrs > 0) {
+              if ($val["othrs"] >= $maxOTHrs) {
+                $val["othrs"] = $maxOTHrs;
+              }
+            }
+          }
+        }
       }
       $data[$fieldOT] = $val['othrs'];
       $this->coreFunctions->sbcupdate("timecard", $data, ['line' => $val["line"]]);

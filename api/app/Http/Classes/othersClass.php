@@ -781,7 +781,7 @@ class othersClass
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
     array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate','promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
+    array_push($date, 'regdate', 'promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
 
     return $date;
   }
@@ -1191,8 +1191,8 @@ class othersClass
         $selectaddedfield = " ,rctrno,rcline,purposeid,acctname";
         break;
       case 'AUTOSERV':
-        $addedfield = " ,carid,modelid";
-        $selectaddedfield = " ,carid,modelid";
+        $addedfield = " ,carid";
+        $selectaddedfield = " ,carid";
         break;
     }
     switch ($config['params']['companyid']) {
@@ -3148,6 +3148,11 @@ class othersClass
       $this->coreFunctions->execqry("delete from hpvitem where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from " . $config['docmodule']->hhead . " where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from " . $config['docmodule']->hdetail . " where trno=?", "delete", [$trno]);
+
+      if ($this->companysetup->getmirrortrans($config['params'])) {
+        $this->mirrorunpost($trno, $doc, $docno);
+      }
+
       $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
       return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
     } else {
@@ -3207,10 +3212,12 @@ class othersClass
         break;
     }
     if ($doc != 'AJ') {
-      $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
-      $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
-      if ($isnegativetotal < 0) {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative'];
+      // $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
+      // $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
+      $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";
+      $items  = $this->coreFunctions->datareader($qry, [$trno]);
+      if ($items != "") {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative. Please check items : ' . $items];
       }
     }
 
@@ -3792,6 +3799,10 @@ class othersClass
             $this->coreFunctions->execqry("delete from cntnum where trno=?", "delete", [$gjtrno]);
           }
         }
+      }
+
+      if ($this->companysetup->getmirrortrans($config['params'])) {
+        $this->mirrorunpost($trno, $doc, $docno);
       }
 
       $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
@@ -10630,6 +10641,11 @@ class othersClass
     }
   } //end function
 
+
+  public function mirrorunpost($trno, $doc, $docno)
+  {
+    $this->coreFunctions->sbcinsert("unpostedtrans", ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'postdate' => $this->getCurrentTimeStamp()]);
+  }
 
   public function socketqueuing($params, $msg, $api = '', $user = '')
   {

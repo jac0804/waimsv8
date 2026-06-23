@@ -150,7 +150,6 @@ class obapplication
           ['val' => 'draft', 'label' => 'Entry', 'color' => 'primary'],
           ['val' => 'forapproval', 'label' => 'For Approval', 'color' => 'primary'],
           ['val' => 'initial', 'label' => 'Initial Approved', 'color' => 'primary'],
-          ['val' => 'initiald', 'label' => 'Initial Disapproved', 'color' => 'primary'],
           ['val' => 'approved', 'label' => 'Approved', 'color' => 'primary'],
           ['val' => 'disapproved', 'label' => 'Disapproved', 'color' => 'primary']
         ];
@@ -471,11 +470,6 @@ class obapplication
       case 'initial':
         // $addcase = "if(submitdate is null,'INITIAL APPROVED','SUBMITTED')";
         $filteroption = " where obapp.empid=" . $id . " and obapp.status='E' and (obapp.initialstatus2 = 'A' and obapp.initialstatus = 'A')  and obapp.initialapp is not null";
-        break;
-      case 'initiald':
-
-        $filteroption = " where obapp.empid=" . $id . " and obapp.status='E' and (obapp.initialstatus = 'D' or obapp.initialstatus2 = 'D') and obapp.initialapp is not null";
-        // $addcase = "if(submitdate is not null and initialstatus = 'D','INITIAL DISAPPROVED','SUBMITTED')";
         break;
       case 'approved':
 
@@ -1144,6 +1138,7 @@ class obapplication
   public function checking($config, $date)
   {
     $head = $config['params']['head'];
+    $scheddate = date('Y-m-d', strtotime($head['scheddate']));
     $empid = $config['params']['adminid'];
     $companyid = $config['params']['companyid'];
     $line = $head['clientid'];
@@ -1155,7 +1150,7 @@ class obapplication
       // $filter .= " and (initialstatus <> 'D' or initialstatus2 <> 'D')";
 
       if ($head['type'] == 'Time-Out' || $head['type'] == 'Time-In') {
-        $qry = "select line from $this->head where empid = $empid and type = '" . $head['type'] . "' and date(scheddate) = '" . $date . "'";
+        $qry = "select line from $this->head where empid = $empid and type = '" . $head['type'] . "' and date(scheddate) = '" . $scheddate . "' and (status <> 'D' and status2 <> 'D')";
         $data = $this->coreFunctions->opentable($qry);
         if (empty($data) || $data[0]->line == $line) {
           goto status;
@@ -1170,7 +1165,7 @@ class obapplication
       $filter .= " and trackingtype = '" . $head['trackingtype'] . "'";
     }
 
-    $qry = "select status,status2,line $initial from $this->head where empid = $empid and type = '" . $head['type'] . "' and date(scheddate) = '" . $date . "' and status <> 'D' $filter ";
+    $qry = "select status,status2,line $initial from $this->head where empid = $empid and type = '" . $head['type'] . "' and date(scheddate) = '" . $scheddate . "' and status <> 'D' $filter ";
     $data =  $this->coreFunctions->opentable($qry);
 
     if (!empty($data)) {

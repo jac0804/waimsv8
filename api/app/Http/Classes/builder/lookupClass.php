@@ -5113,13 +5113,13 @@ class lookupClass
         );
         $plottype = 'plothead';
         $title = 'List of Customers';
-        $condition = " where client.iscustomer=1 and client.isinactive =0 order by client.client";
+        $condition = " where client.iscustomer=1 and client.isinactive =0 and left(client.client,2)='SB' order by client.client";
         $btnadd = $this->sqlquery->checksecurity($config, 24, '/ledger/masterfile/customer');
         break;
       case 'projectheadlookup':
         $plotting = array('empid' => 'clientid', 'empcode' => 'client', 'empname' => 'clientname');
         $plottype = 'plothead';
-        $title = 'List of Project Head';
+        $title = 'List of Project Head'; 
         $condition = " where client.iscustomer=1 and client.clientid in (3863,3866,3867,3865,3868,3870) and  client.isinactive =0 order by client.client";
         $btnadd = $this->sqlquery->checksecurity($config, 24, '/ledger/masterfile/customer');
         break;

@@ -1027,6 +1027,11 @@ class pc
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from hstockinfotrans where trno=?", "delete", [$trno]);
+
+        if ($this->companysetup->getmirrortrans($config['params'])) {
+          $this->othersClass->mirrorunpost($trno, $config['params']['doc'], $docno);
+        }
+
         $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
       } else {

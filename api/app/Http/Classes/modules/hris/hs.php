@@ -267,6 +267,7 @@ class hs
       $fields = ['docno', 'empcode', 'empname', 'jobtitle', 'dateid'];
       $col1 = $this->fieldClass->create($fields);
       data_set($col1, 'empcode.action', 'lookupemployee');
+      data_set($col1, 'empcode.addedparams', ['trno']);
       data_set($col1, 'jobtitle.class', 'csjobtitle sbccsreadonly');
 
       $fields = ['lblrem', 'fsalarytype', 'feffdate', 'fhsperiod', 'fbasicrate', 'fcola'];
@@ -376,6 +377,7 @@ class hs
       data_set($col4, 'ttype.lookupclass', 'ttypelookup');
       data_set($col4, 'tjobgrade.type', 'input');
       data_set($col4, 'tpayrate.label', 'To Class Rate');
+      data_set($col4, 'tjobname.lookupclass', 'lookupjobs');
 
       switch ($companyid) {
         case 3: // conti
@@ -744,6 +746,17 @@ class hs
     $user = $config['params']['user'];
     $doc = $config['params']['doc'];
     $companyid = $config['params']['companyid'];
+
+    $rateqry ="select trno, dateid, fpayrate, tpayrate, fbasicrate, tbasicrate, tallowrate from " . $this->head . " where trno = $trno";
+    $rateqryResult = $this->coreFunctions->opentable($rateqry);
+
+    if ($rateqryResult[0]->tbasicrate != 0 && empty($rateqryResult[0]->tpayrate)) {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR BASIC RATE.'];
+    }
+
+    if ($rateqryResult[0]->tallowrate != 0 && empty($rateqryResult[0]->tpayrate)) {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR ALLOWANCE.'];
+    }
 
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
     $msg = '';

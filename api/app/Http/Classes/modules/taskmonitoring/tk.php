@@ -199,7 +199,7 @@ class tk
     $filterdate = " and date(h.dateid) between '" . $date1 . "' and '" . $date2 . "' ";
     $filter = '';
     // 0 -draft, 1-open , 2 -pending , 3 - ongoing , 4- for checking 5-complete
-    $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'On-going' when '4' then 'For Checking' else 'Completed' end) else 'Close' end) as statname";
+  $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'On-going' when '4' then 'For Checking' else 'Completed' end) else 'Close' end) as statname";
 
     $user = " and d.userid=" . $userid . " ";
 

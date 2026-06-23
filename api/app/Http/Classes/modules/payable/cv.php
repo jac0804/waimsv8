@@ -2949,7 +2949,8 @@ class cv
     switch ($companyid) {
       case 27: //nte
       case 36: //rozlab
-        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+      case 60: //transpower
+         $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
         if (!$isposted) {
 
           $result = $this->othersClass->posttransacctg($config);

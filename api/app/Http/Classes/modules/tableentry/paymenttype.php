@@ -106,7 +106,7 @@ class paymenttype
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addrecord', 'saveallentry', 'whlog'];
+    $tbuttons = ['addrecord', 'saveallentry', 'whlog', 'syncall'];
     $obj = $this->tabClass->createtabbutton($tbuttons);
 
     return $obj;
@@ -287,4 +287,23 @@ class paymenttype
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
   }
+
+  public function tableentrystatus($config)
+  {
+    switch ($config['params']['action2']) {
+      case 'syncallentry':
+        $this->coreFunctions->execqry("update checktypes set dlock='" . $this->othersClass->getCurrentTimeStamp() . "'");
+        $returndata = $this->loaddata($config);
+      return ['status' => true, 'msg' => 'Card type dlock updated.', 'data' => $returndata];
+        break;
+
+      default:
+        if (isset($config['params']['data'])) {
+          return ['status' => true, 'msg' => 'No function yet', 'data' => $config['params']['data']];
+        } else {
+          return ['status' => true, 'msg' => 'No function yet', 'data' => []];
+        }
+        break;
+    }
+  } //end function
 } //end class

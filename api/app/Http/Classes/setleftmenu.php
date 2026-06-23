@@ -266,11 +266,6 @@ class setleftmenu
         break;
     }
 
-    $isautoservice = $this->companysetup->getisautoservice($params);
-    if ($isautoservice) { // autoservice
-      array_push($itemmaster, 'jobsetup', 'carmake', 'taskhistory', 'itemhistory');
-    }
-
     return ['itemmaster' => ['parent' => 2, 'modules' => $itemmaster]];
   } //end function
 
@@ -1335,18 +1330,18 @@ class setleftmenu
 
   public function autoservsetup($params)
   {
-    $autoservsetup = ['parentautoservsetup', 'tasklabor'];
+    $autoservsetup = ['parentautoservsetup', 'tasklabor', 'jobsetup', 'carmake'];
     return ['autoservsetup' => ['parent' => 47, 'modules' => $autoservsetup]];
   } //end function
 
   public function autoservoperation($params)
   {
-    $autoservoperation = ['parentautoservoperation', 'aq', 'ak', 'am', 'aw'];
+    $autoservoperation = ['parentautoservoperation', 'aq', 'ak', 'aw', 'am'];
     return ['autoservoperation' => ['parent' => 48, 'modules' => $autoservoperation]];
   } //end function
   public function autoinquiry($config)
   {
-    $autoinquiry = ['parentautoinquiry', 'jobhistory'];
+    $autoinquiry = ['parentautoinquiry', 'jobhistory', 'taskhistory', 'itemhistory'];
     return ['autoinquiry' => ['parent' => 49, 'modules' => $autoinquiry]];
   }
 } // end class

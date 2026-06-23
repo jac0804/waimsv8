@@ -123,7 +123,13 @@ class adashboard
 
             $this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id - 1];
             if ($this->config['verifyaccess'] == 0) {
-                $this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access'];
+                $access_desc = $accessid;
+                switch ($accessid) {
+                    case 'load':
+                        $access_desc = 'view';
+                        break;
+                }
+                $this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access (' . $access_desc . ')'];
             }
         } else {
             $this->coreFunctions->sbclogger('Undefined ' . $accessid . ' ' . $this->config['params']['doc'] . ' id: ' . $this->config['params']['id']);
@@ -169,23 +175,21 @@ class adashboard
     public function dashboardclienttable() {} //end function
 
     public function approveapv()
-  {
-    $center = $this->config['params']['center'];
-    $getcols = ['action', 'docno', 'dateid','clientname'];
-    $stockbuttons = ['view'];
-    $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-    $cols[0]['btns']['view']['lookupclass'] = 'jumptableentry';
-    $wh = $this->companysetup->getwh($this->config['params']);
-    $fields = [];
-    $col1 = $this->fieldClass->create($fields);
-    $paramsdata = $this->coreFunctions->opentable("SELECT 'XXX' as ourref");
+    {
+        $center = $this->config['params']['center'];
+        $getcols = ['action', 'docno', 'dateid', 'clientname'];
+        $stockbuttons = ['view'];
+        $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+        $cols[0]['btns']['view']['lookupclass'] = 'jumptableentry';
+        $wh = $this->companysetup->getwh($this->config['params']);
+        $fields = [];
+        $col1 = $this->fieldClass->create($fields);
+        $paramsdata = $this->coreFunctions->opentable("SELECT 'XXX' as ourref");
 
-    $qry = "select head.trno,cntnum.doc, head.docno, date(head.dateid) as dateid, d.clientname as clientname,'../../ledgergrid/s966bcd74e8482da1569c6b839996c0dd/postingapv' as url
+        $qry = "select head.trno,cntnum.doc, head.docno, date(head.dateid) as dateid, d.clientname as clientname,'../../ledgergrid/s966bcd74e8482da1569c6b839996c0dd/postingapv' as url
     from lahead as head left join cntnum on cntnum.trno=head.trno  left join client as d on d.client = head.client where head.doc='PV' 
     and head.lockdate is not null and cntnum.center = ?  limit 20";
-    $data = $this->coreFunctions->opentable($qry,[$center]);
-    $this->config['sbclist']['approveapv'] = ['cols' => $cols, 'data' => $data, 'title' => 'APV APPROVAL', 'txtfield' => ['col1' => $col1], 'paramsdata' => $paramsdata[0]];
-  }
-
-    
+        $data = $this->coreFunctions->opentable($qry, [$center]);
+        $this->config['sbclist']['approveapv'] = ['cols' => $cols, 'data' => $data, 'title' => 'APV APPROVAL', 'txtfield' => ['col1' => $col1], 'paramsdata' => $paramsdata[0]];
+    }
 }

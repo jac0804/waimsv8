@@ -229,10 +229,11 @@ class dailytask_report
     {
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $isUndone = ($statid == 2);
+        $detailDateLimit = $isUndone ? $this->othersClass->getCurrentDate() : $end;
+
 
         if ($refx == 0) {
             if ($isUndone) {
-                // Root undone task (refx=0, origtrno=0) — follow future continuations via origtrno
                 $whereClause = "(dt.trno = $trno OR dt.refx = $trno OR dt.origtrno = $trno)";
             } elseif ($isChecker == 1) {
                 $whereClause = "(dt.trno = $trno OR dt.refx = $trno)";
@@ -241,7 +242,6 @@ class dailytask_report
             }
         } else {
             if ($statid == 2 || ($statid == 0 && $isprev == 1)) {
-                // UNDONE: remove trno upper limit so future rows are included
                 if ($isUndone) {
                     $whereClause = "((dt.origtrno = $refx) OR dt.trno = $refx OR (dt.refx = $refx))";
                 } else {
@@ -261,7 +261,7 @@ class dailytask_report
         left join client as c on c.clientid = dt.clientid
         left join client as userr on userr.clientid = dt.userid
         left join employee as emp on emp.empid = dt.userid
-        where  date(dt.createdate) <= '$end'and  $whereClause
+        where  date(dt.createdate) <= '$detailDateLimit'and  $whereClause
         group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate, dt.isprev, dt.ischecker, dt.statid, dt.rem1, dt.trno, dt.refx, dt.origtrno, emp.empfirst
 
         union all
@@ -272,7 +272,7 @@ class dailytask_report
         left join client as c on c.clientid = dt.clientid
         left join client as userr on userr.clientid = dt.userid
         left join employee as emp on emp.empid = dt.userid
-        where  date(dt.createdate) <= '$end'and $whereClause
+        where  date(dt.createdate) <= '$detailDateLimit'and $whereClause
         group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate, dt.isprev, dt.ischecker, dt.statid, dt.rem1, dt.trno, dt.refx, dt.origtrno, emp.empfirst
         order by createdate
         ";
@@ -287,6 +287,7 @@ class dailytask_report
     {
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $isUndone = ($statid == 2);
+        $detailDateLimit = $isUndone ? $this->othersClass->getCurrentDate() : $end;
 
         if ($statid == 1 || $statid == 2 || ($statid == 0 && $isprev == 1)) {
             if ($isUndone) {
@@ -311,7 +312,7 @@ class dailytask_report
         left join client as c on c.clientid = dt.clientid
         left join client as userr on userr.clientid = dt.userid
         left join employee as emp on emp.empid = dt.userid
-        where date(dt.createdate) <= '$end'
+        where date(dt.createdate) <= '$detailDateLimit'
         and ($whereClause)
         group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate, dt.isprev, dt.ischecker, dt.statid, dt.rem1, dt.trno, dt.tasktrno, dt.origtrno, dt.taskline, emp.empfirst
 
@@ -323,7 +324,7 @@ class dailytask_report
         left join client as c on c.clientid = dt.clientid
         left join client as userr on userr.clientid = dt.userid
         left join employee as emp on emp.empid = dt.userid
-        where date(dt.createdate) <= '$end'
+        where date(dt.createdate) <= '$detailDateLimit'
         and ($whereClause)
         group by c.clientname, dt.createdate, userr.clientname, dt.rem, dt.donedate, dt.isprev, dt.ischecker, dt.statid, dt.rem1, dt.trno, dt.tasktrno, dt.origtrno, dt.taskline, emp.empfirst
         order by createdate
@@ -347,7 +348,8 @@ class dailytask_report
             ? $limitResult[0]['donedate']
             : $end . ' 23:59:59';
 
-        $commentDateLimit = $isUndone ? ($end . ' 23:59:59') : $limitDate;
+        $dateLimit = $isUndone ? $this->othersClass->getCurrentDate() : $end;
+        $commentDateLimit = $isUndone ? $this->othersClass->getCurrentDate() . ' 23:59:59' : $limitDate;
 
 
         $data1 = array();
@@ -417,7 +419,7 @@ class dailytask_report
         left join client as cl on cl.email = hp.createby
         left join employee as emp on emp.empid = cl.clientid
         where $whereClause
-        and date(hp.createdate) <= '$end'
+        and date(hp.createdate) <= '$dateLimit'
         and hp.createdate <= '$commentDateLimit'
         order by hp.createdate asc
         ";
@@ -478,7 +480,7 @@ class dailytask_report
         left join client as cl on cl.email = hp.createby
         left join employee as emp on emp.empid = cl.clientid
         where $taskWhereClause
-        and date(hp.createdate) <= '$end'
+        and date(hp.createdate) <= '$dateLimit'
         and hp.createdate <= '$commentDateLimit'
         order by hp.createdate asc
         ";

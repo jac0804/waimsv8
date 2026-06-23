@@ -2809,6 +2809,17 @@ class tabClass
         'access' => 'additem',
         'visible' => true
       ),
+
+      'addpackage' => array(
+        'label' => 'Add Package',
+        'icon' => 'inventory_2',
+        'class' => 'btnaddpackage',
+        'lookupclass' => 'addpackage',
+        'action' => 'addpackage',
+        'access' => 'additem',
+        'visible' => true
+      ),
+
     );
   }
 

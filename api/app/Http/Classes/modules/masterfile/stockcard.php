@@ -1077,6 +1077,11 @@ class stockcard
         break;
     }
 
+    if ($ispos) {
+      data_set($col1, 'shortname.type', 'cinput');
+      data_set($col1, 'shortname.maxlength', 100);
+    }
+
     switch ($systemtype) {
       case 'WAIMS':
         switch ($companyid) {

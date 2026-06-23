@@ -180,9 +180,9 @@ class ml
 
 
     $tab = [
-      'multiinput1' => ['inputcolumn' => ['col3' => $col3], 'label' => 'Tasks'],
-      'multiinput2' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3], 'label' => 'Profile']
+      'multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3], 'label' => 'Profile']
     ];
+    $tab['tableentry']  =  ['action' => 'autoserventry', 'lookupclass' => 'entrymechanictask', 'label' => 'TASK'];
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);

@@ -65,7 +65,13 @@ class headtableClass
 		$id = $this->config['mattrib'][$accessid];
 		$this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id - 1];
 		if ($this->config['verifyaccess'] == 0) {
-			$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access'];
+			$access_desc = $accessid;
+			switch ($accessid) {
+				case 'load':
+					$access_desc = 'view';
+					break;
+			}
+			$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access (' . $access_desc . ')'];
 		}
 		return $this;
 	}
@@ -92,7 +98,7 @@ class headtableClass
 			if (method_exists($this->config['classname'], 'hideobj')) {
 				$hideobj = $this->config['docmodule']->hideobj($this->config);
 			}
-			if(isset($this->config['docmodule']->rowperpage)) $rowperpage = $this->config['docmodule']->rowperpage;
+			if (isset($this->config['docmodule']->rowperpage)) $rowperpage = $this->config['docmodule']->rowperpage;
 			if (method_exists($this->config['classname'], 'createtab2')) {
 				$tab2 = $this->config['docmodule']->createtab2($access, $this->config);
 			}
@@ -101,11 +107,25 @@ class headtableClass
 				$griddata = $this->config['docmodule']->griddata($this->config);
 			}
 			$this->config['return'] = [
-				'txtfield' => $txtfield, 'tab' => $tab, 'tabbuttons' => $tabbtn,
-				'toolbar' => $buttons, 'status' => true, 'msg' => 'Loaded Success',
-				'modulename' => $modulename, 'doc' => $this->config['params']['lookupclass'],
-				'action' => $this->config['params']['action'], 'style' => $style, 'gridname' => $gridname, 'data' => $data, 'issearchshow' => $issearchshow,
-				'maccess' => $access, 'tab2' => $tab2, 'rowperpage'=>$rowperpage, 'hideobj'=>$hideobj, 'loadtable' => $loadtable, 'griddata'=>$griddata
+				'txtfield' => $txtfield,
+				'tab' => $tab,
+				'tabbuttons' => $tabbtn,
+				'toolbar' => $buttons,
+				'status' => true,
+				'msg' => 'Loaded Success',
+				'modulename' => $modulename,
+				'doc' => $this->config['params']['lookupclass'],
+				'action' => $this->config['params']['action'],
+				'style' => $style,
+				'gridname' => $gridname,
+				'data' => $data,
+				'issearchshow' => $issearchshow,
+				'maccess' => $access,
+				'tab2' => $tab2,
+				'rowperpage' => $rowperpage,
+				'hideobj' => $hideobj,
+				'loadtable' => $loadtable,
+				'griddata' => $griddata
 			];
 		}
 		return $this;

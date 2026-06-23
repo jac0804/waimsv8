@@ -2000,7 +2000,7 @@ union all
         $averageprice = 0;
       }
       if ($data->qty != 0) {
-        $averagecost = $data->cogs / $data->qty;
+        $averagecost = $cogs / $data->qty;
       } else {
         $averagecost = 0;
       }
@@ -2048,7 +2048,7 @@ union all
         $averageprice = 0;
       }
       if ($data->qty != 0) {
-        $averagecost = $data->cogs / $data->qty;
+        $averagecost = $cogs / $data->qty;
       } else {
         $averagecost = 0;
       }
@@ -2078,11 +2078,11 @@ union all
       $subaverageprice = $subaverageprice + $averageprice;
       $subaveragecost = $subaveragecost + $averagecost;
       //part
-      $gsubgrosssales = $subgrosssales + $data->gsales;
-      $gsubamountdiscount = $subamountdiscount +$data->disc;
-      $gsubreturns = $subreturns + $data->sreturn;
+      $gsubgrosssales = $subgrosssales + $gsales;
+      $gsubamountdiscount = $subamountdiscount + $disc;
+      $gsubreturns = $subreturns + $sreturn;
       $gsubnetsales = $subnetsales + $netsales;
-      $gsubcostsales = $subcostsales +$data->cogs;
+      $gsubcostsales = $subcostsales + $cogs;
       $gsubgrossprofit = $subgrossprofit + $grossprofit;
       $gsubmarginvscost = $submarginvscost + $marginvscost;
       $gsubmarginvssales = $submarginvssales + $marginvssales;

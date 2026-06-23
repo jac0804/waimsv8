@@ -2109,6 +2109,11 @@ class po
         $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from hstockinfotrans where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->hinfohead . " where trno=?", 'delete', [$trno]);
+
+        if ($this->companysetup->getmirrortrans($config['params'])) {
+          $this->othersClass->mirrorunpost($trno, $config['params']['doc'], $docno);
+        }
+
         $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
       } else {
@@ -4062,13 +4067,13 @@ class po
     $data2 = [];
 
     if ($config['params']['companyid'] == 60) { //transpower
-      $data2 = $this->coreFunctions->opentable("select 'Invoice Price' as pricegrp, format(amt5,2) as amt,format(disc5,2) as disc,format(namt5,2) as netamt from item where barcode =?
+      $data2 = $this->coreFunctions->opentable("select 'Invoice Price' as pricegrp, format(amt5,2) as amt,disc5 as disc,format(namt5,2) as netamt from item where barcode =?
       union all 
-      select 'DR Price' as pricegrp, format(amt7,2) as amt,format(disc7,2) as disc,format(namt7,2) as netamt from item where barcode =?
+      select 'DR Price' as pricegrp, format(amt7,2) as amt,disc7 as disc,format(namt7,2) as netamt from item where barcode =?
       union all
-      select 'Wholesale Price' as pricegrp, format(amt2,2) as amt ,format(disc2,2) as disc, format(namt2,2) as netamt from item where barcode =?
+      select 'Wholesale Price' as pricegrp, format(amt2,2) as amt ,disc2 as disc, format(namt2,2) as netamt from item where barcode =?
       union all
-      select 'Base Price' as pricegrp, format(amt,2), format(disc,2), format(namt,2) as netamt  from item where barcode =?", [$barcode, $barcode, $barcode, $barcode]);
+      select 'Base Price' as pricegrp, format(amt,2), disc, format(namt,2) as netamt  from item where barcode =?", [$barcode, $barcode, $barcode, $barcode]);
     }
 
     switch ($config['params']['companyid']) {

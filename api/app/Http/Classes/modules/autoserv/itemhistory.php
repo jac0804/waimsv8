@@ -107,22 +107,27 @@ class itemhistory
             $fsearch =  'where 1=1 ' . $filtersearch;
         }
         $qry = " 
-        select docno,dateid,clientname,barcode,itemname,plateno,vehicle,isqty,uom,amount,ext from (
-        select head.docno,date(head.dateid) as dateid, cl.clientname, item.barcode, item.itemname, '' as plateno, car.carname as vehicle, FORMAT(stock.isqty,2) as isqty, stock.uom,FORMAT(stock.isamt,2) as amount, FORMAT(stock.ext,2) as ext from " . $this->head . " as head
-        left join client as cl on cl.client = head.client
-        left join ptstock as stock on stock.trno = head.trno
+        select docno, dateid,clientname,barcode,itemname,plateno,vehicle,isqty,uom,amount,ext from (
+        select head.docno, date(head.dateid) as dateid, client.clientname, item.barcode, item.itemname, cvh.licenseno as plateno, model.model as vehicle, stock.isqty,stock.uom, FORMAT(stock.isamt,2) as amount, FORMAT(stock.ext,2) as ext
+        from " . $this->head . " as head
+        left join lastock as stock on stock.trno = head.trno
+        left join client on head.client = client.client
+        left join cvehicle as cvh on cvh.clientid = client.clientid and cvh.line = head.carid
         left join item on item.itemid = stock.itemid
-        left join cmake as car on car.id = head.carid
-        where  head.doc ='AM' 
-        union all 
-        select head.docno,date(head.dateid) as dateid, cl.clientname, item.barcode, item.itemname, '' as plateno, car.carname as vehicle, FORMAT(stock.isqty,2) as isqty, stock.uom,FORMAT(stock.isamt,2) as amount, FORMAT(stock.ext,2) as ext from " . $this->hhead . " as head
-        left join client as cl on cl.clientid = head.clientid
-        left join ptstock as stock on stock.trno = head.trno
+        left join cmodel as model on model.line=cvh.cmodelline
+        where head.doc = 'AM'
+        union all
+        select head.docno,date(head.dateid) as dateid, client.clientname, item.barcode, item.itemname, cvh.licenseno as plateno, model.model as vehicle, stock.isqty,stock.uom, FORMAT(stock.isamt,2) as amount, FORMAT(stock.ext,2) as ext
+        from " . $this->hhead . " as head
+        left join glstock as stock on stock.trno = head.trno
+        left join client on head.clientid = client.clientid
+        left join cvehicle as cvh on cvh.clientid = client.clientid 
         left join item on item.itemid = stock.itemid
-        left join cmake as car on car.id = head.carid
-        where  head.doc ='AM' 
+        left join cmodel as model on model.line=cvh.cmodelline
+        where head.doc = 'AM'
         ) as x $fsearch
         order by docno";
+        // var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }

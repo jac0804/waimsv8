@@ -162,11 +162,14 @@ class px
     $user = $config['params']['adminid'];
     $isadmin = $this->othersClass->checkAccess($config['params']['user'], 5389);
     $isphead = 0;
+    $saleshead =  $this->othersClass->checkAccess($config['params']['user'], 5554);
+    $salesgid = $this->coreFunctions->datareader('select salesgroupid as value from client where clientid=?', [$user]); 
     switch ($companyid) {
       case 10:
       case 12: //afti
         if ($isadmin == 0) {
           $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile", "agentid", "agentid = ?", [$user], '', true);
+          
         }
         break;
     }
@@ -244,12 +247,20 @@ class px
     // $this->coreFunctions->LogConsole($isphead. "-phead");
 
     if ($companyid == 10 || $companyid == 12) { //afti
-      if ($isadmin == 0 && $isphead == 0) {
-        $addparams .= " and head.createby='" . $username . "'";
-      } else {
-        if ($isphead != 0) {
-          $addparams .= " and pm.agentid = " . $user . " or head.createby='" . $username . "'";
+      if ($isadmin == 0 && $isphead == 0) {        
+        if($saleshead!=0){
+          $addparams .= " and (head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid .")" ;
+        }else{
+          $addparams .= " and head.createby='" . $username . "'";
         }
+      } else {
+        if ($isphead != 0) {          
+          if($saleshead!=0){
+            $addparams .= " and (pm.agentid = " . $user . " or head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid.")" ;
+          }else{
+            $addparams .= " and (pm.agentid = " . $user . " or head.createby='" . $username . "')";
+          }
+        }       
       }
     }
 
@@ -257,19 +268,25 @@ class px
     if ($searchfilter == "") $limit = '';
     $orderby =  "order by  dateid desc, docno desc";
 
-    $qry = "select head.trno,head.docno,$dateid, case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end as status,
+    $qry = "select distinct head.trno,head.docno,$dateid, case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end as status,
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,case ifnull(head.lockdate,'') when '' then 'red' else 'cyan' end as statuscolor,
       head.dtcno, head.pcfno,head.rem,cl.clientname
      from " . $this->head . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno " . $join . " left join client as cl on cl.clientid = head.clientid 
-     left join projectmasterfile as pm on pm.code = head.project where num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
+      left join pxstock as stock on stock.trno = head.trno
+      left join item on item.itemid = stock.itemid
+      left join projectmasterfile as pm on pm.line = item.projectid
+     left join client as ag on ag.clientid = head.agentid where num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
      union all
-     select head.trno,head.docno,$dateid,'POSTED' as status,
+     select distinct head.trno,head.docno,$dateid,'POSTED' as status,
      head.createby,head.editby,head.viewby, num.postedby, date(num.postdate) as postdate,'blue' as statuscolor,
        head.dtcno, head.pcfno,head.rem  ,cl.clientname
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno  " . $hjoin . " left join client as cl on cl.clientid = head.clientid
-     left join projectmasterfile as pm on pm.code = head.project   where  num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
+     left join hpxstock as stock on stock.trno = head.trno
+      left join item on item.itemid = stock.itemid
+      left join projectmasterfile as pm on pm.line = item.projectid
+     left join client as ag on ag.clientid = head.agentid where  num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
     $orderby $limit";
     $this->coreFunctions->LogConsole($qry . $date1 . ' ' . $date2);
     $data = $this->coreFunctions->opentable($qry, [$center, $date1, $date2, $center, $date1, $date2]);
@@ -666,7 +683,8 @@ class px
     $user = $config['params']['adminid'];
     $isadmin = $this->othersClass->checkAccess($config['params']['user'], 5389);
     $isphead = 0;
-
+    $saleshead =  $this->othersClass->checkAccess($config['params']['user'], 5554);
+    $salesgid = $this->coreFunctions->datareader('select salesgroupid as value from client where clientid=?', [$user]);
     if ($isadmin == 0) {
       $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile", "agentid", "agentid = ?", [$user], '', true);
     }
@@ -687,11 +705,21 @@ class px
     $addparams = "";
     if ($companyid == 10 || $companyid == 12) { //afti
       if ($isadmin == 0 && $isphead == 0) {
-        $addparams .= " and head.createby='" . $username . "'";
-      } else {
-        if ($isphead == 1) {
-          $addparams .= " and pm.agentid = " . $user;
+        if($saleshead!=0){
+          $addparams .= " and (head.createby='" . $username . "' or agent.salesgroupid=" . $salesgid ." )";
+        }else{
+          $addparams .= " and head.createby='" . $username . "'";
         }
+      } else {
+        if ($isphead == 1) {         
+          if($saleshead!=0){
+            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user." or agent.salesgroupid=" . $salesgid .")";
+          }else{
+            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user.") ";
+          }
+        }
+
+        
       }
     }
 
@@ -719,14 +747,18 @@ class px
         left join $tablenum as num on num.trno = head.trno
         left join client on head.clientid = client.clientid
         left join client as agent on agent.clientid = head.agentid
-        left join projectmasterfile as p on p.code = head.project
+        left join pxstock as stock on stock.trno = head.trno
+        left join item on item.itemid = stock.itemid
+        left join projectmasterfile as p on p.line = item.projectid
         left join transnum as qt on qt.trno = head.potrno
         where head.trno = ? and num.center = ? " . $addparams . "
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.clientid = client.clientid
         left join client as agent on agent.clientid = head.agentid
-        left join projectmasterfile as p on p.code = head.project
+        left join hpxstock as stock on stock.trno = head.trno
+        left join item on item.itemid = stock.itemid
+        left join projectmasterfile as p on p.line = item.projectid
         left join transnum as qt on qt.trno = head.potrno
         where head.trno = ? and num.center=? " . $addparams;
 

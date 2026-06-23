@@ -25,7 +25,7 @@ class login
   public function onloadtableupdate()
   {
     //always update this version every changes made inside this function
-    $dbversion = '2025-10-06 16:26';
+    $dbversion = '2026-06-14 21:09';
 
     $dbupdate = $this->coreFunctions->datareader("select pvalue as value from profile where doc='SYS' and psection='DBUPDATE'");
     $this->coreFunctions->LogConsole($dbupdate);
@@ -232,6 +232,19 @@ class login
       $this->coreFunctions->execqrynolog("update item set lock=null where lock=''");
       $this->coreFunctions->execqrynolog("update item set lock=null where lock='0000-00-00 00:00:00'");
       $this->coreFunctions->sbcaddcolumn("item", "lock", "datetime default null");
+    }
+
+    //FMM - 2026-06-14
+    if ('2026-06-14 21:09' >= $dbupdate) {
+      $qry = "
+        CREATE TABLE `unpostedtrans` (
+          `trno` int(11) NOT NULL DEFAULT '0',
+          `doc` varchar(5) NOT NULL DEFAULT '',
+          `docno` varchar(20) NOT NULL DEFAULT '',
+          `postdate` DATETIME DEFAULT NULL,
+          KEY `Index_Trno` (`trno`),
+          KEY `Index_Doc` (`doc`)) ";
+      $this->coreFunctions->sbccreatetable("unpostedtrans", $qry);
     }
 
     //always at the end of this function

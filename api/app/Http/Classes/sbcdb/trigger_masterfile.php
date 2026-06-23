@@ -245,10 +245,8 @@ class trigger_masterfile
 
 		$this->entrycarmodel_triggers($config);
 
-		$this->entryamjob_triggers($config);
 		$this->entryamtask_triggers($config);
 
-		$this->entryjob_ak_triggers($config);
 		$this->entrycarmodel_triggers($config);
 		$this->entrytasklabor_ak_triggers($config);
 		$this->entryvehicle_triggers($config);
@@ -2771,17 +2769,6 @@ class trigger_masterfile
 		$this->settriggermasterfilelogs($config, 'APPROVER_SETUP', 'multiapprover', 'payroll_log', $fields, 'line', 'empid');
 	}
 
-	private function entryjob_ak_triggers($config)
-	{
-		$doc = 'ENTRYJOB';
-		$fields = [
-			'Job Code' =>  ['jobid' => [true, "docno", "jobthead", "line"]],
-			'Job Description' =>  ['jobid' => [true, "jobtitle", "jobthead", "line"]],
-			'Notes' => ['rem' => []]
-		];
-		$this->settriggermasterfilelogs($config, $doc, 'ptjobs', 'masterfile_log', $fields, 'line', 'trno');
-	}
-
 	private function entrycarmodel_triggers($config)
 	{
 		$fields = [
@@ -2803,22 +2790,12 @@ class trigger_masterfile
 			'Task Description' =>  ['laborline' => [true, "description", "jobtask", "line"]],
 			'Cost' => ['cost' => []],
 			'Rate' => ['rate' => []],
+			'Mechanic' =>  ['mecline' => [true, "clientname", "client", "clientid"]],
 			'Notes' => ['rem' => []]
 		];
-		$this->settriggermasterfilelogs($config,  $doc, 'pttask', 'masterfile_log', $fields, 'line');
+		$this->settriggermasterfilelogs($config,  $doc, 'pttask', 'masterfile_log', $fields, 'line', 'trno','','','jobline');
 	}
 
-	private function entryamjob_triggers($config)
-	{
-		$doc = 'ENTRYJOBDETAILS';
-		$fields = [
-			'Job Code' =>  ['jobid' => [true, "docno", "jobthead", "line"]],
-			'Job Description' =>  ['jobid' => [true, "jobtitle", "jobthead", "line"]],
-			'Notes' => ['rem' => []]
-			// 'Package' => ['packageline' => []]
-		];
-		$this->settriggermasterfilelogs($config, $doc, 'amjobs', 'masterfile_log', $fields, 'line', 'trno');
-	}
 
 	private function entryamtask_triggers($config)
 	{
@@ -2830,26 +2807,26 @@ class trigger_masterfile
 			'Rate' => ['rate' => []],
 			'Notes' => ['rem' => []]
 		];
-		$this->settriggermasterfilelogs($config,  $doc, 'amtask', 'masterfile_log', $fields, 'line', 'trno');
+		$this->settriggermasterfilelogs($config,  $doc, 'amtask', 'masterfile_log', $fields, 'line', 'trno', '', '', 'jobline');
 	}
 
 	private function entryvehicle_triggers($config)
 	{
-	    $fields = [
-	        'Client ID'    => ['clientid'     => [true, "clientid",   "cvehicle", "line"]],
-	        'Car Make'     => ['cmake'        => []],
-	        'Car ID'       => ['carid'        => []],
-	        'Model Line'   => ['cmodelline'   => []],
-	        'License No'   => ['licenseno'    => []],
-	        'Mileage'      => ['mileage'      => []],
-	        'Engine'       => ['carengine'    => []],
-	        'Transmission' => ['transmission' => []],
-	        'Motor No'     => ['motorno'      => []],
-	        'Chassis'      => ['chassis'      => []],
-	        'MV No'        => ['mvno'         => []],
-	        'Insurance'    => ['insurance'    => []],
-	        'Labor'        => ['labor'        => []],
-	    ];
-	    $this->settriggermasterfilelogs($config, 'customer', 'cvehicle', 'masterfile_log', $fields, 'line', 'clientid');
+		$fields = [
+			'Client ID'    => ['clientid'     => [true, "clientid",   "cvehicle", "line"]],
+			'Car Make'     => ['cmake'        => []],
+			'Car ID'       => ['carid'        => []],
+			'Model Line'   => ['cmodelline'   => []],
+			'License No'   => ['licenseno'    => []],
+			'Mileage'      => ['mileage'      => []],
+			'Engine'       => ['carengine'    => []],
+			'Transmission' => ['transmission' => []],
+			'Motor No'     => ['motorno'      => []],
+			'Chassis'      => ['chassis'      => []],
+			'MV No'        => ['mvno'         => []],
+			'Insurance'    => ['insurance'    => []],
+			'Labor'        => ['labor'        => []],
+		];
+		$this->settriggermasterfilelogs($config, 'customer', 'cvehicle', 'masterfile_log', $fields, 'line', 'clientid');
 	}
 }// end class

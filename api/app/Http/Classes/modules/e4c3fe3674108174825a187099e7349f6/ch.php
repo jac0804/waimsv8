@@ -57,7 +57,7 @@ class ch
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount', 'sdate1'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount', 'sdate1','ewt','ewtrate'];
   private $except = ['trno', 'dateid', 'due'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -378,7 +378,7 @@ class ch
     data_set($col1, 'client.required', false);
     data_set($col1, 'docno.label', 'Transaction#');
     data_set($col1, 'sdate1.label', 'Sales Date');
-    $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
+    $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname','dewt'];
 
 
     $col2 = $this->fieldClass->create($fields);
@@ -432,6 +432,9 @@ class ch
     $data[0]['deldate'] = $this->othersClass->getCurrentDate();
     $data[0]['amount'] = 0;
     $data[0]['sdate1'] = $this->othersClass->getCurrentDate();
+    $data[0]['ewt'] = '';
+    $data[0]['dewt'] = '';
+    $data[0]['ewtrate'] = 0;
     return $data;
   }
 
@@ -495,7 +498,8 @@ class ch
       '' as dwhname,
       left(head.due,10) as due,
       date(head.deldate) as deldate,
-      head.amount, date(head.sdate1) as sdate1
+      head.amount, date(head.sdate1) as sdate1,
+      head.ewt,head.ewtrate,'' as dewt
     ";
 
     $qry = $qryselect . " from $table as head

@@ -162,6 +162,8 @@ class paygroup
             . ' Special OT Multipler - ' . $data['spot'] . ';'
             . ' NDIFF Multipler - ' . $data['ndiffhrs'] . ';'
             . ' SSS Max Bracket -  ' . $data['s3maxbracket']);
+        } else {
+          $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data['code'] . ' - ' . $data['paygroup']);
         }
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
@@ -185,19 +187,16 @@ class paygroup
           $checking1 = $this->coreFunctions->datareader($qry);
 
           if (!empty($checking1)) {
-            $returndata = $this->loaddata($config);
             return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data['code'], 'data' => $data];
           }
         }
       }
 
       if (!empty($checkingTimecard)) {
-        $returndata = $this->loaddata($config);
         return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data['paygroup'], 'data' => $data];
       }
 
       if (!empty($checkingEmployee)) {
-        $returndata = $this->loaddata($config);
         return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data['paygroup'], 'data' => $data];
       }
 
@@ -260,19 +259,16 @@ class paygroup
               $checking1 = $this->coreFunctions->datareader($qry);
 
               if (!empty($checking1)) {
-                $returndata = $this->loaddata($config);
                 return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data[$key]['code'], 'data' => $data];
               }
             }
           }
 
           if (!empty($checkingTimecard)) {
-            $returndata = $this->loaddata($config);
             return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data[$key]['paygroup'], 'data' => $data];
           }
 
           if (!empty($checkingEmployee)) {
-            $returndata = $this->loaddata($config);
             return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data[$key]['paygroup'], 'data' => $data];
           }
 
@@ -300,7 +296,7 @@ class paygroup
     $count = $this->coreFunctions->datareader($qry1, [$row['paygroup']]);
 
     if ($count != '') {
-      return ['clientid' => $row['paygroup'], 'status' => false, 'msg' => 'Already have transaction...'];
+      return ['clientid' => $row['paygroup'], 'status' => false, 'msg' => 'Cannot Be Deleted Because Paygroup Already Has a Transaction in Employee. - ' . $row['paygroup']];
     }
 
     $qry2 = "select pgline as value from timecard where pgline=?";

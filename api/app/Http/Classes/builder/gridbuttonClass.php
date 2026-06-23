@@ -2227,7 +2227,7 @@ class gridbuttonClass
         'icon' => 'add',
         'action' => 'autoserventry',
         'class' => 'btnaddtask',
-        'lookupclass' => 'entrytlabor',
+        'lookupclass' => 'entrylabor',
         'access' => 'view',
         'visible' => true,
         'color' => 'primary'

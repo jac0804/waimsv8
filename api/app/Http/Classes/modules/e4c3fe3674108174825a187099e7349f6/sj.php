@@ -1456,7 +1456,7 @@ class sj
       $config['params']['barcode'] = $barcode;
       $data = $this->getlatestprice($config);
 
-      if (!empty($data)) {
+      if (!empty($data[0])) {
         $item[0]->amt = $data['data'][0]->amt;
         $item[0]->disc = $data['data'][0]->disc;
         $item[0]->uom = $data['data'][0]->uom;

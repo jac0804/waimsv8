@@ -931,12 +931,12 @@ class posClass
     return $newstring;
   }
 
-  public function ftpcreatefiletrans($csv, $branch, $station, $folder, $doc, $docno, $trno)
+  public function ftpcreatefiletrans($csv, $branch, $station, $folder, $doc, $docno, $trno, $filetype = 'trans')
   {
     date_default_timezone_set('Asia/Singapore');
     $current_timestamp = date('Y-m-dH.i.s');
     if ($csv != '') {
-      $this->ftpwritefile('/' . $branch . '/' . $station . '/' . $folder . '/trans~' . $doc . '~' . $docno . '~' . $trno . '~' . $current_timestamp, $csv);
+      $this->ftpwritefile('/' . $branch . '/' . $station . '/' . $folder . '/' . $filetype . '~' . $doc . '~' . $docno . '~' . $trno . '~' . $current_timestamp, $csv);
     }
     return 'true';
   }
@@ -2059,11 +2059,11 @@ class posClass
 
   public function getalltransdoc($doc, $table)
   {
-    // $qry = "select trno, doc, docno, postdate from cntnum where postdate is not null and iscsv=0
-    //       union all
-    //       select trno, doc, docno, postdate from transnum where postdate is not null and iscsv=0 order by postdate";
-
-    $qry = "select trno, doc, docno, postdate from transnum where postdate is not null and iscsv=0 order by postdate";
+    $qry = "select trno, doc, docno, postdate, 0 as unposted from cntnum where postdate is not null and iscsv=0
+          union all
+          select trno, doc, docno, postdate, 0 as unposted from transnum where postdate is not null and iscsv=0 
+          union all 
+          select trno, doc, docno, postdate, 1 as unposted from unpostedtrans order by postdate";
     return $this->coreFunctions->opentable($qry);
   }
 
@@ -2141,12 +2141,19 @@ class posClass
 
           $queries = [];
           foreach ($tables as $t) {
-            $qry = $this->gettransactionsqry($t, $doc1->trno);
+            if ($doc1->unposted) {
+              $qry = "delete from " . $t . " where trno=" . $doc1->trno;
+            } else {
+              $qry = $this->gettransactionsqry($t, $doc1->trno);
+            }
             array_push($queries, $qry);
           }
           $csv = $this->createtranscsv($queries);
           // $this->coreFunctions->LogConsole('creating transaction csv doc:' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno);
-          $this->ftpcreatefiletrans($csv, "MIRROR", "MIRROR1", 'download', $doc1->doc, $doc1->docno, $doc1->trno);
+
+          $csvtype = ($doc1->unposted) ? 'unposted' : 'trans';
+
+          $this->ftpcreatefiletrans($csv, "MIRROR", "MIRROR1", 'download', $doc1->doc, $doc1->docno, $doc1->trno, $csvtype);
           $this->coreFunctions->sbcupdate($numtable, ['iscsv' => 1], ['trno' => $doc1->trno]);
 
           $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());

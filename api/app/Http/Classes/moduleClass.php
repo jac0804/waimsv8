@@ -762,7 +762,13 @@ class moduleClass
 			$this->config['verifyaccess'] = $this->config['access'][0]['attributes'][$id - 1];
 			$this->coreFunctions->LogConsole($id . '-access');
 			if ($this->config['verifyaccess'] == 0) {
-				$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access ' . $id];
+				$access_desc = $accessid;
+				switch ($accessid) {
+					case 'load':
+						$access_desc = 'view';
+						break;
+				}
+				$this->config['return'] = ['status' => 'denied', 'msg' => 'Invalid Access (' . $access_desc . ')'];
 			}
 		} else {
 			$this->coreFunctions->sbclogger('Undefined ' . $accessid . ' ' . $this->config['params']['doc'] . ' id: ' . $this->config['params']['id']);
@@ -1552,7 +1558,7 @@ class moduleClass
 				}
 
 				if ($this->config['params']['doc'] == 'TC') {
-					$unposted = $this->coreFunctions->getfieldvalue("transnum", "docno", "doc='TC' and center=?", [$this->config['params']['center']], "trno desc");
+					$unposted = $this->coreFunctions->getfieldvalue("transnum", "docno", "doc='TC' and postdate is null and center=?", [$this->config['params']['center']], "docno desc");
 					if ($unposted != '') {
 						$this->config['return'] = ['head' => [], 'griddata' => [], 'islocked' => false, 'isposted' => false, 'status' => false, 'msg' => 'There are unposted Petty Cash transaction. Post it first to continue.', 'clickobj' => [], 'backlisting' => false];
 						return $this;

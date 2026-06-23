@@ -75,7 +75,7 @@ class entrybankterminal
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];
+    $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs', 'syncall'];
     $obj = $this->tabClass->createtabbutton($tbuttons);
     return $obj;
   }
@@ -297,4 +297,25 @@ class entrybankterminal
     $data = $this->coreFunctions->opentable($qry, [$tableid]);
     return $data;
   }
+
+  public function tableentrystatus($config)
+  {
+    switch ($config['params']['action2']) {
+      case 'syncallentry':
+        $tableid = $config['params']['tableid'];
+        $this->coreFunctions->execqry("update branchbank set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' where clientid=" . $tableid);
+        $this->coreFunctions->execqry("update bankcharges set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' where clientid=" . $tableid);
+        $returndata = $this->loaddata($config);
+        return ['status' => true, 'msg' => 'Card type dlock updated.', 'data' => $returndata];
+        break;
+
+      default:
+        if (isset($config['params']['data'])) {
+          return ['status' => true, 'msg' => 'No function yet', 'data' => $config['params']['data']];
+        } else {
+          return ['status' => true, 'msg' => 'No function yet', 'data' => []];
+        }
+        break;
+    }
+  } //end function
 } //end class

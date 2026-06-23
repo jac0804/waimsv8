@@ -38,8 +38,8 @@ class bms
     $this->coreFunctions->sbcaddcolumngrp(["contacts"],  ['line'], "INT(11) UNSIGNED NOT NULL", 0);
     $this->coreFunctions->execqrynolog("ALTER TABLE contacts CHANGE line line INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY");
     $this->coreFunctions->sbcaddcolumngrp(["glhead", "lahead"], ['purposeid'], "INT(11) NOT NULL DEFAULT '0'", 1);
-    $this->coreFunctions->sbcaddcolumngrp(["glhead", "lahead"], ['bstype', 'ownertype'], "VARCHAR(50) NOT NULL DEFAULT ''", 1); // used in MN/JU
-    $this->coreFunctions->sbcaddcolumngrp(["glhead", "lahead"], ['ownername', 'owneraddr', 'contact'], "VARCHAR(150) NOT NULL DEFAULT ''", 1); // used in MN/JU
+    // $this->coreFunctions->sbcaddcolumngrp(["glhead", "lahead"], ['bstype', 'ownertype'], "VARCHAR(50) NOT NULL DEFAULT ''", 1); // used in MN/JU
+    // $this->coreFunctions->sbcaddcolumngrp(["glhead", "lahead"], ['ownername', 'owneraddr', 'contact'], "VARCHAR(150) NOT NULL DEFAULT ''", 1); // used in MN/JU
     $this->coreFunctions->sbcaddcolumngrp(['glhead', 'lahead'], ['truid', 'bonafideid'], "INT(11) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(['reqcategory'], ['istru', 'isbonafide'], "tinyint(1) not null default '0'");
     $this->coreFunctions->sbcaddcolumngrp(['reqcategory'], ['encodeddate'], 'timestamp not null default CURRENT_TIMESTAMP', 0);

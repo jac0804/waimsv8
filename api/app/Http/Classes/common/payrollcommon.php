@@ -610,6 +610,9 @@ class payrollcommon
     public function computeemptimesheet_jda($batchid, $batchdate, $empid, $start, $end, $user, $batch, $params)
     {
         try {
+
+            $paygroup = $params['dataparams']['pgroup'];
+
             $qry = "delete from timesheet where empid=" . $empid . " and batchid=" . $batchid;
             $this->coreFunctions->execqry($qry);
 
@@ -622,39 +625,41 @@ class payrollcommon
             sum(ndiffot) as ndiffot, sum(restday) as restday, sum(restot) as restot, sum(leg) as leg, sum(legot) as legot, sum(sp) as sp, sum(spot) as spot, sum(legabsent) as legabsent, sum(latehrs2) as latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
             from (
             select empid, reghrs, absdays, latehrs, underhrs, 0 as othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='WORKING'
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='WORKING' and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs, 0 as ndiffhrs, 0 as ndiffot, reghrs as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='RESTDAY' and RDapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='RESTDAY' and RDapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, othrs as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='RESTDAY' and RDOTapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='RESTDAY' and RDOTapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs,  0 as ndiffhrs, 0 as ndiffot, 0 as restday, reghrs-absdays as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs,  0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, absdays as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, othrs as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGOTapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='LEG' and LEGOTapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs,  0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, reghrs as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='SP' and SPapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='SP' and SPapprvd=1 and pgline=" . $paygroup . "
             union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs,  0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, othrs as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='SP' and SPOTapprvd=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='SP' and SPOTapprvd=1 and pgline=" . $paygroup . "
             union all
             select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and otapproved=1
+            from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and otapproved=1 and pgline=" . $paygroup . "
             union all
             select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, 0 as othrs, ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and ndiffsapprvd=1
+            from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and ndiffsapprvd=1 and pgline=" . $paygroup . "
             union all
             select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, 0 as othrs, 0 as ndiffhrs, ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, legotmulti, spotmulti, ndiffmulti, maxsss
-            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and Ndiffapproved=1
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and Ndiffapproved=1 and pgline=" . $paygroup . "
             ) as t group by empid, legotmulti, spotmulti, ndiffmulti, maxsss ";
             $timecard = $this->coreFunctions->opentable($qry);
+
+            // Logger($qry);
 
             //all MDS account
             $qry = "select " . $batchid . " as batchid, " . $empid . " as empid, line as acnoid, '" . $batchdate . "' as dateid,
@@ -3881,11 +3886,19 @@ class payrollcommon
 
             $dcManualOtherEarn = isset($params['dataparams']['cur']) ? $params['dataparams']['cur'] : 0;
 
+            $blnNoGovEDAdv = false;
+
+            //checking if paygroup is not same with employee setup and batch setup - no deduction of gov contri/earning/deduction/advance
+            if ($params['dataparams']['paygroup'] != $params['dataparams']['pgroup']) $blnNoGovEDAdv = true;
+
             if ($dcManualOtherEarn == '' || $dcManualOtherEarn == null) {
                 $dcManualOtherEarn = 0;
             }
 
             $batch13 = false;
+
+            $earning = 0;
+            $earningadv = 0;
 
             if (substr($params['dataparams']['batch'], -2, 2) == '13') {
                 $batch13 = true;
@@ -3896,18 +3909,14 @@ class payrollcommon
             if ($batch13) {
                 $amt13th = $this->bonusC($emp->empid, $batchid, $batchdate, $startdate, $enddate);
 
-                $earning = 0;
-                $earningadv = 0;
                 if ($amt13th > 0) {
                     $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                     $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                    if ($params['companyid'] == 43) { //mighty
-                        $this->resetTripIncentive($emp->empid, $batchid);
+                    if (!$blnNoGovEDAdv) {
+                        $earning = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], false);
+                        $earningadv = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], true);
                     }
-
-                    $earning = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], false);
-                    $earningadv = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], true);
                 }
 
                 $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $amt13th + $earning + $earningadv, 0, 99);
@@ -4223,101 +4232,85 @@ class payrollcommon
                         } // end of foreach
                     } // end of !13th
 
-                    //Allowance Setup
+
                     $allow3 = 0;
-                    $nethrs = 0;
-                    $qry = "select allowance from allowsetup where empid=" . $emp->empid . " and date('" . $enddate . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1";
-                    $result_allowancesetup = $this->coreFunctions->opentable($qry);
-                    if ($result_allowancesetup) {
-                        $hrsLegSP1 = 0;
-                        if ($params['companyid'] == 30) { //RT
-                            $hrsLegSP1 = $hrsLegSP;
-                        }
+                    if (!$blnNoGovEDAdv) {
+                        //Allowance Setup
 
-                        $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
-                        if ($nethrs  > 0) {
-                            if ($salary != 0) {
+                        $nethrs = 0;
+                        $qry = "select allowance from allowsetup where empid=" . $emp->empid . " and date('" . $enddate . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1";
+                        $result_allowancesetup = $this->coreFunctions->opentable($qry);
+                        if ($result_allowancesetup) {
+                            $hrsLegSP1 = 0;
 
-                                $allow1 = 0;
-                                $allow2 = 0;
-                                $qtyAllow = 0;
-                                foreach ($result_allowancesetup as $key => $aval) {
-                                    $allow1 = $aval->allowance;
+                            $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
+                            if ($nethrs  > 0) {
+                                if ($salary != 0) {
 
-                                    if ($allow1 != 0) {
-                                        $qtyAllow = $qtyworking;
-                                        switch ($emp->paymode) {
-                                            case 'M':
-                                                $allow2 = $allow1;
-                                                $allow3 = $allow3 + $allow2;
-                                                $nethrs = 1;
-                                                break;
-                                            case 'S':
-                                                $allow2 = $allow1 / 2;
-                                                $allow3 = $allow3 + $allow2;
-                                                $nethrs = 1;
-                                                break;
-                                            default:
-                                                $allow2 = ($allow1 / 8) * $nethrs;
-                                                $allow3 = $allow3 + $allow2;
-                                                break;
-                                        }
+                                    $allow1 = 0;
+                                    $allow2 = 0;
+                                    $qtyAllow = 0;
+                                    foreach ($result_allowancesetup as $key => $aval) {
+                                        $allow1 = $aval->allowance;
 
-                                        if ($allow2 != 0) {
-                                            $allowid = $this->coreFunctions->datareader("select line as value from paccount where code='PT31'");
-                                            if ($allowid != '') {
-                                                $this->addProccessAccount($emp->empid, $batchid, 'PT31', $batchdate, $allow2, 0, 0, $allowid, $nethrs);
+                                        if ($allow1 != 0) {
+                                            $qtyAllow = $qtyworking;
+                                            switch ($emp->paymode) {
+                                                case 'M':
+                                                    $allow2 = $allow1;
+                                                    $allow3 = $allow3 + $allow2;
+                                                    $nethrs = 1;
+                                                    break;
+                                                case 'S':
+                                                    $allow2 = $allow1 / 2;
+                                                    $allow3 = $allow3 + $allow2;
+                                                    $nethrs = 1;
+                                                    break;
+                                                default:
+                                                    $allow2 = ($allow1 / 8) * $nethrs;
+                                                    $allow3 = $allow3 + $allow2;
+                                                    break;
+                                            }
+
+                                            if ($allow2 != 0) {
+                                                $allowid = $this->coreFunctions->datareader("select line as value from paccount where code='PT31'");
+                                                if ($allowid != '') {
+                                                    $this->addProccessAccount($emp->empid, $batchid, 'PT31', $batchdate, $allow2, 0, 0, $allowid, $nethrs);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    //COLA
-                    if ($cola != 0) {
-                        if (($qtyworking - $qtyabsent) > 0) {
-                            if ($salary != 0) {
+                        //COLA
+                        if ($cola != 0) {
+                            if (($qtyworking - $qtyabsent) > 0) {
+                                if ($salary != 0) {
 
-                                if ($rate[0]->type == 'M') {
-                                    $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
-                                } else {
-                                    $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
+                                    if ($rate[0]->type == 'M') {
+                                        $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
+                                    } else {
+                                        $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
+                                    }
+
+                                    $this->addProccessAccount($emp->empid, $batchid, 'COLA', $batchdate, $cola, 0);
                                 }
-
-                                $this->addProccessAccount($emp->empid, $batchid, 'COLA', $batchdate, $cola, 0);
                             }
                         }
                     }
+
 
                     $pieceAmt = $this->getPieceAmt($emp->empid, $startdate, $enddate, $batchid);
                     if ($pieceAmt != 0) {
                         $this->addProccessAccount($emp->empid, $batchid, 'PIECE', $batchdate, $pieceAmt, 0);
                     }
 
-                    if ($params['companyid'] == 43) { //mighty
-                        $tripIncentive = $this->getTripIncentive($emp->empid, $startdate, $enddate, $batchid);
-                        if ($tripIncentive != 0) {
-                            $this->addProccessAccount($emp->empid, $batchid, 'INCENTIVE1', $batchdate, $tripIncentive, 0, 90);
-                        }
-
-                        $operatorIncentive = $this->getOperatorIncentive($emp->empid, $startdate, $enddate, $batchid);
-                        if ($operatorIncentive != 0) {
-                            $this->addProccessAccount($emp->empid, $batchid, 'INCENTIVE2', $batchdate, $operatorIncentive, 0, 90);
-                        }
-                    }
-
-
                     // COMPUTATION OF SSS,PHIC,HDMF,WHT AND TOTAL PAY
                     if (($qtyworking + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) <= 0) {
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
-
-                        if ($params['companyid'] == 43) { //mighty
-                            $this->resetTripIncentive($emp->empid, $batchid);
-                            $this->resetOperatorIncentive($emp->empid, $batchid);
-                        }
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtyworking + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -4332,11 +4325,6 @@ class payrollcommon
                     if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) <= 0) {
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
-
-                        if ($params['companyid'] == 43) { //mighty
-                            $this->resetTripIncentive($emp->empid, $batchid);
-                            $this->resetOperatorIncentive($emp->empid, $batchid);
-                        }
 
                         $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
@@ -4353,11 +4341,6 @@ class payrollcommon
                     if ($salary + $pieceAmt == 0) {
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
-
-                        if ($params['companyid'] == 43) { //mighty
-                            $this->resetTripIncentive($emp->empid, $batchid);
-                            $this->resetOperatorIncentive($emp->empid, $batchid);
-                        }
 
                         $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
@@ -4386,6 +4369,8 @@ class payrollcommon
                         }
 
                         $grossPay[2] = $grossPay[1];
+
+                        if ($blnNoGovEDAdv) goto SkipGovContriHere;
 
                         if ($blndeduction) {
 
@@ -4576,8 +4561,12 @@ class payrollcommon
 
                     } //end of is13th
 
-                    $earning = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], false);
-                    $earningadv = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], true);
+                    SkipGovContriHere:
+                    if (!$blnNoGovEDAdv) {
+                        $earning = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], false);
+                        $earningadv = $this->getEarningDeduction($emp->empid, $batchcode, $batchid, $enddate, $batchdate, $params['user'], true);
+                    }
+
                     $leavetransamt = $this->getLeaveTrans($emp->empid, $startdate, $enddate, $dayRate, $batchid, $batchdate);
 
                     if ($dcManualOtherEarn != 0) {

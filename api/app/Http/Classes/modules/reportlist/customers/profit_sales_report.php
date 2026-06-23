@@ -533,12 +533,10 @@ class profit_sales_report
       $str .= $this->reporter->endtable();
 
 
-      $str .= $this->reporter->printline();
-
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Date', '150', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Document No.', '150', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
+      $str .= $this->reporter->col('Date', '130', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
+      $str .= $this->reporter->col('Document No.', '170', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Item Description', '200', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Sales', '125', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Cost', '125', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
@@ -604,8 +602,8 @@ class profit_sales_report
 
           if($client != $data->clientname && $client != ''){
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-            $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+            $str .= $this->reporter->col('', '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+            $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
             $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
             $str .= $this->reporter->col(number_format($totalsales, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
             $str .= $this->reporter->col(number_format($totalcost, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
@@ -627,8 +625,8 @@ class profit_sales_report
             $totalmargin = 0;
           }
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('<u>'.$data->clientname.'</u>', '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-          $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+          $str .= $this->reporter->col('<u>'.$data->clientname.'</u>', '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+          $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
@@ -639,8 +637,8 @@ class profit_sales_report
         }
         $str .= $this->reporter->addline();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->dateid, '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->docno, '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+        $str .= $this->reporter->col($data->dateid, '130', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+        $str .= $this->reporter->col($data->docno, '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col($data->itemname, '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col(number_format($data->sales, 2), '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
         $str .= $this->reporter->col(number_format($data->cost, 2), '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
@@ -664,8 +662,8 @@ class profit_sales_report
       }
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-      $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+      $str .= $this->reporter->col('', '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+      $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($totalsales, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($totalcost, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
@@ -769,12 +767,10 @@ class profit_sales_report
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $str .= $this->reporter->printline();
-
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Date', '150', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Document No.', '150', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
+      $str .= $this->reporter->col('Date', '130', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
+      $str .= $this->reporter->col('Document No.', '170', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Item Description', '200', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Sales', '125', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Cost', '125', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
@@ -840,8 +836,8 @@ class profit_sales_report
         if($agent == '' || $agent != $data->agentname){
         
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col($data->agentname, '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-          $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+          $str .= $this->reporter->col($data->agentname, '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+          $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
@@ -856,8 +852,8 @@ class profit_sales_report
           //appears at end of agent-client
           if($client != $data->clientname && $client != ''){
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-            $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+            $str .= $this->reporter->col('', '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+            $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
             $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
             $str .= $this->reporter->col(number_format($totalsales, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
             $str .= $this->reporter->col(number_format($totalcost, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
@@ -879,8 +875,8 @@ class profit_sales_report
             $totalmargin = 0;
           }
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-          $str .= $this->reporter->col($data->clientname, '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+          $str .= $this->reporter->col('', '130', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+          $str .= $this->reporter->col($data->clientname, '170', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
           $str .= $this->reporter->col('', '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
@@ -891,8 +887,8 @@ class profit_sales_report
         }
         $str .= $this->reporter->addline();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->dateid, '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->docno, '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+        $str .= $this->reporter->col($data->dateid, '130', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+        $str .= $this->reporter->col($data->docno, '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col($data->itemname, '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col(number_format($data->sales, 2), '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
         $str .= $this->reporter->col(number_format($data->cost, 2), '125', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
@@ -917,8 +913,8 @@ class profit_sales_report
       }
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
-      $str .= $this->reporter->col('', '150', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
+      $str .= $this->reporter->col('', '130', null, false, '1px dotted ', '', 'L', $font, '12', 'B', '', '', '');
+      $str .= $this->reporter->col('', '170', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col('', '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($totalsales, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($totalcost, 2), '125', null, false, '1px dotted ', 'T', 'R', $font, '12', '', '', '', '');
@@ -940,8 +936,8 @@ class profit_sales_report
       $totalmargin = 0;
       
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '150', null, false, '1.5px solid', 'T', 'L', $font, '12', 'B', '', '', '');
-      $str .= $this->reporter->col('', '150', null, false, '1.5px solid', 'T', 'L', $font, '12', '', '', '', '');
+      $str .= $this->reporter->col('', '130', null, false, '1.5px solid', 'T', 'L', $font, '12', 'B', '', '', '');
+      $str .= $this->reporter->col('', '170', null, false, '1.5px solid', 'T', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col('', '200', null, false, '1.5px solid', 'T', 'L', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($overallsales, 2), '125', null, false, '1.5px solid', 'T', 'R', $font, '12', '', '', '', '');
       $str .= $this->reporter->col(number_format($overallcost, 2), '125', null, false, '1.5px solid', 'T', 'R', $font, '12', '', '', '', '');
@@ -965,7 +961,8 @@ class profit_sales_report
       $border = '1px solid';
       $border_line = '';
       $alignment = '';
-      $font = $this->companysetup->getrptfont($config['params']);
+      // $font = $this->companysetup->getrptfont($config['params']);
+      $font = 8;
       $font_size = '10';
       $padding = '';
       $margin = '';
@@ -1005,40 +1002,38 @@ class profit_sales_report
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('SALES REPORT W/ MARK-UP', null, null, false, $border, '', 'C', $font, '18', 'B', '', '') . '<br />';
+      $str .= $this->reporter->col('SALES REPORT W/ MARK-UP', null, null, false, $border, '', 'C', $font+2, '18', 'B', '', '') . '<br />';
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
-      $str .= $this->reporter->col('Date Period : ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, '10', '', '', '');
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font+2, '10', '', '');
+      $str .= $this->reporter->col('Date Period : ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font+2, '10', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       
       $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
-      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, '10', '', '', '');
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font+2, '10', '', '');
+      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font+2, '10', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
       
-
-      $str .= $this->reporter->printline();
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Date', '100', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Document No.', '120', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Agent', '100', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Item Description', '250', '', '', $border, 'TB', 'L', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('QTY', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('UOM', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Price', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Disc', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Total Amount', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Total Cost', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Mark-up%', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('Total Mark-up Amount', '75', '', '', $border, 'TB', 'C', $font, '12', 'B', '', '');
+      $str .= $this->reporter->col('Date', '80', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Document No.', '170', '', '', $border, 'TB', 'L', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Agent', '80', '', '', $border, 'TB', 'L', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Item Description', '190', '', '', $border, 'TB', 'L', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('QTY', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('UOM', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Price', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Disc', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Total Amount', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Total Cost', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Mark-up%', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
+      $str .= $this->reporter->col('Total Mark-up Amount', '60', '', '', $border, 'TB', 'C', $font, '8', 'B', '', '');
       $str .= $this->reporter->endrow();
 
       return $str;
@@ -1049,7 +1044,8 @@ class profit_sales_report
       $border = '1px solid';
       $border_line = '';
       $alignment = '';
-      $font = $this->companysetup->getrptfont($config['params']);
+      // $font = $this->companysetup->getrptfont($config['params']);
+      $font = 7;
       $font_size = '10';
       $padding = '';
       $margin = '';
@@ -1087,18 +1083,18 @@ class profit_sales_report
 
         $str .= $this->reporter->addline();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->dateid, '100', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->docno, '120', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->agentname, '100', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->itemname, '200', null, false, '1px dotted ', '', 'L', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->qty, 2), '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->uom, '75', null, false, '1px dotted ', '', 'C', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->amt, 2), '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col($data->disc, '75', null, false, '1px dotted ', '', 'C', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->ext, 2), '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->cost, 2), '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->markupper, 2) . ' %', '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->markup, 2), '75', null, false, '1px dotted ', '', 'R', $font, '12', '', '', '', '');
+        $str .= $this->reporter->col($data->dateid, '80', null, false, '1px dotted ', '', 'L', $font, '', '', '', '', '');
+        $str .= $this->reporter->col($data->docno, '170', null, false, '1px dotted ', '', 'L', $font, '', '', '', '', '');
+        $str .= $this->reporter->col($data->agentname, '80', null, false, '1px dotted ', '', 'L', $font, '', '', '', '', '');
+        $str .= $this->reporter->col($data->itemname, '190', null, false, '1px dotted ', '', 'L', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->qty, 2), '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
+        $str .= $this->reporter->col($data->uom, '60', null, false, '1px dotted ', '', 'C', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->amt, 2), '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
+        $str .= $this->reporter->col($data->disc, '60', null, false, '1px dotted ', '', 'C', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->ext, 2), '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->cost, 2), '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->markupper, 2) . ' %', '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->markup, 2), '60', null, false, '1px dotted ', '', 'R', $font, '', '', '', '', '');
         $str .= $this->reporter->endrow();
 
         if ($this->reporter->linecounter == $page) {

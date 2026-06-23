@@ -902,7 +902,7 @@ class mj
     }
 
     $data['modeofsales'] = $head['line'];
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
 

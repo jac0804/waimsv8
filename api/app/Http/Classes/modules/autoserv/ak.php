@@ -165,7 +165,7 @@ class ak
     public function createtabbutton($config)
     {
 
-        $tbuttons = ['addjob'];
+        $tbuttons = ['addjob']; //deleteallitem
         $obj = $this->tabClass->createtabbutton($tbuttons);
         return $obj;
     }
@@ -358,7 +358,7 @@ class ak
                 break;
             // case 'deleteallitem':
             //     return $this->deleteallitem($config);
-            //     break
+            //     break;
             case 'getautojob':
                 return $this->getautojob($config);
                 break;
@@ -404,6 +404,16 @@ class ak
         $data = $this->openstockline($config);
         return ['row' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
     }
+    // public function deleteallitem($config)
+    // {
+    //     $trno = $config['params']['trno'];
+    //     $this->coreFunctions->execqry('delete from ptjobs where trno=?', 'delete', [$trno]);
+    //     $this->coreFunctions->execqry('delete from pttask where trno=?', 'delete', [$trno]);
+    //     $this->coreFunctions->execqry('delete from ptstock where trno=?', 'delete', [$trno]);
+
+    //     $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL: Jobs, Task/labor and Parts/Item');
+    //     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
+    // }
     public function additem($action, $config)
     {
 
@@ -467,11 +477,15 @@ class ak
     {
         $config['params']['trno'] = $config['params']['row']['trno'];
         $config['params']['line'] = $config['params']['row']['line'];
-        $data = $this->openstockline($config);
         $trno = $config['params']['trno'];
         $line = $config['params']['line'];
+        $query = "select * from pttask where trno = ? and jobline = ? "; #check stock before delete
+        $pttask = $this->coreFunctions->opentable($query, [$trno, $line]);
+        if (!empty($pttask)) {
+            return ['status' => false, 'msg' => "Cannot delete this Jobs; already have Task/Labor."];
+        }
         $this->coreFunctions->execqry('delete from ptjobs where trno=? and line=?', 'delete', [$trno, $line]);
-
+        $data = $this->openstockline($config);
         $data = json_decode(json_encode($data), true);
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Job Description:' . $data[0]['description']);
         return ['status' => true, 'msg' => 'Item was successfully deleted.'];

@@ -32,7 +32,7 @@ class pendinginitialobapplications
     public $style = 'width:90%;max-width:90%;';
     public $issearchshow = true;
     public $showclosebtn = true;
-    public $obfields = ['initialstatus', 'initialappdate', 'initialapprovedby', 'initial_remarks', 'initialstatus2', 'initialappdate2', 'initialapprovedby2', 'initial_remarks2'];
+    public $obfields = ['status', 'status2', 'initialstatus', 'initialappdate', 'initialapprovedby', 'initial_remarks', 'initialstatus2', 'initialappdate2', 'initialapprovedby2', 'initial_remarks2'];
 
     public function __construct()
     {
@@ -321,6 +321,8 @@ class pendinginitialobapplications
                             ];
                             if ($obstatus == 'D') {
                                 $data['initialstatus'] = 'D';
+                                $data['status2'] = 'D';
+                                $data['status'] = 'D';
                                 $lastapp = true;
                             }
                             break;
@@ -341,6 +343,10 @@ class pendinginitialobapplications
                             'initialapprovedby' => $config['params']['user'],
                             'initial_remarks' => $remarkslast
                         ];
+                        if ($obstatus == 'D') {
+                            $data['status2'] = 'D';
+                            $data['status'] = 'D';
+                        }
                         break;
                     }
                 }

@@ -406,7 +406,7 @@ class extraction
           foreach ($whouse as $key => $v) {
             $returnupdatejs = $this->updatesjs($config, $dateid, $whouse[$key]->client);
             if (!$returnupdatejs['status']) {
-              return ['status' => false, 'msg' => $returnupdatejs['msg']];
+              return ['status' => false, 'msg' => $returnupdatejs['msg'] . '(recompute sjs)'];
             }
           }
           $this->coreFunctions->LogConsole($counter);
@@ -1630,55 +1630,86 @@ class extraction
                 $filteramt = '';
                 $filterStation = '';
 
-                if ($dpStation == '') {
-                  //return layaway
-                  if ($dpAmt > 0) {
-                    $filteramt = ' and cr.bal<>0 and ar.cr=' . $dpAmt;
+                if ($data[$k]->deposit > 0) {
+                  if ($dpStation == '') {
+                    //return layaway
+                    if ($dpAmt > 0) {
+                      $filteramt = ' and cr.bal<>0 and ar.cr=' . $dpAmt;
+                    } else {
+                      $filteramt = ' and ar.cr=' . abs($dpAmt);
+                    }
                   } else {
-                    $filteramt = ' and ar.cr=' . abs($dpAmt);
+                    $filterStation = " and num.station='" . $dpStation . "'";
                   }
-                } else {
-                  $filterStation = " and num.station='" . $dpStation . "'";
-                }
 
-                $sql = "select ar.trno, ar.line, ar.dateid, ar.docno, d.dpref, ar.acnoid, ar.clientid, ar.db, ar.cr, ar.bal, client.client, coa.acno, num.station
+                  $sql = "select ar.trno, ar.line, ar.dateid, ar.docno, d.dpref, ar.acnoid, ar.clientid, ar.db, ar.cr, ar.bal, client.client, coa.acno, num.station
                         FROM arledger AS ar LEFT JOIN coa ON coa.acnoid=ar.acnoid LEFT JOIN gldetail AS d ON d.trno=ar.trno AND d.line=ar.line LEFT JOIN client ON client.clientid=ar.clientid LEFT JOIN cntnum AS num ON num.trno=ar.trno
                         WHERE LEFT(ar.docno,3)='CRS' AND coa.alias IN ('ARL1','ARL2') and d.dpref='" . $dpRef . "' and ar.cr>0 " . $filteramt . $filterStation;
 
-                $dataLAY = $this->coreFunctions->opentable($sql);
+                  $dataLAY = $this->coreFunctions->opentable($sql);
 
-                if (empty($dataLAY)) {
-                  return ['status' => false, 'msg' => 'Please extract pending Layaway transactions.'];
-                }
-
-                foreach ($dataLAY as $keyL => $valueL) {
-                  if ($data[$k]->deposit != $dpAmt) {
-                    $entry = [
-                      'acnoid' => $valueL->acnoid,
-                      'client' => $valueL->client,
-                      'db' => $data[$k]->deposit > 0 ? abs($dpAmt) : 0,
-                      'cr' => $data[$k]->deposit > 0 ? 0 : abs($dpAmt),
-                      'postdate' => $valueL->dateid,
-                      'rem' => 'LAYAWAY~' . $dpRef,
-                      'refx' => $valueL->trno,
-                      'linex' => $valueL->line,
-                      'ref' => $valueL->docno
-                    ];
-                  } else {
-                    $entry = [
-                      'acnoid' => $valueL->acnoid,
-                      'client' => $valueL->client,
-                      'db' => $data[$k]->deposit > 0 ? abs($data[$k]->deposit) : 0,
-                      'cr' => $data[$k]->deposit > 0 ? 0 : abs($data[$k]->deposit),
-                      'postdate' => $valueL->dateid,
-                      'rem' => 'LAYAWAY~' . $dpRef,
-                      'refx' => $valueL->trno,
-                      'linex' => $valueL->line,
-                      'ref' => $valueL->docno
-                    ];
+                  if (empty($dataLAY)) {
+                    return ['status' => false, 'msg' => 'Please extract pending Layaway transactions.'];
                   }
 
-                  $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+                  foreach ($dataLAY as $keyL => $valueL) {
+                    if ($data[$k]->deposit != $dpAmt) {
+                      $entry = [
+                        'acnoid' => $valueL->acnoid,
+                        'client' => $valueL->client,
+                        'db' => $data[$k]->deposit > 0 ? abs($dpAmt) : 0,
+                        'cr' => $data[$k]->deposit > 0 ? 0 : abs($dpAmt),
+                        'postdate' => $valueL->dateid,
+                        'rem' => 'LAYAWAY~' . $dpRef,
+                        'refx' => $valueL->trno,
+                        'linex' => $valueL->line,
+                        'ref' => $valueL->docno
+                      ];
+                    } else {
+                      $entry = [
+                        'acnoid' => $valueL->acnoid,
+                        'client' => $valueL->client,
+                        'db' => $data[$k]->deposit > 0 ? abs($data[$k]->deposit) : 0,
+                        'cr' => $data[$k]->deposit > 0 ? 0 : abs($data[$k]->deposit),
+                        'postdate' => $valueL->dateid,
+                        'rem' => 'LAYAWAY~' . $dpRef,
+                        'refx' => $valueL->trno,
+                        'linex' => $valueL->line,
+                        'ref' => $valueL->docno
+                      ];
+                    }
+
+                    $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+                  }
+                } else { //return/void
+                  if ($dpStation == '') {
+                  } else {
+                    $filterStation = " and num.station='" . $dpStation . "'";
+                  }
+
+                  $sql = "select d.trno, d.line, d.postdate as dateid, num.docno, d.dpref, d.acnoid, d.clientid, d.db, d.cr, 0 as bal, client.client, coa.acno, num.station
+                    FROM gldetail AS d LEFT JOIN client ON client.clientid=d.clientid LEFT JOIN cntnum AS num ON num.trno=d.trno LEFT JOIN coa ON coa.acnoid=d.acnoid
+                    WHERE LEFT(num.docno,3)='CRS' AND left(coa.alias,2) IN ('CA','CR', 'CB') and d.dpref='" . $dpRef . "' and d.db>0 " . $filteramt . $filterStation;
+
+                  $dataLAY = $this->coreFunctions->opentable($sql);
+
+                  if (empty($dataLAY)) {
+                    return ['status' => false, 'msg' => 'Please extract pending Layaway transactions.'];
+                  }
+
+                  foreach ($dataLAY as $keyL => $valueL) {
+                    $entry = [
+                      'acnoid' => $valueL->acnoid,
+                      'client' => $valueL->client,
+                      'db' => 0,
+                      'cr' => $valueL->db,
+                      'postdate' => $valueL->dateid,
+                      'rem' => 'LAYAWAY~' . $dpRef,
+                      'ref' => $valueL->docno
+                    ];
+
+                    $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+                  }
                 }
               }
             }
@@ -2019,7 +2050,9 @@ class extraction
                 if (!$this->sqlquery->setupdatebal($this->acctg[$key3]['refx'], $this->acctg[$key3]['linex'], $acno, $config)) {
                   $this->coreFunctions->sbcupdate('ladetail', ['db' => 0, 'cr' => 0, 'fdb' => 0, 'fcr' => 0], ['trno' => $key['trno'], 'line' => $this->acctg[$key3]['line']]);
                   $this->sqlquery->setupdatebal($this->acctg[$key3]['refx'], $this->acctg[$key3]['linex'], $acno, $config);
-                  return ['status' => false, 'msg' => 'Extraction Failed-Error on Applying Payment' . isset($this->acctg[$key3]['ref']) ? $this->acctg[$key3]['ref'] : ''];
+
+                  $referenceno = isset($this->acctg[$key3]['ref']) ? $this->acctg[$key3]['ref'] : '';
+                  return ['status' => false, 'msg' => 'Extraction Failed-Error on Applying Payment - ' . $referenceno];
                 }
               }
             } else {

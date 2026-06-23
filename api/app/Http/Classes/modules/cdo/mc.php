@@ -38,8 +38,25 @@ class mc
     public $tablelogs_del = 'del_transnum_log';
     public $htablelogs = 'htransnum_log';
     private $fields = [
-        'trno', 'docno', 'dateid', 'clientid', 'clientname', 'yourref', 'ourref', 'amount',
-        'rem', 'address', 'checkinfo', 'modeofpayment', 'checkdate', 'trnxtype', 'rem2', 'sicsino', 'drno', 'chsino', 'swsno'
+        'trno',
+        'docno',
+        'dateid',
+        'clientid',
+        'clientname',
+        'yourref',
+        'ourref',
+        'amount',
+        'rem',
+        'address',
+        'checkinfo',
+        'modeofpayment',
+        'checkdate',
+        'trnxtype',
+        'rem2',
+        'sicsino',
+        'drno',
+        'chsino',
+        'swsno'
     ];
     private $except = ['trno', 'dateid'];
     public $showfilteroption = true;
@@ -178,7 +195,13 @@ class mc
             $this->gridname => [
                 'gridcolumns' => [
                     'action',
-                    'dateid', 'ref', 'yourref', 'ourref', 'amount','vat', 'penalty'
+                    'dateid',
+                    'ref',
+                    'yourref',
+                    'ourref',
+                    'amount',
+                    'vat',
+                    'penalty'
                 ],
                 'headgridbtns' => ['view_items']
             ]
@@ -203,7 +226,7 @@ class mc
         $obj[0][$this->gridname]['columns'][$si]['label'] = 'DR#';
 
         $obj[0][$this->gridname]['columns'][$vat]['style'] = 'text-align:right;width:80px;whiteSpace: normal;min-width:80px;';
-        
+
 
         $obj[0][$this->gridname]['descriptionrow'] = [];
         $obj[0][$this->gridname]['label'] = ['ACCOUNTING'];
@@ -911,6 +934,11 @@ class mc
                 $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,postedby='' where trno=?", 'update', [$trno]);
                 $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
                 $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
+
+                if ($this->companysetup->getmirrortrans($config['params'])) {
+                    $this->othersClass->mirrorunpost($trno, $config['params']['doc'], $docno);
+                }
+
                 $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
                 return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
             } else {

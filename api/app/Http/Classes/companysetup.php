@@ -133,6 +133,7 @@ class companysetup
   public $isenterqty = false;
   public $ismultiloc = false;
   public $isautoservice = false;
+  public $ismirrortrans = false;
 
 
   public function __construct()
@@ -233,6 +234,7 @@ class companysetup
     $this->isenterqty = false;
     $this->isshortcutpr = false;
     $this->isautoservice = false;
+    $this->ismirrortrans = false;
 
     switch ($params['companyid']) {
       case 69: //CEMPHIL
@@ -667,6 +669,7 @@ class companysetup
         $this->isglc = true;
         $this->iseditsortline = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\technolab\\";
+        $this->isfirstpageheader = true;
         break;
       case 51: //ULITC PORTAL -single approver "loginlogostyle":"width:240px;","mainlogostyle":"width:230px;margin:auto;","mainlogodivmargin":"margin-top:150px;","mainlogodivheight":"height:120px"
         $this->clientlength = 0;
@@ -908,6 +911,7 @@ class companysetup
         $this->isglc = true;
         $this->iseditsortline = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\labsol\\";
+        $this->isfirstpageheader = true;
         break;
       case 40: //cdocycles aims
         $this->clientlength = 15;
@@ -946,6 +950,7 @@ class companysetup
         $this->reportpath = "\Http\Classes\modules\modulereport\cdo\\";
         $this->showserialrem = false;
         $this->isshareinv = true;
+        // $this->ismirrortrans = true;
         break;
       case 39: //CBBSI
         $this->clientlength = 0;
@@ -1769,7 +1774,7 @@ class companysetup
         $this->tax = 12;
         $this->serial = false;
         $this->companyname = 'ABC Corp.';
-        $this->systemtype = 'AUTOSERV';
+        $this->systemtype = 'AIMS';
         $this->isexpiry = false;
         $this->checkbelowcost = true;
         $this->isproject = false;
@@ -2111,6 +2116,9 @@ class companysetup
                 $modulelist = ['masterfile', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
                 if ($this->istaskmonitoring) {
                   array_push($modulelist, 'taskmonitoring');
+                }
+                if ($this->isautoservice) {
+                  $modulelist = ['masterfile', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster', 'autoinquiry', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
                 }
                 break; // end switch
             }
@@ -3018,5 +3026,11 @@ class companysetup
   {
     $this->companylist($params);
     return $this->isautoservice;
+  }
+
+  public function getmirrortrans($params)
+  {
+    $this->companylist($params);
+    return $this->ismirrortrans;
   }
 }

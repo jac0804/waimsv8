@@ -461,6 +461,8 @@ class linkemail
                                     ];
                                     if ($status == 'D') {
                                         $lastapp = true;
+                                        $appdata['status'] = 'D';
+                                        $appdata['status2'] = 'D';
                                     }
                                     break;
                                 }
@@ -479,6 +481,10 @@ class linkemail
                                     'initialappdate' => $this->othersClass->getCurrentTimeStamp(),
                                     'initialapprovedby' => $approver[0]->appcode
                                 ];
+                                if ($status == 'D') {
+                                    $appdata['status'] = 'D';
+                                    $appdata['status2'] = 'D';
+                                }
                                 break;
                             }
                         }

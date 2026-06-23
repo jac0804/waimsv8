@@ -272,7 +272,7 @@ class cv
       default:
         $query = "select ifnull(DATE_FORMAT(cb.checkdate,'%Y-%m-%d'),DATE_FORMAT(head.dateid,'%Y-%m-%d')) as kdate, ifnull(head2.yourref,'') as dyourref,detail.rem as drem,
         DATE_FORMAT(left(detail.postdate,10),'%b %d %Y') as pdate,detail.ref,head.trno, head.docno, 
-        date(head.dateid) as dateid, 
+       DATE_FORMAT(left(head.dateid,10),'%m/%d/%Y') as dateid, 
         date(cntnum.postdate) as postdate,client.client, head.clientname, head.address,
         client.tin, '' as busstyle, head.terms, head.yourref, head.ourref, head.rem, coa.acno,
         coa.acnoname, detail.rem as drem,round(detail.db,2) as db,round(detail.cr,2) as cr, 
@@ -286,7 +286,7 @@ class cv
         union all
         select ifnull(DATE_FORMAT(cb.checkdate,'%Y-%m-%d'),DATE_FORMAT(head.dateid,'%Y-%m-%d')) as kdate, ifnull(head2.yourref,'') as dyourref,detail.rem as drem,
         DATE_FORMAT(left(detail.postdate,10),'%b %d %Y') as pdate,detail.ref,head.trno, head.docno, 
-        date(head.dateid) as dateid, 
+        DATE_FORMAT(left(head.dateid,10),'%m/%d/%Y') as dateid, 
         date(cntnum.postdate) as postdate,client.client, head.clientname, head.address,
         client.tin, '' as busstyle, head.terms, head.yourref, head.ourref, head.rem, coa.acno,
         coa.acnoname, detail.rem as drem,round(detail.db,2) as db,round(detail.cr,2) as cr, 
@@ -345,51 +345,59 @@ class cv
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(300, 5, $this->modulename, '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(300, 5, "Docno #: ", '', 'R', false, 0, '',  '');
+    PDF::MultiCell(150, 5, "Docno #: ", '', 'R', false, 0, '',  '');
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 5, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'R', false);
+    PDF::MultiCell(250, 5, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'C', false);
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(300, 5, '', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(300, 5, "", '', 'R', false, 0, '',  '');
+    PDF::MultiCell(150, 5, "", '', 'R', false, 0, '',  '');
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 5, '', 'T', 'R', false);
+    PDF::MultiCell(250, 5, '', 'T', 'R', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 5, 'PAYEE : ', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(425, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
+    PDF::MultiCell(295, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
+    
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(85, 5, 'DATE:', '', 'R', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 5, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'R', false);
+    PDF::MultiCell(250, 5, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'C', false);
 
+    // underline ng payee
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 5, '', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '',  '');
+    PDF::MultiCell(295, 5, '', 'T', 'L', false, 0, '',  '');
+    // underline ng date
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(85, 5, '', '', 'R', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 5, '', 'T', 'R', false);
+    PDF::MultiCell(250, 5, '', 'T', 'R', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 5, 'ADDRESS : ', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(425, 5, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '');
+    PDF::MultiCell(295, 5, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '');
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(85, 5, 'REFERENCE # :', '', 'R', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 5, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'R', false);
+    PDF::MultiCell(250, 5, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'C', false);
 
+    // underline ng addr
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 5, '', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '',  '');
+    PDF::MultiCell(295, 5, '', 'T', 'L', false, 0, '',  '');
+
+    // underline ng ref
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(85, 5, '', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 5, '', 'T', 'R', false);
+    PDF::MultiCell(250, 5, '', 'T', 'R', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 5, 'NOTES : ', '', 'L', false, 0);
@@ -400,8 +408,10 @@ class cv
     PDF::MultiCell(70, 5, '', '', 'L', false, 0);
     PDF::MultiCell(630, 5, '', 'T', 'L', false);
 
+    PDF::SetLineWidth(0.1);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
+    PDF::SetLineWidth(1.0);
 
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(70, 0, 'ACCT #', '', 'L', false, 0);
@@ -413,6 +423,7 @@ class cv
     PDF::MultiCell(10, 0, '', '', 'C', false, 0);
     PDF::MultiCell(110, 0, 'REMARKS', '', 'C', false);
 
+    PDF::SetLineWidth(1.0);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
   }
@@ -433,9 +444,9 @@ class cv
     $fontbold = "";
     $border = "1px solid ";
     $fontsize = "11";
-    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    if (Storage::disk('sbcpath')->exists('/fonts/tahoma.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahoma.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahomabd.ttf');
     }
     $this->PDF_default_header($params, $data);
 
@@ -454,11 +465,12 @@ class cv
         $acnonamedescs = $data[$i]['acnoname'];
         $checkno = $data[$i]['checkno'];
         $pdate = $data[$i]['pdate'];
+        $pdate = date('m-d-Y', strtotime($pdate));
         $debit = number_format($data[$i]['db'], $decimalcurr);
-        $debit = $debit < 0 ? '-' : $debit;
+        $debit = $debit <= 0 ? '-' : $debit;
 
         $credit = number_format($data[$i]['cr'], $decimalcurr);
-        $credit = $credit < 0 ? '-' : $credit;
+        $credit = $credit <= 0 ? '-' : $credit;
         $drem = $data[$i]['drem'];
 
         $arr_acno = $this->reporter->fixcolumn([$acno], '15', 0);
@@ -497,17 +509,23 @@ class cv
       }
     }
 
-
+    PDF::SetLineWidth(1.0);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(705, 0, '', 'B');
+    PDF::SetLineWidth(0.1);
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(705, 0, '', '');
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(425, 5, 'GRAND TOTAL : ', '', 'R', false, 0);
-    PDF::MultiCell(85, 5, number_format($totaldb, $decimal), '', 'R', false, 0);
-    PDF::MultiCell(85, 5, number_format($totalcr, $decimal), '', 'R', false);
+    PDF::MultiCell(85, 5, ($totaldb <= 0 ? '-' : number_format($totaldb, $decimal)), '', 'R', false, 0);
+    PDF::MultiCell(85, 5, ($totalcr <= 0 ? '-' : number_format($totalcr, $decimal)), '', 'R', false);
+
+    PDF::SetLineWidth(0.1);
+    PDF::SetFont($font, '', 5);
+    PDF::MultiCell(705, 0, '', 'B');
+    PDF::SetLineWidth(1.0);
 
     PDF::MultiCell(0, 0, "\n\n\n");
     PDF::SetFont($font, '', 12);
@@ -520,9 +538,11 @@ class cv
 
     PDF::MultiCell(0, 0, "\n");
 
-    PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
-    PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
-    PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
+    PDF::MultiCell(200, 0, $params['params']['dataparams']['prepared'], 'B', 'L', false, 0);
+    PDF::MultiCell(53, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(200, 0, $params['params']['dataparams']['approved'], 'B', 'L', false, 0);
+    PDF::MultiCell(53, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(200, 0, $params['params']['dataparams']['received'], 'B', 'L');
 
 
     return PDF::Output($this->modulename . '.pdf', 'S');

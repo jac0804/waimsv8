@@ -1944,6 +1944,11 @@ class so
         if ($companyid != 39) { //not cbbsi
           $this->coreFunctions->execqry("update headinfotrans set approvalreason ='' where trno=?", 'update', [$trno]);
         }
+
+        if ($this->companysetup->getmirrortrans($config['params'])) {
+          $this->othersClass->mirrorunpost($trno, $config['params']['doc'], $docno);
+        }
+
         $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
       } else {
