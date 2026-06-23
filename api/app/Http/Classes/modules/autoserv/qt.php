@@ -24,12 +24,12 @@ use Exception;
 
 
 
-class ak
+class qt
 {
     private $btnClass;
     private $fieldClass;
     private $tabClass;
-    public $modulename = 'PACKAGE KITS';
+    public $modulename = 'QUOTATION'; //Quotation
     public $gridname = 'inventory';
     private $companysetup;
     private $coreFunctions;
@@ -80,20 +80,20 @@ class ak
     public function getAttrib()
     {
         $attrib = array(
-            'view' => 5845,
-            'edit' => 5846,
-            'new' => 5847,
-            'save' => 5848,
-            // 'change' => 67, remove change doc 5854
-            'delete' => 5849,
-            'print' => 5850,
-            'lock' => 5917,
-            'unlock' => 5918,
-            'post' => 5919,
-            'unpost' => 5920,
-            'additem' => 5851,
-            'edititem' => 5852,
-            'deleteitem' => 5853
+            'view' => 2133,
+            'edit' => 2134,
+            'new' => 2135,
+            'save' => 2136,
+            'delete' => 2138,
+            'print' => 2139,
+            'lock' => 2140,
+            'unlock' => 2141,
+            'changeamt' => 2142,
+            'post' => 2143,
+            'unpost' => 2144,
+            'additem' => 2145,
+            'edititem' => 2146,
+            'deleteitem' => 2147
         );
 
         return $attrib;

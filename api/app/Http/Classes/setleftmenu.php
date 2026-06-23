@@ -1336,7 +1336,7 @@ class setleftmenu
 
   public function autoservoperation($params)
   {
-    $autoservoperation = ['parentautoservoperation', 'aq', 'ak', 'aw', 'am'];
+    $autoservoperation = ['parentautoservoperation', 'qt', 'ak', 'aw', 'am'];
     return ['autoservoperation' => ['parent' => 48, 'modules' => $autoservoperation]];
   } //end function
   public function autoinquiry($config)

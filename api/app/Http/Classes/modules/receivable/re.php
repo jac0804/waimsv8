@@ -323,7 +323,7 @@ class re
             ],
         ];
 
-        $stockbuttons = ['save', 'delete'];
+        $stockbuttons = ['save', 'delete', 'replacementcheque'];
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
         $obj[0][$this->gridname]['columns'][$action]['style'] = 'width: 80px;whiteSpace: normal;min-width:80px;max-width:80px;';
@@ -1029,6 +1029,7 @@ class re
     public function deleteallitem($config)
     {
         $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
 
         $data = $this->coreFunctions->opentable('select coa.acnoid,t.refx,t.linex,t.line,t.rctrno,rcline 
         from ' . $this->stock . ' as t left join coa on coa.acnoid=t.acnoid 
@@ -1044,6 +1045,10 @@ class re
                 $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $data[$key]->rctrno, 'line' => $data[$key]->rcline]);
             }
         }
+        if ($companyid == 59) { //roosevelt
+            $this->coreFunctions->execqry("delete from chequedetail where trno=?", 'delete', [$trno]);
+            $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
+        }
         $this->logger->sbcwritelog($trno, $config, 'ACCTG', 'DELETED ALL ACCTG ENTRIES');
         return ['status' => true, 'msg' => 'Successfully deleted.', 'accounting' => []];
     }
@@ -1052,6 +1057,7 @@ class re
     {
         $trno = $config['params']['row']['trno'];
         $line = $config['params']['row']['line'];
+        $companyid = $config['params']['companyid'];
         $data = $this->openstockline($config);
         $trno = $config['params']['trno'];
         $line = $config['params']['line'];
@@ -1070,6 +1076,10 @@ class re
             }
             if ($data[0]->rctrno != 0) {
                 $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $data[0]->rctrno, 'line' => $data[0]->rcline]);
+            }
+            if ($companyid == 59) { //roosevelt
+                $this->coreFunctions->execqry("delete from chequedetail where trno=? and line=?", 'delete', [$trno, $line]);
+                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
             }
             $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Check #: ' . $data[0]->checkno);
         }

@@ -304,7 +304,7 @@ class entrybankterminal
       case 'syncallentry':
         $tableid = $config['params']['tableid'];
         $this->coreFunctions->execqry("update branchbank set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' where clientid=" . $tableid);
-        $this->coreFunctions->execqry("update bankcharges set dlock='" . $this->othersClass->getCurrentTimeStamp() . "' where clientid=" . $tableid);
+        $this->coreFunctions->execqry("update bankcharges set dlock='" . $this->othersClass->getCurrentTimeStamp() . "'");
         $returndata = $this->loaddata($config);
         return ['status' => true, 'msg' => 'Card type dlock updated.', 'data' => $returndata];
         break;

@@ -674,9 +674,11 @@ class payrollcommon
                 $qty2 = 0;
 
                 $params['qtymulti'] = 0;
-                $maxsss = $timecard[0]->maxsss;
 
                 if (!empty($timecard)) {
+
+                    $maxsss = $timecard[0]->maxsss;
+
                     foreach ($timecard as $key2 => $val2) {
                         switch ($val->alias) {
                             case 'WORKING':

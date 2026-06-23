@@ -4460,6 +4460,10 @@ class uploadingutility
         return 'subcat';
         break;
 
+      case 'subclassification':
+        return 'subclass';
+        break;
+
       case 'size':
       case 'bin':
         if ($companyid == 39 && strtolower($field) == 'bin') {

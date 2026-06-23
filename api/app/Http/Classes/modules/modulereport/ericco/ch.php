@@ -737,7 +737,7 @@ class ch
           // if ($rowCount == 0) {
           PDF::MultiCell(50, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
 
-          PDF::MultiCell(191, 10, $remm, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(201, 10, $remm, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
 
           PDF::MultiCell(70, 10, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           // } else {
@@ -1710,7 +1710,7 @@ class ch
     $this->nwilcon_header_PDF($params, $data);
 
     $rowCount = 0;
-    $pageLimit = 13; //14
+    $pageLimit = 14; //14
     $trno = $params['params']['dataid'];
     $totalext = $this->coreFunctions->datareader("
                select sum(ext) as value from
@@ -1741,12 +1741,12 @@ class ch
           // PDF::MultiCell(45, 10, ' ', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           // PDF::MultiCell(5, 10, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 9);
-          PDF::MultiCell(321, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(326, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', $fontsize);
 
 
           // PDF::MultiCell(50, 10, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(90, 10, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(85, 10, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(70, 10, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(90, 10, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(54, 10, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
@@ -1960,8 +1960,8 @@ class ch
     // $fontsize1 = 11;
 
     $add = isset($data[0]['address']) ? trim($data[0]['address']) : '';
-    $maxChars = 56;
-    $fontsize1 = 9.5;
+    $maxChars = 65; //56
+    $fontsize1 = 9; //9.5
 
     $lines = explode("\n", wordwrap($add, $maxChars, "\n", false));
 
@@ -2695,7 +2695,7 @@ class ch
     $this->nwilcon_header_PDF($params, $data);
 
     $rowCount = 0;
-    $pageLimit = 13; //14
+    $pageLimit = 14; //14
     $trno = $params['params']['dataid'];
     $totalext = $this->coreFunctions->datareader("
                select sum(ext) as value from
@@ -2712,11 +2712,11 @@ class ch
         $rem = $data[$i]['srem'];
         $itemname = $data[$i]['itemname'];
 
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '25', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '20', 0);
         $arr_rem = $this->reporter->fixcolumn([$rem], '25', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
-        $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+        $arr_amt = $this->reporter->fixcolumn([$amt], '14', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_rem, $arr_ext, $arr_qty, $arr_amt]);
         for ($r = 0; $r < $maxrow; $r++) {
@@ -2725,9 +2725,9 @@ class ch
           PDF::MultiCell(45, 10, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           // PDF::MultiCell(5, 10, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           // 
-          PDF::MultiCell(50, 10, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(55, 10, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), 'LR', 'CT', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 9);
-          PDF::MultiCell(143, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(138, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 10);
           PDF::MultiCell(5, 10, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(163, 10, ' ' . (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -2904,7 +2904,7 @@ class ch
     $this->nwilcon_header_PDF($params, $data);
 
     $rowCount = 0;
-    $pageLimit = 13; //14
+    $pageLimit = 14; //14
     $trno = $params['params']['dataid'];
     $totalext = $this->coreFunctions->datareader("
                select sum(ext) as value from
@@ -2926,7 +2926,7 @@ class ch
         $rem = $data[$i]['srem'];
         $itemname = $data[$i]['itemname'];
 
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '55', 0);
         $arr_rem = $this->reporter->fixcolumn([$rem], '25', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
@@ -2938,9 +2938,9 @@ class ch
           // PDF::MultiCell(10, 18, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(95, 10, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 9);
-          PDF::MultiCell(321, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //148
+          PDF::MultiCell(326, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //148
           PDF::SetFont($font, '', 10);
-          PDF::MultiCell(90, 10, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(85, 10, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(214, 10, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           $rowCount++;
         }

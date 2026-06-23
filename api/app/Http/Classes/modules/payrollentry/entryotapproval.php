@@ -365,11 +365,9 @@ class entryotapproval
         $data[$field_approved] = 1;
 
         if ($companyid == 68) { //jda - maximum of 4hrs only
-          if ($ottype == 'REGULAR OT') {
-            if ($maxOTHrs > 0) {
-              if ($val["othrs"] >= $maxOTHrs) {
-                $val["othrs"] = $maxOTHrs;
-              }
+          if ($maxOTHrs > 0) {
+            if ($val["othrs"] >= $maxOTHrs) {
+              $val["othrs"] = $maxOTHrs;
             }
           }
         }

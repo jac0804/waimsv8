@@ -165,7 +165,7 @@ class tm
     }
 
     $qry = "select h.trno,h.trno as clientid,c.clientid as custid,
-            c.client,c.clientname,left(h.dateid,10) as dateid,r.category,
+            c.client,if(h.reseller<>'',concat(c.clientname,' / ',h.reseller),c.clientname) as clientname,left(h.dateid,10) as dateid,r.category,
             u.clientname as requestby,case h.status when 0 then 'Draft' when 1 then 'Open' else 'Completed' end as statname, h.rem
             from tmhead as h 
              
@@ -234,7 +234,7 @@ class tm
     data_set($col1, 'tasktype.action', 'lookupreqcategory');
     data_set($col1, 'tasktype.readonly', true);
     data_set($col1, 'tasktype.required', true);
-    data_set($col1, 'reseller.label', 'Reseller');
+    data_set($col1, 'reseller.label', 'Reseller Customer');
 
     $fields = ['dateid', 'empname', 'rem'];
     $col2 = $this->fieldClass->create($fields);

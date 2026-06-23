@@ -392,31 +392,35 @@ class am
 
   public function createTab($access, $config)
   {
-    $columns = ['action',  'code', 'description', 'rem']; // 'packname'
-    $tab = [$this->gridname => ['gridcolumns' => $columns]];
-
+    // var_dump($config['params']);
+    $columns = ['action',  'code', 'description', 'rem', 'packname']; // 'packname'
     foreach ($columns as $key => $value) {
       $$value = $key;
     }
 
-    $stockbuttons = ['save', 'addtask', 'delete'];
+
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
+
+    $tab['tableentry'] = ['action' => 'autoserventry', 'lookupclass' => 'entryamlabor', 'label' => 'TASK/LABOR'];
+    $tab['tableentry2']  =  ['action' => 'autoserventry', 'lookupclass' => 'entryamparts', 'label' => 'PARTS'];
+
+    $stockbuttons = ['save', 'addtask', 'delete'];
     $obj = $this->tabClass->createTab($tab, $stockbuttons);
 
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$code]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
     $obj[0][$this->gridname]['columns'][$description]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
     $obj[0][$this->gridname]['columns'][$rem]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
-    // $obj[0][$this->gridname]['columns'][$packname]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    // $obj[0][$this->gridname]['columns'][$packname]['label'] = 'Package';
+    $obj[0][$this->gridname]['columns'][$packname]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+    $obj[0][$this->gridname]['columns'][$packname]['label'] = 'Package';
 
     $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$description]['readonly'] = true;
-
-    // $obj[0][$this->gridname]['columns'][$action]['btns']['addtask']['name'] = 'addtask';
     $obj[0][$this->gridname]['columns'][$action]['btns']['addtask']['action'] = 'autoserventry';
     $obj[0][$this->gridname]['columns'][$action]['btns']['addtask']['lookupclass'] = 'entryamlabor';
+    
     $obj[0][$this->gridname]['descriptionrow'] = [];
+    $obj[0][$this->gridname]['label'] = 'JOBS';
     return $obj;
   }
 
@@ -490,6 +494,7 @@ class am
     data_set($col4, 'rem1.label', 'Complaints');
     data_set($col4, 'rem1.type', 'ctextarea');
     data_set($col4, 'rem1.readonly', false);
+    data_set($col4, 'rem1.class', 'csrem1');
     data_set($col4, 'porem.label', 'Recommendations');
     data_set($col4, 'porem.readonly', false);
 
@@ -776,6 +781,7 @@ class am
   public function posttrans($config)
   {
     $trno = $config['params']['trno'];
+    $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
     $checkacct = $this->othersClass->checkcoaacct(['AR1', 'IN1', 'SD1', 'TX2', 'CG1']);
     if ($checkacct != '') {
       return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
@@ -821,20 +827,23 @@ class am
 
       if ($return['status']) {
         //insert jobs
-        $jobqry = "insert into " . $this->hamstock . "(trno,line,jobid,packageline,rem,encodeddate,editdate,editby)
-        SELECT job.trno,job.line,job.jobid,job.packageline,job.rem,job.encodeddate,job.editdate,job.editby
+        $jobqry = "insert into " . $this->hamstock . "(trno,line,jobid,packagetrno,rem,encodeddate,encodedby,editdate,editby)
+        SELECT job.trno,job.line,job.jobid,job.packagetrno,job.rem,job.encodeddate,job.encodedby,job.editdate,job.editby
         FROM " . $this->amstock . " as job left join cntnum on cntnum.trno=job.trno
         where job.trno=?";
         $postamjobs = $this->coreFunctions->execqry($jobqry, 'insert', [$trno]);
         if ($postamjobs) {
+          //delete sa unposted amjobs
+          $this->coreFunctions->execqry("delete from " . $this->amstock . " where trno=?", "delete", [$trno]);
           //insert tasks
-          $taskqry = "insert into hamtask (trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,editdate,editby)
-          SELECT task.trno,task.line,task.jobline,task.laborline,task.mecline,task.cost,task.rate,task.rem,task.encodeddate,task.editdate,task.editby
+          $taskqry = "insert into hamtask (trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby)
+          SELECT task.trno,task.line,task.jobline,task.laborline,task.mecline,task.cost,task.rate,task.rem,task.encodeddate,task.encodedby,task.editdate,task.editby
           FROM amtask as task left join cntnum on cntnum.trno=task.trno
           where task.trno=?";
           $posttask = $this->coreFunctions->execqry($taskqry, 'insert', [$trno]);
           if (!$posttask) {
-            if ($this->othersClass->unpostinghead($config)) {
+            if ($this->othersClass->unposttranstock($config)) { //insert pabalik sa lahead /lastock
+              //delete sa mga nagposted
               $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
               $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
               $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
@@ -842,9 +851,13 @@ class am
               $this->coreFunctions->execqry("delete from hamjobs where trno=?", "delete", [$trno]);
             }
             return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Tasks'];
+          } else { //inserted
+            //delete sa uposted amtask
+            $this->coreFunctions->execqry("delete from amtask where trno=?", "delete", [$trno]);
           }
         } else {
-          if ($this->othersClass->unpostinghead($config)) {
+          if ($this->othersClass->unposttranstock($config)) { //insert pabalik sa lahead /lastock
+            //delete sa mga nagposted
             $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
@@ -852,12 +865,73 @@ class am
           }
           return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Jobs'];
         }
+        $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+        $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
       }
       return $return;
     }
     // }
   } //end function
 
+
+  public function unposttrans($config)
+  {
+    $trno = $config['params']['trno'];
+
+    $return = $this->othersClass->unposttranstock($config);
+
+    if ($return['status']) {
+      //insert jobs
+      $jobqry = "insert into " . $this->amstock . "(trno,line,jobid,packagetrno,rem,encodeddate,encodedby,editdate,editby)
+        SELECT job.trno,job.line,job.jobid,job.packagetrno,job.rem,job.encodeddate,job.encodedby,job.editdate,job.editby
+        FROM " . $this->hamstock . " as job left join cntnum on cntnum.trno=job.trno
+        where job.trno=?";
+      $unpostamjobs = $this->coreFunctions->execqry($jobqry, 'insert', [$trno]);
+
+
+      if ($unpostamjobs) {
+        //delete sa posted hamjobs
+        $this->coreFunctions->execqry("delete from " . $this->hamstock . " where trno=?", "delete", [$trno]);
+
+        //insert tasks
+        $taskqry = "insert into amtask (trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby)
+          SELECT task.trno,task.line,task.jobline,task.laborline,task.mecline,task.cost,task.rate,task.rem,task.encodeddate,task.encodedby,task.editdate,task.editby
+          FROM hamtask as task left join cntnum on cntnum.trno=task.trno
+          where task.trno=?";
+        $unposttask = $this->coreFunctions->execqry($taskqry, 'insert', [$trno]);
+        if (!$unposttask) {
+          if ($this->othersClass->posttranstock($config)) { //insert sa glhead pag failed
+            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+
+            $jobqry = "insert into " . $this->hamstock . "(trno,line,jobid,packagetrno,rem,encodeddate,encodedby,editdate,editby)
+            SELECT job.trno,job.line,job.jobid,job.packagetrno,job.rem,job.encodeddate,job.encodedby,job.editdate,job.editby
+            FROM " . $this->amstock . " as job left join cntnum on cntnum.trno=job.trno
+            where job.trno=?";
+            $postamjobs = $this->coreFunctions->execqry($jobqry, 'insert', [$trno]); //post hamjob pabalik
+
+            $this->coreFunctions->execqry("delete from amjobs where trno=?", "delete", [$trno]);
+          }
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Tasks'];
+        } else { //inserted sa task
+          //delete sa posted hamtask
+          $this->coreFunctions->execqry("delete from hamtask where trno=?", "delete", [$trno]);
+        }
+      } else {
+        if ($this->othersClass->posttranstock($config)) { //insert sa glhead
+          $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+          $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+        }
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Jobs'];
+      }
+    }
+
+    return $return;
+
+    // return $this->othersClass->unposttranstock($config);
+
+
+  } //end function
 
 
 
@@ -891,15 +965,14 @@ class am
   } //end function
 
 
-  public function unposttrans($config)
-  {
-    return $this->othersClass->unposttranstock($config);
-  } //end function
+
 
   private function getstockselect($config)
   {
-    $sqlselect = "select  am.line,am.trno,am.jobid,am.packageline,am.rem,
-     job.docno as code,job.jobtitle as description, '' as bgcolor ";
+
+    $sqlselect = "select  am.line,am.trno,am.jobid,pk.docno as packname,am.rem,
+     job.docno as code,job.jobtitle as description,
+     '' as bgcolor ";
     return $sqlselect;
   }
 
@@ -910,15 +983,17 @@ class am
     FROM $this->amstock as am
     left join $this->head as head on head.trno = am.trno
     left join jobthead as job on job.line=am.jobid
+    left join pthead as pk on pk.trno=am.packagetrno
     where am.trno =?
-    group by am.line,am.trno,am.jobid,am.packageline,am.rem, job.docno,job.jobtitle
+    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
     UNION ALL
     " . $sqlselect . "
     FROM $this->hamstock as am
     left join $this->hhead as head on head.trno = am.trno
     left join jobthead as job  on job.line=am.jobid
+    left join hpthead as pk on pk.trno=am.packagetrno
     where am.trno =? 
-    group by am.line,am.trno,am.jobid,am.packageline,am.rem, job.docno,job.jobtitle
+    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
     order by line";
 
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
@@ -936,9 +1011,24 @@ class am
     FROM $this->amstock as am
     left join $this->head as head on head.trno = am.trno
     left join jobthead as job on job.line=am.jobid
+    left join pthead as pk on pk.trno=am.packagetrno
     where am.trno = ? and am.line = ? 
-    group by am.line,am.trno,am.jobid,am.packageline,am.rem, job.docno,job.jobtitle";
-    $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
+    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
+    
+    union all
+
+    $sqlselect
+
+     FROM $this->hamstock as am
+    left join $this->hhead as head on head.trno = am.trno
+    left join jobthead as job on job.line=am.jobid
+    left join hpthead as pk on pk.trno=am.packagetrno
+    where am.trno = ? and am.line = ? 
+    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
+
+
+    ";
+    $stock = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
     return $stock;
   } // end function
 
@@ -1386,11 +1476,18 @@ class am
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
 
-    $qry = "delete from " . $this->amstock . " where trno=? and line=?";
-    $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
-    $this->logger->sbcwritelog($trno, $config, 'JOB', 'REMOVED - Line:' . $line
-      . ' Description:' . ' ' . $data[0]->description);
-    return ['status' => true, 'msg' => 'Item was successfully deleted.'];
+    $exist = !empty($this->coreFunctions->getfieldvalue("amtask", "trno",  "trno=? and  jobline=?",  [$trno, $line]));
+
+    if ($exist) {
+      return ['status' => false, 'msg' => 'Some tasks already exist in this job.'];
+    } else {
+
+      $qry = "delete from " . $this->amstock . " where trno=? and line=?";
+      $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
+      $this->logger->sbcwritelog($trno, $config, 'JOB', 'REMOVED - Line:' . $line
+        . ' Description:' . ' ' . $data[0]->description);
+      return ['status' => true, 'msg' => 'Item was successfully deleted.'];
+    }
   } // end function
 
   public function getlatestprice($config)
@@ -2161,6 +2258,7 @@ class am
           $inserttask = $this->coreFunctions->sbcinsert('amtask', $task);
 
           if (!$inserttask) {
+            $this->coreFunctions->execqry("delete from amjobs where trno=? and line =? ", "delete", [$trno, $newJobLine]);
             return ['row' => $rows, 'status' => false, 'msg' => 'Inserting labor/tasks failed.'];
           }
 
@@ -2170,35 +2268,38 @@ class am
 
           $data4 = $this->coreFunctions->opentable($query4, [$aktrno, $oldJobLine, $oldTaskLine]);
 
-          $lastock = $this->coreFunctions->getfieldvalue("lastock", "ifnull(max(line),0)", "trno=?", [$trno], '', true);
-          $partln = $lastock + 1;
 
           foreach ($data4 as $key4 => $value4) {
-            $item = [
-              'line'        => $partln,
-              'taskline'    => $newTaskLine,
-              'jobline'     => $newJobLine,
-              'itemid'      => $value4->itemid,
-              'uom'         => $value4->uom,
-              'disc'        => $value4->disc,
-              'rem'         => $value4->rem,
-              'amt'         => $value4->amt,
-              'isqty'       => $value4->isqty,
-              'isamt'       => $value4->isamt,
-              'iss'         => $value4->iss,
-              'ext'         => $value4->ext,
-              'encodeddate' => $encodeddate,
-              'encodedby'   => $encodedby,
-              'trno'        => $trno
+            $config['params']['tableid'] = $trno;
+
+            $wh = $this->companysetup->getwh($config['params']);
+            $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
+
+            $config['params']['row'] = [
+              'trno'     => $trno,
+              'line'     => 0,
+              'taskline' => $newTaskLine,
+              'jobline'  => $newJobLine,
+              'itemid'   => $value4->itemid,
+              'uom'      => $value4->uom,
+              'isqty'    => $value4->isqty,
+              'isamt'    => $value4->isamt,
+              'disc'     => $value4->disc,
+              'rem'      => $value4->rem,
+              'ext'      => $value4->ext,
+              'wh'       => $wh,
+              'whid'     => $whid,
+              'bgcolor'  => 'bg-blue-2'
             ];
 
-            $insertpart = $this->coreFunctions->sbcinsert('lastock', $item);
+            $urlHistory = 'App\Http\Classes\modules\autoserventry\\' . 'entryamparts';
+            $return = app($urlHistory)->save($config);
 
-            if (!$insertpart) {
+            if (!$return['status']) {
+              $this->coreFunctions->execqry("delete from amjobs where trno=? and line =? ", "delete", [$trno, $newJobLine]);
+              $this->coreFunctions->execqry("delete from amtask where trno=? and line =? and jobline=?", "delete", [$trno, $newTaskLine, $newJobLine]);
               return ['row' => $rows, 'status' => false, 'msg' => 'Inserting parts/items failed.'];
             }
-
-            $partln++;
           }
 
           $taskln++;

@@ -82,7 +82,8 @@ class supplier
     'ispickupdate',
     'floor',
     'brgy',
-    'acctadvances'
+    'acctadvances',
+    'registername'
   ];
   private $otherinfo = ['city', 'street'];
 
@@ -490,6 +491,9 @@ class supplier
       if ($companyid == 56) { //homeworks
         array_push($fields, 'businesstype', 'city', 'brgy', 'street', 'floor');
       }
+      if ($companyid == 67) { //yulick
+        array_push($fields, 'registername', 'dvattype');
+      }
     }
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'zipcode.type', 'cinput');
@@ -592,6 +596,7 @@ class supplier
     $data[0]['city'] = '';
     $data[0]['brgy'] = '';
     $data[0]['acctadvances'] = '';
+    $data[0]['registername'] = '';
     $data[0]['isnonbdo'] = '0';
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];

@@ -156,7 +156,7 @@ class endofday
         $d = $config['params']['dataparams'];
         $dateid = date('Y-m-d', strtotime($d['dateid']));
 
-        if($d['totalcoll'] ==0 || $d['totaldep'] == 0 || $d['endingbal'] ==0 ){
+        if($d['totalcoll'] ==0 && $d['totaldep'] == 0 && $d['endingbal'] ==0 ){
           return  ['status' => 'false', 'msg' => 'No data to check. Please Load data first.','action' => 'load'];
         }
 
@@ -215,6 +215,8 @@ class endofday
               return  ['status' => 'false', 'msg' => 'Error on closing.','action' => 'load'];
             }
             
+        }else{
+          return  ['status' => 'false', 'msg' => 'Already Close.','action' => 'load'];
         }
         //return $this->downloadmcdx($config);
         break;
@@ -235,7 +237,7 @@ class endofday
     $user = $config['params']['user'];
     $dateid = $this->othersClass->sbcdateformat($dateid);
 
-    $closed = $this->coreFunctions->getfieldvalue("eod","line","date(dateid) = ? and center=? and closeby = ?",[$dateid,$center],$user,'',true);
+    $closed = $this->coreFunctions->getfieldvalue("eod","line","date(dateid) = ? and center=? and closeby = ?",[$dateid,$center,$user],'',true);
     if($closed !=0){
       return ['status' => false, 'msg' => 'This date is already close.', 'action' => 'load'];
     }

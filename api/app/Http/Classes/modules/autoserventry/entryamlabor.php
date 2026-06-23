@@ -25,6 +25,7 @@ class entryamlabor
   private $companysetup;
   private $coreFunctions;
   private $table = 'amtask';
+  private $htable = 'hamtask';
   private $othersClass;
   public $style = 'width:1000px;max-width:1000px;';
   public $tablelogs = 'masterfile_log';
@@ -51,18 +52,27 @@ class entryamlabor
 
   public function createTab($config)
   {
+    $descriptions = isset($config['params']['row']['description']) ? $config['params']['row']['description'] : '';
+
     $doc = $config['params']['doc'];
-    $columns = ['action', 'code', 'description', 'cost', 'rate', 'rem']; //mechanic
+    $columns = ['jobcode', 'jobtitle', 'code', 'description', 'cost', 'rate', 'rem']; //viewing
+
+    if ($descriptions != '') {
+      $columns = ['action', 'code', 'description', 'cost', 'rate', 'rem']; //mechanic
+    }
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
     foreach ($columns as $key => $value) {
       $$value = $key;
     }
 
-    $stockbuttons = ['save', 'delete', 'entryamparts'];
+    $stockbuttons = []; //viewing
+    if ($descriptions != '') {
+      $stockbuttons = ['save', 'delete', 'entryamparts'];
+    }
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
     $obj = $this->tabClass->createTab($tab, $stockbuttons);
-    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
+
     $obj[0][$this->gridname]['columns'][$code]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$cost]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$rate]['style'] = "width:70px;whiteSpace: normal;min-width:70px;";
@@ -71,16 +81,36 @@ class entryamlabor
 
     $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$description]['readonly'] = true;
-
-    $obj[0][$this->gridname]['columns'][$cost]['label'] = "Cost";
     $obj[0][$this->gridname]['columns'][$cost]['readonly'] = false;
-    $obj[0][$this->gridname]['columns'][$rate]['label'] = "Rate";
+    $obj[0][$this->gridname]['columns'][$description]['label'] = 'Task Description';
+    $obj[0][$this->gridname]['columns'][$code]['label'] = 'Task Code';
+    $obj[0][$this->gridname]['columns'][$rem]['label'] = 'Task Notes';
+    $obj[0][$this->gridname]['columns'][$cost]['label'] = 'Task Cost';
+    $obj[0][$this->gridname]['columns'][$rate]['label'] = 'Task Rate';
 
-    $obj[0][$this->gridname]['columns'][1]['btns']['delete']['label'] = 'delete';
-    $this->modulename .= ' - ' . $config['params']['row']['description'];
 
 
+    if ($descriptions != '') {
+      $this->modulename .= ' - ' . $descriptions;
+      $obj[0][$this->gridname]['columns'][1]['btns']['delete']['label'] = 'delete';
+      $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
+    } else {
+      //for viewing
+      $obj[0][$this->gridname]['columns'][$cost]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$rate]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$jobtitle]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$jobcode]['type'] = 'label';
 
+      $obj[0][$this->gridname]['columns'][$code]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$description]['type'] = 'label';
+      $obj[0][$this->gridname]['columns'][$jobtitle]['label'] = 'Job Description';
+      $obj[0][$this->gridname]['columns'][$description]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+      $obj[0][$this->gridname]['columns'][$cost]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: right';
+      $obj[0][$this->gridname]['columns'][$rate]['style'] = 'width:70px;whiteSpace: normal;min-width:70px; text-align: right';
+      $obj[0][$this->gridname]['columns'][$jobtitle]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; text-align: left';
+      $obj[0][$this->gridname]['columns'][$jobcode]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: left';
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -88,10 +118,18 @@ class entryamlabor
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addoutlet', 'saveallentry', 'whlog'];
-    $obj = $this->tabClass->createtabbutton($tbuttons);
-    $obj[0]['lookupclass'] = 'addtasklabor';
-    $obj[0]['action'] = 'lookupsetup';
+    $rows = isset($config['params']['row']) ? $config['params']['row'] : '';
+
+    if ($rows != '') {
+      $tbuttons = ['addoutlet', 'saveallentry', 'whlog'];
+      $obj = $this->tabClass->createtabbutton($tbuttons);
+      $obj[0]['lookupclass'] = 'addtasklabor';
+      $obj[0]['action'] = 'lookupsetup';
+    } else {
+      //viewing
+      $tbuttons = [];
+      $obj = $this->tabClass->createtabbutton($tbuttons);
+    }
     return $obj;
   }
 
@@ -101,10 +139,15 @@ class entryamlabor
       $jobline = $config['params']['row']['line'];
       $trno = $config['params']['row']['trno'];
     } else {
-      $jobline = $config['params']['data'][0]['jobline'];
-      $trno = $config['params']['data'][0]['trno'];
+      $jobline = isset($config['params']['data'][0]['jobline']) ? $config['params']['data'][0]['jobline'] : 0;
+      $trno = isset($config['params']['data'][0]['trno']) ? $config['params']['data'][0]['trno'] : 0;
+
+      //viewing
+      if ($jobline == 0 && $trno == 0) {
+        $trno = $config['params']['tableid'];
+      }
     }
-    
+
     $filtersearch = "";
     $searchfield  = $this->fields;
 
@@ -120,19 +163,41 @@ class entryamlabor
       $filtersearch .= ")";
     }
 
+    $orderby = " order by line";
+    if ($jobline != 0) {
+      $jobline = "  and jt.jobline = $jobline";
+    } else {
+      //viewing
+      $jobline = '';
+      $orderby = " order by jobcode";
+    }
+
     $select = $this->selectqry() . ", '' as bgcolor";
     $qry = "select " . $select . " from " . $this->table . " as jt 
            left join jobtask on jobtask.line=jt.laborline 
-           where  jt.trno = ? and jt.jobline = $jobline
-           " . $filtersearch . " order by line";
-    $data = $this->coreFunctions->opentable($qry, [$trno]);
+            left join amjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
+           left join jobthead as joo on joo.line=jo.jobid
+           where  jt.trno = ? $jobline
+           " . $filtersearch . "
+           
+           union all 
+
+           select " . $select . " from " . $this->htable . " as jt 
+           left join jobtask on jobtask.line=jt.laborline 
+           left join hamjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
+           left join jobthead as joo on joo.line=jo.jobid
+           where  jt.trno = ? $jobline
+           " . $filtersearch . "
+
+           $orderby";
+    $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $data;
   }
 
   private function selectqry()
   {
     $qry = "jt.line,jobtask.code, jobtask.description, jt.cost, jt.rate, jt.rem, 
-            jt.mecline, jt.trno,jt.jobline,jt.laborline,jt.line as taskline";
+            jt.mecline, jt.trno,jt.jobline,jt.laborline,jt.line as taskline,joo.jobtitle, joo.docno as jobcode";
     return $qry;
   }
 
@@ -240,22 +305,41 @@ class entryamlabor
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . " as jt
             left join jobtask on jobtask.line=jt.laborline 
-            where jt.trno = $trno and jt.line=? and jt.jobline = $jobline";
-    $data = $this->coreFunctions->opentable($qry, [$line]);
+            left join amjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
+            left join jobthead as joo on joo.line=jo.jobid
+            where jt.trno = $trno and jt.line=? and jt.jobline = $jobline
+            
+            union all
+
+            select " . $select . " from " . $this->htable . " as jt
+            left join jobtask on jobtask.line=jt.laborline 
+            left join hamjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
+            left join jobthead as joo on joo.line=jo.jobid
+            where jt.trno = $trno and jt.line=? and jt.jobline = $jobline ";
+    // var_dump($qry);
+    $data = $this->coreFunctions->opentable($qry, [$line, $line]);
     return $data;
   }
 
   public function delete($config)
   {
+    $trno = $config['params']['tableid'];
     $row = $config['params']['row'];
     $doc = $config['params']['doc'];
-    $qry = "delete from " . $this->table . " where line=? and trno=? and jobline=?";
-    $this->coreFunctions->execqry($qry, 'delete', [$row['line'], $row['trno'], $row['jobline']]);
-    $trno = $config['params']['tableid'];
-    $config['params']['doc'] = 'ENTRYAMTASK';
-    $task = $this->coreFunctions->opentable("select code,description from jobtask where line =?", [$row['laborline']]);
-    $this->logger->sbcdelmaster_log($trno, $config, 'REMOVE LINE: ' . $row['line'] . ' -Task Code: ' . $task[0]->code . ' ' . 'Task Desc : ' . $task[0]->description, 0, $row['jobline']);
-    return ['status' => true, 'msg' => 'Successfully deleted.'];
+
+    $exist = !empty($this->coreFunctions->getfieldvalue("lastock", "trno",  "trno=? and taskline=? and jobline=?",  [$trno, $row['line'], $row['jobline']]));
+
+    if ($exist) {
+      return ['status' => false, 'msg'   => 'Some parts are already existing in this task/job.'];
+    } else {
+      $qry = "delete from " . $this->table . " where line=? and trno=? and jobline=?";
+      $this->coreFunctions->execqry($qry, 'delete', [$row['line'], $row['trno'], $row['jobline']]);
+      $trno = $config['params']['tableid'];
+      $config['params']['doc'] = 'ENTRYAMTASK';
+      $task = $this->coreFunctions->opentable("select code,description from jobtask where line =?", [$row['laborline']]);
+      $this->logger->sbcdelmaster_log($trno, $config, 'REMOVE LINE: ' . $row['line'] . ' -Task Code: ' . $task[0]->code . ' ' . 'Task Desc : ' . $task[0]->description, 0, $row['jobline']);
+      return ['status' => true, 'msg' => 'Successfully deleted.'];
+    }
   }
 
   public function lookupsetup($config)

@@ -588,6 +588,7 @@ class customer
     $contactperson_access = $this->othersClass->checkAccess($config['params']['user'], 3744);
     $loan_access = $this->othersClass->checkAccess($config['params']['user'], 4997);
     $loan_sched = $this->othersClass->checkAccess($config['params']['user'], 5019);
+    // $rchistory_access = $this->othersClass->checkAccess($config['params']['user'], 5000);
 
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku', 'label' => 'SKU']];
     $sku = $this->tabClass->createtab($tab, []);
@@ -607,6 +608,11 @@ class customer
     $unpaidarap = ['customform' => ['action' => 'customform', 'lookupclass' => 'unpaidar']];
     $loan = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewloan']];
     $loansched = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewloansched']];
+    $rchistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrchistory']];
+    $rhhistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrhhistory']];
+    $behistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewbehistory']];
+    $rechistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrechistory']];
+
 
     //3/2/2023 FPY Testing
     if ($companyid != 56) { //homeworks
@@ -714,6 +720,13 @@ class customer
 
         if ($unpaidarap_access != 0) {
           $return['UNPAID AR/AP'] = ['icon' => 'fa fa-coins', 'customform' => $unpaidarap];
+        }
+
+        if ($companyid == 59) { // roosevelt
+          $return['RECEIVED CHECKS HISTORY'] = ['icon' => 'fas fa-check', 'customform' => $rchistory];
+          $return['RECEIVED CASH HISTORY'] = ['icon' => 'fas fa-money-bill-wave-alt', 'customform' => $rhhistory];
+          $return['BOUNCED CHEQUE HISTORY'] = ['icon' => 'fas fa-money-check-alt', 'customform' => $behistory];
+          $return['REPLACEMENT CHEQUE'] = ['icon' => 'fas fa-money-check', 'customform' => $rechistory];
         }
         break;
     }
@@ -970,8 +983,10 @@ class customer
                 break;
               case 3: //conti
               case 0: //main
-              case 67: //yulick
                 array_push($fields, 'tin', 'bstyle', 'purchaser', 'registername');
+                break;
+              case 67: //yulick
+                array_push($fields, 'tin', 'bstyle', 'purchaser', 'registername', 'owner');
                 break;
               case 15: //nathina
                 array_push($fields, 'contact', 'acct');

@@ -121,17 +121,17 @@ class entrygeneratesj
         return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
     } // end function
 
-    public function save($config)
-    {
-        $row = $config['params']['row'];
-        $trno = $config['params']['tableid'];
-        $qry = "update hsostock set tmtrno=? where trno=? and line=?";
-        $this->coreFunctions->execqry($qry, 'update', [$trno, $row['sotrno'], $row['soline']]);
-        $config['params']['doc'] = 'ENNTRYPENDINGSO';
-        $this->logger->sbcmasterlog($trno, $config, 'ADD - Line : ' . $row['soline'] . ' Item Name: ' . $row['itemname'] . ' Docno : ' . $row['sodocno']);
-        $returnrow = $this->loaddataperrecord($trno, $row['sotrno'], $row['soline']);
-        return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
-    } //end function
+    // public function save($config)
+    // {
+    //     $row = $config['params']['row'];
+    //     $trno = $config['params']['tableid'];
+    //     $qry = "update hsostock set tmtrno=? where trno=? and line=?";
+    //     $this->coreFunctions->execqry($qry, 'update', [$trno, $row['sotrno'], $row['soline']]);
+    //     $config['params']['doc'] = 'ENNTRYPENDINGSO';
+    //     $this->logger->sbcmasterlog($trno, $config, 'ADD - Line : ' . $row['soline'] . ' Item Name: ' . $row['itemname'] . ' Docno : ' . $row['sodocno']);
+    //     $returnrow = $this->loaddataperrecord($trno, $row['sotrno'], $row['soline']);
+    //     return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+    // } //end function
     public function delete($config)
     {
         $row = $config['params']['row'];
@@ -145,24 +145,10 @@ class entrygeneratesj
 
     private function selectqry()
     {
-        $qry = "stock.tmtrno,lstock.ref,head.docno,head.client,head.clientname,date(head.dateid) as dateid";
+        $qry = "stock.tmtrno,lstock.ref,head.docno,cl.client,head.clientname,date(head.dateid) as dateid";
 
         return $qry;
     }
-
-
-    private function loaddataperrecord($trno, $sotrno, $soline)
-    {
-        $select = $this->selectqry();
-        $qry = "select " . $select . ",'' as bgcolor
-         from hsohead as head
-         left join hsostock as stock on stock.trno=head.trno
-         left join item on item.itemid=stock.itemid
-         where stock.tmtrno = ? and stock.trno=? and stock.line=?";
-        $data = $this->coreFunctions->opentable($qry, [$trno, $sotrno, $soline]);
-        return $data;
-    }
-
 
     public function loaddata($config)
     {
@@ -190,18 +176,14 @@ class entrygeneratesj
         } else {
             $l = $limit;
         }
-        $qry = "select " . $select . ",'' as bgcolor from " . $this->table . " as stock
-         left join lastock as lstock on lstock.refx = stock.trno and lstock.linex = stock.line
-         left join lahead as head on head.trno =lstock.trno
-         where stock.tmtrno = ? " . $filtersearch . "
-         group by lstock.ref,stock.tmtrno,head.docno,head.client,head.clientname,head.dateid
-         union all
+        $qry = "
          select " . $select . ",'' as bgcolor from " . $this->table . " as stock
          left join glstock as lstock on lstock.refx = stock.trno and lstock.linex = stock.line
          left join glhead as head on head.trno =lstock.trno
+         left join client as cl on cl.clientid = head.clientid
          where stock.tmtrno = ? " . $filtersearch . "
-         group by lstock.ref,stock.tmtrno,head.docno,head.client,head.clientname,head.dateid";
-        return $this->coreFunctions->opentable($qry, [$trno]);
+         group by lstock.ref,stock.tmtrno,head.docno,cl.client,head.clientname,head.dateid";
+        return $this->coreFunctions->opentable($qry, [$trno, $trno]);
     }
 
     public function lookupsetup($config)

@@ -58,7 +58,7 @@ class viewpendingso
 
     public function createTab($config)
     {
-        $columns = ['docno', 'barcode', 'itemname', 'ispicked'];
+        $columns = ['docno', 'barcode', 'itemname', 'remarks', 'ispicked'];
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         foreach ($columns as $key => $value) {
@@ -74,6 +74,8 @@ class viewpendingso
         $obj[0][$this->gridname]['columns'][$itemname]['label'] = 'Itemname';
         $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$ispicked]['label'] = 'Select';
+        $obj[0][$this->gridname]['columns'][$remarks]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$remarks]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
@@ -110,17 +112,15 @@ class viewpendingso
         }
         //get client
         $dyclientid = $this->coreFunctions->datareader("select dy.clientid as value from $table as dy where dy.trno = ?", [$trno], '', true);
-        $condition = "";
-        if ($dyclientid != 0) {
-            $getclient = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$dyclientid], '', true);
-            $condition = " and head.client='" . $getclient . "'";
-        }
+
+        $getclient = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$dyclientid], '', true);
+
         if ($stat != 1) {
             $username = $this->coreFunctions->getfieldvalue('client', 'email', 'clientid=?', [$userid]);
-            $qry = "select head.docno,head.trno, i.barcode,i.itemname,stock.line,i.itemid, 'false' as ispicked,'' as bgcolor from hsohead as head
+            $qry = "select head.docno,head.trno, i.barcode,i.itemname,stock.line,i.itemid,head.rem as remarks, 'false' as ispicked,'' as bgcolor from hsohead as head
                 left join hsostock as stock on stock.trno=head.trno
                 left join item as i on i.itemid=stock.itemid
-                where stock.dytrno=0 and stock.tmtrno=0 and head.createby='$username' $condition";
+                where stock.dytrno=0 and stock.tmtrno=0 and head.createby='$username' and head.client='" . $getclient . "'";
             return $this->coreFunctions->opentable($qry);
         } else {
             return [];

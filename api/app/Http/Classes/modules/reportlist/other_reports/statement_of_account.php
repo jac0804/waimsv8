@@ -249,7 +249,8 @@ class statement_of_account
         }
         break;
       case 59: //roosevelt
-        return $this->reportDefaultLayout_roosevelt($config);
+        $str= $this->reportDefaultLayout_roosevelt($config);
+         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
         break;
       case 29: //sbc
         $reporttype = $config['params']['dataparams']['reporttype'];
@@ -264,7 +265,7 @@ class statement_of_account
             if (strpos($str, 'ERROR:') === 0) {
                 return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
                 
-      // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
+            // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
             }
             if (!empty($str)) {
                 return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
@@ -272,14 +273,15 @@ class statement_of_account
             break;
           }
         break;
-      case 52: //technolab
+      case 52: case 41: //technolab //labsolmla
         switch ($config['params']['dataparams']['radiotechlabcomp']) {
           case 'c0':
             return $this->technolab_layout($config);
             break;
         }
       default:
-        return $this->reportDefaultLayout($config);
+        $str = $this->reportDefaultLayout($config);
+        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
         break;
     }
   }
@@ -6294,11 +6296,21 @@ class statement_of_account
           // aging
           $str .= $this->reporter->begintable($layoutsize);
 
+          // $str .= $this->reporter->startrow();
+          // $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          // $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          // $str .= $this->reporter->endrow();
+
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
           $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
           $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
           $str .= $this->reporter->endrow();
 
@@ -6473,12 +6485,21 @@ class statement_of_account
     //summary ng last customer
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable($layoutsize);
+    // $str .= $this->reporter->startrow();
+    // $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    // $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    // $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
+     $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
+      $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();

@@ -740,6 +740,11 @@ class leftmenu
                 return "($sort,$p,'QT','/module/cbbsi/qt','Quotation','fa fa-receipt sub_menu_ico',2132," . $params['levelid'] . ")";
                 break;
             default:
+
+                $isautoservice = $this->companysetup->getisautoservice($params);
+                if ($isautoservice) {
+                    return "($sort,$p,'QT','/module/autoserv/qt','Quotation','fa fa-receipt sub_menu_ico',2132," . $params['levelid'] . ")";
+                }
                 return "($sort,$p,'QT','/module/sales/qt','Quotation','fa fa-receipt sub_menu_ico',2132," . $params['levelid'] . ")";
                 break;
         }
@@ -10380,7 +10385,11 @@ class leftmenu
         (5851,1,'Allow Click Add Item AK','',0,'\\61013','\\610',0,'0',0," . $params['levelid'] . ") ,
         (5852,1,'Allow Click Edit Item AK','',0,'\\61014','\\610',0,'0',0," . $params['levelid'] . ") ,
         (5853,1,'Allow Click Delete Item AK','',0,'\\61015','\\610',0,'0',0," . $params['levelid'] . "),
-        (5854,1,'Allow Change Button AK','',0,'\\61016','\\610',0,'0',0," . $params['levelid'] . ")";
+        (5854,1,'Allow Change Button AK','',0,'\\61016','\\610',0,'0',0," . $params['levelid'] . "),
+        (5917,0,'Allow Click Lock Button AK','',0,'\\61017','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5918,0,'Allow Click UnLock Button AK','',0,'\\61018','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5919,0,'Allow Click Post Button AK','',0,'\\61019','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5920,0,'Allow Click UnPost Button AK','',0,'\\61020','\\610',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'AK','/module/autoserv/ak','Package Kits','fas fa-truck-loading sub_menu_ico',5844," . $params['levelid'] . ")";
     } //
@@ -10451,25 +10460,6 @@ class leftmenu
 
 
 
-    public function aq($params, $parent, $sort)
-    {
-        $p = $parent;
-        $parent = '\\' . $parent;
-        $qry = "(5885,0,'Quotation','',0,'\\612','$parent',0,'0',0," . $params['levelid'] . ") ,
-        (5886,0,'Allow View Transaction AQ','AQ',0,'\\61201','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5887,0,'Allow Click Edit Button  AQ','',0,'\\61202','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5888,0,'Allow Click New Button AQ','',0,'\\61203','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5889,0,'Allow Click Save Button AQ','',0,'\\61204','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5890,0,'Allow Click Delete Button AQ','',0,'\\61205','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5891,0,'Allow Click Print Button AQ','',0,'\\61206','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5892,1,'Allow Click Edit Item AQ','',0,'\\61207','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5893,1,'Allow Click Add Item AQ','',0,'\\61208','\\612',0,'0',0," . $params['levelid'] . ") ,
-        (5894,1,'Allow Click Delete Item AQ','',0,'\\61209','\\612',0,'0',0," . $params['levelid'] . "),
-        (5895,1,'Allow Change Button AQ','',0,'\\61210','\\612',0,'0',0," . $params['levelid'] . ")";
-        $this->insertattribute($params, $qry);
-        return "($sort,$p,'aq','/module/autoserv/aq','Quotation','fas fa-receipt sub_menu_ico',5885," . $params['levelid'] . ")";
-    } //
-
     public function aw($params, $parent, $sort)
     {
         $p = $parent;
@@ -10484,7 +10474,11 @@ class leftmenu
         (5906,1,'Allow Click Edit Item AW','',0,'\\61307','\\613',0,'0',0," . $params['levelid'] . ") ,
         (5907,1,'Allow Click Add Item AW','',0,'\\61308','\\613',0,'0',0," . $params['levelid'] . ") ,
         (5908,1,'Allow Click Delete Item AW','',0,'\\61309','\\613',0,'0',0," . $params['levelid'] . "),
-        (5909,1,'Allow Change Button AW','',0,'\\61310','\\613',0,'0',0," . $params['levelid'] . ")";
+        (5909,1,'Allow Change Button AW','',0,'\\61310','\\613',0,'0',0," . $params['levelid'] . "),
+        (5921,0,'Allow Click Lock Button AK','',0,'\\61017','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5922,0,'Allow Click UnLock Button AK','',0,'\\61018','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5923,0,'Allow Click Post Button AK','',0,'\\61019','\\610',0,'0',0," . $params['levelid'] . ") ,
+        (5924,0,'Allow Click UnPost Button AK','',0,'\\61020','\\610',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'aw','/module/autoserv/aw','Work Order','fas fa-briefcase sub_menu_ico',5898," . $params['levelid'] . ")";
     } ///

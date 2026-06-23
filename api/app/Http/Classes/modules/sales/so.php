@@ -81,7 +81,8 @@ class so
     'amenityid',
     'subamenityid',
     'tax',
-    'vattype' . 'createby'
+    'vattype',
+    'createby'
   ];
 
   private $infoheadfields = ['trnxtype', 'approvalreason'];
@@ -1100,6 +1101,7 @@ class so
       data_set($col4, 'createby.lookupclass', 'lookuptmusers');
       data_set($col4, 'createby.action', 'lookupcreateby');
       data_set($col4, 'createby.label', 'Create By');
+      data_set($col4, 'createby.class', 'sbccsreadonly');
     }
 
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];

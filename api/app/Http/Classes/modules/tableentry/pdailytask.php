@@ -100,10 +100,11 @@ class pdailytask
         $obj[0][$this->gridname]['columns'][$amt]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$amt]['label'] = 'Amount';
         $obj[0][$this->gridname]['columns'][$amt]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;max-width:80px;';
-        $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
+        $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
         $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0][$this->gridname]['columns'][$rem1]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
-        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
+        $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$rem]['label'] = 'Remarks';
         $obj[0][$this->gridname]['columns'][$statname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$statname]['label'] = 'Status';
@@ -534,7 +535,7 @@ class pdailytask
     public function generatesj($config)
     {
         $msg = "Failed to generate SJ.";
-        $stat = false;
+        $stat = true;
         $adminid = $config['params']['adminid'];
         $sourceTrno = $config['params']['row']['trno'];
 
@@ -580,8 +581,8 @@ class pdailytask
         $mrseq = $sjref . $seq;
         $newdocno = $this->othersClass->PadJ($mrseq, $docnolength);
 
-        $col = ['doc' => $doc, 'docno' => $newdocno, 'seq' => $seq, 'bref' => $sjref, 'center' => $center];
-        $this->coreFunctions->insertGetId($table, $col);
+        $col = ['doc' => $doc, 'docno' => $newdocno, 'seq' => $seq, 'bref' => $sjref, 'center' => $center, 'postdate' => null];
+        $cntnumm = $this->coreFunctions->insertGetId($table, $col);
 
         $cntdata = $this->coreFunctions->opentable("select trno, docno from cntnum where doc = ? and docno = ? and center = ? limit 1", [$doc, $newdocno, $center]);
 
@@ -661,18 +662,39 @@ class pdailytask
                     $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $sjTrno, 'line' => $line]);
                     app($path)->setserveditems($soitem[$key2]->trno, $soitem[$key2]->line, app($path)->hqty);
                 }
+                $config['docmodule']->stock = 'lastock';
+                $config['docmodule']->tablelogs = 'table_log';
+                $config['docmodule']->tablenum = 'cntnum';
+                $config['docmodule']->hhead = 'glhead';
+                $config['docmodule']->hstock = 'glstock';
+                $config['docmodule']->head = 'lahead';
+                $config['docmodule']->hdetail = 'gldetail';
+                $config['docmodule']->detail = 'ladetail';
+                $config['docmodule']->htablelogs = 'htable_log';
+                $config['params']['tableid'] = $sjTrno;
+                $autopost = app($path)->posttrans($config);
+                $config['params']['tableid'] = 0;
+                $this->tablelogs = 'task_log';
+                if (!$autopost['status']) {
+                    $msg = $autopost['msg'];
+                    goto deleteall;
+                }
+
+                $msg = "Generated. Doc No: ' . $docno";
             } else {
-                $msg = "Error generating SJ. Please review transaction.";
+                $msg = $return['msg'];
+                // $msg = "Error generating SJ. Please review transaction.";
+                deleteall:
                 $stat = false;
                 //delete
                 $cntnum = $this->coreFunctions->execqry("delete from cntnum where  trno=" . $sjTrno, 'delete');
                 $sjhead = $this->coreFunctions->execqry("delete from lahead where  trno=" . $sjTrno, 'delete');
                 $sjstock = $this->coreFunctions->execqry("delete from lastock where  trno=" . $sjTrno, 'delete');
-                $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
-            }
+                $cntnum = $this->coreFunctions->execqry("delete from costing where  trno=" . $sjTrno, 'delete');
+                $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0, 'qa' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
 
-            $stat = true;
-            $msg = "Generated. Doc No: ' . $docno";
+                break;
+            }
         }
 
         return ['status' => $stat, 'msg' => $msg];

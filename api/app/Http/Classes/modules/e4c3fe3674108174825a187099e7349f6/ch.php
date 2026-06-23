@@ -57,7 +57,7 @@ class ch
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount', 'sdate1','ewt','ewtrate'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'amount', 'sdate1', 'ewt', 'ewtrate'];
   private $except = ['trno', 'dateid', 'due'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -131,7 +131,7 @@ class ch
 
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-    $cols[$listdate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$listdate]['style'] = 'width:120px;whiteSpace: normal;min-width:120px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
@@ -378,7 +378,7 @@ class ch
     data_set($col1, 'client.required', false);
     data_set($col1, 'docno.label', 'Transaction#');
     data_set($col1, 'sdate1.label', 'Sales Date');
-    $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname','dewt'];
+    $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'dewt'];
 
 
     $col2 = $this->fieldClass->create($fields);

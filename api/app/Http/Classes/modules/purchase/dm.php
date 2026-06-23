@@ -1554,7 +1554,7 @@ class dm
     $links = [];
     $data['width'] = 1500;
     $startx = 100;
-    $rrtrno =0;
+    $rrtrno = 0;
 
     //DM
     $qry = "
@@ -1572,8 +1572,8 @@ class dm
     where head.trno = ?
     group by head.trno,head.docno,head.dateid,stock.refx";
     $t = $this->coreFunctions->opentable($qry, [$config['params']['trno'], $config['params']['trno']]);
-    if (!empty($t)) {     
-      if(floatval($t[0]->refx) != 0){
+    if (!empty($t)) {
+      if (floatval($t[0]->refx) != 0) {
         $startx = 550;
       }
       $a = 0;
@@ -1583,7 +1583,7 @@ class dm
           $t[$key]->docno,
           [
             'align' => 'left',
-            'x' => $startx ,
+            'x' => $startx,
             'y' => 200,
             'w' => 250,
             'h' => 80,
@@ -1720,18 +1720,17 @@ class dm
                   $a = $a + 100;
                 }
               }
-              
             }
 
             //CV for RR
-              if (!empty($apvdata)) {
-                $apvtrno = $apvdata[0]->trno;
-                $startx = $startx + 800;
-              } else {
-                $apvtrno = $rrtrno;
-                $startx = $startx + 600;         
-              }
-              $cvqry = "
+            if (!empty($apvdata)) {
+              $apvtrno = $apvdata[0]->trno;
+              $startx = $startx + 800;
+            } else {
+              $apvtrno = $rrtrno;
+              $startx = $startx + 600;
+            }
+            $cvqry = "
               select head.docno, date(head.dateid) as dateid, head.trno,
               CAST(concat('Applied Amount: ', round(detail.db+detail.cr,2)) as CHAR) as rem
               from glhead as head
@@ -1743,34 +1742,34 @@ class dm
               from lahead as head
               left join ladetail as detail on head.trno = detail.trno
               where detail.refx = ?";
-              $cvdata = $this->coreFunctions->opentable($cvqry, [$apvtrno, $apvtrno]);
-              if (!empty($cvdata)) {
-                foreach ($cvdata as $k2 => $value2) {
-                  data_set(
-                    $nodes,
-                    $cvdata[$k2]->docno,
-                    [
-                      'align' => 'left',
-                      'x' => $startx,
-                      'y' => 100,
-                      'w' => 250,
-                      'h' => 80,
-                      'type' => $cvdata[$k2]->docno,
-                      'label' => $cvdata[$k2]->rem,
-                      'color' => 'red',
-                      'details' => [$cvdata[$k2]->dateid]
-                    ]
-                  );
-                  if(empty($apvdata)){
-                    array_push($links, ['from' => $x[$key2]->docno, 'to' => $cvdata[$k2]->docno]); 
-                  }else{
-                    array_push($links, ['from' => 'apv', 'to' => $cvdata[$k2]->docno]);
-                  }
-                  
-                  $a = $a + 100;
+            $cvdata = $this->coreFunctions->opentable($cvqry, [$apvtrno, $apvtrno]);
+            if (!empty($cvdata)) {
+              foreach ($cvdata as $k2 => $value2) {
+                data_set(
+                  $nodes,
+                  $cvdata[$k2]->docno,
+                  [
+                    'align' => 'left',
+                    'x' => $startx,
+                    'y' => 100,
+                    'w' => 250,
+                    'h' => 80,
+                    'type' => $cvdata[$k2]->docno,
+                    'label' => $cvdata[$k2]->rem,
+                    'color' => 'red',
+                    'details' => [$cvdata[$k2]->dateid]
+                  ]
+                );
+                if (empty($apvdata)) {
+                  array_push($links, ['from' => $x[$key2]->docno, 'to' => $cvdata[$k2]->docno]);
+                } else {
+                  array_push($links, ['from' => 'apv', 'to' => $cvdata[$k2]->docno]);
                 }
+
+                $a = $a + 100;
               }
-          }          
+            }
+          }
         }
 
         //CV for DM
@@ -1807,8 +1806,8 @@ class dm
                 'details' => [$cvdata[$k2]->dateid]
               ]
             );
-            array_push($links, ['from' => $t[$key]->docno, 'to' => $cvdata[$k2]->docno]);  
-            
+            array_push($links, ['from' => $t[$key]->docno, 'to' => $cvdata[$k2]->docno]);
+
             $a = $a + 100;
           }
         }
@@ -2662,6 +2661,7 @@ class dm
           $tax = round(($stock[$key]->ext / $tax1), 2);
           $tax = round(($stock[$key]->ext - $tax), 2);
         }
+
         $params = [
           'client' => $stock[$key]->client,
           'acno' => $stock[$key]->contra,

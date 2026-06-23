@@ -1038,7 +1038,7 @@ class sj
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-    public function SBC_sj_PDF($params, $data)
+  public function SBC_sj_PDF($params, $data)
   {
     $companyid = $params['params']['companyid'];
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
@@ -1052,6 +1052,7 @@ class sj
 
     $font = "";
     $fontbold = "";
+    $fonti = "";
     $border = "1px solid ";
     $fontsize = "12";
     // if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
@@ -1061,6 +1062,7 @@ class sj
     if (Storage::disk('sbcpath')->exists('/fonts/times.ttf')) {
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.ttf');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.ttf');
+      $fonti = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbi.ttf');
     }
 
     $this->default_sj_header_PDF($params, $data, $next = 0);
@@ -1068,6 +1070,7 @@ class sj
 
     $rowCount = 0;
     $pageLimit = 25;
+    $isFirstRow = true;
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
 
@@ -1080,19 +1083,25 @@ class sj
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '85', 0);
         $arr_hrem = $this->reporter->fixcolumn([$hrem], '100', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
+        $arr_stocknotes = $this->reporter->fixcolumn([$stocknotes], '100', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_stocknotes, $arr_ext]);
 
         for ($r = 0; $r < $maxrow; $r++) {
-          $name = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
+          if ($stocknotes != ''){
+            $name = isset($arr_stocknotes[$r]) ? $arr_stocknotes[$r] : '';
+          }else {
+            $name = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
+          }
 
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(580, 15, ' ' . $name, 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont('dejavusans', '', 12);
-          PDF::MultiCell(20, 15, $r != 0 ? '' : '₱', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(20, 15, $isFirstRow ? '₱' : '', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), 'R', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
 
+          $isFirstRow = false;
           $rowCount++;
         }
 
@@ -1113,9 +1122,19 @@ class sj
       }
         // head remarks sa ilalim ng item
         if(!empty($hrem)) {
+        PDF::SetFont($font, 'I', 10);
+        PDF::MultiCell(580, null, '', 'L', 'L', false, 0);
+        PDF::SetCellPaddings(4, 2, 0, 4); // restore original padding
+        PDF::MultiCell(20, null, '', 'L', 'L', false, 0);
+        PDF::MultiCell(100, null, '', 'R', 'R', false, 1);
+
         PDF::SetFont($font, 'I', $fontsize);
-        PDF::SetCellPaddings(30, 0, 0, 0);
-        PDF::MultiCell(580, 10, $hrem, 'L', 'L', false, 0);
+        PDF::MultiCell(20, 10, '', 'L', 'L', false, 0);
+        PDF::SetCellPaddings(20, 0, 0, 0);
+        PDF::MultiCell(80, 10, 'Remarks: ', '', 'L', false, 0);
+        PDF::SetCellPaddings(0, 0, 0, 0);
+        PDF::SetFont($font, 'I', $fontsize);
+        PDF::MultiCell(480, 10, $hrem, '', 'L', false, 0);
         PDF::SetCellPaddings(4, 2, 0, 4); // restore original padding
         PDF::MultiCell(20, 10, '', 'L', 'L', false, 0);
         PDF::MultiCell(100, 10, '', 'R', 'R', false, 1);

@@ -4142,6 +4142,15 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+            'subclass' => array(
+                'name' => 'subclass',
+                'type' => 'input',
+                'label' => 'Sub-Class',
+                'class' => 'csclass',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
             'model' => array(
                 'name' => 'model',
                 'type' => 'lookup',

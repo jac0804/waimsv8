@@ -2255,7 +2255,17 @@ class gridbuttonClass
         'visible' => true,
         'color' => 'primary'
       ],
-
+      'replacementcheque' => [
+        'name' => 'tableentry',
+        'label' => 'Add Bounce Cheque',
+        'icon' => 'add',
+        'action' => 'tableentry',
+        'class' => 'btnreplacementcheque',
+        'lookupclass' => 'entryreplacementcheque',
+        'access' => 'view',
+        'visible' => true,
+        'color' => 'primary'
+      ],
     ];
   }
 } // end class

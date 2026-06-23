@@ -237,7 +237,7 @@ class forecast_report
     $str .= $this->reporter->col('Probability', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Closing Month', '120', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Remarks/Status', '140', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Year', '90', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Closing Year', '90', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Account Type', '130', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
@@ -301,22 +301,22 @@ class forecast_report
       }
 
       switch ($probability) {
-        case '25%':
+        case '25%': //1yr
           $closing = "December";
           break;
-        case '50%':
+        case '50%': //9months
           $qdate = strtotime($data->quodate);
           $closing = date("F", strtotime("+6 month", $qdate));
           break;
-        case '75%':
+        case '75%': //3mos
           $qdate = strtotime($data->quodate);
           $closing = date("F", strtotime("+3 month", $qdate));
           break;
-        case '90%':
+        case '90%': //within the month
           $qdate = strtotime($data->quodate);
           $closing = date("F", strtotime($qdate));
           break;
-        case '100%':
+        case '100%': //same on the date
           $closing = date("F", strtotime($data->due));
           break;
       }

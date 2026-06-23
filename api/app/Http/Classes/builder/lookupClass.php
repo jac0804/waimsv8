@@ -3377,6 +3377,12 @@ class lookupClass
           $plotting['ewt'] = 'ewt';
           $addonfield = ", ifnull(ewtlist.rate,0) as ewtrate, if(ewtlist.code <> '',ewtlist.code,'') as ewt,client.vattype,client.tax";
           $leftjoin = " left join ewtlist on ewtlist.line = client.ewtid ";
+
+          if($config['params']['doc'] == 'DM'){
+             $plotting['contra'] = 'contra';
+             $addonfield .= ", (case when left(client.client,3)='161' then '\\2-01-01-01-03' when left(client.client,3)='162' then '\\2-01-01-01-02' else '\\2-01-01-01-01' end) as contra";
+          }
+
         }
         break;
       case 'supplieremp':
@@ -13677,6 +13683,7 @@ class lookupClass
   {
     //default
     $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $plotting = array();
     $plottype = '';
 
@@ -13756,13 +13763,18 @@ class lookupClass
       case 'lookupusers':
       case 'user':
       case 'lookupreqby':
+        $filter = "";
+        if($companyid == 29 && ( $doc =='TM' ||  $doc == 'DY')){
+            $filter = " and isinactive=0";
+        }
+
         $qry = "select '' as userid,'' as accessid, '' as username,'' as name,'' as project
                 union all
                 select userid, accessid, username, name,project
                 from useraccess
                 union all
                 select clientid as userid, 0 as accessid, email as username, clientname as name, '' as project
-                from client where isemployee=1 and email <> ''";
+                from client where isemployee=1 and email <> ''" . $filter;
         break;
       case 'lookupcollector':
 
@@ -13784,7 +13796,7 @@ class lookupClass
          $qry = "select '0' as userid,'0' as accessid, '' as username,'' as name,'' as project
             union all
             select clientid as userid, 0 as accessid, email as username, clientname as name, '' as project
-            from client where isemployee=1 and email <> ''";
+            from client where isemployee=1 and email <> '' and isinactive=0";
         break;  
       default:
         $qry = "select idno as userid, username from users";
@@ -15011,7 +15023,7 @@ class lookupClass
       ['name' => 'gender', 'label' => 'Gender', 'align' => 'left', 'field' => 'gender', 'sortable' => true, 'style' => 'font-size:16px;'],
     ];
 
-    $qry = "select 'Male' as gender union all select 'Female' union all select 'LGBT'";
+    $qry = "select 'Male' as gender union all select 'Female' union all select 'LGBT' union all select 'Any'";
 
     if ($config['params']['doc'] == 'CA' || $config['params']['doc'] == 'BG') { //ticket and brgy
       $qry = "select 'Male' as gender union all select 'Female' as gender ";

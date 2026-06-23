@@ -103,10 +103,14 @@ class entrytask
     $obj[0][$this->gridname]['columns'][$action]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     $obj[0][$this->gridname]['columns'][$title]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
 
-    $obj[0][$this->gridname]['columns'][$user]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $obj[0][$this->gridname]['columns'][$isprio]['style'] = 'width:50px;whiteSpace: normal;min-width:50px;';
+    $obj[0][$this->gridname]['columns'][$taskcategory]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+
+    $obj[0][$this->gridname]['columns'][$user]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
 
     $obj[0][$this->gridname]['columns'][$title]['label'] = 'Task';
     $obj[0][$this->gridname]['columns'][$title]['readonly'] = false;
+    $obj[0][$this->gridname]['columns'][$title]['type'] = 'textarea';
 
     $obj[0][$this->gridname]['columns'][$user]['label'] = 'Assigned to';
     $obj[0][$this->gridname]['columns'][$user]['type'] = 'lookup';
@@ -311,6 +315,7 @@ class entrytask
           if ($update) {
             if ($data2['isassigntype'] != 0) {
               $this->computeassignedtype($config, $data[$key]['line']);
+              $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno . " and line=" . $data[$key]['line'], 'delete');
             }
           }
         }
@@ -480,6 +485,7 @@ class entrytask
         if ($this->coreFunctions->sbcupdate($tbl, $data, ['trno' => $trno, 'line' => $row['line']]) == 1) {
           if ($data['isassigntype'] != 0) {
             $this->computeassignedtype($config, $row['line']);
+            $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno . " and line=" . $row['line'], 'delete');
           }
           $returnrow = $this->loaddataperrecord($trno, $row['line']);
           // $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['title']);

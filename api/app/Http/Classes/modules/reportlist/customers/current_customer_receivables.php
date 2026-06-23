@@ -414,6 +414,7 @@ class current_customer_receivables
     $addfield2 = '';
     $addleftjoin = '';
     $elapseP = "case when terms.days = 0 then 0 else datediff(now(), detail.dateid) end as elapse";
+    $addleftjoin = "left join terms on terms.terms=head.terms";
 
     switch ($companyid) {
       case 19: //housegem
@@ -428,7 +429,6 @@ class current_customer_receivables
       case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
-        $addleftjoin = "left join terms on terms.terms=head.terms";
         break;
     }
 
@@ -527,6 +527,7 @@ class current_customer_receivables
     $addfield2 = '';
     $addleftjoin = "";
     $elapseU = "case when terms.days = 0 then 0 else datediff(now(), head.dateid) end as elapse";
+    $addleftjoin = "left join terms on terms.terms=head.terms";
 
     switch ($companyid) {
       case 32: //3m
@@ -547,7 +548,6 @@ class current_customer_receivables
       case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
-        $addleftjoin = "left join terms on terms.terms=head.terms";
         break;
     }
 
@@ -669,6 +669,8 @@ class current_customer_receivables
     $addgrp3m = '';
     $elapseU = "case when terms.days = 0 then 0 else datediff(now(), head.dateid) end as elapse";
     $elapseP = "case when terms.days = 0 then 0 else datediff(now(), ar.dateid) end as elapse";
+    $addleftjoin = "left join terms on terms.terms=head.terms";
+    $addleftjoin2 = "left join terms on terms.terms=head.terms";
 
     switch ($companyid) {
       case 32: //3m
@@ -689,8 +691,6 @@ class current_customer_receivables
       case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
-        $addleftjoin = "left join terms on terms.terms=head.terms";
-        $addleftjoin2 = "left join terms on terms.terms=head.terms";
         break;
     }
 

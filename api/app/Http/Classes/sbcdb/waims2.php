@@ -4376,5 +4376,37 @@ class waims2
     $this->coreFunctions->sbcaddcolumn("tmhead", "sjdate", "datetime DEFAULT NULL", 0);
 
     $this->coreFunctions->execqrynolog("ALTER TABLE sistock CHANGE rem rem varchar(200) NOT NULL DEFAULT ''");
+
+    $qry = "CREATE TABLE `chequedetail` (
+            `trno` bigint(11) unsigned NOT NULL DEFAULT  '0',
+            `line` int(11) unsigned NOT NULL DEFAULT  '0',
+            `rctrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+            `rcline` int(11) unsigned NOT NULL DEFAULT '0',
+            `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+            `linex` int(11) unsigned NOT NULL DEFAULT '0',
+            `editby` varchar(100) NOT NULL DEFAULT '',
+            `editdate` datetime DEFAULT NULL,
+            `encodedby` varchar(100) NOT NULL DEFAULT '',
+            `encodeddate` datetime DEFAULT NULL,
+             INDEX `Index_trno`(`trno`),
+             INDEX `Index_line`(`line`))
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("chequedetail", $qry);
+
+    $qry = "CREATE TABLE `hchequedetail` (
+            `trno` bigint(11) unsigned NOT NULL DEFAULT  '0',
+            `line` int(11) unsigned NOT NULL DEFAULT  '0',
+            `rctrno` bigint(20) unsigned NOT NULL DEFAULT '0',
+            `rcline` int(11) unsigned NOT NULL DEFAULT '0',
+            `refx` bigint(20) unsigned NOT NULL DEFAULT '0',
+            `linex` int(11) unsigned NOT NULL DEFAULT '0',
+            `editby` varchar(100) NOT NULL DEFAULT '',
+            `editdate` datetime DEFAULT NULL,
+            `encodedby` varchar(100) NOT NULL DEFAULT '',
+            `encodeddate` datetime DEFAULT NULL,
+             INDEX `Index_trno`(`trno`),
+             INDEX `Index_line`(`line`))
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("hchequedetail", $qry);
   }
 }

@@ -252,12 +252,25 @@ class carmakesetup
         if ($isupdate) {
             unset($this->fields[array_search('carcode', $this->fields)]);
         } else {
-            $data['carcode'] = $head['client']; 
+            $data['carcode'] = $head['client'];
             $head['carcode'] = $head['client'];
         }
 
         if (isset($head['name'])) {
             $head['carname'] = $head['name'];
+        }
+
+        // duplicate carname check
+        if ($isupdate) {
+            $qry2 = "select id as value from cmake where carname=? and id<>? limit 1";
+            $dup = $this->coreFunctions->datareader($qry2, [$head['carname'], $head['clientid']]);
+        } else {
+            $qry2 = "select id as value from cmake where carname=? limit 1";
+            $dup = $this->coreFunctions->datareader($qry2, [$head['carname']]);
+        }
+
+        if ($dup != '') {
+            return ['status' => false, 'msg' => 'Car Make name already exists.', 'clientid' => $isupdate ? $head['clientid'] : 0];
         }
 
         foreach ($this->fields as $key) {
@@ -285,7 +298,7 @@ class carmakesetup
         $stock = $this->openstock($clientid, $config);
         return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid, 'griddata' => ['cmodel' => $stock]];
     }
-
+    
     public function newclient($config)
     {
         $data = $this->resetdata($config['newclient']);

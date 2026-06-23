@@ -171,13 +171,23 @@ class entryamparts
                 //     $line = $this->coreFunctions->insertGetId($this->table, $data2);
                 //     $config['params']['doc'] = 'ENTRYAMPARTS';
 
-                //     $item = $this->coreFunctions->opentable("select barcode,itemname from item where item =?", [$data2['itemid']]);
+                $item = $this->coreFunctions->opentable("select barcode,itemname from item where itemid =?", [$data2['itemid']]);
                 //     $this->logger->sbcmasterlog($line, $config, ' CREATE - Line: ' . $line . 'Job Code :' . $item[0]->barcode . ' ' . 'Job Desc : ' . $item[0]->itemname);
                 // } else {
                 $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
                 $data2['editby'] = $config['params']['user'];
                 $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line'], 'trno' => $trno]);
                 // }
+
+                $logs = [
+                    'barcode' => $item[0]->barcode,
+                    'amt' => $data2['isamt'],
+                    'disc' => $data2['disc'],
+                    'qty' => $data2['isqty'],
+                    'wh' => $data2['whid'],
+                ];
+
+                $computecost = $this->computecost($config, $data2, $data[$key]['line'], $logs);
             }
         }
         $returndata = $this->loaddata($config);

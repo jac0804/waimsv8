@@ -76,7 +76,7 @@ class monthly_income_statement
     '" . $defaultcenter[0]['centername'] . "' as centername,
     '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
     '' as costcenter ";
-    
+
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
@@ -192,20 +192,20 @@ class monthly_income_statement
       'cat' => 'E',
       'parent' => 'X',
       'detail' => 0,
-      'monjan' => number_format((float)$month_revenue2['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$month_revenue2['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$month_revenue2['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$month_revenue2['mapr'], 2, '.', ''),
+      'monjan' => number_format((float) $month_revenue2['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $month_revenue2['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $month_revenue2['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $month_revenue2['mapr'], 2, '.', ''),
 
-      'monmay' => number_format((float)$month_revenue2['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$month_revenue2['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$month_revenue2['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$month_revenue2['maug'], 2, '.', ''),
+      'monmay' => number_format((float) $month_revenue2['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $month_revenue2['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $month_revenue2['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $month_revenue2['maug'], 2, '.', ''),
 
-      'monsep' => number_format((float)$month_revenue2['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$month_revenue2['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$month_revenue2['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$month_revenue2['mdec'], 2, '.', ''),
+      'monsep' => number_format((float) $month_revenue2['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $month_revenue2['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $month_revenue2['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $month_revenue2['mdec'], 2, '.', ''),
       'amt' => 0,
       'total' => $amt1b
     );
@@ -232,18 +232,18 @@ class monthly_income_statement
       'cat' => 'E',
       'parent' => 'X',
       'detail' => 0,
-      'monjan' => number_format((float)$computed_month_gross_margin['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$computed_month_gross_margin['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$computed_month_gross_margin['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$computed_month_gross_margin['mapr'], 2, '.', ''),
-      'monmay' => number_format((float)$computed_month_gross_margin['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$computed_month_gross_margin['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$computed_month_gross_margin['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$computed_month_gross_margin['maug'], 2, '.', ''),
-      'monsep' => number_format((float)$computed_month_gross_margin['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$computed_month_gross_margin['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$computed_month_gross_margin['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$computed_month_gross_margin['mdec'], 2, '.', ''),
+      'monjan' => number_format((float) $computed_month_gross_margin['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $computed_month_gross_margin['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $computed_month_gross_margin['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $computed_month_gross_margin['mapr'], 2, '.', ''),
+      'monmay' => number_format((float) $computed_month_gross_margin['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $computed_month_gross_margin['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $computed_month_gross_margin['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $computed_month_gross_margin['maug'], 2, '.', ''),
+      'monsep' => number_format((float) $computed_month_gross_margin['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $computed_month_gross_margin['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $computed_month_gross_margin['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $computed_month_gross_margin['mdec'], 2, '.', ''),
       'amt' => 0,
       'total' => $amt1b_less2b
     );
@@ -272,18 +272,18 @@ class monthly_income_statement
       'cat' => 'E',
       'parent' => 'X',
       'detail' => 0,
-      'monjan' => number_format((float)$computed_month_net_income_loss_from_operation['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$computed_month_net_income_loss_from_operation['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$computed_month_net_income_loss_from_operation['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$computed_month_net_income_loss_from_operation['mapr'], 2, '.', ''),
-      'monmay' => number_format((float)$computed_month_net_income_loss_from_operation['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$computed_month_net_income_loss_from_operation['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$computed_month_net_income_loss_from_operation['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$computed_month_net_income_loss_from_operation['maug'], 2, '.', ''),
-      'monsep' => number_format((float)$computed_month_net_income_loss_from_operation['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$computed_month_net_income_loss_from_operation['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$computed_month_net_income_loss_from_operation['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$computed_month_net_income_loss_from_operation['mdec'], 2, '.', ''),
+      'monjan' => number_format((float) $computed_month_net_income_loss_from_operation['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $computed_month_net_income_loss_from_operation['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $computed_month_net_income_loss_from_operation['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $computed_month_net_income_loss_from_operation['mapr'], 2, '.', ''),
+      'monmay' => number_format((float) $computed_month_net_income_loss_from_operation['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $computed_month_net_income_loss_from_operation['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $computed_month_net_income_loss_from_operation['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $computed_month_net_income_loss_from_operation['maug'], 2, '.', ''),
+      'monsep' => number_format((float) $computed_month_net_income_loss_from_operation['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $computed_month_net_income_loss_from_operation['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $computed_month_net_income_loss_from_operation['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $computed_month_net_income_loss_from_operation['mdec'], 2, '.', ''),
       'amt' => 0,
       'total' => $amt1b_less2b_less3b
     );
@@ -315,20 +315,20 @@ class monthly_income_statement
       'cat' => 'E',
       'parent' => 'X',
       'detail' => 0,
-      'monjan' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mapr'], 2, '.', ''),
-      'monmay' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['maug'], 2, '.', ''),
-      'monsep' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$computed_month_net_profit_loss_before_admin_expenses['mdec'], 2, '.', ''),
+      'monjan' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mapr'], 2, '.', ''),
+      'monmay' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['maug'], 2, '.', ''),
+      'monsep' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $computed_month_net_profit_loss_before_admin_expenses['mdec'], 2, '.', ''),
       'amt' => 0,
-      'total' => number_format((float)$amt1b_less2b_less3b_less4b, 2, '.', '')
+      'total' => number_format((float) $amt1b_less2b_less3b_less4b, 2, '.', '')
     );
 
     $adminshare = $this->cdogetadminshare($filters, $brgross);
@@ -341,20 +341,20 @@ class monthly_income_statement
       'parent' => 'X',
       'detail' => 0,
 
-      'monjan' => number_format((float)$adminshare['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$adminshare['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$adminshare['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$adminshare['mapr'], 2, '.', ''),
-      'monmay' => number_format((float)$adminshare['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$adminshare['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$adminshare['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$adminshare['maug'], 2, '.', ''),
-      'monsep' => number_format((float)$adminshare['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$adminshare['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$adminshare['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$adminshare['mdec'], 2, '.', ''),
-      'amt' => number_format((float)$adminshare['amt'], 2, '.', ''),
-      'total' => number_format((float)$adminshare['amt'], 2, '.', '')
+      'monjan' => number_format((float) $adminshare['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $adminshare['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $adminshare['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $adminshare['mapr'], 2, '.', ''),
+      'monmay' => number_format((float) $adminshare['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $adminshare['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $adminshare['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $adminshare['maug'], 2, '.', ''),
+      'monsep' => number_format((float) $adminshare['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $adminshare['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $adminshare['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $adminshare['mdec'], 2, '.', ''),
+      'amt' => number_format((float) $adminshare['amt'], 2, '.', ''),
+      'total' => number_format((float) $adminshare['amt'], 2, '.', '')
     );
 
 
@@ -378,20 +378,20 @@ class monthly_income_statement
       'cat' => 'E',
       'parent' => 'X',
       'detail' => 0,
-      'monjan' => number_format((float)$computed_less_admin['mjan'], 2, '.', ''),
-      'monfeb' => number_format((float)$computed_less_admin['mfeb'], 2, '.', ''),
-      'monmar' => number_format((float)$computed_less_admin['mmar'], 2, '.', ''),
-      'monapr' => number_format((float)$computed_less_admin['mapr'], 2, '.', ''),
-      'monmay' => number_format((float)$computed_less_admin['mmay'], 2, '.', ''),
-      'monjun' => number_format((float)$computed_less_admin['mjun'], 2, '.', ''),
-      'monjul' => number_format((float)$computed_less_admin['mjul'], 2, '.', ''),
-      'monaug' => number_format((float)$computed_less_admin['maug'], 2, '.', ''),
-      'monsep' => number_format((float)$computed_less_admin['msep'], 2, '.', ''),
-      'monoct' => number_format((float)$computed_less_admin['moct'], 2, '.', ''),
-      'monnov' => number_format((float)$computed_less_admin['mnov'], 2, '.', ''),
-      'mondec' => number_format((float)$computed_less_admin['mdec'], 2, '.', ''),
+      'monjan' => number_format((float) $computed_less_admin['mjan'], 2, '.', ''),
+      'monfeb' => number_format((float) $computed_less_admin['mfeb'], 2, '.', ''),
+      'monmar' => number_format((float) $computed_less_admin['mmar'], 2, '.', ''),
+      'monapr' => number_format((float) $computed_less_admin['mapr'], 2, '.', ''),
+      'monmay' => number_format((float) $computed_less_admin['mmay'], 2, '.', ''),
+      'monjun' => number_format((float) $computed_less_admin['mjun'], 2, '.', ''),
+      'monjul' => number_format((float) $computed_less_admin['mjul'], 2, '.', ''),
+      'monaug' => number_format((float) $computed_less_admin['maug'], 2, '.', ''),
+      'monsep' => number_format((float) $computed_less_admin['msep'], 2, '.', ''),
+      'monoct' => number_format((float) $computed_less_admin['moct'], 2, '.', ''),
+      'monnov' => number_format((float) $computed_less_admin['mnov'], 2, '.', ''),
+      'mondec' => number_format((float) $computed_less_admin['mdec'], 2, '.', ''),
       'amt' => 0,
-      'total' => number_format((float)$amt1234_lessadmin, 2, '.', '')
+      'total' => number_format((float) $amt1234_lessadmin, 2, '.', '')
     );
 
 
@@ -516,16 +516,21 @@ class monthly_income_statement
     switch ($companyid) {
       case 40: //cdo
         $result = $this->CDO_query($config);
-        $reportdata =  $this->CDO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
+        $reportdata = $this->CDO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
       case 8: //maxipro
         $result = $this->maxipro_query($config);
-        $reportdata =  $this->MAXIPRO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
+        $reportdata = $this->MAXIPRO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
+        break;
+      case 29:
+        $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1200'];
+        $result = $this->default_query($config);
+        $reportdata = $this->SBC_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
 
       default:
         $result = $this->default_query($config);
-        $reportdata =  $this->DEFAULT_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
+        $reportdata = $this->DEFAULT_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
     }
 
@@ -553,81 +558,81 @@ class monthly_income_statement
               'cat' => $result2[$b]['cat'],
               'parent' => $result2[$b]['parent'],
               'detail' => $result2[$b]['detail'],
-              'monjan' => number_format((float)$result2[$b]['monjan'], 2, '.', ''),
-              'monfeb' => number_format((float)$result2[$b]['monfeb'], 2, '.', ''),
-              'monmar' => number_format((float)$result2[$b]['monmar'], 2, '.', ''),
-              'monapr' => number_format((float)$result2[$b]['monapr'], 2, '.', ''),
-              'monmay' => number_format((float)$result2[$b]['monmay'], 2, '.', ''),
-              'monjun' => number_format((float)$result2[$b]['monjun'], 2, '.', ''),
-              'monjul' => number_format((float)$result2[$b]['monjul'], 2, '.', ''),
-              'monaug' => number_format((float)$result2[$b]['monaug'], 2, '.', ''),
-              'monsep' => number_format((float)$result2[$b]['monsep'], 2, '.', ''),
-              'monoct' => number_format((float)$result2[$b]['monoct'], 2, '.', ''),
-              'monnov' => number_format((float)$result2[$b]['monnov'], 2, '.', ''),
-              'mondec' => number_format((float)$result2[$b]['mondec'], 2, '.', ''),
+              'monjan' => number_format((float) $result2[$b]['monjan'], 2, '.', ''),
+              'monfeb' => number_format((float) $result2[$b]['monfeb'], 2, '.', ''),
+              'monmar' => number_format((float) $result2[$b]['monmar'], 2, '.', ''),
+              'monapr' => number_format((float) $result2[$b]['monapr'], 2, '.', ''),
+              'monmay' => number_format((float) $result2[$b]['monmay'], 2, '.', ''),
+              'monjun' => number_format((float) $result2[$b]['monjun'], 2, '.', ''),
+              'monjul' => number_format((float) $result2[$b]['monjul'], 2, '.', ''),
+              'monaug' => number_format((float) $result2[$b]['monaug'], 2, '.', ''),
+              'monsep' => number_format((float) $result2[$b]['monsep'], 2, '.', ''),
+              'monoct' => number_format((float) $result2[$b]['monoct'], 2, '.', ''),
+              'monnov' => number_format((float) $result2[$b]['monnov'], 2, '.', ''),
+              'mondec' => number_format((float) $result2[$b]['mondec'], 2, '.', ''),
               'yr' => $result2[$b]['yr']
             );
             $oldacno = $result2[$b]['acno'];
           } else {
             $key = array_search($result2[$b]['acno'], array_column($a, 'acno'));
-            $a[$key]['monjan'] = $a[$key]['monjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-            $a[$key]['monfeb'] = $a[$key]['monfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-            $a[$key]['monmar'] = $a[$key]['monmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-            $a[$key]['monapr'] = $a[$key]['monapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-            $a[$key]['monmay'] = $a[$key]['monmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-            $a[$key]['monjun'] = $a[$key]['monjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-            $a[$key]['monjul'] = $a[$key]['monjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-            $a[$key]['monaug'] = $a[$key]['monaug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-            $a[$key]['monsep'] = $a[$key]['monsep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-            $a[$key]['monoct'] = $a[$key]['monoct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-            $a[$key]['monnov'] = $a[$key]['monnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-            $a[$key]['mondec'] = $a[$key]['mondec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+            $a[$key]['monjan'] = $a[$key]['monjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+            $a[$key]['monfeb'] = $a[$key]['monfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+            $a[$key]['monmar'] = $a[$key]['monmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+            $a[$key]['monapr'] = $a[$key]['monapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+            $a[$key]['monmay'] = $a[$key]['monmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+            $a[$key]['monjun'] = $a[$key]['monjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+            $a[$key]['monjul'] = $a[$key]['monjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+            $a[$key]['monaug'] = $a[$key]['monaug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+            $a[$key]['monsep'] = $a[$key]['monsep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+            $a[$key]['monoct'] = $a[$key]['monoct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+            $a[$key]['monnov'] = $a[$key]['monnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+            $a[$key]['mondec'] = $a[$key]['mondec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
           }
 
-          $month['mjan'] = $month['mjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-          $month['mfeb'] = $month['mfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-          $month['mmar'] = $month['mmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-          $month['mapr'] = $month['mapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-          $month['mmay'] = $month['mmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-          $month['mjun'] = $month['mjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-          $month['mjul'] = $month['mjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-          $month['maug'] = $month['maug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-          $month['msep'] = $month['msep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-          $month['moct'] = $month['moct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-          $month['mnov'] = $month['mnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-          $month['mdec'] = $month['mdec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+          $month['mjan'] = $month['mjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+          $month['mfeb'] = $month['mfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+          $month['mmar'] = $month['mmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+          $month['mapr'] = $month['mapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+          $month['mmay'] = $month['mmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+          $month['mjun'] = $month['mjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+          $month['mjul'] = $month['mjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+          $month['maug'] = $month['maug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+          $month['msep'] = $month['msep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+          $month['moct'] = $month['moct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+          $month['mnov'] = $month['mnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+          $month['mdec'] = $month['mdec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
 
-          $month2['mjan'] = $month2['mjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-          $month2['mfeb'] = $month2['mfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-          $month2['mmar'] = $month2['mmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-          $month2['mapr'] = $month2['mapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-          $month2['mmay'] = $month2['mmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-          $month2['mjun'] = $month2['mjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-          $month2['mjul'] = $month2['mjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-          $month2['maug'] = $month2['maug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-          $month2['msep'] = $month2['msep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-          $month2['moct'] = $month2['moct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-          $month2['mnov'] = $month2['mnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-          $month2['mdec'] = $month2['mdec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+          $month2['mjan'] = $month2['mjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+          $month2['mfeb'] = $month2['mfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+          $month2['mmar'] = $month2['mmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+          $month2['mapr'] = $month2['mapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+          $month2['mmay'] = $month2['mmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+          $month2['mjun'] = $month2['mjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+          $month2['mjul'] = $month2['mjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+          $month2['maug'] = $month2['maug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+          $month2['msep'] = $month2['msep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+          $month2['moct'] = $month2['moct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+          $month2['mnov'] = $month2['mnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+          $month2['mdec'] = $month2['mdec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
           break;
 
         case '3YEARS':
           if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
-            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'year1' => number_format((float)$result2[$b]['year1'], 2, '.', ''), 'year2' => number_format((float)$result2[$b]['year2'], 2, '.', ''), 'year3' => number_format((float)$result2[$b]['year3'], 2, '.', ''));
+            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'year1' => number_format((float) $result2[$b]['year1'], 2, '.', ''), 'year2' => number_format((float) $result2[$b]['year2'], 2, '.', ''), 'year3' => number_format((float) $result2[$b]['year3'], 2, '.', ''));
             $oldacno = $result2[$b]['acno'];
           } else {
             $key = array_search($result2[$b]['acno'], array_column($a, 'acno'));
-            $a[$key]['year1'] = $a[$key]['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-            $a[$key]['year2'] = $a[$key]['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-            $a[$key]['year3'] = $a[$key]['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+            $a[$key]['year1'] = $a[$key]['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+            $a[$key]['year2'] = $a[$key]['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+            $a[$key]['year3'] = $a[$key]['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
           }
-          $month['year1'] = $month['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-          $month['year2'] = $month['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-          $month['year3'] = $month['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+          $month['year1'] = $month['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+          $month['year2'] = $month['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+          $month['year3'] = $month['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
 
-          $month2['year1'] = $month2['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-          $month2['year2'] = $month2['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-          $month2['year3'] = $month2['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+          $month2['year1'] = $month2['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+          $month2['year2'] = $month2['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+          $month2['year3'] = $month2['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
           break;
       }
 
@@ -639,7 +644,7 @@ class monthly_income_statement
                 $a[] = array(
                   'acno' => $result2[$b]['acno'],
                   'acnoname' =>
-                  'TOTAL ' . $result2[$b]['acnoname'],
+                    'TOTAL ' . $result2[$b]['acnoname'],
                   'levelid' => $result2[$b]['levelid'],
                   'cat' => $result2[$b]['cat'],
                   'parent' => $result2[$b]['parent'],
@@ -690,9 +695,9 @@ class monthly_income_statement
               $L2 = $loss[0]['year2'] - $loss2[0]['year2'];
               $L3 = $loss[0]['year3'] - $loss2[0]['year3'];
 
-              $month2['year1'] = $month2['year1'] + number_format((float)$L1, 2, '.', '');
-              $month2['year2'] = $month2['year2'] + number_format((float)$L2, 2, '.', '');
-              $month2['year3'] = $month2['year3'] + number_format((float)$L3, 2, '.', '');
+              $month2['year1'] = $month2['year1'] + number_format((float) $L1, 2, '.', '');
+              $month2['year2'] = $month2['year2'] + number_format((float) $L2, 2, '.', '');
+              $month2['year3'] = $month2['year3'] + number_format((float) $L3, 2, '.', '');
 
               $a[] = array('acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET', 'levelid' => $result2[$b]['levelid'] + 1, 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => 1, 'year1' => $L1, 'year2' => $L2, 'year3' => $L3);
             }
@@ -750,68 +755,68 @@ class monthly_income_statement
       switch ($view) {
         case 'MONTHLY':
           if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
-            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'monjan' => number_format((float)$result2[$b]['monjan'], 2, '.', ''), 'monfeb' => number_format((float)$result2[$b]['monfeb'], 2, '.', ''), 'monmar' => number_format((float)$result2[$b]['monmar'], 2, '.', ''), 'monapr' => number_format((float)$result2[$b]['monapr'], 2, '.', ''), 'monmay' => number_format((float)$result2[$b]['monmay'], 2, '.', ''), 'monjun' => number_format((float)$result2[$b]['monjun'], 2, '.', ''), 'monjul' => number_format((float)$result2[$b]['monjul'], 2, '.', ''), 'monaug' => number_format((float)$result2[$b]['monaug'], 2, '.', ''), 'monsep' => number_format((float)$result2[$b]['monsep'], 2, '.', ''), 'monoct' => number_format((float)$result2[$b]['monoct'], 2, '.', ''), 'monnov' => number_format((float)$result2[$b]['monnov'], 2, '.', ''), 'mondec' => number_format((float)$result2[$b]['mondec'], 2, '.', ''), 'yr' => $result2[$b]['yr']);
+            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'monjan' => number_format((float) $result2[$b]['monjan'], 2, '.', ''), 'monfeb' => number_format((float) $result2[$b]['monfeb'], 2, '.', ''), 'monmar' => number_format((float) $result2[$b]['monmar'], 2, '.', ''), 'monapr' => number_format((float) $result2[$b]['monapr'], 2, '.', ''), 'monmay' => number_format((float) $result2[$b]['monmay'], 2, '.', ''), 'monjun' => number_format((float) $result2[$b]['monjun'], 2, '.', ''), 'monjul' => number_format((float) $result2[$b]['monjul'], 2, '.', ''), 'monaug' => number_format((float) $result2[$b]['monaug'], 2, '.', ''), 'monsep' => number_format((float) $result2[$b]['monsep'], 2, '.', ''), 'monoct' => number_format((float) $result2[$b]['monoct'], 2, '.', ''), 'monnov' => number_format((float) $result2[$b]['monnov'], 2, '.', ''), 'mondec' => number_format((float) $result2[$b]['mondec'], 2, '.', ''), 'yr' => $result2[$b]['yr']);
             $oldacno = $result2[$b]['acno'];
           } else {
             $key = array_search($result2[$b]['acno'], array_column($a, 'acno'));
-            $a[$key]['monjan'] = $a[$key]['monjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-            $a[$key]['monfeb'] = $a[$key]['monfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-            $a[$key]['monmar'] = $a[$key]['monmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-            $a[$key]['monapr'] = $a[$key]['monapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-            $a[$key]['monmay'] = $a[$key]['monmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-            $a[$key]['monjun'] = $a[$key]['monjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-            $a[$key]['monjul'] = $a[$key]['monjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-            $a[$key]['monaug'] = $a[$key]['monaug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-            $a[$key]['monsep'] = $a[$key]['monsep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-            $a[$key]['monoct'] = $a[$key]['monoct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-            $a[$key]['monnov'] = $a[$key]['monnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-            $a[$key]['mondec'] = $a[$key]['mondec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+            $a[$key]['monjan'] = $a[$key]['monjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+            $a[$key]['monfeb'] = $a[$key]['monfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+            $a[$key]['monmar'] = $a[$key]['monmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+            $a[$key]['monapr'] = $a[$key]['monapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+            $a[$key]['monmay'] = $a[$key]['monmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+            $a[$key]['monjun'] = $a[$key]['monjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+            $a[$key]['monjul'] = $a[$key]['monjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+            $a[$key]['monaug'] = $a[$key]['monaug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+            $a[$key]['monsep'] = $a[$key]['monsep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+            $a[$key]['monoct'] = $a[$key]['monoct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+            $a[$key]['monnov'] = $a[$key]['monnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+            $a[$key]['mondec'] = $a[$key]['mondec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
           }
 
-          $month['mjan'] = $month['mjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-          $month['mfeb'] = $month['mfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-          $month['mmar'] = $month['mmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-          $month['mapr'] = $month['mapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-          $month['mmay'] = $month['mmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-          $month['mjun'] = $month['mjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-          $month['mjul'] = $month['mjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-          $month['maug'] = $month['maug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-          $month['msep'] = $month['msep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-          $month['moct'] = $month['moct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-          $month['mnov'] = $month['mnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-          $month['mdec'] = $month['mdec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+          $month['mjan'] = $month['mjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+          $month['mfeb'] = $month['mfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+          $month['mmar'] = $month['mmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+          $month['mapr'] = $month['mapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+          $month['mmay'] = $month['mmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+          $month['mjun'] = $month['mjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+          $month['mjul'] = $month['mjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+          $month['maug'] = $month['maug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+          $month['msep'] = $month['msep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+          $month['moct'] = $month['moct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+          $month['mnov'] = $month['mnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+          $month['mdec'] = $month['mdec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
 
-          $month2['mjan'] = $month2['mjan'] + number_format((float)$result2[$b]['monjan'], 2, '.', '');
-          $month2['mfeb'] = $month2['mfeb'] + number_format((float)$result2[$b]['monfeb'], 2, '.', '');
-          $month2['mmar'] = $month2['mmar'] + number_format((float)$result2[$b]['monmar'], 2, '.', '');
-          $month2['mapr'] = $month2['mapr'] + number_format((float)$result2[$b]['monapr'], 2, '.', '');
-          $month2['mmay'] = $month2['mmay'] + number_format((float)$result2[$b]['monmay'], 2, '.', '');
-          $month2['mjun'] = $month2['mjun'] + number_format((float)$result2[$b]['monjun'], 2, '.', '');
-          $month2['mjul'] = $month2['mjul'] + number_format((float)$result2[$b]['monjul'], 2, '.', '');
-          $month2['maug'] = $month2['maug'] + number_format((float)$result2[$b]['monaug'], 2, '.', '');
-          $month2['msep'] = $month2['msep'] + number_format((float)$result2[$b]['monsep'], 2, '.', '');
-          $month2['moct'] = $month2['moct'] + number_format((float)$result2[$b]['monoct'], 2, '.', '');
-          $month2['mnov'] = $month2['mnov'] + number_format((float)$result2[$b]['monnov'], 2, '.', '');
-          $month2['mdec'] = $month2['mdec'] + number_format((float)$result2[$b]['mondec'], 2, '.', '');
+          $month2['mjan'] = $month2['mjan'] + number_format((float) $result2[$b]['monjan'], 2, '.', '');
+          $month2['mfeb'] = $month2['mfeb'] + number_format((float) $result2[$b]['monfeb'], 2, '.', '');
+          $month2['mmar'] = $month2['mmar'] + number_format((float) $result2[$b]['monmar'], 2, '.', '');
+          $month2['mapr'] = $month2['mapr'] + number_format((float) $result2[$b]['monapr'], 2, '.', '');
+          $month2['mmay'] = $month2['mmay'] + number_format((float) $result2[$b]['monmay'], 2, '.', '');
+          $month2['mjun'] = $month2['mjun'] + number_format((float) $result2[$b]['monjun'], 2, '.', '');
+          $month2['mjul'] = $month2['mjul'] + number_format((float) $result2[$b]['monjul'], 2, '.', '');
+          $month2['maug'] = $month2['maug'] + number_format((float) $result2[$b]['monaug'], 2, '.', '');
+          $month2['msep'] = $month2['msep'] + number_format((float) $result2[$b]['monsep'], 2, '.', '');
+          $month2['moct'] = $month2['moct'] + number_format((float) $result2[$b]['monoct'], 2, '.', '');
+          $month2['mnov'] = $month2['mnov'] + number_format((float) $result2[$b]['monnov'], 2, '.', '');
+          $month2['mdec'] = $month2['mdec'] + number_format((float) $result2[$b]['mondec'], 2, '.', '');
           break;
 
         case '3YEARS':
           if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
-            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'year1' => number_format((float)$result2[$b]['year1'], 2, '.', ''), 'year2' => number_format((float)$result2[$b]['year2'], 2, '.', ''), 'year3' => number_format((float)$result2[$b]['year3'], 2, '.', ''));
+            $a[] = array('acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'], 'year1' => number_format((float) $result2[$b]['year1'], 2, '.', ''), 'year2' => number_format((float) $result2[$b]['year2'], 2, '.', ''), 'year3' => number_format((float) $result2[$b]['year3'], 2, '.', ''));
             $oldacno = $result2[$b]['acno'];
           } else {
             $key = array_search($result2[$b]['acno'], array_column($a, 'acno'));
-            $a[$key]['year1'] = $a[$key]['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-            $a[$key]['year2'] = $a[$key]['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-            $a[$key]['year3'] = $a[$key]['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+            $a[$key]['year1'] = $a[$key]['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+            $a[$key]['year2'] = $a[$key]['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+            $a[$key]['year3'] = $a[$key]['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
           }
-          $month['year1'] = $month['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-          $month['year2'] = $month['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-          $month['year3'] = $month['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+          $month['year1'] = $month['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+          $month['year2'] = $month['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+          $month['year3'] = $month['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
 
-          $month2['year1'] = $month2['year1'] + number_format((float)$result2[$b]['year1'], 2, '.', '');
-          $month2['year2'] = $month2['year2'] + number_format((float)$result2[$b]['year2'], 2, '.', '');
-          $month2['year3'] = $month2['year3'] + number_format((float)$result2[$b]['year3'], 2, '.', '');
+          $month2['year1'] = $month2['year1'] + number_format((float) $result2[$b]['year1'], 2, '.', '');
+          $month2['year2'] = $month2['year2'] + number_format((float) $result2[$b]['year2'], 2, '.', '');
+          $month2['year3'] = $month2['year3'] + number_format((float) $result2[$b]['year3'], 2, '.', '');
           break;
       }
 
@@ -853,9 +858,9 @@ class monthly_income_statement
               $L2 = $loss[0]['year2'] - $loss2[0]['year2'];
               $L3 = $loss[0]['year3'] - $loss2[0]['year3'];
 
-              $month2['year1'] = $month2['year1'] + number_format((float)$L1, 2, '.', '');
-              $month2['year2'] = $month2['year2'] + number_format((float)$L2, 2, '.', '');
-              $month2['year3'] = $month2['year3'] + number_format((float)$L3, 2, '.', '');
+              $month2['year1'] = $month2['year1'] + number_format((float) $L1, 2, '.', '');
+              $month2['year2'] = $month2['year2'] + number_format((float) $L2, 2, '.', '');
+              $month2['year3'] = $month2['year3'] + number_format((float) $L3, 2, '.', '');
 
               $a[] = array('acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET', 'levelid' => $result2[$b]['levelid'] + 1, 'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => 1, 'year1' => $L1, 'year2' => $L2, 'year3' => $L3);
             }
@@ -1141,7 +1146,7 @@ class monthly_income_statement
 
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $dept   = $params['params']['dataparams']['ddeptname'];
+      $dept = $params['params']['dataparams']['ddeptname'];
       if ($dept != "") {
         $deptname = $params['params']['dataparams']['deptname'];
       } else {
@@ -1296,7 +1301,7 @@ class monthly_income_statement
 
           if ($data[$i]['detail'] != 0) {
             if ($data[$i]['monjan'] == 0) {
-              $str .= $this->reporter->col('-', '90', null, false, '1px solid ', '', 'R', $font,  $bold, '', '');
+              $str .= $this->reporter->col('-', '90', null, false, '1px solid ', '', 'R', $font, $bold, '', '');
             } else {
               $str .= $this->reporter->col(number_format($data[$i]['monjan'], 2), '90', null, false, '1px solid ', '', 'R', $font, $fontsize12, $bold, '', '');
             }
@@ -1413,11 +1418,13 @@ class monthly_income_statement
       $lineTotal = 0;
       $bold = '';
 
-      if ($data[$i]['detail'] == 1 and ($data[$i]['monjan'] == 0 and $data[$i]['monfeb'] == 0
-        and $data[$i]['monmar'] == 0 and $data[$i]['monapr'] == 0 and $data[$i]['monmay'] == 0
-        and $data[$i]['monjun'] == 0 and $data[$i]['monjul'] == 0 and $data[$i]['monaug'] == 0
-        and $data[$i]['monsep'] == 0 and $data[$i]['monoct'] == 0 and $data[$i]['monnov'] == 0
-        and $data[$i]['mondec'] == 0)) {
+      if (
+        $data[$i]['detail'] == 1 and ($data[$i]['monjan'] == 0 and $data[$i]['monfeb'] == 0
+          and $data[$i]['monmar'] == 0 and $data[$i]['monapr'] == 0 and $data[$i]['monmay'] == 0
+          and $data[$i]['monjun'] == 0 and $data[$i]['monjul'] == 0 and $data[$i]['monaug'] == 0
+          and $data[$i]['monsep'] == 0 and $data[$i]['monoct'] == 0 and $data[$i]['monnov'] == 0
+          and $data[$i]['mondec'] == 0)
+      ) {
       } else {
         if ($data[$i]['acnoname'] != '') {
           $indent = '5' * ($data[$i]['levelid'] * 3);
@@ -1430,7 +1437,7 @@ class monthly_income_statement
           $str .= $this->reporter->col($data[$i]['acnoname'], '280', null, false, '1px solid ', '', '', $font, $fontsize12, $bold, '', '0px 0px 0px ' . $indent . 'px');
           if ($data[$i]['detail'] != 0) {
             if ($data[$i]['monjan'] == 0) {
-              $str .= $this->reporter->col('-', '90', null, false, '1px solid ', '', 'R', $font,  $bold, '', '');
+              $str .= $this->reporter->col('-', '90', null, false, '1px solid ', '', 'R', $font, $bold, '', '');
             } else {
               $str .= $this->reporter->col(number_format($data[$i]['monjan'], 2), '90', null, false, '1px solid ', '', 'R', $font, $fontsize12, $bold, '', '');
             }
@@ -1642,35 +1649,35 @@ class monthly_income_statement
 
 
         if ($is_total == 1) {
-          $str .= $this->reporter->col(isset($data[$i]['monjan']) ? ($data[$i]['monjan'] == 0 ? '-' : number_format((float)$data[$i]['monjan'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monfeb']) ? ($data[$i]['monfeb'] == 0 ? '-' : number_format((float)$data[$i]['monfeb'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monmar']) ? ($data[$i]['monmar'] == 0 ? '-' : number_format((float)$data[$i]['monmar'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monapr']) ? ($data[$i]['monapr'] == 0 ? '-' : number_format((float)$data[$i]['monapr'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monmay']) ? ($data[$i]['monmay'] == 0 ? '-' : number_format((float)$data[$i]['monmay'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monjun']) ? ($data[$i]['monjun'] == 0 ? '-' : number_format((float)$data[$i]['monjun'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monjul']) ? ($data[$i]['monjul'] == 0 ? '-' : number_format((float)$data[$i]['monjul'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monaug']) ? ($data[$i]['monaug'] == 0 ? '-' : number_format((float)$data[$i]['monaug'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monsep']) ? ($data[$i]['monsep'] == 0 ? '-' : number_format((float)$data[$i]['monsep'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monoct']) ? ($data[$i]['monoct'] == 0 ? '-' : number_format((float)$data[$i]['monoct'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monnov']) ? ($data[$i]['monnov'] == 0 ? '-' : number_format((float)$data[$i]['monnov'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['mondec']) ? ($data[$i]['mondec'] == 0 ? '-' : number_format((float)$data[$i]['mondec'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['total']) ?  ($data[$i]['total'] == 0 ? '-' : number_format((float)$data[$i]['total'], 2)) : '', '110', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px ');
+          $str .= $this->reporter->col(isset($data[$i]['monjan']) ? ($data[$i]['monjan'] == 0 ? '-' : number_format((float) $data[$i]['monjan'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monfeb']) ? ($data[$i]['monfeb'] == 0 ? '-' : number_format((float) $data[$i]['monfeb'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monmar']) ? ($data[$i]['monmar'] == 0 ? '-' : number_format((float) $data[$i]['monmar'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monapr']) ? ($data[$i]['monapr'] == 0 ? '-' : number_format((float) $data[$i]['monapr'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monmay']) ? ($data[$i]['monmay'] == 0 ? '-' : number_format((float) $data[$i]['monmay'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monjun']) ? ($data[$i]['monjun'] == 0 ? '-' : number_format((float) $data[$i]['monjun'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monjul']) ? ($data[$i]['monjul'] == 0 ? '-' : number_format((float) $data[$i]['monjul'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monaug']) ? ($data[$i]['monaug'] == 0 ? '-' : number_format((float) $data[$i]['monaug'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monsep']) ? ($data[$i]['monsep'] == 0 ? '-' : number_format((float) $data[$i]['monsep'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monoct']) ? ($data[$i]['monoct'] == 0 ? '-' : number_format((float) $data[$i]['monoct'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monnov']) ? ($data[$i]['monnov'] == 0 ? '-' : number_format((float) $data[$i]['monnov'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['mondec']) ? ($data[$i]['mondec'] == 0 ? '-' : number_format((float) $data[$i]['mondec'], 2)) : '', '70', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['total']) ? ($data[$i]['total'] == 0 ? '-' : number_format((float) $data[$i]['total'], 2)) : '', '110', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '0px 0px 0px ');
         } else {
 
-          $str .= $this->reporter->col(isset($data[$i]['monjan']) ? ($data[$i]['monjan'] == 0 ? '-' : number_format((float)$data[$i]['monjan'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monfeb']) ? ($data[$i]['monfeb'] == 0 ? '-' : number_format((float)$data[$i]['monfeb'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monmar']) ? ($data[$i]['monmar'] == 0 ? '-' : number_format((float)$data[$i]['monmar'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monapr']) ? ($data[$i]['monapr'] == 0 ? '-' : number_format((float)$data[$i]['monapr'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monmay']) ? ($data[$i]['monmay'] == 0 ? '-' : number_format((float)$data[$i]['monmay'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monjun']) ? ($data[$i]['monjun'] == 0 ? '-' : number_format((float)$data[$i]['monjun'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monjul']) ? ($data[$i]['monjul'] == 0 ? '-' : number_format((float)$data[$i]['monjul'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monaug']) ? ($data[$i]['monaug'] == 0 ? '-' : number_format((float)$data[$i]['monaug'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monsep']) ? ($data[$i]['monsep'] == 0 ? '-' : number_format((float)$data[$i]['monsep'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monoct']) ? ($data[$i]['monoct'] == 0 ? '-' : number_format((float)$data[$i]['monoct'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['monnov']) ? ($data[$i]['monnov'] == 0 ? '-' : number_format((float)$data[$i]['monnov'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-          $str .= $this->reporter->col(isset($data[$i]['mondec']) ? ($data[$i]['mondec'] == 0 ? '-' : number_format((float)$data[$i]['mondec'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monjan']) ? ($data[$i]['monjan'] == 0 ? '-' : number_format((float) $data[$i]['monjan'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monfeb']) ? ($data[$i]['monfeb'] == 0 ? '-' : number_format((float) $data[$i]['monfeb'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monmar']) ? ($data[$i]['monmar'] == 0 ? '-' : number_format((float) $data[$i]['monmar'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monapr']) ? ($data[$i]['monapr'] == 0 ? '-' : number_format((float) $data[$i]['monapr'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monmay']) ? ($data[$i]['monmay'] == 0 ? '-' : number_format((float) $data[$i]['monmay'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monjun']) ? ($data[$i]['monjun'] == 0 ? '-' : number_format((float) $data[$i]['monjun'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monjul']) ? ($data[$i]['monjul'] == 0 ? '-' : number_format((float) $data[$i]['monjul'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monaug']) ? ($data[$i]['monaug'] == 0 ? '-' : number_format((float) $data[$i]['monaug'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monsep']) ? ($data[$i]['monsep'] == 0 ? '-' : number_format((float) $data[$i]['monsep'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monoct']) ? ($data[$i]['monoct'] == 0 ? '-' : number_format((float) $data[$i]['monoct'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['monnov']) ? ($data[$i]['monnov'] == 0 ? '-' : number_format((float) $data[$i]['monnov'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+          $str .= $this->reporter->col(isset($data[$i]['mondec']) ? ($data[$i]['mondec'] == 0 ? '-' : number_format((float) $data[$i]['mondec'], 2)) : '', '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
 
-          $str .= $this->reporter->col(isset($data[$i]['total']) ?  ($data[$i]['total'] == 0 ? '-' : number_format((float)$data[$i]['total'], 2)) : '', '110', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px ');
+          $str .= $this->reporter->col(isset($data[$i]['total']) ? ($data[$i]['total'] == 0 ? '-' : number_format((float) $data[$i]['total'], 2)) : '', '110', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px ');
         }
 
 
@@ -1684,7 +1691,7 @@ class monthly_income_statement
 
         $allowfirstpage = $this->companysetup->getisfirstpageheader($filters['params']);
         if (!$allowfirstpage) {
-          $str .=  $this->CDO_HEADER($filters, $center);
+          $str .= $this->CDO_HEADER($filters, $center);
         }
         $str .= $this->CDO_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $filters, $center);
 
@@ -1788,22 +1795,22 @@ class monthly_income_statement
       $indent = 5 * (2 * 3);
 
       $str .= $this->reporter->col($percentage_analysis[$g], '250', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '0px 0px 0px ' . $indent . 'px');
-      $str .= $this->reporter->col(($computed_fields['monjan'] == 0 ? '-' : number_format((float)$computed_fields['monjan'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monfeb'] == 0 ? '-' : number_format((float)$computed_fields['monfeb'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monmar'] == 0 ? '-' : number_format((float)$computed_fields['monmar'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monapr'] == 0 ? '-' : number_format((float)$computed_fields['monapr'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monjan'] == 0 ? '-' : number_format((float) $computed_fields['monjan'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monfeb'] == 0 ? '-' : number_format((float) $computed_fields['monfeb'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monmar'] == 0 ? '-' : number_format((float) $computed_fields['monmar'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monapr'] == 0 ? '-' : number_format((float) $computed_fields['monapr'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
 
-      $str .= $this->reporter->col(($computed_fields['monmay'] == 0 ? '-' : number_format((float)$computed_fields['monmay'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monjun'] == 0 ? '-' : number_format((float)$computed_fields['monjun'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monjul'] == 0 ? '-' : number_format((float)$computed_fields['monjul'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monaug'] == 0 ? '-' : number_format((float)$computed_fields['monaug'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monmay'] == 0 ? '-' : number_format((float) $computed_fields['monmay'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monjun'] == 0 ? '-' : number_format((float) $computed_fields['monjun'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monjul'] == 0 ? '-' : number_format((float) $computed_fields['monjul'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monaug'] == 0 ? '-' : number_format((float) $computed_fields['monaug'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
 
-      $str .= $this->reporter->col(($computed_fields['monsep'] == 0 ? '-' : number_format((float)$computed_fields['monsep'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monoct'] == 0 ? '-' : number_format((float)$computed_fields['monoct'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['monnov'] == 0 ? '-' : number_format((float)$computed_fields['monnov'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
-      $str .= $this->reporter->col(($computed_fields['mondec'] == 0 ? '-' : number_format((float)$computed_fields['mondec'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monsep'] == 0 ? '-' : number_format((float) $computed_fields['monsep'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monoct'] == 0 ? '-' : number_format((float) $computed_fields['monoct'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['monnov'] == 0 ? '-' : number_format((float) $computed_fields['monnov'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['mondec'] == 0 ? '-' : number_format((float) $computed_fields['mondec'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
 
-      $str .= $this->reporter->col(($computed_fields['total'] == 0 ? '-' : number_format((float)$computed_fields['total'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
+      $str .= $this->reporter->col(($computed_fields['total'] == 0 ? '-' : number_format((float) $computed_fields['total'], 2) . '%'), '70', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '0px 0px 0px');
 
 
       $str .= $this->reporter->endrow();
@@ -1996,11 +2003,11 @@ class monthly_income_statement
         if ($center != "") {
           $filters .= " and detail.branch = '" . $center . "' "; // branch filter
         }
-        
+
         break;
 
       case 40:
-        
+
         if ($center != "") {
           $filters .= " and cntnum.center = '" . $center . "' "; // branch filter
         }
@@ -2093,18 +2100,18 @@ class monthly_income_statement
               'detail' => $value->detail,
               'alias' => '',
               'isshow' => $value->isshow,
-              'monjan' => number_format((float)$value->monjan, 2, '.', ''),
-              'monfeb' => number_format((float)$value->monfeb, 2, '.', ''),
-              'monmar' => number_format((float)$value->monmar, 2, '.', ''),
-              'monapr' => number_format((float)$value->monapr, 2, '.', ''),
-              'monmay' => number_format((float)$value->monmay, 2, '.', ''),
-              'monjun' => number_format((float)$value->monjun, 2, '.', ''),
-              'monjul' => number_format((float)$value->monjul, 2, '.', ''),
-              'monaug' => number_format((float)$value->monaug, 2, '.', ''),
-              'monsep' => number_format((float)$value->monsep, 2, '.', ''),
-              'monoct' => number_format((float)$value->monoct, 2, '.', ''),
-              'monnov' => number_format((float)$value->monnov, 2, '.', ''),
-              'mondec' => number_format((float)$value->mondec, 2, '.', ''),
+              'monjan' => number_format((float) $value->monjan, 2, '.', ''),
+              'monfeb' => number_format((float) $value->monfeb, 2, '.', ''),
+              'monmar' => number_format((float) $value->monmar, 2, '.', ''),
+              'monapr' => number_format((float) $value->monapr, 2, '.', ''),
+              'monmay' => number_format((float) $value->monmay, 2, '.', ''),
+              'monjun' => number_format((float) $value->monjun, 2, '.', ''),
+              'monjul' => number_format((float) $value->monjul, 2, '.', ''),
+              'monaug' => number_format((float) $value->monaug, 2, '.', ''),
+              'monsep' => number_format((float) $value->monsep, 2, '.', ''),
+              'monoct' => number_format((float) $value->monoct, 2, '.', ''),
+              'monnov' => number_format((float) $value->monnov, 2, '.', ''),
+              'mondec' => number_format((float) $value->mondec, 2, '.', ''),
               'amt' => $value->amt,
               'total' => $value->amt
             );
@@ -2248,18 +2255,18 @@ class monthly_income_statement
                 'total' => $level2amt,
                 'alias' => $value->alias,
                 'isshow' => $value->isshow, // original 'amt' => $amt2 , 'total' => $level2amt
-                'monjan' => number_format((float)$level2jan, 2, '.', ''),
-                'monfeb' => number_format((float)$level2feb, 2, '.', ''),
-                'monmar' => number_format((float)$level2mar, 2, '.', ''),
-                'monapr' => number_format((float)$level2apr, 2, '.', ''),
-                'monmay' => number_format((float)$level2may, 2, '.', ''),
-                'monjun' => number_format((float)$level2jun, 2, '.', ''),
-                'monjul' => number_format((float)$level2jul, 2, '.', ''),
-                'monaug' => number_format((float)$level2aug, 2, '.', ''),
-                'monsep' => number_format((float)$level2sep, 2, '.', ''),
-                'monoct' => number_format((float)$level2oct, 2, '.', ''),
-                'monnov' => number_format((float)$level2nov, 2, '.', ''),
-                'mondec' => number_format((float)$level2dec, 2, '.', ''),
+                'monjan' => number_format((float) $level2jan, 2, '.', ''),
+                'monfeb' => number_format((float) $level2feb, 2, '.', ''),
+                'monmar' => number_format((float) $level2mar, 2, '.', ''),
+                'monapr' => number_format((float) $level2apr, 2, '.', ''),
+                'monmay' => number_format((float) $level2may, 2, '.', ''),
+                'monjun' => number_format((float) $level2jun, 2, '.', ''),
+                'monjul' => number_format((float) $level2jul, 2, '.', ''),
+                'monaug' => number_format((float) $level2aug, 2, '.', ''),
+                'monsep' => number_format((float) $level2sep, 2, '.', ''),
+                'monoct' => number_format((float) $level2oct, 2, '.', ''),
+                'monnov' => number_format((float) $level2nov, 2, '.', ''),
+                'mondec' => number_format((float) $level2dec, 2, '.', ''),
                 'amt' => 0,
                 'total' => $level2amt
               );
@@ -2334,12 +2341,12 @@ class monthly_income_statement
               $labelsubgroup = $prev_incomegrp;
               $arrgrp = explode(".", $prev_incomegrp);
               if (count($arrgrp) > 1) {
-                $labelsubgroup =   $arrgrp[1];
+                $labelsubgroup = $arrgrp[1];
               }
 
               $a[] = array(
                 'acno' => $value->acno,
-                'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) .  '</b>',
+                'acnoname' => '<b>TOTAL ' . strtoupper($labelsubgroup) . '</b>',
                 'levelid' => $value->levelid,
                 'cat' => $value->cat,
                 'parent' => $value->parent,
@@ -2358,7 +2365,7 @@ class monthly_income_statement
       $counter += 1;
     }
     exithere:
-    if (count((array)$result2) > 0) { // cast to array result2 is an object count function not work on object
+    if (count((array) $result2) > 0) { // cast to array result2 is an object count function not work on object
       return true;
     } else {
       return false;
@@ -2409,18 +2416,18 @@ class monthly_income_statement
         'alias' => '',
         'isshow' => $value->isshow,
         'detail' => $value->detail,
-        'monjan' => number_format((float)$value->monjan, 2, '.', ''),
-        'monfeb' => number_format((float)$value->monfeb, 2, '.', ''),
-        'monmar' => number_format((float)$value->monmar, 2, '.', ''),
-        'monapr' => number_format((float)$value->monapr, 2, '.', ''),
-        'monmay' => number_format((float)$value->monmay, 2, '.', ''),
-        'monjun' => number_format((float)$value->monjun, 2, '.', ''),
-        'monjul' => number_format((float)$value->monjul, 2, '.', ''),
-        'monaug' => number_format((float)$value->monaug, 2, '.', ''),
-        'monsep' => number_format((float)$value->monsep, 2, '.', ''),
-        'monoct' => number_format((float)$value->monoct, 2, '.', ''),
-        'monnov' => number_format((float)$value->monnov, 2, '.', ''),
-        'mondec' => number_format((float)$value->mondec, 2, '.', ''),
+        'monjan' => number_format((float) $value->monjan, 2, '.', ''),
+        'monfeb' => number_format((float) $value->monfeb, 2, '.', ''),
+        'monmar' => number_format((float) $value->monmar, 2, '.', ''),
+        'monapr' => number_format((float) $value->monapr, 2, '.', ''),
+        'monmay' => number_format((float) $value->monmay, 2, '.', ''),
+        'monjun' => number_format((float) $value->monjun, 2, '.', ''),
+        'monjul' => number_format((float) $value->monjul, 2, '.', ''),
+        'monaug' => number_format((float) $value->monaug, 2, '.', ''),
+        'monsep' => number_format((float) $value->monsep, 2, '.', ''),
+        'monoct' => number_format((float) $value->monoct, 2, '.', ''),
+        'monnov' => number_format((float) $value->monnov, 2, '.', ''),
+        'mondec' => number_format((float) $value->mondec, 2, '.', ''),
         'amt' => $value->amt,
         'total' => $value->amt
       );
@@ -2603,4 +2610,180 @@ class monthly_income_statement
 
     return $adminshare;
   }
+
+  private function SBC_DEFAULT_HEADER($params, $data)
+  {
+    // $font = $this->companysetup->getrptfont($params['params']);
+    $font = 'Tahoma';
+    $fontsize10 = '10';
+    $fontsize12 = '12';
+
+    $year = $params['params']['dataparams']['year'];
+    $center1 = $params['params']['center'];
+    $username = $params['params']['user'];
+    $companyid = $params['params']['companyid'];
+
+    $center = $params['params']['dataparams']['center'];
+    $costcenter = $params['params']['dataparams']['code'];
+    if ($center == '') {
+      $center = "ALL";
+    }
+
+    $layoutsize = 1200;
+
+    $str = '';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center1, $username, $params);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('MONTHLY INCOME STATEMENT', null, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Center :  ' . $center, 100, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Year :  ' . $year, 100, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '4px');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+    return $str;
+  } // end fn
+
+  private function sbc_table_cols($layoutsize, $border, $font, $fontsize, $config)
+  {
+    $str = '';
+    $fontsize12 = '12';
+    $companyid = $config['params']['companyid'];
+
+    $layoutsize = 1200;
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ACCOUNTS', '270', null, false, '1px solid ', 'TB', '', $font, '9', 'B', '', '4px');
+    $str .= $this->reporter->col('JAN', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('FEB', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('MAR', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('APR', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('MAY', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('JUN', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('JUL', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('AUG', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('SEP', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('OCT', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('NOV', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('DEC', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('', '10', '', '', $border, '', 'C', $font, '', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  private function SBC_MONTHLY_INCOME_STATEMENT_LAYOUT($params, $data)
+  {
+    $companyid = $params['params']['companyid'];
+    $border = '1px solid';
+    // $font = $this->companysetup->getrptfont($params['params']);
+    $font = 'Tahoma';
+    $fontsize = 9;
+    $fontsize11 = 11;
+    $fontsize12 = 12;
+    $count = 17;
+    $page = 17;
+    $this->reporter->linecounter = 0;
+    $str = '';
+    $layoutsize = '1200';
+
+    if (empty($data)) {
+      return $this->othersClass->emptydata($params);
+    }
+
+    // $str .= $this->reporter->beginreport();
+    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '115px;margin-top:5px;');
+    $str .= $this->SBC_DEFAULT_HEADER($params, $data);
+
+    $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize11, $params);
+
+    for ($i = 0; $i < count($data); $i++) {
+
+      $lineTotal = 0;
+      $bold = '';
+
+      if ($data[$i]['detail'] == 1 and ($data[$i]['monjan'] == 0 and $data[$i]['monfeb'] == 0 and $data[$i]['monmar'] == 0 and $data[$i]['monapr'] == 0 and $data[$i]['monmay'] == 0 and $data[$i]['monjun'] == 0 and $data[$i]['monjul'] == 0 and $data[$i]['monaug'] == 0 and $data[$i]['monsep'] == 0 and $data[$i]['monoct'] == 0 and $data[$i]['monnov'] == 0 and $data[$i]['mondec'] == 0)) {
+      } else {
+
+        if ($data[$i]['acnoname'] != '') {
+
+          $indent = '5' * ($data[$i]['levelid'] * 3);
+          $str .= $this->reporter->begintable($layoutsize);
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->addline();
+
+          if ($data[$i]['detail'] == 2) {
+            $bold = 'B';
+          }
+          $str .= $this->reporter->col($data[$i]['acnoname'], '270', null, false, '1px solid', '', '', $font, '9', $bold, '', '0px 0px 0px ' . $indent . 'px');
+
+          if ($data[$i]['detail'] != 0) {
+            $str .= $this->reporter->col($data[$i]['monjan'] != 0 ? number_format($data[$i]['monjan'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monfeb'] != 0 ? number_format($data[$i]['monfeb'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monmar'] != 0 ? number_format($data[$i]['monmar'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monapr'] != 0 ? number_format($data[$i]['monapr'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monmay'] != 0 ? number_format($data[$i]['monmay'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monjun'] != 0 ? number_format($data[$i]['monjun'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monjul'] != 0 ? number_format($data[$i]['monjul'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monaug'] != 0 ? number_format($data[$i]['monaug'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monsep'] != 0 ? number_format($data[$i]['monsep'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monoct'] != 0 ? number_format($data[$i]['monoct'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monnov'] != 0 ? number_format($data[$i]['monnov'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['mondec'] != 0 ? number_format($data[$i]['mondec'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+
+            $lineTotal = $data[$i]['monjan'] + $data[$i]['monfeb'] + $data[$i]['monmar'] + $data[$i]['monapr'] + $data[$i]['monmay'] + $data[$i]['monjun'] + $data[$i]['monjul'] + $data[$i]['monaug'] + $data[$i]['monsep'] + $data[$i]['monoct'] + $data[$i]['monnov'] + $data[$i]['mondec'];
+            $str .= $this->reporter->col($lineTotal != 0 ? number_format($lineTotal, 2) : '-', '100', null, false, '1px solid ', '', 'RT', $font, '9', $bold, '', '');
+            $str .= $this->reporter->col('', '10', '', '', $border, '', 'C', $font, '', 'B', '', '');
+          }
+
+          $str .= $this->reporter->endrow();
+        }
+      }
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->SBC_DEFAULT_HEADER($params, $data);
+        }
+        $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize11, $params);
+
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+    return $str;
+  } //end fn
 }//end class

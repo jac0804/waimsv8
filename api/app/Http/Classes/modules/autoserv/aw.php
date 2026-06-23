@@ -36,9 +36,9 @@ class aw
     public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
     public $tablenum = 'transnum';
     public $head = 'awhead';
-    public $hhead = 'awhead';
+    public $hhead = 'hawhead';
     public $stock = 'ptjobs';
-    public $hstock = 'ptjobs';
+    public $hstock = 'hptjobs';
     public $tablelogs = 'transnum_log';
     public $statlogs = 'transnum_stat';
     public $tablelogs_del = 'del_transnum_log';
@@ -78,7 +78,9 @@ class aw
     private $reporter;
 
     public $showfilterlabel = [
-        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary']
+        ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
+        ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
     public function __construct()
     {
@@ -102,6 +104,10 @@ class aw
             // 'change' => 67, remove change doc 5854
             'delete' => 5904,
             'print' => 5905,
+            'lock' => 5921,
+            'unlock' => 5922,
+            'post' => 5923,
+            'unpost' => 5924,
             'additem' => 5907,
             'edititem' => 5906,
             'deleteitem' => 5908
@@ -118,6 +124,10 @@ class aw
             'delete',
             'cancel',
             'print',
+            'post',
+            'unpost',
+            'lock',
+            'unlock',
             'logs',
             'edit',
             'backlisting',
@@ -249,39 +259,42 @@ class aw
         $obj[0]['inventory']['columns'][$description]['label'] = 'Job Description';
         $obj[0]['inventory']['columns'][$description]['style'] = 'text-align: left; width: 125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['descriptionrow'] = [];
-        
+
         return $obj;
     } // end createTab
 
     public function createtabbutton($config)
     {
-        $tbuttons = ['additem', 'addjob', 'addvehicle'];
+        $tbuttons = ['addvehicle', 'additem', 'addjob'];
         $obj = $this->tabClass->createtabbutton($tbuttons);
-        $obj[0]['icon'] = 'batch_prediction';
-        $obj[0]['label'] = 'Add Package';
-        $obj[0]['lookupclass'] = 'lookuppackage';
-        $obj[0]['action'] = 'addpackage';
+        $obj[1]['icon'] = 'inventory_2';
+        $obj[1]['label'] = 'Add Package';
+        $obj[1]['lookupclass'] = 'lookuppackage';
+        $obj[1]['action'] = 'addpackage';
         return $obj;
     } // end createtabbutton
 
     public function createdoclisting($config)
     {
-        $getcols = ['action', 'listdocument', 'listdate', 'listcreateby', 'listeditby', 'listviewby'];
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listcreateby', 'listeditby', 'listviewby'];
         $stockbuttons = ['view'];
         foreach ($getcols as $key => $value) {
             $$value = $key;
         }
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
 
+        // $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
         // $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
         $cols = $this->tabClass->delcollisting($cols);
         return $cols;
     } // end createdoclisting
+
     public function loaddoclisting($config)
     {
 
         $date1 = date('Y-m-d', strtotime($config['params']['date1']));
         $date2 = date('Y-m-d', strtotime($config['params']['date2']));
+        $itemfilter = $config['params']['itemfilter'];
 
         $doc = $config['params']['doc'];
         $center = $config['params']['center'];
@@ -306,9 +319,25 @@ class aw
             }
         }
 
+        switch ($itemfilter) {
+            case 'posted':
+                $filter = " and num.postdate is not null ";
+                break;
+            case 'draft':
+                $filter = " and num.postdate is null ";
+                break;
+            default:
+                $filter = "";
+                break;
+        }
+
         $qry = " 
-        select head.trno, head.docno, $status as lblstatus, head.createby, head.editby, head.viewby
+        select head.trno, head.docno, $status as status, head.createby, head.editby, head.viewby, date(head.dateid) as dateid
         from awhead as head 
+        left join transnum as num on num.trno = head.trno
+        union all
+        select head.trno, head.docno, 'Posted' as status, head.createby, head.editby, head.viewby, date(head.dateid) as dateid
+        from hawhead as head 
         left join transnum as num on num.trno = head.trno
         where head.doc = ? and num.center = ? $filtersearch $orderby $limit";
         $data = $this->coreFunctions->opentable($qry, [$doc, $center]);
@@ -462,9 +491,9 @@ class aw
             // case 'addallitem': // save all item selected from lookup
             //     return $this->addallitem($config);
             //     break;
-            // case 'deleteitem':
-            //     return $this->deleteitem($config);
-            //     break;
+            case 'deleteitem':
+                return $this->deleteitem($config);
+                break;
             // case 'saveitem': //save all item edited
             //     return $this->updateitem($config);
             //     break;
@@ -644,7 +673,7 @@ class aw
                     'jobid' => $job->jobid,
                     'trno' => $trno,
                     'rem' => $job->rem,
-                    'packagetrno' => $packagetrno, 
+                    'packagetrno' => $packagetrno,
                     'encodeddate' => $this->othersClass->getCurrentTimeStamp(),
                     'encodedby' => $config['params']['user'],
                 ];
@@ -692,8 +721,8 @@ class aw
                         $stockdata = [
                             'line' => $stockline,
                             'trno' => $trno,
-                            'jobline' => $line,        
-                            'taskline' => $taskline,   
+                            'jobline' => $line,
+                            'taskline' => $taskline,
                             'itemid' => $stock->itemid,
                             'uom' => $stock->uom,
                             'isqty' => $stock->isqty,
@@ -745,6 +774,155 @@ class aw
         where pt.trno = ? and pt.line = ?";
         $data = $this->coreFunctions->opentable($query, [$trno, $line]);
         return $data;
+    }
+    public function deleteitem($config)
+    {
+        $config['params']['trno'] = $config['params']['row']['trno'];
+        $config['params']['line'] = $config['params']['row']['line'];
+        $trno = $config['params']['trno'];
+        $line = $config['params']['line'];
+        $query = "select * from pttask where trno = ? and jobline = ? "; #check stock before delete
+        $pttask = $this->coreFunctions->opentable($query, [$trno, $line]);
+        if (!empty($pttask)) {
+            return ['status' => false, 'msg' => "Cannot delete this Jobs; already have Task/Labor."];
+        }
+        $this->coreFunctions->execqry('delete from ptjobs where trno=? and line=?', 'delete', [$trno, $line]);
+        $data = $this->openstockline($config);
+        $data = json_decode(json_encode($data), true);
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Job Description:' . $config['params']['row']['description']);
+        return ['status' => true, 'msg' => 'Item was successfully deleted.'];
+    } // end function
+
+    public function posttrans($config)
+    {
+        $trno = $config['params']['trno'];
+        $docno = $this->coreFunctions->datareader("select docno as value from " . $this->head . " where trno = ?", [$trno]);
+        try {
+            $this->posthead($config, true);
+            $this->postjobs($config, true);
+            $this->posttasks($config, true);
+            $this->poststock($config, true);
+
+            $date = $this->othersClass->getCurrentTimeStamp();
+            $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 5];
+            $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+            $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+        } catch (Exception $e) {
+            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+            return ['status' => false, 'msg' => 'Error on Posting: ' . $e->getMessage()];
+        }
+    }
+
+    public function unposttrans($config)
+    {
+        $trno = $config['params']['trno'];
+        $docno = $this->coreFunctions->datareader("select docno as value from " . $this->hhead . " where trno = ?", [$trno]);
+        try {
+            $this->posthead($config, false);
+            $this->postjobs($config, false);
+
+            $data = ['postdate' => null, 'postedby' => '', 'statid' => 0];
+            $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+            $this->logger->sbcwritelog($trno, $config, 'UNPOST', $docno);
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+        } catch (Exception $e) {
+            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+            return ['status' => false, 'msg' => 'Error on UnPosting: ' . $e->getMessage()];
+        }
+    }
+
+    public function posthead($config, $post)
+    {
+        $trno = $config['params']['trno'];
+        $cols = "trno,doc,docno,dateid,rem,client,clientname,address,tax,ref,kmno,recommend,
+        cryear,licenseno,make,modelname,crtype,submodel,carengine,transmission,
+        mvno,mileage,manufacturer,chassisno,createdate,createby,editdate,editby,
+        viewdate,viewby,lockdate,lockuser";
+
+        if ($post) {
+            $qry = "insert into " . $this->hhead . " ($cols)
+        select $cols
+        from " . $this->head . " as head
+        where head.trno=? limit 1";
+        } else {
+            $qry = "insert into " . $this->head . " ($cols)
+        select $cols
+        from " . $this->hhead . " as head
+        where head.trno=? limit 1";
+        }
+        $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+        if (!$posthead) {
+            throw new Exception('Failed to insert head');
+        }
+        return $posthead;
+    }
+
+    public function postjobs($config, $post)
+    {
+        $trno = $config['params']['trno'];
+        if ($post) {
+            $qry = "insert into hptjobs (trno,line,jobid,rem,encodeddate,encodedby,editdate,editby,packagetrno)
+        select trno,line,jobid,rem,encodeddate,encodedby,editdate,editby,packagetrno
+        from ptjobs as jobs
+        where jobs.trno=?";
+        } else {
+            $qry = "insert into ptjobs (trno,line,jobid,rem,encodeddate,encodedby,editdate,editby,packagetrno)
+        select trno,line,jobid,rem,encodeddate,encodedby,editdate,editby,packagetrno
+        from hptjobs as jobs
+        where jobs.trno=?";
+        }
+        $postjobs = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+        if (!$postjobs) {
+            throw new Exception('Failed to insert jobs');
+        }
+        return $postjobs;
+    }
+    public function posttasks($config, $post)
+    {
+        $trno = $config['params']['trno'];
+        if ($post) {
+            $qry = "insert into hpttask (trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby)
+        select trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby
+        from pttask as task
+        where task.trno=?";
+        } else {
+            $qry = "insert into pttask (trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby)
+        select trno,line,jobline,laborline,mecline,cost,rate,rem,encodeddate,encodedby,editdate,editby
+        from hpttask as task
+        where task.trno=?";
+        }
+        $posttasks = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+        if (!$posttasks) {
+            throw new Exception('Failed to insert task');
+        }
+        return $posttasks;
+    }
+    public function poststock($config, $post)
+    {
+        $trno = $config['params']['trno'];
+        if ($post) {
+            $qry = "insert into hptstock (trno,line,uom,disc,rem,amt,isqty,isamt,iss,ext,qa,void,encodeddate,encodedby,editdate,editby,
+        loc,expiry,kgs,itemid,whid,refx,linex,ref,projectid,taskline,jobline)
+        select trno,line,uom,disc,rem,amt,isqty,isamt,iss,ext,qa,void,encodeddate,encodedby,editdate,editby,loc,expiry,kgs,itemid,whid,refx,linex,ref,projectid,taskline,jobline
+        from ptstock where trno=?";
+        } else {
+            $qry = "insert into ptstock (trno,line,uom,disc,rem,amt,isqty,isamt,iss,ext,qa,void,encodeddate,encodedby,editdate,editby,loc,expiry,kgs,itemid,whid,refx,linex,ref,projectid,taskline,jobline
+        )
+        select trno,line,uom,disc,rem,amt,isqty,isamt,iss,ext,qa,void,encodeddate,encodedby,editdate,editby,loc,expiry,kgs,itemid,whid,refx,linex,ref,projectid,taskline,jobline
+        from hptstock where trno=?";
+        }
+        $poststock = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+        if (!$poststock) {
+            throw new Exception('Failed to insert stock');
+        }
+        return $poststock;
     }
 
     public function reportsetup($config)

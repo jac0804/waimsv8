@@ -52,8 +52,8 @@ class daily_time_record
     }
 
     if ($companyid == 68) { //jda
-      array_push($fields, 'divrep','deptrep','sectrep', 'dclientname');
-    }else{
+      array_push($fields, 'divrep', 'deptrep', 'sectrep', 'dclientname');
+    } else {
       array_push($fields, 'divrep', 'deptrep', 'dclientname');
     }
 
@@ -200,7 +200,7 @@ class daily_time_record
 
     if ($sectid != 0 && $sectname != '') {
       $filter3 .= " and emp.sectid = $sectid";
-    }    
+    }
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
@@ -250,7 +250,7 @@ class daily_time_record
                   left join leavesetup as ls on ls.trno = lr.trno left join paccount as p on p.line=ls.acnoid
                   where timecard.dateid between '" . $start . "' and '" . $end . "' and emp.level in $emplvl $filter $filter1 $filter2 
                   order by d.clientname,e.clientname,timecard.dateid";
-      } else if ($config['params']['companyid'] == 68){ //jda
+      } else if ($config['params']['companyid'] == 68) { //jda
         $query = "select division.divname, j.jobtitle,p.code as paygroup, emp.sectid,e.clientname,e.client, timecard.dateid,time(timecard.schedin) AS schedin,
                           time(timecard.schedout) AS schedout,time(timecard.actualin) AS actualin,
                           time(timecard.actualout) AS actualout, timecard.reghrs,date_format(timecard.dateid, '%a') as acnoday, 
@@ -269,7 +269,7 @@ class daily_time_record
                   left join paygroup as p on p.line = timecard.pgline
                   where dateid between '" . $start . "' and '" . $end . "' and emp.level in $emplvl $filter $filter1 $filter2 $filter3
                   order by division.divname,d.clientname,e.clientname,timecard.dateid";
-      }else {
+      } else {
         $query = "select e.clientname,e.client, timecard.dateid,time(timecard.schedin) AS schedin,
                           time(timecard.schedout) AS schedout,time(timecard.actualin) AS actualin,
                           time(timecard.actualout) AS actualout, timecard.reghrs,date_format(timecard.dateid, '%a') as acnoday, 
@@ -308,6 +308,7 @@ class daily_time_record
               order by e.clientname,timecard.dateid";
     }
     // var_dump($query);
+    // Logger($query);
     return $this->coreFunctions->opentable($query);
   }
 
@@ -1742,7 +1743,7 @@ class daily_time_record
     } else {
       $deptn = strtoupper($deptname);
     }
-    
+
     $layoutsize = 1050;
     $str = '';
     $str .= $this->reporter->beginreport($layoutsize);
@@ -1751,15 +1752,15 @@ class daily_time_record
       return $this->othersClass->emptydata($config);
     }
     foreach ($result as $key => $data) {
-      foreach ($data as $field => $value) {
-        if ($value === 0.00 || $value === '0.00') {
-          $data->$field = '-';
-        }
-      }
+      // foreach ($data as $field => $value) {
+      //   if ($value === 0.00 || $value === '0.00') {
+      //     $data->$field = '-';
+      //   }
+      // }
       $empChange = ($emp !== '' && $emp !== $data->client);
-      $divisionemp = isset($data->divname)? $data->divname : '';
+      $divisionemp = isset($data->divname) ? $data->divname : '';
 
-      if ($empChange){ //totals
+      if ($empChange) { //totals
         $emp = $data->client;
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -1769,7 +1770,7 @@ class daily_time_record
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('<b>No. of Days: </b>', 90, null, false, $border2, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col( $count, 60, null, false, $border2, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($count, 60, null, false, $border2, '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('Total', 455, null, false, null, '', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col($subreghrs, '55', null, false, $border, '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($subabsdays, '55', null, false, $border, '', 'C', $font, $font_size, '', '', '');
@@ -1804,15 +1805,15 @@ class daily_time_record
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Name', 50, null, false, $border, '', 'L', $font, '10', 'B', '', '', '');
-        $str .= $this->reporter->col(': '. $data->clientname, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+        $str .= $this->reporter->col(': ' . $data->clientname, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
         $str .= $this->reporter->col('Department', 100, null, false, $border, '', 'L', $font, '10', 'B', '', '', '');
-        $str .= $this->reporter->col(': '. $data->deptname, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+        $str .= $this->reporter->col(': ' . $data->deptname, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Code', 50, null, false, $border, '', 'L', $font, '10', 'B', '', '', '');
-        $str .= $this->reporter->col(': '.$data->client, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+        $str .= $this->reporter->col(': ' . $data->client, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
         $str .= $this->reporter->col('Job Title', 100, null, false, $border, '', 'L', $font, '10', 'B', '', '', '');
-        $str .= $this->reporter->col(': ' .$data->jobtitle, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+        $str .= $this->reporter->col(': ' . $data->jobtitle, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         //DTR
@@ -1934,7 +1935,7 @@ class daily_time_record
     $sectn = '';
     $str = '';
     $str .= '<br/><br/>';
-    $divisionemp = $divisionemp == '' ? '' : $divisionemp; 
+    $divisionemp = $divisionemp == '' ? '' : $divisionemp;
 
     $str .= $this->reporter->letterhead($center, $username, $config);
     $str .= $this->reporter->begintable($layoutsize);
@@ -1985,8 +1986,4 @@ class daily_time_record
 
     return $str;
   }
-
-  
-
-
 }

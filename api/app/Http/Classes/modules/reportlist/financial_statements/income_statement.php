@@ -2199,8 +2199,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 68;
-    $page = 67;
+    $count = 50;//68
+    $page = 49;//67
     $this->reporter->linecounter = 0;
     $str = '';
     if (empty($data)) {
@@ -2313,8 +2313,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 68;
-    $page = 67;
+    $count = 50;
+    $page = 49;
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2411,8 +2411,8 @@ class income_statement
     $companyid = $filters['params']['companyid'];
     $decimal_currency = $this->companysetup->getdecimal('currency', $filters['params']);
 
-    $count = 68;
-    $page = 67;
+    $count = 50; 
+    $page = 49; 
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2480,8 +2480,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 68;
-    $page = 67;
+    $count = 50; 
+    $page = 49; 
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2580,8 +2580,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 68;
-    $page = 67;
+    $count = 50; //68
+    $page = 49; //67
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2629,24 +2629,9 @@ class income_statement
         $indent = '5' * ($data[$i]['levelid'] * 3);
         $str .= $this->reporter->addline();
         $str .= $this->reporter->col($data[$i]['acnoname'], '580', null, false, '1px solid ', '', '', $font, $fontsize, '', '', '0px 0px 0px ' . $indent . 'px');
-        if ($data[$i]['amt'] == 0) {
-          $amt = '';
-        } else {
-          $amt = number_format($data[$i]['amt'], $decimal_currency);
-        }
-        $str .= $this->reporter->col($amt, '100', null, false, '1px solid ', '', 'r', $font, $fontsize,  '', '', '');
-        if ($data[$i]['total'] == 0) {
-          $total = '';
-        } else {
-          if (
-            $amt == 0
-          ) {
-            $total = number_format($data[$i]['total'], 2);
-          } else {
-            $total = '';
-          }
-        }
-        $str .= $this->reporter->col($total, '100', null, false, '1px solid ', '', 'R', $font, $fontsize, 'B', '', '');
+        $amt = $data[$i]['amt'];
+        $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, '1px solid ', '', 'r', $font, $fontsize,  '', '', '');
+        $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
       }
 

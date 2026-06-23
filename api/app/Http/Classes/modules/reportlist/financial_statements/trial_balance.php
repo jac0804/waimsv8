@@ -28,7 +28,7 @@ class trial_balance
   private $reporter;
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
+  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1015'];
 
   public function __construct()
   {
@@ -495,19 +495,19 @@ class trial_balance
         break;
     }
 
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1015');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->letterhead($center1, $username, $params);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= '<br/><br/>';
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1015');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('TRIAL BALANCE', null, null, false, '1px solid ', '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1015');
     $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
     if ($companyid == 8) { //maxipro
       $str .= $this->reporter->col('Project :' . $costcenter, null, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '', '');
@@ -517,12 +517,12 @@ class trial_balance
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1015');
     $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
     $str .= $this->reporter->col('Date Period : ' . date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), null, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
     $str .= $this->reporter->col('Center :' . $center, null, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '', '');
     $str .= $this->reporter->col('Transaction :' . strtoupper($isposted), null, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '', '');
-    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->pagenumber('Page', null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     return $str;
@@ -532,16 +532,22 @@ class trial_balance
   {
     $str = '';
     $fontsize10 = '10';
-    $str .= $this->reporter->printline();
-    $str .= $this->reporter->begintable('800');
+    // $str .= $this->reporter->printline();
+    $str .= $this->reporter->begintable('1015');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ACCOUNT #', '20px', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('     ', '30px', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('ACCOUNT TITLE', '110px', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('     ', '20px', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('DEBIT', '20px', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('     ', '20px', null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('CREDIT', '20px', null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', null, null, false, '1px solid #DCDCDC', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1015');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ACCOUNT #', 120, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('ACCOUNT TITLE', 535, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('DEBIT', 150, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('CREDIT', 150, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
     return $str;
   }
 
@@ -553,8 +559,8 @@ class trial_balance
     $fontsize11 = 11;
 
     $str = "";
-    $count = 71;
-    $page = 70;
+    $count = 47;
+    $page = 47;
     $this->reporter->linecounter = 0;
 
     if (empty($data)) {
@@ -608,23 +614,23 @@ class trial_balance
       } else {
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->addline();
-        $str .= $this->reporter->col($data[$i]['acno'], '20px', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('     ', '30px', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . $data[$i]['acnoname'], '110px', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->col('     ', '20px', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col($data[$i]['acno'], 120, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('' . $data[$i]['acnoname'], 535, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
 
         if ($db == 0) {
-          $str .= $this->reporter->col('-', '20px', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('-', 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
         } else {
-          $str .= $this->reporter->col(number_format($db, 2), '20px', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col(number_format($db, 2), 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
         }
 
-        $str .= $this->reporter->col('     ', '20px', null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
 
         if ($cr == 0) {
-          $str .= $this->reporter->col('-', '20px', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('-', 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
         } else {
-          $str .= $this->reporter->col(number_format($cr, 2), '20px', null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col(number_format($cr, 2), 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
         }
 
         $str .= $this->reporter->endrow();
@@ -643,7 +649,7 @@ class trial_balance
         }
         $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
         $str .= $this->reporter->endrow();
-        $str .= $this->reporter->printline();
+        // $str .= $this->reporter->printline();
         $page = $page + $count;
       }
     } //END FOR EACH
@@ -660,7 +666,7 @@ class trial_balance
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->endtable();
-    $str .= $this->reporter->printline();
+    // $str .= $this->reporter->printline();
     $str .= $this->reporter->endreport();
     return $str;
   } //end fn

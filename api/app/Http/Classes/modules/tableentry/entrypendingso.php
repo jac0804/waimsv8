@@ -68,7 +68,7 @@ class entrypendingso
 
     public function createTab($config)
     {
-        $columns = ['action', 'docno', 'client', 'clientname', 'barcode', 'itemname', 'ref'];
+        $columns = ['action', 'docno', 'client', 'clientname', 'rem', 'barcode', 'itemname', 'ref'];
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $columns
@@ -100,6 +100,7 @@ class entrypendingso
         $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$docno]['style'] = 'width:120px;whiteSpace: normal;min-width:120px;';
         $obj[0][$this->gridname]['columns'][$ref]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
         return $obj;
     }
 
@@ -172,9 +173,10 @@ class entrypendingso
 
     private function selectqry()
     {
-        $qry = "head.client,head.clientname,head.docno,item.itemname,item.barcode,head.forex,head.cur,head.agent,head.address,head.tax,head.vattype,head.wh,head.terms,head.due,head.projectid,head.ourref,head.yourref,head.pono,head.sano,head.shipto,head.rem,stock.line as soline,stock.trno as sotrno,stock.tmtrno,stock.itemid,
+        $qry = "head.client,head.clientname,head.docno,head.rem,item.itemname,item.barcode,head.forex,head.cur,head.agent,head.address,head.tax,head.vattype,head.wh,head.terms,head.due,head.projectid,head.ourref,head.yourref,head.pono,head.sano,head.shipto,head.rem,stock.line as soline,stock.trno as sotrno,stock.tmtrno,stock.itemid,
         wh.client as stockwh,stock.uom,stock.disc,stock.amt,stock.isamt,stock.iss,stock.isqty,stock.ext,stock.void,stock.loc,stock.expiry,stock.kgs,
-        (select ref from lastock as s where s.refx = stock.trno and s.line = stock.line limit 1 ) as ref";
+        (select h.docno from glstock as s
+		  left join glhead as h on h.trno = s.trno where s.refx = stock.trno and s.linex = stock.line limit 1 ) as ref";
 
         return $qry;
     }
@@ -206,12 +208,14 @@ class entrypendingso
 
         if (isset($config['params']['filter'])) {
             $search = $config['params']['filter'];
-            foreach ($searcfield as $key => $sfield) {
-                if ($filtersearch == "") {
-                    $filtersearch .= " and (head." . $sfield . " like '%" . $search . "%'";
-                } else {
-                    $filtersearch .= " or head." . $sfield . " like '%" . $search . "%'";
-                } //end if
+            if (!empty($search)) {
+                foreach ($searcfield as $key => $sfield) {
+                    if ($filtersearch == "") {
+                        $filtersearch .= " and (head." . $sfield . " like '%" . $search . "%'";
+                    } else {
+                        $filtersearch .= " or head." . $sfield . " like '%" . $search . "%'";
+                    } //end if
+                }
             }
             $filtersearch .= ")";
         }
@@ -279,7 +283,7 @@ class entrypendingso
             'type' => 'multi', //single
             'rowkey' => 'trnoln',
             'title' => 'List of Pending SO',
-            'style' => 'width:800px;max-width:800px;'
+            'style' => 'width:1200px;max-width:1200px;height:60%;'
         );
 
         $plotsetup = array(
@@ -292,11 +296,12 @@ class entrypendingso
             ['name' => 'docno', 'label' => 'Document No.', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'client', 'label' => 'Customer', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
+            ['name' => 'rem', 'label' => 'Notes', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'itemname', 'label' => 'Item Name', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;']
 
         ];
-        $qry = "select  head.client,head.clientname,head.docno,item.itemname,item.barcode,concat(stock.trno,'~',stock.line) as trnoln,stock.line,stock.tmtrno,stock.trno,stock.itemid
+        $qry = "select  head.client,head.clientname,head.docno,head.rem,item.itemname,item.barcode,concat(stock.trno,'~',stock.line) as trnoln,stock.line,stock.tmtrno,stock.trno,stock.itemid
          from hsostock as stock
          left join hsohead as head on head.trno=stock.trno
          left join item on item.itemid=stock.itemid
@@ -434,17 +439,7 @@ class entrypendingso
 
                 $config['params']['doc'] = 'SJ';
                 $return = app($path)->additem('insert', $config, true);
-                if ($return['status']) {
-                    if (app($path)->setserveditems($data[$key]['sotrno'], $data[$key]['soline'], 'qty') == 0) {
-                        $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-                        $sjline = $return['row'][0]->line;
-                        $config['params']['trno'] = $sjtrno;
-                        $config['params']['line'] = $sjline;
-                        $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $data[$key]['soline']]);
-                        app($path)->setserveditems($data[$key]['sotrno'], $data[$key]['soline'], app($path)->hqty);
-                    }
-                    $this->othersClass->getcreditinfo($config, $this->head);
-                } else {
+                if (!$return['status']) {
                     $msg = ' generate stock failed!';
                     $config['params']['doc'] = 'ENTRYPENDINGSO';
                     $this->tablelogs = 'masterfile_log';
@@ -458,12 +453,22 @@ class entrypendingso
                 }
             }
         }
-
         if ($status && $msg != "") {
-            $config['params']['doc'] = 'ENTRYPENDINGSO';
-            $this->tablelogs = 'masterfile_log';
-            $this->tablelogs_del = 'del_masterfile_log';
-            $this->logger->sbcmasterlog($trno, $config, 'GENERETE - ' . $docno);
+            $config['params']['tableid'] = $sjtrno;
+            $postrans = app($path)->posttrans($config);
+            $config['params']['trno'] = $trno;
+            if ($postrans['status']) {
+                $config['params']['doc'] = 'ENTRYPENDINGSO';
+                $this->tablelogs = 'masterfile_log';
+                $this->tablelogs_del = 'del_masterfile_log';
+                $this->logger->sbcmasterlog($trno, $config, 'GENERETE - ' . $docno);
+            } else {
+                $msg = $postrans['msg'];
+                $status = false;
+                $this->coreFunctions->execqry("delete from lahead where trno=? and doc = 'sj'", 'delete', [$sjtrno]);
+                $this->coreFunctions->execqry("delete from lastock where trno=?", 'delete', [$sjtrno]);
+                $this->coreFunctions->execqry('delete from cntnum where trno=?', 'delete', [$sjtrno]);
+            }
         }
         if (empty($msg)) {
             $msg = 'No Data Found!';

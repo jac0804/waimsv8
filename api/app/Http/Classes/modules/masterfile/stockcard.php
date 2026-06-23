@@ -37,7 +37,7 @@ class stockcard
   public $tablelogs_del = 'del_item_log';
   private $stockselect;
 
-  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate'];
+  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate'];
   private $iteminfo = ['volume', 'weight', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
 
   private $except = ['itemid', 'itemrem'];
@@ -1107,6 +1107,9 @@ class stockcard
             break;
           case 64: //excilin
             $fields = ['classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname', 'lastpr', 'defcost', 'commrate'];
+            break;
+          case 67: //yulick
+            $fields = ['partname', 'modelname', 'classname', 'subclass', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];
             break;
           default:
             $fields = ['partname', 'modelname', 'classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];

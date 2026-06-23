@@ -25,6 +25,7 @@ class entryparts
     private $companysetup;
     private $coreFunctions;
     private $table = 'ptstock';
+    private $htable = 'hptstock';
     private $othersClass;
     public $style = 'width:100%;max-width:1000px;';
     public $tablelogs = 'transnum_log';
@@ -54,7 +55,7 @@ class entryparts
     public function createTab($config)
     {
 
-        $columns = ['action',  'barcode', 'isqty', 'itemname', 'isamt', 'disc', 'ext', 'rem']; // 'packname'
+        $columns = ['action', 'jobcode', 'jobtitle', 'code', 'description', 'barcode', 'isqty', 'itemname', 'isamt', 'disc', 'ext', 'rem']; // 'packname'
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         foreach ($columns as $key => $value) {
@@ -62,14 +63,16 @@ class entryparts
         }
 
         $stockbuttons = ['save', 'delete'];
+
+        if (!isset($config['params']['row'])) {
+            $stockbuttons = [];
+        }
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
         $obj = $this->tabClass->createTab($tab, $stockbuttons);
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
         $obj[0][$this->gridname]['columns'][$barcode]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
-        $obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
         $obj[0][$this->gridname]['columns'][$rem]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-        // $obj[0][$this->gridname]['columns'][$packname]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-        // $obj[0][$this->gridname]['columns'][$packname]['label'] = 'Package';
 
         $obj[0][$this->gridname]['columns'][$barcode]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$barcode]['type'] = 'label';
@@ -77,12 +80,44 @@ class entryparts
         $obj[0][$this->gridname]['columns'][$itemname]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$itemname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$itemname]['label'] = 'Product Name';
+
+        $obj[0][$this->gridname]['columns'][$isqty]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
+
+        if (!isset($config['params']['row'])) {
+            $obj[0][$this->gridname]['columns'][$isqty]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$isamt]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$disc]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$jobtitle]['label'] = 'Job Description';
+            $obj[0][$this->gridname]['columns'][$jobtitle]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
+            $obj[0][$this->gridname]['columns'][$jobtitle]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$jobcode]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
+            $obj[0][$this->gridname]['columns'][$jobcode]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$code]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
+            $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$code]['label'] = 'Task Code';
+            $obj[0][$this->gridname]['columns'][$description]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
+            $obj[0][$this->gridname]['columns'][$description]['readonly'] = true;
+            $obj[0][$this->gridname]['columns'][$description]['label'] = 'Task Description';
+            $obj[0][$this->gridname]['columns'][$action]['type'] = 'coldel';
+        } else {
+            $obj[0][$this->gridname]['columns'][$jobtitle]['type'] = 'coldel';
+            $obj[0][$this->gridname]['columns'][$jobcode]['type'] = 'coldel';
+            $obj[0][$this->gridname]['columns'][$code]['type'] = 'coldel';
+            $obj[0][$this->gridname]['columns'][$description]['type'] = 'coldel';
+        }
+        $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
 
     public function createtabbutton($config)
     {
+
         $tbuttons = ['addoutlet', 'saveallentry']; //'whlog'
+
+        if (!isset($config['params']['row'])) {
+            $tbuttons = [];
+        }
         $obj = $this->tabClass->createtabbutton($tbuttons);
         $obj[0]['lookupclass'] = 'addparts';
         $obj[0]['action'] = 'lookupsetup';
@@ -91,7 +126,17 @@ class entryparts
 
     public function loaddata($config)
     {
-        $row = isset($config['params']['sourcerow']) ? $config['params']['sourcerow'] : $config['params']['row'];
+        // $row = isset($config['params']['sourcerow']) ? $config['params']['sourcerow'] : $config['params']['row'];
+        $isview = false;
+        if (isset($config['params']['sourcerow'])) {
+            $row = $config['params']['sourcerow'];
+        } else {
+            if (isset($config['params']['row'])) {
+                $row = $config['params']['row'];
+            } else {
+                $isview = true;
+            }
+        }
         $trno = $config['params']['tableid'];
         $filtersearch = "";
         $searchfield  = $this->fields;
@@ -107,17 +152,47 @@ class entryparts
             }
             $filtersearch .= ")";
         }
-        $select = $this->selectqry() . ", '' as bgcolor";
+
+        $filter = "";
+        $fields = "";
+        $join = "";
+        $hjoin = "";
+        if (!$isview) {
+            $filter = " and stock.jobline = " . $row['jobline'] . " and stock.taskline = " . $row['taskline'];
+        } else {
+            $fields = ",jt.jobcode as code,jt.description,jhead.docno as jobcode,jhead.jobtitle";
+            $join = "      
+        left join ptjobs as job on job.trno = stock.trno and job.line = stock.jobline
+		left join jobthead as jhead on jhead.line = job.jobid
+        left join pttask as task on task.trno = stock.trno and task.line = stock.taskline and task.jobline = stock.jobline
+        left join jobtask as jt on jt.line = task.laborline";
+
+            $hjoin = "      
+        left join hptjobs as job on job.trno = stock.trno and job.line = stock.jobline
+		left join jobthead as jhead on jhead.line = job.jobid
+        left join hpttask as task on task.trno = stock.trno and task.line = stock.taskline and task.jobline = stock.jobline
+        left join jobtask as jt on jt.line = task.laborline";
+        }
+
+        $select = $this->selectqry() . ", '' as bgcolor $fields";
         $qry = "select " . $select . " from " . $this->table . " as stock
         left join item on item.itemid=stock.itemid
-        where stock.trno = ? and stock.jobline = " . $row['jobline'] . " and stock.taskline = " . $row['taskline'] . $filtersearch . " order by stock.line";
-        $data = $this->coreFunctions->opentable($qry, [$trno]);
+        $join
+        where stock.trno = ? " . $filter . $filtersearch . "
+        union all 
+        select " . $select . " from " . $this->htable . " as stock
+        left join item on item.itemid=stock.itemid
+        $hjoin
+        where stock.trno = ? " . $filter . $filtersearch . " 
+        order by line
+        ";
+        $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
         return $data;
     }
 
     private function selectqry()
     {
-        $query = "stock.line,stock.jobline,stock.taskline,stock.amt,item.barcode,item.itemname,item.uom,format(stock.isqty,2) as isqty,stock.iss,stock.disc,stock.itemid,stock.uom,stock.trno,stock.line,stock.rem,format(stock.ext,2) as ext,format(stock.isamt,2) as isamt";
+        $query = "stock.line,stock.jobline,stock.taskline,stock.amt,item.barcode,item.itemname,format(stock.isqty,2) as isqty,stock.iss,stock.disc,stock.itemid,stock.uom,stock.trno,stock.rem,format(stock.ext,2) as ext,format(stock.isamt,2) as isamt";
         return $query;
     }
 

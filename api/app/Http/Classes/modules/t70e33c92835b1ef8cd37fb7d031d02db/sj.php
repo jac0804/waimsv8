@@ -2237,6 +2237,7 @@ class sj
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
       $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+      $agentamt = $this->othersClass->sanitizekeyfield('qty', $agentamt);
 
       if ($item[0]->iswireitem == 1){
         $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? and whid=? union all select trno, startwire, endwire from glstock where itemid=? and whid = ?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid,$whid, $itemid,$whid]);
@@ -2267,6 +2268,7 @@ class sj
       $qty = $config['params']['data'][$this->dqty];
       $startwire = $config['params']['data']['startwire'];
       $endwire = $config['params']['data']['endwire'];
+      $agentamt = $this->othersClass->sanitizekeyfield('qty', $agentamt);
       $config['params']['line'] = $line;
     }
 

@@ -58,7 +58,7 @@ class viewassignedso
 
     public function createTab($config)
     {
-        $columns = ['docno', 'barcode', 'itemname'];
+        $columns = ['docno', 'barcode', 'itemname', 'remarks'];
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         foreach ($columns as $key => $value) {
@@ -73,6 +73,8 @@ class viewassignedso
         $obj[0][$this->gridname]['columns'][$itemname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$itemname]['label'] = 'Itemname';
         $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$remarks]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$remarks]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
@@ -94,7 +96,7 @@ class viewassignedso
         }
 
         $username = $this->coreFunctions->getfieldvalue('client', 'email', 'clientid=?', [$userid]);
-        $qry = "select head.docno,head.trno, i.barcode,i.itemname from hsohead as head
+        $qry = "select head.docno,head.trno, i.barcode,i.itemname,head.rem as remarks from hsohead as head
                 left join hsostock as stock on stock.trno=head.trno
                 left join $table as task on task.trno=stock.dytrno
                 left join item as i on i.itemid=stock.itemid where stock.dytrno <>0 and stock.tmtrno=0 and head.createby='$username' and task.trno = $trno";

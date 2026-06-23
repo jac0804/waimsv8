@@ -74,6 +74,24 @@ class autoserv
          ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         $this->coreFunctions->sbccreatetable("pthead", $qry);
 
+        $qry = " CREATE TABLE  `hpthead` (
+         `trno` bigint(20) unsigned NOT NULL DEFAULT '0',
+         `doc` VARCHAR(20) NOT NULL DEFAULT '',
+         `docno` VARCHAR(20) NOT NULL DEFAULT '',
+         `description` varchar(200) NOT NULL DEFAULT '',
+         `rem` text,
+         `dateid` datetime DEFAULT NULL,
+         `createdate` datetime DEFAULT NULL,
+         `createby` varchar(100) NOT NULL DEFAULT '',
+         `editdate` datetime DEFAULT NULL,
+         `editby` varchar(100) NOT NULL DEFAULT '',
+         `viewdate` datetime DEFAULT NULL,
+         `viewby` varchar(100) NOT NULL DEFAULT '',
+          PRIMARY KEY (`trno`) USING BTREE
+         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("hpthead", $qry);
+
+
 
         $qry = " CREATE TABLE  `ptjobs` (
         `line` int(10) unsigned NOT NULL DEFAULT '0',
@@ -87,6 +105,19 @@ class autoserv
          PRIMARY KEY (`trno`,`line`) USING BTREE
          ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         $this->coreFunctions->sbccreatetable("ptjobs", $qry);
+
+        $qry = " CREATE TABLE  `hptjobs` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `jobid` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        `editby` varchar(100) NOT NULL DEFAULT '',
+         PRIMARY KEY (`trno`,`line`) USING BTREE
+         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("hptjobs", $qry);
 
         $qry = " CREATE TABLE  `pttask` (
         `line` int(10) unsigned NOT NULL DEFAULT '0',
@@ -105,8 +136,28 @@ class autoserv
         ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         $this->coreFunctions->sbccreatetable("pttask", $qry);
 
+        $qry = " CREATE TABLE  `hpttask` (
+        `line` int(10) unsigned NOT NULL DEFAULT '0',
+        `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
+        `jobline` int(10) unsigned NOT NULL DEFAULT '0',
+        `laborline` int(10) unsigned NOT NULL DEFAULT '0',
+        `mecline` int(10) unsigned NOT NULL DEFAULT '0',
+        `cost` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rate` decimal(18,2) NOT NULL DEFAULT '0.00',
+        `rem` varchar(200) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,   
+        `editby` varchar(100) NOT NULL DEFAULT '',
+        PRIMARY KEY (`trno`,`line`) USING BTREE
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        $this->coreFunctions->sbccreatetable("hpttask", $qry);
+
         $qry = "CREATE TABLE ptstock like sostock";
         $this->coreFunctions->sbccreatetable("ptstock", $qry);
+
+        $qry = "CREATE TABLE hptstock like ptstock";
+        $this->coreFunctions->sbccreatetable("hptstock", $qry);
 
 
         // $this->coreFunctions->sbcdroptable("ptjobs");
@@ -144,7 +195,6 @@ class autoserv
 
         $this->coreFunctions->sbcaddcolumngrp(["pttask"], ["laborline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
         $this->coreFunctions->sbcaddcolumngrp(["ptstock"], ["jobline", "taskline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
-        $this->coreFunctions->sbcaddcolumngrp(["ptstock"], ["extension"], "varchar(200) NOT NULL DEFAULT ''", 0);
 
 
 
@@ -152,7 +202,6 @@ class autoserv
         `line` int(10) unsigned NOT NULL DEFAULT '0',
         `jobid` int(10) unsigned NOT NULL DEFAULT '0',
         `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
-        `packageline` bigint(10) unsigned NOT NULL DEFAULT '0',
         `rem` varchar(200) NOT NULL DEFAULT '',
         `encodeddate` datetime DEFAULT NULL,
         `encodedby` varchar(100) NOT NULL DEFAULT '',
@@ -166,7 +215,6 @@ class autoserv
         `line` int(10) unsigned NOT NULL DEFAULT '0',
         `jobid` int(10) unsigned NOT NULL DEFAULT '0',
         `trno` bigint(10) unsigned NOT NULL DEFAULT '0',
-        `packageline` bigint(10) unsigned NOT NULL DEFAULT '0',
         `rem` varchar(200) NOT NULL DEFAULT '',
         `encodeddate` datetime DEFAULT NULL,
         `encodedby` varchar(100) NOT NULL DEFAULT '',
@@ -253,7 +301,16 @@ class autoserv
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mileage'], "decimal(10,2) DEFAULT 0", 0);
 
         $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["taskline", "jobline"], "INT(11) NOT NULL DEFAULT '0'", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['ptjobs'], ['packagetrno'], "bigint(20) unsigned NOT NULL DEFAULT 0", 0);
+        $this->coreFunctions->sbcaddcolumngrp(['ptjobs', 'amjobs', 'hamjobs'], ['packagetrno'], "bigint(20) unsigned NOT NULL DEFAULT 0", 1);
+
+        $this->coreFunctions->sbcdropcolumngrp(["amjobs", "hamjobs"], ['packageline']);
+
+        $this->coreFunctions->sbcaddcolumngrp(["pthead", "hpthead"], ["lockdate"], "datetime DEFAULT NULL", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["pthead", "hpthead"], ["lockuser"], "VARCHAR(150) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcdropcolumngrp(["ptstock", "hptstock"], ['extension']);
+
+        $qry = "CREATE TABLE hawhead like awhead";
+        $this->coreFunctions->sbccreatetable("hawhead", $qry);
     } //end function
 
 } // end class

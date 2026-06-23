@@ -1330,7 +1330,7 @@ class sj
         $disc = $data[$i]['disc'];
 
         $arr_uom = $this->reporter->fixcolumn([$uom], '10', 0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname], '60', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '70', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);

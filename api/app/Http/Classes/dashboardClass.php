@@ -205,19 +205,19 @@ class dashboardClass
       $this->notice();
     }
 
-    if ($companyid == 29) { //sbc
-      if ($this->checkapprover($this->config) || $this->othersClass->isSBCProjectHead($this->config['params']['adminid'])) {
-        $this->currenttimerec($this->config);
-      }
-    }
-
     if ($this->companysetup->getistaskmonitor($this->config['params'])) {
       if ($this->checksecurity(5483)) {
         $this->gapplications();
       }
     }
 
-    if ($companyid == 29) $this->taskassign();
+    if ($companyid == 29) { //sbc
+      $this->taskassign();
+
+      if ($this->checkapprover($this->config) || $this->othersClass->isSBCProjectHead($this->config['params']['adminid'])) {
+        $this->currenttimerec($this->config);
+      }
+    }
 
     if ($this->checkapprover($this->config)) {
       vehicleschedulehere:

@@ -521,7 +521,7 @@ class othersClass
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
-    array_push($number, 'amtrno', 'jobline', 'packageline', 'taskline', 'phperc', 'impperc', 'devperc');
+    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc');
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -1395,6 +1395,15 @@ class othersClass
                   bank,branch,checkdate,clientid
                   FROM " . $config['docmodule']->stock . " 
                   where trno =?";
+
+          if ($config['params']['doc'] == 'RE') {
+            $qry2 = "insert into hchequedetail (trno,line,refx,linex,rctrno,rcline,editby,editdate,encodeddate,encodedby)
+                    select trno, line,refx,linex,rctrno,rcline,editby,editdate,encodeddate,encodedby
+                    from chequedetail
+                    where trno =?";
+            $return = $this->coreFunctions->execqry($qry2, 'insert', [$trno]);
+            if (!$return) return $return;
+          }
         } else {
           goto defaultqry;
         }
@@ -1416,7 +1425,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1426,7 +1435,7 @@ class othersClass
                 stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,stock.poref, 
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2042,8 +2051,8 @@ class othersClass
         $selectaddedfield = " ,rctrno,rcline,purposeid";
         break;
       case 'AUTOSERV':
-        $addedfield = " ,carid,modelid";
-        $selectaddedfield = " ,carid,modelid";
+        $addedfield = " ,carid";
+        $selectaddedfield = " ,carid";
         break;
     }
 
@@ -2271,6 +2280,13 @@ class othersClass
                   bank,branch,checkdate,clientid
                   FROM " . $config['docmodule']->hstock . " 
                   where trno =?";
+
+          $qry2 = "insert into chequedetail (trno,line,refx,linex,rctrno,rcline,editby,editdate,encodeddate,encodedby)
+                    select trno, line,refx,linex,rctrno,rcline,editby,editdate,encodeddate,encodedby
+                    from hchequedetail
+                    where trno =?";
+          $return = $this->coreFunctions->execqry($qry2, 'insert', [$trno]);
+          if (!$return) return $return;
         } else {
           goto defaultqry;
         }
@@ -2292,7 +2308,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2301,7 +2317,7 @@ class othersClass
                 stock.isextract,stock.pickerid,stock.pickerstart,stock.pickerend,stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -3490,6 +3506,7 @@ class othersClass
       $this->coreFunctions->execqry("delete from cntnuminfo where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from voidstock where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from boxinginfo where trno=?", "delete", [$trno]);
+      $this->coreFunctions->execqry("delete from chequedetail where trno=?", "delete", [$trno]);
 
       if ($config['params']['companyid'] == 6) { //mitsukoshi
         switch ($doc) {
@@ -3559,6 +3576,7 @@ class othersClass
       $this->coreFunctions->execqry("delete from hcntnuminfo where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from hvoidstock where trno=?", "delete", [$trno]);
       $this->coreFunctions->execqry("delete from hboxinginfo where trno=?", "delete", [$trno]);
+      $this->coreFunctions->execqry("delete from hchequedetail where trno=?", "delete", [$trno]);
 
       $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno . ' POSTED FAILED');
 

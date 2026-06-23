@@ -613,7 +613,7 @@ class pa
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
-    $forex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
+    $forex = 1; //$this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
     $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
 
     if (floatval($forex) == 0) {
@@ -862,6 +862,9 @@ class pa
   }
   public function uploadexcel($config)
   {
+    ini_set('max_execution_time', 0);
+    ini_set('memory_limit', '-1');
+
     $rawdata = $config['params']['data'];
     $trno = $config['params']['dataparams']['trno'];
     $msg = '';

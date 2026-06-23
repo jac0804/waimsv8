@@ -62,7 +62,8 @@ class pv
             'radioreporttype.options',
             [
                 ['label' => 'VOUCHER', 'value' => '0', 'color' => 'blue'],
-                ['label' => 'BIR Form 2307 (New)', 'value' => '2', 'color' => 'blue']
+                ['label' => 'BIR Form 2307 (New)', 'value' => '2', 'color' => 'blue'],
+                ['label' => 'Detailed Format', 'value' => '4', 'color' => 'blue']
             ]
         );
         return array('col1' => $col1);
@@ -112,6 +113,9 @@ class pv
 
                 case 3:
                     $str = $this->PDF_CV_WTAXREPORT($data, $config);
+                    break;
+                case 4:
+                    $str = $this->detailed_format_PDF($data, $config);
                     break;
             }
         }
@@ -1756,10 +1760,22 @@ class pv
                 break;
 
             default:
+
+                $repp = $filters['params']['dataparams']['reporttype'];
+
+                $addf = "";
+                $addgrp = "";
+                $orderby = "";
+                if ($repp == 4) {
+                    $addf = ",detail.ref, detail.postdate,client.client";
+                    $addgrp = ",detail.ref, detail.postdate,client.client";
+                    $orderby = " order by postdate ";
+                }
+
                 $query = "select date(head.dateid) as dateid, head.docno,  client.clientname, head.address, head.terms,
           head.rem, head.yourref,
           coa.acno, coa.acnoname,  sum(detail.db) as db, sum(detail.cr) as cr,
-          client.tin,date(head.due) as due,date(head.checkdate) as checkdate,head.checkno
+          client.tin,date(head.due) as due,date(head.checkdate) as checkdate,head.checkno $addf 
           from lahead as head 
           left join ladetail as detail on detail.trno=head.trno 
           left join client on client.client=head.client
@@ -1768,12 +1784,12 @@ class pv
           group by date(head.dateid), head.docno,  client.clientname, head.address, head.terms,
           head.rem, head.yourref,
           coa.acno, coa.acnoname, 
-          client.tin,date(head.due),date(head.checkdate),head.checkno
+          client.tin,date(head.due),date(head.checkdate),head.checkno $addgrp 
           union all
           select date(head.dateid) as dateid, head.docno,  client.clientname, head.address, head.terms,
           head.rem, head.yourref,
           coa.acno, coa.acnoname,  sum(detail.db) as db, sum(detail.cr) as cr,
-          client.tin,date(head.due) as due,date(head.checkdate) as checkdate,head.checkno
+          client.tin,date(head.due) as due,date(head.checkdate) as checkdate,head.checkno $addf 
           from glhead as head 
           left join gldetail as detail on detail.trno=head.trno 
           left join client on client.clientid=head.clientid
@@ -1782,8 +1798,8 @@ class pv
           group by date(head.dateid), head.docno,  client.clientname, head.address, head.terms,
           head.rem, head.yourref,
           coa.acno, coa.acnoname, 
-          client.tin,date(head.due),date(head.checkdate),head.checkno";
-                //    var_dump($query);
+          client.tin,date(head.due),date(head.checkdate),head.checkno $addgrp $orderby";
+                // var_dump($query);
                 $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
                 break;
         } // end switch
@@ -3959,5 +3975,379 @@ class pv
         </div>
       </div>
     ";
+    }
+
+    /////////////rwen 6.10.2026
+
+    public function detailed_header_PDF($data, $params)
+    {
+        $center = $params['params']['center'];
+        $username = $params['params']['user'];
+        //$width = 800; $height = 1000;
+
+        $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        $font = "";
+        $fontbold = "";
+        $fontsize = 8;
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        //$width = PDF::pixelsToUnits($width);
+        //$height = PDF::pixelsToUnits($height);
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [800, 1000]);
+        PDF::SetMargins(40, 40);
+        PDF::SetCellPaddings(4, 4, 4, 4);
+
+        // SetFont(family, style, size)
+        // MultiCell(width, height, txt, border, align, x, y)
+        // write2DBarcode(code, type, x, y, width, height, style, align)
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        PDF::SetFont($font, '', 8);
+        PDF::SetY(10.00125);
+        PDF::MultiCell(150, 0, 'Print User:' . strtoupper($username), '', 'L', false, 0, '',  '');
+        PDF::MultiCell(350, 0, 'Print Date/Time: ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s'), '', 'L', false, 0, '',  '');
+        PDF::MultiCell(220, 0, 'Page ' . PDF::PageNo() . ' of ' . PDF::getAliasNbPages(), '', 'R', false, 1);
+
+
+
+        // $this->reportheader->getheader($params);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(720, 0, strtoupper($headerdata[0]->name), '', 'C', false, 1, '',  '');
+        // PDF::SetFont($font, '', 13);
+        // PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
+        // PDF::MultiCell(0, 0, '', '', 'C', false, 1);
+
+
+
+        // PDF::SetFont($fontbold, '', 14);
+        // PDF::MultiCell(720, 0, $this->modulename, '', 'L', false, 1, '',  '');
+
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(465, 0, $this->modulename, '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(70, 0, "DOCNO #:", '', 'L', false, 0, '',  '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(185, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '');
+        // PDF::SetFont($fontbold, '', 1);
+        // PDF::MultiCell(720, 0, '', '', 'L', false); //space muna bago mag next line
+
+
+        $add = isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
+        $datehere = (isset($data[0]['dateid']) ? $data[0]['dateid'] : '');
+        $dates = date_format(date_create($datehere), 'M-d-Y');
+        $maxChars = 50;
+        $adds = strlen($add);
+        $firstLine = '';
+        $remaininglines = [];
+        $addsz = '';
+
+        if ($adds > $maxChars) {
+            $firstLine = substr($add, 0, $maxChars);
+            $remaining = substr($add, $maxChars);
+            // Split remaining address into multiple lines without cutting words
+            while (strlen($remaining) > $maxChars) {
+                // Find the last space within the maxChars limit
+                $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
+                // If there's no space, just cut at maxChars
+                if ($spacePos === false) {
+                    $nextLine = substr($remaining, 0, $maxChars);
+                    $remaining = substr($remaining, $maxChars);
+                } else {
+                    $nextLine = substr($remaining, 0, $spacePos);
+                    $remaining = substr($remaining, $spacePos + 1);
+                }
+                $remainingLines[] = $nextLine;
+            }
+            // Add the final remaining part if it's less than or equal to $maxChars
+            if (strlen($remaining) > 0) {
+                $remainingLines[] = $remaining;
+            }
+        } else {
+            $addsz = $add;
+        }
+
+
+        if ($adds > $maxChars) {
+
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(80, 0, "CUSTOMER: ", '', 'L', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(440, 0, $firstLine, 'B', 'L', false, 0, '',  '');
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(60, 0, "DATE: ", '', 'R', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(140, 0, $dates, 'B', 'L', false, 1, '',  '');
+
+
+            // Loop through remaining lines and print them
+            foreach ($remainingLines as $line) {
+
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(80, 0, '', '', 'L', false, 0, '',  '');
+                PDF::SetFont($fontbold, '', $fontsize);
+                PDF::MultiCell(440, 0, $line, 'B', 'L', false, 0, '',  '');
+
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(60, 0, '', '', 'R', false, 0, '',  '');
+                PDF::SetFont($fontbold, '', $fontsize);
+                PDF::MultiCell(140, 0, '', 'B', 'L', false, 1, '',  '');
+                // PDF::SetFont($fontbold, '', 4);
+                // PDF::MultiCell(720, 5, '', '', 'L', false); //space muna bago mag next line
+                //   PDF::SetFont($fontbold, '', 1);
+                //  PDF::MultiCell(720, 0, '', '', 'L', false); 
+            }
+        } else {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(80, 0, "CUSTOMER: ", '', 'L', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(440, 0, $addsz, 'B', 'L', false, 0, '',  '');
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(60, 0, "DATE: ", '', 'R', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(140, 0, $dates, 'B', 'L', false, 1, '',  '');
+            // PDF::SetFont($fontbold, '', 4);
+            // PDF::MultiCell(720, 5, '', '', 'L', false); //space muna bago mag next line
+            // PDF::SetFont($fontbold, '', 1);
+            // // PDF::MultiCell(720, 0, '', '', 'L', false);
+            // PDF::SetFont($fontbold, '', 1);
+            // PDF::MultiCell(720, 0, '', '', 'L', false);
+        }
+
+
+
+        $addr = isset($data[0]['address']) ? $data[0]['address'] : '';
+        $maxCharsz = 60;
+        $addrs = strlen($addr);
+        $fline = '';
+        $remainingliness = [];
+        $address = '';
+
+        if ($addrs > $maxCharsz) {
+            $fline = substr($addr, 0, $maxCharsz);
+            $remaining = substr($addr, $maxCharsz);
+            // Split remaining address into multiple lines without cutting words
+            while (strlen($remaining) > $maxCharsz) {
+                // Find the last space within the maxCharsz limit
+                $spacePos = strrpos(substr($remaining, 0, $maxCharsz), ' ');
+                // If there's no space, just cut at maxCharsz
+                if ($spacePos === false) {
+                    $nextLine = substr($remaining, 0, $maxCharsz);
+                    $remaining = substr($remaining, $maxCharsz);
+                } else {
+                    $nextLine = substr($remaining, 0, $spacePos);
+                    $remaining = substr($remaining, $spacePos + 1);
+                }
+                $remainingliness[] = $nextLine;
+            }
+            // Add the final remaining part if it's less than or equal to $maxChars
+            if (strlen($remaining) > 0) {
+                $remainingliness[] = $remaining;
+            }
+        } else {
+            $address = $addr;
+        }
+
+
+        if ($addrs > $maxChars) {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(80, 0, "ADDRESS: ", '', 'L', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(440, 0, $fline, 'B', 'L', false, 0, '',  '');
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(60, 0, "REF: ", '', 'R', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(140, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 1, '',  '');
+
+            // Loop through remaining lines and print them
+            foreach ($remainingliness as $line) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(80, 0, '', '', 'L', false, 0, '',  '');
+                PDF::SetFont($fontbold, '', $fontsize);
+                PDF::MultiCell(440, 0, $line, 'B', 'L', false, 0, '',  '');
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(60, 0, "", '', 'R', false, 0, '',  '');
+                PDF::SetFont($fontbold, '', $fontsize);
+                PDF::MultiCell(140, 0, '', 'B', 'L', false, 1, '',  '');
+            }
+        } else {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(80, 0, "ADDRESS: ", '', 'L', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(440, 0, $address, 'B', 'L', false, 0, '',  '');
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(60, 0, "REF: ", '', 'R', false, 0, '',  '');
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(140, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 1, '',  '');
+        }
+
+
+        // PDF::MultiCell(0, 0, "\n");
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(80, 0, "NOTES: ", '', 'L', false, 0, '',  '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(440, 0, (isset($data[0]['remarks']) ? $data[0]['remarks'] : ''), 'B', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(60, 0, "", '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(140, 0, '', '', 'L', false, 1, '',  '');
+
+
+        PDF::MultiCell(0, 0, "\n");
+        PDF::SetCellPaddings(0, 2, 0, 2); //left, top, right, bottom
+        PDF::SetFont($font, '', 1);
+        PDF::MultiCell(720, 0, '', 'T');
+
+        PDF::SetFont($font, 'B', $fontsize);
+        PDF::MultiCell(75, 0, "ACCOUNT NO.", '', 'L', false, 0);
+        PDF::MultiCell(10, 0, "", '', 'L', false, 0);
+        PDF::MultiCell(205, 0, "ACCOUNT NAME", '', 'L', false, 0);
+        PDF::MultiCell(135, 0, "REFERENCE #", '', 'C', false, 0);
+        PDF::MultiCell(60, 0, "DATE", '', 'C', false, 0);
+        PDF::MultiCell(85, 0, "DEBIT", '', 'R', false, 0);
+        PDF::MultiCell(85, 0, "CREDIT", '', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", '', 'R', false, 0);
+        PDF::MultiCell(55, 0, "CLIENT", '', 'C', false);
+
+
+        PDF::SetFont($font, '', 1);
+        PDF::MultiCell(720, 0, '', 'B');
+
+        PDF::SetCellPaddings(0, 0.5, 0, 0); //left, top, right, bottom
+    }
+
+    public function detailed_format_PDF($data, $params)
+    {
+        $companyid = $params['params']['companyid'];
+        $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
+        $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
+        $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
+        $center = $params['params']['center'];
+        $username = $params['params']['user'];
+        $count = $page = 48;
+
+        $font = "";
+        $fontbold = "";
+        $border = "1px solid ";
+        $fontsize = "8";
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+        $this->detailed_header_PDF($data, $params);
+
+        PDF::SetFont($font, '', 2);
+        PDF::MultiCell(720, 0, '', '');
+
+        $countarr = 0;
+
+        if (!empty($data)) {
+            $totaldb = 0;
+            $totalcr = 0;
+            for ($i = 0; $i < count($data); $i++) {
+
+                $maxrow = 1;
+                $acno = $data[$i]['acno'];
+                $acnoname = $data[$i]['acnoname'];
+                $ref = $data[$i]['ref'];
+                $postdates = $data[$i]['postdate'];
+                $postdate = date_format(date_create($postdates), 'm-d-y');
+
+                $debit = number_format($data[$i]['db'], $decimalcurr);
+                $credit = number_format($data[$i]['cr'], $decimalcurr);
+                $client = $data[$i]['client'];
+                $debit = $debit < 0 ? '-' : $debit;
+                $credit = $credit < 0 ? '-' : $credit;
+
+                $arr_acno = $this->reporter->fixcolumn([$acno], '16', 0);
+                $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '45', 0); //35
+                $arr_ref = $this->reporter->fixcolumn([$ref], '20', 0);
+                $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+                $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+                $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
+                $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
+
+                $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
+
+                for ($r = 0; $r < $maxrow; $r++) {
+                    PDF::SetFont($font, '', $fontsize);
+                    PDF::MultiCell(75, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'LT', false, 0, '', '', true, 1);
+                    PDF::MultiCell(10, 0, '', '', 'L', false, 0, '', '', false, 1);
+                    PDF::MultiCell(205, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'LT', false, 0, '', '', false, 1);
+                    PDF::MultiCell(135, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+                    PDF::MultiCell(60, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+                    PDF::MultiCell(85, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+                    PDF::MultiCell(85, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+                    PDF::MultiCell(10, 0, '', '', 'RT', false, 0, '', '', false, 1);
+                    PDF::MultiCell(55, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'C', false, 1, '', '', false, 1);
+                }
+                $totaldb += $data[$i]['db'];
+                $totalcr += $data[$i]['cr'];
+
+                if (intVal($i) + 1 == $page) {
+                    PDF::SetCellPaddings(0, 0, 0, 0);
+                    PDF::SetY(10.00125);
+                    $this->detailed_header_PDF($data, $params);
+                    $page += $count;
+                }
+            }
+        }
+
+
+        PDF::SetFont($font, '', 3);
+        PDF::MultiCell(720, 0, '', 'B');
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(720, 0, '', '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(485, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
+        PDF::MultiCell(85, 0, number_format($totaldb, $decimalprice), '', 'R', false, 0);
+        PDF::MultiCell(85, 0, number_format($totalcr, $decimalprice), '', 'R', false, 0);
+        PDF::MultiCell(65, 0, '', '', 'R', false, 1);
+
+        PDF::MultiCell(0, 0, "\n");
+
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(50, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(670, 0, '', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n\n");
+
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, 'Prepared By: ', '', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, 'Approved By: ', '', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, 'Received By: ', '', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false);
+
+        PDF::MultiCell(0, 0, "\n");
+        $trno = $params['params']['dataid'];
+        $createby = $this->coreFunctions->datareader("
+        select createby as value from lahead where trno = $trno
+        union all
+        select createby as value from glhead where trno = $trno");
+        $createname = $this->coreFunctions->datareader("select name as value from useraccess where username = '$createby'");
+
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $createname, 'B', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $params['params']['dataparams']['approved'], 'B', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $params['params']['dataparams']['received'], 'B', 'C', false, 0);
+        PDF::MultiCell(30, 0, '', '', 'L', false);
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
     }
 }

@@ -2773,9 +2773,9 @@ class trigger_masterfile
 	{
 		$fields = [
 			'Car'        => ['carid'      => [true, "carname", "cmake", "id"]],
-			'Year'       => ['year'       => []],
+			'Year'       => ['cryear'       => []],
 			'Model'      => ['model'      => []],
-			'Type'       => ['type'       => []],
+			'Type'       => ['crtype'       => []],
 			'Sub Model'  => ['sub_model'  => []],
 			'Other Info' => ['other_info' => []],
 		];

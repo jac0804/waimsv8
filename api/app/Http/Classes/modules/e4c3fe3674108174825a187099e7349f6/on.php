@@ -130,7 +130,7 @@ class on
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
 
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-    $cols[$listdate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$listdate]['style'] = 'width:120px;whiteSpace: normal;min-width:120px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';

@@ -88,21 +88,15 @@ class entrybudget
   public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['year', 'project', ['refresh', 'print'], ['update'], 'radiooption'];
+    $fields = ['year', 'project', ['refresh', 'print'], ['update']];
     if ($companyid == 10) { //afti
-      $fields = ['year', 'project', 'branchname', 'deptname', ['refresh'], 'radiooption'];
+      $fields = ['year', 'project', 'branchname', 'deptname', ['refresh']];
     }
     $col1 = $this->fieldClass->create($fields);
     if ($companyid == 10) { //afti
       data_set($col1, 'deptname.type', 'lookup');
       data_set($col1, 'deptname.lookupclass', 'lookupddeptname');
       data_set($col1, 'deptname.action', 'lookupclient');
-    }
-    if ($companyid == 68) { //jda
-      data_set($col1, 'radiooption.options', [
-        ['label' => 'Balance Sheet', 'value' => 0, 'color' => 'red'],
-        ['label' => 'Profit and Loss', 'value' => 1, 'color' => 'green']
-      ]);
     }
     data_set($col1, 'year.type', 'lookup');
     data_set($col1, 'year.class', 'sbccsreadonly');
@@ -117,7 +111,19 @@ class entrybudget
     data_set($col1, 'update.confirm', true);
     data_set($col1, 'update.confirmlabel', 'Are you sure you want to copy previous year budget?');
     data_set($col1, 'print.style', 'width:100%;');
-    return array('col1' => $col1);
+
+
+    $fields = ['radiooption'];
+    $col2 = $this->fieldClass->create($fields);
+
+    if ($companyid == 68) { //jda
+      data_set($col2, 'radiooption.options', [
+        ['label' => 'Balance Sheet', 'value' => 0, 'color' => 'red'],
+        ['label' => 'Profit and Loss', 'value' => 1, 'color' => 'green']
+      ]);
+    }
+
+    return array('col1' => $col1, 'col2' => $col2);
   }
 
   public function paramsdata($config)
@@ -192,8 +198,8 @@ class entrybudget
     $qry = "select b.line,b.year,concat(c.acno,' ',c.acnoname) as acno,c.acnoname,b.acnoid,b.projectid,format(b.amt1," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt1,format(b.amt2," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt2,format(b.amt3," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt3,format(b.amt4," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt4,format(b.amt5," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt5,format(b.amt6," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt6,format(b.amt7," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt7,format(b.amt8," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt8,format(b.amt9," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt9,format(b.amt10," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt10,format(b.amt11," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt11,format(b.amt12," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt12,format((b.amt1+b.amt2+b.amt3+b.amt4+b.amt5+b.amt6+b.amt7+b.amt8+b.amt9+b.amt10+b.amt11+b.amt12)," . $this->companysetup->getdecimal('price', $config['params']) . ") as total,'' as bgcolor ,
     d.client as dept,d.clientid as deptid,br.clientid as branch,br.client as branchcode,d.clientname as deptname,br.clientname as branchname,'' as ddeptname    
     from budget as b left join coa as c on c.acnoid = b.acnoid left join projectmasterfile as p on p.line = b.projectid 
-    left join client as d on d.clientid = b.deptid left join client as br on br.clientid = b.branch where c.cat in " . $cat . " and b.projectid=? and b.year=? " . $addonfilter;
-    $data = $this->coreFunctions->opentable($qry, [$projectid, $year]);
+    left join client as d on d.clientid = b.deptid left join client as br on br.clientid = b.branch where c.cat in " . $cat . " and b.projectid=" . $projectid . " and b.year=" . $year . " " . $addonfilter;
+    $data = $this->coreFunctions->opentable($qry);
 
     if (empty($data)) {
       if ($year == '' || $project == '') {

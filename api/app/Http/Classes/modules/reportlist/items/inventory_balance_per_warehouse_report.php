@@ -115,6 +115,7 @@ class inventory_balance_per_warehouse_report
         '' as part,
         '' as partname,
         '' as dwhname,
+        0 as whid,
         '' as wh,
         '' as whname,
         '0' as layoutformat";
