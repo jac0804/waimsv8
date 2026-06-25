@@ -55,10 +55,10 @@ class entryamlabor
     $descriptions = isset($config['params']['row']['description']) ? $config['params']['row']['description'] : '';
 
     $doc = $config['params']['doc'];
-    $columns = ['jobcode', 'jobtitle', 'code', 'description', 'cost', 'rate', 'rem']; //viewing
+    $columns = ['jobcode', 'jobtitle', 'code', 'description', 'cost', 'mechanic', 'rate', 'rem']; //viewing
 
     if ($descriptions != '') {
-      $columns = ['action', 'code', 'description', 'cost', 'rate', 'rem']; //mechanic
+      $columns = ['action', 'code', 'description', 'cost', 'mechanic','rate', 'rem']; //mechanic
     }
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
@@ -88,6 +88,12 @@ class entryamlabor
     $obj[0][$this->gridname]['columns'][$cost]['label'] = 'Task Cost';
     $obj[0][$this->gridname]['columns'][$rate]['label'] = 'Task Rate';
 
+    $obj[0][$this->gridname]['columns'][$mechanic]['type'] = 'lookup';
+    $obj[0][$this->gridname]['columns'][$mechanic]['lookupclass'] = 'lookupmechanic';
+    $obj[0][$this->gridname]['columns'][$mechanic]['action'] = 'lookupsetup';
+    $obj[0][$this->gridname]['columns'][$mechanic]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][$mechanic]['style'] = "width:170px;whiteSpace: normal;min-width:170px;";
+
 
 
     if ($descriptions != '') {
@@ -110,6 +116,8 @@ class entryamlabor
       $obj[0][$this->gridname]['columns'][$rate]['style'] = 'width:70px;whiteSpace: normal;min-width:70px; text-align: right';
       $obj[0][$this->gridname]['columns'][$jobtitle]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; text-align: left';
       $obj[0][$this->gridname]['columns'][$jobcode]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: left';
+
+       $obj[0][$this->gridname]['columns'][$mechanic]['type'] ='label';
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -177,6 +185,7 @@ class entryamlabor
            left join jobtask on jobtask.line=jt.laborline 
             left join amjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
            left join jobthead as joo on joo.line=jo.jobid
+           left join client as mech on mech.clientid = jt.mecline
            where  jt.trno = ? $jobline
            " . $filtersearch . "
            
@@ -186,6 +195,7 @@ class entryamlabor
            left join jobtask on jobtask.line=jt.laborline 
            left join hamjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
            left join jobthead as joo on joo.line=jo.jobid
+           left join client as mech on mech.clientid = jt.mecline
            where  jt.trno = ? $jobline
            " . $filtersearch . "
 
@@ -197,7 +207,7 @@ class entryamlabor
   private function selectqry()
   {
     $qry = "jt.line,jobtask.code, jobtask.description, jt.cost, jt.rate, jt.rem, 
-            jt.mecline, jt.trno,jt.jobline,jt.laborline,jt.line as taskline,joo.jobtitle, joo.docno as jobcode";
+            jt.mecline, jt.trno,jt.jobline,jt.laborline,jt.line as taskline,joo.jobtitle, joo.docno as jobcode,mech.clientname as mechanic";
     return $qry;
   }
 
@@ -307,6 +317,7 @@ class entryamlabor
             left join jobtask on jobtask.line=jt.laborline 
             left join amjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
             left join jobthead as joo on joo.line=jo.jobid
+             left join client as mech on mech.clientid = jt.mecline 
             where jt.trno = $trno and jt.line=? and jt.jobline = $jobline
             
             union all
@@ -315,6 +326,7 @@ class entryamlabor
             left join jobtask on jobtask.line=jt.laborline 
             left join hamjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
             left join jobthead as joo on joo.line=jo.jobid
+             left join client as mech on mech.clientid = jt.mecline 
             where jt.trno = $trno and jt.line=? and jt.jobline = $jobline ";
     // var_dump($qry);
     $data = $this->coreFunctions->opentable($qry, [$line, $line]);
@@ -352,6 +364,8 @@ class entryamlabor
       case 'addtasklabor':
         return $this->addtasklabor($config);
         break;
+      case 'lookupmechanic':
+        return $this->lookupmechanic($config);
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under WH documents'];
         break;
@@ -466,5 +480,32 @@ class entryamlabor
     // var_dump($qry);
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
+  }
+
+  public function lookupmechanic($config)
+  {
+    $lookupsetup = array(
+      'type' => 'single',
+      'rowkey' => 'mecline',
+      'title' => 'List of Mechanic',
+      'style' => 'width:800px;max-width:800px;'
+    );
+    $plotting = array('mechanic' => 'mechanic', 'mecline' => 'mecline');
+    $plotsetup = array(
+      'plottype' => 'plotgrid',
+      'plotting' => $plotting,
+    );
+
+
+    // lookup columns
+    $cols = [
+      ['name' => 'mechacode', 'label' => 'Code', 'align' => 'left', 'field' => 'mechacode', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'mechanic', 'label' => 'Description', 'align' => 'left', 'field' => 'mechanic', 'sortable' => true, 'style' => 'font-size:16px;']
+    ];
+    $qry = "select client as mechacode,clientname as mechanic,clientid as mecline from client where ismechanic = 1";
+    $data = $this->coreFunctions->opentable($qry);
+
+    $rowindex = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex];
   }
 } //end class

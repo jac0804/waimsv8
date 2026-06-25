@@ -114,7 +114,7 @@ class viewrechistory
         $companyid = $config['params']['companyid'];
 
 
-        $qry = "select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, dt.checkdate, dt.bank, dt.branch, p.checkno,
+        $qry = "select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, dt.checkdate, dt.bank, dt.branch, p.checkno,
         FORMAT(p.amount,2) as amount, dt.checkno as rcchecks, head2.docno as ref, FORMAT(dt.amount,2) as amount2, p.rem as notes
         from particulars as p
         left join hrcdetail as dt on dt.retrno = p.trno and dt.line = p.rcline
@@ -127,7 +127,7 @@ class viewrechistory
 
         union all
 
-        select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, dt.checkdate, dt.bank, dt.branch, p.checkno,
+        select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, dt.checkdate, dt.bank, dt.branch, p.checkno,
         FORMAT(p.amount,2) as amount, dt.checkno as rcchecks, head2.docno as ref, FORMAT(dt.amount,2) as amount2, p.rem as notes
         from particulars as p
         left join hrcdetail as dt on dt.retrno = p.trno and dt.line = p.rcline

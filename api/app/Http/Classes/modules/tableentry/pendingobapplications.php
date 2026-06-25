@@ -360,6 +360,7 @@ class pendingobapplications
                                 // $data['status'] = $obstatus; //pag na disapproved update na din ito last status
                                 $data['disapprovedby2'] = $config['params']['user'];
                                 $data['disapprovedate2'] = $this->othersClass->getCurrentTimeStamp();
+                                $data['status'] = 'D';
                                 $lastapp = true;
                             }
                             break;

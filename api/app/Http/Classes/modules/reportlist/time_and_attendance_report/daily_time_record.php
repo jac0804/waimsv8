@@ -1934,9 +1934,9 @@ class daily_time_record
     $deptn = '';
     $sectn = '';
     $str = '';
-    $str .= '<br/><br/>';
     $divisionemp = $divisionemp == '' ? '' : $divisionemp;
 
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->letterhead($center, $username, $config);
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();

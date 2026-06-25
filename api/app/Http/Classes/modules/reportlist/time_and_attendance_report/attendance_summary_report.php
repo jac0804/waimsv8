@@ -59,7 +59,10 @@ class attendance_summary_report
         data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
         data_set($col1, 'deptrep.label', 'Department');
 
-        data_set($col1, 'tpaygroupname.lookupclass', 'batchsetuppaygroup');
+        if (isset($col1['tpaygroupname'])) {
+            data_set($col1, 'tpaygroupname.lookupclass', 'batchsetuppaygroup');
+            data_set($col1, 'tpaygroupname.label', 'Timecard Paygroup');
+        }
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -374,7 +377,7 @@ class attendance_summary_report
             $filter  .= " and emp.divid='" . $divid . "'";
         }
         if ($tpaygroupname != "") {
-            $filter  .= " and emp.paygroup='" . $pgroup . "'";
+            $filter  .= " and tm.pgline=" . $pgroup;
         }
 
         $query = "select client.clientid, client.client as code, client.clientname,
@@ -445,7 +448,7 @@ class attendance_summary_report
         $currentdate = date("m-d-Y", strtotime($this->othersClass->getCurrentDate()));
         $tpaygroupname   = $config['params']['dataparams']['tpaygroupname'];
 
-        if(empty($tpaygroupname)){
+        if (empty($tpaygroupname)) {
             $tpaygroupname = 'All';
         }
 
@@ -538,7 +541,7 @@ class attendance_summary_report
         $str .= $this->reporter->col('OT',          30,  null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '');
 
         // start of nightshift
-        $str .= $this->reporter->col('Days',        30,  null, false, $border, 'LB','CT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Days',        30,  null, false, $border, 'LB', 'CT', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Hrs',         40,  null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('OT',          30,  null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '');
 
@@ -559,7 +562,7 @@ class attendance_summary_report
         // total
         $str .= $this->reporter->col('Days',        30,  null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Hrs',         40,  null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('OT',          30,  null, false, $border, 'RB','CT', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('OT',          30,  null, false, $border, 'RB', 'CT', $font, $fontsize, 'B', '', '');
 
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -614,7 +617,7 @@ class attendance_summary_report
                 $night_leg_hrs_calc = isset($data->night_leg_hrs) ? $data->night_leg_hrs : 0;
                 // Calculate total hours
                 $calculated_total_hrs = $day_reg_hrs_calc + $day_rd_hrs_calc + $day_sp_hrs_calc + $day_leg_hrs_calc +
-                $night_reg_hrs_calc + $night_rd_hrs_calc + $night_sp_hrs_calc + $night_leg_hrs_calc;
+                    $night_reg_hrs_calc + $night_rd_hrs_calc + $night_sp_hrs_calc + $night_leg_hrs_calc;
                 // Calculate total days
                 $calculated_total_days = 0;
                 if ($day_reg_hrs_calc > 0) $calculated_total_days += ($day_reg_hrs_calc / 8);

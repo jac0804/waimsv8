@@ -418,7 +418,7 @@ class emptimecard
                       '' as actualbrkin_bgcolor,'' as actualbrkout_bgcolor";
         break;
       case 68: //jda
-        $addfields = ",sh.shftcode as shiftcode,t.shiftid,dayofweek(t.dateid) as dayn,t.pgline,pg.paygroup,t.otapproved,t.ndiffsapprvd,t.ndiffapproved,
+        $addfields = ",sh.shftcode as shiftcode,t.shiftid,dayofweek(t.dateid) as dayn,t.pgline,pg.paygroup,t.otapproved,t.ndiffsapprvd,t.ndiffapproved,t.spotapprvd,t.legotapprvd,
                   '' as othrs_bgcolor, '' as ndiffot_bgcolor, '' as ndiffhrs_bgcolor";
         $join = " left join paygroup as pg on pg.line=t.pgline
                   left join tmshifts as sh on sh.line=t.shiftid";
@@ -745,7 +745,7 @@ class emptimecard
 
       case 68:
         foreach ($data as $key => $value) {
-          if ($value->otapproved == 1) {
+          if ($value->otapproved == 1 || $value->spotapprvd == 1 || $value->legotapprvd == 1) {
             $value->othrs_bgcolor = 'bg-blue-2';
           }
           if ($value->ndiffsapprvd == 1) {

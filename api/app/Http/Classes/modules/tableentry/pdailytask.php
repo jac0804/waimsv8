@@ -552,24 +552,61 @@ class pdailytask
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         $defaultContra = 'AR1';
 
-        $qry = "select head.client, head.clientname, i.itemname, i.itemid, head.cur, head.forex, head.address, 
-                       head.terms, date(head.due) as due, head.wh, head.agent, head.yourref, head.ourref, 
-                       head.projectid, head.vattype, head.tax, head.rem, head.trno, stock.line,
-                       stock.uom,stock.disc,stock.rem as srem,stock.amt,stock.isqty,stock.isamt,stock.iss,stock.ext,stock.qa,
-                       stock.void,stock.loc,stock.expiry,stock.kgs,stock.whid,stock.ref,stock.projectid as sprojid,
-                       head.docno,wh.client as swh,sinfo.itemdesc
-                       from hsohead as head 
-                       left join hsostock as stock on stock.trno = head.trno 
-                       left join client as wh on wh.clientid=stock.whid
-                       left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
-                       left join item as i on i.itemid = stock.itemid where stock.dytrno = ? and head.createby = ? and not exists (select 1 from lahead as sj left join lastock as lst on lst.trno = sj.trno where sj.doc = 'SJ' and lst.refx = head.trno and lst.linex = stock.line)";
-        $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
+        // $qry = "select head.client, head.clientname, i.itemname, i.itemid, head.cur, head.forex, head.address, 
+        //                head.terms, date(head.due) as due, head.wh, head.agent, head.yourref, head.ourref, 
+        //                head.projectid, head.vattype, head.tax, head.rem, head.trno, stock.line,
+        //                stock.uom,stock.disc,stock.rem as srem,stock.amt,stock.isqty,stock.isamt,stock.iss,stock.ext,stock.qa,
+        //                stock.void,stock.loc,stock.expiry,stock.kgs,stock.whid,stock.ref,stock.projectid as sprojid,
+        //                head.docno,wh.client as swh,sinfo.itemdesc
+        //                from hsohead as head 
+        //                left join hsostock as stock on stock.trno = head.trno 
+        //                left join client as wh on wh.clientid=stock.whid
+        //                left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
+        //                left join item as i on i.itemid = stock.itemid where stock.dytrno = ? and head.createby = ? 
+        //                and (
+        //                    exists (select 1 from lahead sj
+        //                      join lastock lst on lst.trno = sj.trno  where sj.doc = 'SJ'     and lst.refx = head.trno and lst.linex = stock.line)
+        //                    or exists (select 1 from glhead sj
+        //                      join glstock lst on lst.trno = sj.trno  where sj.doc = 'SJ'  and lst.refx = head.trno   and lst.linex = stock.line))";
+        //                $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
 
+        // Check muna kung may existing SJ kahit isa
+        $checkQry = "
+            select i.itemname, x.sjdocno
+            from hsohead as head
+            left join hsostock as stock on stock.trno = head.trno
+            left join item as i on i.itemid = stock.itemid
+            join (
+            select sj.docno as sjdocno, lst.refx, lst.linex
+            from lahead sj
+            join lastock lst on lst.trno = sj.trno  where sj.doc = 'SJ'
+            union all
+            select sj.docno as sjdocno, lst.refx, lst.linex
+            from glhead sj
+            join glstock lst on lst.trno = sj.trno where sj.doc = 'SJ'   ) as x on x.refx = head.trno and x.linex = stock.line where stock.dytrno = ? and head.createby = ? limit 1 ";
 
+            $existing = $this->coreFunctions->opentable($checkQry, [$sourceTrno, $username]);
 
-        if (empty($soitem)) {
-            return ['status' => false, 'msg' => 'Failed to generate SJ. SJ document already exists for all selected SO item(s).'];
-        }
+            if (!empty($existing)) {
+                return [ 'status' => false, 'msg' => 'Failed to generate SJ. SJ document already exists for item ' . $existing[0]->itemname . '. SJ docno: '   . $existing[0]->sjdocno];
+            }
+
+            // Kapag walang existing SJ, kunin lahat ng SO items
+            $qry = "
+            select head.client, head.clientname, i.itemname, i.itemid, head.cur, head.forex, head.address, 
+            head.terms, date(head.due) as due, head.wh, head.agent, head.yourref, head.ourref, 
+            head.projectid, head.vattype, head.tax, head.rem, head.trno, stock.line,
+            stock.uom, stock.disc, stock.rem as srem, stock.amt, stock.isqty, stock.isamt,
+            stock.iss, stock.ext, stock.qa, stock.void, stock.loc, stock.expiry, stock.kgs,
+            stock.whid, stock.ref, stock.projectid as sprojid, head.docno, wh.client as swh, sinfo.itemdesc
+            from hsohead as head 
+            left join hsostock as stock on stock.trno = head.trno 
+            left join client as wh on wh.clientid = stock.whid
+            left join hstockinfotrans as sinfo on sinfo.trno = stock.trno and sinfo.line = stock.line
+            left join item as i on i.itemid = stock.itemid
+            where stock.dytrno = ? and head.createby = ? ";
+
+         $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
 
         $getdoc = $this->coreFunctions->getfieldvalue($table, 'doc', 'bref=?', [$sjref]);
         $seq = $this->othersClass->getlastseq($sjref, $config, $table);
@@ -653,49 +690,60 @@ class pdailytask
             $config['params']['data']['projectid'] = $soitem[$key2]->sprojid;
             if (isset($soitem[$key2]->itemdesc)) $config['params']['data']['itemdesc'] = $soitem[$key2]->itemdesc;
             $return = app($path)->additem('insert', $config, true);
-            if ($return['status']) {
-                if (app($path)->setserveditems($soitem[$key2]->trno, $soitem[$key2]->line, 'qty') == 0) {
-                    $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-                    $line = $return['row'][0]->line;
-                    $config['params']['trno'] = $sjTrno;
-                    $config['params']['line'] = $line;
-                    $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $sjTrno, 'line' => $line]);
-                    app($path)->setserveditems($soitem[$key2]->trno, $soitem[$key2]->line, app($path)->hqty);
-                }
-                $config['docmodule']->stock = 'lastock';
-                $config['docmodule']->tablelogs = 'table_log';
-                $config['docmodule']->tablenum = 'cntnum';
-                $config['docmodule']->hhead = 'glhead';
-                $config['docmodule']->hstock = 'glstock';
-                $config['docmodule']->head = 'lahead';
-                $config['docmodule']->hdetail = 'gldetail';
-                $config['docmodule']->detail = 'ladetail';
-                $config['docmodule']->htablelogs = 'htable_log';
-                $config['params']['tableid'] = $sjTrno;
-                $autopost = app($path)->posttrans($config);
-                $config['params']['tableid'] = 0;
-                $this->tablelogs = 'task_log';
-                if (!$autopost['status']) {
-                    $msg = $autopost['msg'];
-                    goto deleteall;
-                }
+             if (!$return['status']) {
 
-                $msg = "Generated. Doc No: ' . $docno";
-            } else {
                 $msg = $return['msg'];
                 // $msg = "Error generating SJ. Please review transaction.";
-                deleteall:
+                
                 $stat = false;
                 //delete
                 $cntnum = $this->coreFunctions->execqry("delete from cntnum where  trno=" . $sjTrno, 'delete');
                 $sjhead = $this->coreFunctions->execqry("delete from lahead where  trno=" . $sjTrno, 'delete');
                 $sjstock = $this->coreFunctions->execqry("delete from lastock where  trno=" . $sjTrno, 'delete');
-                $cntnum = $this->coreFunctions->execqry("delete from costing where  trno=" . $sjTrno, 'delete');
+                $costing = $this->coreFunctions->execqry("delete from costing where  trno=" . $sjTrno, 'delete');
                 $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0, 'qa' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
 
                 break;
-            }
+             }
+
+
+            
         }
+
+        if ($stat) {
+            $config['docmodule']->stock = 'lastock';
+            $config['docmodule']->tablelogs = 'table_log';
+            $config['docmodule']->tablenum = 'cntnum';
+            $config['docmodule']->hhead = 'glhead';
+            $config['docmodule']->hstock = 'glstock';
+            $config['docmodule']->head = 'lahead';
+            $config['docmodule']->hdetail = 'gldetail';
+            $config['docmodule']->detail = 'ladetail';
+            $config['docmodule']->htablelogs = 'htable_log';
+            $config['params']['tableid'] = $sjTrno;
+            $autopost = app($path)->posttrans($config);
+            $config['params']['tableid'] = 0;
+            $this->tablelogs = 'task_log';
+            if (!$autopost['status']) {
+                $msg = $autopost['msg'];
+                goto deleteall;
+            }
+
+            $msg = "Generated. Doc No: ' . $docno";
+        } else {
+            $msg = $return['msg'];
+            // $msg = "Error generating SJ. Please review transaction.";
+            deleteall:
+            $stat = false;
+            // delete
+            $cntnum = $this->coreFunctions->execqry("delete from cntnum where  trno=" . $sjTrno, 'delete');
+            $sjhead = $this->coreFunctions->execqry("delete from lahead where  trno=" . $sjTrno, 'delete');
+            $sjstock = $this->coreFunctions->execqry("delete from lastock where  trno=" . $sjTrno, 'delete');
+            $costing = $this->coreFunctions->execqry("delete from costing where  trno=" . $sjTrno, 'delete');
+            $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0, 'qa' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
+        }
+
+        
 
         return ['status' => $stat, 'msg' => $msg];
     }

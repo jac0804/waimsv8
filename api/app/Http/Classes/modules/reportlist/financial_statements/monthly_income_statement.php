@@ -523,7 +523,8 @@ class monthly_income_statement
         $reportdata = $this->MAXIPRO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
       case 29:
-        $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1200'];
+        $this->style = 'width:1200px;max-width:1200px;';
+        $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1410'];
         $result = $this->default_query($config);
         $reportdata = $this->SBC_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
@@ -2629,7 +2630,7 @@ class monthly_income_statement
       $center = "ALL";
     }
 
-    $layoutsize = 1200;
+    $layoutsize = 1410;
 
     $str = '';
 
@@ -2643,24 +2644,24 @@ class monthly_income_statement
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('MONTHLY INCOME STATEMENT', null, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('MONTHLY INCOME STATEMENT', null, null, false, '1px solid ', '', '', $font, '8', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Center :  ' . $center, 100, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Center :  ' . $center, 100, null, false, '1px solid ', '', '', $font, '8', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Year :  ' . $year, 100, null, false, '1px solid ', '', '', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Year :  ' . $year, 100, null, false, '1px solid ', '', '', $font, '8', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '4px');
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, '8', '', '', '4px');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -2675,25 +2676,25 @@ class monthly_income_statement
     $fontsize12 = '12';
     $companyid = $config['params']['companyid'];
 
-    $layoutsize = 1200;
+    $layoutsize = 1410;
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ACCOUNTS', '270', null, false, '1px solid ', 'TB', '', $font, '9', 'B', '', '4px');
-    $str .= $this->reporter->col('JAN', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('FEB', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('MAR', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('APR', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('MAY', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('JUN', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('JUL', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('AUG', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('SEP', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('OCT', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('NOV', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('DEC', '70', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'TB', 'R', $font, '9', 'B', '', '');
-    $str .= $this->reporter->col('', '10', '', '', $border, '', 'C', $font, '', 'B', '', '');
+    $str .= $this->reporter->col('ACCOUNTS', '250', null, false, '1px solid ', 'TB', '', $font, '8', 'B', '', '4px');
+    $str .= $this->reporter->col('JAN', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('FEB', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('MAR', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('APR', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('MAY', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('JUN', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('JUL', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('AUG', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('SEP', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('OCT', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('NOV', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('DEC', '88', null, false, '1px solid ', 'TB', 'RT', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'TB', 'R', $font, '8', 'B', '', '');
+    $str .= $this->reporter->col('', '19', '', '', $border, '', 'C', $font, '', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     return $str;
@@ -2708,18 +2709,18 @@ class monthly_income_statement
     $fontsize = 9;
     $fontsize11 = 11;
     $fontsize12 = 12;
-    $count = 17;
-    $page = 17;
+    $count = 27;
+    $page = 27;
     $this->reporter->linecounter = 0;
     $str = '';
-    $layoutsize = '1200';
+    $layoutsize = '1410';
 
     if (empty($data)) {
       return $this->othersClass->emptydata($params);
     }
 
     // $str .= $this->reporter->beginreport();
-    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '115px;margin-top:5px;');
+    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '135px;margin-top:5px;');
     $str .= $this->SBC_DEFAULT_HEADER($params, $data);
 
     $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize11, $params);
@@ -2742,28 +2743,33 @@ class monthly_income_statement
           if ($data[$i]['detail'] == 2) {
             $bold = 'B';
           }
-          $str .= $this->reporter->col($data[$i]['acnoname'], '270', null, false, '1px solid', '', '', $font, '9', $bold, '', '0px 0px 0px ' . $indent . 'px');
+          $str .= $this->reporter->col($data[$i]['acnoname'], '250', null, false, '1px solid', '', '', $font, '8', $bold, '', '0px 0px 0px ' . $indent . 'px');
 
           if ($data[$i]['detail'] != 0) {
-            $str .= $this->reporter->col($data[$i]['monjan'] != 0 ? number_format($data[$i]['monjan'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monfeb'] != 0 ? number_format($data[$i]['monfeb'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monmar'] != 0 ? number_format($data[$i]['monmar'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monapr'] != 0 ? number_format($data[$i]['monapr'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monmay'] != 0 ? number_format($data[$i]['monmay'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monjun'] != 0 ? number_format($data[$i]['monjun'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monjul'] != 0 ? number_format($data[$i]['monjul'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monaug'] != 0 ? number_format($data[$i]['monaug'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monsep'] != 0 ? number_format($data[$i]['monsep'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monoct'] != 0 ? number_format($data[$i]['monoct'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['monnov'] != 0 ? number_format($data[$i]['monnov'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
-            $str .= $this->reporter->col($data[$i]['mondec'] != 0 ? number_format($data[$i]['mondec'], 2) : '-', '70', null, false, '1px solid ', '', 'R', $font, '10', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monjan'] != 0 ? number_format($data[$i]['monjan'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monfeb'] != 0 ? number_format($data[$i]['monfeb'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monmar'] != 0 ? number_format($data[$i]['monmar'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monapr'] != 0 ? number_format($data[$i]['monapr'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monmay'] != 0 ? number_format($data[$i]['monmay'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monjun'] != 0 ? number_format($data[$i]['monjun'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monjul'] != 0 ? number_format($data[$i]['monjul'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monaug'] != 0 ? number_format($data[$i]['monaug'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monsep'] != 0 ? number_format($data[$i]['monsep'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monoct'] != 0 ? number_format($data[$i]['monoct'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['monnov'] != 0 ? number_format($data[$i]['monnov'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col($data[$i]['mondec'] != 0 ? number_format($data[$i]['mondec'], 2) : '-', '88', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
 
             $lineTotal = $data[$i]['monjan'] + $data[$i]['monfeb'] + $data[$i]['monmar'] + $data[$i]['monapr'] + $data[$i]['monmay'] + $data[$i]['monjun'] + $data[$i]['monjul'] + $data[$i]['monaug'] + $data[$i]['monsep'] + $data[$i]['monoct'] + $data[$i]['monnov'] + $data[$i]['mondec'];
-            $str .= $this->reporter->col($lineTotal != 0 ? number_format($lineTotal, 2) : '-', '100', null, false, '1px solid ', '', 'RT', $font, '9', $bold, '', '');
-            $str .= $this->reporter->col('', '10', '', '', $border, '', 'C', $font, '', 'B', '', '');
+            $str .= $this->reporter->col($lineTotal != 0 ? number_format($lineTotal, 2) : '-', '100', null, false, '1px solid ', '', 'RT', $font, '8', $bold, '', '');
+            $str .= $this->reporter->col('', '19', '', '', $border, '', 'C', $font, '', 'B', '', '');
           }
 
           $str .= $this->reporter->endrow();
+          if ($data[$i]['detail'] == 2) {
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', null, 10, false, '', '', '', $font, '8', '', '', '');
+            $str .= $this->reporter->endrow();
+          }
         }
       }
 

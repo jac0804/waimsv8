@@ -866,7 +866,6 @@ class am
           return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting Jobs'];
         }
         $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
-        $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
       }
       return $return;
     }
@@ -983,7 +982,7 @@ class am
     FROM $this->amstock as am
     left join $this->head as head on head.trno = am.trno
     left join jobthead as job on job.line=am.jobid
-    left join pthead as pk on pk.trno=am.packagetrno
+    left join hpthead as pk on pk.trno=am.packagetrno
     where am.trno =?
     group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
     UNION ALL
@@ -995,7 +994,7 @@ class am
     where am.trno =? 
     group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
     order by line";
-
+    // var_dump($qry);
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
   } //end function
@@ -1011,7 +1010,7 @@ class am
     FROM $this->amstock as am
     left join $this->head as head on head.trno = am.trno
     left join jobthead as job on job.line=am.jobid
-    left join pthead as pk on pk.trno=am.packagetrno
+    left join hpthead as pk on pk.trno=am.packagetrno
     where am.trno = ? and am.line = ? 
     group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
     
@@ -1024,10 +1023,7 @@ class am
     left join jobthead as job on job.line=am.jobid
     left join hpthead as pk on pk.trno=am.packagetrno
     where am.trno = ? and am.line = ? 
-    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle
-
-
-    ";
+    group by am.line,am.trno,am.jobid,pk.docno,am.rem, job.docno,job.jobtitle";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
     return $stock;
   } // end function
@@ -1423,6 +1419,8 @@ class am
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from stockinfo where trno=?', 'delete', [$trno]);
+    $this->coreFunctions->execqry('delete from amjobs where trno=?', 'delete', [$trno]);
+    $this->coreFunctions->execqry('delete from amtask where trno=?', 'delete', [$trno]);
     foreach ($data as $key => $value) {
       $this->setserveditems($data[$key]->refx, $data[$key]->linex);
     }
@@ -2201,8 +2199,8 @@ class am
       $packagedocno = !empty($packagedata) ? $packagedata[0]->docno : '';
 
       $query = "select pt.trno, jb.jobid, jb.line as jobline, jb.rem as jobrem
-                  from pthead as pt
-                  left join ptjobs as jb on jb.trno = pt.trno
+                  from hpthead as pt
+                  left join hptjobs as jb on jb.trno = pt.trno
                   where pt.trno = ?";
 
       $data = $this->coreFunctions->opentable($query, [$aktrno]);
@@ -2220,8 +2218,9 @@ class am
           'rem'         => $value2->jobrem,
           'encodeddate' => $encodeddate,
           'encodedby'   => $encodedby,
+          'packagetrno' => $value2->trno,
           'trno'        => $trno
-        ];
+        ]; 
 
         $insertjob = $this->coreFunctions->sbcinsert('amjobs', $job);
 
@@ -2229,9 +2228,9 @@ class am
           return ['row' => $rows, 'status' => false, 'msg' => 'Inserting jobs failed.'];
         }
 
-        $query3 = "select pttask.line as taskline, pttask.jobline, pttask.laborline, pttask.mecline, pttask.cost, pttask.rate, pttask.rem
-                       from pttask
-                       where pttask.trno = ? and pttask.jobline = ?";
+        $query3 = "select pt.line as taskline, pt.jobline, pt.laborline, pt.mecline, pt.cost, pt.rate, pt.rem
+                       from hpttask as pt
+                       where pt.trno = ? and pt.jobline = ?";
 
         $data3 = $this->coreFunctions->opentable($query3, [$aktrno, $oldJobLine]);
 
@@ -2255,6 +2254,7 @@ class am
             'trno'        => $trno
           ];
 
+
           $inserttask = $this->coreFunctions->sbcinsert('amtask', $task);
 
           if (!$inserttask) {
@@ -2263,7 +2263,7 @@ class am
           }
 
           $query4 = "select stock.taskline, stock.jobline, stock.itemid, stock.uom, stock.disc, stock.rem, stock.amt, stock.isqty, stock.isamt, stock.iss, stock.ext
-                           from ptstock as stock
+                           from hptstock as stock
                            where stock.trno = ? and stock.jobline = ? and stock.taskline = ?";
 
           $data4 = $this->coreFunctions->opentable($query4, [$aktrno, $oldJobLine, $oldTaskLine]);

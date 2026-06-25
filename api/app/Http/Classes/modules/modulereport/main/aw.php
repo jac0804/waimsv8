@@ -356,7 +356,7 @@ class aw
             $arr_qty = $this->reporter->fixcolumn([$this->formatQty($qty)], '10', 0);
             $arr_uom = $this->reporter->fixcolumn([$uom], '20', 0);
             $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-            $arr_itemname = $this->reporter->fixcolumn([$itemname], '25', 0);
+            $arr_itemname = $this->reporter->fixcolumn([$itemname], '18', 0);
             $arr_ext = $this->reporter->fixcolumn([number_format($ext, 2)], '40', 0);
 
             $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_barcode, $arr_qty, $arr_uom,  $arr_ext]);
@@ -369,8 +369,8 @@ class aw
                 PDF::MultiCell(20, 20, isset($arr_qty[$r]) ? $arr_qty[$r] : '', '', 'C', false, 0);
                 PDF::MultiCell(20, 20, isset($arr_uom[$r]) ? $arr_uom[$r] : '', '', 'C', false, 0);
                 PDF::MultiCell(80, 20, isset($arr_barcode[$r]) ? $arr_barcode[$r] : '', '', 'L', false, 0);
-                PDF::MultiCell(100, 20, isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', '', 'L', false, 0);
-                PDF::MultiCell(50, 20, isset($arr_ext[$r]) ? $arr_ext[$r] : '', $border, 'R', false);
+                PDF::MultiCell(85, 20, isset($arr_itemname[$r]) ? $arr_itemname[$r] : '', '', 'L', false, 0);
+                PDF::MultiCell(65, 20, $r == 0 ? (isset($arr_ext[$r]) ? $arr_ext[$r] : '') : '', $border, 'R', false);
             }
             $total1 += $ext;
 
@@ -390,8 +390,9 @@ class aw
             }
         }
         PDF::SetLineWidth(2);
-        PDF::MultiCell(220, 0, '', '', 'R', false, 0);//$count1
-        PDF::MultiCell(50, 0, number_format($total1, 2), 'B', 'R', false);
+        PDF::MultiCell(205, 0, '', '', 'R', false, 0);//$count1
+        PDF::SetFont($fontbold, '', $fonttable);
+        PDF::MultiCell(65, 0, number_format($total1, 2). ' ', 'B', 'R', false);
         PDF::SetLineWidth(0.5);
 
         
@@ -416,8 +417,8 @@ class aw
 
             $preJob = $jobtitle;
 
-            $arr_jobtitle = $this->reporter->fixcolumn([$display_jobtitle], '40', 0) ?: [''];
-            $arr_description = $this->reporter->fixcolumn([$description], '40', 0);
+            $arr_jobtitle = $this->reporter->fixcolumn([$display_jobtitle], '27', 0) ?: [''];
+            $arr_description = $this->reporter->fixcolumn([$description], '27', 0);
             $arr_cost = $this->reporter->fixcolumn([number_format($cost, 2)], '10', 0);
 
             $maxrow = $this->othersClass->getmaxcolumn([$arr_jobtitle, $arr_description, $arr_cost]);
@@ -443,13 +444,13 @@ class aw
                 if ($r == 0 && !empty($description)) {
                     PDF::SetX(360);
                     PDF::SetFont($font, '', $fonttable);
-                    PDF::MultiCell(165, 20, '--- ' . $description, '', 'L', false, 0);
-                    PDF::MultiCell(50, 20, isset($arr_cost[$r]) ? $arr_cost[$r] : '', $border, 'R', false);
+                    PDF::MultiCell(150, 20, '--- ' . $description, '', 'L', false, 0);
+                    PDF::MultiCell(65, 20, isset($arr_cost[$r]) ? $arr_cost[$r] : '', $border, 'R', false);
                 } else if ($r == 0 && empty($description)) {
-                    PDF::MultiCell(50, 20, isset($arr_cost[$r]) ? $arr_cost[$r] : '', '', 'R', false);
+                    PDF::MultiCell(65, 20, isset($arr_cost[$r]) ? $arr_cost[$r] : '', '', 'R', false);
                 }
             }
-            PDF::SetX(303);
+            // PDF::SetX(303);
             $total2 += $cost;
 
             if($count2 > $rowlimit2){
@@ -468,10 +469,11 @@ class aw
             }
 
         }
-        PDF::SetX(303);
+        PDF::SetX(360);
         PDF::SetLineWidth(2);
-        PDF::MultiCell(220, 0, '', '', 'R', false, 0);//$count2
-        PDF::MultiCell(50, 0, number_format($total2, 2), 'B', 'R', false);
+        PDF::SetFont($fontbold, '', $fonttable);
+        PDF::MultiCell(150, 20, '', '', 'R', false, 0);
+        PDF::MultiCell(65, 0, number_format($total2, 2). ' ', 'B', 'R', false, 0);
         PDF::SetLineWidth(0.5);
 
         PDF::setPage(PDF::getNumPages());
@@ -782,8 +784,8 @@ class aw
         $ftotal = 0;
         $fill = 1;
 
-        $rowlimit1 = 10;
-        $rowlimit2 = 10;
+        $rowlimit1 = 12;
+        $rowlimit2 = 12;
 
         if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
@@ -837,7 +839,8 @@ class aw
         }
         PDF::SetLineWidth(2);
         PDF::MultiCell(271, 0, '', '', 'R', false,0);//$count1
-        PDF::MultiCell(95, 0, number_format($total1,2), 'B', 'R', false);
+        PDF::SetFont($fontbold, '', $fonttable);
+        PDF::MultiCell(97, 0, number_format($total1,2). ' ', 'B', 'R', false);
         PDF::SetLineWidth(0.5);
 
         PDF::setPage($startPage);
@@ -914,7 +917,8 @@ class aw
         }
         PDF::SetLineWidth(2);
         PDF::MultiCell(271, 0, '', '', 'R', false, 0); //$count2
-        PDF::MultiCell(95, 0, number_format($total2, 2), 'B', 'R', false);
+        PDF::SetFont($fontbold, '', $fonttable);
+        PDF::MultiCell(97, 0, number_format($total2, 2). ' ', 'B', 'R', false);
         PDF::SetLineWidth(0.5);
 
         PDF::setPage(PDF::getNumPages());

@@ -66,7 +66,6 @@ class statement_of_account
   public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-
     $fields = ['radioprint', 'dateid', 'dclientname'];
 
     if ($companyid == 59) { //roosevelt
@@ -216,73 +215,83 @@ class statement_of_account
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
+    $str = '';
+    $msg = 'Generating report successfully.';
+    $status = true;
     switch ($companyid) {
       case 3: //conti
         $reporttype = $config['params']['dataparams']['reporttype'];
         switch ($reporttype) {
           case '0': // summarized
-            return $this->SOA_SUMMARIZED_LAYOUT($config);
+            $str= $this->SOA_SUMMARIZED_LAYOUT($config);
             break;
           case '1': // detailed
-            return $this->GPC_SOA_DETAILED_LAYOUT($config);
+            $str= $this->GPC_SOA_DETAILED_LAYOUT($config);
             break;
         }
         break;
       case 32: //3m
-        return $this->mmm_defaultLayout($config);
+        $str= $this->mmm_defaultLayout($config);
         break;
       case 10: //afti
       case 12: //afti usd
-        return $this->report_soa_afti($config);
+        $str= $this->report_soa_afti($config);
         break;
       case 37: //mega crystal
-        return $this->report_megacrystal($config);
+        $str= $this->report_megacrystal($config);
         break;
       case 39: //cbbsi
         switch ($config['params']['dataparams']['customerfilter']) {
           case '2':
-            return $this->report_cbbsi_project_layout($config);
+            $str= $this->report_cbbsi_project_layout($config);
             break;
           default:
-            return $this->report_cbbsi_layout($config);
+            $str= $this->report_cbbsi_layout($config);
             break;
         }
         break;
       case 59: //roosevelt
         $str= $this->reportDefaultLayout_roosevelt($config);
-         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+        //  return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
         break;
       case 29: //sbc
         $reporttype = $config['params']['dataparams']['reporttype'];
         switch ($reporttype) {
           case '1': // default
             $str = $this->reportDefaultLayout($config);
-            return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+            
             break;
           case '0': // sbc format
             
             $str = $this->sbc_layout($config);
             if (strpos($str, 'ERROR:') === 0) {
-                return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
+              $status = false;
+              $msg = substr($str, 7);
+                // return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
+
                 
             // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
             }
-            if (!empty($str)) {
-                return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
-            }
+            // if (!empty($str)) {
+            //     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+            // }
             break;
           }
         break;
       case 52: case 41: //technolab //labsolmla
         switch ($config['params']['dataparams']['radiotechlabcomp']) {
           case 'c0':
-            return $this->technolab_layout($config);
+            $str = $this->technolab_layout($config);
             break;
         }
       default:
         $str = $this->reportDefaultLayout($config);
-        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
         break;
+    }
+
+    if($str!='' && $status){
+      return ['status' => true, 'msg' => $msg, 'report' => $str];
+
     }
   }
 

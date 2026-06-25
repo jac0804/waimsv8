@@ -63,6 +63,10 @@ class customer
                 ["label" => "Return Checks", "value" => "rc", 'color' => 'red'],
                 ["label" => "Inventory", "value" => "stock", 'color' => 'red'],
                 ["label" => "Profile", "value" => "profile", 'color' => 'red'],
+                ["label" => "Received Checks History", "value" => "checks", 'color' => 'red'],
+                ["label" => "Received Cash History", "value" => "cash", 'color' => 'red'],
+                ["label" => "Bounced Cheque History", "value" => "bounced", 'color' => 'red'],
+                ["label" => "Replacement Cheque", "value" => "replacement", 'color' => 'red'],
             ]);
         }
 
@@ -136,6 +140,18 @@ class customer
             case 'profile':
                 $query = $this->default_PROFILE_QUERY($config);
                 break;
+            case 'checks':
+                $query = $this->default_CHECKS_QUERY($config);
+                break;
+            case 'cash':
+                $query = $this->default_CASH_QUERY($config);
+                break;
+            case 'bounced':
+                $query = $this->default_BOUNCED_QUERY($config);
+                break;
+            case 'replacement':
+                $query = $this->default_REPLACEMENT_QUERY($config);
+                break;
         }
         return $this->coreFunctions->opentable($query);
     }
@@ -183,6 +199,18 @@ class customer
                     break;
                 case 'profile':
                     $str = $this->reportdefault_PROFILE_PDF($config, $data);
+                    break;
+                case 'checks':
+                    $str = $this->reportdefault_CHECKS_PDF($config, $data);
+                    break;
+                case 'cash':
+                    $str = $this->reportdefault_CASH_PDF($config, $data);
+                    break;
+                case 'bounced':
+                    $str = $this->reportdefault_BOUNCED_PDF($config, $data);
+                    break;
+                case 'replacement':
+                    $str = $this->reportdefault_REPLACEMENT_PDF($config, $data);
                     break;
             }
         }
@@ -2743,6 +2771,780 @@ class customer
         PDF::MultiCell(243, 0, $prepared, '', 'L', false, 0);
         PDF::MultiCell(243, 0, $received, '', 'L', false, 0);
         PDF::MultiCell(244, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+
+    public function default_CHECKS_QUERY($config)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = md5($config['params']['dataid']);
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+
+        $qry = "select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, detail.checkdate,
+        detail.bank, detail.branch, detail.checkno, FORMAT(detail.amount,2) as amount,rd.docno as ref, '' as clearday,  head.rem as notes, client.clientname
+        from rchead as head
+        left join rcdetail as detail on detail.trno = head.trno
+        left join client on client.client = detail.client
+        left join client as agent on agent.client = head.agent
+        left join rdhead as rd on rd.trno= detail.rdtrno
+        left join transnum on transnum.trno = head.trno
+        where head.doc = 'RC' and md5(client.clientid)= '$clientid' and head.dateid>='$start' and transnum.center = '$center' and detail.line is not null
+
+        union all
+
+        select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, detail.checkdate,
+        detail.bank, detail.branch, detail.checkno, FORMAT(detail.amount,2) as amount,rd.docno as ref, '' as clearday,  head.rem as notes, client.clientname
+        from hrchead as head
+        left join hrcdetail as detail on detail.trno = head.trno
+        left join client on client.client = detail.client
+        left join client as agent on agent.client = head.agent
+        left join rdhead as rd on rd.trno= detail.rdtrno
+        left join transnum on transnum.trno = head.trno
+        where head.doc = 'RC' and md5(client.clientid)= '$clientid' and head.dateid>='$start' and transnum.center = '$center' and detail.line is not null";
+        // var_dump($qry);
+        return $qry;
+    }
+
+    public function reportdefault_CHECKS_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+        $companyid = $config['params']['companyid'];
+
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+        $count = 55;
+        $page = 54;
+        $fontsize = "10";
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('l', [1100, 800]);
+        PDF::SetMargins(20, 20);
+
+        PDF::SetFont($font, '', 9);
+        PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
+
+
+        PDF::MultiCell(0, 0, "\n");
+        $this->reportheader->getheader($config);
+        PDF::MultiCell(0, 0, "\n");
+
+
+
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(1050, 30, "CUSTOMER LEDGER - RECEIVED CHECKS HISTORY", '', 'L', false);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(65, 20, "Customer : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(320, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(45, 20, "Agent : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(280, 20, (isset($data[0]->agentname) ? $data[0]->agentname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(37, 20, "Date : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(100, 20, $start, '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(1050, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1050, 0, "", 'T', 'L', false);
+
+
+        PDF::SetFont($fontbold, '', 10);
+        PDF::MultiCell(110, 10, "Document #", '', 'L', false, 0);
+        PDF::MultiCell(70, 10, "Trans. Date", '', 'C', false, 0);
+        PDF::MultiCell(105, 10, "Agent", '', 'C', false, 0);
+        PDF::MultiCell(90, 10, "Yourref/Ourref", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Check Date", '', 'C', false, 0);
+        PDF::MultiCell(80, 10, "Bank", '', 'C', false, 0);
+        PDF::MultiCell(90, 10, "Branch", '', 'C', false, 0);
+        PDF::MultiCell(75, 10, "Check No.", '', 'C', false, 0);
+        PDF::MultiCell(80, 10, "Amount", '', 'R', false, 0);
+        PDF::MultiCell(110, 10, "Deposit lef.", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Clear Date", '', 'C', false, 0);
+        PDF::MultiCell(100, 10, "Notes", '', 'C', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1050, 0, "", 'B', 'L', false);
+
+        PDF::MultiCell(0, 0, "\n");
+
+
+        foreach ($data as $key => $data) {
+            $maxrow = 1;
+            $docno = $data->docno;
+            $dateid = $data->dateid;
+            $agent = $data->agentname;
+            $yourref = $data->yourref;
+            $ourref = $data->ourref;
+            $checkdate = $data->checkdate;
+            $bank = $data->bank;
+            $branch = $data->branch;
+            $checkno = $data->checkno;
+            $amount = $data->amount;
+            $ref = $data->ref;
+            $cleardate = $data->clearday;
+            $rem = $data->notes;
+
+            $arr_docno = $this->reporter->fixcolumn([$docno], '16', 0);
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '16', 0);
+            $arr_agent = $this->reporter->fixcolumn([$agent], '20', 0);
+            $arr_yourref = $this->reporter->fixcolumn([$yourref], '16', 0);
+            $arr_ourref = $this->reporter->fixcolumn([$ourref], '16', 0);
+            $arr_checkdate = $this->reporter->fixcolumn([$checkdate], '16', 0);
+            $arr_bank = $this->reporter->fixcolumn([$bank], '16', 0);
+            $arr_branch = $this->reporter->fixcolumn([$branch], '16', 0);
+            $arr_checkno = $this->reporter->fixcolumn([$checkno], '16', 0);
+            $arr_amount = $this->reporter->fixcolumn([$amount], '16', 0);
+            $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+            $arr_cleardate = $this->reporter->fixcolumn([$cleardate], '16', 0);
+            $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
+
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_agent]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 20, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(105, 20, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_yourref[$r]) && isset($arr_ourref[$r]) ? $arr_yourref[$r] . ' / ' . $arr_ourref[$r] : (isset($arr_yourref[$r]) ? $arr_yourref[$r] : (isset($arr_ourref[$r]) ? $arr_ourref[$r] : ''))), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_checkdate[$r]) ? $arr_checkdate[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_bank[$r]) ? $arr_bank[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_branch[$r]) ? $arr_branch[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(75, 20, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_amount[$r]) ? $arr_amount[$r] : '-'), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_cleardate[$r]) ? $arr_cleardate[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(100, 20, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'C', 0, 1, '', '', true, 0, true, false);
+            }
+        }
+
+        // PDF::MultiCell(0, 0, "\n\n\n\n");
+        // PDF::SetFont($font, '', $fontsize);
+        // PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+        // PDF::MultiCell(0, 0, "\n\n");
+        // PDF::SetFont($fontbold, '', $fontsize);
+        // PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    public function default_CASH_QUERY($config)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = md5($config['params']['dataid']);
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+
+        $qry = "select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref,
+        detail.bank,  FORMAT(detail.amount,2) as amount,rd.docno as ref, '' as clearday,  head.rem as notes, client.clientname
+        from rhhead as head
+        left join rhdetail as detail on detail.trno = head.trno
+        left join client on client.clientid = detail.clientid
+        left join client as agent on agent.client = head.agent
+        left join rdhead as rd on rd.trno= detail.rdtrno
+        left join transnum on transnum.trno = head.trno
+       where transnum.doc = 'RH'  and md5(client.clientid)= '$clientid' and head.dateid>='$start' and transnum.center = '$center' and detail.line is not null
+
+        union all
+
+        select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref,
+        detail.bank,  FORMAT(detail.amount,2) as amount,rd.docno as ref, '' as clearday,  head.rem as notes, client.clientname
+        from hrhhead as head
+        left join hrhdetail as detail on detail.trno = head.trno
+        left join client on client.clientid = detail.clientid
+        left join client as agent on agent.client = head.agent
+        left join rdhead as rd on rd.trno= detail.rdtrno
+        left join transnum on transnum.trno = head.trno
+        where transnum.doc = 'RH'  and md5(client.clientid)= '$clientid' and head.dateid>='$start' and transnum.center = '$center' and detail.line is not null";
+        // var_dump($qry);
+        return $qry;
+    }
+
+    public function reportdefault_CASH_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+        $companyid = $config['params']['companyid'];
+
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+        $count = 55;
+        $page = 54;
+        $fontsize = "10";
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [900, 1000]);
+        PDF::SetMargins(20, 20);
+
+        PDF::SetFont($font, '', 9);
+        PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
+
+
+        PDF::MultiCell(0, 0, "\n");
+        $this->reportheader->getheader($config);
+        PDF::MultiCell(0, 0, "\n");
+
+
+
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(1050, 30, "CUSTOMER LEDGER - RECEIVED CASH HISTORY", '', 'L', false);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(65, 28, "Customer : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(200, 28, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(45, 28, "Agent : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(200, 28, (isset($data[0]->agentname) ? $data[0]->agentname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(37, 28, "Date : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(100, 28, $start, '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(855, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(855, 0, "", 'T', 'L', false);
+
+
+        PDF::SetFont($fontbold, '', 10);
+        PDF::MultiCell(110, 10, "Document #", '', 'L', false, 0);
+        PDF::MultiCell(70, 10, "Trans. Date", '', 'C', false, 0);
+        PDF::MultiCell(105, 10, "Agent", '', 'C', false, 0);
+        PDF::MultiCell(100, 10, "Yourref/Ourref", '', 'C', false, 0);
+        PDF::MultiCell(80, 10, "Bank", '', 'C', false, 0);
+        PDF::MultiCell(90, 10, "Amount", '', 'R', false, 0);
+        PDF::MultiCell(110, 10, "Deposit Ref.", '', 'C', false, 0);
+        PDF::MultiCell(80, 10, "Clear Date", '', 'R', false, 0);
+        PDF::MultiCell(110, 10, "Notes", '', 'C', false, 1);
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(855, 0, "", 'B', 'L', false);
+
+        PDF::MultiCell(0, 0, "\n");
+
+
+        foreach ($data as $key => $data) {
+            $maxrow = 1;
+            $docno = $data->docno;
+            $dateid = $data->dateid;
+            $agent = $data->agentname;
+            $yourref = $data->yourref;
+            $ourref = $data->ourref;
+            $bank = $data->bank;
+            $amount = $data->amount;
+            $ref = $data->ref;
+            $cleardate = $data->clearday;
+            $rem = $data->notes;
+
+            $arr_docno = $this->reporter->fixcolumn([$docno], '16', 0);
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '16', 0);
+            $arr_agent = $this->reporter->fixcolumn([$agent], '20', 0);
+            $arr_yourref = $this->reporter->fixcolumn([$yourref], '16', 0);
+            $arr_ourref = $this->reporter->fixcolumn([$ourref], '16', 0);
+            $arr_bank = $this->reporter->fixcolumn([$bank], '16', 0);
+            $arr_amount = $this->reporter->fixcolumn([$amount], '16', 0);
+            $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+            $arr_cleardate = $this->reporter->fixcolumn([$cleardate], '16', 0);
+            $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
+
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_agent]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 20, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(105, 20, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(100, 20, (isset($arr_yourref[$r]) && isset($arr_ourref[$r]) ? $arr_yourref[$r] . ' / ' . $arr_ourref[$r] : (isset($arr_yourref[$r]) ? $arr_yourref[$r] : (isset($arr_ourref[$r]) ? $arr_ourref[$r] : ''))), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_bank[$r]) ? $arr_bank[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_amount[$r]) ? $arr_amount[$r] : '-'), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_cleardate[$r]) ? $arr_cleardate[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'C', 0, 1, '', '', true, 0, true, false);
+            }
+        }
+
+        // PDF::MultiCell(0, 0, "\n\n\n\n");
+        // PDF::SetFont($font, '', $fontsize);
+        // PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+        // PDF::MultiCell(0, 0, "\n\n");
+        // PDF::SetFont($fontbold, '', $fontsize);
+        // PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    public function default_BOUNCED_QUERY($config)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = md5($config['params']['dataid']);
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+
+        $rehead = "'' as ref";
+        $hrehead = "(select docno from lahead as re where re.trno=p.retrno
+               union all select docno from glhead as re where re.trno=p.retrno) as ref";
+
+        $qry = "select head.docno, head.dateid, agent.clientname as agentname, head.yourref, head.ourref,
+        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, FORMAT(p.amount,2) as amount, rc.docno as prref,  " . $rehead  . ", head.rem as notes, customer.clientname
+        from lahead as head
+        left join client as agent on agent.client = head.agent
+        left join particulars as p on p.trno = head.trno
+        left join client as customer on customer.clientid = p.clientid
+        left join lahead as rc on rc.trno = p.rctrno
+        left join cntnum on cntnum.trno = head.trno
+        where head.doc = 'BE'  and md5(customer.clientid)= '$clientid' and head.dateid>='$start' and cntnum.center = '$center' and p.line is not null
+
+        union all
+
+        select head.docno, head.dateid, agent.clientname as agentname, head.yourref, head.ourref,
+        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, FORMAT(p.amount,2),rc.docno as prref,  " . $hrehead  . ", head.rem as notes, customer.clientname
+        from glhead as head
+        left join client as agent on agent.clientid = head.agentid
+        left join hparticulars as p on p.trno = head.trno
+        left join client as customer on customer.clientid = p.clientid
+        left join glhead as rc on rc.trno = p.rctrno
+        left join cntnum on cntnum.trno = head.trno
+        where head.doc = 'BE'  and md5(customer.clientid)= '$clientid' and head.dateid>='$start' and cntnum.center = '$center' and p.line is not null";
+        // var_dump($qry);
+        return $qry;
+    }
+
+    public function reportdefault_BOUNCED_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+        $companyid = $config['params']['companyid'];
+
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+        $count = 55;
+        $page = 54;
+        $fontsize = "10";
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('l', [1130, 800]);
+        PDF::SetMargins(20, 20);
+
+        PDF::SetFont($font, '', 9);
+        PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
+
+
+        PDF::MultiCell(0, 0, "\n");
+        $this->reportheader->getheader($config);
+        PDF::MultiCell(0, 0, "\n");
+
+
+
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(1050, 30, "CUSTOMER LEDGER - BOUNCED CHEQUE HISTORY", '', 'L', false);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(65, 20, "Customer : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(320, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(45, 20, "Agent : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(280, 20, (isset($data[0]->agentname) ? $data[0]->agentname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(37, 20, "Date : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(100, 20, $start, '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(1090, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1090, 0, "", 'T', 'L', false);
+
+
+        PDF::SetFont($fontbold, '', 10);
+        PDF::MultiCell(110, 28, "Document #", '', 'L', false, 0);
+        PDF::MultiCell(70, 28, "Trans. Date", '', 'C', false, 0);
+        PDF::MultiCell(105, 28, "Agent", '', 'C', false, 0);
+        PDF::MultiCell(90, 28, "Yourref/Ourref", '', 'C', false, 0);
+        PDF::MultiCell(70, 28, "Check Date", '', 'C', false, 0);
+        PDF::MultiCell(80, 28, "Bank", '', 'C', false, 0);
+        PDF::MultiCell(90, 28, "Branch", '', 'C', false, 0);
+        PDF::MultiCell(75, 28, "Check No.", '', 'C', false, 0);
+        PDF::MultiCell(80, 28, "Amount", '', 'R', false, 0);
+        PDF::MultiCell(110, 28, "Reference (Check / Cash)", '', 'C', false, 0);
+        PDF::MultiCell(110, 28, "Reference (Replacement)", '', 'C', false, 0);
+        PDF::MultiCell(100, 28, "Notes", '', 'C', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1090, 0, "", 'B', 'L', false);
+
+        PDF::MultiCell(0, 0, "\n");
+
+
+        foreach ($data as $key => $data) {
+            $maxrow = 1;
+            $docno = $data->docno;
+            $dateid = $data->dateid;
+            $agent = $data->agentname;
+            $yourref = $data->yourref;
+            $ourref = $data->ourref;
+            $checkdate = $data->checkdate;
+            $bank = $data->bank;
+            $branch = $data->branch;
+            $checkno = $data->checkno;
+            $amount = $data->amount;
+            $prref = $data->prref;
+            $ref = $data->ref;
+            $rem = $data->notes;
+
+            $arr_docno = $this->reporter->fixcolumn([$docno], '16', 0);
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '16', 0);
+            $arr_agent = $this->reporter->fixcolumn([$agent], '20', 0);
+            $arr_yourref = $this->reporter->fixcolumn([$yourref], '16', 0);
+            $arr_ourref = $this->reporter->fixcolumn([$ourref], '16', 0);
+            $arr_checkdate = $this->reporter->fixcolumn([$checkdate], '16', 0);
+            $arr_bank = $this->reporter->fixcolumn([$bank], '16', 0);
+            $arr_branch = $this->reporter->fixcolumn([$branch], '16', 0);
+            $arr_checkno = $this->reporter->fixcolumn([$checkno], '16', 0);
+            $arr_amount = $this->reporter->fixcolumn([$amount], '16', 0);
+            $arr_prref = $this->reporter->fixcolumn([$prref], '16', 0);
+            $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+            $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
+
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_agent]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 20, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(105, 20, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_yourref[$r]) && isset($arr_ourref[$r]) ? $arr_yourref[$r] . ' / ' . $arr_ourref[$r] : (isset($arr_yourref[$r]) ? $arr_yourref[$r] : (isset($arr_ourref[$r]) ? $arr_ourref[$r] : ''))), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_checkdate[$r]) ? $arr_checkdate[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_bank[$r]) ? $arr_bank[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_branch[$r]) ? $arr_branch[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(75, 20, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_amount[$r]) ? $arr_amount[$r] : '-'), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_prref[$r]) ? $arr_prref[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(100, 20, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', 0, 1, '', '', true, 0, true, false);
+            }
+        }
+
+        // PDF::MultiCell(0, 0, "\n\n\n\n");
+        // PDF::SetFont($font, '', $fontsize);
+        // PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+        // PDF::MultiCell(0, 0, "\n\n");
+        // PDF::SetFont($fontbold, '', $fontsize);
+        // PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    public function default_REPLACEMENT_QUERY($config)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = md5($config['params']['dataid']);
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+
+        $qry = "select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, dt.checkdate, dt.bank, dt.branch, p.checkno,
+        FORMAT(p.amount,2) as amount, dt.checkno as rcchecks, head2.docno as ref, FORMAT(dt.amount,2) as amount2, p.rem as notes, customer.clientname
+        from particulars as p
+        left join hrcdetail as dt on dt.retrno = p.trno and dt.line = p.rcline
+        left join lahead as head on head.trno = p.trno
+        left join client as agent on agent.client = head.agent
+        left join client as customer on customer.clientid = p.clientid
+        left join hrchead as head2 on head2.trno = dt.trno
+        left join cntnum on cntnum.trno = head.trno
+        where head.doc = 'RE'  and md5(customer.clientid)= '$clientid' and head.dateid>='$start' and cntnum.center = '$center' and p.line is not null
+
+        union all
+
+        select head.docno, date(head.dateid) as dateid, agent.clientname as agentname, head.yourref, head.ourref, dt.checkdate, dt.bank, dt.branch, p.checkno,
+        FORMAT(p.amount,2) as amount, dt.checkno as rcchecks, head2.docno as ref, FORMAT(dt.amount,2) as amount2, p.rem as notes, customer.clientname
+        from particulars as p
+        left join hrcdetail as dt on dt.retrno = p.trno and dt.line = p.rcline
+        left join glhead as head on head.trno = p.trno
+        left join client as agent on agent.clientid = head.agentid
+        left join client as customer on customer.clientid = p.clientid
+        left join hrchead as head2 on head2.trno = dt.trno
+        left join cntnum on cntnum.trno = head.trno
+        where head.doc = 'RE'  and md5(customer.clientid)= '$clientid' and head.dateid>='$start' and cntnum.center = '$center' and p.line is not null";
+        // var_dump($qry);
+        return $qry;
+    }
+
+    public function reportdefault_REPLACEMENT_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+        $companyid = $config['params']['companyid'];
+
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+        $count = 55;
+        $page = 54;
+        $fontsize = "10";
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('l', [1200, 800]);
+        PDF::SetMargins(20, 20);
+
+        PDF::SetFont($font, '', 9);
+        PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
+
+
+        PDF::MultiCell(0, 0, "\n");
+        $this->reportheader->getheader($config);
+        PDF::MultiCell(0, 0, "\n");
+
+
+
+        PDF::SetFont($fontbold, '', 15);
+        PDF::MultiCell(1050, 30, "CUSTOMER LEDGER - REPLACEMENT CHEQUE HISTORY", '', 'L', false);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(65, 20, "Customer : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(320, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(45, 20, "Agent : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(280, 20, (isset($data[0]->agentname) ? $data[0]->agentname : ''), '', 'L', false, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(37, 20, "Date : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(100, 20, $start, '', 'L', false, 1);
+
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(1155, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1155, 0, "", 'T', 'L', false);
+
+
+        PDF::SetFont($fontbold, '', 10);
+        PDF::MultiCell(110, 25, "Document #", '', 'L', false, 0);
+        PDF::MultiCell(70, 25, "Trans. Date", '', 'C', false, 0);
+        PDF::MultiCell(120, 25, "Agent", '', 'C', false, 0);
+        PDF::MultiCell(90, 25, "Yourref/Ourref", '', 'C', false, 0);
+        PDF::MultiCell(70, 25, "Check Date", '', 'C', false, 0);
+        PDF::MultiCell(80, 25, "Bank", '', 'C', false, 0);
+        PDF::MultiCell(90, 25, "Branch", '', 'C', false, 0);
+        PDF::MultiCell(75, 25, "Check No.", '', 'C', false, 0);
+        PDF::MultiCell(80, 25, "Amount", '', 'R', false, 0);
+        PDF::MultiCell(80, 25, "Reference Cheque", '', 'C', false, 0);
+        PDF::MultiCell(110, 25, "Reference Doc", '', 'C', false, 0);
+        PDF::MultiCell(80, 25, "Replacement Amount", '', 'R', false, 0);
+        PDF::MultiCell(100, 25, "Notes", '', 'C', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(1155, 0, "", 'B', 'L', false);
+
+        PDF::MultiCell(0, 0, "\n");
+
+
+        foreach ($data as $key => $data) {
+            $maxrow = 1;
+            $docno = $data->docno;
+            $dateid = $data->dateid;
+            $agent = $data->agentname;
+            $yourref = $data->yourref;
+            $ourref = $data->ourref;
+            $checkdate = $data->checkdate;
+            $bank = $data->bank;
+            $branch = $data->branch;
+            $checkno = $data->checkno;
+            $amount = $data->amount;
+            $amount2 = $data->amount2;
+            $rcchecks = $data->rcchecks;
+            $ref = $data->ref;
+            $rem = $data->notes;
+
+            $arr_docno = $this->reporter->fixcolumn([$docno], '16', 0);
+            $arr_dateid = $this->reporter->fixcolumn([$dateid], '16', 0);
+            $arr_agent = $this->reporter->fixcolumn([$agent], '16', 0);
+            $arr_yourref = $this->reporter->fixcolumn([$yourref], '16', 0);
+            $arr_ourref = $this->reporter->fixcolumn([$ourref], '16', 0);
+            $arr_checkdate = $this->reporter->fixcolumn([$checkdate], '16', 0);
+            $arr_bank = $this->reporter->fixcolumn([$bank], '16', 0);
+            $arr_branch = $this->reporter->fixcolumn([$branch], '16', 0);
+            $arr_checkno = $this->reporter->fixcolumn([$checkno], '16', 0);
+            $arr_amount = $this->reporter->fixcolumn([$amount], '16', 0);
+            $arr_amount2 = $this->reporter->fixcolumn([$amount2], '16', 0);
+            $arr_rcchecks = $this->reporter->fixcolumn([$rcchecks], '16', 0);
+            $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+            $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
+
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_agent]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(110, 20, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(120, 20, (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_yourref[$r]) && isset($arr_ourref[$r]) ? $arr_yourref[$r] . ' / ' . $arr_ourref[$r] : (isset($arr_yourref[$r]) ? $arr_yourref[$r] : (isset($arr_ourref[$r]) ? $arr_ourref[$r] : ''))), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(70, 20, (isset($arr_checkdate[$r]) ? $arr_checkdate[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_bank[$r]) ? $arr_bank[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(90, 20, (isset($arr_branch[$r]) ? $arr_branch[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(75, 20, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_amount[$r]) ? $arr_amount[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_rcchecks[$r]) ? $arr_rcchecks[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(110, 20, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(80, 20, (isset($arr_amount2[$r]) ? $arr_amount2[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+                PDF::MultiCell(100, 20, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'C', 0, 1, '', '', true, 0, true, false);
+            }
+        }
+
+        // PDF::MultiCell(0, 0, "\n\n\n\n");
+        // PDF::SetFont($font, '', $fontsize);
+        // PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+        // PDF::MultiCell(0, 0, "\n\n");
+        // PDF::SetFont($fontbold, '', $fontsize);
+        // PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+        // PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+        // PDF::MultiCell(254, 0, $approved, '', 'L');
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }

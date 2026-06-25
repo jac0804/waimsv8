@@ -116,7 +116,7 @@ class viewbehistory
                union all select docno from glhead as re where re.trno=p.retrno) as ref";
 
         $qry = "select head.docno, head.dateid, agent.clientname as agentname, head.yourref, head.ourref,
-        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, p.amount, rc.docno as prref,  " . $rehead  . "
+        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, p.amount, rc.docno as prref,  " . $rehead  . ", head.rem as notes
         from lahead as head
         left join client as agent on agent.client = head.agent
         left join particulars as p on p.trno = head.trno
@@ -128,7 +128,7 @@ class viewbehistory
         union all
 
         select head.docno, head.dateid, agent.clientname as agentname, head.yourref, head.ourref,
-        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, p.amount,rc.docno as prref,  " . $hrehead  . "
+        date(p.checkdate) as checkdate, p.bank, p.branch, p.checkno, p.amount,rc.docno as prref,  " . $hrehead  . ", head.rem as notes
         from glhead as head
         left join client as agent on agent.clientid = head.agentid
         left join hparticulars as p on p.trno = head.trno

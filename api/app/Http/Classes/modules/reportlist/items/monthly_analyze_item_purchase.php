@@ -1627,6 +1627,17 @@ class monthly_analyze_item_purchase
     $i = 0;
     foreach ($result as $key => $data) {
 
+    // if ($rowcount >= $page) {
+
+    //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+    //     if (!$allowfirstpage) {
+    //       $str .= $this->default_displayHeader($config);
+    //     }
+    //     $str .= $this->default_table_cols($layoutsize, $border, $font, $fontsize11, $config);
+
+    //     $page = $page + $count;
+    //   }
+
       if ($data->part == '') {
         $data->part = 'No ' . $partName;
 
@@ -1645,25 +1656,25 @@ class monthly_analyze_item_purchase
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col($brandSubTotalLabel, '200', null, false, $border, '', 'R', $font, $font_size9, 'Bi', '', '', '');
-        $str .= $this->reporter->col(number_format($subjan, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subfeb, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($submar, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subapr, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($submay, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subjun, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subjul, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subaug, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subsep, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($suboct, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subnov, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subdec, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
-        $str .= $this->reporter->col(number_format($subamt, 2), '95', null, false, '1px dotted ', 'T', 'R', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subjan, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subfeb, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($submar, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subapr, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($submay, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subjun, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subjul, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subaug, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subsep, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($suboct, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subnov, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subdec, 2), '75', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
+        $str .= $this->reporter->col(number_format($subamt, 2), '95', null, false, '1px dotted ', 'T', 'RT', $font, $font_size9, '', '', '', '');
         $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         // $rowcount++;
 
-        $charsPerLine = 33;
+        $charsPerLine = 27;
         $estimatedLines = (int) ceil(mb_strlen($brandSubTotalLabel) / $charsPerLine);
         if ($estimatedLines < 1) {
           $estimatedLines = 1;
@@ -1697,19 +1708,19 @@ class monthly_analyze_item_purchase
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col($partSubTotalLabel, '200', null, false, $border, '', 'R', $font, $font_size9, 'B', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubjan, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubfeb, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubmar, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubapr, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubmay, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubjun, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubjul, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubaug, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubsep, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsuboct, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubnov, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubdec, 2), '75', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col(number_format($gsubamt, 2), '95', null, false, $border, 'T', 'R', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubjan, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubfeb, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubmar, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubapr, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubmay, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubjun, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubjul, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubaug, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubsep, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsuboct, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubnov, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubdec, 2), '75', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
+          $str .= $this->reporter->col(number_format($gsubamt, 2), '95', null, false, $border, 'T', 'RT', $font, $font_size9, '', '', '', '');
           $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
@@ -1785,13 +1796,13 @@ class monthly_analyze_item_purchase
       $str .= $this->reporter->col($mooct, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col($monov, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col($modec, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
-      $str .= $this->reporter->col(number_format($amt, 2), '95', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($amt, 2), '95', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
       // $rowcount++;
 
-      $charsPerLine = 33; // tune this based on actual rendered behavior
+      $charsPerLine = 27; // tune this based on actual rendered behavior
       $estimatedLines = (int) ceil(mb_strlen($itemLabel) / $charsPerLine);
       if ($estimatedLines < 1) {
         $estimatedLines = 1;
@@ -1851,9 +1862,6 @@ class monthly_analyze_item_purchase
       $i++;
 
       if ($rowcount >= $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        // 
 
         $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
         if (!$allowfirstpage) {
@@ -1864,6 +1872,12 @@ class monthly_analyze_item_purchase
         $page = $page + $count;
       }
     } // end foreach
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col("CUMULATIVE ROWCOUNT AT END OF REPORT: {$rowcount}", '1220', null, false, '', '', 'L', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();

@@ -196,7 +196,7 @@ class linkemail
                                         } else {
                                             $appdata['disapprovedby2'] = $approver[0]->appcode;
                                             $appdata['disapprovedate2'] = $this->othersClass->getCurrentTimeStamp();
-                                            // $appdata['status'] = 'D'; //pag na disapproved update na din ito last status
+                                            $appdata['status'] = 'D'; //pag na disapproved update na din ito last status
                                             $lastapp = true;
                                         }
                                         break; // loop

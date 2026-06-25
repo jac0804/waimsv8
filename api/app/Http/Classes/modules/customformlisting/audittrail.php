@@ -67,28 +67,35 @@ class audittrail
 
   public function createTab($config)
   {
+    $columns = ['userid', 'task', 'docno', 'oldversion', 'dateid'];
 
-    $tab = [$this->gridname => ['gridcolumns' => ['userid', 'task', 'oldversion', 'dateid']]];
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
+
+    $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
     $stockbuttons = [];
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0][$this->gridname]['descriptionrow'] = [];
 
-    $obj[0][$this->gridname]['columns'][0]['style'] = "width:100px;whiteSpace: normal;min-width:100px;border-style: solid ;";
-    $obj[0][$this->gridname]['columns'][1]['style'] = "width:100px;whiteSpace: normal;min-width:100px;border-style: solid ;";
-    $obj[0][$this->gridname]['columns'][2]['style'] = "width:100px;whiteSpace: normal;min-width:250px;border-style: solid ;";
-    $obj[0][$this->gridname]['columns'][3]['style'] = "width:100px;whiteSpace: normal;min-width:120px;border-style: solid ;";
+    $obj[0][$this->gridname]['columns'][$userid]['style'] = "width:100px;whiteSpace: normal;min-width:100px;border-style: solid ;";
+    $obj[0][$this->gridname]['columns'][$task]['style'] = "width:100px;whiteSpace: normal;min-width:100px;border-style: solid ;";
+    $obj[0][$this->gridname]['columns'][$oldversion]['style'] = "width:300px;whiteSpace: normal;min-width:300px;border-style: solid ;";
+    $obj[0][$this->gridname]['columns'][$dateid]['style'] = "width:100px;whiteSpace: normal;min-width:120px;border-style: solid ;";
 
-    $obj[0][$this->gridname]['columns'][0]['disable'] = true;
-    $obj[0][$this->gridname]['columns'][1]['disable'] = true;
-    $obj[0][$this->gridname]['columns'][2]['disable'] = true;
-    $obj[0][$this->gridname]['columns'][3]['disable'] = true;
+    $obj[0][$this->gridname]['columns'][$userid]['disable'] = true;
+    $obj[0][$this->gridname]['columns'][$task]['disable'] = true;
+    $obj[0][$this->gridname]['columns'][$docno]['disable'] = true;
+    $obj[0][$this->gridname]['columns'][$oldversion]['disable'] = true;
+    $obj[0][$this->gridname]['columns'][$dateid]['disable'] = true;
 
-    $obj[0][$this->gridname]['columns'][0]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][1]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][2]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][3]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$userid]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$task]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$oldversion]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label';
 
     $obj[0][$this->gridname]['label'] = 'AUDIT TRAIL LOGS';
     return $obj;
@@ -188,53 +195,53 @@ class audittrail
 
     switch ($doc) {
       case "ALL":
-        return  "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client,profile.master
+        return  "select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client,profile.master, cntnum.docno
         from table_log as tl left join cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
         where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username $doc_filter
         union all
-        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client,profile.master
+        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client,profile.master, cntnum.docno
         from htable_log as tl left join cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
         where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username $doc_filter
         union all
-        select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client,'' as master
+        select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client,'' as master, client.client as docno
         from client_log as tl left join client on client.clientid = tl.trno
         where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d')  $username
         union all
-        select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client, '' as master
+        select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client, '' as master, item.barcode as docno
         from item_log as tl left join item on item.itemid = tl.trno
         where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d')  $username
         union all
-        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client, profile.master
+        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client, profile.master, cntnum.docno
         from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username $doc_filter
         union all
-        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client, profile.master
+        select cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid, '' as clientname, '' as client, profile.master, cntnum.docno
         from htransnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username $doc_filter
         union all        
-        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master
+        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master, tl.docno
         from del_transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
         left join profile on profile.psection=cntnum.doc
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $module $username $doc_filter
         union all
-        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master
+        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master, tl.docno
         from del_table_log as tl left join cntnum as cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $module $username $doc_filter
         union all
-        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master
+        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master, tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
@@ -251,25 +258,25 @@ class audittrail
       case "SQ":
       case "QS":
         return
-          "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master
+          "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
          left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
          and date_format('$date2','%Y-%m-%d') $module $username 
          union all
-         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master
+         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from htransnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
          left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
          and date_format('$date2','%Y-%m-%d') $module $username 
          union all
-         select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master
+         select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master,  tl.docno
          from del_transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
          left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
          and date_format('$date2','%Y-%m-%d') $module $username 
          union all 
-        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master
+        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master,  tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
@@ -294,25 +301,19 @@ class audittrail
       case "PG":
       case "DR":
         return
-          "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master
+          "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from table_log as tl left join cntnum on cntnum.trno = tl.trno 
          left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
          and date_format('$date2','%Y-%m-%d') $module $username 
          union all
-         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master
+         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from htable_log as tl left join cntnum on cntnum.trno = tl.trno 
          left join profile on profile.psection=cntnum.doc
          where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
          and date_format('$date2','%Y-%m-%d') $module $username 
          union all
-         select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master
-         from del_table_log as tl left join cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all 
-        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master
+        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master, tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
@@ -320,12 +321,12 @@ class audittrail
         break;
       case "CL":
         return
-          "select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client, 'Customer' as master
+          "select 'CL' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,client.clientname,client.client, 'Customer' as master, client.client as docno
         from client_log as tl left join client on client.clientid = tl.trno where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d')  $username order by tl.dateid";
         break;
       case "SK":
         return
-          "select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client, '' as master
+          "select 'SK' as doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,item.itemname as clientname,item.barcode as client, '' as master, item.barcode as docno
         from item_log as tl left join item on item.itemid = tl.trno where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d')  $username order by tl.dateid";
         break;
       case 'customer':
@@ -340,17 +341,17 @@ class audittrail
         }
 
         return
-          "select '' as clientname, '' as client, trno, field as task, oldversion, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master
+          "select '' as clientname, '' as client, trno, field as task, oldversion, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master, '' as docno
           from client_log as log
           left join useraccess as u on u.username=log.userid
           where date_format(dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $filter
           union all
-          select '' as clientname, '' as client,  trno, concat('DELETE',' ',field) as task, docno, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master
+          select '' as clientname, '' as client,  trno, concat('DELETE',' ',field) as task, docno, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master, '' as docno
           from  del_client_log as log
           left join useraccess as u on u.username=log.userid
           where date_format(dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $filter
           union all 
-          select '' as clientname, '' as client, log.clientid as trno,'CREATE' as task,concat(log.client,'-',log.clientname) as oldversion,log.createby as userid,log.createdate as dateid,if(u.pic='','blank_user.png',pic) as pic , '' as master
+          select '' as clientname, '' as client, log.clientid as trno,'CREATE' as task,concat(log.client,'-',log.clientname) as oldversion,log.createby as userid,log.createdate as dateid,if(u.pic='','blank_user.png',pic) as pic , '' as master, '' as docno
           from client as log
           left join useraccess as u on u.username=log.createby
           where date_format(log.createdate,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $filter1 ";
@@ -361,12 +362,12 @@ class audittrail
           $filter = "and log.userid = '$user'";
         }
 
-        return "select '' as client, '' as clientname, trno, field as task, oldversion, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master
+        return "select '' as client, '' as clientname, trno, field as task, oldversion, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master, '' as docno
             from item_log as log
             left join useraccess as u on u.username=log.userid
             where date_format(dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $filter
             union all
-            select '' as client, '' as clientname, trno, concat('DELETE',' ',field) as task, docno, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master
+            select '' as client, '' as clientname, trno, concat('DELETE',' ',field) as task, docno, log.userid, dateid, if(pic='','blank_user.png',pic) as pic, '' as master, '' as docno
             from  del_item_log as log
             left join useraccess as u on u.username=log.userid
             where date_format(dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') and date_format('$date2','%Y-%m-%d') $filter";

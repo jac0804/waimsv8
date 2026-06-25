@@ -195,7 +195,7 @@ class balance_sheet
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'A', $amt1, $amt1b, $a, $asof, $center, $isposted, $cc, $filter, $company, $addedparams);
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'L', $amt2, $amt2b, $a, $asof, $center, $isposted, $cc, $filter, $company, $addedparams);
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'C', $amt3, $amt3b, $a, $asof, $center, $isposted, $cc, $filter, $company, $addedparams);
-    $coa[] = array('acno' => '//4999', 'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt2b + $amt3b);
+    $coa[] = array('acno' => '//4999', 'acnoname' => '<b>TOTAL LIABILITIES AND STOCKHOLDERS EQUITY</b>', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt2b + $amt3b);
 
     $array = json_decode(json_encode($coa), true); // for clearing set to array
     return $array;
@@ -286,7 +286,7 @@ class balance_sheet
       foreach ($result2 as $key => $value) {
         $a[] = array(
           'acno' => $value->acno,
-          'acnoname' => $value->levelid == 1 ? '<b>' . $value->acnoname . '</b>' : $value->acnoname,
+          'acnoname' => $value->levelid == 1 ? '<b>' .  strtoupper($value->acnoname)  . '</b>' : $value->acnoname,
           'levelid' => $value->levelid,
           'cat' => $value->cat,
           'parent' => $value->parent,
@@ -714,6 +714,7 @@ class balance_sheet
     $fontsize11 = 11;
     $padding = '';
     $margin = '';
+    $totalLine = '';
 
     $companyid = $filters['params']['companyid'];
     $decimal_currency = $this->companysetup->getdecimal('currency', $filters['params']);
@@ -757,15 +758,30 @@ class balance_sheet
           }
         }
       } else {
-        $str .= $this->reporter->startrow();
 
+        $isCategoryHeader = ($data[$i]['levelid'] == 1 && $data[$i]['detail'] == 0 && $data[$i]['total'] != 0 );
+
+        $str .= $this->reporter->startrow();
         $indent = '5' * ($data[$i]['levelid'] * 3);
         $str .= $this->reporter->addline();
         $str .= $this->reporter->col($data[$i]['acnoname'], '580', null, false, $border, '', '', $font, $font_size, '', '', '0px 0px 0px ' . $indent . 'px');
         $amt = $data[$i]['amt'];
-        $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, $border, '', 'r', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+        $totalLine = ($amt == 0 && $data[$i]['total'] != 0 && !$isCategoryHeader) ? 'B' : '';
+        $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, $border,  $totalLine, 'r', $font, $font_size, '', '', '');
+        if ($isCategoryHeader && ($data[$i]['cat'] == 'A' || $data[$i]['cat'] == 'X')){ //categ final total
+          $tborder = '4px double';
+          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '');
+          $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, $tborder, 'B', 'R', $font, $font_size, 'B', '', '');
+        }else{
+          $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+        }
         $str .= $this->reporter->endrow();
+        
+        if ($isCategoryHeader){
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', 'null', '20', false, $border,  '', 'r', $font, $font_size, '', '', '');
+          $str .= $this->reporter->endrow();
+        }
       }
 
 
@@ -974,7 +990,7 @@ class balance_sheet
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    $str .= "<br/><br/>";
+    $str .= "<br/>";
 
     return $str;
   } //DEFAULT HEADER
@@ -992,9 +1008,6 @@ class balance_sheet
 
     $isposted = $filters['params']['dataparams']['posttype'];
     $asof = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
-
-    $str .= $this->reporter->printline();
-
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
@@ -1031,6 +1044,8 @@ class balance_sheet
     $str .= $this->reporter->pagenumber('Page', null, null, false, $border, '', '', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->printline();
 
     return $str;
   }

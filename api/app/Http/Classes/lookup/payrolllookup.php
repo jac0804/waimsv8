@@ -289,7 +289,7 @@ class payrolllookup
     $plottype = 'plothead';
     // camera all application lookup working and resday na lang 10-27-2025
     if (strtoupper($doc) == 'TTC' || strtoupper($doc) == 'EMPTIMECARD') {
-      if ($companyid == 62 || $companyid == 66) { //onesky || metro dragon payroll
+      if ($companyid == 62 || $companyid == 66 || $companyid == 68) { //onesky || metro dragon payroll || jda
         $qry .= "
         union all 
         select 'SP' as daytype
@@ -440,7 +440,10 @@ class payrolllookup
     $cols = array(
       array('name' => 'shiftcode', 'label' => 'Shift Code', 'align' => 'left', 'field' => 'shiftcode', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'ftime', 'label' => 'From', 'align' => 'left', 'field' => 'ftime', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'stime', 'label' => 'To', 'align' => 'left', 'field' => 'stime', 'sortable' => true, 'style' => 'font-size:16px;')
+      array('name' => 'stime', 'label' => 'To', 'align' => 'left', 'field' => 'stime', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'schedbrkout', 'label' => 'Sched Lunch-Out', 'align' => 'left', 'field' => 'schedbrkout', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'schedbrkin', 'label' => 'Sched Lunch-In', 'align' => 'left', 'field' => 'schedbrkin', 'sortable' => true, 'style' => 'font-size:16px;'),
+
     );
     $qry = "select shd.dayn,date_format(timestamp('" . $dateid . "',time(shd.schedin)), '%Y-%m-%d %H:%i') as schedin,
     date_format(timestamp('" . $dateid . "',time(shd.schedout)),'%Y-%m-%d %H:%i') as schedout,

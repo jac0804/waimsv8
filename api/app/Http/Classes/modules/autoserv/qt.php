@@ -37,8 +37,8 @@ class qt
     private $logger;
     public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
     public $tablenum = 'transnum';
-    public $head = 'pthead';
-    public $hhead = 'hpthead';
+    public $head = 'qthead';
+    public $hhead = 'hqthead';
     public $stock = 'ptjobs';
     public $hstock = 'hptjobs';
     public $tablelogs = 'transnum_log';
@@ -48,9 +48,9 @@ class qt
     private $stockselect;
     private $sbcscript;
 
-    private $fields = ['trno', 'docno', 'dateid', 'description', 'rem'];
+    private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'address', 'tax', 'carid'];
 
-    private $except = ['trno', 'dateid'];
+    private $except = ['trno', 'dateid', 'due'];
     private $blnfields = [];
     public $showfilteroption = true;
     public $showfilter = true;
@@ -132,21 +132,93 @@ class qt
 
     public function createHeadField($config)
     {
-        $fields = ['docno', 'rem'];
-
+        $fields = ['docno', 'client', 'clientname', 'address'];
         $col1 = $this->fieldClass->create($fields);
-        $fields = ['description'];
+        data_set($col1, 'docno.label', 'Transaction#');
+        data_set($col1, 'client.lookupclass', 'customer');
 
+        $fields = [['dateid', 'terms'], 'due', ['cur', 'forex'], ['yourref', 'ourref']];
         $col2 = $this->fieldClass->create($fields);
-        data_set($col2, 'description.label', '');
 
-        $fields = [];
+        $fields = [['vehicle', 'year'], ['modelname', 'mileage'], ['licenseno', 'type'], ['motorno', 'chassisno'], ['submodel', 'engine'], ['transmission', 'mvno']];
         $col3 = $this->fieldClass->create($fields);
+        data_set($col3, 'vehicle.readonly', true);
+        data_set($col3, 'vehicle.type', 'input');
+        data_set($col3, 'vehicle.label', 'Car Make');
+        data_set($col3, 'year.readonly', true);
+        data_set($col3, 'modelname.readonly', true);
+        data_set($col3, 'modelname.type', 'input');
 
-        $fields = [];
+        data_set($col3, 'licenseno.label', 'License');
+
+        data_set($col3, 'mileage.label', 'Mileage');
+        data_set($col3, 'mileage.readonly', true);
+
+
+        data_set($col3, 'type.type', 'input');
+        data_set($col3, 'type.readonly', true);
+
+        data_set($col3, 'transmission.required', false);
+        data_set($col3, 'mvno.required', false);
+
+        data_set($col3, 'year.class', 'csyear sbccsreadonly');
+        data_set($col3, 'licenseno.class', 'cslicenseno sbccsreadonly');
+        data_set($col3, 'motorno.class', 'csmotorno sbccsreadonly');
+        data_set($col3, 'submodel.class', 'cssubmodel sbccsreadonly');
+        data_set($col3, 'transmission.class', 'cstransmission sbccsreadonly');
+
+        data_set($col3, 'type.class', 'cstype sbccsreadonly');
+        data_set($col3, 'mileage.class', 'csmileage sbccsreadonly');
+        data_set($col3, 'chassisno.class', 'cschassisno sbccsreadonly');
+        data_set($col3, 'engine.class', 'csengine sbccsreadonly');
+        data_set($col3, 'mvno.class', 'csmvno sbccsreadonly');
+
+        data_set($col3, 'submodel.required', false);
+        data_set($col3, 'year.required', false);
+        data_set($col3, 'type.required', false);
+
+
+        $fields = ['kmno', 'rem', 'rem1', 'porem'];
         $col4 = $this->fieldClass->create($fields);
+        data_set($col4, 'rem.type', 'input');
+        data_set($col4, 'rem.label', 'Customer Notes');
 
-        return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
+        data_set($col4, 'kmno.required', false);
+
+
+
+        data_set($col4, 'rem1.label', 'Complaints');
+        data_set($col4, 'rem1.type', 'ctextarea');
+        data_set($col4, 'rem1.readonly', false);
+        data_set($col4, 'rem1.class', 'csrem1');
+        data_set($col4, 'porem.label', 'Recommendations');
+        data_set($col4, 'porem.readonly', false);
+
+
+        return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
+    }
+    public function createnewtransaction($docno, $params)
+    {
+        $data = [];
+        $data[0]['trno'] = 0;
+        $data[0]['docno'] = $docno;
+        $data[0]['dateid'] = $this->othersClass->getCurrentDate();
+        $data[0]['due'] = $this->othersClass->getCurrentDate();
+        $data[0]['client'] = '';
+        $data[0]['clientname'] = '';
+        $data[0]['yourref'] = '';
+        $data[0]['address'] = '';
+        $data[0]['ourref'] = '';
+        $data[0]['rem'] = '';
+        $data[0]['terms'] = '';
+        $data[0]['forex'] = 1;
+        $data[0]['cur'] = $this->companysetup->getdefaultcurrency($params);
+        $data[0]['tax'] = 0;
+        $data[0]['carid'] = 0;
+        $data[0]['kmno'] = '';
+        $data[0]['rem1'] = '';
+        $data[0]['porem'] = '';
+        return $data;
     }
 
     public function createTab($access, $config)
@@ -177,7 +249,7 @@ class qt
     public function createtabbutton($config)
     {
 
-        $tbuttons = ['addjob']; //deleteallitem
+        $tbuttons = ['addvehicle','addjob']; //deleteallitem
         $obj = $this->tabClass->createtabbutton($tbuttons);
         return $obj;
     }
@@ -243,13 +315,13 @@ class qt
         $qry = " 
         select head.trno, head.docno, case when lockdate is null then 'draft' else 'Locked' end  as status, head.createby, head.editby, head.viewby,date(head.dateid) as dateid,
         case when head.lockdate is not null then 'green' else 'red' end as statuscolor
-        from pthead as head 
+        from " . $this->head . " as head 
         left join transnum as num on num.trno = head.trno
         where head.doc = ? and num.center = ? $filter $filtersearch
         union all
         select head.trno, head.docno, case when lockdate is null then 'posted' else 'Locked' end  as status, head.createby, head.editby, head.viewby,date(head.dateid) as dateid,
         case when head.lockdate is not null then 'green' else 'grey' end as statuscolor
-        from hpthead as head 
+        from " . $this->hhead . " as head 
         left join transnum as num on num.trno = head.trno
         where head.doc = ? and num.center = ? $filter $filtersearch
         $orderby $limit";
@@ -274,14 +346,50 @@ class qt
         }
 
         $head = [];
-        $qry = "select head.trno, head.docno,head.doc,head.dateid,head.rem,head.description from pthead as head
-        where head.trno = ?
-        union all
-        select head.trno, head.docno,head.doc,head.dateid,head.rem,head.description from hpthead as head
-        where head.trno = ?";
+        $qryselect = "select
+         num.center,
+         head.trno,
+         head.docno,
+         client.client,
+         head.terms,
+         head.cur,
+         head.forex,
+         head.yourref,
+         head.ourref,
+         left(head.dateid,10) as dateid,
+         head.clientname,
+         head.address,
+         date_format(head.createdate,'%Y-%m-%d') as createdate,
+         head.rem,
+         head.tax,
+         left(head.due,10) as due,
+         client.groupid,
+         ifnull(hinfo.kmno,'') as kmno,ifnull(hinfo.complaints,'') as rem1,
+         ifnull(hinfo.recomm,'') as porem,
+         ifnull(cvh.cmake,'') as vehicle,ifnull(model.model,'') as modelname,
+         ifnull(cvh.licenseno,'') as licenseno,ifnull(cvh.motorno,'') as motorno,
+         ifnull(model.sub_model,'') as submodel, ifnull(cvh.transmission,'') as transmission,
+          model.cryear as year,ifnull(cvh.mileage,0) as mileage,ifnull(model.crtype,'') as type,
+          ifnull(cvh.chassis,'') as chassisno,ifnull(cvh.carengine,'') as engine,
+          ifnull(cvh.mvno,'') as mvno, cvh.line";
+
+        $qry = $qryselect . " from " . $this->head . " as head
+        left join $tablenum as num on num.trno = head.trno
+        left join client on client.client = head.client
+        left join cvehicle as cvh on cvh.clientid=client.clientid and cvh.line = head.carid
+        left join cmodel as model on model.line=cvh.cmodelline
+        left join cntnuminfo as hinfo on hinfo.trno = head.trno
+        where head.trno = ? and num.doc=? and num.center = ?
+        union all " . $qryselect . " from " . $this->hhead . " as head
+        left join $tablenum as num on num.trno = head.trno
+        left join client on client.client = head.client
+        left join cvehicle as cvh on cvh.clientid=client.clientid and cvh.line = head.carid
+        left join cmodel as model on model.line=cvh.cmodelline
+        left join hcntnuminfo as hinfo on hinfo.trno = head.trno
+        where head.trno = ? and num.doc=? and num.center=? ";
 
 
-        $head = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
         if (!empty($head)) {
 
@@ -361,21 +469,12 @@ class qt
         $data = $this->coreFunctions->opentable($query, [$trno, $line, $trno, $line]);
         return $data;
     }
-
-    public function createnewtransaction($docno, $params)
-    {
-        $data = [];
-        $data[0]['trno'] = 0;
-        $data[0]['docno'] = $docno;
-        $data[0]['dateid'] = $this->othersClass->getCurrentDate();
-        $data[0]['description'] = '';
-        $data[0]['rem'] = '';
-        return $data;
-    }
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
+        $info = [];
         if ($isupdate) {
             unset($this->fields[1]);
             unset($head['docno']);
@@ -384,22 +483,41 @@ class qt
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
                 } //end if
             }
         }
+
+
+        if ($data['terms'] == '') {
+            $data['due'] = $data['dateid'];
+        } else {
+            $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+        }
+        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+        $data['editby'] = $config['params']['user'];
         if ($isupdate) {
-            $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-            $data['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+            $info['trno'] = $head['trno'];
+            $info['kmno'] = $head['kmno'];
+            $info['complaints'] = $head['rem1'];
+            $info['recomm'] = $head['porem'];
         } else {
             $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
-            $insert = $this->coreFunctions->sbcinsert($this->head, $data);
-            $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['description']);
+            $this->coreFunctions->sbcinsert($this->head, $data);
+            // $this->othersClass->getcreditinfo($config, $this->head);
+
+            $info = [];
+            $info['trno'] = $head['trno'];
+            $info['kmno'] = $head['kmno'];
+            $info['complaints'] = $head['rem1'];
+            $info['recomm'] = $head['porem'];
+            $this->coreFunctions->sbcinsert('cntnuminfo', $info);
+            $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
         }
-    }
+    } // end function
     public function stockstatus($config)
     {
         switch ($config['params']['action']) {
@@ -417,6 +535,9 @@ class qt
             //     break;
             case 'getautojob':
                 return $this->getautojob($config);
+                break;
+            case 'getvehicle':
+                return $this->getvehicle($config);
                 break;
             default:
                 return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
@@ -451,6 +572,23 @@ class qt
         } //end foreach
         $this->coreFunctions->LogConsole(json_encode($rows));
         return ['row' => $rows, 'status' => true, 'msg' => 'Added Items Successful...'];
+    }
+    public function getvehicle($config)
+    {
+        $trno = $config['params']['trno'];
+        $vehicleline = $config['params']['rows'][0]['keyid'];
+        $data['carid'] = $vehicleline;
+        $updatehead = $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
+        $stat = true;
+        $msg = "Header updated successfully.";
+        $reload = true;
+
+        if ($updatehead != 1) {
+            $stat = false;
+            $msg = "'Failed to update the header";
+            $reload = false;
+        }
+        return ['status' => $stat, 'msg' => $msg, 'reloadhead' => $reload];
     }
     public function updateperitem($config)
     {

@@ -101,7 +101,7 @@ class earning_and_deduction_transaction_history
     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $companyid = $config['params']['companyid'];
     $docno = "case when b.batch is null then (concat(left(ss.docno,3),right(ss.docno,6))) else b.batch end";
-    if($companyid == 28){
+    if ($companyid == 28) {
       $docno = "case when b.batch is null then case when ismanual = 1 then st.docno else '' end else b.batch end";
     }
     $query = "      
@@ -130,7 +130,7 @@ class earning_and_deduction_transaction_history
         left join paccount as pa on pa.line=ss.acnoid
         left join client as emp on emp.clientid=ss.empid
         where date(ss.dateid) between '$start' and '$end' and emp.client = '$client' and pa.line='$earndedid'
-        group by st.dateid, b.batch,st.docno, st.ismanual, ss.remarks,st.db,b.startdate,b.enddate
+        group by st.dateid, b.batch,st.docno,ss.docno, st.ismanual, ss.remarks,st.db,b.startdate,b.enddate
 
         union all
         
@@ -143,7 +143,7 @@ class earning_and_deduction_transaction_history
         left join paccount as pa on pa.line=ss.acnoid
         left join client as emp on emp.clientid=ss.empid
         where date(ss.dateid) between '$start' and '$end' and emp.client = '$client' and pa.line='$earndedid'
-        group by st.dateid, b.batch,st.docno, st.ismanual, ss.remarks,st.db,b.startdate,b.enddate        
+        group by st.dateid, b.batch,st.docno,ss.docno, st.ismanual, ss.remarks,st.db,b.startdate,b.enddate        
       ) as x
 
       order by dateid, docno";

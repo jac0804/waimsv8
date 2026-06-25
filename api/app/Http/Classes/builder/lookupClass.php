@@ -11385,20 +11385,36 @@ class lookupClass
       'rctrno' => 'trno',
       'rcline' => 'line'
     );
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
+
+    $line = 0;
+    $betrno = 0;
+    $beline = 0;
 
     $plottype = 'plotgrid';
     $action = '';
     $callbackfieldhead = '';
     $callbackfieldlookup = '';
+    $type = 'sigle';
 
+    if($doc == 'RE' && $companyid == 59){ //roosevelt
+      if(isset($config['params']['row'])){
+      $line = $config['params']['row']['line'];
+      $betrno = $config['params']['row']['betrno'];
+      $beline = $config['params']['row']['beline'];
+      $action = 'lookuprcchecks';
+      $type = 'multi';
+      }
+    }
     $title = 'List of Replacement Checks';
 
     $lookupsetup = array(
-      'type' => 'single',
+      'type' => $type,
+      'rowkey' => 'keyid',
       'title' => $title,
       'style' => 'width:100%;max-width:100%;'
     );
-
 
     $plotsetup = array(
       'plottype' => $plottype,
@@ -11419,7 +11435,7 @@ class lookupClass
       array('name' => 'amount', 'label' => 'Amount', 'align' => 'left', 'field' => 'amount', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $qry = "select d.trno,d.line,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate
+    $qry = "select d.trno,d.line,concat(d.trno,'~',d.line) as keyid,$line as reline,$betrno as betrno,$beline as beline,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate
             from hrcdetail as d
             left join hrchead as h on h.trno=d.trno
             where ortrno = 0 and retrno=0";

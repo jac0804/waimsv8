@@ -179,7 +179,10 @@ class entryreplacementcheque
             $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $row['rctrno'], 'line' => $row['rcline']]);
         }
         $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL',  'REMOVE - Checkno: ' . $row['checkno']);
-        return ['status' => true, 'msg' => 'Successfully deleted.'];
+        
+        $path = 'App\Http\Classes\modules\receivable\\re';
+        $stock = app($path)->openstock($config['params']['tableid'], $config);
+        return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadgriddata' => ['inventory' => $stock]];
     }
     public function lookupsetup($config)
     {
@@ -198,6 +201,7 @@ class entryreplacementcheque
     public function addbouncedcheque($config)
     {
         $row = $config['params']['row'];
+        $trno = $config['params']['tableid'];
         $lookupsetup = array(
             'type' => 'multi',
             'rowkey' => 'rc',
@@ -225,13 +229,12 @@ class entryreplacementcheque
             left join hrchead as h on h.trno=d.trno
             where ortrno = 0 and retrno=0";
         $data = $this->coreFunctions->opentable($qry);
-
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
     }
     public function lookupcallback($config)
     {
         $rows = $config['params']['rows'];
-        $pttrno = $config['params']['tableid'];
+        $trno = $config['params']['tableid'];
 
         $returndata = [];
         $status = true;
@@ -252,6 +255,8 @@ class entryreplacementcheque
                 $msg = $return['msg'];
             }
         }
-        return ['status' => $status, 'msg' => $msg, 'data' => $returndata];
+        $path = 'App\Http\Classes\modules\receivable\\re';
+        $stock = app($path)->openstock($trno, $config);
+        return ['status' => $status, 'msg' => $msg, 'data' => $returndata, 'reloadgriddata' => ['inventory' => $stock]];
     }
 } //end class

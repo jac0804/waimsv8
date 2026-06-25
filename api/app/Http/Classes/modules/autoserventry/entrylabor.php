@@ -257,12 +257,12 @@ class entrylabor
   }
   private function loaddataperrecord($config, $line)
   {
-    $jobline = isset($config['params']['rows'][0]['jobline']) ? $config['params']['rows'][0]['jobline'] : $config['params']['row']['jobline'];
+    // $jobline = isset($config['params']['rows'][0]['jobline']) ? $config['params']['rows'][0]['jobline'] : $config['params']['row']['jobline'];
     $isview = false;
 
     if (isset($config['params']['rows'][0]['jobline'])) {
       $jobline = $config['params']['rows'][0]['jobline'];
-      $trno = $config['params']['rows'][0]['trno'];
+      $trno = $config['params']['tableid'];
     } else {
       if (isset($config['params']['row']['jobline'])) {
         $jobline = $config['params']['row']['jobline'];

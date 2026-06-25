@@ -3991,6 +3991,7 @@ class payrollcommon
                     $amtDeduc = 0;
                     $qtywork = 0;
                     $qtyworking = 0;
+                    $qtyworkhrsonly = 0;
                     $qtyabsent = 0;
                     $qtylate = 0;
                     $qtyundertime = 0;
@@ -4091,6 +4092,7 @@ class payrollcommon
                                     }
                                     $qtywork = $val->qty;
                                     $qtyworking += $val->qty;
+                                    $qtyworkhrsonly += $val->qty;
                                     $msalary = $salary;
                                     $rawdata['uom'] = 'PESO';
                                     $rawdata['db'] = $salary;
@@ -4168,6 +4170,9 @@ class payrollcommon
                                     } else {
                                         $amtRestday += round($rawdata['db'], 2);
                                     }
+                                    if ($val->alias != 'NDIFFS' && $val->alias != 'SP100') {
+                                        $qtyworkhrsonly += $val->qty;
+                                    }
                                     switch ($emp->paymode) {
                                         case 'M':
                                         case 'S':
@@ -4240,12 +4245,12 @@ class payrollcommon
                         //Allowance Setup
 
                         $nethrs = 0;
-                        $qry = "select allowance from allowsetup where empid=" . $emp->empid . " and date('" . $enddate . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1";
+                        $qry = "select allowance, type from allowsetup where empid=" . $emp->empid . " and date('" . $enddate . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1";
                         $result_allowancesetup = $this->coreFunctions->opentable($qry);
                         if ($result_allowancesetup) {
                             $hrsLegSP1 = 0;
 
-                            $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
+                            $nethrs = $qtyworkhrsonly - $qtyabsent - $qtylate - $hrsLegSP1;
                             if ($nethrs  > 0) {
                                 if ($salary != 0) {
 
@@ -4254,10 +4259,12 @@ class payrollcommon
                                     $qtyAllow = 0;
                                     foreach ($result_allowancesetup as $key => $aval) {
                                         $allow1 = $aval->allowance;
-
+                                        Logger('allowance:' . $aval->allowance);
+                                        Logger('type:' . $aval->type);
+                                        Logger('nethrs :' .  $nethrs);
                                         if ($allow1 != 0) {
                                             $qtyAllow = $qtyworking;
-                                            switch ($emp->paymode) {
+                                            switch ($aval->type) {
                                                 case 'M':
                                                     $allow2 = $allow1;
                                                     $allow3 = $allow3 + $allow2;

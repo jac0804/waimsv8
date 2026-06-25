@@ -469,14 +469,14 @@ class obapplication
         break;
       case 'initial':
         // $addcase = "if(submitdate is null,'INITIAL APPROVED','SUBMITTED')";
-        $filteroption = " where obapp.empid=" . $id . " and obapp.status='E' and (obapp.initialstatus2 = 'A' and obapp.initialstatus = 'A')  and obapp.initialapp is not null";
+        $filteroption = " where obapp.empid=" . $id . " and (obapp.status='E' and obapp.status2='E') and (obapp.initialstatus2 = 'A' and obapp.initialstatus = 'A')  and obapp.initialapp is not null";
         break;
       case 'approved':
 
         $filteroption = " where obapp.empid=" . $id . " and obapp.status='A'";
         break;
       case 'disapproved':
-        $filteroption = " where obapp.empid=" . $id . " and obapp.status='D'";
+        $filteroption = " where obapp.empid=" . $id . " and (obapp.status='D' or obapp.status2='D')";
         break;
       default:
         $isapprover = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$id]);
@@ -772,10 +772,10 @@ class obapplication
         $addcase = " case 
                       when obapp.status = 'E' and obapp.initialapp is null then 'ENTRY'
                       when obapp.status = 'E' and obapp.initialstatus = '' and obapp.initialapp is not null then 'FOR APPROVAL'
-                      when obapp.status = 'E' and obapp.initialstatus = 'A' then 'INITIAL APPROVED'
-                      when obapp.status = 'E' and obapp.initialstatus = 'D' then 'INITIAL DISAPPROVED'
+                      when obapp.status = 'E' and obapp.status2 = 'E' and obapp.initialstatus = 'A' then 'INITIAL APPROVED'
+                      when obapp.status = 'E' and obapp.status2 = 'E' and obapp.initialstatus = 'D' then 'INITIAL DISAPPROVED'
+                      when (obapp.status = 'D' or obapp.status2 = 'D') then 'DISAPPROVED'
                       when obapp.status = 'A' then 'APPROVED'
-                      when obapp.status = 'D' then 'DISAPPROVED'
                       END ";
         break;
 
@@ -1092,6 +1092,12 @@ class obapplication
       $end = date('Y-m-d', strtotime($head['dateid']));
     } else {
       $end = date('Y-m-d', strtotime($head['end']));
+    }
+
+    if ($head['type'] == 'Time-Out') {
+      if ($date < $data['scheddate']) {
+        return ['status' => false, 'msg' => "Applied date cannot be earlier than the scheduled date."];
+      }
     }
     if ($isupdate) {
       $type = $head['type'];

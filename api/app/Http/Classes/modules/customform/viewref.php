@@ -1484,6 +1484,7 @@ class viewref
         break;
       case 'ar':
       case 'cr':
+      case 'kr':
         if ($companyid == 55) {
           $url = "/module/lending/";
         } else {

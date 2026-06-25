@@ -104,6 +104,7 @@ class entrymechanictask
     }
     public function loaddata($config)
     {
+        $mechanicid=$config['params']['tableid'];
         $filtersearch = "";
         $searchfield  = ['head.docno', 'date(head.dateid)', 'jt.docno', 'jt.jobtitle', 'jobs.jobcode', 'jobs.description', 'cvh.mileage'];
 
@@ -129,7 +130,7 @@ class entrymechanictask
         left join jobthead as jt on jt.line = pt.jobid
         left join amtask as am on am.trno = head.trno and am.jobline = pt.line
         left join jobtask as jobs on jobs.line = am.laborline
-        where head.doc = 'AM'
+        where head.doc = 'AM' and am.mecline=$mechanicid
 
         union all
 
@@ -137,11 +138,12 @@ class entrymechanictask
         from glhead as head
         left join client on client.clientid = head.clientid
         left join cvehicle as cvh on cvh.clientid = client.clientid and cvh.line = head.carid
-        left join amjobs as pt on pt.trno = head.trno
+        left join hamjobs as pt on pt.trno = head.trno
         left join jobthead as jt on jt.line = pt.jobid
-        left join amtask as am on am.trno = head.trno and am.jobline = pt.line
+        left join hamtask as am on am.trno = head.trno and am.jobline = pt.line
         left join jobtask as jobs on jobs.line = am.laborline
-        where head.doc = 'AM'";
+        where head.doc = 'AM' and am.mecline=$mechanicid";
+        // var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }

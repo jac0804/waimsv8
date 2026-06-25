@@ -620,9 +620,13 @@ class re
 
     private function getstockselect($config)
     {
-        $sqlselect = "select stock.trno,stock.line,stock.acnoid,stock.checkno,format(stock.amount,2) as amount,stock.refx,stock.linex,
-                    stock.rctrno,stock.rcline,coa.acnoname,beh.docno as ref,stock.rcchecks,
-                    stock.rem,be.trno as betrno,be.line as beline,stock.clientid,c.clientname as client,'' as bgcolor,'' as errcolor ";
+        $sqlselect = "select stock.trno,stock.line,stock.acnoid,format(stock.amount,2) as amount,stock.refx,stock.linex,
+                    stock.rctrno,stock.rcline,coa.acnoname,beh.docno as ref,
+                    stock.rem,be.trno as betrno,be.line as beline,stock.clientid,c.clientname as client,'' as bgcolor,'' as errcolor,
+                    (select CONCAT(GROUP_CONCAT(rc.checkno separator '\\n\\r'),'\\n\\r',stock.rcchecks) as checkno from chequedetail as detail
+                    left join  hrcdetail as rc on rc.trno = detail.rctrno and rc.line = detail.rcline and detail.trno = rc.retrno
+                    where detail.trno = stock.trno
+                    and detail.line = stock.line) as rcchecks";
         return $sqlselect;
     }
 
@@ -670,6 +674,9 @@ class re
     public function stockstatus($config)
     {
         switch ($config['params']['action']) {
+            case 'testcall':
+                return ['msg'=>'hey', 'status' => true];
+                break;
             // case 'adddetail':
             //     return $this->additem('insert', $config);
             //     break;
@@ -690,6 +697,9 @@ class re
                 break;
             case 'getbouncedardetail':
                 return $this->getbouncedardetail($config);
+                break;
+            case 'lookuprcchecks':
+                return $this->replacementcheque($config);
                 break;
             default:
                 return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
@@ -728,6 +738,90 @@ class re
 
         return ['row' => $rows, 'status' => true, 'msg' => 'Added accounts successfully.'];
     } //end function
+    public function replacementcheque($config)
+    {
+        $data = $config['params']['rows'];
+        $trno = $config['params']['trno'];
+        $rows = [];
+
+        foreach ($data as $key => $value) {
+
+            $config['params']['data']['refx'] = $data[$key]['betrno'];
+            $config['params']['data']['linex'] = $data[$key]['beline'];
+            $config['params']['data']['trno'] = $trno;
+            $config['params']['data']['line'] = $data[$key]['reline'];
+            $config['params']['data']['rctrno'] = $data[$key]['trno'];
+            $config['params']['data']['rcline'] = $data[$key]['line'];
+
+            $return = $this->addreplamentcheque('insert', $config);
+            if ($return['status']) {
+                array_push($rows, $return['data'][0]);
+            }
+        } //end foreach
+        $data2 = $this->openstock($trno, $config);
+        return ['status' => true, 'reloadgriddata' => true, 'msg' => 'Serial has been added.', 'griddata' => ['inventory' => $data2]];
+    }
+    public function addreplamentcheque($action, $config)
+    {
+        $trno = $config['params']['trno'];
+
+        $refx = 0;
+        $linex = 0;
+        $rctrno = 0;
+        $rcline = 0;
+        $line = 0;
+
+        if (isset($config['params']['data']['refx'])) {
+            $refx = $config['params']['data']['refx'];
+        }
+        if (isset($config['params']['data']['linex'])) {
+            $linex = $config['params']['data']['linex'];
+        }
+
+        if (isset($config['params']['data']['rctrno'])) {
+            $rctrno = $config['params']['data']['rctrno'];
+        }
+        if (isset($config['params']['data']['rcline'])) {
+            $rcline = $config['params']['data']['rcline'];
+        }
+
+        if (isset($config['params']['data']['line'])) {
+            $line = $config['params']['data']['line'];
+        }
+        $data = [
+            'trno' => $trno,
+            'line' => $line,
+            'refx' => $refx,
+            'linex' => $linex,
+            'rctrno' => $rctrno,
+            'rcline' => $rcline
+        ];
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        }
+
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        $data['encodeddate'] = $current_timestamp;
+        $data['encodedby'] = $config['params']['user'];
+
+        if ($action == 'insert') {
+            if ($this->coreFunctions->sbcinsert('chequedetail', $data)) {
+                $config['params']['line'] = $line;
+
+                if ($refx != 0) {
+                    $this->coreFunctions->execqry("update hparticulars set retrno = " . $trno . " where trno =? and line =? ", "update", [$refx, $linex]);
+                }
+                $this->coreFunctions->execqry("update hrcdetail set retrno = $trno where trno =? and line =? ", "update", [$rctrno, $rcline]);
+                $checkno = $this->coreFunctions->getfieldvalue($this->stock, 'checkno', 'trno=? and line =?', [$rctrno, $rcline]);
+
+                $data2 =  $this->openstockline($config);
+                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $line . ' Check #: ' . $checkno);
+                return ['status' => true, 'msg' => 'Successfully saved.', 'data' => $data2];
+            } else {
+                return ['status' => false, 'msg' => 'Saving failed.', 'data' => []];
+            }
+        }
+    }
 
     public function diagram($config)
     {
@@ -1071,6 +1165,7 @@ class re
 
             if ($data[0]->refx != 0) {
                 $this->coreFunctions->sbcupdate('hparticulars', ['retrno' => 0], ['trno' => $data[0]->refx, 'line' => $data[0]->linex]);
+                $acno = $this->coreFunctions->getfieldvalue('coa', 'acno', 'acnoid=?', [$data[0]->acnoid]);
 
                 $this->sqlquery->setupdatebal($data[0]->refx, $data[0]->linex, $acno, $config, 1);
             }
@@ -1081,7 +1176,7 @@ class re
                 $this->coreFunctions->execqry("delete from chequedetail where trno=? and line=?", 'delete', [$trno, $line]);
                 $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
             }
-            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Check #: ' . $data[0]->checkno);
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Check #: ' . $data[0]->rcchecks);
         }
 
         ExitHere:

@@ -225,7 +225,14 @@ class autoservlookup
         $query = "select head.trno as keyid, head.docno as code, head.rem as description
         from pthead as head
         where head.doc = 'AK'
-        order by head.docno";
+
+        union all
+
+        select head.trno as keyid, head.docno as code, head.rem as description
+        from hpthead as head
+        where head.doc = 'AK'
+
+        order by code";
 
         $data = $this->coreFunctions->opentable($query);
 

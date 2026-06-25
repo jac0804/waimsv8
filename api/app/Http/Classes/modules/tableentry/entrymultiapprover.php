@@ -225,7 +225,34 @@ class entrymultiapprover
                     $mdoc = $this->coreFunctions->opentable("select doc,case when issupervisor = 1 then 'true' else 'false' end as issupervisor,case when isapprover = 1 then 'true' else 'false' end as isapprover from multiapprover where empid = " . $data[$key]['empid'] . " and line = '" . $data[$key]['line'] . "'");
                     if (!empty($mdoc)) {
                         if ($mdoc[0]->doc != $data[$key]['doc'] || $mdoc[0]->isapprover != $data[$key]['isapprover'] || $mdoc[0]->issupervisor != $data[$key]['issupervisor']) {
-                            $query = "select doc as value from pendingapp where clientid = '" . $data[$key]['approverid'] . "' and doc = '" . $mdoc[0]->doc . "' limit 1";
+                            $table = '';
+                            $filterjoin = " app.line = pen.line";
+                            switch ($data[$key]['doc']) {
+                                case 'OB':
+                                case 'INITIALOB':
+                                    $table = 'obapplication';
+                                    break;
+                                case 'OT':
+                                    $table = 'otapplication';
+                                    break;
+                                case 'CHANGESHIFT':
+                                    $table = 'changeshiftapp';
+                                    break;
+                                case 'LEAVE':
+                                    $table = 'leavetrans';
+                                    $filterjoin = " app.trno = pen.trno and app.line = pen.line";
+                                    break;
+                                case 'LOAN':
+                                    $table = 'loanapplication';
+                                    $filterjoin = " app.trno = pen.trno ";
+                                    break;
+                                case 'UNDERTIME':
+                                    $table = 'undertime';
+                                    break;
+                            }
+                            $query = "select pen.doc as value from $table as app
+                                      left join pendingapp as pen on $filterjoin
+                                      where app.empid = $tableid and  pen.clientid = '" . $data[$key]['approverid'] . "' and doc = '" . $mdoc[0]->doc . "'";
                             $pending = $this->coreFunctions->datareader($query);
                             if (!empty($pending)) {
                                 return ['status' => false, 'msg' => 'Cannot update approver setup because there are pending applications in ' . $mdoc[0]->doc];

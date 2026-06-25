@@ -587,7 +587,9 @@ class cash_receipt_book
   private function default_table_cols($layoutsize, $border, $font, $fontsize, $config)
   {
     $str = '';
+    $fontsize9 = '8';
     $fontsize10 = '10';
+    $fontsize12 = 12;
     $companyid = $config['params']['companyid'];
     if ($config['params']['dataparams']['reporttype'] == 1) {
 
@@ -605,28 +607,28 @@ class cash_receipt_book
           $str .= $this->reporter->endrow();
           break;
         default:
-          $str .= $this->reporter->begintable('1200');
+          $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('DATE', 100, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('POSTED <br> DATE', 100, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('DOCUMENT #', 120, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('PAYOR NAME', 160, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('ACCOUNT CODE', 100, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 160, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('REFFERENCE #', 120, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('DEBIT', 120, null, '', $border, 'TB', 'r', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('CREDIT', 120, null, '', $border, 'TB', 'r', $font, $fontsize10, 'B', '', '');
-          $str .= $this->reporter->col('PARTICULARS', 100, null, '', $border, 'TB', 'r', $font, $fontsize10, 'B', '', '');
+          $str .= $this->reporter->col('DATE', 80, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('POSTED DATE', 80, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('DOCUMENT #', 100, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('PAYOR NAME', 140, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('ACCOUNT CODE', 80, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 140, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('REFFERENCE #', 100, null, '', $border, 'TB', 'l', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('DEBIT', 100, null, '', $border, 'TB', 'r', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('CREDIT', 100, null, '', $border, 'TB', 'r', $font, $fontsize9, 'B', '', '');
+          $str .= $this->reporter->col('PARTICULARS', 80, null, '', $border, 'TB', 'r', $font, $fontsize9, 'B', '', '');
           $str .= $this->reporter->endrow();
           break;
       }
     } else {
-      $str .= $this->reporter->begintable('800', null, '', $border, '', '', '', '', '', '', '');
+      $str .= $this->reporter->begintable('1000', null, '', $border, '', '', '', '', '', '', '');
       $str .= $this->reporter->startrow('', null, '', $border, '', '', $font, 'B', 'b', '', '');
-      $str .= $this->reporter->col('ACCOUNT CODE', 100, null, '', $border, 'B', 'l', $font, $fontsize10, 'b', '', '');
-      $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 400, null, '', $border, 'B', 'c', $font, $fontsize10, 'b', '', '');
-      $str .= $this->reporter->col('DEBIT', 150, null, '', $border, 'B', 'r', $font, $fontsize10, 'b', '');
-      $str .= $this->reporter->col('CREDIT', 150, null, '', $border, 'B', 'r', $font, $fontsize10, 'b', '');
+      $str .= $this->reporter->col('ACCOUNT CODE', 150, null, '', $border, 'B', 'l', $font, $fontsize12, 'b', '', '');
+      $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 500, null, '', $border, 'B', 'c', $font, $fontsize12, 'b', '', '');
+      $str .= $this->reporter->col('DEBIT', 175, null, '', $border, 'B', 'r', $font, $fontsize12, 'b', '');
+      $str .= $this->reporter->col('CREDIT', 175, null, '', $border, 'B', 'r', $font, $fontsize12, 'b', '');
       $str .= $this->reporter->endrow();
     } //end if
     return $str;
@@ -639,7 +641,8 @@ class cash_receipt_book
     $username = $params['params']['user'];
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
-    $fontsize10 = '10';
+    $fontsize10 = '8';
+    $fontsize12 = '12';
     $str = '';
     $posttype = $params['params']['dataparams']['posttype'];
 
@@ -669,7 +672,7 @@ class cash_receipt_book
     if ($params['params']['dataparams']['reporttype'] == 1) {
 
 
-      $str .= $this->reporter->begintable('1200');
+      $str .= $this->reporter->begintable('1000');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center, $username, $params);
       $str .= $this->reporter->endrow();
@@ -679,10 +682,10 @@ class cash_receipt_book
 
       $str .= '<br><br>';
 
-      $str .= $this->reporter->begintable('1200', null, '', $border, '', '', $font, '', '', '', '');
+      $str .= $this->reporter->begintable('1000', null, '', $border, '', '', $font, '', '', '', '');
       $str .= $this->reporter->startrow();
 
-      $str .= $this->reporter->col('DETAILED CASH RECEIPT BOOK', null, null, '', $border, '', 'l', $font, '18', 'b', '', '');
+      $str .= $this->reporter->col('DETAILED CASH RECEIPT BOOK', null, null, '', $border, '', 'l', $font, '15', 'b', '', '');
       $str .= $this->reporter->endrow();
 
       $str .= $this->reporter->startrow();
@@ -698,13 +701,13 @@ class cash_receipt_book
           break;
       }
       $str .= $this->reporter->col('Center: ' . $params['params']['center'], null, null, '', $border, '', 'l', $font, $fontsize10, '', '');
-      $str .= $this->reporter->pagenumber('Page');
+      $str .= $this->reporter->pagenumber('Page', null, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
     } else {
 
 
-      $str .= $this->reporter->begintable('800');
+      $str .= $this->reporter->begintable('1000');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center, $username, $params);
       $str .= $this->reporter->endrow();
@@ -713,25 +716,25 @@ class cash_receipt_book
 
       $str .= '<br><br>';
 
-      $str .= $this->reporter->begintable('800', null, '', $border, '', '', $font, '', '', '', '');
+      $str .= $this->reporter->begintable('1000', null, '', $border, '', '', $font, '', '', '', '');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('SUMMARIZED CASH RECEIPT BOOK', null, null, '', $border, '', 'l', $font, '18', 'b', '', '');
       $str .= $this->reporter->endrow();
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col(date('M-d-Y', strtotime($params['params']['dataparams']['start'])) . ' TO ' . date('M-d-Y', strtotime($params['params']['dataparams']['end'])), null, null, '', $border, '', 'l', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col(date('M-d-Y', strtotime($params['params']['dataparams']['start'])) . ' TO ' . date('M-d-Y', strtotime($params['params']['dataparams']['end'])), null, null, '', $border, '', 'l', $font, $fontsize12, '', '', '');
       $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow(null, null, '', $border, '', 'l', $font, $fontsize10, '', '');
-      $str .= $this->reporter->col('Transaction: ' . strtoupper($post), null, null, '', $border, '', 'l', $font, $fontsize10, '', '');
+      $str .= $this->reporter->startrow(null, null, '', $border, '', 'l', $font, $fontsize12, '', '');
+      $str .= $this->reporter->col('Transaction: ' . strtoupper($post), null, null, '', $border, '', 'l', $font, $fontsize12, '', '');
       switch ($companyid) {
         case 17: //unihome
         case 39: //CBBSI
-          $str .= $this->reporter->col('Project: ' . $project, null, null, '', $border, '', 'l', $font, $fontsize10, '', '');
+          $str .= $this->reporter->col('Project: ' . $project, null, null, '', $border, '', 'l', $font, $fontsize12, '', '');
           break;
       }
-      $str .= $this->reporter->col('Center: ' . $params['params']['center'], null, null, '', $border, '', 'l', $font, $fontsize10, '', '');
-      $str .= $this->reporter->pagenumber('Page');
+      $str .= $this->reporter->col('Center: ' . $params['params']['center'], null, null, '', $border, '', 'l', $font, $fontsize12, '', '');
+      $str .= $this->reporter->pagenumber('Page', null, null, false, '1px solid ', '', 'R', $font, $fontsize12, '', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -783,10 +786,10 @@ class cash_receipt_book
       $totaldb = $totaldb + $value->debit;
       $totalcr = $totalcr + $value->credit;
 
-      $str .= $this->reporter->col($value->acno, 100, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->description, 400, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($debit, 150, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '', '', 0, '', 1);
-      $str .= $this->reporter->col($credit, 150, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '', '', 0, '', 1);
+      $str .= $this->reporter->col($value->acno, 150, null, '', '1px solid ', '', 'LT', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($value->description, 500, null, '', '1px solid ', '', 'LT', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($debit, 175, null, '', '1px solid ', '', 'RT', $font, $fontsize12, '', '', '', '', 0, '', 1);
+      $str .= $this->reporter->col($credit, 175, null, '', '1px solid ', '', 'RT', $font, $fontsize12, '', '', '', '', 0, '', 1);
       $str .= $this->reporter->endrow();
 
       if ($this->reporter->linecounter == $page) {
@@ -806,9 +809,9 @@ class cash_receipt_book
 
     $str .= $this->reporter->startrow('', null, '', '1px solid ', '', 'B', $font, 'B', '12', '', '');
     $str .= $this->reporter->col('', 100, null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL: ', 400, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), 150, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
-    $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), 150, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
+    $str .= $this->reporter->col('GRAND TOTAL: ', 400, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), 150, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '', '', 0, '', 1);
+    $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), 150, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '', '', 0, '', 1);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
@@ -816,20 +819,326 @@ class cash_receipt_book
     return $str;
   } //end fn
 
+  // private function default_CRBOOK_detailed($data, $params)
+  // {
+  //   $border = '1px solid';
+  //   $font = $this->companysetup->getrptfont($params['params']);
+  //   $fontsize9 = '9';
+  //   $fontsize10 = '10';
+  //   $fontsize12 = 12;
+  //   $layoutSize = 1200;
+  //   $this->reporter->linecounter = 0;
+
+  //   $companyid = $params['params']['companyid'];
+  //   $decimal_currency = $this->companysetup->getdecimal('currency', $params['params']);
+
+  //   $count = 11;
+  //   $page = 10;
+
+  //   if (empty($data)) {
+  //     return $this->othersClass->emptydata($params);
+  //   }
+
+  //   $str = '';
+  //   $str .= $this->reporter->beginreport();
+  //   // $str .= $this->reporter->beginreport($layoutSize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:5px');
+  //   $str .= $this->generateDefaultHeader($params);
+  //   $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize12, $params);
+
+  //   $totaldb = 0;
+  //   $totalcr = 0;
+  //   $docno = "";
+  //   $date = "";
+  //   $postdate = "";
+  //   $rem = "";
+  //   $cname = "";
+
+  //   foreach ($data as $key => $value) {
+  //     if ($docno == $value->docno) {
+  //       $docno = "";
+  //       $date = "";
+  //       $cname = "";
+  //       $postdate = "";
+  //       $rem = "";
+  //     } else {
+  //       if ($docno != "") {
+  //         $str .= $this->reporter->startrow();
+  //         $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->endrow();
+  //       }
+
+  //       $docno = $value->docno;
+  //       $date = $value->dateid;
+  //       $postdate = $value->postdate;
+  //       $cname = $value->clientname;
+  //       $rem = $value->rem;
+  //     } //end fn
+
+  //     $debit = number_format($value->debit, $decimal_currency);
+  //     if ($debit == 0) {
+  //       $debit = '-';
+  //     }
+  //     $credit = number_format($value->credit, $decimal_currency);
+  //     if ($credit == 0) {
+  //       $credit = '-';
+  //     }
+
+  //     $str .= $this->generateDefaultDetailPart($params, $docno, $cname, $date, $value->acno, $value->description, $value->ref, $debit, $credit, $postdate, $rem);
+
+  //     $totaldb = $totaldb + $value->debit;
+  //     $totalcr = $totalcr + $value->credit;
+
+  //     $docno = $value->docno;
+  //     $date = $value->dateid;
+  //     $cname = $value->clientname;
+
+
+  //     if ($this->reporter->linecounter == $page) {
+  //       $str .= $this->reporter->endtable();
+  //       $str .= $this->reporter->page_break();
+  //       $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+  //       if (!$allowfirstpage) {
+  //         $str .= $this->generateDefaultHeader($params);
+  //       }
+  //       $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize9, $params);
+
+  //       $page = $page + $count;
+  //     } //end if
+  //   } //end foreach
+
+  //   $str .= $this->reporter->startrow();
+  //   $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('GRAND TOTAL: ', '100', null, '', $border, 'T', 'c', $font, $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->endrow();
+  //   $str .= $this->reporter->endtable();
+  //   $str .= $this->reporter->endreport();
+
+  //   return $str;
+  // } //end fn
+
+  // private function default_CRBOOK_detailed($data, $params)
+  // {
+  //   $border = '1px solid';
+  //   $font = $this->companysetup->getrptfont($params['params']);
+  //   $fontsize9  = '8';
+  //   $fontsize10 = '10';
+  //   $fontsize12 = 12;
+  //   $layoutSize = 1000;
+  //   $this->reporter->linecounter = 0;
+
+  //   $companyid        = $params['params']['companyid'];
+  //   $decimal_currency = $this->companysetup->getdecimal('currency', $params['params']);
+
+  //   $linesPerPage = 60;
+  //   $currentLines = 0;
+
+  //   if (empty($data)) {
+  //     return $this->othersClass->emptydata($params);
+  //   }
+
+  //   $str = '';
+  //   $str .= $this->reporter->beginreport();
+  //   $str .= $this->generateDefaultHeader($params);
+  //   $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize9, $params);
+
+  //   $totaldb = 0;
+  //   $totalcr = 0;
+
+  //   // Subtotal 
+  //   $subtotaldb = 0;
+  //   $subtotalcr = 0;
+
+  //   $docno = "";
+  //   $date = "";
+  //   $postdate = "";
+  //   $rem = "";
+  //   $cname = "";
+
+  //   $colWidths = [
+  //     'date' => 80,
+  //     'postdate' => 80,
+  //     'docno' => 100,
+  //     'cname' => 140,
+  //     'acno' => 80,
+  //     'description' => 140,
+  //     'ref' => 100,
+  //     'debit' => 100,
+  //     'credit' => 100,
+  //     'rem' => 80,
+  //   ];
+  //   $charWidth = 6;
+
+  //   $estimateLines = function ($text, $colWidth) use ($charWidth) {
+  //     if (empty(trim($text))) return 1;
+  //     $charsPerLine = max(1, floor($colWidth / $charWidth));
+  //     return max(1, ceil(strlen($text) / $charsPerLine));
+  //   };
+
+  //   $getTallestLines = function ($docno, $cname, $date, $acno, $description, $ref, $debit, $credit, $postdate, $rem) use ($estimateLines, $colWidths) {
+  //     $lines = [
+  //       $estimateLines($date, $colWidths['date']),
+  //       $estimateLines($postdate, $colWidths['postdate']),
+  //       $estimateLines($docno, $colWidths['docno']),
+  //       $estimateLines($cname, $colWidths['cname']),
+  //       $estimateLines($acno, $colWidths['acno']),
+  //       $estimateLines($description, $colWidths['description']),
+  //       $estimateLines($ref, $colWidths['ref']),
+  //       $estimateLines($debit, $colWidths['debit']),
+  //       $estimateLines($credit, $colWidths['credit']),
+  //       $estimateLines($rem, $colWidths['rem']),
+  //     ];
+  //     return max($lines);
+  //   };
+
+  //   foreach ($data as $key => $value) {
+  //     if ($docno == $value->docno) {
+  //       $docno = "";
+  //       $date = "";
+  //       $cname = "";
+  //       $postdate = "";
+  //       $rem = "";
+  //     } else {
+  //       if ($docno != "") {
+  //         // Subtotal row 
+  //         $str .= $this->reporter->startrow();
+  //         $str .= $this->reporter->col('', 80,  null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('', 80,  null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('', 100, null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('', 80,  null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->col('SUB TOTAL:', 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //         $str .= $this->reporter->col(number_format($subtotaldb, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //         $str .= $this->reporter->col(number_format($subtotalcr, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //         $str .= $this->reporter->col('', 80,  null, '', $border, 'T', 'l', '', $fontsize9, '',  '', '');
+  //         $str .= $this->reporter->endrow();
+  //         $currentLines++;
+
+  //         // Reset subtotals for next document 
+  //         $subtotaldb = 0;
+  //         $subtotalcr = 0;
+
+  //         // Dashed separator
+  //         $str .= $this->reporter->startrow();
+  //         $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+  //         $str .= $this->reporter->endrow();
+  //         $currentLines++;
+  //       }
+
+  //       $docno = $value->docno;
+  //       $date = $value->dateid;
+  //       $postdate = $value->postdate;
+  //       $cname = $value->clientname;
+  //       $rem = $value->rem;
+  //     }
+
+  //     $debit = number_format($value->debit, $decimal_currency);
+  //     if ($debit == 0) $debit = '-';
+
+  //     $credit = number_format($value->credit, $decimal_currency);
+  //     if ($credit == 0) $credit = '-';
+
+  //     $rowLines = $getTallestLines($docno, $cname, $date, $value->acno, $value->description, $value->ref, $debit, $credit, $postdate, $rem);
+
+  //     if (($currentLines + $rowLines) > $linesPerPage) {
+  //       $str .= $this->reporter->endtable();
+  //       $str .= $this->reporter->page_break();
+  //       $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+  //       if (!$allowfirstpage) {
+  //         $str .= $this->generateDefaultHeader($params);
+  //       }
+  //       $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize9, $params);
+  //       $currentLines = 0;
+  //     }
+
+  //     $str .= $this->generateDefaultDetailPart($params, $docno, $cname, $date, $value->acno, $value->description, $value->ref, $debit, $credit, $postdate, $rem);
+
+  //     $currentLines += $rowLines;
+
+  //     $subtotaldb += $value->debit;
+  //     $subtotalcr += $value->credit;
+  //     $totaldb += $value->debit;
+  //     $totalcr += $value->credit;
+
+  //     $docno = $value->docno;
+  //     $date  = $value->dateid;
+  //     $cname = $value->clientname;
+  //   } // end foreach
+
+  //   // Subtotal for the last document
+  //   $str .= $this->reporter->startrow();
+  //   $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', 100, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->col('SUB TOTAL:', 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col(number_format($subtotaldb, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col(number_format($subtotalcr, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col('', 80,  null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+  //   $str .= $this->reporter->endrow();
+
+  //   // Grand Total row
+  //   $str .= $this->reporter->startrow();
+  //   $str .= $this->reporter->col('', '80',  null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '80',  null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '80',  null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->col('GRAND TOTAL: ', '100', null, '', $border, 'T', 'c', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+  //   $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+  //   $str .= $this->reporter->endrow();
+  //   $str .= $this->reporter->endtable();
+  //   $str .= $this->reporter->endreport();
+
+  //   return $str;
+  // } // end fn
+
   private function default_CRBOOK_detailed($data, $params)
   {
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize9  = '8';
     $fontsize10 = '10';
     $fontsize12 = 12;
-    $layoutSize = 1200;
+    $layoutSize = 1000;
     $this->reporter->linecounter = 0;
 
     $companyid = $params['params']['companyid'];
     $decimal_currency = $this->companysetup->getdecimal('currency', $params['params']);
 
-    $count = 51;
-    $page = 50;
+    $linesPerPage = 60;
+    $currentLines = 0;
 
     if (empty($data)) {
       return $this->othersClass->emptydata($params);
@@ -838,15 +1147,134 @@ class cash_receipt_book
     $str = '';
     $str .= $this->reporter->beginreport();
     $str .= $this->generateDefaultHeader($params);
-    $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize12, $params);
+    $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize9, $params);
 
     $totaldb = 0;
     $totalcr = 0;
+    $subtotaldb = 0;
+    $subtotalcr = 0;
+
     $docno = "";
     $date = "";
     $postdate = "";
     $rem = "";
     $cname = "";
+
+    $colWidths = [
+      'date' => 80,
+      'postdate' => 80,
+      'docno' => 100,
+      'cname' => 140,
+      'acno' => 80,
+      'description' => 140,
+      'ref' => 100,
+      'debit' => 100,
+      'credit' => 100,
+      'rem' => 80,
+    ];
+    $charWidth = 6;
+
+    $estimateLines = function ($text, $colWidth) use ($charWidth) {
+      if (empty(trim($text))) return 1;
+      $charsPerLine = max(1, floor($colWidth / $charWidth));
+      return max(1, ceil(strlen($text) / $charsPerLine));
+    };
+
+    $getTallestLines = function ($docno, $cname, $date, $acno, $description, $ref, $debit, $credit, $postdate, $rem) use ($estimateLines, $colWidths) {
+      $lines = [
+        $estimateLines($date, $colWidths['date']),
+        $estimateLines($postdate, $colWidths['postdate']),
+        $estimateLines($docno, $colWidths['docno']),
+        $estimateLines($cname, $colWidths['cname']),
+        $estimateLines($acno, $colWidths['acno']),
+        $estimateLines($description, $colWidths['description']),
+        $estimateLines($ref, $colWidths['ref']),
+        $estimateLines($debit, $colWidths['debit']),
+        $estimateLines($credit, $colWidths['credit']),
+        $estimateLines($rem, $colWidths['rem']),
+      ];
+      return max($lines);
+    };
+
+    // Reusable page break handler
+    $doPageBreak = function () use (
+      &$str,
+      &$currentLines,
+      $layoutSize,
+      $border,
+      $font,
+      $fontsize9,
+      $params
+    ) {
+      $str .= $this->reporter->endtable();
+      $str .= $this->reporter->page_break();
+      $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+      if (!$allowfirstpage) {
+        $str .= $this->generateDefaultHeader($params);
+      }
+      $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize9, $params);
+      $currentLines = 0;
+    };
+
+    // Subtotal row
+    $drawSubtotal = function () use (
+      &$str,
+      &$currentLines,
+      $border,
+      $font,
+      $fontsize9,
+      &$subtotaldb,
+      &$subtotalcr,
+      $decimal_currency,
+      $linesPerPage,
+      $doPageBreak
+    ) {
+      // Check if subtotal fits
+      if (($currentLines + 1) > $linesPerPage) {
+        $doPageBreak();
+      }
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('', 100, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('', 140, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->col('SUB TOTAL:', 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($subtotaldb, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+      $str .= $this->reporter->col(number_format($subtotalcr, $decimal_currency), 100, null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+      $str .= $this->reporter->col('', 80, null, '', $border, 'T', 'l', '', $fontsize9, '', '', '');
+      $str .= $this->reporter->endrow();
+      $currentLines++;
+    };
+
+    // Dashed separator
+    $drawDash = function () use (
+      &$str,
+      &$currentLines,
+      $font,
+      $fontsize9,
+      $linesPerPage,
+      $doPageBreak
+    ) {
+      // Check if dash fits
+      if (($currentLines + 1) > $linesPerPage) {
+        $doPageBreak();
+      }
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 140, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->col(' ', 80,  null, '', '1px dashed ', 'T', 'l', $font, $fontsize9, '', '', '5px');
+      $str .= $this->reporter->endrow();
+      $currentLines++;
+    };
 
     foreach ($data as $key => $value) {
       if ($docno == $value->docno) {
@@ -857,18 +1285,14 @@ class cash_receipt_book
         $rem = "";
       } else {
         if ($docno != "") {
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 120, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 160, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 160, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 120, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 120, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 120, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-          $str .= $this->reporter->endrow();
+          // Subtotal then dash, each with their own page break check
+          $drawSubtotal();
+
+          // Reset subtotals for next document
+          $subtotaldb = 0;
+          $subtotalcr = 0;
+
+          $drawDash();
         }
 
         $docno = $value->docno;
@@ -876,57 +1300,82 @@ class cash_receipt_book
         $postdate = $value->postdate;
         $cname = $value->clientname;
         $rem = $value->rem;
-      } //end fn
-
-      $debit = number_format($value->debit, $decimal_currency);
-      if ($debit == 0) {
-        $debit = '-';
       }
+
+      $debit  = number_format($value->debit,  $decimal_currency);
+      if ($debit  == 0) $debit  = '-';
       $credit = number_format($value->credit, $decimal_currency);
-      if ($credit == 0) {
-        $credit = '-';
+      if ($credit == 0) $credit = '-';
+
+      $rowLines = $getTallestLines(
+        $docno,
+        $cname,
+        $date,
+        $value->acno,
+        $value->description,
+        $value->ref,
+        $debit,
+        $credit,
+        $postdate,
+        $rem
+      );
+
+      // Check if data row fits
+      if (($currentLines + $rowLines) > $linesPerPage) {
+        $doPageBreak();
       }
 
-      $str .= $this->generateDefaultDetailPart($params, $docno, $cname, $date, $value->acno, $value->description, $value->ref, $debit, $credit, $postdate, $rem);
+      $str .= $this->generateDefaultDetailPart(
+        $params,
+        $docno,
+        $cname,
+        $date,
+        $value->acno,
+        $value->description,
+        $value->ref,
+        $debit,
+        $credit,
+        $postdate,
+        $rem
+      );
 
-      $totaldb = $totaldb + $value->debit;
-      $totalcr = $totalcr + $value->credit;
+      $currentLines += $rowLines;
+
+      $subtotaldb += $value->debit;
+      $subtotalcr += $value->credit;
+      $totaldb += $value->debit;
+      $totalcr += $value->credit;
 
       $docno = $value->docno;
-      $date = $value->dateid;
+      $date  = $value->dateid;
       $cname = $value->clientname;
+    } // end foreach
 
+    // Subtotal for the last document
+    $drawSubtotal();
 
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
-        if (!$allowfirstpage) {
-          $str .= $this->generateDefaultHeader($params);
-        }
-        $str .= $this->default_table_cols($layoutSize, $border, $font, $fontsize12, $params);
-
-        $page = $page + $count;
-      } //end if
-    } //end foreach
-
+    // Grand Total row 
+    if (($currentLines + 1) > $linesPerPage) {
+      $doPageBreak();
+    }
     $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+    $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
     $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('', '120', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('', '160', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('', '160', null, '', $border, 'T', 'c', '', '', '', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL: ', '120', null, '', $border, 'T', 'c', $font, $fontsize10, '', '', '');
-    $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), '120', null, '', $border, 'T', 'r', $font, $fontsize10, '', '', '');
-    $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), '120', null, '', $border, 'T', 'r', $font, $fontsize10, '', '', '');
-    $str .= $this->reporter->col('', '100', null, '', $border, 'T', 'c', '', '', '', '', '');
+    $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+    $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
+    $str .= $this->reporter->col('', '140', null, '', $border, 'T', 'c', '', '', '', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL: ', '100', null, '', $border, 'T', 'c', $font, $fontsize9, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalcr, $decimal_currency), '100', null, '', $border, 'T', 'r', $font, $fontsize9, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, '', $border, 'T', 'c', '', '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
 
     return $str;
-  } //end fn
+  } // end fn
+
 
   private function MSJOY_table_cols($layoutsize, $border, $font, $fontsize, $params)
   {
@@ -1356,7 +1805,7 @@ class cash_receipt_book
   {
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
-    $fontsize10 = '10';
+    $fontsize10 = '8';
 
     $str = '';
     $str .= $this->reporter->startrow();
