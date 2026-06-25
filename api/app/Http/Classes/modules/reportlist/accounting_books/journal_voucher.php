@@ -668,7 +668,8 @@ class journal_voucher
     $companyid = $params['params']['companyid'];
     $reporttype = $params['params']['dataparams']['reporttype'];
     if ($reporttype == 1) {
-      $str .= $this->reporter->begintable('1200');
+      $layoutsize = ($companyid == 1 || $companyid == 23) ? 1200 : 1050;
+      $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
 
       switch ($params['params']['companyid']) {
@@ -686,13 +687,13 @@ class journal_voucher
           break;
         default:
           $str .= $this->reporter->col('DOCUMENT #', 120, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 250, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('DATE', 110, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('ACCNT CODE', 100, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 200, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 220, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', ''); 
+          $str .= $this->reporter->col('DATE', 80, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('ACCNT CODE', 70, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 180, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('REFFERENCE #', 120, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('DEBIT', 150, null, '', '1px solid ', 'B', 'r', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('CREDIT', 150, null, '', '1px solid ', 'B', 'r', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('DEBIT', 130, null, '', '1px solid ', 'B', 'r', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('CREDIT', 130, null, '', '1px solid ', 'B', 'r', $font, $fontsize, 'B', '', '');
           break;
       }
     } else {
@@ -837,7 +838,7 @@ class journal_voucher
 
     $str .= $this->reporter->beginreport();
     $str .= $this->DEFAULT_JOURNAL_VOUCHER_HEADER($params);
-    $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
+    $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
     $totalardb = 0;
     $totalrcr = 0;
     $totaldb = 0;
@@ -848,6 +849,8 @@ class journal_voucher
     $rem = "";
     $db = 0;
     $cr = 0;
+    $docdb = 0;
+    $doccr = 0;
 
     foreach ($data as $key => $data) {
       if ($docno == $data->docno) {
@@ -857,7 +860,23 @@ class journal_voucher
         $rem = "";
       } else {
         if ($docno != "") {
+           //Sub total
           $str .= $this->reporter->startrow();
+          $str .= $this->reporter->addline();
+          $str .= $this->reporter->col('', 120, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('', 220, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('', 80, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('', 70, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('', 180, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+          $str .= $this->reporter->col('SUB TOTAL:', 100, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+          $str .= $this->reporter->col(number_format($docdb, $decimal_currency), 130, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+          $str .= $this->reporter->col(number_format($doccr, $decimal_currency), 130, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+          $str .= $this->reporter->endrow();
+          $docdb = 0;
+          $doccr = 0;
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->addline();
           $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
           $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
           $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
@@ -887,17 +906,20 @@ class journal_voucher
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($docno, 120, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($cname . "<br>" . $rem, 250, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($cname . "<br>" . $rem, 220, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
 
-      $str .= $this->reporter->col($date, 110, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($data->acno, 100, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($data->description, 200, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($date, 80, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($data->acno, 70, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($data->description, 180, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
       $str .= $this->reporter->col($data->ref, 120, null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($debit, 150, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($credit, 150, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($debit, 130, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($credit, 130, null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
 
       $totaldb = $totaldb + $data->debit;
       $totalcr = $totalcr + $data->credit;
+
+      $docdb = $docdb + $data->debit;
+      $doccr = $doccr + $data->credit;
 
       $docno = $data->docno;
       $date = $data->dateid;
@@ -906,7 +928,7 @@ class journal_voucher
 
       $str .= $this->reporter->endrow();
 
-      if ($this->reporter->linecounter == $page) {
+      if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
@@ -984,10 +1006,10 @@ class journal_voucher
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data->acno, 100, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($data->description, 400, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($debit, 150, null, '', '1px solid ', '', 'r', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($credit, 150, null, '', '1px solid ', '', 'r', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($data->acno, 100, null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($data->description, 400, null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($debit, 150, null, '', '1px solid ', '', 'r', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($credit, 150, null, '', '1px solid ', '', 'r', $font, $fontsize12, '', '', '');
 
       $totaldb = $totaldb + $data->debit;
       $totalcr = $totalcr + $data->credit;

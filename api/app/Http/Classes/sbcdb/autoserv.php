@@ -312,6 +312,7 @@ class autoserv
         $qry = "CREATE TABLE hawhead like awhead";
         $this->coreFunctions->sbccreatetable("hawhead", $qry);
         $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["carid"], "int(11) NOT NULL DEFAULT '0'", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["recomm"], "varchar(300) NOT NULL DEFAULT ''", 0);
     } //end function
 
 } // end class

@@ -523,7 +523,7 @@ class monthly_income_statement
         $reportdata = $this->MAXIPRO_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);
         break;
       case 29:
-        $this->style = 'width:1200px;max-width:1200px;';
+        $this->style = 'width:1410px;max-width:1410px;';
         $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1410'];
         $result = $this->default_query($config);
         $reportdata = $this->SBC_MONTHLY_INCOME_STATEMENT_LAYOUT($config, $result);

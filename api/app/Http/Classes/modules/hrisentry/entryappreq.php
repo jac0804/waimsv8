@@ -30,7 +30,7 @@ class entryappreq
   private $logger;
   private $othersClass;
   public $style = 'width:1100px;max-width:1100px;';
-  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid', 'expiry'];
+  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid', 'expiry','irno'];
   public $showclosebtn = false;
   private $hrislookup;
 
@@ -57,9 +57,10 @@ class entryappreq
 
   public function createTab($config)
   {
+   $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
 
-    $gridcols = ['action', 'pin', 'reqs', 'submitdate', 'expiry', 'notes', 'issubmitted'];
+    $gridcols = ['action', 'pin', 'reqs', 'submitdate','irno', 'expiry', 'notes', 'issubmitted'];
     $stockbuttons = ['save', 'delete'];
 
     foreach ($gridcols as $key => $value) {
@@ -81,14 +82,25 @@ class entryappreq
     $obj[0][$this->gridname]['columns'][$reqs]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$issubmitted]['align'] = "text-left";
 
+    $obj[0][$this->gridname]['columns'][$irno]['type'] = "coldel";
+
     if ($doc == 'EMPLOYEE') {
       $obj[0][$this->gridname]['columns'][$issubmitted]['type'] = "coldel";
       $obj[0][$this->gridname]['columns'][$submitdate]['type'] = "coldel";
       $obj[0][$this->gridname]['columns'][$expiry]['type'] = "date";
       $obj[0][$this->gridname]['columns'][$expiry]['readonly'] = false;
+      if($companyid ==68){ //JDA
+        $obj[0][$this->gridname]['columns'][$irno]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
+        $obj[0][$this->gridname]['columns'][$irno]['label'] = "No";
+        $obj[0][$this->gridname]['columns'][$irno]['type'] = "input";
+      }
     } else {
+
       $obj[0][$this->gridname]['columns'][$expiry]['type'] = "coldel";
+      
     }
+
+   
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -114,13 +126,21 @@ class entryappreq
     $data['notes'] = '';
     $data['pin'] = '';
     $data['issubmitted'] = 0;
+    $data['irno'] = '';
     $data['bgcolor'] = 'bg-blue-2';
     return $data;
   }
 
-  private function selectqry()
+  private function selectqry($config)
   {
-    $qry = "line,empid,reqs,date(submitdate) as submitdate,notes,pin,case when issubmitted=0 then 'false' else 'true' end as issubmitted,reqid,date(expiry) as expiry ";
+    $companyid = $config['params']['companyid'];
+    $submitdate="";
+    if($companyid==68){//jda
+      $submitdate=", if(submitdate is not null, date(submitdate), date(expiry)) as expiry";//date galing sa applicant ledger
+    }else{
+      $submitdate=",date(expiry) as expiry";
+    }
+    $qry = "line,empid,reqs,date(submitdate) as submitdate,notes,pin,case when issubmitted=0 then 'false' else 'true' end as issubmitted,reqid,irno $submitdate ";
 
     return $qry;
   }
@@ -144,6 +164,10 @@ class entryappreq
           $logexp = ', Expiry Date: ';
         } else {
           $config['params']['doc'] = strtoupper('app_req');
+        }
+
+        if ($data[$key]['expiry'] == "") {
+          $data2['expiry'] = NULL;
         }
         if ($data[$key]['line'] == 0) {
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
@@ -184,6 +208,9 @@ class entryappreq
       $logexp = ', Expiry Date: ';
     } else {
       $config['params']['doc'] = strtoupper('app_req');
+    }
+    if($data['expiry']==""){
+      $data['expiry'] = NULL;
     }
     if ($row['line'] == 0) {
       $data['submitdate'] = NULL;
@@ -260,9 +287,10 @@ class entryappreq
     if ($doc == 'EMPLOYEE') {
       $this->table = 'erequire';
     }
-    $select = $this->selectqry();
+    $select = $this->selectqry($config);
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . " where  empid=? and line=?";
+   
     $data = $this->coreFunctions->opentable($qry, [$empid, $line]);
     return $data;
   }
@@ -275,7 +303,7 @@ class entryappreq
     if ($doc == 'EMPLOYEE') {
       $this->table = 'erequire';
     }
-    $select = $this->selectqry();
+    $select = $this->selectqry($config);
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . "  where  empid=?  order by line";
     $data = $this->coreFunctions->opentable($qry, [$tableid]);
@@ -312,6 +340,7 @@ class entryappreq
       $config['params']['row']['submitdate'] = date('Y-m-d');
       $config['params']['row']['expiry'] = date('Y-m-d');
       $config['params']['row']['notes'] = '';
+      $config['params']['row']['irno'] = '';
       $config['params']['row']['issubmitted'] = 0;
       $config['params']['row']['bgcolor'] = 'bg-blue-2';
       $return = $this->save($config);

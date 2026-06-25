@@ -406,29 +406,42 @@ class sales_journal
     $reporttype = $params['params']['dataparams']['reporttype'];
     switch ($reporttype) {
       case 0:
-        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->col('', null, null, '', '1px solid  #d3d3d3', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('ACCOUNT CODE', null, null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('ACCOUNT CODE', '150', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('ACCOUNT DESCRIPTION', null, null, '', '1px solid ', 'B', 'L', $font, $fontsize10, 'B', '', '');
-        $str .= $this->reporter->col('DEBIT', null, null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
-        $str .= $this->reporter->col('CREDIT', null, null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('DEBIT', '150', null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('CREDIT', '150', null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->endrow();
         break;
 
       case 1:
-        $str .= $this->reporter->printline();
-        $str .= $this->reporter->begintable('800');
+        // $str .= $this->reporter->printline();
+        $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->col('', null, null, '', '1px solid  #d3d3d3', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DATE', '70', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
-        $str .= $this->reporter->col('DOC#', null, null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp;&nbsp;CLIENTNAME', '300', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('DATE', '90', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('DOC#', '150', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('CLIENTNAME', '300', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('REMARKS', null, null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('AMOUNT', '100', null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->endrow();
+
         break;
 
       case 2:
-        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->col('', null, null, '', '1px solid  #d3d3d3', 'B', 'l', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable('1000');
         switch ($params['params']['companyid']) {
           case 1: //vitaline
           case 23: //labsol cebu
@@ -451,7 +464,7 @@ class sales_journal
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->col('DATE', '100', null, '', '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
-        $str .= $this->reporter->col('POSTED <br> DATE', '75', null, '', '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col('POSTED DATE', '75', null, '', '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('DOCUMENT #', '100', null, '', '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('COSTUMER NAME', '175', null, '', '1px solid ', 'B', 'l', $font, $fontsize10, 'B', '', '');
         $str .= $this->reporter->col('A/R DEBIT', '75', null, '', '1px solid ', 'B', 'r', $font, $fontsize10, 'B', '', '');
@@ -501,7 +514,7 @@ class sales_journal
       case 0:
 
 
-        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center1, $username, $params);
         $str .= $this->reporter->endrow();
@@ -509,42 +522,40 @@ class sales_journal
 
 
         $str .= '<br/><br/>';
-        $str .= $this->reporter->begintable('800', null, '', '1px solid ', '', '', $font, '', '', '', '');
+        $str .= $this->reporter->begintable('1000', null, '', '1px solid ', '', '', $font, '', '', '', '');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('SUMMARIZED SALES JOURNAL', null, null, '', '1px solid ', '', 'l', $font, '18', 'B', '', '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(date('M-d-Y', strtotime($startdate)) . ' TO ' . date('M-d-Y', strtotime($enddate)), null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+        $str .= $this->reporter->col(date('M-d-Y', strtotime($startdate)) . ' TO ' . date('M-d-Y', strtotime($enddate)), null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
 
         $str .= $this->reporter->endrow();
 
-        $str .= $this->reporter->startrow(null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+        $str .= $this->reporter->startrow(null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         if ($center != '') {
-          $str .= $this->reporter->col('Center: ' . $center . ' - ' . $centername, null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+          $str .= $this->reporter->col('Center: ' . $center . ' - ' . $centername, null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         } else {
-          $str .= $this->reporter->col('Center: ' . 'ALL', null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+          $str .= $this->reporter->col('Center: ' . 'ALL', null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         }
 
         switch ($params['params']['companyid']) {
           case 17: //unihome
           case 39: //cbbsi
-            $str .= $this->reporter->col('Project: ' . $project, null, null, '', '1px solid', '', 'l', '', '10', '', '', '');
+            $str .= $this->reporter->col('Project: ' . $project, null, null, '', '1px solid', '', 'l', '', '12', '', '', '');
             break;
         }
-
-        $str .= $this->reporter->pagenumber('Page');
-
+        $str .= $this->reporter->pagenumber('Page', null, null, '', '1px solid', '', 'r', '', '12', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        $str .= $this->reporter->printline();
+        // $str .= $this->reporter->printline();
         break;
 
       case 1:
 
 
-        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center1, $username, $params);
         $str .= $this->reporter->endrow();
@@ -553,30 +564,30 @@ class sales_journal
 
         $str .= '<br/><br/>';
 
-        $str .= $this->reporter->begintable('800', null, '', '1px solid ', '', '', $font, '', '', '', '');
+        $str .= $this->reporter->begintable('1000', null, '', '1px solid ', '', '', $font, '', '', '', '');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('SALES JOURNAL SUMMARY', null, null, '', '1px solid ', '', 'l', $font, '18', 'B', '', '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(date('M-d-Y', strtotime($startdate)) . ' TO ' . date('M-d-Y', strtotime($enddate)), null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+        $str .= $this->reporter->col(date('M-d-Y', strtotime($startdate)) . ' TO ' . date('M-d-Y', strtotime($enddate)), null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
 
         $str .= $this->reporter->endrow();
 
-        $str .= $this->reporter->startrow(null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+        $str .= $this->reporter->startrow(null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         if ($center != '') {
-          $str .= $this->reporter->col('Center: ' . $center . ' - ' . $centername, null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+          $str .= $this->reporter->col('Center: ' . $center . ' - ' . $centername, null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         } else {
-          $str .= $this->reporter->col('Center: ' . 'ALL', null, null, '', '1px solid ', '', 'l', '', '10', '', '', '');
+          $str .= $this->reporter->col('Center: ' . 'ALL', null, null, '', '1px solid ', '', 'l', '', '12', '', '', '');
         }
 
         switch ($params['params']['companyid']) {
           case 17: //unihome
           case 39: //cbbsi
-            $str .= $this->reporter->col('Project: ' . $project, null, null, '', '1px solid', '', 'l', '', '10', '', '', '');
+            $str .= $this->reporter->col('Project: ' . $project, null, null, '', '1px solid', '', 'l', '', '12', '', '', '');
             break;
         }
-        $str .= $this->reporter->pagenumber('Page');
+        $str .= $this->reporter->pagenumber('Page', null, null, '', '1px solid', '', 'r', '', '12', '', '', '');
 
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -586,7 +597,7 @@ class sales_journal
       case 2:
 
 
-        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center1, $username, $params);
         $str .= $this->reporter->endrow();
@@ -595,7 +606,7 @@ class sales_journal
 
         $str .= '<br/><br/>';
 
-        $str .= $this->reporter->begintable('800', null, '', '1px solid ', '', '', $font, '', '', '', '');
+        $str .= $this->reporter->begintable('1000', null, '', '1px solid ', '', '', $font, '', '', '', '');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('DETAILED SALES JOURNAL', null, null, '', '1px solid ', '', 'l', $font, '18', 'B', '', '');
         $str .= $this->reporter->endrow();
@@ -620,10 +631,10 @@ class sales_journal
             break;
         }
 
-        $str .= $this->reporter->pagenumber('Page');
+        $str .= $this->reporter->pagenumber('Page', null, null, '', '1px solid', '', 'r', '', '10', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $str .= $this->reporter->printline();
+        // $str .= $this->reporter->printline();
     } // end switch
 
     return $str;
@@ -632,8 +643,8 @@ class sales_journal
   private function MSJOY_SALES_JOURNAL_SUMMARIZED($data, $params)
   {
     $str = '';
-    $count = 45;
-    $page = 45;
+    $count = 30;
+    $page = 30;
 
     $border = '1px solid';
     $fontsize10 = 10;
@@ -666,10 +677,10 @@ class sales_journal
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($value->acno, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->description, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($debit, null, null, '', '1px solid ', '', 'r', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($credit, null, null, '', '1px solid ', '', 'r', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($value->acno, '150', null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($value->description, null, null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($debit, '150', null, '', '1px solid ', '', 'r', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($credit, '150', null, '', '1px solid ', '', 'r', $font, $fontsize12, '', '', '');
       $str .= $this->reporter->endrow();
 
       $totaldb = $totaldb + $value->debit;
@@ -685,16 +696,16 @@ class sales_journal
         }
         $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
 
-        $str .= $this->reporter->begintable('800');
+        // $str .= $this->reporter->begintable('1000');
         $page = $page + $count;
       } //end if
     } //end for each
 
     $str .= $this->reporter->startrow('', null, '', '1px solid ', '', 'B', $font, 'B', '12', '', '');
-    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL: ', null, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col(number_format($totaldb, 2), null, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col(number_format($totalcr, 2), null, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL: ', null, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, 2), '150', null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalcr, 2), '150', null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -705,8 +716,8 @@ class sales_journal
   private function MSJOY_SALES_SUMMARY($data, $params)
   {
     $str = '';
-    $count = 61;
-    $page = 60;
+    $count = 31;
+    $page = 30;
 
     $border = '1px solid';
     $fontsize10 = 10;
@@ -721,9 +732,12 @@ class sales_journal
 
     $str .= $this->reporter->beginreport();
     $str .= $this->MSJOY_DEFAULT_HEADER($params);
-    $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
+    $str .= $this->MSJOY_table_cols('1000', $border, $font, $fontsize12, $params);
 
     $totalamt = 0;
+    $linecount = 0;
+    $remcolwidth = 370;
+    $charperline = intval($remcolwidth / 6);
 
     foreach ($data as $key => $value) {
       $amt = number_format($value->amt, 2);
@@ -732,18 +746,22 @@ class sales_journal
         $amt = '-';
       } //end if
 
+      // count how many lines rem will wrap into
+      $remlines = max(1, ceil(strlen($value->rem) / $charperline));
+
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($value->dateid, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->docno, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col('&nbsp;&nbsp;' . $value->clientname, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->rem, null, null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($amt, null, null, '', '1px solid ', '', 'r', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($value->dateid, '90', null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($value->docno, '150', null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($value->clientname, '300', null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($value->rem, null, null, '', '1px solid ', '', 'l', $font, $fontsize12, '', '', '');
+      $str .= $this->reporter->col($amt, '100', null, '', '1px solid ', '', 'r', $font, $fontsize12, '', '', '');
       $str .= $this->reporter->endrow();
 
       $totalamt += $value->amt;
+      $linecount += $remlines;
 
-      if ($this->reporter->linecounter == $page) {
+      if ($linecount >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
@@ -751,19 +769,18 @@ class sales_journal
         if (!$allowfirstpage) {
           $str .= $this->MSJOY_DEFAULT_HEADER($params);
         }
-        $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
+        $str .= $this->MSJOY_table_cols('1000', $border, $font, $fontsize12, $params);
 
-        $str .= $this->reporter->begintable('800');
         $page = $page + $count;
       } //end if
     } //end foreach
 
     $str .= $this->reporter->startrow('', null, '', '1px solid ', '', 'B', $font, 'B', '12', '', '');
-    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL: ', null, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col(number_format($totalamt, 2), null, null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col('', null, null, '', '1px solid ', 'T', 'c', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL: ', null, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalamt, 2), null, null, '', '1px solid ', 'T', 'r', $font, $fontsize12, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -773,8 +790,8 @@ class sales_journal
 
   private function MSJOY_SALES_JOURNAL_DETAILED($data, $params)
   {
-    $count = 41;
-    $page = 40;
+    $count = 51;
+    $page = 50;
     $str = '';
 
     $border = '1px solid';
@@ -790,7 +807,7 @@ class sales_journal
 
     $str .= $this->reporter->beginreport();
     $str .= $this->MSJOY_DEFAULT_HEADER($params);
-    $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
+    $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
     $totalrdb = 0;
     $totalrcr = 0;
     $docno = "";
@@ -800,6 +817,10 @@ class sales_journal
     $totalsuncr = 0;
     $totalrebate = 0;
     $rebate = "-";
+    $linecount = 0;
+    $clnamecolwidth = 175;
+    $sunacctcolwidth = 150;
+    $charperline = intval($clnamecolwidth / 6); // approx chars per line based on fontsize10
 
     foreach ($data as $key => $value) {
       $getrebate = $this->coreFunctions->opentable(
@@ -841,6 +862,7 @@ class sales_journal
           $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
           $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
           $str .= $this->reporter->endrow();
+          $linecount++;
         }
         $docno = $value->docno;
         $date = $value->dateid;
@@ -880,6 +902,12 @@ class sales_journal
           $docno = $value->doc == 'SJ' ? substr($value->docno, -5) : 'BS' . substr($value->docno, -8);
           break;
       }
+
+      // count wrapped lines for clientname
+      $clnamelines = max(1, ceil(strlen($value->clientname) / $charperline));
+      $sunacctlines = max(1, ceil(strlen($value->sunacctname) / intval($sunacctcolwidth / 6)));
+      $rowlines = max($clnamelines, $sunacctlines);
+
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($date, '75', null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
@@ -908,14 +936,16 @@ class sales_journal
       $clname = $value->clientname;
       $str .= $this->reporter->endrow();
 
-      if ($this->reporter->linecounter == $page) {
+      $linecount += $rowlines;
+
+      if ($linecount >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
         if (!$allowfirstpage) {
           $str .= $this->MSJOY_DEFAULT_HEADER($params);
         }
-        $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize12, $params);
+        $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
 
         $page = $page + $count;
       }

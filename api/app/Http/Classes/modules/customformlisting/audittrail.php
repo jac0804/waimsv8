@@ -179,7 +179,7 @@ class audittrail
 
     $module = "";
     $username = "";
-    if ($moduledoc != "") {
+    if ($modulename != "") {
       $module = " and cntnum.doc ='$doc'";
     }
 
@@ -405,6 +405,7 @@ class audittrail
     }
     // $data = $this->coreFunctions->opentable($qry);
     // return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data];
+
   }
 
 
@@ -488,8 +489,8 @@ class audittrail
     }
 
     $str = "";
-    $font =  "Century Gothic";
-    $fontsize = "11";
+    $font =  "Arial";
+    $fontsize = "10";
     $border = "1px solid ";
     $layoutsize = 800;
     $str .= $this->reporter->begintable($layoutsize);
@@ -521,9 +522,10 @@ class audittrail
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Module Name', '100', null, false, $border, 'BTRL', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Username', '100', null, false, $border, 'BTRL', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Task', '200', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Activity', '200', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Username', '80', null, false, $border, 'BTRL', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Task', '100', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Doc No.', '120', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Activity', '300', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Date', '100', null, false, $border, 'BTRL', 'C', $font, $fontsize, 'B', '', '');
     // $str .= $this->reporter->printline();
     $str .= $this->reporter->endrow();
@@ -534,9 +536,10 @@ class audittrail
   public function reportdefaultlayout($config)
   {
     $str = "";
-    $data = json_decode(json_encode($this->coreFunctions->opentable($this->thisquery($config))), true);
-    $font =  "Century Gothic";
-    $fontsize = "11";
+    $SQL = $this->thisquery($config);
+    $data = json_decode(json_encode($this->coreFunctions->opentable($SQL)), true);
+    $font =  "Arial";
+    $fontsize = "10";
     $border = "1px solid ";
     $count = 13;
     $page = 14;
@@ -549,9 +552,10 @@ class audittrail
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col($data[$i]['master'], '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data[$i]['userid'], '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data[$i]['task'], '200', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data[$i]['oldversion'], '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['userid'], '80', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['task'], '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['docno'], '120', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['oldversion'], '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['dateid'], '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();

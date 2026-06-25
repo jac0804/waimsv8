@@ -98,6 +98,11 @@ class earning_and_deduction_report
   {
     $center = $config['params']['center'];
     $username = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    if ($companyid == 68) {
+      return $this->jda_Layout($config);
+    }
 
     return $this->reportDefaultLayout($config);
   }
@@ -116,11 +121,16 @@ class earning_and_deduction_report
     $end = $config['params']['dataparams']['end'];
 
     $filter = "";
-    if ($divid != 0 && $divname != '') $filter .= " and e.divid='" . $divid . "' ";
-    if ($deptid != 0 && $deptname != '') $filter .= " and e.deptid='" . $deptid . "' ";  //e.dept
-    if ($sectid != 0 && $sectname != '') $filter .= " and e.sectid='" . $sectid . "' "; //e.orgsection
-    if ($tpaygroup != "") $filter .= " and e.paygroup='" . $tpaygroup . "' ";
-    if ($earndedid != "") $filter .= " and ss.acnoid='" . $earndedid . "' ";
+    if ($divid != 0 && $divname != '')
+      $filter .= " and e.divid='" . $divid . "' ";
+    if ($deptid != 0 && $deptname != '')
+      $filter .= " and e.deptid='" . $deptid . "' ";  //e.dept
+    if ($sectid != 0 && $sectname != '')
+      $filter .= " and e.sectid='" . $sectid . "' "; //e.orgsection
+    if ($tpaygroup != "")
+      $filter .= " and e.paygroup='" . $tpaygroup . "' ";
+    if ($earndedid != "")
+      $filter .= " and ss.acnoid='" . $earndedid . "' ";
 
     $query = "select a.empname,
     a.idno,a.empid, 
@@ -147,6 +157,65 @@ class earning_and_deduction_report
     return $this->coreFunctions->opentable($query);
   }
 
+  public function reportDefault2($config)
+  {
+    $divid = $config['params']['dataparams']['divid'];
+    $deptid = $config['params']['dataparams']['deptid'];
+    $sectid = $config['params']['dataparams']['sectid'];
+    $divname = $config['params']['dataparams']['divname'];
+    $deptname = $config['params']['dataparams']['deptname'];
+    $sectname = $config['params']['dataparams']['sectname'];
+    $tpaygroup = $config['params']['dataparams']['tpaygroup'];
+    $earndedid = $config['params']['dataparams']['earndedid'];
+    $start = $config['params']['dataparams']['start'];
+    $end = $config['params']['dataparams']['end'];
+
+    $filter = "";
+    if ($divid != 0 && $divname != '')
+      $filter .= " and e.divid='" . $divid . "' ";
+    if ($deptid != 0 && $deptname != '')
+      $filter .= " and e.deptid='" . $deptid . "' ";
+    if ($sectid != 0 && $sectname != '')
+      $filter .= " and e.sectid='" . $sectid . "' ";
+    if ($tpaygroup != "")
+      $filter .= " and e.paygroup='" . $tpaygroup . "' ";
+    if ($earndedid != "")
+      $filter .= " and ss.acnoid='" . $earndedid . "' ";
+
+    $query = "select a.docno,date(a.dateid) as dateid,
+      a.empname,date(a.effdate) as effdate,a.amt, a.idno,
+      a.balance as bal,sum(a.amortization) as amortization, quincena,a.codename
+      from(
+      select ss.docno,ss.dateid,
+      emp.client as idno,
+      concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname,
+      ss.effdate,ss.amt,ss.balance,ss.amortization,
+      ss.amortization as quincena,pa.codename
+      from standardsetup as ss
+      left join employee as e on ss.empid=e.empid
+      left join client as emp on emp.clientid=e.empid
+      left join paccount as pa on pa.line=ss.acnoid
+      left join standardtrans as str on str.trno=ss.trno
+      where date(ss.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
+      union all
+      select ss.docno,ss.dateid,
+      emp.client as idno,
+      concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname,ss.effdate,
+      ss.amt,ss.balance,ss.amortization,
+      ss.amortization as quincena,pa.codename
+      from standardsetupadv as ss
+      left join employee as e on ss.empid=e.empid
+      left join client as emp on emp.clientid=e.empid
+      left join paccount as pa on pa.line=ss.acnoid
+      left join standardtrans as str on str.trno=ss.trno
+      where date(ss.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
+      ) as a
+      group by docno,a.dateid,idno,empname,a.effdate, quincena,a.amt,a.balance,a.codename
+      order by empname;";
+
+    return $this->coreFunctions->opentable($query);
+  }
+
   private function displayHeader($config)
   {
 
@@ -165,8 +234,8 @@ class earning_and_deduction_report
     $start = $config['params']['dataparams']['start'];
     $end = $config['params']['dataparams']['end'];
     $earnded = $config['params']['dataparams']['earnded'];
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
 
     $str = '';
     $layoutsize = '1000';
@@ -266,6 +335,139 @@ class earning_and_deduction_report
     $str .= $this->reporter->col('', '150px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
     $str .= $this->reporter->col('Grand Total&nbsp;&nbsp;&nbsp;', '450px', null, false, $border, 'TB', 'R', $font, $font_size, '', '', '');
     $str .= $this->reporter->col(number_format($total, 2), '200px', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  private function jda_displayHeader($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $division = $config['params']['dataparams']['divname'];
+    $dept = $config['params']['dataparams']['deptname'];
+    $sect = $config['params']['dataparams']['sectname'];
+    $tpaygroup = $config['params']['dataparams']['tpaygroup'];
+    $start = $config['params']['dataparams']['start'];
+    $end = $config['params']['dataparams']['end'];
+    $earnded = $config['params']['dataparams']['earnded'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+
+    $str = '';
+    $layoutsize = '1000';
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('EARNING/DEDUCTION REPORT', null, null, false, $border, '', 'C', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Date From: <b>' . $start . '</b> To: <b>' . $end . '</b>', null, null, false, $border, '', 'C', $font, '13', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Division: <b>' . ($division == '' ? 'ALL COMPANY' : $division) . '</b>&nbsp;&nbsp;&nbsp;Department: <b>' . ($dept == '' ? 'ALL DEPARTMENTS' : $dept) . '</b>&nbsp;&nbsp;&nbsp;Section: <b>' . ($sect == '' ? 'ALL SECTIONS' : $sect) . '</b>', null, null, false, $border, '', 'C', $font, '13', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Pay Group: ' . ($tpaygroup == '' ? 'All Paygroup' : $tpaygroup), null, null, false, $border, '', 'C', $font, '13', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('<b>Account Name: ' . ($earnded == '' ? 'ALL ACCOUNTS' : $earnded) . '</b>', null, null, false, $border, '', 'L', $font, '13', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('D O C N O', '150', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('I D  N O.', '150', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('E M P L O Y E E &nbsp N A M E', '300', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('E A R N I N G/D E D U C T I O N', '250', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('A M O U N T', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  public function jda_Layout($config)
+  {
+    $result = $this->reportDefault2($config);
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $count = 53;
+    $page = 53;
+    $layoutsize = '1000';
+
+    $str = '';
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->jda_displayHeader($config);
+
+    $total = 0;
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->begintable($layoutsize);
+      // $amt = $data->amt + ($data->db-$data->cr);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->docno, '150', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->idno, '150', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->empname, '300', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->codename, '250', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->amt != 0 ? number_format($data->amt, 2) : '-', '150', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->endrow();
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        $str .= $this->jda_displayHeader($config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $page = $page + $count;
+      }
+      $total += $data->amt;
+    }
+
+    $str .= $this->reporter->col('', '150px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '150px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '300', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Grand Total&nbsp;&nbsp;&nbsp;', '250', null, false, $border, 'TB', 'RT', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col(number_format($total, 2), '150', null, false, $border, 'TB', 'RT', $font, $font_size, 'B', '', '');
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endtable();

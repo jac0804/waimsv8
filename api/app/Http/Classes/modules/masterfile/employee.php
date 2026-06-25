@@ -228,7 +228,7 @@ class employee
   public function createTab2($access, $config)
   {
     $systemtype = $this->companysetup->getsystemtype($config['params']);
-
+    $companyid = $config['params']['companyid'];
     $ar = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewar']];
     $ap = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewap']];
     if ($systemtype == "FAMS" || $systemtype == "ATI") {
@@ -257,6 +257,12 @@ class employee
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryempassets', 'label' => 'ASSETS']];
       $tab_issueitem = $this->tabClass->createtab($tab, []);
       $return['ISSUED ITEMS'] = ['icon' => 'fa fa-history', 'tab' => $tab_issueitem];
+    }
+
+    if($companyid==68){//JDA
+      $tab = ['tableentry' => ['action' => 'hrisentry', 'lookupclass' => 'entryappreq', 'label' => 'REQUIREMENTS']];
+      $requirements = $this->tabClass->createtab($tab, []);
+      $return['REQUIREMENTS'] = ['icon' => 'fa fa-history', 'tab' => $requirements];
     }
 
     $return['USER ACCOUNT'] = ['icon' => 'fa fa-user', 'customform' => $user];

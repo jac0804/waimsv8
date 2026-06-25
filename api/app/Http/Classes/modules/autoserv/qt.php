@@ -48,7 +48,7 @@ class qt
     private $stockselect;
     private $sbcscript;
 
-    private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'address', 'tax', 'carid'];
+    private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'address', 'tax', 'carid', 'recomm'];
 
     private $except = ['trno', 'dateid', 'due'];
     private $blnfields = [];
@@ -249,7 +249,7 @@ class qt
     public function createtabbutton($config)
     {
 
-        $tbuttons = ['addvehicle','addjob']; //deleteallitem
+        $tbuttons = ['addvehicle', 'addjob']; //deleteallitem
         $obj = $this->tabClass->createtabbutton($tbuttons);
         return $obj;
     }
@@ -474,7 +474,6 @@ class qt
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
         $data = [];
-        $info = [];
         if ($isupdate) {
             unset($this->fields[1]);
             unset($head['docno']);
@@ -496,25 +495,14 @@ class qt
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
+
         if ($isupdate) {
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-            $info['trno'] = $head['trno'];
-            $info['kmno'] = $head['kmno'];
-            $info['complaints'] = $head['rem1'];
-            $info['recomm'] = $head['porem'];
         } else {
             $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
-            // $this->othersClass->getcreditinfo($config, $this->head);
-
-            $info = [];
-            $info['trno'] = $head['trno'];
-            $info['kmno'] = $head['kmno'];
-            $info['complaints'] = $head['rem1'];
-            $info['recomm'] = $head['porem'];
-            $this->coreFunctions->sbcinsert('cntnuminfo', $info);
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
         }
     } // end function
@@ -759,14 +747,14 @@ class qt
     {
         $trno = $config['params']['trno'];
         if ($post) {
-            $qry = "insert into hpthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
+            $qry = "insert into hqthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
         select trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser
-        from pthead as head
+        from qthead as head
         where head.trno=? limit 1";
         } else {
-            $qry = "insert into pthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
+            $qry = "insert into qthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
         select trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser
-        from hpthead as head
+        from hqthead as head
         where head.trno=? limit 1";
         }
         $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);

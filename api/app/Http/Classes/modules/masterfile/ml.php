@@ -284,8 +284,7 @@ class ml
     $qryselect = "select  client.client as docno,client.clientid, client.clientname, ifnull(client.addr, '') as addr,ifnull(client.tin, '') as tin,
     ifnull(client.fax, '') as fax,ifnull(client.mobile, '') as mobile,ifnull(client.email, '') as email,ifnull(client.contact, '') as contact,
     
-    client.client, client.clientname, client.addr, client.tin, client.tel,client.fax, 
-    client.mobile, client.email, client.contact,  client.iscustomer, client.ismechanic, client.isinactive,
+    client.client, client.tel,  client.iscustomer, client.ismechanic, client.isinactive,
     date(client.start) as start, client.status, client.area, client.province, client.region, client.picture,client.rate ";
 
     $qry = $qryselect . " from client
@@ -373,17 +372,13 @@ class ml
     $clientid = $config['params']['clientid'];
     $doc = $config['params']['doc'];
     $client = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$clientid]);
-    $qry = "select lahead.trno as value from lahead where client=?
+    $qry = "select amtask.trno as value from amtask where mecline=?
             union all 
-            select glhead.trno as value from glhead where clientid=?
+            select hamtask.trno as value from hamtask where mecline=?
             union all
-            select sohead.trno as value from sohead where client=?
+            select pttask.trno as value from pttask where mecline=?
             union all
-            select hsohead.trno  as value from hsohead where client=?
-            union all
-            select sohead.trno as value from sohead where agent=?
-            union all
-            select hsohead.trno  as value from hsohead where agent=? limit 1";
+            select hpttask.trno  as value from hpttask where mecline=? limit 1";
     $count = $this->coreFunctions->datareader($qry, [$client, $clientid, $client, $clientid, $client, $client, $client, $client]);
     if (($count != '')) {
       return ['clientid' => $clientid, 'status' => false, 'msg' => 'Already have transaction...'];
@@ -412,7 +407,9 @@ class ml
   {
     $companyid = $config['params']['companyid'];
     $this->logger->sbcviewreportlog($config);
-    $data = app($this->companysetup->getreportpath($config['params']))->generateResult($config);
+    // $data = app($this->companysetup->getreportpath($config['params']))->generateResult($config);
+    $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];

@@ -574,7 +574,7 @@ class issued_checks
     $str = '';
     $companyid = $config['params']['companyid'];
 
-    $str .= $this->reporter->begintable();
+    $str .= $this->reporter->begintable($layoutsize);
 
     switch ($companyid) {
       case 55: //afli
@@ -599,13 +599,13 @@ class issued_checks
         break;
       default:
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Supplier Name', '120', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Document #', '150', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Notes', '125', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Trans. Date', '105', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Check Info', '100', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Check Date', '100', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
-        $str .= $this->reporter->col('Amount', '100', '', false, '1px dashed', 'B', 'RT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Supplier Name', '150', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Document #', '188', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Notes', '156', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Trans. Date', '131', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Check Info', '125', '', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Check Date', '125', '', false, '1px dashed', 'B', 'CT', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('Amount', '125', '', false, '1px dashed', 'B', 'RT', $font, '',  'B', '', '', '');
         break;
     }
 
@@ -633,6 +633,8 @@ class issued_checks
     $username = $params['params']['user'];
     $project = isset($params['params']['dataparams']['dprojectname']) ? $params['params']['dataparams']['dprojectname'] : '';
 
+    $layoutWidth = ($companyid == 55 || $companyid == 46) ? '800' : '1000'; // Width
+
     switch ($isposted) {
       case 0:
         $ispostedstr = 'posted';
@@ -652,19 +654,16 @@ class issued_checks
 
     $str = '';
 
-
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable($layoutWidth);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->letterhead($center1, $username, $params);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-
-
     $str .= '<br/><br/>'; # new 
 
     # BEGIN TABLE 
-    $str .= $this->reporter->begintable('800', null, '', $border, '', '', $font, '', '', '', '');
+    $str .= $this->reporter->begintable($layoutWidth, null, '', $border, '', '', $font, '', '', '', '');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('ISSUED CHECKS', null, null, false, $border, '', '', $font, '15', 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -691,7 +690,7 @@ class issued_checks
     }
 
     $str .= $this->reporter->col('Transaction: ' . strtoupper($ispostedstr), null, null, false, $border, '', '', $font, '10', '', '', '');
-    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->pagenumber('Page', null, null, false, $border, '', 'R', $font, '10', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     # END TABLE
@@ -722,19 +721,21 @@ class issued_checks
     $cnt = count((array)$data);
     $cnt1 = 0;
 
+    // characters per line based on font size and column width
+    $charPerLine = 18;
+
     if (empty($data)) {
       return $this->othersClass->emptydata($params);
     }
 
-    $str .= $this->reporter->beginreport('800');
+    $layoutWidth = ($companyid == 55 || $companyid == 46) ? '800' : '1000';
+
+    $str .= $this->reporter->beginreport($layoutWidth);
 
     #header here
     $str .= $this->ISSUED_CHECKS_HEADER($params);
-
-    $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
+    $str .= $this->default_table_cols($layoutWidth, $border, $font, $fontsize10, $params);
     #header end
-
-    $str .= $this->reporter->begintable();
 
     foreach ($data as $key => $value) {
       $amtt = 0;
@@ -756,16 +757,17 @@ class issued_checks
           #subtotal
           $str .= $this->reporter->addline();
           $c = 0;
-        } // END IF 
+        } // END IF
 
-        $str .= $this->reporter->begintable();
+        $str .= $this->reporter->begintable($layoutWidth);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($value->clientname, '800', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col($value->clientname, $layoutWidth, '', false, $border, '', 'L', $font, '',  'B', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $str .= $this->reporter->begintable();
-      } // END IF 
+        $str .= $this->reporter->begintable($layoutWidth);
+      } // END IF
 
+      $str .= $this->reporter->begintable($layoutWidth);
       switch ($companyid) {
         case 55: //afli
           $str .= $this->reporter->startrow();
@@ -773,9 +775,9 @@ class issued_checks
           $str .= $this->reporter->col($value->docno, '100', '', false, $border, '', 'L', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($value->yourref, '100', '', false, $border, '', 'C', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($value->rem, '75', '', false, $border, '', 'L', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col(date('M-d-Y', strtotime($value->trdate)), '125', '', false, $border, '', 'L', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col(date('m-d-Y', strtotime($value->trdate)), '125', '', false, $border, '', 'L', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($value->chkinfo, '100', '', false, $border, '', 'L', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col(date('M-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'R', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col(date('m-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'R', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($amtt, '100', '', false, $border, '', 'R', $font, '',  '', '', '', '');
           $str .= $this->reporter->endrow();
           break;
@@ -785,34 +787,40 @@ class issued_checks
           $str .= $this->reporter->col('', '150', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($value->acnoname, '200', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($value->chkinfo, '100', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col(date('M-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col(date('m-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
           $str .= $this->reporter->col($amtt, '100', '', false, $border, '', 'RT', $font, '',  '', '', '', '');
           $str .= $this->reporter->endrow();
           break;
         default:
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '120', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col($value->docno, '150', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col($value->rem, '125', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col(date('M-d-Y', strtotime($value->trdate)), '105', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col($value->chkinfo, '100', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col(date('M-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
-          $str .= $this->reporter->col($amtt, '100', '', false, $border, '', 'RT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col('', '150', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col($value->docno, '188', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col($value->rem, '156', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col(date('m-d-Y', strtotime($value->trdate)), '131', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col($value->chkinfo, '125', '', false, $border, '', 'LT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col(date('m-d-Y', strtotime($value->chkdate)), '125', '', false, $border, '', 'CT', $font, '',  '', '', '', '');
+          $str .= $this->reporter->col($amtt, '125', '', false, $border, '', 'RT', $font, '',  '', '', '', '');
           $str .= $this->reporter->endrow();
           break;
       }
 
       $str .= $this->reporter->endtable();
 
-      $str .= $this->reporter->begintable('800');
+      // Dynamic line counter adjustment for wrapping rows
+      $notesLines = ceil(strlen($value->rem) / $charPerLine);
+      $chkLines   = ceil(strlen($value->chkinfo) / $charPerLine);
+      $extraLines = max($notesLines, $chkLines) - 1;
+      if ($extraLines > 0) {
+        $this->reporter->linecounter += $extraLines;
+      }
+
       $clientname = $value->clientname;
 
       $c = $c + $value->amount;
       $total = $total + $value->amount;
-      // fix issue check grand total
 
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
+      if ($this->reporter->linecounter >= $page) {
+        // $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
         #header here
@@ -820,13 +828,12 @@ class issued_checks
         if (!$allowfirstpage) {
           $str .= $this->ISSUED_CHECKS_HEADER($params);
         }
-        $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
-
+        $str .= $this->default_table_cols($layoutWidth, $border, $font, $fontsize10, $params);
         #header end
 
-        $str .= $this->reporter->begintable();
+        $str .= $this->reporter->begintable($layoutWidth);
         $page = $page + $count;
-      } # END IF linecounter
+      }
 
       $str .= $this->reporter->startrow();
       if ($cnt == $cnt1) {
@@ -844,40 +851,62 @@ class issued_checks
           $group = $value->clientname;
         } #end if
 
-
         $str .= $this->reporter->endtable();
-
-        $str .= $this->reporter->begintable('800');
-      } # end if
+        $str .= $this->reporter->begintable($layoutWidth);
+      }
 
       $str .= $this->reporter->endrow();
     } //end foreach
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '75', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    if ($c == 0) {
+    if ($layoutWidth == '800') {
+      $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '75', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
       $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-      $str .= $this->reporter->col('', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      if ($c == 0) {
+        $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'R', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col(number_format($c, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      }
     } else {
-      $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-      $str .= $this->reporter->col(number_format($c, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '188', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '156', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '131', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+      if ($c == 0) {
+        $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col('', '125', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Sub Total : ', '125', '', false, $border, '', 'R', $font, '',  'B', '', '', '');
+        $str .= $this->reporter->col(number_format($c, 2), '125', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      }
     }
     $str .= $this->reporter->endrow();
-    $str .= $this->reporter->begintable('800');
+
+    $str .= $this->reporter->begintable($layoutWidth);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '75', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '125', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Grand Total : ', '145', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
-
-    $str .= $this->reporter->col(number_format($total, 2), '120', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
-
+    if ($layoutWidth == '800') {
+      $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '75', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '100', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('Grand Total : ', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col(number_format($total, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+    } else {
+      $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '188', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '156', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '131', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('Grand Total : ', '125', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col(number_format($total, 2), '125', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+    }
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -1307,21 +1336,40 @@ class issued_checks
     $font_size = '10';
     $padding = '';
     $margin = '';
+    $companyid = $params['params']['companyid'];
+
+    $layoutWidth = ($companyid == 55 || $companyid == 46) ? '800' : '1000'; // Option width
 
     $str = '';
+    $str .= $this->reporter->begintable($layoutWidth);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '75', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '125', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'R', $font, '',  'b', '', '', '');
-    if ($c == 0) {
-      $str .= $this->reporter->col('0', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+    if ($layoutWidth == '800') {
+      $str .= $this->reporter->col('', '150', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '75', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '150', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'R', $font, '',  'b', '', '', '');
+      if ($c == 0) {
+        $str .= $this->reporter->col('0', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($c, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      }
     } else {
-      $str .= $this->reporter->col(number_format($c, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      $str .= $this->reporter->col('', '155', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '188', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '156', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '131', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', '125', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('Sub Total : ', '125', '', false, $border, '', 'R', $font, '',  'B', '', '', '');
+      if ($c == 0) {
+        $str .= $this->reporter->col('0', '125', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($c, 2), '125', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      }
     }
     $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     return $str;
   }

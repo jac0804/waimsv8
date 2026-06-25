@@ -674,9 +674,6 @@ class re
     public function stockstatus($config)
     {
         switch ($config['params']['action']) {
-            case 'testcall':
-                return ['msg'=>'hey', 'status' => true];
-                break;
             // case 'adddetail':
             //     return $this->additem('insert', $config);
             //     break;

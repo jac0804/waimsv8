@@ -203,7 +203,7 @@ class income_statement
     $a = 0;
 
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'R', $amt1, $amt1b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, [], 0, $amtgrp, $prev_incomegrp2, "");
-    $coa[] = array('acno' => '//666', 'acnoname' => '<b>NET SALES</b>', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt1b);
+    // $coa[] = array('acno' => '//666', 'acnoname' => '<b>NET SALES</b>', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'amt' => 0, 'detail' => 0, 'total' => $amt1b);
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'G', $amt1, $amt1b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, [], 0, $amtgrp, $prev_incomegrp2, "");
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'E', $amt2, $amt2b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, [], 0, $amtgrp, $prev_incomegrp2, "");
     $this->DEFAULT_PLANTTREE($coa, '\\\\', 'O', $amt3, $amt3b, $a, $start, $end, $center, $isposted, $cc, $filter, $company, [], 0, $amtgrp, $prev_incomegrp2, "");
@@ -2571,6 +2571,7 @@ class income_statement
     $font = $this->companysetup->getrptfont($filters['params']);
     $fontsize = '10';
     $fontsize11 = 11;
+    $border = '1px solid';
 
     $companyid = $filters['params']['companyid'];
     $decimal_currency = $this->companysetup->getdecimal('currency', $filters['params']);
@@ -2589,7 +2590,10 @@ class income_statement
       return $this->othersClass->emptydata($filters);
     }
 
-    $str .= $this->reporter->beginreport();
+    $layoutsize = 0;
+    ($companyid == 8) ?  $layoutsize = 800 : $layoutsize = 900;
+
+    $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->DEFAULT_HEADER($filters, $center);
     $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $filters, $center);
     $str .= $this->reporter->begintable();
@@ -2625,14 +2629,33 @@ class income_statement
           }
         }
       } else {
+        $isCategoryHeader = ($data[$i]['levelid'] == 1 && $data[$i]['detail'] == 0 && $data[$i]['total'] != 0 );
+
         $str .= $this->reporter->startrow();
         $indent = '5' * ($data[$i]['levelid'] * 3);
         $str .= $this->reporter->addline();
         $str .= $this->reporter->col($data[$i]['acnoname'], '580', null, false, '1px solid ', '', '', $font, $fontsize, '', '', '0px 0px 0px ' . $indent . 'px');
         $amt = $data[$i]['amt'];
-        $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, '1px solid ', '', 'r', $font, $fontsize,  '', '', '');
-        $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, 'B', '', '');
+
+        $totalLine = ($amt == 0 && $data[$i]['total'] != 0 && (!$isCategoryHeader || $data[$i]['cat'] == 'E' || $data[$i]['cat'] == 'O'))  ? 'B' : ''; //used by both Net Expense/Net Others
+        
+        $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, '1px solid ', $totalLine, 'r', $font, $fontsize,  '', '', '');
+        
+        if ($isCategoryHeader && ($data[$i]['cat'] == 'R' || $data[$i]['cat'] == 'X')){ //categ final total  will create the 4th column
+          $tborder = '4px double';    
+          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '120', null, false, $tborder, 'B', 'R', $font, $fontsize, 'B', '', '');
+        }else{
+          $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '120', null, false, $border, '', 'R', $font, $fontsize, '', '', ''); //empty 4th column
+        }
         $str .= $this->reporter->endrow();
+
+        if ($isCategoryHeader){
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', 'null', '20', false, $border,  '', 'r', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->endrow();
+        }
       }
 
       if ($this->reporter->linecounter == $page) {

@@ -343,6 +343,10 @@ class received_checks
       case 21: //kinggeorge
         $reportdata =  $this->kinggeorge_layout($config, $result);
         break;
+      case 29:
+        $this->reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+        $reportdata =  $this->SBC_RECIEVED_CHECKS_LAYOUT($config, $result);
+        break;
 
       default:
         $reportdata =  $this->DEFAULT_RECIEVED_CHECKS_LAYOUT($config, $result);
@@ -1114,6 +1118,284 @@ class received_checks
       $str .= $this->reporter->col('' . number_format($c, 2), '100', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '', '');
     }
     $str .= $this->reporter->endrow();
+    return $str;
+  }
+
+    private function SBC_RECEIVED_CHECKS_HEADER($params)
+  {
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $layoutsize = '1000';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+    $companyid = $params['params']['companyid'];
+    $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
+    $end = '';
+    if ($companyid == 19) { //housegem
+      $end = date("Y-m-d", strtotime($params['params']['dataparams']['end']));
+    } else {
+      $end = date("Y-m-d", strtotime($params['params']['dataparams']['due']));
+    }
+    $isposted = $params['params']['dataparams']['posttype'];
+    $checks = $params['params']['dataparams']['reporttype'];
+    $center = $params['params']['dataparams']['center'];
+    $center1 = $params['params']['center'];
+    $username = $params['params']['user'];
+
+    switch ($isposted) {
+      case 0:
+        $ispostedstr = 'posted';
+        break;
+      case 1:
+        $ispostedstr = 'unposted';
+      case 2:
+        $ispostedstr = 'all';
+        break;
+    }
+
+    if ($checks == 0) {
+      $checksstr = 'transaction date';
+    } else {
+      $checksstr = 'checkdate';
+    }
+
+    if ($center == '') {
+      $center = 'ALL';
+    }
+
+    $str = '';
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center1, $username, $params);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+
+    $str .= '<br/><br/>';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('RECEIVED CHECKS', null, null, false, $border, '', '', $font, '15', 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), null, null, false, $border, '', '', $font, '10', '', '', '');
+    $str .= $this->reporter->col('Date Base on : ' . strtoupper($checksstr), null, null, false, $border, '', '', $font, '10', '', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow(null, null, false, $border, '', '', $font, '10', '', '', '');
+    $str .= $this->reporter->col('Center: ' . $center, null, null, false, $border, '', '', $font, '10', '', '', '');
+    $str .= $this->reporter->col('Transaction: ' . strtoupper($ispostedstr), null, null, false, $border, '', '', $font, '10', '', '', '');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', '5', false, $border, '', 'C', $font, $font_size, 'B', '', '', '', '', '', '', '', '#808080');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', null, false, '1px solid', 'T', 'C', $font, $font_size, 'B', '', '', '', '', '', '', '', '#A0A0A0');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', null, false, '1px solid', 'T', 'C', $font, $font_size, 'B', '', '', '', '', '', '', '', '#A0A0A0');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', '5', false, $border, '', 'C', $font, $font_size, 'B', '', '', '', '', '', '', '', '#808080');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  private function sbc_table_cols($layoutsize, $border, $font, $fontsize, $config)
+  {
+    $str = '';
+    $companyid = $config['params']['companyid'];
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Customer Name', '300', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '', '600');
+    $str .= $this->reporter->col('Document #', '150', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Trans. Date', '125', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Check Info', '175', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Check Date', '100', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Amount', '150', '', false, '1px dashed', 'B', 'R', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  private function SBC_RECIEVED_CHECKS_LAYOUT($params, $data)
+  {
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $layoutsize = '1000';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $font_size = '10';
+    $fontsize11 = 11;
+    $padding = '';
+    $margin = '';
+
+    $companyid = $params['params']['companyid'];
+    $decimal_currency = $this->companysetup->getdecimal('currency', $params['params']);
+
+    $str = "";
+    $count = 41;
+    $page = 40;
+    $rowcount = 0;
+
+    $clientname = '';
+    $c = 0;
+    $c2 = 0;
+    $total = 0;
+
+    $cnt = count((array)$data);
+    $cnt1 = 0;
+
+    if (empty($data)) {
+      return $this->othersClass->emptydata($params);
+    }
+
+    $str .= $this->reporter->beginreport();
+
+    #header here
+    $str .= $this->SBC_RECEIVED_CHECKS_HEADER($params);
+    $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize11, $params);
+    #header end
+
+    foreach ($data as $key => $value) {
+      $cnt1 += 1;
+      if ($clientname != $value->clientname) {
+        if ($clientname != '') {
+          #subtotal here
+          $str .= $this->SBC_RECEIVED_CHECKS_SUBTOTAL($params, $c);
+          $rowcount++;
+          #subtotal end
+          $c = 0;
+        }
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($value->clientname, '1000', '', false, $border, '', 'LT', $font, '',  'B', '', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $rowcount ++;
+      }
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '300', '', false, $border, '', 'LT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col($value->docno, '150', '', false, $border, '', 'LT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->pridate)), '125', '', false, $border, '', 'LT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col($value->chkinfo, '175', '', false, $border, '', 'LT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->suppdate)), '100', '', false, $border, '', 'RT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col(number_format($value->amount, $decimal_currency), '150', '', false, $border, '', 'RT', $font, '',  '', '', '', '', '');
+
+      $clientname = $value->clientname;
+      $c = $c + $value->amount;
+      $c2 = $value->amount;
+      $total = $total + $c2;
+      $rowcount ++;
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      if ($rowcount >= $page) {
+        $str .= $this->reporter->page_break();
+        #header here
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->SBC_RECEIVED_CHECKS_HEADER($params);
+        }
+        $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize11, $params);
+        #header end
+        $page = $page + $count;
+      }
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      if ($cnt == $cnt1) {
+        if ($value->clientname == '') {
+          $group = 'NO GROUP';
+        } else {
+          #subtotal here
+          $str .= $this->SBC_RECEIVED_CHECKS_SUBTOTAL($params, $c);
+          #subtotal end
+          $rowcount ++;
+          $c = 0;
+          $group = $value->clientname;
+        } #end if
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      } # end if
+    } // end foreach
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '175', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+
+    if ($c == 0) {
+      $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+      $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'CT', $font, '',  'B', '', '', '', '');
+      $str .= $this->reporter->col(number_format($c, 2), '150', '', false, '1px dashed', 'T', 'RT', $font, '',  'I', '', '', '', '');
+    }
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '300', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '125', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '175', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Grand Total : ', '100', '', false, '1px dashed', 'T', 'RT', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col(number_format($total, 2), '150', '', false, '1px dashed', 'T', 'RT', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+    return $str;
+  } // end fn
+
+  private function SBC_RECEIVED_CHECKS_SUBTOTAL($params, $c)
+  {
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $layoutsize = '1000';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $str = '';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '200', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '125', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '', '');
+    $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'R', $font, '',  'B', '', '', '', '');
+
+    if ($c == 0) {
+      $str .= $this->reporter->col('', '125', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('' . number_format($c, 2), '125', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '', '');
+    }
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
     return $str;
   }
 }//end class

@@ -6474,6 +6474,53 @@ class subsidiary_ledger
   } // end fn
 
 
+  private function defaultSBC_detail_table_cols($layoutsize, $border, $font, $fontsize, $params)
+  {
+    $companyid = $params['params']['companyid'];
+    $str = '';
+    $layoutsize = 1000;
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+
+    $str .= $this->reporter->col('Transaction Date', '100', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Document#', '150', null, false, '1px solid', 'B', 'C', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Supplier/Customer', '260', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Particular', '220', null, false, '1px solid', 'B', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Debit', '85', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Credit', '85', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Balance', '100', null, false, '1px solid', 'B', 'R', $font, '10', 'B', '', '');
+
+
+    $str .= $this->reporter->endrow();
+    return $str;
+  }
+
+  private function defaultSBC_subtotal($params, $db, $cr, $bal, $companyid)
+  {
+    $str = '';
+    $fontsize = 11;
+
+    $font = $this->companysetup->getrptfont($params['params']);
+
+    $col3 = array();
+    array_push($col3, array('100', null, false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('150', null, false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('260', null,  false, '1px solid', '', 'L', $font, $fontsize));
+    array_push($col3, array('220', null, false, '1px solid', '', 'R', $font, $fontsize, 'B'));
+    array_push($col3, array('85', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+    array_push($col3, array('85', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+    array_push($col3, array('100', null, false, '1px solid', 'T', 'R', $font, $fontsize, 'B', '', '2px'));
+
+    $value2 = array('', '', '', 'SUB TOTAL : ', number_format($db, 2), number_format($cr, 2), number_format($bal, 2));
+
+    $str .= $this->reporter->row($col3, $value2);
+
+    return $str;
+  } // end fn
+
+
   public function SBC_DEFAULT_SUBSIDIARY_LEDGER_LAYOUT($params, $data)
   {
     $companyid = $params['params']['companyid'];
@@ -6481,12 +6528,12 @@ class subsidiary_ledger
     $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
     $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
 
-    $layoutsize = 800;
+    $layoutsize = 1000;
 
-        $project = $params['params']['dataparams']['dprojectname'];
-        if ($project != "") {
-          $projectid = $params['params']['dataparams']['projectid'];
-        }
+    $project = $params['params']['dataparams']['dprojectname'];
+    if ($project != "") {
+      $projectid = $params['params']['dataparams']['projectid'];
+    }
 
     $acno = $params['params']['dataparams']['contra'];
     $acnoid = $params['params']['dataparams']['acnoid'];
@@ -6506,26 +6553,24 @@ class subsidiary_ledger
       case 'O':
         $field = ' ifnull(sum(round(cr-db,2)),0) ';
         break;
-
       default:
         $field = ' ifnull(sum(round(db-cr,2)),0) ';
         break;
     }
 
     $filter = "";
-    
-      if ($acno != "ALL") {
-          $filter .= " and coa.acno='\\" . $acno . "'";
-      }
-    
-        if ($project != "") {
-          $filter .= " and head.projectid = '" . $projectid . "'";
-        }
-        if ($this->companysetup->getmultibranch($params['params'])) {
-          $center = $params['params']['dataparams']['center'];
-          $filter .= " and cntnum.center='" . $center . "' ";
-        }
 
+    if ($acno != "ALL") {
+      $filter .= " and coa.acno='\\" . $acno . "'";
+    }
+
+    if ($project != "") {
+      $filter .= " and head.projectid = '" . $projectid . "'";
+    }
+    if ($this->companysetup->getmultibranch($params['params'])) {
+      $center = $params['params']['dataparams']['center'];
+      $filter .= " and cntnum.center='" . $center . "' ";
+    }
 
     if ($client != "") {
       $filter .= " and client.client='" . $client . "' ";
@@ -6538,30 +6583,29 @@ class subsidiary_ledger
     $fontsize = 10;
     $font = $this->companysetup->getrptfont($params['params']);
 
-
     $col = array(
-      array('60', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
-      array('160', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
-      array('170', null,  false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
-      array('160', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
-      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
-      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
+      array('100', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('150', null, false, '1px solid', '', 'C', $font, '10', '', '', '1px', '', ''),
+      array('260', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('220', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px', '', ''),
+      array('85', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
+      array('85', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
       array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px', '', ''),
     );
 
     $col2 = array(
-      array('60', null, false, '1px solid', '', 'C', $font, '10', 'B', '', '1px'),
-      array('160', null, false, '1px solid', '', 'L', $font, '10', 'B', '', '1px'),
-      array('170', null,  false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
-      array('160', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
-      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
-      array('75', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
+      array('100', null, false, '1px solid', '', 'C', $font, '10', 'B', '', '1px'),
+      array('150', null, false, '1px solid', '', 'C', $font, '10', 'B', '', '1px'),
+      array('260', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
+      array('220', null, false, '1px solid', '', 'L', $font, '10', '', '', '1px'),
+      array('85', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
+      array('85', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
       array('100', null, false, '1px solid', '', 'R', $font, '10', '', '', '1px'),
     );
 
     $str .= $this->reporter->beginreport();
     $str .= $this->headerlabel($params);
-    $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
+    $str .= $this->defaultSBC_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
 
     $totaldb = 0;
     $totalcr = 0;
@@ -6572,12 +6616,11 @@ class subsidiary_ledger
     $acno = '';
     $acno2 = '';
 
-
     if (!empty($data)) {
       foreach ($data as $key => $data_) {
         if ($acno2 != $data_->acno) { // account groupings
-          if ($acno2 != '') { // subtotal for accounts 
-          $str .= $this->default_subtotal($params, $db, $cr, $bal, $companyid);
+          if ($acno2 != '') { // subtotal for accounts
+            $str .= $this->defaultSBC_subtotal($params, $db, $cr, $bal, $companyid);
             $db = 0;
             $cr = 0;
             $bal = 0;
@@ -6586,9 +6629,10 @@ class subsidiary_ledger
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->row($col2, $value2);
           $str .= $this->reporter->endrow();
+
+          $acno2 = $data_->acno; // ← moved inside loop
         }
-        //$bal = 0;
-        //for ($i = 0; $i < count($result); $i++) {
+
         if ($data_->docno == 'Beginning Balance') {
           $bal = $data_->begbal;
         } else {
@@ -6606,54 +6650,58 @@ class subsidiary_ledger
           $data_->begbal = $bal;
         }
 
-        //table
-            $str .= $this->reporter->addline();
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data_->dateid, '100', null, false, '1px solid', '', 'L', $font, $fontsize, '', '', '', '');
+        // estimate wrapped lines for long text columns
+        $clientlines = ceil(strlen($data_->clientname) / 50);
+        $remlines    = ceil(strlen($data_->rem)        / 45);
+        $extralines  = max($clientlines, $remlines);
+        if ($extralines < 1) $extralines = 1;
 
-            $str .= $this->reporter->col($data_->docno, '150', null, false, '1px solid', '', 'L', $font, $fontsize, '', '', '', '');
-
-
-            $str .= $this->reporter->col($data_->clientname, '180', null, false, '1px solid', '', 'L', $font, $fontsize, '', '', '', '');
-            $str .= $this->reporter->col($data_->rem, '170', null, false, '1px solid', '', 'L', $font, $fontsize, '', '', '', '', '');
-                $str .= $this->reporter->col(number_format($data_->db, 2), '75', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
-                $str .= $this->reporter->col(number_format($data_->cr, 2), '75', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
-                $str .= $this->reporter->col(number_format($data_->begbal, 2), '100', null, false, '1px solid', '', 'R', $font, $fontsize, '', '', '', '', 0, '', 1);
-            $totaldb += $data_->db;
-            $totalcr += $data_->cr;
-
-            $db += $data_->db;
-            $cr += $data_->cr;
-            $bal = $data_->begbal;
+        // count lines accurately including wrapping
+        for ($i = 0; $i < $extralines; $i++) {
+          $str .= $this->reporter->addline();
         }
 
-            if ($this->reporter->linecounter == $page) {
-              $str .= $this->reporter->endtable();
-              $str .= $this->reporter->printline();
-              $str .= $this->reporter->page_break();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data_->dateid,     '100', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->docno,      '150', null, false, '1px solid', '', 'CT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->clientname, '280', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data_->rem,        '220', null, false, '1px solid', '', 'LT', $font, $fontsize, '', '', '', '', '');
+        $str .= $this->reporter->col((isset($data_->db) && $data_->db != 0) ? number_format($data_->db, 2) : '-',         '85', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+        $str .= $this->reporter->col((isset($data_->cr) && $data_->cr != 0) ? number_format($data_->cr, 2) : '-',         '85', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+        $str .= $this->reporter->col((isset($data_->begbal) && $data_->begbal != 0) ? number_format($data_->begbal, 2) : '-', '100', null, false, '1px solid', '', 'RT', $font, $fontsize, '', '', '', '', 0, '', 1);
+        $totaldb += $data_->db;
+        $totalcr += $data_->cr;
+        $db += $data_->db;
+        $cr += $data_->cr;
+        $bal = $data_->begbal;
 
-              $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
-              if (!$allowfirstpage) {
+        // page break check inside the loop
+        if ($this->reporter->linecounter >= $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->printline();
+          $str .= $this->reporter->page_break();
 
-                $str .= $this->headerlabel($params);
-              }
-              $str .= $this->default_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
-              $page = $page + $count;
-            } // end if
-        //} // end for loop
-        $acno2 = $data_->acno;
-    }
+          $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+          if (!$allowfirstpage) {
+            $str .= $this->headerlabel($params);
+          }
+          $str .= $this->defaultSBC_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
+          $page = $page + $count;
+        } // end if
 
-    $str .= $this->default_subtotal($params, $db, $cr, $bal, $companyid);
+      } // end foreach
+
+    } // end if (!empty($data))
+
+    $str .= $this->defaultSBC_subtotal($params, $db, $cr, $bal, $companyid);
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('</br></br></br>', $layoutsize, null, false, '1px dotted', 'T', 'L', $font, $fontsize);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-
     $prepared = $params['params']['dataparams']['prepared'];
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1000');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Prepared by: ', '100', null, false, '1px dotted', '', 'L', $font, $fontsize);
     $str .= $this->reporter->col('', '20', null, false, '1px dotted', '', 'L', $font, $fontsize);

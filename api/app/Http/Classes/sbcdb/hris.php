@@ -1996,6 +1996,8 @@ class hris
     $this->coreFunctions->sbcdropcolumngrp(["erequire", "arequire"], ["expirydate"]);
     $this->coreFunctions->sbcaddcolumngrp(["arequire", "erequire"], ["expiry"], "DATETIME DEFAULT NULL", 0);
     $this->coreFunctions->sbcaddcolumn("cljobs", "deptid", "INT(10) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["arequire","erequire"], ["irno"], "VARCHAR(200) NOT NULL DEFAULT ''", 1);
   } //end function
 
 } // end class
