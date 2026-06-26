@@ -205,8 +205,8 @@ class entryreplacementcheque
             'style' => 'width:800px;max-width:800px;'
         );
         $plotsetup = array(
-            'plottype' => 'tableentry',
-            'action' => 'addtogrid'
+            'plottype' => 'callback',
+            'action' => 'replacement'
         );
 
         // lookup columns
@@ -227,33 +227,5 @@ class entryreplacementcheque
         $data = $this->coreFunctions->opentable($qry);
 
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
-    }
-    public function lookupcallback($config)
-    {
-        $rows = $config['params']['rows'];
-        $trno = $config['params']['tableid'];
-
-        $returndata = [];
-        $status = true;
-        $msg = 'Successfully added.';
-        foreach ($rows  as $key2 => $value) {
-            $config['params']['row']['trno'] = $rows[$key2]['trno'];
-            $config['params']['row']['line'] = $rows[$key2]['line'];
-            $config['params']['row']['refx'] = $rows[$key2]['refx'];
-            $config['params']['row']['linex'] = $rows[$key2]['linex'];
-            $config['params']['row']['rctrno'] = $rows[$key2]['rctrno'];
-            $config['params']['row']['rcline'] = $rows[$key2]['rcline'];
-            $config['params']['row']['bgcolor'] = '';
-            $return = $this->save($config);
-            if ($return['status']) {
-                array_push($returndata, $return['row'][0]);
-            } else {
-                $status = false;
-                $msg = $return['msg'];
-            }
-        }
-        $path = 'App\Http\Classes\modules\receivable\\re';
-        $stock = app($path)->openstock($trno, $config);
-        return ['status' => $status, 'msg' => $msg, 'data' => $returndata, 'reloadgriddata' => ['inventory' => $stock]];
     }
 } //end class

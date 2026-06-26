@@ -194,7 +194,7 @@ class autoserv
         $this->coreFunctions->sbcdropcolumngrp(["jobtask"], ['istlabor']);
 
         $this->coreFunctions->sbcaddcolumngrp(["pttask"], ["laborline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
-        $this->coreFunctions->sbcaddcolumngrp(["ptstock","hptstock"], ["jobline", "taskline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["ptstock", "hptstock"], ["jobline", "taskline"], "int(10) unsigned NOT NULL DEFAULT '0'", 0);
 
 
 
@@ -301,7 +301,7 @@ class autoserv
         $this->coreFunctions->sbcaddcolumngrp(['awhead'], ['mileage'], "decimal(10,2) DEFAULT 0", 0);
 
         $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["taskline", "jobline"], "INT(11) NOT NULL DEFAULT '0'", 0);
-        $this->coreFunctions->sbcaddcolumngrp(['ptjobs','hptjobs', 'amjobs', 'hamjobs'], ['packagetrno'], "bigint(20) unsigned NOT NULL DEFAULT 0", 1);
+        $this->coreFunctions->sbcaddcolumngrp(['ptjobs', 'hptjobs', 'amjobs', 'hamjobs'], ['packagetrno'], "bigint(20) unsigned NOT NULL DEFAULT 0", 1);
 
         $this->coreFunctions->sbcdropcolumngrp(["amjobs", "hamjobs"], ['packageline']);
 
@@ -312,7 +312,8 @@ class autoserv
         $qry = "CREATE TABLE hawhead like awhead";
         $this->coreFunctions->sbccreatetable("hawhead", $qry);
         $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["carid"], "int(11) NOT NULL DEFAULT '0'", 0);
-        $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["recomm"], "varchar(300) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["recomm", "kmno"], "varchar(300) NOT NULL DEFAULT ''", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["tax"], "DECIMAL(18,0) NOT NULL DEFAULT '0'", 1);
     } //end function
 
 } // end class

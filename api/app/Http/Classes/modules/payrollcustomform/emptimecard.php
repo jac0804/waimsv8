@@ -672,6 +672,7 @@ class emptimecard
 
           if ($value->isuspended) {
             $value->bgcolor = "bg-orange";
+            $value->details = ' SUSPENDED: ' . $value->absdays . ' hrs ';
           } else {
 
             if ($value->absdays > 0) {

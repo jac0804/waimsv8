@@ -473,7 +473,7 @@ class ci
 
                 $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
                 $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
-                $arr_itemname = $this->reporter->fixcolumn([$itemname], '30', 0);
+                $arr_itemname = $this->reporter->fixcolumn([$itemname], '25', 0);
                 $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
                 $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
                 $maxrow = $this->othersClass->getmaxcolumn([$arr_uom, $arr_itemname, $arr_qty, $arr_amt, $arr_ext]);

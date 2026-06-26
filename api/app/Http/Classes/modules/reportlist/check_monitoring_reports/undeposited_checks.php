@@ -241,35 +241,13 @@ class undeposited_checks
         return $reportdata =  $this->CBBSI_UNDEPOSIT_CHECK_LISTING($config, $result);
         break;
       default:
-        $reportdata =  $this->VITALINE_UNDEPOSITED_CHECKS($config, $result);
+        $reportdata =  $this->DEFAULT_UNDEPOSITED_CHECKS($config, $result);
         break;
     }
     return $reportdata;
   }
 
-  private function DEFAULT_UNDEPOSITED_CHECKS_SUBTOTAL($params, $c)
-  {
-    $border = '1px solid';
-    $border_line = '';
-    $alignment = '';
-
-    $font = $this->companysetup->getrptfont($params['params']);
-    $font_size = '10';
-    $padding = '';
-    $margin = '';
-
-    $str = '';
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '200', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '125', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Sub Total : ', '130', '', false, $border, '', 'R', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('' . number_format($c, 2), '130', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
-    $str .= $this->reporter->endrow();
-    return $str;
-  }
-
+  
   private function DEFAULT_UNDEPOSITED_CHECKS($params, $data)
   {
 
@@ -328,12 +306,12 @@ class undeposited_checks
         $str .= $this->reporter->begintable();
       }
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '200', '', false, $border, '', 'l', $font, '',  '', '', '');
-      $str .= $this->reporter->col($value->docno, '150', '', false, $border, '', 'C', $font, '',  '', '', '');
-      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->trdate)), '125', '', false, $border, '', 'C', $font, '',  '', '', '');
-      $str .= $this->reporter->col($value->chkinfo, '100', '', false, $border, '', 'L', $font, '',  '', '', '', '', '');
-      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->chkdate)), '100', '', false, $border, '', 'R', $font, '',  '', '', '');
-      $str .= $this->reporter->col(number_format($value->amount, $decimal_currency), '125', '', false, $border, '', 'R', $font, '',  '', '', '');
+      $str .= $this->reporter->col('', '200', '20', false, $border, '', 'LT', $font, '',  '', '', '');
+      $str .= $this->reporter->col($value->docno, '150', '20', false, $border, '', 'CT', $font, '',  '', '', '');
+      $str .= $this->reporter->col(date('m-d-Y', strtotime($value->trdate)), '125', '20', false, $border, '', 'CT', $font, '',  '', '', '');
+      $str .= $this->reporter->col($value->chkinfo, '100', '20', false, $border, '', 'LT', $font, '',  '', '', '', '', '');
+      $str .= $this->reporter->col(date('m-d-Y', strtotime($value->chkdate)), '100', '20', false, $border, '', 'RT', $font, '',  '', '', '');
+      $str .= $this->reporter->col(number_format($value->amount, $decimal_currency), '125', '20', false, $border, '', 'RT', $font, '',  '', '', '');
       $str .= $this->reporter->endrow();
 
       $clientname = $value->clientname;
@@ -343,7 +321,7 @@ class undeposited_checks
 
       $str .= $this->reporter->addline();
 
-      if ($this->reporter->linecounter == $page) {
+      if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
@@ -383,37 +361,63 @@ class undeposited_checks
     } // end foreach
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '200', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '120', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '200', '20', false, $border, '', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '150', '20', false, $border, '', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '120', '20', false, $border, '', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '100', '20', false, $border, '', 'CT', $font, '',  'B', '', '', '');
 
     if ($c == 0) {
-      $str .= $this->reporter->col('', '100', '', false, $border, '', 'C', $font, '',  'B', '', '', '');
-      $str .= $this->reporter->col('', ' 130', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      $str .= $this->reporter->col('', '100', '20', false, $border, '', 'CT', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col('', ' 130', '20', false, '1px dashed', '', 'RT', $font, '',  'I', '', '', '');
     } else {
-      $str .= $this->reporter->col('Sub Total : ', '100', '', false, $border, '', 'R', $font, '',  'B', '', '', '');
-      $str .= $this->reporter->col(number_format($c, 2), '130', '', false, '1px dashed', 'T', 'R', $font, '',  'I', '', '', '');
+      $str .= $this->reporter->col('Sub Total : ', '100', '20', false, $border, '', 'RT', $font, '',  'B', '', '', '');
+      $str .= $this->reporter->col(number_format($c, 2), '130', '20', false, '1px dashed', 'T', 'RT', $font, '',  'I', '', '', '');
     }
 
     $str .= $this->reporter->endrow();
+    
+    $str .= '<br/><br/>';
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '200', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '150', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '120', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('', '100', '', false, '1px dashed', 'T', 'C', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Grand Total : ', '100', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '200', '20', false, '1px dashed', 'T', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '150', '20', false, '1px dashed', 'T', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '120', '20', false, '1px dashed', 'T', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '100', '20', false, '1px dashed', 'T', 'CT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Grand Total : ', '100', '20', false, '1px dashed', 'T', 'RT', $font, '',  'B', '', '', '');
 
-    $str .= $this->reporter->col(number_format($total, 2), '130', '', false, '1px dashed', 'T', 'R', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col(number_format($total, 2), '130', '20', false, '1px dashed', 'T', 'RT', $font, '',  'B', '', '', '');
 
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
-    $str .= $this->reporter->endreport();
     return $str;
   } // end fn
+
+  private function DEFAULT_UNDEPOSITED_CHECKS_SUBTOTAL($params, $c)
+  {
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $str = '';
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '200', '20', false, $border, '', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '150', '20', false, $border, '', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '125', '20', false, $border, '', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('', '100', '20', false, $border, '', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Sub Total : ', '130', '20', false, $border, '', 'RT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('' . number_format($c, 2), '130', '20', false, '1px dashed', 'T', 'RT', $font, '',  'I', '', '', '');
+    $str .= $this->reporter->endrow();
+    return $str;
+  }
+
 
   private function DEFAULT_UNDEPOSITED_CHECKS_HEADER($params)
   {
@@ -485,12 +489,12 @@ class undeposited_checks
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Customer Name', '200', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Document #', '150', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Trans. Date', '125', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Check Info', '100', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Check Date', '100', '', false, '1px dashed', 'B', 'L', $font, '',  'B', '', '', '');
-    $str .= $this->reporter->col('Amount', '125', '', false, '1px dashed', 'B', 'R', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Customer Name', '200', '20', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Document #', '150', '20', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Trans. Date', '125', '20', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Check Info', '100', '20', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Check Date', '100', '20', false, '1px dashed', 'B', 'LT', $font, '',  'B', '', '', '');
+    $str .= $this->reporter->col('Amount', '125', '20', false, '1px dashed', 'B', 'RT', $font, '',  'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -813,9 +817,9 @@ class undeposited_checks
       $str .= $this->reporter->col('', '100', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
       $str .= $this->reporter->col('', '150', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
       $str .= $this->reporter->col($value->docno, '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
-      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->trdate)), '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
+      $str .= $this->reporter->col(date('m-d-Y', strtotime($value->trdate)), '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
       $str .= $this->reporter->col($value->chkinfo, '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
-      $str .= $this->reporter->col(date('M-d-Y', strtotime($value->chkdate)), '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
+      $str .= $this->reporter->col(date('m-d-Y', strtotime($value->chkdate)), '125', '', false, '1px solid', '', 'l', $font, '',  '', '', '', '');
       $str .= $this->reporter->col(number_format($value->amount, $decimal_currency), '100', '', false, '1px solid', '', 'r', $font, '',  '', '', '', '');
       $clientname = $value->clientname;
 
@@ -968,6 +972,7 @@ class undeposited_checks
 
     $str .= $this->reporter->begintable();
 
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Post Date', '100', '', false, '1px dashed', 'B', 'l', $font, '',  'b', '', '', '');
     $str .= $this->reporter->col('Customer Name', '150', '', false, '1px dashed', 'B', 'l', $font, '',  'b', '', '', '');
     $str .= $this->reporter->col('Document #', '125', '', false, '1px dashed', 'B', 'l', $font, '',  'b', '', '', '');
@@ -1004,6 +1009,7 @@ class undeposited_checks
     $str .= $this->reporter->endrow();
     return $str;
   }
+
   private function cbbsi_table_cols($layoutsize, $border, $font, $fontsize, $config)
   {
     $str = '';
@@ -1187,4 +1193,6 @@ class undeposited_checks
     $str .= $this->reporter->endreport();
     return $str;
   } // end fn
+
+
 }//end class

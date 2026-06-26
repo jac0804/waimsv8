@@ -867,7 +867,7 @@ class customer
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
-        $fields = ['client', 'clientname', 'groupid',  'territory',  'type', 'dcategory', 'industry', 'tin', 'officialemail', 'officialwebsite', 'addr2'];
+        $fields = ['client', 'clientname', 'groupid',  'territory',  'type', 'dcategory', 'industry', 'description', 'tin', 'officialemail', 'officialwebsite', 'addr2'];
         break;
       case 34: //evergreen
         $fields = ['client', 'clientname', 'addr', 'start', 'clientstatus', 'email', 'tel', 'tel2'];
@@ -956,6 +956,9 @@ class customer
             data_set($col1, 'addr2.action', 'lookuprandom');
             data_set($col1, 'addr2.lookupclass', 'lookupsource');
             data_set($col1, 'addr2.class', 'sbccsreadonly');
+            data_set($col1, 'description.readonly', true);
+            data_set($col1, 'description.label', 'Industry Category');
+            data_set($col1, 'description.class', 'csdescription sbccsreadonly');
             $fields = ['terms', 'dvattype', 'dcur', 'dagentname', ['bal', 'isnocrlimit'], 'crtype', 'crdays', 'dparentcode', 'alias', 'region', 'dewt'];
             break;
           case 19: //housegem
@@ -1454,6 +1457,7 @@ class customer
         $data[0]['crlimit'] = '100000';
         $data[0]['terms'] = '50% DOWN;50%BEFORE DELIVERY';
         $data[0]['center'] = '';
+        $data[0]['description'] = '';
         break;
       case 19: //housegem
         $data[0]['isnocrlimit'] = '0';
@@ -1600,12 +1604,19 @@ class customer
 
     $addfields = "";
     $arball = 0;
-    if ($companyid == 55) { //AFLI Lending
-      $addfields = ", info.fname, info.mname, info.lname";
-    } else if ($companyid == 59) { //roosevelt
-      $getbal = $this->getbal($config);
-      $arball = isset($getbal[0]->bal) ? $getbal[0]->bal : 0;
-      $addfields = ", '' as dpricegroup,if(client.ar='0', '$arball',client.ar) as ar";
+    switch ($companyid) {
+      case 55:
+        $addfields = ", info.fname, info.mname, info.lname";
+        break;
+      case 59:
+        $getbal = $this->getbal($config);
+        $arball = isset($getbal[0]->bal) ? $getbal[0]->bal : 0;
+        $addfields = ", '' as dpricegroup,if(client.ar='0', '$arball',client.ar) as ar";
+        break;
+      case 10:
+      case 12:
+        $addfields = ", rc.description";
+        break;
     }
 
     $qryselect = "select " . $fields . ", ifnull(a.clientname, '') as agentname, ifnull(coa.acnoname, '') as acnoname, ifnull(ar.acnoname, '') as assetname,

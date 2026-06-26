@@ -48,7 +48,7 @@ class qt
     private $stockselect;
     private $sbcscript;
 
-    private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'address', 'tax', 'carid', 'recomm'];
+    private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'address', 'tax', 'carid', 'kmno', 'vattype'];
 
     private $except = ['trno', 'dateid', 'due'];
     private $blnfields = [];
@@ -137,7 +137,7 @@ class qt
         data_set($col1, 'docno.label', 'Transaction#');
         data_set($col1, 'client.lookupclass', 'customer');
 
-        $fields = [['dateid', 'terms'], 'due', ['cur', 'forex'], ['yourref', 'ourref']];
+        $fields = [['dateid', 'terms'], 'due', 'dvattype', ['cur', 'forex'], ['yourref', 'ourref']];
         $col2 = $this->fieldClass->create($fields);
 
         $fields = [['vehicle', 'year'], ['modelname', 'mileage'], ['licenseno', 'type'], ['motorno', 'chassisno'], ['submodel', 'engine'], ['transmission', 'mvno']];
@@ -178,19 +178,11 @@ class qt
         data_set($col3, 'type.required', false);
 
 
-        $fields = ['kmno', 'rem', 'rem1', 'porem'];
+        $fields = ['kmno', 'rem', 'porem'];
         $col4 = $this->fieldClass->create($fields);
         data_set($col4, 'rem.type', 'input');
         data_set($col4, 'rem.label', 'Customer Notes');
-
         data_set($col4, 'kmno.required', false);
-
-
-
-        data_set($col4, 'rem1.label', 'Complaints');
-        data_set($col4, 'rem1.type', 'ctextarea');
-        data_set($col4, 'rem1.readonly', false);
-        data_set($col4, 'rem1.class', 'csrem1');
         data_set($col4, 'porem.label', 'Recommendations');
         data_set($col4, 'porem.readonly', false);
 
@@ -214,9 +206,10 @@ class qt
         $data[0]['forex'] = 1;
         $data[0]['cur'] = $this->companysetup->getdefaultcurrency($params);
         $data[0]['tax'] = 0;
+        $data[0]['dvattype'] = '';
+        $data[0]['vattype'] = 'NON-VATABLE';
         $data[0]['carid'] = 0;
         $data[0]['kmno'] = '';
-        $data[0]['rem1'] = '';
         $data[0]['porem'] = '';
         return $data;
     }
@@ -362,30 +355,29 @@ class qt
          date_format(head.createdate,'%Y-%m-%d') as createdate,
          head.rem,
          head.tax,
+         head.vattype,
+         '' as dvattype,
          left(head.due,10) as due,
          client.groupid,
-         ifnull(hinfo.kmno,'') as kmno,ifnull(hinfo.complaints,'') as rem1,
-         ifnull(hinfo.recomm,'') as porem,
+         head.kmno,head.recomm as porem,
          ifnull(cvh.cmake,'') as vehicle,ifnull(model.model,'') as modelname,
          ifnull(cvh.licenseno,'') as licenseno,ifnull(cvh.motorno,'') as motorno,
          ifnull(model.sub_model,'') as submodel, ifnull(cvh.transmission,'') as transmission,
-          model.cryear as year,ifnull(cvh.mileage,0) as mileage,ifnull(model.crtype,'') as type,
-          ifnull(cvh.chassis,'') as chassisno,ifnull(cvh.carengine,'') as engine,
-          ifnull(cvh.mvno,'') as mvno, cvh.line";
+         model.cryear as year,ifnull(cvh.mileage,0) as mileage,ifnull(model.crtype,'') as type,
+         ifnull(cvh.chassis,'') as chassisno,ifnull(cvh.carengine,'') as engine,
+         ifnull(cvh.mvno,'') as mvno, cvh.line";
 
         $qry = $qryselect . " from " . $this->head . " as head
         left join $tablenum as num on num.trno = head.trno
         left join client on client.client = head.client
         left join cvehicle as cvh on cvh.clientid=client.clientid and cvh.line = head.carid
         left join cmodel as model on model.line=cvh.cmodelline
-        left join cntnuminfo as hinfo on hinfo.trno = head.trno
         where head.trno = ? and num.doc=? and num.center = ?
         union all " . $qryselect . " from " . $this->hhead . " as head
         left join $tablenum as num on num.trno = head.trno
         left join client on client.client = head.client
         left join cvehicle as cvh on cvh.clientid=client.clientid and cvh.line = head.carid
         left join cmodel as model on model.line=cvh.cmodelline
-        left join hcntnuminfo as hinfo on hinfo.trno = head.trno
         where head.trno = ? and num.doc=? and num.center=? ";
 
 
@@ -493,10 +485,10 @@ class qt
         } else {
             $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
         }
-        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['editby'] = $config['params']['user'];
-
+        $data['recomm'] = $head['porem'];
         if ($isupdate) {
+            $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
         } else {
             $data['doc'] = $config['params']['doc'];
@@ -692,7 +684,7 @@ class qt
     public function posttrans($config)
     {
         $trno = $config['params']['trno'];
-        $docno = $this->coreFunctions->datareader("select docno as value from pthead where trno = ?", [$trno]);
+        $docno = $this->coreFunctions->datareader("select docno as value from qthead where trno = ?", [$trno]);
         try {
             $this->posthead($config, true); // no need na mag return
             $this->postjobs($config, true);
@@ -702,7 +694,7 @@ class qt
             $date = $this->othersClass->getCurrentTimeStamp();
             $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 5];
             $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
-            $this->coreFunctions->execqry("delete from pthead where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from qthead where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from ptjobs where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from pttask where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from ptstock where trno=?", "delete", [$trno]);
@@ -719,7 +711,7 @@ class qt
     public function unposttrans($config)
     {
         $trno = $config['params']['trno'];
-        $docno = $this->coreFunctions->datareader("select docno as value from hpthead where trno = ?", [$trno]);
+        $docno = $this->coreFunctions->datareader("select docno as value from hqthead where trno = ?", [$trno]);
         try {
             $this->posthead($config, false);
             $this->postjobs($config, false);
@@ -728,7 +720,7 @@ class qt
 
             $data = ['postdate' => null, 'postedby' => '', 'statid' => 0];
             $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
-            $this->coreFunctions->execqry("delete from hpthead where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from hqthead where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from hptjobs where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from hpttask where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry("delete from hptstock where trno=?", "delete", [$trno]);
@@ -747,13 +739,13 @@ class qt
     {
         $trno = $config['params']['trno'];
         if ($post) {
-            $qry = "insert into hqthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
-        select trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser
+            $qry = "insert into hqthead (trno,doc,docno,rem,dateid,terms,cur,forex,yourref,ourref,client,clientname,address,tax,vattype,due,kmno,carid,createdate,recomm,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
+        select head.trno,head.doc,head.docno,head.rem,head.dateid,head.terms,head.cur,head.forex,head.yourref,head.ourref,head.client,head.clientname,head.address,head.tax,head.vattype,head.due,head.kmno,head.carid,head.createdate,head.recomm,head.createby,head.editdate,head.editby,head.viewdate,head.viewby,head.lockdate,head.lockuser
         from qthead as head
         where head.trno=? limit 1";
         } else {
-            $qry = "insert into qthead (trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
-        select trno,doc,docno,description,rem,dateid,createdate,createby,editdate,editby,viewdate,viewby,lockdate,lockuser
+            $qry = "insert into qthead (trno,doc,docno,rem,dateid,terms,cur,forex,yourref,ourref,client,clientname,address,tax,vattype,due,kmno,carid,createdate,recomm,createby,editdate,editby,viewdate,viewby,lockdate,lockuser)
+        select head.trno,head.doc,head.docno,head.rem,head.dateid,head.terms,head.cur,head.forex,head.yourref,head.ourref,head.client,head.clientname,head.address,head.tax,head.vattype,head.due,head.kmno,head.carid,head.createdate,head.recomm,head.createby,head.editdate,head.editby,head.viewdate,head.viewby,head.lockdate,head.lockuser
         from hqthead as head
         where head.trno=? limit 1";
         }

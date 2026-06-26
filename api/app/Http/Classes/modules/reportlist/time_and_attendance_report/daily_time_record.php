@@ -238,7 +238,7 @@ class daily_time_record
                           timecard.isnopbrkout,time(timecard.brk2ndout) as timeisnopbrkout,
                           timecard.isnopbrkin,time(timecard.brk2ndin) as timeisnopbrkin,
                           timecard.isnologout,time(timecard.actualout) as timeisnologout,
-                          timecard.isnologpin,timecard.isnologunder, r.isrestday,lr.status as leavestat, p.codename, timecard.lateoffset, ls.isnopay
+                          timecard.isnologpin,timecard.isnologunder, r.isrestday,lr.status as leavestat, p.codename, timecard.lateoffset, ls.isnopay, timecard.isuspended
                   FROM timecard 
                   LEFT JOIN employee AS emp ON emp.empid=timecard.empid
                   left join client as e on e.clientid = emp.empid
@@ -1541,6 +1541,10 @@ class daily_time_record
         }
       } else {
         $leave = '';
+      }
+
+      if ($data->isuspended) {
+        $absen = 'Suspended';
       }
 
       $timeisnologin = $data->timeisnologin == null ? '' : (new DateTime($data->timeisnologin))->format('h:i A');

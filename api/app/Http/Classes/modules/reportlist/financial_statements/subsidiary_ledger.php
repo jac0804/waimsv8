@@ -2023,7 +2023,7 @@ class subsidiary_ledger
     $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
     $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
 
-    if ($companyid == 8 || $companyid == 68) { //maxipro or jda
+    if ($companyid == 8 || $companyid == 68 || $companyid == 29) { //maxipro or jda or sbc
       $pLayoutSize = 1000;
     }
 
@@ -5350,7 +5350,7 @@ class subsidiary_ledger
   private function default_summary_table_cols($layoutsize, $border, $font, $fontsize, $params)
   {
     $str = '';
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable('1000');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Account Description', '600', null, false, '1px solid', 'B', 'L', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('Amount', '150', null, false, '1px solid', 'B', 'R', $font, '12', 'B', '', '');
@@ -6678,14 +6678,13 @@ class subsidiary_ledger
         // page break check inside the loop
         if ($this->reporter->linecounter >= $page) {
           $str .= $this->reporter->endtable();
-          $str .= $this->reporter->printline();
           $str .= $this->reporter->page_break();
 
           $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
           if (!$allowfirstpage) {
             $str .= $this->headerlabel($params);
           }
-          $str .= $this->defaultSBC_detail_table_cols($this->reportParams['layoutSize'], '', $font, $fontsize + 1, $params);
+          $str .= $this->defaultSBC_detail_table_cols($layoutsize, '', $font, $fontsize + 1, $params);
           $page = $page + $count;
         } // end if
 
@@ -6713,5 +6712,180 @@ class subsidiary_ledger
     return $str;
   }
 
-  public function SBC_SUBSIDIARY_LEDGER_SUMM_LAYOUT($params, $data) {}
+  private function summ_sbc_header($params)
+  {
+
+    $companyid = $params['params']['companyid'];
+    $isposted = $params['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
+    $font = $this->companysetup->getrptfont($params['params']);
+    $acno = $params['params']['dataparams']['contra'];
+    $acnoname = $params['params']['dataparams']['acnoname'];
+
+    $center1 = $params['params']['center'];
+    $username = $params['params']['user'];
+
+
+    if ($acnoname == "") {
+      $acnoname = "ALL";
+    } else {
+      $acnoname = $acno . ' - ' . $acnoname;
+    }
+
+    switch ($isposted) {
+      case 0:
+        $isposted = 'posted';
+        break;
+
+      case 1:
+        $isposted = 'unposted';
+        break;
+
+      case 2:
+        $isposted = 'ALL';
+        break;
+    }
+
+
+
+    if ($acnoname == "") {
+      $acnoname = "ALL";
+    } else {
+      $acnoname = $acno . ' - ' . $acnoname;
+    }
+
+    $str = '';
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center1, $username, $params);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('SUBSIDIARY LEDGER - SUMMARY', null, null, false, '1px solid ', '', 'L', $font, '15', 'B', '', '', '');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), null, null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'L', $font, '11', '', '', '');
+
+
+    $str .= $this->reporter->col('Transaction: ' . strtoupper($isposted), null, null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'L', $font, '11', '', '', '');
+    $str .= $this->reporter->col('Accounts: ' . strtoupper($acnoname), null, null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', $font, '11', '', '', '');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+
+  public function SBC_SUBSIDIARY_LEDGER_SUMM_LAYOUT($params, $data)
+  {
+    $companyid = $params['params']['companyid'];
+    $isposted = $params['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($params['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($params['params']['dataparams']['enddate']));
+    $acno = $params['params']['dataparams']['contra'];
+    $acnoname = $params['params']['dataparams']['acnoname'];
+    $client = $params['params']['dataparams']['client'];
+
+    $count = 60;
+    $page = 60;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '1000';
+
+    $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->summ_sbc_header($params);
+    $str .= $this->default_summary_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $params);
+    $str .= $this->reporter->begintable($layoutsize);
+
+    $amt = 0;
+    $totalamt = 0;
+    $cat = $this->coreFunctions->getfieldvalue('coa', 'cat', 'acno=?', [$acno]);
+    if (!empty($data)) {
+      for ($i = 0; $i < count($data); $i++) {
+        switch ($cat) {
+          case 'L':
+          case 'R':
+          case 'C':
+            $amt = ($data[$i]['begbal'] + $data[$i]['cr']) - $data[$i]['db'];
+            break;
+          default:
+            $amt = ($data[$i]['begbal'] + $data[$i]['db']) - $data[$i]['cr'];
+            break;
+        }
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data[$i]['acnoname'], '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($amt, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->endrow();
+        $this->reporter->linecounter++;
+
+        $totalamt += $amt;
+
+        if ($this->reporter->linecounter >= $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+
+          $str .= $this->summ_sbc_header($params);
+          $str .= $this->default_summary_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize + 1, $params);
+          $str .= $this->reporter->begintable($layoutsize);
+          $page = $page + $count;
+        }
+      }
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('GRAND TOTAL: ', '100', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalamt, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->endrow();
+    }
+
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('</br></br></br>', '1000', null, false, '1px dotted', 'T', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $prepared = $params['params']['dataparams']['prepared'];
+    $str .= $this->reporter->begintable('1000');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Prepared by: ', '100', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col('', '20', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col($prepared, '100', null, false, '1px solid', 'B', 'C', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->col('', '580', null, false, '1px dotted', '', 'L', $font, $fontsize, '', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
 }//end class

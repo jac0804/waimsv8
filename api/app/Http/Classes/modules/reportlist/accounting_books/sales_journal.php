@@ -331,7 +331,7 @@ class sales_journal
                       where " . $condition . " $filter
                       and date(head.dateid) between '" . $startdate . "' and '" . $enddate . "' and left(coa.alias, 2) not in ('ar','sa')
                       group by head.trno, head.dateid, head.docno, coa.acno, coa.acnoname, head.rem, client.clientname, cntnum.postdate, head.doc
-                      order by suncr,regcr";
+                      order by dateid, docno, tr";
             break;
         }
 
@@ -820,7 +820,15 @@ class sales_journal
     $linecount = 0;
     $clnamecolwidth = 175;
     $sunacctcolwidth = 150;
-    $charperline = intval($clnamecolwidth / 6); // approx chars per line based on fontsize10
+    $charperline = intval($clnamecolwidth / 6);
+
+    // subtotal per docno
+    $subdocno = "";
+    $subrdb = 0;
+    $subrcr = 0;
+    $subsundb = 0;
+    $subsuncr = 0;
+    $subrebate = 0;
 
     foreach ($data as $key => $value) {
       $getrebate = $this->coreFunctions->opentable(
@@ -845,6 +853,44 @@ class sales_journal
         $rebate = "-";
       } else {
         if ($docno != "") {
+          // print subtotal for previous docno before dashed line
+          $str .= $this->reporter->startrow();
+          switch ($params['params']['companyid']) {
+            case 1: //vitaline
+            case 23: //labsol cebu
+              $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+              $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col(number_format($subrebate, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              break;
+            default:
+              $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+              $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+              $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+              break;
+          }
+          $str .= $this->reporter->endrow();
+          $linecount++;
+
+          // reset subtotal
+          $subrdb = 0;
+          $subrcr = 0;
+          $subsundb = 0;
+          $subsuncr = 0;
+          $subrebate = 0;
+
           $str .= $this->reporter->startrow();
           switch ($params['params']['companyid']) {
             case 1: //vitaline
@@ -874,6 +920,7 @@ class sales_journal
           $rebate = '-';
         }
         $totalrebate = $totalrebate + $getrebate[0]->rebate;
+        $subrebate = $subrebate + $getrebate[0]->rebate;
       }
 
       $regdb = number_format($value->regdb, 2);
@@ -903,7 +950,7 @@ class sales_journal
           break;
       }
 
-      // count wrapped lines for clientname
+      // count wrapped lines for clientname and sunacctname
       $clnamelines = max(1, ceil(strlen($value->clientname) / $charperline));
       $sunacctlines = max(1, ceil(strlen($value->sunacctname) / intval($sunacctcolwidth / 6)));
       $rowlines = max($clnamelines, $sunacctlines);
@@ -931,6 +978,12 @@ class sales_journal
       $totalrdb = $totalrdb + $value->regdb;
       $totalrcr = $totalrcr + $value->regcr;
 
+      //subtotals per docno
+      $subrdb = $subrdb + $value->regdb;
+      $subrcr = $subrcr + $value->regcr;
+      $subsundb = $subsundb + $value->sundb;
+      $subsuncr = $subsuncr + $value->suncr;
+
       $docno = $value->docno;
       $date = $value->dateid;
       $clname = $value->clientname;
@@ -950,6 +1003,36 @@ class sales_journal
         $page = $page + $count;
       }
     } //end foreach
+
+    // print last subtotal
+    $str .= $this->reporter->startrow();
+    switch ($params['params']['companyid']) {
+      case 1: //vitaline
+      case 23: //labsol cebu
+        $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col(number_format($subrebate, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        break;
+      default:
+        $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+        $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+        $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+        break;
+    }
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow('', null, '', '1px solid ', '', 'B', $font, 'B', '12', '', '');
     switch ($params['params']['companyid']) {

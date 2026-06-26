@@ -698,12 +698,53 @@ class re
             case 'lookuprcchecks':
                 return $this->replacementcheque($config);
                 break;
+            case 'replacement':
+                return $this->addreplacement($config);
             default:
                 return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
                 break;
         }
     }
+    public function addreplacement($config)
+    {
+        $rows = $config['params']['rows'];
+        $trno = $config['params']['trno'];
+        $data = [];
+        $line = 0;
+        $status = true;
+        $msg = 'Successfully added.';
+        foreach ($rows  as $key2 => $value) {
+            $data['trno'] = $rows[$key2]['trno'];
+            $data['line'] = $rows[$key2]['line'];
+            $data['refx'] = $rows[$key2]['refx'];
+            $data['linex'] = $rows[$key2]['linex'];
+            $data['rctrno'] = $rows[$key2]['rctrno'];
+            $data['rcline'] = $rows[$key2]['rcline'];
 
+            $cheque = $this->coreFunctions->sbcinsert('chequedetail', $data);
+
+            if ($cheque) {
+                if ($data['refx'] != 0) {
+                    $this->coreFunctions->execqry("update hparticulars set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['refx'], $data['linex']]);
+                }
+                $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
+
+                $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
+                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $data['rcline'] . ' Check #: ' . $checkno);
+                $line = $data['line'];
+            } else {
+                $msg = 'Insert data failed';
+                $status = false;
+            }
+        }
+        $qry = "select head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
+                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,'' as bgcolor from chequedetail as detail
+				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
+				left join hrchead as head on head.trno = d.trno
+				where detail.trno = " . $trno . " and detail.line = " . $line . "";
+        $data = $this->coreFunctions->opentable($qry);
+        return ['status' => $status, 'msg' => $msg, 'tableentrydata' => $data, 'reloadtableentry' => true, 'reloadhead' => true];
+    }
 
     public function getbouncedardetail($config)
     {
@@ -1137,6 +1178,7 @@ class re
             }
         }
         if ($companyid == 59) { //roosevelt
+            $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['retrno' => $trno]);
             $this->coreFunctions->execqry("delete from chequedetail where trno=?", 'delete', [$trno]);
             $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
         }
@@ -1169,8 +1211,13 @@ class re
             if ($data[0]->rctrno != 0) {
                 $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $data[0]->rctrno, 'line' => $data[0]->rcline]);
             }
-            if ($companyid == 59) { //roosevelt
-                $this->coreFunctions->execqry("delete from chequedetail where trno=? and line=?", 'delete', [$trno, $line]);
+            if ($companyid == 59) { //roosevelt 
+                $cheque = $this->coreFunctions->opentable('select trno,line,rctrno,rcline  from chequedetail where trno = ? and line = ?', [$trno, $data[0]->line]);
+                foreach ($cheque as $key2 => $val) {
+                    $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $val->rctrno, 'line' => $val->rcline]);
+                }
+                $this->coreFunctions->execqry("delete from chequedetail where trno=? and line ", 'delete', [$trno, $line]);
+
                 $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
             }
             $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Check #: ' . $data[0]->rcchecks);

@@ -68,7 +68,7 @@ class hd
     {
         $trno = $config['params']['dataid'];
         $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,head.artid, head.sectionno, 
-                        head.violationno,head.startdate, head.enddate, head.amt,head.detail, emp.clientname as empname,
+                        head.violationno,suspension.startdate, suspension.enddate, head.amt,head.detail, emp.clientname as empname,
                         head.jobtitle,chead.description as articlename,cdetail.description as sectionname,
                         head.penalty, head.numdays,head.refx,emp.client as empcode,dept.client as dept,
                         dept.clientname as deptname,head.deptid,ir.docno as irno,ir.idescription as irdesc,
@@ -83,10 +83,11 @@ class hd
                 left join codehead as chead on chead.artid=head.artid
                 left join codedetail as cdetail on head.sectionno=cdetail.line and chead.artid=cdetail.artid
                 left join hrisnum as num on num.trno = head.trno
+                left join datesuspension as suspension on suspension.trno = head.trno
                 where num.trno = '$trno' and num.doc='HD'
                 union all
                 select head.trno, head.docno, head.empid, date(head.dateid) as dateid,head.artid, head.sectionno, 
-                       head.violationno,head.startdate, head.enddate, head.amt,head.detail, emp.clientname as empname,
+                       head.violationno,suspension.startdate, suspension.enddate, head.amt,head.detail, emp.clientname as empname,
                        head.jobtitle,chead.description as articlename,cdetail.description as sectionname,
                        head.penalty, head.numdays,head.refx,emp.client as empcode,dept.client as dept,
                        dept.clientname as deptname,head.deptid,ir.docno as irno,ir.idescription as irdesc,
@@ -101,8 +102,9 @@ class hd
                 left join codehead as chead on chead.artid=head.artid
                 left join codedetail as cdetail on head.sectionno=cdetail.line and chead.artid=cdetail.artid
                 left join hrisnum as num on num.trno = head.trno
+                left join datesuspension as suspension on suspension.trno = head.trno
                 where num.trno = '$trno' and num.doc='HD'";
-
+        // var_dump($query);
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;
     }
@@ -430,28 +432,30 @@ class hd
 
         PDF::MultiCell(0, 0, "\n");
 
-        $start = $data[0]['disciplinarystart'];
-        $end   = $data[0]['disciplinaryend'];
+        usort($data, function ($a, $b) {
+            return strtotime($a['startdate']) - strtotime($b['startdate']);
+        });
 
-        $formattedStart = strtoupper((new DateTime($start))->format('M-j-Y'));
-        $formattedEnd   = strtoupper((new DateTime($end))->format('M-j-Y'));
+        $dates = array();
 
-        if ($start == $end) {
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(210, 18, 'This disciplinary action takes effect on', '', 'L', false, 0);
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(490, 18, $formattedStart . '.', '', 'L', false);
-        } else {
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(230, 18, 'This disciplinary action takes effect starting', '', 'L', false, 0);
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(70, 18, $formattedStart, '', 'L', false, 0);
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(30, 18, ' until', '', 'L', false, 0);
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(370, 18, $formattedEnd . '.', '', 'L', false);
+        foreach ($data as $row) {
+            $start = $row['startdate'];
+            $end   = $row['enddate'];
+
+            $formattedStart = strtoupper((new DateTime($start))->format('M-j-Y'));
+            $formattedEnd   = strtoupper((new DateTime($end))->format('M-j-Y'));
+
+            if ($start == $end) {
+                $dates[] = $formattedStart;
+            } else {
+                $dates[] = $formattedStart . ' to ' . $formattedEnd;
+            }
         }
 
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(230, 18, 'This disciplinary action takes effect starting', '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(470, 18, implode(', ', $dates) . '.', '', 'L', false);
 
         PDF::MultiCell(0, 0, "\n\n\n");
 

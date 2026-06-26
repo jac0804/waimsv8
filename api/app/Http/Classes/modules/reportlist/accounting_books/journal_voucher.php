@@ -944,6 +944,34 @@ class journal_voucher
       }
     } // end foreach
 
+    //Final Sub total
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->addline();
+    $str .= $this->reporter->col('', 120, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+    $str .= $this->reporter->col('', 220, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+    $str .= $this->reporter->col('', 80, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+    $str .= $this->reporter->col('', 70, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+    $str .= $this->reporter->col('', 180, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');
+    $str .= $this->reporter->col('SUB TOTAL:', 100, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($docdb, $decimal_currency), 130, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($doccr, $decimal_currency), 130, null, '', $border, 'T', 'r', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $docdb = 0;
+    $doccr = 0;
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->addline();
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+    $str .= $this->reporter->endrow();
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', 120, null, '', '1px solid ', 'T', 'c', '', $font, $fontsize10, 'b', '', '');

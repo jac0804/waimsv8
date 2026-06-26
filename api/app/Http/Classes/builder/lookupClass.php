@@ -19460,6 +19460,7 @@ class lookupClass
     $table = '';
     $btnadd = [];
     $doc = $config['params']['doc'];
+    $companyid = $config['params']['companyid'];
     switch ($config['params']['lookupclass']) {
       case 'lookuptermsdet': //afti pcf terms detail
         $plotting = array('termsdetails' => 'field1');
@@ -20101,13 +20102,13 @@ class lookupClass
         }
         break;
       case 'lookupindustry':
-        $plotting = array('industry' => 'field1', 'industryid' => 'line');
+        $plotting = array('industry' => 'field1', 'industryid' => 'line','description' => 'description');
         $plottype = 'plothead';
         $title = 'List of Industry';
         $label = 'Industry';
 
         $qry = "
-          select case reqtype when '' then category else concat(category,'~',reqtype) end as field1,line from reqcategory where isindustry =1";
+          select case reqtype when '' then category else concat(category,'~',reqtype) end as field1,line,description from reqcategory where isindustry =1";
 
         $btnadd = $this->sqlquery->checksecurity($config, 4476, '/tableentries/tableentry/entryclientindustry');
         break;
@@ -20139,6 +20140,9 @@ class lookupClass
     $cols = [
       ['name' => 'field1', 'label' => $label, 'align' => 'left', 'field' => 'field1', 'sortable' => true, 'style' => 'font-size:16px;']
     ];
+    if($companyid == 10 || $companyid == 12){ //afti or afti usd
+      array_push($cols,['name' => 'description', 'label' => 'Category', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;']);
+    }
 
     $data = $this->coreFunctions->opentable($qry);
 

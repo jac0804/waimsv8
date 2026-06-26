@@ -3597,7 +3597,6 @@ class sj
       'rem' => $rem,
       'ref' => $ref,
       'loc' => $loc,
-      'expiry' => $expiry,
       'uom' => $uom,
       'locid' => $locid,
       'palletid' => $palletid,
