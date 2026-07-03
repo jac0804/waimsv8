@@ -150,8 +150,8 @@ class brand_sales_summary
     private function default_displayHeader($config)
     {
         $border = '1px solid';
-        $font = $this->companysetup->getrptfont($config['params']);
-        $font_size = '12';
+        $font = 'CALIBRI';
+        $font_size = '14';
 
         $center     = $config['params']['center'];
         $username   = $config['params']['user'];
@@ -217,8 +217,8 @@ class brand_sales_summary
     {
         $border = '1px solid';
 
-        $font = $this->companysetup->getrptfont($config['params']);
-        $font_size = '11';
+        $font = 'CALIBRI';
+        $font_size = '14';
 
         $result = $this->reportDefault($config);
 
@@ -270,38 +270,9 @@ class brand_sales_summary
         $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'R', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->endrow();
 
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '10', null, false, $border, 'TLB', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('PAGE TOTAL', '490', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '2px', '');
-        $str .= $this->reporter->col(number_format($tlsales, 2), '290', null, false, $border, 'TLB', 'R', $font, $font_size, 'B', '', '2px', '');
-        $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-
-        $str .= $this->reporter->begintable($layoutsize);
-
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '490', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '290', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->endrow();
-
-        $str .= $this->reporter->startrow();
-
-        $printeddate = $this->othersClass->getCurrentTimeStamp();
-        $datetime = new DateTime($printeddate);
-        $formattedDate = $datetime->format('m/d/Y h:i:s a'); //2025-09-25 16:46:32 pm
-        $str .= $this->reporter->col($formattedDate, '500', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col(' ', '400', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->pagenumber('Page', '100', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
+        $str .= $this->footer($config, $tlsales);
 
         $str .= $this->reporter->endreport();
-
         return $str;
     }
 
@@ -310,8 +281,8 @@ class brand_sales_summary
     {
         $border = '1px solid';
 
-        $font = $this->companysetup->getrptfont($config['params']);
-        $font_size = '11';
+        $font = 'CALIBRI';
+        $font_size = '14';
 
         $count = 33;
         $page = 34;
@@ -339,7 +310,7 @@ class brand_sales_summary
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '490', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '290', null, false,  '', '',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '490', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->endrow();
 
@@ -348,9 +319,11 @@ class brand_sales_summary
         $printeddate = $this->othersClass->getCurrentTimeStamp();
         $datetime = new DateTime($printeddate);
         $formattedDate = $datetime->format('m/d/Y h:i:s a'); //2025-09-25 16:46:32 pm
-        $str .= $this->reporter->col($formattedDate, '500', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col(' ', '400', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->pagenumber('Page', '100', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col(' ', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col($formattedDate, '490', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->pagenumber('Page', '90', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col(' ', '490', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col(' ', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         // $str .= $this->reporter->endreport();

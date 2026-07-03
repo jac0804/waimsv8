@@ -52,12 +52,13 @@ class MirrorMasters extends Command
         date_default_timezone_set('Asia/Singapore');
         $currentdate = date('Y-m-d');
 
-        $params = ['companyid' => 0];
+        $params = ['companyid' => 40];
 
         try {
 
             $processSyncing = $this->coreFunction->getfieldvalue("profile", "pvalue", "doc='IOU' and psection='MIRROR'");
             if ($processSyncing == '') {
+                $this->coreFunction->sbclogger("Starting database mirror", 'MIRROR');
 
                 $syncing = ['doc' => 'IOU', 'psection' => 'MIRROR', 'pvalue' => 1];
                 $this->coreFunction->sbcinsert("profile", $syncing);
@@ -85,14 +86,29 @@ class MirrorMasters extends Command
                         break;
 
                     case 40: //cdo aims
+
+                        $this->posClass->masterfilemirror("coa", ["AcnoID"]);
+                        $this->posClass->masterfilemirror("useraccess", ["userid"]);
+                        $this->posClass->masterfilemirror("users", ["idno"]);
+                        $this->posClass->masterfilemirror("moduleaccess", ["idno"]);
+                        $this->posClass->masterfilemirror("center", ["line"]);
+                        $this->posClass->masterfilemirror("centeraccess", ["userid"]);
+
+                        $this->posClass->masterfilemirror("ewtlist", ["line"]);
+                        $this->posClass->masterfilemirror("terms", ["line"]);
+
                         $this->posClass->transactionsmirror("");
                         break;
                 }
 
                 $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
 
-                $this->coreFunction->execqry("delete from pos_log where e_detail='DLOCK' and date(date_executed)<'" . $currentdate . "'");
+                $this->coreFunction->execqry("delete from pos_log where e_detail in ('DLOCK','MIRROR') and date(date_executed)<'" . $currentdate . "'");
+
+                $this->coreFunction->sbclogger("Database mirror completed", 'MIRROR');
             } else {
+
+                $this->coreFunction->sbclogger("Process already running", 'MIRROR');
 
                 $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log where e_detail='MIRROR' order by e_id desc limit 1");
                 if ($lastlog != '') {

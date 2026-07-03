@@ -40,10 +40,21 @@ class setreportlist
     $rep_trucklist = "";
     $rep_carmake_list = "";
 
+    // PRODUCT PORTAL
+    $productportal = "";
+    $rep_catalog = "";
+    $rep_price_list = "";
+
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
       case 'HRISPAYROLL':
       case 'QUEUING':
+        break;
+
+      case 'PRODUCTPORTAL':
+        $productportal = "('','\\9','','','',0,0,0,'Product Portal Report','\\920',5886,'0'," . $params['levelid'] . ")";
+        $rep_catalog = "('','\\920','','','',0,1,0,'Catalog','\\92001',5889,'0'," . $params['levelid'] . ")";
+        $rep_price_list = "('','\\920','','','',0,1,0,'Price List','\\92002',5890,'0'," . $params['levelid'] . ")";
         break;
 
       default:
@@ -1021,7 +1032,7 @@ class setreportlist
               $rep_unncollected_creditable_withholding_tax = "('','\\908','','','',0,1,0,'Uncollected Creditable Withholding Tax','\\90818',3753,'0'," . $params['levelid'] . ")";
               break;
 
-            case 17: //unihome 
+            case 17: //unihome
               $uncleared_reports = "('','\\908','','','',0,1,0,'Uncleared Report','\\90825',4900,'0'," . $params['levelid'] . ")";
               break;
 
@@ -1703,7 +1714,7 @@ class setreportlist
             $rep_nods = "('','\\90907','','\\\\909','',0,1,0,'NODS','\\9090706',3521,'0'," . $params['levelid'] . ")";
             $rep_jobreq = "('','\\90907','','\\\\909','',0,1,0,'Job Requests','\\9090707',3522,'0'," . $params['levelid'] . ")";
 
-            // TRANSACTION LIST PURCHASES 
+            // TRANSACTION LIST PURCHASES
             $rep_supplierinvoicereport = "('','\\90901','','\\\\909','',0,1,0,'Supplier Invoice','\\9090105',3468,'0'," . $params['levelid'] . ")";
 
             break;
@@ -2411,6 +2422,15 @@ class setreportlist
           $rep_documenttracking
         ];
         break;
+
+      case 'PRODUCTPORTAL':
+        $report_sysmenu = [
+          $productportal,
+          $rep_catalog,
+          $rep_price_list
+        ];
+        break;
+
       case 'MIS':
       case 'MISPOS':
         $report_sysmenu = [
@@ -3997,7 +4017,7 @@ class setreportlist
           $rep_trip_incentive_detailed,
           $rep_operator_incentive_report,
 
-          // TRIP 
+          // TRIP
           $parent_trip,
           $rep_trip_detailed,
           $rep_trip_summary,
@@ -4849,7 +4869,7 @@ class setreportlist
           $rep_MC_sales_report,
           $rep_total_sales_per_mode,
 
-          // TRIP 
+          // TRIP
           $parent_trip,
           $rep_trip_detailed,
           $rep_trip_summary,

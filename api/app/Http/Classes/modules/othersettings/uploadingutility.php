@@ -89,6 +89,20 @@ class uploadingutility
 
     $col1 = $this->fieldClass->create($fields);
     switch ($config['params']['companyid']) {
+      case 64: //excelin
+        data_set($col1, 'optionuploading.options',  array(
+          ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
+          ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
+          ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
+          ['label' => 'New Agent', 'value' => 'newagent', 'color' => 'green'],
+          ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
+          ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
+          ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
+          ['label' => 'Update Agent', 'value' => 'updateagent', 'color' => 'green'],
+          ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green']
+        ));
+        break;
       case 59: //roosevelt
         data_set($col1, 'optionuploading.options',  array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
@@ -431,6 +445,9 @@ class uploadingutility
       case 66: //  metro dragon payroll
         $fields = ['downloademployeeexcel'];
         break;
+      case 59: //roosevelt
+        $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloaditemexcelmaster'];
+        break;
 
       default:
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel'];
@@ -438,6 +455,9 @@ class uploadingutility
     }
 
     switch ($config['params']['companyid']) {
+      case 64: //excelin
+        array_push($fields, 'downloadagentexcel');
+        break;
       case 19:
         array_push($fields, 'downloadagentexcel', 'downloademployeeexcel', 'downloadsupplieritemexcel');
         break;
@@ -462,6 +482,10 @@ class uploadingutility
     $col2 = $this->fieldClass->create($fields);
     if ($config['params']['companyid'] == 35) data_set($col2, "downloaditemexcel.label", "DONWLOAD METER TEMPLATE");
 
+    if ($config['params']['companyid'] == 59) {
+      data_set($col2, "downloaditemexcelmaster.label", "Export ItemList");
+    }
+
     $fields = [];
     switch ($config['params']['companyid']) {
       case 19: //housegem
@@ -481,6 +505,7 @@ class uploadingutility
         break;
     }
 
+
     $col3 = $this->fieldClass->create($fields);
     if ($config['params']['companyid'] == 56) {
       data_set($col3, "update.label", "UPDATE PRICE LIST");
@@ -488,6 +513,7 @@ class uploadingutility
       data_set($col3, "update.confirmlabel", "Do you want to update item price?");
       data_set($col3, "update.confirm", true);
     }
+
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
   }
@@ -1019,6 +1045,42 @@ class uploadingutility
               ]
             ];
             break;
+          case 59: //roosevelt
+            return [
+              'status' => true,
+              'msg' => 'Item List ready to Download',
+              'name' => 'item',
+              'data' => [
+                [
+                  'ITEMCODE' => '',
+                  'ITEMDESCRIPTION' => '',
+                  'UOM' => '',
+                  'CRITICAL' => '',
+                  'REORDER' => '',
+                  'SUPPLIER' => '',
+                  'PARTNO' => '',
+                  'PART' => '',
+                  'MODEL ' => '',
+                  'CLASS' => '',
+                  'BRAND' => '',
+                  'GROUP' => '',
+                  'CATEGORY' => '',
+                  'SUBCAT' => '',
+                  'BODY' => '',
+                  'SIZE' => '',
+                  'COLOR' => '',
+                  'ASSET' => '',
+                  'LIABILITY' => '',
+                  'REVENUE' => '',
+                  'EXPENSE' => '',
+                  'PRICE1' => '',
+                  'PRICE2' => '',
+                  'PRICE_A' => '',
+                  'PRICE_B' => ''
+                ]
+              ]
+            ];
+            break;
           default:
             return [
               'status' => true,
@@ -1047,11 +1109,9 @@ class uploadingutility
             break;
         }
         break;
-
       case 'downloaditemexcelmaster':
         return $this->getitemmaster($config);
         break;
-
       case 'downloaditemuomexcelmaster':
         return $this->getitemuommaster($config);
         break;
@@ -1523,6 +1583,24 @@ class uploadingutility
               ]]
             ];
             break;
+          case 64: //excelin
+            return [
+              'status' => true,
+              'msg' => 'Supplier template ready to Download',
+              'name' => 'item',
+              'data' => [[
+                'SupplierCode' => '',
+                'SupplierName' => '',
+                'Address' => '',
+                'TelephoneNumber' => '',
+                'FaxNumber' => '',
+                'Email' => '',
+                'ContactPerson' => '',
+                'TIN' => '',
+                'Bank_Account' => ''
+              ]]
+            ];
+            break;
           default:
             return [
               'status' => true,
@@ -1607,6 +1685,20 @@ class uploadingutility
                 'Mobile' => '',
                 'E-mail' => '',
                 'Contact' => ''
+              ]]
+            ];
+            break;
+          case 64: //excelin
+            return [
+              'status' => true,
+              'msg' => 'Agent template ready to Download',
+              'name' => 'agent',
+              'data' => [[
+                'AgentCode' => '',
+                'AgentName' => '',
+                'Group' => '',
+                'PriceGroup' => '',
+                'Alias' => ''
               ]]
             ];
             break;
@@ -1765,9 +1857,9 @@ class uploadingutility
         if ($companyid ==  47) { //kstar
           $qry = "select " . $fieldnames . " from item left join itemlevel as il on il.itemid = item.itemid order by item.barcode ";
         } else {
-          $qry = "select " . $fieldnames . " from item order by barcode ";
+          $qry = "select " . $fieldnames . " from item  order by barcode ";
         }
-
+        // var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         $data = json_decode(json_encode($data), true);
 
@@ -2588,6 +2680,8 @@ class uploadingutility
 
     return ['status' => $status, 'msg' => $msg];
   }
+
+
 
   private function insertdatafromexcel($type, $rawdata, $config)
   {
@@ -4254,6 +4348,10 @@ class uploadingutility
         return 'contact';
         break;
 
+      case 'bank_account':
+        return 'accountnum';
+        break;
+
       case 'fbname':
         return 'acct';
         break;
@@ -4536,6 +4634,8 @@ class uploadingutility
             break;
           case 'newitem':
           case 'newfams':
+          case 'updateitem':
+          case 'updatefams':
             return 'itemrem';
             break;
           default:
@@ -4568,6 +4668,10 @@ class uploadingutility
       case 'pricegroup':
       case 'description_1':
         return 'class';
+        break;
+
+      case 'alias':
+        return 'alias';
         break;
 
       case 'ischecker':
@@ -4916,6 +5020,22 @@ class uploadingutility
       case 'e-mail':
         return 'email';
         break;
+      case 'Partid';
+        return 'part';
+        break;
+      case 'Critical':
+        return 'critical';
+        break;
+      case 'Reorder':
+        return 'reorder';
+        break;
+      case 'Brandid':
+        return 'brand';
+        break;
+      case 'Color':
+        return 'color';
+        break;
+
       default:
         if ($companyid == 22) {
           switch (strtolower($field)) {
@@ -5444,12 +5564,16 @@ class uploadingutility
     if ($qry == '') {
       return true;
     }
-    $item = $this->coreFunctions->datareader($qry, [], '', true);
-    if ($item != 0) {
-      return $item;
-    } else {
 
-      return false;
+    if ($returnfield == 'id') {
+      $item = $this->coreFunctions->datareader($qry, [], '', true);
+      if ($item != 0) {
+        return $item;
+      } else {
+        return false;
+      }
+    } else {
+      return  $this->coreFunctions->datareader($qry);
     }
   }
 

@@ -176,9 +176,9 @@ class entryterms
         }
         if ($data[$key]['line'] == 0) {
           $data2['createby'] = $config['params']['user'];
-          $exist = $this->coreFunctions->getfieldvalue("terms","line","terms = ?",[$data[$key]['terms']],'',true);
-          if($exist != 0){
-            return ['status' => false, 'msg' => $data[$key]['terms'].' Terms already exist', 'data' => []];
+          $exist = $this->coreFunctions->getfieldvalue("terms", "line", "terms = ?", [$data[$key]['terms']], '', true);
+          if ($exist != 0) {
+            return ['status' => false, 'msg' => $data[$key]['terms'] . ' Terms already exist', 'data' => []];
           }
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
           $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['terms']);
@@ -192,6 +192,7 @@ class entryterms
             } else {
               $data2['editby'] = $config['params']['user'];
               $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+              $data2['ismirror'] = 0;
               $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
             }
           } else {
@@ -216,9 +217,9 @@ class entryterms
       $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
     }
     if ($row['line'] == 0) {
-      $exist = $this->coreFunctions->getfieldvalue("terms","line","terms = ?",[$data['terms']],'',true);
-      if($exist != 0){
-        return ['status' => false, 'msg' => $data['terms'].' Terms already exist'];
+      $exist = $this->coreFunctions->getfieldvalue("terms", "line", "terms = ?", [$data['terms']], '', true);
+      if ($exist != 0) {
+        return ['status' => false, 'msg' => $data['terms'] . ' Terms already exist'];
       }
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
@@ -238,7 +239,7 @@ class entryterms
           return ['status' => false, 'msg' => $check['msg']];
         }
       }
-
+      $data['ismirror'] = 0;
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
         $returnrow = $this->loaddataperrecord($row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];

@@ -74,7 +74,7 @@ class entrytasklabor
     public function createTab($config)
     {
 
-        $columns = ['action', 'description', 'code', 'jobcode', 'labor1', 'labor2', 'labor3', 'labor4', 'labor5'];
+        $columns = ['action', 'code', 'description', 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'jobcode'];
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $columns
@@ -93,12 +93,19 @@ class entrytasklabor
         $obj[0][$this->gridname]['columns'][$description]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
 
         $obj[0][$this->gridname]['columns'][$code]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-        $obj[0][$this->gridname]['columns'][$jobcode]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$jobcode]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
         $obj[0][$this->gridname]['columns'][$labor1]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$labor2]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$labor3]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$labor4]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         $obj[0][$this->gridname]['columns'][$labor5]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+
+
+        $obj[0][$this->gridname]['columns'][$jobcode]['type'] = "lookup";
+        $obj[0][$this->gridname]['columns'][$jobcode]['lookupclass'] = "getjob";
+        $obj[0][$this->gridname]['columns'][$jobcode]['action'] = "lookupsetup";
+
+
 
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
@@ -271,6 +278,9 @@ class entrytasklabor
         switch ($lookupclass2) {
             case 'whlog':
                 return $this->lookuplogs($config);
+            case 'getjob':
+                return $this->getautojob($config);
+                break;
             default:
                 return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under WH documents'];
                 break;
@@ -311,5 +321,31 @@ class entrytasklabor
         $qry = $qry . " order by dateid desc";
         $data = $this->coreFunctions->opentable($qry);
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
+    }
+
+
+
+    public function getautojob($config)
+    {
+        $lookupsetup = array(
+            'type' => 'single',
+            'title' => 'List of Auto Job Setup',
+            'style' => 'width:900px;max-width:900px;'
+        );
+        $plotsetup = array(
+            'plottype' => 'plotgrid',
+            'plotting' => ['jobcode' => 'code']
+        );
+
+        $cols = array(
+            array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'description', 'label' => 'Job Description', 'align' => 'left', 'field' => 'description', 'sortable' => true, 'style' => 'font-size:16px;'),
+        );
+
+
+        $query = "select line as keyid,line,docno as code,jobtitle as description from jobthead";
+        $data = $this->coreFunctions->opentable($query);
+        $index = $config['params']['index'];
+        return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
     }
 } //end class

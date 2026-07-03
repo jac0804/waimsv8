@@ -788,6 +788,286 @@ class sales_journal
     return $str;
   } //end fn
 
+  // private function MSJOY_SALES_JOURNAL_DETAILED($data, $params)
+  // {
+  //   $count = 51;
+  //   $page = 50;
+  //   $str = '';
+
+  //   $border = '1px solid';
+  //   $fontsize10 = 10;
+  //   $fontsize12 = 12;
+  //   $font = $this->companysetup->getrptfont($params['params']);
+
+  //   $this->reporter->linecounter = 0;
+
+  //   if (empty($data)) {
+  //     return $this->othersClass->emptydata($params);
+  //   }
+
+  //   $str .= $this->reporter->beginreport();
+  //   $str .= $this->MSJOY_DEFAULT_HEADER($params);
+  //   $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
+  //   $totalrdb = 0;
+  //   $totalrcr = 0;
+  //   $docno = "";
+  //   $date = "";
+  //   $postdate = "";
+  //   $totalsundb = 0;
+  //   $totalsuncr = 0;
+  //   $totalrebate = 0;
+  //   $rebate = "-";
+  //   $linecount = 0;
+  //   $clnamecolwidth = 175;
+  //   $sunacctcolwidth = 150;
+  //   $charperline = intval($clnamecolwidth / 6);
+
+  //   // subtotal per docno
+  //   $subdocno = "";
+  //   $subrdb = 0;
+  //   $subrcr = 0;
+  //   $subsundb = 0;
+  //   $subsuncr = 0;
+  //   $subrebate = 0;
+
+  //   foreach ($data as $key => $value) {
+  //     $getrebate = $this->coreFunctions->opentable(
+  //       "
+  //         select sum(detail.cr) as rebate 
+  //         from gldetail as detail 
+  //         left join coa as coa on coa.acnoid = detail.acnoid
+  //         where trno = '" . $value->trno . "' and coa.alias = 'AR3'
+  //       "
+  //     );
+
+  //     if ($docno == $value->docno) {
+  //       $docno = "";
+  //       $date = "";
+  //       $postdate = "";
+  //       if ($params['params']['companyid'] == 35) { //aquamax
+  //         $clname = $value->clientname;
+  //       } else {
+  //         $clname = "";
+  //       }
+
+  //       $rebate = "-";
+  //     } else {
+  //       if ($docno != "") {
+  //         // print subtotal for previous docno before dashed line
+  //         $str .= $this->reporter->startrow();
+  //         switch ($params['params']['companyid']) {
+  //           case 1: //vitaline
+  //           case 23: //labsol cebu
+  //             $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+  //             $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col(number_format($subrebate, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             break;
+  //           default:
+  //             $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+  //             $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+  //             $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //             break;
+  //         }
+  //         $str .= $this->reporter->endrow();
+  //         $linecount++;
+
+  //         // reset subtotal
+  //         $subrdb = 0;
+  //         $subrcr = 0;
+  //         $subsundb = 0;
+  //         $subsuncr = 0;
+  //         $subrebate = 0;
+
+  //         $str .= $this->reporter->startrow();
+  //         switch ($params['params']['companyid']) {
+  //           case 1: //vitaline
+  //           case 23: // labsol cebu
+  //             $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //             break;
+  //         }
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->col(' ', null, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+  //         $str .= $this->reporter->endrow();
+  //         $linecount++;
+  //       }
+  //       $docno = $value->docno;
+  //       $date = $value->dateid;
+  //       $postdate = $value->postdate;
+  //       $clname = $value->clientname;
+
+  //       $rebate = number_format($getrebate[0]->rebate, 2);
+  //       if ($rebate == 0) {
+  //         $rebate = '-';
+  //       }
+  //       $totalrebate = $totalrebate + $getrebate[0]->rebate;
+  //       $subrebate = $subrebate + $getrebate[0]->rebate;
+  //     }
+
+  //     $regdb = number_format($value->regdb, 2);
+  //     if ($regdb == 0) {
+  //       $regdb = '-';
+  //     }
+
+  //     $regcr = number_format($value->regcr, 2);
+  //     if ($regcr == 0) {
+  //       $regcr = '-';
+  //     }
+
+  //     $sundb = number_format($value->sundb, 2);
+  //     if ($sundb == 0) {
+  //       $sundb = '-';
+  //     }
+
+  //     $suncr = number_format($value->suncr, 2);
+  //     if ($suncr == 0) {
+  //       $suncr = '-';
+  //     }
+
+  //     switch ($params['params']['companyid']) {
+  //       case 10: //afti
+  //       case 12: //afti usd
+  //         $docno = $value->doc == 'SJ' ? substr($value->docno, -5) : 'BS' . substr($value->docno, -8);
+  //         break;
+  //     }
+
+  //     // count wrapped lines for clientname and sunacctname
+  //     $clnamelines = max(1, ceil(strlen($value->clientname) / $charperline));
+  //     $sunacctlines = max(1, ceil(strlen($value->sunacctname) / intval($sunacctcolwidth / 6)));
+  //     $rowlines = max($clnamelines, $sunacctlines);
+
+  //     $str .= $this->reporter->startrow();
+  //     $str .= $this->reporter->addline();
+  //     $str .= $this->reporter->col($date, '75', null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($postdate, '100', null, '', '1px solid ', '', 'CT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($docno, '100', null, '', '1px solid ', '', 'CT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($clname, '175', null, '', '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($regdb, '75', null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($regcr, '75', null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+  //     switch ($params['params']['companyid']) {
+  //       case 1: //vitaline
+  //       case 23: //labsol cebu
+  //         $str .= $this->reporter->col($rebate, '75', null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+  //         break;
+  //     }
+  //     $str .= $this->reporter->col($value->sunacctname, '150', null, '', '1px solid ', '', 'CT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($sundb, '75', null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+  //     $str .= $this->reporter->col($suncr, '75', null, '', '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+
+  //     $totalsundb = $totalsundb + $value->sundb;
+  //     $totalsuncr = $totalsuncr + $value->suncr;
+  //     $totalrdb = $totalrdb + $value->regdb;
+  //     $totalrcr = $totalrcr + $value->regcr;
+
+  //     //subtotals per docno
+  //     $subrdb = $subrdb + $value->regdb;
+  //     $subrcr = $subrcr + $value->regcr;
+  //     $subsundb = $subsundb + $value->sundb;
+  //     $subsuncr = $subsuncr + $value->suncr;
+
+  //     $docno = $value->docno;
+  //     $date = $value->dateid;
+  //     $clname = $value->clientname;
+  //     $str .= $this->reporter->endrow();
+
+  //     $linecount += $rowlines;
+
+  //     if ($linecount >= $page) {
+  //       $str .= $this->reporter->endtable();
+  //       $str .= $this->reporter->page_break();
+  //       $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+  //       if (!$allowfirstpage) {
+  //         $str .= $this->MSJOY_DEFAULT_HEADER($params);
+  //       }
+  //       $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
+
+  //       $page = $page + $count;
+  //     }
+  //   } //end foreach
+
+  //   // print last subtotal
+  //   $str .= $this->reporter->startrow();
+  //   switch ($params['params']['companyid']) {
+  //     case 1: //vitaline
+  //     case 23: //labsol cebu
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col(number_format($subrebate, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       break;
+  //     default:
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('', '100', null, '', '1px solid ', '', 'l', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col('Subtotal: ', '175', null, '', '1px solid ', '', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($subrdb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col(number_format($subrcr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col('', '150', null, '', '1px solid ', '', 'c', $font, $fontsize10, '', '', '');
+  //       $str .= $this->reporter->col(number_format($subsundb, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       $str .= $this->reporter->col(number_format($subsuncr, 2), '75', null, '', '1px dashed ', 'T', 'r', $font, $fontsize10, 'I', '', '');
+  //       break;
+  //   }
+  //   $str .= $this->reporter->endrow();
+
+  //   $str .= $this->reporter->startrow('', null, '', '1px solid ', '', 'B', $font, 'B', '12', '', '');
+  //   switch ($params['params']['companyid']) {
+  //     case 1: //vitaline
+  //     case 23: //labsol cebu
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '100', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('GRAND TOTAL: ', '175', null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalrdb, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalrcr, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalrebate, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '150', null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalsundb, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalsuncr, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       break;
+  //     default:
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '100', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('GRAND TOTAL: ', '175', null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalrdb, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalrcr, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col('', '150', null, '', '1px solid ', 'T', 'c', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalsundb, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       $str .= $this->reporter->col(number_format($totalsuncr, 2), '75', null, '', '1px solid ', 'T', 'r', $font, $fontsize10, 'B', '', '');
+  //       break;
+  //   }
+
+  //   $str .= $this->reporter->endrow();
+  //   $str .= $this->reporter->endtable();
+  //   $str .= $this->reporter->endreport();
+  //   return $str;
+  // } //end fn
+
   private function MSJOY_SALES_JOURNAL_DETAILED($data, $params)
   {
     $count = 51;
@@ -820,7 +1100,9 @@ class sales_journal
     $linecount = 0;
     $clnamecolwidth = 175;
     $sunacctcolwidth = 150;
-    $charperline = intval($clnamecolwidth / 6);
+    $avgcharwidth = 5;
+    $clnamecharlimit = intval($clnamecolwidth / $avgcharwidth);
+    $sunacctcharlimit = intval($sunacctcolwidth / $avgcharwidth);
 
     // subtotal per docno
     $subdocno = "";
@@ -950,9 +1232,9 @@ class sales_journal
           break;
       }
 
-      // count wrapped lines for clientname and sunacctname
-      $clnamelines = max(1, ceil(strlen($value->clientname) / $charperline));
-      $sunacctlines = max(1, ceil(strlen($value->sunacctname) / intval($sunacctcolwidth / 6)));
+      // count wrapped lines using word-wrap simulation
+      $clnamelines = $this->countWrappedLines($value->clientname, $clnamecharlimit);
+      $sunacctlines = $this->countWrappedLines($value->sunacctname, $sunacctcharlimit);
       $rowlines = max($clnamelines, $sunacctlines);
 
       $str .= $this->reporter->startrow();
@@ -1000,7 +1282,8 @@ class sales_journal
         }
         $str .= $this->MSJOY_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize10, $params);
 
-        $page = $page + $count;
+        $linecount = 0; // reset linecount after page break
+        $page = $count;  // reset page threshold back to count
       }
     } //end foreach
 
@@ -1066,6 +1349,43 @@ class sales_journal
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
     return $str;
+  } //end fn
+
+  private function countWrappedLines($text, $charlimit)
+  {
+    if (trim($text) === '' || $charlimit <= 0) {
+      return 1;
+    }
+
+    $words = explode(' ', $text);
+    $lines = 1;
+    $currentlen = 0;
+
+    foreach ($words as $word) {
+      $wordlen = strlen($word);
+
+      if ($wordlen >= $charlimit) {
+        // single word longer than limit, wraps by itself
+        if ($currentlen > 0) {
+          $lines++;
+        }
+        $lines += intval($wordlen / $charlimit);
+        $currentlen = $wordlen % $charlimit;
+      } else {
+        if ($currentlen === 0) {
+          $currentlen = $wordlen;
+        } elseif ($currentlen + 1 + $wordlen <= $charlimit) {
+          // word fits on current line
+          $currentlen += 1 + $wordlen;
+        } else {
+          // word doesn't fit, move to next line
+          $lines++;
+          $currentlen = $wordlen;
+        }
+      }
+    } //end foreach
+
+    return $lines;
   } //end fn
   // CURRENTLY FOR UNIHOME/NATHINA END
 

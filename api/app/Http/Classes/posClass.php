@@ -10,6 +10,7 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\coreFunctions;
 use App\Http\Classes\companysetup;
 use App\Http\Classes\othersClass;
+use App\Http\Classes\sqlquery;
 
 use Illuminate\Support\Facades\Storage;
 use Datetime;
@@ -25,6 +26,7 @@ class posClass
   private $coreFunctions;
   private $logger;
   private $companysetup;
+  private $sqlquery;
 
   public function __construct()
   {
@@ -32,6 +34,7 @@ class posClass
     $this->logger = new Logger;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
+    $this->sqlquery = new sqlquery;
   } //end fn
 
 
@@ -99,7 +102,7 @@ class posClass
       $sql = "select uom.itemid, uom.uom, uom.factor, uom.isinactive, uom.isdefault2 as isdefault, uom.amt FROM itemdlock AS id  LEFT JOIN uom on uom.itemid=id.itemid where uom.itemid is not null";
       $uom = $this->coreFunctions->opentable($sql);
 
-      $batchSize = 10000;
+      $batchSize = 5000;
 
       //creating csv files for item
       $totalRowsItem = count($item);
@@ -168,7 +171,7 @@ class posClass
 
   public function pricelist($dlock)
   {
-    $batchSize = 50000;
+    $batchSize = 5000;
 
     $sql = "select pl.line, pl.itemid, pl.amount, pl.amount2, pl.clientid, pl.cost, date(pl.startdate) as startdate, date(pl.enddate) as enddate 
           from pricelist as pl " . ($dlock != '' ? " where ifnull(pl.dlock,now())>'" . $dlock . "'" : "") . " order by pl.line";
@@ -2053,17 +2056,17 @@ class posClass
 
   public function gettransdoc($doc, $table)
   {
-    $qry = "select trno, doc, docno from " . $table . " where doc='" . $doc . "' and postdate is not null and iscsv=0 order by postdate";
+    $qry = "select trno, doc, docno, 0 as unposted from " . $table . " where doc='" . $doc . "' and postdate is not null and iscsv=0 order by postdate";
     return $this->coreFunctions->opentable($qry);
   }
 
   public function getalltransdoc($doc, $table)
   {
-    $qry = "select trno, doc, docno, postdate, 0 as unposted from cntnum where postdate is not null and iscsv=0
+    $qry = "select trno, doc, docno, postdate, 0 as unposted from cntnum where postdate is not null and year(postdate)<=2025 and iscsv=0
           union all
-          select trno, doc, docno, postdate, 0 as unposted from transnum where postdate is not null and iscsv=0 
+          select trno, doc, docno, postdate, 0 as unposted from transnum where postdate is not null and year(postdate)<=2025 and iscsv=0 
           union all 
-          select trno, doc, docno, postdate, 1 as unposted from unpostedtrans order by postdate";
+          select trno, doc, docno, postdate, 1 as unposted from unpostedtrans where year(postdate)<=2025 order by postdate limit 5000";
     return $this->coreFunctions->opentable($qry);
   }
 
@@ -2092,6 +2095,16 @@ class posClass
             $arr1[$arrkey] = $this->removeNewlines(trim($arr1[$arrkey]));
             $arr1[$arrkey] = $this->othersClass->sanitizekeyfield($arrkey, $arr1[$arrkey], $table);
             if ($arr1[$arrkey] === null) $arr1[$arrkey] = "NULL";
+
+            if ($this->isDateField($arrkey)) {
+              $stringDate = ['invoicedate'];
+              if (in_array($arrkey, $stringDate)) {
+                $arr1[$arrkey] = "";
+              } else {
+                $returndate = $this->getDateSQLValue($arr1[$arrkey]);
+                if ($returndate == null) $arr1[$arrkey] = "NULL";
+              }
+            }
           }
           if ($nkey == 0) {
             $ins .= '(' . "'" . implode("','", $arr1) . "')";
@@ -2108,7 +2121,7 @@ class posClass
 
   public function transactionsmirror($doc)
   {
-    $this->coreFunctions->LogConsole("Mirror - Creating " . $doc . " transactions file");
+    //$this->coreFunctions->LogConsole("Mirror - Creating " . $doc . " transactions file");
     $this->coreFunctions->sbclogger("Mirror - Creating " . $doc . " transactions file", "DLOCK");
 
     ini_set('max_execution_time', 0);
@@ -2141,20 +2154,26 @@ class posClass
 
           $queries = [];
           foreach ($tables as $t) {
+            $qry = '';
             if ($doc1->unposted) {
               $qry = "delete from " . $t . " where trno=" . $doc1->trno;
             } else {
               $qry = $this->gettransactionsqry($t, $doc1->trno);
             }
-            array_push($queries, $qry);
+            if ($qry != '') array_push($queries, $qry);
           }
           $csv = $this->createtranscsv($queries);
           // $this->coreFunctions->LogConsole('creating transaction csv doc:' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno);
 
-          $csvtype = ($doc1->unposted) ? 'unposted' : 'trans';
+          $csvtype = 'trans';
+          if ($doc1->unposted) $csvtype = 'unposted';
 
           $this->ftpcreatefiletrans($csv, "MIRROR", "MIRROR1", 'download', $doc1->doc, $doc1->docno, $doc1->trno, $csvtype);
-          $this->coreFunctions->sbcupdate($numtable, ['iscsv' => 1], ['trno' => $doc1->trno]);
+          if ($doc1->unposted) {
+            $this->coreFunctions->execqry("delete from unpostedtrans where trno=" . $doc1->trno . " and doc='" . $doc1->doc . "'");
+          } else {
+            $this->coreFunctions->sbcupdate($numtable, ['iscsv' => 1], ['trno' => $doc1->trno]);
+          }
 
           $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
           $elapsed = $start->diffInSeconds($end);
@@ -2172,8 +2191,8 @@ class posClass
 
   public function masterfilemirror($table, $uniquefield)
   {
-    $this->coreFunctions->LogConsole("Mirror - Creating " . $table . " file");
-    $this->coreFunctions->sbclogger("Mirror - Creating " . $table . " file", 'MIRROR');
+    //$this->coreFunctions->LogConsole("MirrorMaster - Creating " . $table . " file");
+    $this->coreFunctions->sbclogger("MirrorMaster - Creating " . $table . " file", 'MIRROR');
 
 
     ini_set('max_execution_time', 0);
@@ -2183,6 +2202,8 @@ class posClass
       $sql = "select * from " . $table . " where ismirror=0 order by " . $uniquefield[0];
       $item = $this->coreFunctions->opentable($sql);
       $item2 = json_decode(json_encode($item), true);
+
+      $this->coreFunctions->LogConsole($table . ' records: ' . count($item));
 
       foreach ($item2 as $key => $value) {
         $filter = "";
@@ -2198,12 +2219,12 @@ class posClass
         $this->coreFunctions->execqry($qryupdate);
       }
 
-      $batchSize = 10000;
+      $batchSize = 5000;
 
       //creating csv files for item
       $totalRowsItem = count($item);
 
-      $this->coreFunctions->LogConsole($table . ': ' . $totalRowsItem);
+      // $this->coreFunctions->LogConsole($table . ': ' . $totalRowsItem);
 
       $counter = 1;
       for ($offset = 0; $offset < $totalRowsItem; $offset += $batchSize) {
@@ -2226,59 +2247,272 @@ class posClass
 
   public function ftpextractmirrorfiles()
   {
-    $this->ftpcheckmirrorfiletoextract("MIRROR", "MIRROR1", "download");
+    try {
+      // $this->ftpcheckmirrorfiletoextract("MIRROR", "MIRROR1", "download");
+      return $this->ftpcheckmirrorfiletoextract_v2("MIRROR", "MIRROR1", "download");
+    } catch (Exception $ex) {
+      $this->coreFunctions->sbclogger('ftpextractmirrorfiles - ' . substr($ex, 0, 1000));
+      return ['status' => false, 'msg' => substr($ex, 0, 1000)];
+    }
   }
 
-  public function ftpcheckmirrorfiletoextract($branch, $station, $folder)
+  // public function ftpcheckmirrorfiletoextract($branch, $station, $folder)
+  // {
+  //   $status = false;
+  //   try {
+  //     date_default_timezone_set('Asia/Singapore');
+
+  //     $ftpHost = config('filesystems.disks.ftpmirror.host');
+  //     $this->coreFunctions->sbclogger('ftp host: ' . $ftpHost, 'MIRROR');
+  //     $this->coreFunctions->sbclogger('Checking directory ' . $branch . '/' . $station . '/' . $folder, 'MIRROR');
+
+  //     $listing = Storage::disk('ftpmirror')->listContents(
+  //       $branch . '/' . $station . '/' . $folder,
+  //       false
+  //     );
+
+  //     $ftpfiles = collect($listing)
+  //       ->filter(function ($item) {
+  //         return $item->isFile();
+  //       })
+  //       ->sortBy(function ($item) {
+  //         return $item->lastModified();
+  //       })
+  //       ->map(function ($item) {
+  //         return $item->path();
+  //       })
+  //       ->values()
+  //       ->toArray();
+
+  //     foreach ($ftpfiles as $filename) {
+  //       $this->coreFunctions->LogConsole('Found ' . $filename);
+
+  //       $status = false;
+  //       if (Str::substr($filename, -3) === 'sbc') {
+  //         $arrline = $this->ftpfilecheckendfile($filename, true);
+  //         // $this->coreFunctions->LogConsole(json_encode($arrline));
+
+  //         if (is_array($arrline)) {
+
+  //           $a = explode('/', $filename);
+  //           $b =  explode('~', $a[3]);
+  //           //table~date    
+  //           if ($this->extractionlinerecord($filename, $b[0], true)) {
+  //             try {
+  //               $this->ftpdeletefile($filename, true);
+  //               $status = true;
+  //               $this->coreFunctions->sbclogger("MIRROR - file deleted " . $filename, 'DLOCK');
+  //               $this->coreFunctions->LogConsole("File deleted " . $filename);
+  //             } catch (Exception $ex) {
+  //               $status = false;
+  //               $this->coreFunctions->sbclogger("MIRROR - deleting failed " . $filename . ' ' . substr($ex, 0, 1000));
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } catch (Exception $ex) {
+  //     $status = false;
+  //     $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - ' . substr($ex, 0, 1000));
+  //     throw new \Exception('Exception message (ftpcheckmirrorfiletoextract) => ' . $ex);
+  //   }
+
+  //   return ['status' => $status];
+  // }
+
+
+  public function ftpcheckmirrorfiletoextract_v2($branch, $station, $folder)
   {
     $status = false;
+    $failures = 0;
+
     try {
       date_default_timezone_set('Asia/Singapore');
 
       $ftpHost = config('filesystems.disks.ftpmirror.host');
-      $this->coreFunctions->sbclogger('ftp host: ' . $ftpHost, 'DLOCK');
-      $this->coreFunctions->LogConsole('Checking directory ' . $branch . '/' . $station . '/' . $folder);
-      $this->coreFunctions->sbclogger('Checking directory ' . $branch . '/' . $station . '/' . $folder, 'DLOCK');
-      foreach (Storage::disk('ftpmirror')->files($branch . '/' . $station . '/' . $folder) as $filename) {
-        $this->coreFunctions->LogConsole('Found ' . $filename);
+      $this->coreFunctions->sbclogger('ftp host: ' . $ftpHost, 'MIRROR');
+      $this->coreFunctions->sbclogger('Checking directory (v2) ' . $branch . '/' . $station . '/' . $folder, 'MIRROR');
 
-        $status = false;
-        if (Str::substr($filename, -3) === 'sbc') {
-          $arrline = $this->ftpfilecheckendfile($filename, true);
-          // $this->coreFunctions->LogConsole(json_encode($arrline));
+      $files = Storage::disk('ftpmirror')->files('/' . $branch . '/' . $station . '/' . $folder);
 
-          if (is_array($arrline)) {
+      $totalFiles = count($files);
+      $this->coreFunctions->sbclogger('Total files found: ' . $totalFiles, 'MIRROR');
 
-            $a = explode('/', $filename);
-            $b =  explode('~', $a[3]);
-            //table~date    
-            if ($this->extractionlinerecord($filename, $b[0], true)) {
-              try {
-                $this->ftpdeletefile($filename, true);
-                $status = true;
-                $this->coreFunctions->sbclogger("MIRROR - file deleted " . $filename, 'DLOCK');
-                $this->coreFunctions->LogConsole("File deleted " . $filename);
-              } catch (Exception $ex) {
-                $status = false;
-                $this->coreFunctions->sbclogger("MIRROR - deleting failed " . $filename . ' ' . substr($ex, 0, 1000));
+      $groupedFiles = collect($files)
+        ->map(function ($file) {
+          $filename = basename($file);
+          return (object) [
+            'filename' => $filename,
+            'fullpath' => $file,
+            'prefix' => explode('~', $filename)[0]
+          ];
+        })
+        ->groupBy('prefix')
+        ->map(function ($group, $prefix) {
+          return (object) [
+            'prefix' => $prefix,
+            'count' => $group->count(),
+            'items' => $group->values(), // keep filename+fullpath paired together
+          ];
+        })
+        ->sortBy('prefix');
+
+      $prioFile = [
+        'item',
+        'uom',
+        'iteminfo',
+        'client',
+        'clientinfo',
+        'model_masterfile',
+        'part_masterfile',
+        'stockgrp_masterfile',
+        'frontend_ebrands',
+        'item_class',
+        'category_masterfile',
+        'projectmasterfile',
+        'itemcategory',
+        'itemsubcategory',
+        'coa',
+        'useraccess',
+        'users',
+        'moduleaccess',
+        'center',
+        'centeraccess',
+        'ewtlist',
+        'terms',
+        'trans',
+        'unposted'
+      ];
+
+      $prioDoc = ['PR', 'PO', 'RR', 'DM', 'SO', 'SJ', 'MJ', 'CI', 'CM', 'MC', 'IS', 'AJ', 'TS', 'ST', 'AP', 'PV', 'CV', 'AR', 'KR', 'CR', 'DS'];
+
+      $sortedPrefixes = $this->sortByPriority($groupedFiles->keys()->toArray(), $prioFile);
+
+      foreach ($sortedPrefixes as $prefix) {
+        $prefixGroup = $groupedFiles->get($prefix);
+        $items = $prefixGroup ? $prefixGroup->items : collect();
+
+        $this->coreFunctions->sbclogger('Found ' . $items->count() . ' file(s) for prefix: ' . $prefix, 'MIRROR');
+
+        if ($prefix == 'trans') {
+          $transByType = $items
+            ->map(function ($item) {
+              $parts = explode('~', $item->filename);
+              $item->doc = isset($parts[1]) ? $parts[1] : null;
+              return $item;
+            })
+            ->groupBy('doc');
+
+          $sortedDocs = $this->sortByPriority($transByType->keys()->toArray(), $prioDoc);
+
+          foreach ($sortedDocs as $doc) {
+            $docItems = $transByType->get($doc)
+              ->sortBy(function ($item) {
+                return $this->extractSortKey($item->filename);
+              })
+              ->values();
+
+            foreach ($docItems as $item) {
+              // $this->coreFunctions->LogConsole('File ' . $item->filename . ' - ' . $item->fullpath);
+              if (!$this->processMirrorFile($prefix, $item->filename, $item->fullpath)) {
+                $this->coreFunctions->sbclogger('Failed to extract ' . $item->filename, 'MIRROR');
+                $failures++;
               }
+            }
+          }
+        } else {
+          $sortedItems = $items
+            ->sortBy(function ($item) {
+              return $this->extractSortKey($item->filename);
+            })
+            ->values();
+
+          foreach ($sortedItems as $item) {
+            // $this->coreFunctions->LogConsole('File ' . $item->filename . ' - ' . $item->fullpath);
+            if (!$this->processMirrorFile($prefix, $item->filename, $item->fullpath)) {
+              $this->coreFunctions->sbclogger('Failed to extract ' . $item->filename, 'MIRROR');
+              $failures++;
             }
           }
         }
       }
+      $status = ($failures === 0); // true only if every file processed cleanly
     } catch (Exception $ex) {
       $status = false;
-      $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - ' . substr($ex, 0, 1000));
+      $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - ' . substr($ex->getMessage(), 0, 1000));
+      throw new \Exception('Exception message (ftpcheckmirrorfiletoextract) => ' . $ex->getMessage(), 0, $ex);
     }
 
-    return ['status' => $status];
+    return ['status' => $status, 'failures' => $failures];
+  }
+
+  private function extractSortKey($filename)
+  {
+    $parts = explode('~', $filename);
+    $last = end($parts); // last "~" segment, e.g. "2026-07-0122.20.04.sbc"
+    return preg_replace('/\.sbc$/i', '', $last); // strip extension only
+  }
+
+  /**
+   * Sort a list of values by their position in a priority list.
+   * Unmatched values are pushed to the end instead of jumping to the front.
+   */
+  private function sortByPriority(array $values, array $priorityList)
+  {
+    usort($values, function ($a, $b) use ($priorityList) {
+      $posA = array_search($a, $priorityList);
+      $posB = array_search($b, $priorityList);
+
+      $posA = ($posA === false) ? PHP_INT_MAX : $posA;
+      $posB = ($posB === false) ? PHP_INT_MAX : $posB;
+
+      return $posA - $posB;
+    });
+
+    return $values;
+  }
+
+  /**
+   * Process a single mirrored file: check, extract, then delete on success.
+   * Returns true if the file was fully processed and deleted, false otherwise.
+   */
+  private function processMirrorFile($table, $filename, $fullpath)
+  {
+    $this->coreFunctions->sbclogger('Processing file: ' . $filename, 'MIRROR');
+
+    if (Str::substr($filename, -3) !== 'sbc') {
+      return false;
+    }
+
+    $arrline = $this->ftpfilecheckendfile($fullpath, true);
+
+    if (!is_array($arrline)) {
+      return false;
+    }
+
+    if (!$this->extractionlinerecord($fullpath, $table, true)) {
+      return false;
+    }
+
+    try {
+      $this->ftpdeletefile($fullpath, true);
+      $this->coreFunctions->sbclogger("MIRROR - file deleted " . $filename, 'DLOCK');
+      $this->coreFunctions->LogConsole("File deleted " . $filename);
+      return true;
+    } catch (Exception $ex) {
+      $this->coreFunctions->sbclogger("MIRROR - deleting failed " . $filename . ' ' . substr($ex->getMessage(), 0, 1000));
+      return false;
+    }
   }
 
   private function extractionlinerecord($path, $table, $mirror)
   {
     $status = true;
     try {
-      if ($table == 'trans') {
+
+      $start = Carbon::parse($this->othersClass->getCurrentTimeStamp());
+
+      if ($table == 'trans' || $table == 'unposted') {
         $file = Storage::disk('ftp')->get($path);
         $qrys = explode("\n", $file);
         $f = explode('/', $path);
@@ -2297,12 +2531,21 @@ class posClass
           return ['status' => false];
         }
 
-        $rec = $this->coreFunctions->opentable("select trno from $numtable where trno=" . $trno);
-        if (!empty($rec)) {
-          foreach ($tables as $t) {
-            $this->coreFunctions->execqry("delete from $t where trno=" . $trno, 'delete');
+        $arap = [];
+
+        if ($table == 'unposted') {
+          if (($key = array_search('gldetail', $tables)) !== false) {
+            $arap = $this->coreFunctions->opentable("select d.refx,d.linex,coa.acno from gldetail as d left join coa on coa.acnoid=d.acnoid where d.refx<>0 and d.trno=" . $trno);
+          }
+        } else {
+          $rec = $this->coreFunctions->opentable("select trno from $numtable where trno=" . $trno);
+          if (!empty($rec)) {
+            foreach ($tables as $t) {
+              $this->coreFunctions->execqry("delete from $t where trno=" . $trno, 'delete');
+            }
           }
         }
+
         foreach ($qrys as $qry) {
           if ($qry != 'ENDFILE' && $qry != '') {
             $qry = str_replace("'NULL'", "NULL", $qry);
@@ -2319,17 +2562,68 @@ class posClass
           foreach ($tables as $t) {
             $this->coreFunctions->execqry("delete from $t where trno=" . $trno, 'delete');
           }
+        } else {
+          //update ar/ap
+          if ($arap && count($arap) > 0) {
+            $config = [];
+            $config['params']['doc'] = $doc;
+            $config['params']['trno'] = $trno;
+            $config['params']['user'] = 'MIRROR';
+            foreach ($arap as $key_arap => $val_arap) {
+              $this->sqlquery->setupdatebal($val_arap->refx, $val_arap->linex, $val_arap->acno, $config);
+            }
+          }
+
+          $servedqa = [];
+          switch ($doc) {
+            case 'RR':
+              $servedqa = $this->coreFunctions->opentable("select refx,linex from glstock where trno=" . $trno . " and refx<>0");
+              foreach ($servedqa as $keyqa => $valqa) {
+                if ($this->othersClass->setserveditemsRR($valqa->refx, $valqa->linex, "qty") == 0) {
+                  $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - failed to update setserveditems ' . $path);
+                  return false;
+                }
+              }
+              break;
+            case 'DM':
+              $servedqa = $this->coreFunctions->opentable("select refx,linex from glstock where trno=" . $trno . " and refx<>0");
+              foreach ($servedqa as $keyqa => $valqa) {
+                if (app('App\Http\Classes\modules\purchase\dm')->setserveditems($valqa->refx, $valqa->linex, "qty") == 0) {
+                  $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - failed to update setserveditems ' . $path);
+                  return false;
+                }
+              }
+              break;
+            case 'SJ':
+              $servedqa = $this->coreFunctions->opentable("select refx,linex from glstock where trno=" . $trno . " and refx<>0");
+              foreach ($servedqa as $keyqa => $valqa) {
+                if (app('App\Http\Classes\modules\sales\sj')->setserveditems($valqa->refx, $valqa->linex, "iss") == 0) {
+                  $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - failed to update setserveditems ' . $path);
+                  return false;
+                }
+              }
+              break;
+            case 'CM':
+              $servedqa = $this->coreFunctions->opentable("select refx,linex from glstock where trno=" . $trno . " and refx<>0");
+              foreach ($servedqa as $keyqa => $valqa) {
+                if (app('App\Http\Classes\modules\sales\cm')->setserveditems($valqa->refx, $valqa->linex) == 0) {
+                  $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - failed to update setserveditems ' . $path);
+                  return false;
+                }
+              }
+              break;
+          }
         }
       } else {
         $data = $this->parseStringToArray($path, $mirror);
 
-        $this->coreFunctions->LogConsole(count($data));
-        // $this->coreFunctions->LogConsole(json_encode($data));
+        $this->coreFunctions->sbclogger('file records: ' . count($data), 'MIRROR');
 
         $blnUpDlock = false;
+        $blnDeleteAll = false;
 
         if (!empty($data)) {
-          $uniquefield = [];
+          $uniquefield = []; //always place the common id in the beginning of array (purpose in centeraccess, moduleaccess to re-insert whole data under of the specify common id)
           switch ($table) {
             case 'item':
               $uniquefield = ['itemid'];
@@ -2356,26 +2650,64 @@ class posClass
             case 'category_masterfile':
               $uniquefield = ['cat_id'];
               break;
+            case 'coa':
+              $uniquefield = ['AcnoID'];
+              break;
+            case 'center':
+              $uniquefield = ['code'];
+              break;
+            case 'centeraccess':
+              $uniquefield = ['userid', 'center'];
+              $blnDeleteAll = true;
+              break;
+            case 'ewtlist':
+              $uniquefield = ['code'];
+              break;
+            case 'moduleaccess':
+              $uniquefield = ['idno', 'attribute'];
+              $blnDeleteAll = true;
+              break;
+            case 'terms':
+              $uniquefield = ['terms'];
+              break;
+            case 'useraccess':
+              $uniquefield = ['userid'];
+              break;
+            case 'users':
+              $uniquefield = ['idno'];
+              break;
           }
 
+          $lineCounter = 1;
           foreach ($data as $row) {
             // $id = $row[$uniquefield];
 
             $formattedValues = [];
 
             $filter = "";
+            $filterDeleteAll = "";
             foreach ($uniquefield as $uniquef) {
+
+              $uniqueval = ($this->isNumberField($uniquef)) ? $row[$uniquef] : "'" . $row[$uniquef] . "'";
               if ($filter == "") {
-                $filter = $uniquef . " = " .  $row[$uniquef];
+                $filter = $uniquef . " = " .  $uniqueval;
+                $filterDeleteAll = $filter;
               } else {
-                $filter .= " and " . $uniquef . " = '" . $row[$uniquef] . "'";
+                $filter .= " and " . $uniquef . " = " . $uniqueval;
               }
             }
 
+            if ($blnDeleteAll) {
+              $updateqry = "DELETE " . $table . " WHERE " .  $filterDeleteAll;
+              $blnDeleteAll = false;
+              goto insertDataHere;
+            }
+
             $selectQueries = "SELECT " . $uniquefield[0] . " as value FROM " . $table . " WHERE " .  $filter;
+            // $this->coreFunctions->sbclogger($selectQueries, 'MIRROR');
             $exists =  $this->coreFunctions->datareader($selectQueries, [], '', true);
             if ($exists == 0) {
-
+              insertDataHere:
               $columns = implode(', ', array_map(function ($column) {
                 return "`$column`";
               }, array_keys($data[0])));
@@ -2396,17 +2728,18 @@ class posClass
               $values = "(" . implode(", ", $formattedValues) . ")";
 
               $insertqry = "INSERT INTO " . $table . " ($columns) VALUES " . $values;
-              $this->coreFunctions->LogConsole($insertqry);
               if ($this->coreFunctions->execqry($insertqry)) {
-                $this->coreFunctions->LogConsole("success insert");
+                // $this->coreFunctions->LogConsole("success insert");
               } else {
+                $this->coreFunctions->LogConsole($insertqry);
                 $this->coreFunctions->LogConsole("failed insert");
                 $status = false;
               }
             } else {
+
               $updates = [];
               foreach ($row as $column => $value) {
-                if ($column !== $uniquefield) {
+                if (!in_array($column, $uniquefield)) {
                   $escapedValue = addslashes($value);
 
                   if ($this->isDateField($column)) {
@@ -2422,10 +2755,10 @@ class posClass
               $updateqry = "UPDATE " . $table . " SET $setClause WHERE " .  $filter;
 
               if ($updateqry != "") {
-                $this->coreFunctions->LogConsole($updateqry);
                 if ($this->coreFunctions->execqry($updateqry)) {
-                  $this->coreFunctions->LogConsole("success update");
+                  // $this->coreFunctions->LogConsole("success update");
                 } else {
+                  $this->coreFunctions->LogConsole($updateqry);
                   $this->coreFunctions->LogConsole("failed update");
                   $status = false;
                 }
@@ -2444,12 +2777,26 @@ class posClass
                   break;
               }
             }
+
+            $lineCounter += 1;
+
+            if ($lineCounter % 500 === 0) {
+              $this->coreFunctions->sbclogger('Processed ' . $lineCounter . ' records for ' . $table, 'MIRROR');
+            }
           }
         }
       }
+
+      if ($status) {
+        $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
+        $elapsed = $start->diffInSeconds($end);
+        $this->coreFunctions->LogConsole('extracted csv:' . $path . ' - ' . $elapsed . ' seconds');
+      } else {
+        $this->coreFunctions->LogConsole('faild to extract csv:' . $path);
+      }
     } catch (Exception $ex) {
       $status = false;
-      $this->coreFunctions->LogConsole('ftpcheckmirrorfiletoextract - ' . substr($ex, 0, 1000));
+      //$this->coreFunctions->LogConsole('ftpcheckmirrorfiletoextract - ' . substr($ex, 0, 1000));
       $this->coreFunctions->sbclogger('ftpcheckmirrorfiletoextract - ' . substr($ex, 0, 1000));
     }
 
@@ -2467,11 +2814,11 @@ class posClass
         break;
       case 'PR':
         $numtable = 'transnum';
-        $tables = ['transnum', 'hpohead', 'hpostock', 'hheadinfotrans', 'hstockinfotrans'];
+        $tables = ['transnum', 'hprhead', 'hprstock', 'hheadinfotrans', 'hstockinfotrans'];
         break;
       case 'PO':
         $numtable = 'transnum';
-        $tables = ['transnum', 'hprhead', 'hprstock', 'hheadinfotrans', 'hstockinfotrans'];
+        $tables = ['transnum', 'hpohead', 'hpostock', 'hheadinfotrans', 'hstockinfotrans'];
         break;
       case 'RR':
       case 'DM':
@@ -2480,6 +2827,9 @@ class posClass
       case 'IS':
       case 'AJ':
       case 'TS':
+      case 'CI':
+      case 'MJ':
+      case 'ST':
         $numtable = 'cntnum';
         $tables = ['cntnum', 'glhead', 'glstock', 'gldetail', 'arledger', 'apledger', 'caledger', 'cbledger', 'crledger', 'rrstatus', 'costing', 'hcntnuminfo', 'hstockinfo', 'hdetailinfo', 'serialin', 'serialout'];
         break;
@@ -2538,6 +2888,14 @@ class posClass
     // $dateFields = ['dateid', 'promostart', 'promoend', 'effectdate', 'dateupdated', 'warranty', 'bday', 'lock', 'hired', 'resigned', 'enddate', 'editdate', 'voiddate', 'bday2', 'viewdate', 'start', 'dlock', 'lasttrans', 'regdate'];
 
     $dateFields = $this->othersClass->getDateFields();
+    return in_array(strtolower($columnName), $dateFields);
+  }
+
+  function isNumberField($columnName)
+  {
+    // $dateFields = ['dateid', 'promostart', 'promoend', 'effectdate', 'dateupdated', 'warranty', 'bday', 'lock', 'hired', 'resigned', 'enddate', 'editdate', 'voiddate', 'bday2', 'viewdate', 'start', 'dlock', 'lasttrans', 'regdate'];
+
+    $dateFields = $this->othersClass->getNumberFields();
     return in_array(strtolower($columnName), $dateFields);
   }
 

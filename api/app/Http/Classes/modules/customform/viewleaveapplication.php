@@ -434,7 +434,7 @@ class viewleaveapplication
             if ($action == "ar" || $action == "post") {
               // getlast approver
               if ($companyid == 58) {
-                $this->othersClass->updatePendingapp($trno, $line, 'LEAVE', $tempdata, $url, $config);
+                $this->othersClass->insertUpdatePendingapp($trno, $line, 'LEAVE', $tempdata, $url, $config);
               }
               $lastapprover = $approversetup[count($approversetup) - 1];
               if ($lastapprover == 'issupervisor' && $supervisor || $lastapprover == 'isapprover' && $approver) {

@@ -128,7 +128,7 @@ class viewbillingshipping
     if ($companyid = 10 || $companyid == 12) {
       switch ($doc) {
         case 'QS':
-          $fields = ['lblgrossprofit', 'conaddr', ['contactname', 'contactno'], 'rem2'];
+          $fields = ['lblgrossprofit','ispaymentnotif', 'conaddr', ['contactname', 'contactno'], 'rem2'];
           break;
       }
     }
@@ -199,7 +199,7 @@ class viewbillingshipping
         $head = strtolower($config['params']['doc']) . 'head';
         $hhead = 'h' . strtolower($config['params']['doc']) . 'head';
         $hleftjoin = " left join client on client.client = head.client";
-        $addfields = ",head.address1 as conaddr, head.cperson as contactname,head.contactno,if(head.rem2 !='',head.rem2,client.rem2) as rem2";
+        $addfields = ",head.address1 as conaddr, head.cperson as contactname,head.contactno,if(head.rem2 !='',head.rem2,client.rem2) as rem2,ifnull(head.ispaymentnotif,'') as ispaymentnotif";
         break;
     }
 
@@ -383,6 +383,8 @@ class viewbillingshipping
       $data['cperson'] = $config['params']['dataparams']['contactname'];
       $data['contactno'] = $config['params']['dataparams']['contactno'];
       $data['rem2'] = $config['params']['dataparams']['rem2'];
+      $data['ispaymentnotif'] =$config['params']['dataparams']['ispaymentnotif'];
+
     }
 
 

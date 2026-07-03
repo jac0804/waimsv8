@@ -228,8 +228,8 @@ class forecast_report
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Sales', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Quotation Date', '120', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Quotation No', '70', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Quotation Date', '110', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Quotation No', '80', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Company Name', '150', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col("Item Group", '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Model No.', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
@@ -277,6 +277,7 @@ class forecast_report
     $closing = "";
     $acctstat = "";
     $qdate = "";
+    $closingdate= "";
    
     foreach ($result as $key => $data) {
       $calllogdata = $this->getcalllastlog($data->trno);
@@ -284,6 +285,10 @@ class forecast_report
       if ($calllogdata) {
         $probability = $calllogdata[0]['probability'];
         $rem = $calllogdata[0]['rem'];
+      }
+
+      if ($config['params']['companyid'] == 10) { //afti
+        $probability = $data->probability;
       }
 
       if ($filterprobability != "") {
@@ -302,24 +307,35 @@ class forecast_report
 
       switch ($probability) {
         case '25%': //1yr
-          $closing = "December";
+          $qdate = strtotime($data->quodate);
+          if ($config['params']['companyid'] == 10){ //afti
+            $closingdate = strtotime("+1 year", $qdate);
+          }else{
+            $closingdate = "December";
+          }
           break;
         case '50%': //9months
           $qdate = strtotime($data->quodate);
-          $closing = date("F", strtotime("+6 month", $qdate));
+          if ($config['params']['companyid'] == 10){ //afti
+            $closingdate = strtotime("+9 month", $qdate);
+          }else{
+            $closingdate = strtotime("+6 month", $qdate);
+          }
           break;
         case '75%': //3mos
           $qdate = strtotime($data->quodate);
-          $closing = date("F", strtotime("+3 month", $qdate));
+          $closingdate = date("F", strtotime("+3 month", $qdate));
           break;
         case '90%': //within the month
-          $qdate = strtotime($data->quodate);
-          $closing = date("F", strtotime($qdate));
+          $closingdate = strtotime($data->quodate);
           break;
         case '100%': //same on the date
-          $closing = date("F", strtotime($data->due));
+          $closingdate = strtotime($data->due);
           break;
       }
+
+      $closing = $closingdate ? date("F", $closingdate) : "";
+      $closingyr = $closingdate ? date("Y", $closingdate) : "";
 
       $so = $this->coreFunctions->datareader("select ifnull(dateid,'') as value from (select sq.dateid from sqhead as sq left join hqshead as qs on qs.sotrno = sq.trno where qs.client = '" . $data->client . "'
       union all select sq.dateid from hsqhead as sq left join hqshead as qs on qs.sotrno = sq.trno where qs.client = '" . $data->client . "') as a order by dateid desc limit 1");
@@ -340,16 +356,24 @@ class forecast_report
       }
 
       $str .= $this->reporter->col($data->sales, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data->quodate, '120', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data->docno, '70', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->quodate, '110', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->docno, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($clientname, '150', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->itemgroup, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->itemname, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col(number_format($data->rate, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($probability, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      if ($config['params']['companyid'] == 10){ //afti
+        $str .= $this->reporter->col($data->probability, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      }else{
+        $str .= $this->reporter->col($probability, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      }
       $str .= $this->reporter->col($closing, '120', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($rem, '140', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(date("Y", strtotime($this->othersClass->getCurrentDate())), '90', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      if ($config['params']['companyid'] == 10){ //afti
+        $str .= $this->reporter->col($closingyr, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      }else{
+        $str .= $this->reporter->col(date("Y", strtotime($this->othersClass->getCurrentDate())), '90', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      }
       $str .= $this->reporter->col($acctstat, '130', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
 
       $str .= $this->reporter->endrow();

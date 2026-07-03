@@ -413,7 +413,6 @@ class pendingloanapplication
             $appstatus = ['status' => true];
             if (!$lastapp) {
                 $appstatus = $this->othersClass->insertUpdatePendingapp($row['trno'], 0, 'LOAN', $tempdata, $url, $config, 0, true);
-                // $appstatus = $this->othersClass->updatePendingapp($row['trno'], 0, 'LOAN', $tempdata, $url, $config, 0, $stat);
             }
 
             if (!$appstatus['status']) {

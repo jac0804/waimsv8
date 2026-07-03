@@ -1074,6 +1074,10 @@ class obapplication
             break;
         }
         break;
+      case 29: //sbc - no sched text
+        $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
+        $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
+        break;
       default:
         $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
         $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
@@ -1400,7 +1404,6 @@ class obapplication
               break;
           }
           $result = $this->othersClass->insertUpdatePendingapp(0, $line, 'OB', $data2, $url, $config, 0, $stats, true);
-          // $this->othersClass->insertPendingapp(0, $line, 'OB', $data2, $url, $config, 0,  $stats);
           $params = [];
           $params['title'] = $this->modulename;
           $params['clientname'] = $obdata[0]['clientname'];

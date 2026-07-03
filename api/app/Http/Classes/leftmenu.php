@@ -1839,6 +1839,7 @@ class leftmenu
         $p = $parent;
         $parent = '\\' . $parent;
         $label = 'Stockcard';
+        $folder = 'masterfile';
         if ($params['companyid'] == 10 || $params['companyid'] == 12) { //afti, afti usd
             $label = 'Main Items';
         }
@@ -1887,6 +1888,9 @@ class leftmenu
                 , (5485,0,'Allow View Supplier Field','',0,'\\10233','\\102',0,'0',0," . $params['levelid'] . ")
                 , (5508,0,'Allow Duplicate Item Info','',0,'\\10235','\\102',0,'0',0," . $params['levelid'] . ")";
                 break;
+            case 70: //sportrunner
+                $folder = 'productportal';
+                break;
         }
 
         if ($this->companysetup->isrecalc($params)) {
@@ -1894,7 +1898,7 @@ class leftmenu
         }
         $this->insertattribute($params, $qry);
 
-        return "($sort,$p,'stockcard','/ledgergrid/masterfile/stockcard','" . $label . "','fa fa-list-alt sub_menu_ico',11," . $params['levelid'] . ")";
+        return "($sort,$p,'stockcard','/ledgergrid/" . $folder . "/stockcard','" . $label . "','fa fa-list-alt sub_menu_ico',11," . $params['levelid'] . ")";
     } //end function
 
     public function itemquery($params, $parent, $sort)
@@ -3415,12 +3419,17 @@ class leftmenu
     public function model($params, $parent, $sort)
     {
         $companyid = $params['companyid'];
+        $folder = 'tableentry';
         switch ($companyid) {
             case 14: //majesty
                 $fieldLabel = 'Item Generic';
                 break;
             case 22: //EIPI
                 $fieldLabel = 'Item Category 4';
+                break;
+            case 70: //sportrunner
+                $fieldLabel = 'Car Model';
+                $folder = 'productportal';
                 break;
             default:
                 $fieldLabel = 'Item Model';
@@ -3430,7 +3439,7 @@ class leftmenu
         $parent = '\\' . $parent;
         $qry = "(852,1,'" . $fieldLabel . "','',0,'\\1102','$parent',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'model','/tableentries/tableentry/entrymodel','" . $fieldLabel . "','fa fa-list sub_menu_ico',852," . $params['levelid'] . ")";
+        return "($sort,$p,'model','/tableentries/" . $folder . "/entrymodel','" . $fieldLabel . "','fa fa-list sub_menu_ico',852," . $params['levelid'] . ")";
     } //end function
 
 
@@ -8575,7 +8584,7 @@ class leftmenu
         $p = $parent;
         $parent = '\\' . $parent;
         $qry = "(4652, 0, 'Financing Partner', '', 0, '\\2031', '$parent', 0, '0', 0, " . $params['levelid'] . "),
-            (4653, 0, 'Allow View Financing Partner', 'FINANCING PARTNER', 0, '\\203101', '\\2031', 0, '0', 0, " . $params['levelid'] . "),
+            (4653, 0, 'Allow View Financing Partner', 'FP', 0, '\\203101', '\\2031', 0, '0', 0, " . $params['levelid'] . "),
             (4654, 0, 'Allow Click Edit Button FP', '', 0, '\\203102', '\\2031', 0, '0', 0, " . $params['levelid'] . "),
             (4655, 0, 'Allow Click New Button FP', '', 0, '\\203103', '\\2031', 0, '0', 0, " . $params['levelid'] . "),
             (4656, 0, 'Allow Click Save Button FP', '', 0, '\\203104', '\\2031', 0, '0', 0, " . $params['levelid'] . "),        
@@ -10475,10 +10484,10 @@ class leftmenu
         (5907,1,'Allow Click Add Item AW','',0,'\\61308','\\613',0,'0',0," . $params['levelid'] . ") ,
         (5908,1,'Allow Click Delete Item AW','',0,'\\61309','\\613',0,'0',0," . $params['levelid'] . "),
         (5909,1,'Allow Change Button AW','',0,'\\61310','\\613',0,'0',0," . $params['levelid'] . "),
-        (5921,0,'Allow Click Lock Button AK','',0,'\\61017','\\610',0,'0',0," . $params['levelid'] . ") ,
-        (5922,0,'Allow Click UnLock Button AK','',0,'\\61018','\\610',0,'0',0," . $params['levelid'] . ") ,
-        (5923,0,'Allow Click Post Button AK','',0,'\\61019','\\610',0,'0',0," . $params['levelid'] . ") ,
-        (5924,0,'Allow Click UnPost Button AK','',0,'\\61020','\\610',0,'0',0," . $params['levelid'] . ")";
+        (5921,0,'Allow Click Lock Button AW','',0,'\\61011','\\613',0,'0',0," . $params['levelid'] . ") ,
+        (5922,0,'Allow Click UnLock Button AW','',0,'\\61312','\\613',0,'0',0," . $params['levelid'] . ") ,
+        (5923,0,'Allow Click Post Button AW','',0,'\\61313','\\613',0,'0',0," . $params['levelid'] . ") ,
+        (5924,0,'Allow Click UnPost Button AW','',0,'\\61314','\\613',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'aw','/module/autoserv/aw','Work Order','fas fa-briefcase sub_menu_ico',5898," . $params['levelid'] . ")";
     } ///
@@ -10498,7 +10507,7 @@ class leftmenu
         $qry = "(5914,0,'Task History','',0,'\\24045','$parent',0,'0',0," . $params['levelid'] . ") ,
         (5915,0,'Allow View Transaction Task History','',0,'\\2404501','\\24045',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'TASK HISTORY','/module/autoserv/taskhistory','Task History','fas fa-list-check sub_menu_ico',5914," . $params['levelid'] . ")";
+        return "($sort,$p,'TASK HISTORY','/module/autoserv/taskhistory','Task History','fas fa-list sub_menu_ico',5914," . $params['levelid'] . ")";
     } ///
 
 
@@ -10526,4 +10535,43 @@ class leftmenu
         $this->insertattribute($params, $qry);
         return "($sort,$p,'Job History','/ledgergrid/autoserv/jobhistory','Job History','fas fa-layer-group sub_menu_ico',5910," . $params['levelid'] . ")";
     } //end function 
+
+
+    public function parentproductportal($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5885,0,'PRODUCT PORTAL','',0,'$parent','\\',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "insert into left_parent(id,name,seq,class,doc,levelid) values($p,'PRODUCT PORTAL',$sort,'fas fa-chalkboard-teacher',',,'," . $params['levelid'] . ")";
+    } //end function
+
+    public function positions($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5887,0,'Positions','',0,'\\24046','$parent',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'positions','/tableentries/productportal/entrypositions','Positions','fa fa-user-plus sub_menu_ico',5887," . $params['levelid'] . ")";
+    } //end function
+
+    public function entrycrbrand($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5888,1,'Car Brand Setup','',0,'\\24047','$parent',0,0,0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'entrycrbrand','/tableentries/productportal/entrycrbrand','Car Brand Setup','fa fa-car sub_menu_ico',5888," . $params['levelid'] . ")";
+    } //end function
+
+    public function updatepricelist($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5890,0,'Update Price List','',0,'\\24048','$parent',0,0,0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry); //<i class="fas fa-sort-amount-up-alt"></i>
+        return "($sort,$p,'updatepricelist','/headtable/othersettings/updatepricelist','Update Price List','fa fa-sort-amount-up-alt sub_menu_ico',5890," . $params['levelid'] . ")";
+    } //end function
+
+
 }//end  

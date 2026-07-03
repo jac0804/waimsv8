@@ -101,6 +101,8 @@ class waims
     $this->coreFunctions->execqrynolog("update cntnuminfo set sdate2=null where sdate2='0000-00-00 00:00:00' or sdate2=''");
     $this->coreFunctions->execqrynolog("update hcntnuminfo set sdate1=null where sdate1='0000-00-00 00:00:00' or sdate1=''");
     $this->coreFunctions->execqrynolog("update hcntnuminfo set sdate2=null where sdate2='0000-00-00 00:00:00' or sdate2=''");
+
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["promostart", "promoend"], "date default NULL");
   }
 
 

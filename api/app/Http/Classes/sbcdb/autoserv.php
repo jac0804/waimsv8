@@ -42,9 +42,9 @@ class autoserv
         $qry = "CREATE TABLE `cmodel` (
         `line` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
         `carid` INTEGER(11) UNSIGNED NOT NULL DEFAULT 0,
-        `year` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+        `cryear` INTEGER UNSIGNED NOT NULL DEFAULT 0,
         `model` VARCHAR(150) NOT NULL DEFAULT '',
-        `type` VARCHAR(150) NOT NULL DEFAULT '',
+        `crtype` VARCHAR(150) NOT NULL DEFAULT '',
         `sub_model` VARCHAR(150) NOT NULL DEFAULT '',
         `other_info` VARCHAR(150) NOT NULL DEFAULT '',
         `createby` varchar(150) NOT NULL DEFAULT '',

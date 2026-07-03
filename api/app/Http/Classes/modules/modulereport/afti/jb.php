@@ -954,7 +954,7 @@ class jb
     PDF::MultiCell(20, 50, '', '', 'L', false, 0);
     PDF::MultiCell(150, 50, 'Procurement', '', 'C', false, 0);
     PDF::MultiCell(120, 50, '', '', 'L', false, 0);
-    PDF::MultiCell(150, 50, 'O.P.L.P Head', '', 'C', false, 0);
+    PDF::MultiCell(150, 50, 'Operations Head', '', 'C', false, 0);
     PDF::MultiCell(20, 50, '', '', 'R');
   }
 
@@ -998,7 +998,7 @@ class jb
 
     PDF::SetFont($font, 'R', $fontsize9);
     PDF::MultiCell(180, 50, '', '', 'L', false, 0);
-    PDF::MultiCell(150, 50, 'O.P.L.P. Head', '', 'C', false, 0);
+    PDF::MultiCell(150, 50, 'Operations Head', '', 'C', false, 0);
     PDF::MultiCell(120, 50, '', '', 'R');
   }
 

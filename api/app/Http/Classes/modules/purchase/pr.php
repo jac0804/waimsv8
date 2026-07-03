@@ -1002,7 +1002,7 @@ class pr
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
-        $data = ['postdate' => $date, 'postedby' => $config['params']['user']];
+        $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'iscsv' => 0];
         $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
         $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);

@@ -119,6 +119,7 @@ class entryewt
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
+          $data2['ismirror'] = 0;
           $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
         }
       } // end if
@@ -146,6 +147,7 @@ class entryewt
     } else {
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
+      $data['ismirror'] = 0;
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
         $returnrow = $this->loaddataperrecord($row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];

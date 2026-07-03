@@ -32,6 +32,7 @@ use App\Http\Classes\sbcdb\payroll;
 use App\Http\Classes\sbcdb\warehousing;
 use App\Http\Classes\sbcdb\documentmanagement;
 use App\Http\Classes\sbcdb\vsched;
+use App\Http\Classes\sbcdb\productportal;
 use App\Http\Classes\sbcdb\reindex;
 
 use Carbon\Carbon;
@@ -67,6 +68,7 @@ class entryprefix
   private $warehousing;
   private $documentmanagement;
   private $fams;
+  private $productportal;
   private $vsched;
   private $logger;
   private $reindex;
@@ -94,6 +96,7 @@ class entryprefix
     $this->warehousing = new warehousing;
     $this->documentmanagement = new documentmanagement;
     $this->fams = new fams;
+    $this->productportal = new productportal;
     $this->vsched = new vsched;
     $this->logger = new Logger;
     $this->reindex = new reindex;
@@ -143,7 +146,7 @@ class entryprefix
     //   if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
     // }
 
-    if ($config['params']['companyid'] == 60) {//transpower
+    if ($config['params']['companyid'] == 60) { //transpower
       if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
     }
 
@@ -152,7 +155,7 @@ class entryprefix
     $obj[0]['label'] = "CHECK FIELDS";
 
 
-    if ($config['params']['companyid'] == 60) {//transpower
+    if ($config['params']['companyid'] == 60) { //transpower
       $obj[2]['label'] = "UPDATE LOWEST PRICE";
       $obj[2]['action'] = "updatelowestprice";
       $obj[2]['lookupclass'] = "updatelowestprice";
@@ -260,6 +263,9 @@ class entryprefix
       case 'tableupdateserv':
         $this->autoserv->tableupdateserv($config);
         break;
+      case 'tableupdateproductportal':
+        $this->productportal->tableupdate($config);
+        break;
       case 'reindex':
         $this->reindex->reindex($config);
         break;
@@ -328,21 +334,21 @@ class entryprefix
     return ['status' => true, 'msg' => $config['params']['lookupclass2'] . ' - TABLES UPDATE. Execution time: ' . $elapsed . "sec(s)"];
   }
 
-  private function updatelowestprice($config){
+  private function updatelowestprice($config)
+  {
     $lowitem = $this->coreFunctions->opentable("select itemid,amt6,disc6,namt6 from item where disc6<>'' and amt6<>0");
     $i = 1;
-    if(!empty($lowitem)){
-      foreach($lowitem as $k =>$v){
-        $namt6 = $this->othersClass->Discount($lowitem[$k]->amt6,$lowitem[$k]->disc6);
+    if (!empty($lowitem)) {
+      foreach ($lowitem as $k => $v) {
+        $namt6 = $this->othersClass->Discount($lowitem[$k]->amt6, $lowitem[$k]->disc6);
         $curnamt6 = $lowitem[$k]->namt6;
 
-        if($namt6 != $curnamt6){
-          $this->coreFunctions->sbclogger("update item set namt6 = ".$namt6." where itemid = ". $lowitem[$k]->itemid);
-          $this->coreFunctions->execqry("update item set namt6 = ".$namt6." where itemid = ". $lowitem[$k]->itemid);
-          $i+=1;
+        if ($namt6 != $curnamt6) {
+          $this->coreFunctions->sbclogger("update item set namt6 = " . $namt6 . " where itemid = " . $lowitem[$k]->itemid);
+          $this->coreFunctions->execqry("update item set namt6 = " . $namt6 . " where itemid = " . $lowitem[$k]->itemid);
+          $i += 1;
         }
       }
-     
     }
 
     return ['status' => true, 'msg' => $config['params']['lookupclass2'] . ' - Update Lowest Price. Execution time: ' . $i . "items(s)"];

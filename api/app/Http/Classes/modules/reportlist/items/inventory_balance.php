@@ -169,27 +169,42 @@ class inventory_balance
         ['label' => 'None', 'value' => 'none', 'color' => 'orange']
       ));
     } else {
-      if ($companyid == 11) { // summit
-        data_set($col2, 'radiorepamountformat.options', array(
-          ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
-          ['label' => 'None', 'value' => 'none', 'color' => 'orange'],
-        ));
-      } elseif (($companyid == 56)) { //homeworks
-        data_set($col2, 'radiorepamountformat.options', array(
-          ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
-          ['label' => 'Show Latest Cost', 'value' => 'rrcost', 'color' => 'orange'],
-          ['label' => 'Show Srp and Cost', 'value' => 'showboth', 'color' => 'orange'],
-          ['label' => 'None', 'value' => 'none', 'color' => 'orange']
-        ));
-      } else {
-        data_set($col2, 'radiorepamountformat.options', array(
-          ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
-          ['label' => 'Show Latest Cost', 'value' => 'rrcost', 'color' => 'orange'],
-          ['label' => 'For Accounting', 'value' => 'avecost', 'color' => 'orange'],
-          ['label' => 'None', 'value' => 'none', 'color' => 'orange'],
-          // ['label' => 'Format Test', 'value' => 'testing', 'color' => 'orange']
-        ));
+      switch ($companyid) {
+
+        case 11: //summit
+          data_set($col2, 'radiorepamountformat.options', array(
+            ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
+            ['label' => 'None', 'value' => 'none', 'color' => 'orange'],
+          ));
+          break;
+        case 56: //homeworks
+          data_set($col2, 'radiorepamountformat.options', array(
+            ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
+            ['label' => 'Show Latest Cost', 'value' => 'rrcost', 'color' => 'orange'],
+            ['label' => 'Show Srp and Cost', 'value' => 'showboth', 'color' => 'orange'],
+            ['label' => 'None', 'value' => 'none', 'color' => 'orange']
+          ));
+          break;
+
+        case 60: //transpower
+          data_set($col2, 'radiorepamountformat.options', array(
+            ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
+            ['label' => 'Show Latest Cost', 'value' => 'rrcost', 'color' => 'orange'],
+            ['label' => 'None', 'value' => 'none', 'color' => 'orange'],
+            // ['label' => 'Format Test', 'value' => 'testing', 'color' => 'orange']
+          ));
+          break;
+        default:
+          data_set($col2, 'radiorepamountformat.options', array(
+            ['label' => 'Show Selling Price', 'value' => 'isamt', 'color' => 'orange'],
+            ['label' => 'Show Latest Cost', 'value' => 'rrcost', 'color' => 'orange'],
+            ['label' => 'For Accounting', 'value' => 'avecost', 'color' => 'orange'],
+            ['label' => 'None', 'value' => 'none', 'color' => 'orange'],
+            // ['label' => 'Format Test', 'value' => 'testing', 'color' => 'orange']
+          ));
+          break;
       }
+      
     }
 
 
@@ -331,6 +346,9 @@ class inventory_balance
           case 56: //homeworks
             $result = $this->hm_SELLING_PRICE_layout($config);
             break;
+          case 60: //transpower 
+            $result = $this->transpower_layout_SELLING_PRICE($config);
+            break;
           case 68: //jda 
             $result = $this->jdaLayout_SELLING_PRICE($config);
             break;
@@ -358,7 +376,9 @@ class inventory_balance
           case 56: //homeworks
             $result = $this->hm_LATEST_COST_layout($config);
             break;
-
+          case 60: //transpower
+            $result = $this->transpower_Layout_LATEST_COST($config);
+            break;
           default:
             $result = $this->reportDefaultLayout_LATEST_COST($config);
             break;
@@ -367,7 +387,14 @@ class inventory_balance
         break;
 
       case 'avecost':
-        $result = $this->report_default_avecost($config);
+        // switch ($companyid) {
+        //   case 60: //transpower
+        //     $result = $this->transpower_layout_avecost($config);
+        //     break;
+        //   default:
+            $result = $this->report_default_avecost($config);
+        //     break;
+        // } // end swtich company
         break;
 
       case 'none':
@@ -1074,7 +1101,6 @@ class inventory_balance
 
   public function transpower_DEFAULT_QUERY($config)
   {
-
     $start       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $end       = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
     $client     = $config['params']['dataparams']['client'];
@@ -1156,39 +1182,38 @@ class inventory_balance
     }
 
     $query = "select ib.itemid, item.barcode, item.disc $fields, cat.name as category, subcat.name as subcatname, item.itemname as itemname, item.partno,
-          item.groupid, item.brand as brandname, item.brand, ifnull(partgrp.part_name, '') as partname,
-          ifnull(modelgrp.model_name, '') as modelname, item.model, partgrp.part_name as part, item.brand, item.sizeid, item.body, item.class, ib.uom,
-          sum(ib.qty - ib.iss) as balance,
-          item.amt,loc, expiry
-          from (
-          select stock.itemid,  item.uom, stock.whid, 
-          sum(stock.qty) as qty, 
-          sum(stock.iss) as iss, 
-          stock.loc, stock.expiry 
-          from lahead as head left join lastock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
-    
-          where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
-          group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
-          union all
-          select stock.itemid, item.uom, stock.whid, 
-          sum(stock.qty) as qty, 
-          sum(stock.iss) as iss, 
-          stock.loc, stock.expiry
-          from glhead as head left join glstock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
+    item.groupid, item.brand as brandname, item.brand, ifnull(partgrp.part_name, '') as partname,
+    ifnull(modelgrp.model_name, '') as modelname, item.model, partgrp.part_name as part, item.brand, item.sizeid, item.body, item.class, ib.uom,
+    sum(ib.qty - ib.iss) as balance,
+    item.amt,loc, expiry,ifnull(stockgrp.stockgrp_name, '') as groupname
+    from (
+      select stock.itemid,  item.uom, stock.whid, 
+      sum(stock.qty) as qty, 
+      sum(stock.iss) as iss, 
+      stock.loc, stock.expiry 
+      from lahead as head left join lastock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
+      where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
+      group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
 
-          where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
-          group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
+      union all
 
-          ) as ib left join item on item.itemid = ib.itemid
-          left join itemcategory as cat on cat.line = item.category
-          $join
-          left join itemsubcategory as subcat on subcat.line = item.subcat
-          left join part_masterfile as partgrp on partgrp.part_id = item.part
-          left join model_masterfile as modelgrp on modelgrp.model_id = item.model
-          left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
-          group by disc $groupby, cat.name, subcat.name, ib.itemid, barcode, itemname, groupid, brandname, partname,partno,
-          ifnull(modelgrp.model_name, ''), model, partgrp.part_name, brand, sizeid, body, class, item.amt, ib.uom,loc,expiry
-          having (case when sum(ib.qty - ib.iss) > 0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
+      select stock.itemid, item.uom, stock.whid, 
+      sum(stock.qty) as qty, 
+      sum(stock.iss) as iss, 
+      stock.loc, stock.expiry
+      from glhead as head left join glstock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
+      where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
+      group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
+    ) as ib left join item on item.itemid = ib.itemid
+    left join itemcategory as cat on cat.line = item.category
+    $join
+    left join itemsubcategory as subcat on subcat.line = item.subcat
+    left join part_masterfile as partgrp on partgrp.part_id = item.part
+    left join model_masterfile as modelgrp on modelgrp.model_id = item.model
+    left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
+    group by disc $groupby, cat.name, subcat.name, ib.itemid, barcode, itemname, groupid, brandname, partname,partno,
+    ifnull(modelgrp.model_name, ''), model, partgrp.part_name, brand, sizeid, body, class, item.amt, ib.uom,loc,expiry,stockgrp.stockgrp_name
+    having (case when sum(ib.qty - ib.iss) > 0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
     return $query;
   }
 
@@ -1846,6 +1871,1844 @@ class inventory_balance
     return $query;
   }
 
+  //TRANSPOWER
+  
+    private function transpower_displayHeader_SELLING_PRICE($config)
+    {
+      $border = '1px solid';
+      $border_line = '';
+      $alignment = '';
+      $font = $this->companysetup->getrptfont($config['params']);
+      $font_size = '10';
+      $padding = '';
+      $margin = '5px';
+
+      $center     = $config['params']['center'];
+      $username   = $config['params']['user'];
+      $companyid = $config['params']['companyid'];
+
+      $asof       = $config['params']['dataparams']['start'];
+      $end       = $config['params']['dataparams']['end'];
+      $client     = $config['params']['dataparams']['client'];
+      $clientname = $config['params']['dataparams']['clientname'];
+      $barcode    = $config['params']['dataparams']['barcode'];
+      $itemname   = $config['params']['dataparams']['itemname'];
+      $classid    = $config['params']['dataparams']['classid'];
+      $classname  = $config['params']['dataparams']['classic'];
+      $categoryid = $config['params']['dataparams']['categoryid'];
+      $categoryname  = $config['params']['dataparams']['categoryname'];
+      $subcatname =  $config['params']['dataparams']['subcat'];
+      $groupid    = $config['params']['dataparams']['groupid'];
+      $groupname  = $config['params']['dataparams']['stockgrp'];
+      $brandid    = $config['params']['dataparams']['brandid'];
+      $brandname  = $config['params']['dataparams']['brandname'];
+      $modelid    = $config['params']['dataparams']['modelid'];
+      $modelname  = $config['params']['dataparams']['modelname'];
+      $wh         = $config['params']['dataparams']['wh'];
+      $whname     = $config['params']['dataparams']['whname'];
+      $amountformat   = $config['params']['dataparams']['amountformat'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+      $itemtype   = $config['params']['dataparams']['itemtype'];
+
+
+      $partid    = $config['params']['dataparams']['partid'];
+      $partname  = $config['params']['dataparams']['partname'];
+
+      // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+      //   $proj   = $config['params']['dataparams']['project'];
+      //   if ($proj != "") {
+      //     $projname = $config['params']['dataparams']['projectname'];
+      //   } else {
+      //     $projname = "ALL";
+      //   }
+      // }
+
+      if ($brandname == '') {
+        $brandname = "ALL";
+      }
+
+      if ($modelname == '') {
+        $modelname = "ALL";
+      }
+
+      if ($whname == '') {
+        $whname = "ALL";
+      }
+
+      $str = '';
+      $layoutsize = '1000';
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->letterhead($center, $username, $config);
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+
+      $str .= '<br/>';
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+
+      $dtagathering = ' - (Current)';
+      if ($config['params']['dataparams']['dtagathering'] == 'dhistory') {
+        $dtagathering = ' - (History)';
+      }
+      $datelabel = 'Balance as of : ' . $asof;
+      // if ($companyid == 60) { //transpower
+        $dtagathering = '';
+        $asof = date('Y-m-d', strtotime($asof));
+        $end = date('Y-m-d', strtotime($end));
+        $datelabel = 'Date from: ' . $asof . ' ' . ' to: ' . $end;
+      // }
+
+      $str .= $this->reporter->col('INVENTORY BALANCE' . $dtagathering, null, null, false, '1px solid ', '', '', $font, '14', 'B', '', '') . '<br />';
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($datelabel, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      if ($barcode == '') {
+        $str .= $this->reporter->col('Items : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Items : ' . $barcode, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      }
+
+      // if ($companyid == 14) { //majesty
+      //   if ($groupname == '') {
+      //     $str .= $this->reporter->col('Division : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   } else {
+      //     $str .= $this->reporter->col('Division : ' . $groupname, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   }
+      // } else {
+        if ($groupname == '') {
+          $str .= $this->reporter->col('Group : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        } else {
+          $str .= $this->reporter->col('Group : ' . $groupname, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        }
+      // }
+
+      $str .= $this->reporter->col('Brand : ' . $brandname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+      // if ($companyid == 14) { //majesty
+      //   if ($partname == '') {
+      //     $str .= $this->reporter->col('Principal : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   } else {
+      //     $str .= $this->reporter->col('Principal : ' . $partname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   }
+      // } else {
+        if ($categoryname == '') {
+          $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        } else {
+          $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        }
+      // }
+
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+
+      $str .= $this->reporter->col('WH : ' . $whname, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+      switch ($itemtype) {
+        case '(1)':
+          $itemtype = 'Import';
+          break;
+        case '(0)':
+          $itemtype = 'Local';
+          break;
+        case '(0,1)':
+          $itemtype = 'Both';
+          break;
+      }
+      $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+
+      switch ($itemstock) {
+        case '(1)':
+          $itemstock = 'With Balance';
+          break;
+        case '(0)':
+          $itemstock = 'Without Balance';
+          break;
+        case '(0,1)':
+          $itemstock = 'None';
+          break;
+      }
+      $str .= $this->reporter->col('Item Stock : ' . strtoupper($itemstock), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+
+
+      // if ($companyid == 14) { //majesty
+      //   $str .= $this->reporter->col('Generic : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // } else {
+        $str .= $this->reporter->col('Model : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // }
+
+      if ($subcatname == '') {
+        $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      }
+
+      // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+      //   $str .= $this->reporter->col('Project : ' . $projname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // } else {
+        $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // }
+
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      return $str;
+    }
+
+    private function transpower_selling_price_table_cols($layoutsize, $border, $font, $fontsize, $config)
+    {
+      $str = '';
+      $companyid = $config['params']['companyid'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+
+      $padding = '';
+      $str .= $this->reporter->printline();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+
+      // if ($companyid == 10) { //afti
+      //   $str .= $this->reporter->col('SKU/PART NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      // } else {
+        $str .= $this->reporter->col('ITEM CODE', '140', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', $padding, '8px');
+      // }
+
+      $str .= $this->reporter->col('ITEM DESCRIPTION', '300', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->col('GROUP', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', $padding, '8px');
+
+      // switch ($companyid) {
+      //   case 1: //vitaline
+      //   case 23: //labsol cebu
+      //   case 41: //labsolparanaque
+      //   case 52: //technolab
+      //     $str .= $this->reporter->col('LOT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     $str .= $this->reporter->col('EXPIRY', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     break;
+      //   case 17: //unihome
+      //   case 39: //CBBSI
+      //     $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     break;
+      //   case 69: //cemphil
+      //   case 24: //goodfound
+      //     $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     break;
+      //   case 50: //unitech
+      //     $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     break;
+      // }
+
+      // switch ($companyid) {
+      //   case 10: //afti
+      //   case 12: //afti usd
+      //     $str .= $this->reporter->col('SERIAL NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      //     break;
+      // }
+
+      $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->col('SRP', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', $padding, '8px');
+      $str .= $this->reporter->endrow();
+      return $str;
+    }
+
+    public function transpower_layout_SELLING_PRICE($config)
+    {
+      $str = '';
+
+      try {
+        //oks
+        $result = $this->reportDefault($config);
+
+        $border = '1px solid';
+        $border_line = '';
+        $alignment = '';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $font_size = 10;
+        $padding = '';
+        $margin = '8px';
+
+        $center     = $config['params']['center'];
+        $username   = $config['params']['user'];
+        $companyid = $config['params']['companyid'];
+
+        $asof       = $config['params']['dataparams']['start'];
+        $client     = $config['params']['dataparams']['client'];
+        $clientname = $config['params']['dataparams']['clientname'];
+        $barcode    = $config['params']['dataparams']['barcode'];
+        $itemname   = $config['params']['dataparams']['itemname'];
+        $classid    = $config['params']['dataparams']['classid'];
+        $classname  = $config['params']['dataparams']['classic'];
+        $categoryid = $config['params']['dataparams']['categoryid'];
+        $categoryname  = $config['params']['dataparams']['categoryname'];
+        $groupid    = $config['params']['dataparams']['groupid'];
+        $groupname  = $config['params']['dataparams']['stockgrp'];
+        $brandid    = $config['params']['dataparams']['brandid'];
+        $brandname  = $config['params']['dataparams']['brandname'];
+        $modelid    = $config['params']['dataparams']['modelid'];
+        $modelname  = $config['params']['dataparams']['modelname'];
+        $wh         = $config['params']['dataparams']['wh'];
+        $whname     = $config['params']['dataparams']['whname'];
+        $amountformat   = $config['params']['dataparams']['amountformat'];
+        $itemstock  = $config['params']['dataparams']['itemstock'];
+        $itemtype   = $config['params']['dataparams']['itemtype'];
+
+        $skipnegative = false;
+        // switch ($companyid) {
+        //   case 49: //hotmix
+        //     $count = 56;
+        //     $page = 56;
+        //     $skipnegative = true;
+        //     $font_size = 12;
+        //     break;
+        //   default:
+            $count = 45;
+            $page = 45;
+        //     break;
+        // }
+
+        if (empty($result)) {
+          return $this->othersClass->emptydata($config);
+        }
+
+
+        $layoutsize = '1000';
+        $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->transpower_displayHeader_SELLING_PRICE($config);
+        $str .= $this->transpower_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+
+        $totalbalqty = 0;
+        $part = "";
+        $scatgrp = "";
+        $igrp = "";
+        $totalext = 0;
+        $grandtotal = 0;
+
+        $multiheader = true;
+        // switch ($companyid) {
+        //   case 14: //majesty
+        //   case 21: //kinggeorge
+        //     $multiheader = false;
+        //     break;
+        // }
+
+        foreach ($result as $key => $data) {
+
+          $balance = number_format($data->balance, 2);
+          if ($balance == 0) {
+            $balance = '-';
+          }
+          $isamt = number_format($data->amt, 2);
+          if ($isamt == 0) {
+            $isamt = '-';
+          }
+
+          $discounted = $this->othersClass->Discount($data->amt, $data->disc);
+          //oks
+          // if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) { //not majesty,unihome,goodfound,cemphil
+            if ($data->part != 0 || $data->part != null) {
+              if (strtoupper($part) == strtoupper($data->part)) {
+                $part = "";
+              } else {
+                $part = strtoupper($data->part);
+                
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->addline();
+                $str .= $this->reporter->col($part, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                $str .= $this->reporter->col('', '60', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->endrow();
+                
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+              }
+            } else {
+              $part = "";
+            }
+
+            if ($data->category != 0 || $data->category != null) {
+              if (strtoupper($scatgrp) == strtoupper($data->category)) {
+                $scatgrp = "";
+              } else {
+                $scatgrp = strtoupper($data->category);
+                
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                // $str .= $this->reporter->addline();
+                // $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                // $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                // $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+                // $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                // $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                
+                $str .= $this->reporter->addline();
+                $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+                $str .= $this->reporter->col('', '60', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+                $str .= $this->reporter->endrow();
+                
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+              }
+            } else {
+              $scatgrp = "";
+            }
+          // }
+
+          // if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
+
+          //   if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
+          //     if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
+          //       $igrp = "";
+          //     } else {
+          //       $igrp = strtoupper($data->stockgrp_name);
+          //       $str .= $this->reporter->startrow();
+          //       $str .= $this->reporter->addline();
+          //       $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+          //       $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+          //       $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //       $str .= $this->reporter->endrow();
+          //     }
+          //   } else {
+          //     $igrp = "";
+          //   }
+          // }
+
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->addline();
+
+          // if ($companyid == 40) { //cdo
+          //   $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          // } else {
+            $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          // }
+
+
+
+          // if ($companyid == 17) { //unihome
+          //   $lastreceive = "select h.dateid from lahead as h
+          //           left join lastock as s on s.trno=h.trno
+          //           left join item as i on i.itemid=s.itemid
+          //           where doc='RR' and s.itemid = $data->itemid
+          //           union all
+          //           select h.dateid from glhead as h
+          //           left join glstock as s on s.trno=h.trno
+          //           left join item as i on i.itemid=s.itemid
+          //           where doc='RR' and s.itemid = $data->itemid
+          //           order by dateid desc limit 1";
+          //   $lrdateresult =  $this->coreFunctions->opentable($lastreceive);
+
+          //   $lastsell = "select h.dateid from lahead as h
+          //           left join lastock as s on s.trno=h.trno
+          //           left join item as i on i.itemid=s.itemid
+          //           where doc='SJ' and s.itemid = $data->itemid
+          //           union all
+          //           select h.dateid from glhead as h
+          //           left join glstock as s on s.trno=h.trno
+          //           left join item as i on i.itemid=s.itemid
+          //           where doc='SJ' and s.itemid = $data->itemid
+          //           order by dateid desc limit 1";
+          //   $lsdateresult =  $this->coreFunctions->opentable($lastsell);
+
+          //   $str .= $this->reporter->col($data->itemname, '150', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+
+          //   if (empty($lrdateresult)) {
+          //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+          //   } else {
+          //     foreach ($lrdateresult as $key1 => $lrdatedata) {
+          //       $str .= $this->reporter->col($lrdatedata->dateid, '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+          //     }
+          //   }
+
+          //   if (empty($lsdateresult)) {
+          //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+          //   } else {
+          //     foreach ($lsdateresult as $key1 => $lsdatedata) {
+          //       $str .= $this->reporter->col($lsdatedata->dateid, '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+          //     }
+          //   }
+          // } else {
+            // if ($companyid == 47) { //kitchenstar
+            //   $str .= $this->reporter->col($data->itemname . ' ' . $data->color . ' ' . $data->sizeid, '400', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+            // } else {
+              $str .= $this->reporter->col($data->itemname, '300', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+              $str .= $this->reporter->col($data->groupname, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+              
+            // }
+          // }
+          // switch ($companyid) {
+          //   case 1: //vitaline
+          //   case 23: //labsol cebu
+          //   case 41: //labsolparanaque
+          //   case 52: //technolab
+          //     $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+          //     $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+          //     break;
+          //   case 69: //cemphil
+          //   case 24: //goodfound
+          //     $str .= $this->reporter->col($data->subcatname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //     break;
+          //   case 50: //unitech
+          //     $str .= $this->reporter->col($data->brandname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+          //     break;
+          // }
+
+          // switch ($companyid) {
+          //   case 10: //afti
+          //   case 12: //afti usd
+          //     $itemserialno = '';
+
+          //     $serialdata = $this->serialquery2($data->itemid);
+          //     if (!empty($serialdata)) {
+          //       foreach ($serialdata as $key => $value) {
+          //         $itemserialno .= $value['serialno'];
+          //       }
+          //     }
+          //     $itemserialno = rtrim($itemserialno, ", ");
+          //     $str .= $this->reporter->col($itemserialno, '75', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          //     break;
+          // }
+
+          $totalext = $data->balance * $discounted;
+
+          if ($totalext == 0) {
+            $totalext = '-';
+          } else {
+            $totalext = number_format($totalext, 2);
+          }
+          #120 380 100 100 100 100 100
+          $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col(number_format($discounted, 2), '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col($totalext, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'B', 'CT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->endrow();
+
+          $scatgrp = strtoupper($data->category);
+          $igrp = isset($data->stockgrp_name) ? strtoupper($data->stockgrp_name) : '';
+          $part = $data->part;
+
+          if ($skipnegative) {
+            if ($data->balance >= 0) {
+              $grandtotal = $grandtotal + ($data->balance * $discounted);
+              $totalbalqty = $totalbalqty + $data->balance;
+            }
+          } else {
+            $grandtotal = $grandtotal + ($data->balance * $discounted);
+            $totalbalqty = $totalbalqty + $data->balance;
+          }
+
+          if ($multiheader) {
+            $this->reporter->linecounter -= 1;
+
+            // if ($companyid == 47) { // kitchenstar
+            //   $itemnameWidth = 400;
+            //   $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+            // } elseif ($companyid == 17) { // unihome
+            //   $itemnameWidth = 150;
+            //   $itemnameValue = $data->itemname;
+            // } else {
+              $itemnameWidth = 400;
+              $itemnameValue = $data->itemname;
+            // }
+
+            // Estimate character limit per line
+            $charsPerLine = max(1, floor($itemnameWidth / ($font_size * 0.6)));
+            $textLength = strlen($itemnameValue);
+            $rowLines = max(1, ceil($textLength / $charsPerLine));
+
+            $this->reporter->linecounter += $rowLines;
+
+            if ($this->reporter->linecounter >= $page) {
+              $str .= $this->reporter->endtable();
+              $str .= $this->reporter->page_break();
+              $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+              if (!$allowfirstpage) {
+                $str .= $this->transpower_displayHeader_SELLING_PRICE($config);
+              }
+              $str .= $this->transpower_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+              $page = $page + $count;
+
+            }
+          }
+        }
+
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= '<br/>';
+        $str .= $this->reporter->startrow();
+
+        // switch ($companyid) {
+        //   case 1: //vitaline
+        //   case 23: //labsol cebu
+        //   case 41: //labsol manila
+        //   case 52: //technolab
+        //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+        //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+        //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+        //     $str .= $this->reporter->col('OVERALL STOCKS :', '500', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        //     break;
+        //   case 17: //unihome
+        //   case 28: //xcomp
+        //   case 39: //CBBSI
+        //     $str .= $this->reporter->col('OVERALL STOCKS :', '670', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        //     break;
+        //   default:
+            $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+            $str .= $this->reporter->col('OVERALL STOCKS :', '500', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        //     break;
+        // }
+
+        $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+        $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', $padding, '8px');
+        $str .= $this->reporter->col(number_format($grandtotal, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', $padding, '8px');
+
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->printline();
+        $str .= $this->reporter->endreport();
+      } catch (Exception $e) {
+        $this->othersClass->logConsole('Exception' . $e->getMessage());
+      }
+
+      return $str;
+    } 
+
+    
+    private function transpower_displayHeader_LATEST_COST($config)
+    {
+
+      $border = '1px solid';
+      $border_line = '';
+      $alignment = '';
+      $font = $this->companysetup->getrptfont($config['params']);
+      $font_size = '10';
+      $padding = '';
+      $margin = '5px';
+
+      $center     = $config['params']['center'];
+      $username   = $config['params']['user'];
+      $companyid = $config['params']['companyid'];
+
+      $asof       = $config['params']['dataparams']['start'];
+      $end       = $config['params']['dataparams']['end'];
+      $client     = $config['params']['dataparams']['client'];
+      $clientname = $config['params']['dataparams']['clientname'];
+      $barcode    = $config['params']['dataparams']['barcode'];
+      $itemname   = $config['params']['dataparams']['itemname'];
+      $classid    = $config['params']['dataparams']['classid'];
+      $classname  = $config['params']['dataparams']['classic'];
+      $categoryid = $config['params']['dataparams']['categoryid'];
+      $categoryname  = $config['params']['dataparams']['categoryname'];
+      $subcatname =  $config['params']['dataparams']['subcat'];
+      $groupid    = $config['params']['dataparams']['groupid'];
+      $groupname  = $config['params']['dataparams']['stockgrp'];
+      $brandid    = $config['params']['dataparams']['brandid'];
+      $brandname  = $config['params']['dataparams']['brandname'];
+      $modelid    = $config['params']['dataparams']['modelid'];
+      $modelname  = $config['params']['dataparams']['modelname'];
+      $wh         = $config['params']['dataparams']['wh'];
+      $whname     = $config['params']['dataparams']['whname'];
+      $amountformat   = $config['params']['dataparams']['amountformat'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+      $itemtype   = $config['params']['dataparams']['itemtype'];
+
+
+      $partid    = $config['params']['dataparams']['partid'];
+      $partname  = $config['params']['dataparams']['partname'];
+
+      // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+      //   $proj   = $config['params']['dataparams']['project'];
+      //   if ($proj != "") {
+      //     $projname = $config['params']['dataparams']['projectname'];
+      //   } else {
+      //     $projname = "ALL";
+      //   }
+      // }
+
+      if ($brandname == '') {
+        $brandname = "ALL";
+      }
+
+      if ($modelname == '') {
+        $modelname = "ALL";
+      }
+
+      if ($whname == '') {
+        $whname = "ALL";
+      }
+
+      $str = '';
+      $layoutsize = '1000';
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->letterhead($center, $username, $config);
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+
+      $str .= '<br/>';
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+
+      $dtagathering = ' - (Current)';
+      if ($config['params']['dataparams']['dtagathering'] == 'dhistory') {
+        $dtagathering = ' - (History)';
+      }
+      $datelabel = 'Balance as of : ' . $asof;
+      // if ($companyid == 60) { //transpower
+        $dtagathering = '';
+        $asof = date('Y-m-d', strtotime($asof));
+        $end = date('Y-m-d', strtotime($end));
+        $datelabel = 'Date from: ' . $asof . ' ' . ' to: ' . $end;
+      // }
+
+      $str .= $this->reporter->col('INVENTORY BALANCE' . $dtagathering, null, null, false, '1px solid ', '', '', $font, '14', 'B', '', '') . '<br />';
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($datelabel, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      if ($barcode == '') {
+        $str .= $this->reporter->col('Items : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Items : ' . $barcode, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      }
+
+      // if ($companyid == 14) { //majesty
+      //   if ($groupname == '') {
+      //     $str .= $this->reporter->col('Division : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   } else {
+      //     $str .= $this->reporter->col('Division : ' . $groupname, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   }
+      // } else {
+        if ($groupname == '') {
+          $str .= $this->reporter->col('Group : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        } else {
+          $str .= $this->reporter->col('Group : ' . $groupname, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        }
+      // }
+
+      $str .= $this->reporter->col('Brand : ' . $brandname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+      // if ($companyid == 14) { //majesty
+      //   if ($partname == '') {
+      //     $str .= $this->reporter->col('Principal : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   } else {
+      //     $str .= $this->reporter->col('Principal : ' . $partname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      //   }
+      // } else {
+        if ($categoryname == '') {
+          $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        } else {
+          $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+        }
+      // }
+
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow(NULL, null, false, '1px solid ', '', 'R', $font, '10', '', '', '', '');
+      $str .= $this->reporter->col('WH : ' . $whname, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+
+      switch ($itemtype) {
+        case '(1)':
+          $itemtype = 'Import';
+          break;
+        case '(0)':
+          $itemtype = 'Local';
+          break;
+        case '(0,1)':
+          $itemtype = 'Both';
+          break;
+      }
+      $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+      switch ($itemstock) {
+        case '(1)':
+          $itemstock = 'With Balance';
+          break;
+        case '(0)':
+          $itemstock = 'Without Balance';
+          break;
+        case '(0,1)':
+          $itemstock = 'None';
+          break;
+      }
+      $str .= $this->reporter->col('Item Stock : ' . strtoupper($itemstock), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+
+      // if ($companyid == 14) { //majesty
+      //   $str .= $this->reporter->col('Generic : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // } else {
+        $str .= $this->reporter->col('Model : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // }
+
+
+      if ($subcatname == '') {
+        $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      } else {
+        $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      }
+      // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+      //   $str .= $this->reporter->col('Project : ' . $projname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // } else {
+        $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+      // }
+
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      return $str;
+    }
+
+    private function transpower_latest_cost_table_cols($layoutsize, $border, $font, $fontsize, $config)
+    {
+      $str = '';
+      $companyid = $config['params']['companyid'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+
+      $str .= $this->reporter->printline();
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+
+      
+      // if ($companyid == 10) { //afti
+      //   $str .= $this->reporter->col('SKU/PART NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      // } else {
+        $str .= $this->reporter->col('ITEM CODE', '140', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+      // }
+
+      $str .= $this->reporter->col('ITEM DESCRIPTION', '340', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('GROUP', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+
+      // switch ($companyid) {
+      //   case 1: //vitaline
+      //   case 23: //labsolcebu
+      //   case 41: //labsolparanaque
+      //   case 52: //technolab
+      //     $str .= $this->reporter->col('LOT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     $str .= $this->reporter->col('EXPIRY', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      //   case 17: //unihome
+      //   case 39: //CBBSI
+      //     $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      //   case 69: //cemphil
+      //   case 24: //goodfound
+      //     $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      //   case 50: //unitech
+      //     $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      // }
+
+      // switch ($companyid) {
+      //   case 10: //afti
+      //   case 12: //afti usd
+      //     $str .= $this->reporter->col('SERIAL NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      // }
+
+      // switch ($companyid) {
+      //   case 41: // labsolparanaque
+      //     $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      //   default:
+          $str .= $this->reporter->col('UOM', '40', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      //     break;
+      // }
+      $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('COST', '80', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+
+      return $str;
+    }
+
+    public function transpower_Layout_LATEST_COST($config)
+    {
+      $result = $this->reportDefault($config);
+
+      $border = '1px solid';
+      $border_line = '';
+      $alignment = '';
+      $font = $this->companysetup->getrptfont($config['params']);
+      $font_size = 10;
+      $padding = '';
+      $margin = '8px';
+
+      $center     = $config['params']['center'];
+      $username   = $config['params']['user'];
+      $companyid = $config['params']['companyid'];
+
+      $asof       = $config['params']['dataparams']['start'];
+      $client     = $config['params']['dataparams']['client'];
+      $clientname = $config['params']['dataparams']['clientname'];
+      $barcode    = $config['params']['dataparams']['barcode'];
+      $itemname   = $config['params']['dataparams']['itemname'];
+      $classid    = $config['params']['dataparams']['classid'];
+      $classname  = $config['params']['dataparams']['classic'];
+      $categoryid = $config['params']['dataparams']['categoryid'];
+      $categoryname  = $config['params']['dataparams']['categoryname'];
+      $groupid    = $config['params']['dataparams']['groupid'];
+      $groupname  = $config['params']['dataparams']['stockgrp'];
+      $brandid    = $config['params']['dataparams']['brandid'];
+      $brandname  = $config['params']['dataparams']['brandname'];
+      $modelid    = $config['params']['dataparams']['modelid'];
+      $modelname  = $config['params']['dataparams']['modelname'];
+      $wh         = $config['params']['dataparams']['wh'];
+      $whname     = $config['params']['dataparams']['whname'];
+      $amountformat   = $config['params']['dataparams']['amountformat'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+      $itemtype   = $config['params']['dataparams']['itemtype'];
+
+      if ($wh == '') {
+        $wh = 'ALL';
+      }
+
+      $skipnegative = false;
+      // switch ($companyid) {
+      //   case 49: //hotmix
+      //     $count = 56;
+      //     $page = 56;
+      //     $skipnegative = true;
+      //     $font_size = 12;
+      //     break;
+      //   default:
+          $count = 55;
+          $page = 55;
+      //     break;
+      // }
+      $this->reporter->linecounter = 0;
+
+      if (empty($result)) {
+        return $this->othersClass->emptydata($config);
+      }
+
+      $str = '';
+      $layoutsize = '1000';
+      $str .= $this->reporter->beginreport($layoutsize);
+      $str .= $this->transpower_displayHeader_LATEST_COST($config);
+
+      $str .= $this->transpower_latest_cost_table_cols($this->reportParams['layoutSize'], $border, $font,  $font_size, $config);
+
+      $totalbalqty = 0;
+      $part = "";
+      $scatgrp = "";
+      $igrp = "";
+      $totalext = 0;
+      $grandtotal = 0;
+
+      $multiheader = true;
+      // switch ($companyid) {
+      //   case 14: //majesty
+      //     $multiheader = false;
+      //     break;
+      // }
+
+      foreach ($result as $key => $data) {
+
+        $balance = number_format($data->balance, 2);
+        if ($balance == 0) {
+          $balance = '-';
+        }
+        $cost = $this->getLatestCost($data->itemid);
+
+        //not majesty, unihome & goodfound, cemphil
+        // if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) {
+        if ($data->part != 0 || $data->part != null) {
+          if (strtoupper($part) == strtoupper($data->part)) {
+            $part = "";
+          } else {
+            $part = strtoupper($data->part);
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->addline();
+            $str .= $this->reporter->col($part, '340', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '40', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '80', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+          }
+        } else {
+          $part = "";
+        }
+
+        if ($data->category != 0 || $data->category != null) {
+          if (strtoupper($scatgrp) == strtoupper($data->category)) {
+            $scatgrp = "";
+          } else {
+            $scatgrp = strtoupper($data->category);
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->addline();
+            $str .= $this->reporter->col($scatgrp, '340', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '40', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '80', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+          }
+        } else {
+          $scatgrp = "";
+        }
+        // }
+
+
+        // if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
+
+        //   if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
+        //     if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
+        //       $igrp = "";
+        //     } else {
+        //       $igrp = strtoupper($data->stockgrp_name);
+        //       $str .= $this->reporter->startrow();
+        //       $str .= $this->reporter->addline();
+        //       $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+        //       $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+        //       $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //       $str .= $this->reporter->endrow();
+        //     }
+        //   } else {
+        //     $igrp = "";
+        //   }
+        // }
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+        // if ($companyid == 40) { //cdo
+        //   $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        // } else {
+          $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        // }
+
+        // if ($companyid == 17) { //unihome
+        //   $lastreceive = "select h.dateid from lahead as h
+        //             left join lastock as s on s.trno=h.trno
+        //             left join item as i on i.itemid=s.itemid
+        //             where doc='RR' and s.itemid = $data->itemid
+        //             union all
+        //             select h.dateid from glhead as h
+        //             left join glstock as s on s.trno=h.trno
+        //             left join item as i on i.itemid=s.itemid
+        //             where doc='RR' and s.itemid = $data->itemid
+        //             order by dateid desc limit 1";
+        //   $lrdateresult =  $this->coreFunctions->opentable($lastreceive);
+
+        //   $lastsell = "select h.dateid from lahead as h
+        //             left join lastock as s on s.trno=h.trno
+        //             left join item as i on i.itemid=s.itemid
+        //             where doc='SJ' and s.itemid = $data->itemid
+        //             union all
+        //             select h.dateid from glhead as h
+        //             left join glstock as s on s.trno=h.trno
+        //             left join item as i on i.itemid=s.itemid
+        //             where doc='SJ' and s.itemid = $data->itemid
+        //             order by dateid desc limit 1";
+        //   $lsdateresult =  $this->coreFunctions->opentable($lastsell);
+
+        //   $str .= $this->reporter->col($data->itemname, '150', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+
+        //   if (empty($lrdateresult)) {
+        //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //   } else {
+        //     foreach ($lrdateresult as $key1 => $lrdatedata) {
+        //       $str .= $this->reporter->col($lrdatedata->dateid, '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //     }
+        //   }
+
+        //   if (empty($lsdateresult)) {
+        //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //   } else {
+        //     foreach ($lsdateresult as $key1 => $lsdatedata) {
+        //       $str .= $this->reporter->col($lsdatedata->dateid, '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //     }
+        //   }
+        // } else {
+
+          // if ($companyid == 47) { //kitchenstar
+          //   $str .= $this->reporter->col($data->itemname . ' ' . $data->color . ' ' . $data->sizeid, '460', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          // } else {
+            $str .= $this->reporter->col($data->itemname, '340', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->groupname, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          // }
+        // }
+
+        // switch ($companyid) {
+        //   case 1: //vitaline
+        //   case 23: //labsol cebu
+        //   case 41: //labsolparanaque
+        //   case 52: //technolab
+        //     $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        //     $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        //     break;
+        //   case 69: //cemphil
+        //   case 24: //goodfound
+        //     $str .= $this->reporter->col($data->subcatname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //     break;
+        //   case 50: //unitech
+        //     $str .= $this->reporter->col($data->brandname, '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+        //     break;
+        // }
+
+        // switch ($companyid) {
+        //   case 10: //afti
+        //   case 12: //afti usd
+        //     $itemserialno = '';
+        //     $serialdata = $this->serialquery2($data->itemid);
+        //     if (!empty($serialdata)) {
+        //       foreach ($serialdata as $key => $value) {
+        //         $itemserialno .= $value['serialno'];
+        //       }
+        //     }
+        //     $itemserialno = rtrim($itemserialno, ", ");
+        //     $str .= $this->reporter->col($itemserialno, '75', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        //     break;
+        // }
+        $totalext = $data->balance * $cost;
+        $costv = $cost;
+        if ($cost == 0) {
+          $cost = '-';
+        } else {
+          // if ($companyid == 23) { //labsol cebu
+          //   $cost = number_format($cost, 6);
+          // } else {
+            $cost = number_format($cost, 2);
+          // }
+        }
+
+        if ($totalext == 0) {
+          $totalext = '-';
+        } else {
+          // if ($companyid == 23) { //labsol cebu
+          //   $totalext = number_format($totalext, 6);
+          // } else {
+            $totalext = number_format($totalext, 2);
+          // }
+        }
+        // $str .= $this->reporter->col($data->uom, '40', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        // replace the uom col line with:
+        // switch ($companyid) {
+        //   case 41: // labsolparanaque
+        //     $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //     break;
+        //   default:
+            $str .= $this->reporter->col($data->uom, '40', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+        //     break;
+        // }
+        $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($cost, '80', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($totalext, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'B', 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+
+        $scatgrp = strtoupper($data->category);
+        $igrp = isset($data->stockgrp_name) ? strtoupper($data->stockgrp_name) : '';
+        $part = $data->part;
+
+        if ($skipnegative) {
+          if ($data->balance >= 0) {
+            $totalbalqty = $totalbalqty + $data->balance;
+            $grandtotal = $grandtotal + ($data->balance * $costv);
+          }
+        } else {
+          $totalbalqty = $totalbalqty + $data->balance;
+          $grandtotal = $grandtotal + ($data->balance * $costv);
+        }
+
+        // if ($multiheader) {
+        //   $this->reporter->linecounter -= 1; // undo addline()'s increment
+
+        //   if ($companyid == 47) { // kitchenstar
+        //     $itemnameWidth = 460;
+        //     $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+        //   } elseif ($companyid == 17) { // unihome
+        //     $itemnameWidth = 150;
+        //     $itemnameValue = $data->itemname;
+        //   } else {
+        //     $itemnameWidth = 440;
+        //     $itemnameValue = $data->itemname;
+        //   }
+
+        //   $charsPerLine = max(1, floor($itemnameWidth / ($font_size * 0.6)));
+        //   $textLength = strlen($itemnameValue);
+        //   $rowLines = max(1, ceil($textLength / $charsPerLine));
+
+        //   $this->reporter->linecounter += $rowLines;
+
+        //   if ($this->reporter->linecounter >= $page) {
+        //     $str .= $this->reporter->endtable();
+        //     $str .= $this->reporter->page_break();
+        //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+        //     if (!$allowfirstpage) {
+        //       $str .= $this->default_displayHeader_LATEST_COST($config);
+        //     }
+        //     $str .= $this->default_latest_cost_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+        //     $page = $page + $count;
+        //   }
+        // }
+
+        if ($multiheader) {
+          $this->reporter->linecounter -= 1;
+
+          // itemname
+          // if ($companyid == 47) { // kitchenstar
+          //   $itemnameWidth = 460;
+          //   $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+          // } elseif ($companyid == 17) { // unihome
+          //   $itemnameWidth = 150;
+          //   $itemnameValue = $data->itemname;
+          // } else {
+            $itemnameWidth = 440;
+            $itemnameValue = $data->itemname;
+          // }
+          $charsPerLine = max(1, floor($itemnameWidth / ($font_size * 0.6)));
+          $textLength = strlen($itemnameValue);
+          $rowLines = max(1, ceil($textLength / $charsPerLine));
+
+          // barcode
+          $barcodeValue = ($companyid == 40) ? ($data->partno == '' ? '-' : $data->partno) : $data->barcode;
+          $barcodeCharsPerLine = max(1, floor(140 / ($font_size * 0.6)));
+          $barcodeLines = max(1, ceil(strlen($barcodeValue) / $barcodeCharsPerLine));
+          $rowLines = max($rowLines, $barcodeLines);
+
+          // loc (only for vitaline/labsol/technolab)
+          // switch ($companyid) {
+          //   case 1:  // vitaline
+          //   case 23: // labsol cebu
+          //   case 41: // labsolparanaque
+          //   case 52: // technolab
+          //     $locValue = isset($data->loc) ? $data->loc : '';
+          //     $locCharsPerLine = max(1, floor(100 / ($font_size * 0.6)));
+          //     $locLines = max(1, ceil(strlen($locValue) / $locCharsPerLine));
+          //     $rowLines = max($rowLines, $locLines);
+          //     break;
+          // }
+
+          $this->reporter->linecounter += $rowLines;
+
+          if ($this->reporter->linecounter >= $page) {
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->page_break();
+            $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+            if (!$allowfirstpage) {
+              $str .= $this->transpower_displayHeader_LATEST_COST($config);
+            }
+            $str .= $this->transpower_latest_cost_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+            $page = $page + $count;
+          }
+        }
+      }
+
+      $str .= $this->reporter->endtable();
+
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= '<br/>';
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', '140', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      // switch ($companyid) {
+      //   case 1: //vitaline
+      //   case 23: //labsol cebu
+      //   case 41: //labsol manila
+      //   case 52: //technolab
+      //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      //     $str .= $this->reporter->col('OVERALL STOCKS :', '500', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      //     break;
+      //   case 17: //unihome
+      //   case 28: //xcomp
+      //   case 39: //CBBSI
+      //     $str .= $this->reporter->col('OVERALL STOCKS :', '680', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      //     break;
+      //   default:
+          $str .= $this->reporter->col('OVERALL STOCKS :', '580', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      //     break;
+      // }
+
+      // switch ($companyid) {
+      //   case 17: //unihome
+      //   case 28: //xcomp
+      //   case 39: //CBBSI
+      //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+      //     $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      //     $str .= $this->reporter->col(number_format($grandtotal, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+      //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      //     break;
+      //   default:
+          $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+          $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col(number_format($grandtotal, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      //     break;
+      // }
+
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $str .= $this->reporter->printline();
+      $str .= $this->reporter->endreport();
+
+      return $str;
+    }
+
+      
+    // private function transpower_displayHeader_avecost($config, $p_fontsize)
+    // {
+
+    //   $border = '1px solid';
+    //   $border_line = '';
+    //   $alignment = '';
+    //   $font = $this->companysetup->getrptfont($config['params']);
+    //   $font_size = $p_fontsize;
+    //   $padding = '';
+    //   $margin = '5px';
+
+    //   $center     = $config['params']['center'];
+    //   $username   = $config['params']['user'];
+    //   $companyid = $config['params']['companyid'];
+
+    //   $asof       = $config['params']['dataparams']['start'];
+    //   $end       = $config['params']['dataparams']['end'];
+    //   $client     = $config['params']['dataparams']['client'];
+    //   $clientname = $config['params']['dataparams']['clientname'];
+    //   $barcode    = $config['params']['dataparams']['barcode'];
+    //   $itemname   = $config['params']['dataparams']['itemname'];
+    //   $classid    = $config['params']['dataparams']['classid'];
+    //   $classname  = $config['params']['dataparams']['classic'];
+    //   $categoryid = $config['params']['dataparams']['categoryid'];
+    //   $categoryname  = $config['params']['dataparams']['categoryname'];
+    //   $subcatname =  $config['params']['dataparams']['subcat'];
+    //   $groupid    = $config['params']['dataparams']['groupid'];
+    //   $groupname  = $config['params']['dataparams']['stockgrp'];
+    //   $brandid    = $config['params']['dataparams']['brandid'];
+    //   $brandname  = $config['params']['dataparams']['brandname'];
+    //   $modelid    = $config['params']['dataparams']['modelid'];
+    //   $modelname  = $config['params']['dataparams']['modelname'];
+    //   $wh         = $config['params']['dataparams']['wh'];
+    //   $whname     = $config['params']['dataparams']['whname'];
+    //   $amountformat   = $config['params']['dataparams']['amountformat'];
+    //   $itemstock  = $config['params']['dataparams']['itemstock'];
+    //   $itemtype   = $config['params']['dataparams']['itemtype'];
+
+    //   // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+    //   //   $proj   = $config['params']['dataparams']['project'];
+    //   //   if ($proj != "") {
+    //   //     $projname = $config['params']['dataparams']['projectname'];
+    //   //   } else {
+    //   //     $projname = "ALL";
+    //   //   }
+    //   // }
+
+    //   if ($brandname == '') {
+    //     $brandname = "ALL";
+    //   }
+
+    //   if ($modelname == '') {
+    //     $modelname = "ALL";
+    //   }
+
+    //   if ($whname == '') {
+    //     $whname = "ALL";
+    //   }
+
+    //   $str = '';
+    //   $layoutsize = '1000';
+    //   if ($companyid == 50) { //unitech
+    //     $layoutsize = '1100';
+    //   }
+    //   $datelabel = 'Balance as of : ' . $asof;
+    //   // if ($companyid == 60) {
+    //     $asof = date('Y-m-d', strtotime($asof));
+    //     $end = date('Y-m-d', strtotime($end));
+    //     $datelabel = 'Date from: ' . $asof . ' ' . ' to: ' . $end;
+    //   // }
+
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->letterhead($center, $username, $config);
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->endtable();
+
+    //   $str .= '<br/>';
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   $str .= $this->reporter->startrow();
+
+    //   $str .= $this->reporter->col('INVENTORY BALANCE REPORT', null, null, false, '1px solid ', '', '', $font, '14', 'B', '', '') . '<br />';
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->endtable();
+
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->col($datelabel, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   if ($barcode == '') {
+    //     $str .= $this->reporter->col('Items : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   } else {
+    //     $str .= $this->reporter->col('Items : ' . $barcode, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   }
+
+    //   if ($groupname == '') {
+    //     $str .= $this->reporter->col('Group : ALL', '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   } else {
+    //     $str .= $this->reporter->col('Group : ' . $groupname, '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   }
+    //   $str .= $this->reporter->col('Brand : ' . $brandname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    //   if ($categoryname == '') {
+    //     $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   } else {
+    //     $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   }
+
+    //   $str .= $this->reporter->endrow();
+
+    //   $str .= $this->reporter->startrow();
+
+    //   $str .= $this->reporter->col('WH : ' . $whname, '300', null, false, '1px solid ', '', 'L', $font, '10', '', '', '');
+
+    //   switch ($itemtype) {
+    //     case '(1)':
+    //       $itemtype = 'Import';
+    //       break;
+    //     case '(0)':
+    //       $itemtype = 'Local';
+    //       break;
+    //     case '(0,1)':
+    //       $itemtype = 'Both';
+    //       break;
+    //   }
+    //   $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+
+    //   switch ($itemstock) {
+    //     case '(1)':
+    //       $itemstock = 'With Balance';
+    //       break;
+    //     case '(0)':
+    //       $itemstock = 'Without Balance';
+    //       break;
+    //     case '(0,1)':
+    //       $itemstock = 'None';
+    //       break;
+    //   }
+    //   $str .= $this->reporter->col('Item Stock : ' . strtoupper($itemstock), '150', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    //   $str .= $this->reporter->col('Model : ' . $modelname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    //   if ($subcatname == '') {
+    //     $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   } else {
+    //     $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+    //   }
+
+    //   $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
+
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->endtable();
+    //   $str .= $this->reporter->printline();
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   $str .= $this->reporter->startrow();
+
+    //   $str .= $this->reporter->col('ITEM CODE', '140', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    //   $str .= $this->reporter->col('ITEM DESCRIPTION', '500', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+
+    //   // if ($companyid == 50) { //unitech
+    //   //   $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    //   // }
+    //   $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+    //   $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+    //   $str .= $this->reporter->col('UNIT COST', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+    //   $str .= $this->reporter->col('TOTAL COST', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+
+    //   $str .= $this->reporter->endrow();
+    //   return $str;
+    // }
+
+    // public function transpower_layout_avecost($config)
+    // {
+    //   $result = $this->reportDefault($config);
+
+    //   $border = '1px solid';
+    //   $border_line = '';
+    //   $alignment = '';
+    //   $font = $this->companysetup->getrptfont($config['params']);
+    //   $font_size = 10;
+    //   $padding = '';
+    //   $margin = '8px';
+
+    //   $center     = $config['params']['center'];
+    //   $username   = $config['params']['user'];
+    //   $companyid = $config['params']['companyid'];
+
+    //   $asof       = $config['params']['dataparams']['start'];
+    //   $client     = $config['params']['dataparams']['client'];
+    //   $clientname = $config['params']['dataparams']['clientname'];
+    //   $barcode    = $config['params']['dataparams']['barcode'];
+    //   $itemname   = $config['params']['dataparams']['itemname'];
+    //   $classid    = $config['params']['dataparams']['classid'];
+    //   $classname  = $config['params']['dataparams']['classic'];
+    //   $categoryid = $config['params']['dataparams']['categoryid'];
+    //   $categoryname  = $config['params']['dataparams']['categoryname'];
+    //   $groupid    = $config['params']['dataparams']['groupid'];
+    //   $groupname  = $config['params']['dataparams']['stockgrp'];
+    //   $brandid    = $config['params']['dataparams']['brandid'];
+    //   $brandname  = $config['params']['dataparams']['brandname'];
+    //   $modelid    = $config['params']['dataparams']['modelid'];
+    //   $modelname  = $config['params']['dataparams']['modelname'];
+    //   $wh         = $config['params']['dataparams']['wh'];
+    //   $whname     = $config['params']['dataparams']['whname'];
+    //   $amountformat   = $config['params']['dataparams']['amountformat'];
+    //   $itemstock  = $config['params']['dataparams']['itemstock'];
+    //   $itemtype   = $config['params']['dataparams']['itemtype'];
+
+    //   if ($wh == '') {
+    //     $wh = 'ALL';
+    //   }
+
+    //   $skipnegative = false;
+
+    //   // switch ($companyid) {
+    //   //   case 49: //hotmix
+    //   //     $count = 45;
+    //   //     $page = 45;
+    //   //     $skipnegative = true;
+    //   //     $font_size = 12;
+    //   //     break;
+    //   //   default:
+    //       $count = 55;
+    //       $page = 55;
+    //   //     break;
+    //   // }
+    //   $this->reporter->linecounter = 0;
+
+    //   if (empty($result)) {
+    //     return $this->othersClass->emptydata($config);
+    //   }
+
+    //   $str = '';
+    //   $layoutsize = '1000';
+    //   // if ($companyid == 50) { //unitech
+    //   //   $layoutsize = '1100';
+    //   // }
+    //   $str .= $this->reporter->beginreport($layoutsize);
+    //   $str .= $this->transpower_displayHeader_avecost($config, $font_size);
+
+    //   $totalbalqty = 0;
+    //   $part = "";
+    //   $scatgrp = "";
+    //   $totalext = 0;
+    //   $grandtotal = 0;
+    //   $latestCost = 0;
+    //   $cost = 0;
+    //   $multiheader = true;
+
+    //   $decimal_place = 2;
+    //   // switch ($companyid) {
+    //   //   case 14: //majesty
+    //   //     $multiheader = false;
+    //   //     break;
+    //   // }
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   foreach ($result as $key => $data) {
+
+    //     // if ($companyid == 36) { //ROZLAB
+    //     //   $decimal_place = 4;
+    //     // }
+
+    //     $balance = number_format($data->balance, $decimal_place);
+    //     if ($balance == 0) {
+    //       $balance = '-';
+    //     }
+
+    //     $latestCost = $this->getLatestCost($data->itemid);
+
+    //     if ($latestCost != '') {
+    //       $cost = number_format($latestCost, $decimal_place);
+    //     }
+
+    //     if ($cost == 0) {
+    //       $cost = '-';
+    //     }
+
+
+    //     // if ($companyid != 14 && $companyid != 17) { //not majesty & unihome
+    //     if ($data->part != 0 || $data->part != null) {
+    //       if (strtoupper($part) == strtoupper($data->part)) {
+    //         $part = "";
+    //       } else {
+    //         $part = strtoupper($data->part);
+    //         $str .= $this->reporter->startrow();
+    //         $str .= $this->reporter->addline();
+    //         $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+    //         $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+    //         $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->endrow();
+    //       }
+    //     } else {
+    //       $part = "";
+    //     }
+
+    //     if ($data->category != 0 || $data->category != null) {
+    //       if (strtoupper($scatgrp) == strtoupper($data->category)) {
+    //         $scatgrp = "";
+    //       } else {
+    //         $scatgrp = strtoupper($data->category);
+    //         $str .= $this->reporter->begintable($layoutsize);
+    //         $str .= $this->reporter->startrow();
+    //         $str .= $this->reporter->addline();
+    //         $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+    //         $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+    //         $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+    //         $str .= $this->reporter->endrow();
+    //         $str .= $this->reporter->endtable();
+    //       }
+    //     } else {
+    //       $scatgrp = "";
+    //     }
+    //     // }
+    //     $str .= $this->reporter->begintable($layoutsize);
+    //     $str .= $this->reporter->startrow();
+    //     $str .= $this->reporter->addline();
+    //     $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+
+    //     // if ($companyid == 17) { // unihome
+    //     //   $lastsell = "select h.dateid from lahead as h
+    //     //             left join lastock as s on s.trno=h.trno
+    //     //             left join item as i on i.itemid=s.itemid
+    //     //             where doc='SJ' and s.itemid = $data->itemid
+    //     //             union all
+    //     //             select h.dateid from glhead as h
+    //     //             left join glstock as s on s.trno=h.trno
+    //     //             left join item as i on i.itemid=s.itemid
+    //     //             where doc='SJ' and s.itemid = $data->itemid
+    //     //             order by dateid desc limit 1";
+    //     //   $lsdateresult =  $this->coreFunctions->opentable($lastsell);
+    //     //   $str .= $this->reporter->col($data->itemname, '150', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+
+    //     //   if (empty($lsdateresult)) {
+    //     //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+    //     //   } else {
+    //     //     foreach ($lsdateresult as $key1 => $lsdatedata) {
+    //     //       $str .= $this->reporter->col($lsdatedata->dateid, '100', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+    //     //     }
+    //     //   }
+    //     // } else {
+    //       // if ($companyid == 47) { //kitchenstar
+    //       //   $str .= $this->reporter->col($data->itemname . ' ' . $data->color . ' ' . $data->sizeid, '520', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+    //       // } else {
+    //         $str .= $this->reporter->col($data->itemname, '500', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+    //       // }
+    //     // }
+
+    //     // switch ($companyid) {
+    //     //   case 1: //vitaline
+    //     //   case 23: //labsol cebu
+    //     //   case 41: //labsol paranaque
+    //     //   case 52: //technolab
+    //     //     $str .= $this->reporter->col($data->loc, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    //     //     $str .= $this->reporter->col($data->expiry, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    //     //     break;
+    //     //   case 50: //unitech
+    //     //     $str .= $this->reporter->col($data->brandn, '100', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    //     //     break;
+    //     // }
+
+    //     // switch ($companyid) {
+    //     //   case 10: //afti
+    //     //   case 12: //afti usd
+    //     //     $itemserialno = '';
+    //     //     $serialdata = $this->serialquery2($data->itemid);
+    //     //     if (!empty($serialdata)) {
+    //     //       foreach ($serialdata as $key => $value) {
+    //     //         $itemserialno .= $value['serialno'];
+    //     //       }
+    //     //     }
+    //     //     $itemserialno = rtrim($itemserialno, ", ");
+    //     //     $str .= $this->reporter->col($itemserialno, '75', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+    //     //     break;
+    //     // }
+
+    //     $totalext = $data->balance * $data->cost;
+    //     if ($totalext == 0) {
+    //       $totalext = '-';
+    //     } else {
+    //       $totalext = number_format($totalext, 2);
+    //     }
+
+    //     $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+    //     $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
+    //     $str .= $this->reporter->col($cost, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+    //     $str .= $this->reporter->col($totalext, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+    //     $str .= $this->reporter->endrow();
+
+    //     $str .= $this->reporter->endtable();
+    //     $scatgrp = strtoupper($data->category);
+    //     $part = $data->part;
+
+    //     if ($skipnegative) {
+    //       if ($data->balance >= 0) {
+    //         $totalbalqty = $totalbalqty + $data->balance;
+    //         $grandtotal = $grandtotal + ($data->balance * $data->cost);
+    //       }
+    //     } else {
+    //       $totalbalqty = $totalbalqty + $data->balance;
+    //       $grandtotal = $grandtotal + ($data->balance * $data->cost);
+    //     }
+
+    //     //oks
+    //     if ($multiheader) {
+    //       if ($this->reporter->linecounter >= $page) {
+    //         $str .= $this->reporter->endtable();
+    //         $str .= $this->reporter->page_break();
+    //         $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+
+    //         // switch ($companyid) {
+    //         //   case 49: //hotmix
+    //         //     if (!$allowfirstpage) {
+    //         //       $str .= $this->kinggeorge_header($config, $font_size);
+    //         //     }
+    //         //     break;
+
+    //         //   default:
+    //             if ($allowfirstpage) {
+    //               $str .= $this->transpower_displayHeader_avecost($config, $font_size);
+    //             }
+    //         //     break;
+    //         // }
+
+
+    //         $page = $page + $count;
+    //       }
+    //     }
+    //   }
+
+    //   $str .= $this->reporter->endtable();
+
+    //   $str .= $this->reporter->begintable();
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   // switch ($companyid) {
+    //   //   case 1: //vitaline
+    //   //   case 23: //labsol cebu
+    //   //   case 41: //labsol manila
+    //   //   case 52: //technolab
+    //   //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('OVERALL STOCKS :', '500', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   //   case 17: //unihome
+    //   //   case 28: //xcomp
+    //   //   case 39: //CBBSI
+    //   //     $str .= $this->reporter->col('OVERALL STOCKS :', '680', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   //   case 50: //unitech
+    //   //     $str .= $this->reporter->col('OVERALL STOCKS :', '540', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   //   default:
+    //       $str .= $this->reporter->col('OVERALL STOCKS :', '500', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   // }
+
+    //   // switch ($companyid) {
+    //   //   case 17: //unihome
+    //   //   case 28: //xcomp
+    //   //   case 39: //CBBSI
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+    //   //     $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col(number_format($grandtotal, 2), '85', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   //   case 50: //unitech
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+    //   //     $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col('', '110', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     $str .= $this->reporter->col(number_format($grandtotal, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   //   default:
+    //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+    //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', $padding, '8px');
+    //       $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //       $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+    //       $str .= $this->reporter->col(number_format($grandtotal, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+    //   //     break;
+    //   // }
+
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->endtable();
+
+    //   $str .= $this->reporter->printline();
+    //   $str .= $this->reporter->endreport();
+
+    //   return $str;
+    // }
+
+  //TRANSPOWER
+
 
   private function default_displayHeader_SELLING_PRICE($config)
   {
@@ -2023,6 +3886,7 @@ class inventory_balance
     if ($subcatname == '') {
       $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     } else {
+      $subcatname = $config['params']['dataparams']['subcatname'];
       $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
 
@@ -2623,6 +4487,7 @@ class inventory_balance
     if ($subcatname == '') {
       $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     } else {
+      $subcatname = $config['params']['dataparams']['subcatname'];
       $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
@@ -5058,6 +6923,7 @@ class inventory_balance
     if ($subcatname == '') {
       $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     } else {
+      $subcatname = $config['params']['dataparams']['subcatname'];
       $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, '10', '', '', '', '');
     }
 
@@ -8424,9 +10290,10 @@ class inventory_balance
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-
+    //120 320 100 100 100 100 60 100
     $str .= $this->reporter->col('ITEM CODE', '120', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
-    $str .= $this->reporter->col('ITEM DESCRIPTION', '420', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '320', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('GROUP', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     if ($itemstock != '(0,1)') {
       $str .= $this->reporter->col('SRP', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
@@ -8462,8 +10329,8 @@ class inventory_balance
 
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
 
-      $count = 50;
-      $page = 50;
+      $count = 45;
+      $page = 45;
 
       $this->reporter->linecounter = 0;
 
@@ -8512,15 +10379,22 @@ class inventory_balance
           if (strtoupper($part) == strtoupper($data->part)) {
             $part = "";
           } else {
+    //120 320 100 100 100 100 60 100
             $part = strtoupper($data->part);
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->addline();
-            $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-            $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col($part, '640', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '60', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
             $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+            
+            $str .= $this->reporter->begintable($layoutsize);
           }
         } else {
           $part = "";
@@ -8531,14 +10405,20 @@ class inventory_balance
             $scatgrp = "";
           } else {
             $scatgrp = strtoupper($data->category);
+            
+            $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->addline();
-            $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
-            $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
+            $str .= $this->reporter->col($scatgrp, '640', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '60', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
             $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+            
+            $str .= $this->reporter->begintable($layoutsize);
           }
         } else {
           $scatgrp = "";
@@ -8549,7 +10429,8 @@ class inventory_balance
         $str .= $this->reporter->addline();
 
         $str .= $this->reporter->col($data->barcode, '120', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col($data->itemname, '420', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->itemname, '320', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->groupname, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
         if ($itemstock != '(0,1)') {
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');

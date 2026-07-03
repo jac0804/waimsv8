@@ -475,19 +475,6 @@ class word
             } else {
 
                 $clientid = $this->coreFunctions->insertGetId($this->head, $data);
-                // if ($config['params']['companyid'] == 58) {
-                //     $url = 'App\Http\Classes\modules\payroll\\' . 'word';
-                //     $appstatus = $this->othersClass->insertPendingapp(0, $clientid, 'WORKONRESTDAY', $data, $url, $config, 0, true);
-                //     if (!$appstatus['status']) {
-                //         $this->coreFunctions->execqry("delete from changeshiftapp where line=".$clientid, 'delete');
-                //         $msg = $appstatus['msg'];
-                //         $status = $appstatus['status'];
-                //     } else {
-                //         goto log;
-                //     }
-                // } else {
-                //     log:
-                // }
                 $this->logger->sbcmasterlog(
                     $clientid,
                     $config,

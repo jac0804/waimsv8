@@ -201,7 +201,7 @@ class monthly_analyze_item_sales
       case 59: //roosevelt
         $result = $this->reportDefaultLayoutRoosevelt($config);
         break;
-      case 60:
+      case 60: //transpower
         $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
         $result = $this->reportDefaultLayoutTranspower($config);
         break;
@@ -218,23 +218,700 @@ class monthly_analyze_item_sales
 
   public function reportDefault($config)
   {
+    
+    $companyid = $config['params']['companyid'];
     // QUERY
     $posttype   = $config['params']['dataparams']['posttype'];
 
-    switch ($posttype) {
-      case '0': // POSTED
-        $query = $this->DEFAULT_QUERY_POSTED($config);
-        break;
-      case '1':
-        $query = $this->DEFAULT_QUERY_UNPOSTED($config);
+    switch ($companyid) {
+      case 60:
+        switch ($posttype) {
+          case '0': // POSTED
+            $query = $this->TRANSPOWER_QUERY_POSTED($config);
+            break;
+          case '1':
+            $query = $this->TRANSPOWER_QUERY_UNPOSTED($config);
+            break;
+          default:
+            $query = $this->TRANSPOWER_QUERY_ALL($config);
+            break;
+        }
         break;
       default:
-        $query = $this->DEFAULT_QUERY_ALL($config);
+        switch ($posttype) {
+          case '0': // POSTED
+            $query = $this->DEFAULT_QUERY_POSTED($config);
+            break;
+          case '1':
+            $query = $this->DEFAULT_QUERY_UNPOSTED($config);
+            break;
+          default:
+            $query = $this->DEFAULT_QUERY_ALL($config);
+            break;
+        }
         break;
     }
+    
 
 
     return $this->coreFunctions->opentable($query);
+  }
+
+  
+  public function TRANSPOWER_QUERY_POSTED($config)
+  {
+    $companyid    = $config['params']['companyid'];
+    $client       = $config['params']['dataparams']['client'];
+    $barcode      = $config['params']['dataparams']['barcode'];
+    $partname     = $config['params']['dataparams']['partname'];
+    $groupname    = $config['params']['dataparams']['stockgrp'];
+    $brandname    = $config['params']['dataparams']['brandname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $subcatname   =  $config['params']['dataparams']['subcatname'];
+    $wh           = $config['params']['dataparams']['wh'];
+    $year         = $config['params']['dataparams']['year'];
+    $analyzedby   = $config['params']['dataparams']['analyzedby'];
+    $itemtype     = $config['params']['dataparams']['itemtype'];
+    $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
+
+    $filter = '';
+    $filter1 = '';
+    if ($barcode != "") {
+      $itemid = $config['params']['dataparams']['itemid'];
+      $filter .= " and stock.itemid=" . $itemid;
+    }
+    if ($brandname != "") {
+      $brandid = $config['params']['dataparams']['brandid'];
+      $filter .= " and item.brand=" . $brandid;
+    }
+    if ($groupname != "") {
+      $groupid = $config['params']['dataparams']['groupid'];
+      $filter .= " and item.groupid=" . $groupid;
+    }
+    if ($categoryname != "") {
+      $category = $config['params']['dataparams']['category'];
+      $filter .= " and item.category='$category'";
+    }
+    if ($subcatname != "") {
+      $subcat = $config['params']['dataparams']['subcat'];
+      $filter .= " and item.subcat='$subcat'";
+    }
+    if ($partname != "") {
+      $partid = $config['params']['dataparams']['partid'];
+      $filter .= " and item.part=" . $partid;
+    }
+    if ($client != "") {
+      $clientid = $config['params']['dataparams']['clientid'];
+      $filter .= " and client.clientid=" . $clientid;
+    }
+    if ($wh != "") {
+      $whid = $config['params']['dataparams']['whid'];
+      $filter .= " and stock.whid=" . $whid;
+    }
+
+    if ($analyzedby == "unit") {
+      $war = "stock.iss";
+    } else {
+      $war = "stock.ext";
+    }
+
+    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+    //   $project = $config['params']['dataparams']['project'];
+    //   $dept = $config['params']['dataparams']['ddeptname'];
+    //   $indus = $config['params']['dataparams']['industry'];
+
+    //   if ($project != "") {
+    //     $projectid = $config['params']['dataparams']['projectid'];
+    //     $filter1 .= " and head.projectid=" . $projectid;
+    //   }
+    //   if ($dept != "") {
+    //     $deptid = $config['params']['dataparams']['deptid'];
+    //     $filter1 .= " and head.deptid=" . $deptid;
+    //   }
+    //   if ($indus != "") {
+    //     $filter1 .= " and client.industry='$indus'";
+    //   }
+    // } else if ($companyid == 59) { //roosevelt
+    //   $area = $config['params']['dataparams']['area'];
+    //   $filter1 .= " and client.area='" . $area . "'";
+    // } else {
+      $filter1 = "";
+    // }
+
+
+    $classid = '';
+    $modelid = '';
+    $addfields = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+    $transpowerfieldgroup = '';
+
+    // if ($companyid == 60) {
+      $classid = $config['params']['dataparams']['classid'];
+      $modelid = $config['params']['dataparams']['modelid'];
+      $whid      = $config['params']['dataparams']['wh'];
+
+      // $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
+      // left join itemlevel as itlevel on itlevel.itemid = item.itemid';
+
+      // if ($whid != '') {
+      //   $transpowerfield  = ",ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,'') as itemmin, ifnull(itlevel.max,'') as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid";
+      //   $transpowerfield2 = "ifnull(x.classname,'') as classname, ifnull(x.itemmin,'') as itemmin, ifnull(x.itemmax,'') as itemmax, x.itemid, x.whid,";
+      //   $addfields        = 'ifnull((select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss),0) as balance,';
+      //   $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
+      //   $transpowerfieldgroup = "x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,";
+      // } else {
+      //   $transpowerfield  = ",ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,'') as itemmin, ifnull(itlevel.max,'') as itemmax, sum(stock.iss) as iss, item.itemid";
+      //   $transpowerfield2 = "ifnull(x.classname,'') as classname, ifnull(x.itemmin,'') as itemmin, ifnull(x.itemmax,'') as itemmax, x.itemid,";
+      //   $addfields        = 'ifnull((select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss),0) as balance,';
+      //   $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
+      //   $transpowerfieldgroup = "x.classname, x.itemmin, x.itemmax, x.itemid, ";
+      // }
+
+      if ($classid != "") {
+        $filter1 .= " and ic.cl_id=" . $classid;
+      }
+      if ($modelid != "") {
+        $filter1 .= " and mm.model_id=" . $modelid;
+      }
+    // }
+
+    // $agfield = '';
+    // $agfield2 = '';
+    // $grpagent = '';
+    // if ($companyid == 23) {
+    //   $agfield = "agentname, ";
+    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
+    //   $grpagent = "agent.clientname, ";
+
+    //   if ($agentid != "") {
+    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
+    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
+    //   }
+    // // }
+    // $sort = "order by part, brand, barcode, itemname";
+    // if ($companyid == 60) {
+    //   $sort = "order by part, brand, itemname, barcode";
+    // }
+
+    // var_dump($config['params']['dataparams']);
+
+    $whfilter = '';
+    $whfield = '';
+    $whfield2 = '';
+    if ($whid != '') {
+      $whfilter .= 'and whid = x.whid';
+      $whfield = 'x.whid,';
+      $whfield2 = ', stock.whid';
+    }
+
+    $query = "select 
+    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
+    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
+    
+    barcode,size,uom,category,groupid,ifnull(category1,'') as category1, ifnull(subcatname,'') as subcatname, part, brand, model,body, upper(itemname) as itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
+      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
+      select item.barcode, client.clientname, item.sizeid as size,'p' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc,'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr, item.category,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, 
+      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
+      item.itemid $whfield2
+      from ((glhead as head left join glstock as stock on stock.trno=head.trno)
+      left join client on client.clientid=head.clientid)
+      left join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.clientid = head.agentid
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname, 
+      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x
+      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
+      order by part, brand, itemname, barcode";
+    // var_dump($query);
+    // return 0;
+    return $query;
+  }
+
+  public function TRANSPOWER_QUERY_UNPOSTED($config)
+  {
+    $companyid    = $config['params']['companyid'];
+    $client       = $config['params']['dataparams']['client'];
+    $barcode      = $config['params']['dataparams']['barcode'];
+    $partname     = $config['params']['dataparams']['partname'];
+    $groupname    = $config['params']['dataparams']['stockgrp'];
+    $brandname    = $config['params']['dataparams']['brandname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $subcatname   =  $config['params']['dataparams']['subcatname'];
+    $wh           = $config['params']['dataparams']['wh'];
+    $year         = $config['params']['dataparams']['year'];
+    $analyzedby   = $config['params']['dataparams']['analyzedby'];
+    $itemtype     = $config['params']['dataparams']['itemtype'];
+    $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
+
+    $filter = '';
+    $filter1 = '';
+    if ($barcode != "") {
+      $itemid = $config['params']['dataparams']['itemid'];
+      $filter .= " and stock.itemid=" . $itemid;
+    }
+    if ($brandname != "") {
+      $brandid = $config['params']['dataparams']['brandid'];
+      $filter .= " and item.brand=" . $brandid;
+    }
+    if ($groupname != "") {
+      $groupid = $config['params']['dataparams']['groupid'];
+      $filter .= " and item.groupid=" . $groupid;
+    }
+    if ($categoryname != "") {
+      $category = $config['params']['dataparams']['category'];
+      $filter .= " and item.category='$category'";
+    }
+    if ($subcatname != "") {
+      $subcat = $config['params']['dataparams']['subcat'];
+      $filter .= " and item.subcat='$subcat'";
+    }
+    if ($partname != "") {
+      $partid = $config['params']['dataparams']['partid'];
+      $filter .= " and item.part=" . $partid;
+    }
+    if ($client != "") {
+      $clientid = $config['params']['dataparams']['clientid'];
+      $filter .= " and client.clientid=" . $clientid;
+    }
+    if ($wh != "") {
+      $whid = $config['params']['dataparams']['whid'];
+      $filter .= " and stock.whid=" . $whid;
+    }
+
+    if ($analyzedby == "unit") {
+      $war = "stock.iss";
+    } else {
+      $war = "stock.ext";
+    }
+
+    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+    //   $project = $config['params']['dataparams']['project'];
+    //   $dept = $config['params']['dataparams']['ddeptname'];
+    //   $indus = $config['params']['dataparams']['industry'];
+
+    //   if ($project != "") {
+    //     $projectid = $config['params']['dataparams']['projectid'];
+    //     $filter1 .= " and head.projectid=" . $projectid;
+    //   }
+    //   if ($dept != "") {
+    //     $deptid = $config['params']['dataparams']['deptid'];
+    //     $filter1 .= " and head.deptid=" . $deptid;
+    //   }
+    //   if ($indus != "") {
+    //     $filter1 .= " and client.industry='$indus'";
+    //   }
+    // } else if ($companyid == 59) { //roosevelt
+    //   $area = $config['params']['dataparams']['area'];
+    //   $filter1 .= " and client.area='" . $area . "'";
+    // } else {
+      $filter1 = "";
+    // }
+
+    $agfield = '';
+    $agfield2 = '';
+    $grpagent = '';
+    // if ($companyid == 23) {
+    //   $agfield = "agentname, ";
+    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
+    //   $grpagent = "agent.clientname, ";
+
+    //   if ($agentid != "") {
+    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
+    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
+    //   }
+    // }
+
+    $sort = "order by $agfield part, brand, barcode, itemname";
+    if ($companyid == 60) { //transpower
+      $sort = "order by itemname,barcode,part, brand";
+    }
+
+
+    $classid = '';
+    $modelid = '';
+    $addfields = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+
+    // if ($companyid == 60) {
+      $classid = $config['params']['dataparams']['classid'];
+      $modelid = $config['params']['dataparams']['modelid'];
+      $whid      = $config['params']['dataparams']['wh'];
+
+    //   $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
+    //   left join itemlevel as itlevel on itlevel.itemid = item.itemid';
+
+    //   if ($whid != '') {
+    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid';
+    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,';
+    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss) as balance,';
+    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
+    //   } else {
+    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid';
+    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid,';
+    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss) as balance,';
+    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
+    //   }
+
+    //   if ($classid != "") {
+    //     $filter1 .= " and ic.cl_id=" . $classid;
+    //   }
+    //   if ($modelid != "") {
+    //     $filter1 .= " and mm.model_id=" . $modelid;
+    //   }
+    // }
+
+    
+    $whfilter = '';
+    $whfield = '';
+    $whfield2 = '';
+    if ($whid != '') {
+      $whfilter .= 'and whid = x.whid';
+      $whfield = 'x.whid,';
+      $whfield2 = ', stock.whid';
+    }
+
+    $query = "select 
+    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
+    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
+    barcode, size, uom,category, groupid, part, brand,category1, subcatname, model,body, 
+    itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
+      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
+      select item.barcode, client.clientname, item.sizeid as size,'u' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, 
+      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,'') as itemmin, ifnull(itlevel.max,'') as itemmax, sum(stock.iss) as iss, 
+      item.itemid $whfield2
+      from ((lahead as head left join lastock as stock on stock.trno=head.trno)
+      left join client on client.client=head.client)
+      left join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.client = head.agent
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname,
+      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x 
+      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
+      order by part, brand, itemname, barcode";
+
+    return $query;
+  }
+
+  private function TRANSPOWER_QUERY_ALL($config)
+  {
+    $companyid    = $config['params']['companyid'];
+    $client       = $config['params']['dataparams']['client'];
+    $barcode      = $config['params']['dataparams']['barcode'];
+    $partname     = $config['params']['dataparams']['partname'];
+    $groupname    = $config['params']['dataparams']['stockgrp'];
+    $brandname    = $config['params']['dataparams']['brandname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $subcatname   =  $config['params']['dataparams']['subcatname'];
+    $wh           = $config['params']['dataparams']['wh'];
+    $year         = $config['params']['dataparams']['year'];
+    $analyzedby   = $config['params']['dataparams']['analyzedby'];
+    $itemtype     = $config['params']['dataparams']['itemtype'];
+    $agent        = $config['params']['dataparams']['agent'];
+    $agentid        = $config['params']['dataparams']['agentid'];
+
+    $filter = '';
+    $filter1 = '';
+    if ($barcode != "") {
+      $itemid = $config['params']['dataparams']['itemid'];
+      $filter .= " and stock.itemid=" . $itemid;
+    }
+    if ($brandname != "") {
+      $brandid = $config['params']['dataparams']['brandid'];
+      $filter .= " and item.brand=" . $brandid;
+    }
+    if ($groupname != "") {
+      $groupid = $config['params']['dataparams']['groupid'];
+      $filter .= " and item.groupid=" . $groupid;
+    }
+    if ($categoryname != "") {
+      $category = $config['params']['dataparams']['category'];
+      $filter .= " and item.category='$category'";
+    }
+    if ($subcatname != "") {
+      $subcat = $config['params']['dataparams']['subcat'];
+      $filter .= " and item.subcat='$subcat'";
+    }
+    if ($partname != "") {
+      $partid = $config['params']['dataparams']['partid'];
+      $filter .= " and item.part=" . $partid;
+    }
+    if ($client != "") {
+      $clientid = $config['params']['dataparams']['clientid'];
+      $filter .= " and client.clientid=" . $clientid;
+    }
+    if ($wh != "") {
+      $whid = $config['params']['dataparams']['whid'];
+      $filter .= " and stock.whid=" . $whid;
+    }
+
+    if ($analyzedby == "unit") {
+      $war = "stock.iss";
+    } else {
+      $war = "stock.ext";
+    }
+
+    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+    //   $project = $config['params']['dataparams']['project'];
+    //   $dept = $config['params']['dataparams']['ddeptname'];
+    //   $indus = $config['params']['dataparams']['industry'];
+
+    //   if ($project != "") {
+    //     $projectid = $config['params']['dataparams']['projectid'];
+    //     $filter1 .= " and head.projectid=" . $projectid;
+    //   }
+    //   if ($dept != "") {
+    //     $deptid = $config['params']['dataparams']['deptid'];
+    //     $filter1 .= " and head.deptid=" . $deptid;
+    //   }
+    //   if ($indus != "") {
+    //     $filter1 .= " and client.industry='$indus'";
+    //   }
+    // } else if ($companyid == 59) { //roosevelt
+    //   $area = $config['params']['dataparams']['area'];
+    //   $filter1 .= "and client.area='" . $area . "'";
+    // } else {
+      $filter1 = "";
+    // }
+
+    $agfield = '';
+    $agfield2 = '';
+    $grpagent = '';
+    // if ($companyid == 23) {
+    //   $agfield = "agentname, ";
+    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
+    //   $grpagent = "agent.clientname, ";
+
+    //   if ($agentid != "") {
+    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
+    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
+    //   }
+    // }
+
+
+
+    // $sort = "order by $agfield part, brand, barcode, itemname";
+    // if ($companyid == 60) { //transpower
+    //   $sort = "order by itemname,barcode,part, brand";
+    // }
+
+
+    $classid = '';
+    $modelid = '';
+    $addfields = '';
+    $leftjoin_class = '';
+    $transpowerfield = '';
+    $gtranspowerfield = '';
+    $transpowerfield2 = '';
+
+    // if ($companyid == 60) {
+      $classid = $config['params']['dataparams']['classid'];
+      $modelid = $config['params']['dataparams']['modelid'];
+      $whid      = $config['params']['dataparams']['wh'];
+
+    //   $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
+    //   left join itemlevel as itlevel on itlevel.itemid = item.itemid';
+
+    //   if ($whid != '') {
+    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid';
+    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,';
+    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss) as balance,';
+    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
+    //   } else {
+    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid';
+    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid,';
+    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss) as balance,';
+    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
+    //   }
+
+    //   if ($classid != "") {
+    //     $filter1 .= " and ic.cl_id=" . $classid;
+    //   }
+    //   if ($modelid != "") {
+    //     $filter1 .= " and mm.model_id=" . $modelid;
+    //   }
+    // }
+
+    
+    $whfilter = '';
+    $whfield = '';
+    $whfield2 = '';
+    if ($whid != '') {
+      $whfilter .= 'and whid = x.whid';
+      $whfield = 'x.whid,';
+      $whfield2 = ', stock.whid';
+    }
+
+
+    $query = "select 
+    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
+    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
+     barcode,size,uom,category, groupid,category1, subcatname, part, brand, model,body, itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
+      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
+      from (
+      select item.barcode, client.clientname, item.sizeid as size,'p' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc,'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr, item.category,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, 
+      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
+      item.itemid $whfield2
+      from ((glhead as head left join glstock as stock on stock.trno=head.trno)
+      left join client on client.clientid=head.clientid)
+      left join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.clientid = head.agentid
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname, 
+      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2
+      UNION ALL
+
+      select item.barcode, client.clientname, item.sizeid as size,'u' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, 
+      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
+      item.itemid $whfield2
+      from ((lahead as head left join lastock as stock on stock.trno=head.trno)
+      left join client on client.client=head.client)
+      left join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.client = head.agent
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname,
+      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x
+      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
+      order by part, brand, itemname, barcode";
+    return $query;
   }
 
   public function DEFAULT_QUERY_POSTED($config)
@@ -3698,7 +4375,7 @@ class monthly_analyze_item_sales
     $model = $config['params']['dataparams']['modelname'];
 
     $str = '';
-    $layoutsize = '1400';
+    $layoutsize = '1500';
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -3785,7 +4462,8 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('BARCODE', '100', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('ITEM DESCRIPTION', '191', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '141', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('GROUP', '50', '', '', $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('JAN', '67', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('FEB', '67', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('MAR', '67', '', '', $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
@@ -3893,7 +4571,7 @@ class monthly_analyze_item_sales
 
     $totalItems = count($result);
     $currentIndex = 0;
-
+    
     foreach ($result as $key => $data) {
       $currentIndex++;
 
@@ -3904,6 +4582,8 @@ class monthly_analyze_item_sales
         where item.barcode = ? and uom.uom = ?";
         $uombal = $this->coreFunctions->datareader($qry, [$data->barcode, $uom]);
       }
+      // To make the groupid empty if it is 'NO GROUP' to avoid displaying 'NO GROUP' in the report
+      $groupid = (strtoupper($data->groupid) == 'NO GROUP') ? '' : $data->groupid;
 
       if ($uombal != 0 && $analyzedby == 'unit') {
         $mojan = number_format($data->mojan / $uombal, $ab);
@@ -3961,7 +4641,8 @@ class monthly_analyze_item_sales
             $str .= $this->reporter->begintable();
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-            $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '191', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
+            $str .= $this->reporter->col('', '50', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+            $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '141', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
             $str .= $this->reporter->col($subjan == 0 ? '-' : number_format($subjan, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
             $str .= $this->reporter->col($subfeb == 0 ? '-' : number_format($subfeb, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
             $str .= $this->reporter->col($submar == 0 ? '-' : number_format($submar, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
@@ -4020,7 +4701,8 @@ class monthly_analyze_item_sales
           $str .= $this->reporter->begintable();
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-          $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '191', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
+          $str .= $this->reporter->col('', '50', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '141', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
           $str .= $this->reporter->col($subjan == 0 ? '-' : number_format($subjan, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
           $str .= $this->reporter->col($subfeb == 0 ? '-' : number_format($subfeb, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
           $str .= $this->reporter->col($submar == 0 ? '-' : number_format($submar, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
@@ -4048,7 +4730,8 @@ class monthly_analyze_item_sales
           $str .= $this->reporter->begintable();
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-          $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '191', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
+          $str .= $this->reporter->col('', '50', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '141', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
           $str .= $this->reporter->col($gsubjan == 0 ? '-' : number_format($gsubjan, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
           $str .= $this->reporter->col($gsubfeb == 0 ? '-' : number_format($gsubfeb, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
           $str .= $this->reporter->col($gsubmar == 0 ? '-' : number_format($gsubmar, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
@@ -4123,7 +4806,8 @@ class monthly_analyze_item_sales
       $str .= $this->reporter->begintable();
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col($data->barcode, '100', '', false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
-      $str .= $this->reporter->col(strtoupper($data->itemname), '191', '', false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col(strtoupper($data->itemname), '141', '', false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($groupid, '50', '', false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($mojan, '67', '', false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($mofeb, '67', '', false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($momar, '67', '', false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
@@ -4260,7 +4944,8 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->begintable();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '191', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
+    $str .= $this->reporter->col('', '50', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col($brand . ' ' . 'SUB TOTAL:', '141', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
     $str .= $this->reporter->col($subjan == 0 ? '-' : number_format($subjan, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col($subfeb == 0 ? '-' : number_format($subfeb, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col($submar == 0 ? '-' : number_format($submar, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
@@ -4285,7 +4970,8 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->begintable();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '191', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
+    $str .= $this->reporter->col('', '50', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col($part . ' ' . 'SUB TOTAL:', '141', '', false, $border, '', 'R', $font, $fontsize, 'Bi', '', '', '');
     $str .= $this->reporter->col($gsubjan == 0 ? '-' : number_format($gsubjan, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col($gsubfeb == 0 ? '-' : number_format($gsubfeb, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col($gsubmar == 0 ? '-' : number_format($gsubmar, $ab), '67', '', false, '1px dotted ', 'T', 'R', $font, $fontsize, '', '', '', '');
@@ -4310,7 +4996,8 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->begintable();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', '', false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('GRAND TOTAL :', '191', '', false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '141', '', false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '50', '', false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col($totalmojan == 0 ? '-' : number_format($totalmojan, $ab), '67', '', false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col($totalmofeb == 0 ? '-' : number_format($totalmofeb, $ab), '67', '', false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col($totalmomar == 0 ? '-' : number_format($totalmomar, $ab), '67', '', false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
@@ -4503,15 +5190,16 @@ class monthly_analyze_item_sales
 
   public function reportDefaultLayoutSbc($config)
   {
+    // --- PREVENT TIMEOUTS AND MEMORY CRASHES ---
+    // set_time_limit(0);
+    // ini_set('memory_limit', '512M');
+
     $border = '1px solid';
     $font = 'Tahoma';
     $fontsize = '9';
 
     $result = $this->reportDefault($config);
     $analyzedby = $config['params']['dataparams']['analyzedby'];
-
-    $rowsPerPage = 20;
-    $this->reporter->linecounter = 0;
 
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
@@ -4529,6 +5217,10 @@ class monthly_analyze_item_sales
       $ab = 2;
     }
 
+    $rowsPerPage    = 29;
+    $maxRowsPerPage = 31;
+    $rowCounter     = 0;
+
     $totalmojan = 0;
     $totalmofeb = 0;
     $totalmomar = 0;
@@ -4541,23 +5233,21 @@ class monthly_analyze_item_sales
     $totalmooct = 0;
     $totalmonov = 0;
     $totalmodec = 0;
-    $totalamt = 0;
+    $totalamt    = 0;
 
-
-    $subjan = 0;
-    $subfeb = 0;
-    $submar = 0;
-    $subapr = 0;
-    $submay = 0;
-    $subjun = 0;
-    $subjul = 0;
-    $subaug = 0;
-    $subsep = 0;
-    $suboct = 0;
-    $subnov = 0;
-    $subdec = 0;
-    $subamt = 0;
-
+    $subjan  = 0;
+    $subfeb  = 0;
+    $submar  = 0;
+    $subapr  = 0;
+    $submay  = 0;
+    $subjun  = 0;
+    $subjul  = 0;
+    $subaug  = 0;
+    $subsep  = 0;
+    $suboct  = 0;
+    $subnov  = 0;
+    $subdec  = 0;
+    $subamt  = 0;
 
     $gsubjan = 0;
     $gsubfeb = 0;
@@ -4573,12 +5263,13 @@ class monthly_analyze_item_sales
     $gsubdec = 0;
     $gsubamt = 0;
 
-    $currentPart = null;
+    $currentPart  = null;
     $currentBrand = null;
 
     foreach ($result as $key => $data) {
-      $itemname = wordwrap($data->itemname, 25, "\n");
-      $lines = substr_count($itemname, "\n") + 1;
+
+      $itemname = wordwrap($data->itemname, 31, "\n");
+      $lines    = substr_count($itemname, "\n") + 1;
 
       $mojan = number_format($data->mojan, $ab);
       if ($mojan == 0) $mojan = '-';
@@ -4608,15 +5299,24 @@ class monthly_analyze_item_sales
       $amt = $data->mojan + $data->mofeb + $data->momar + $data->moapr + $data->momay + $data->mojun
         + $data->mojul + $data->moaug + $data->mosep + $data->mooct + $data->monov + $data->modec;
 
-      $rowPart = $data->part;
+      $rowPart  = $data->part;
       $rowBrand = strtoupper($data->brand);
 
-      $newPart = false;
+      $newPart  = false;
       $newBrand = false;
 
 
       if ($currentPart !== null && strtoupper($rowPart) !== strtoupper($currentPart)) {
-        // Brand subtotal
+
+
+        if ($rowCounter + 2 > $maxRowsPerPage) {
+          $str .= $this->reporter->page_break();
+          $str .= $this->reportHeaderSbc($config);
+          $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize, $config);
+          $rowCounter = 0;
+        }
+
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
@@ -4637,9 +5337,9 @@ class monthly_analyze_item_sales
         $str .= $this->reporter->col('', '50', null, false, '', '', 'R', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $this->reporter->linecounter++;
+        $rowCounter += 1.0;
 
-        // Part subtotal
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
@@ -4660,22 +5360,21 @@ class monthly_analyze_item_sales
         $str .= $this->reporter->col('', '50', null, false, '', '', 'R', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $this->reporter->linecounter++;
+        $rowCounter += 1.0;
 
-
-        $subjan = 0;
-        $subfeb = 0;
-        $submar = 0;
-        $subapr = 0;
-        $submay = 0;
-        $subjun = 0;
-        $subjul = 0;
-        $subaug = 0;
-        $subsep = 0;
-        $suboct = 0;
-        $subnov = 0;
-        $subdec = 0;
-        $subamt = 0;
+        $subjan  = 0;
+        $subfeb  = 0;
+        $submar  = 0;
+        $subapr  = 0;
+        $submay  = 0;
+        $subjun  = 0;
+        $subjul  = 0;
+        $subaug  = 0;
+        $subsep  = 0;
+        $suboct  = 0;
+        $subnov  = 0;
+        $subdec  = 0;
+        $subamt  = 0;
         $gsubjan = 0;
         $gsubfeb = 0;
         $gsubmar = 0;
@@ -4690,9 +5389,18 @@ class monthly_analyze_item_sales
         $gsubdec = 0;
         $gsubamt = 0;
 
-        $newPart = true;
+        $newPart  = true;
         $newBrand = true;
       } elseif ($currentBrand !== null && $rowBrand !== $currentBrand) {
+
+
+        if ($rowCounter + 1 > $maxRowsPerPage) {
+          $str .= $this->reporter->page_break();
+          $str .= $this->reportHeaderSbc($config);
+          $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize, $config);
+          $rowCounter = 0;
+        }
+
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -4714,9 +5422,9 @@ class monthly_analyze_item_sales
         $str .= $this->reporter->col('', '50', null, false, '', '', 'R', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $this->reporter->linecounter++;
+        $rowCounter += 1.0;
 
-        // reset brand accumulators only
+
         $subjan = 0;
         $subfeb = 0;
         $submar = 0;
@@ -4735,19 +5443,28 @@ class monthly_analyze_item_sales
       }
 
       if ($currentPart === null) {
+        $newPart  = true;
+        $newBrand = true;
+      }
+
+      $rowHeight = $lines;
+
+      $rowsNeeded = $rowHeight;
+      if ($newPart)  $rowsNeeded += 1.0;
+      if ($newBrand) $rowsNeeded += 1.0;
+
+      if ($rowCounter + $rowsNeeded > $rowsPerPage) {
+        $str .= $this->reporter->page_break();
+        $str .= $this->reportHeaderSbc($config);
+        $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize, $config);
+        $rowCounter = 0;
+
+
         $newPart = true;
         $newBrand = true;
       }
 
 
-      if ($this->reporter->linecounter + $lines > $rowsPerPage) {
-        $str .= $this->reporter->page_break();
-        $str .= $this->reportHeaderSbc($config);
-        $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize, $config);
-        $this->reporter->linecounter = 0;
-      }
-
-      // Render Part header if needed (only on Part change)
       if ($newPart) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -4769,8 +5486,9 @@ class monthly_analyze_item_sales
         $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $this->reporter->linecounter++;
+        $rowCounter += 1.0;
       }
+
 
       if ($newBrand) {
         $str .= $this->reporter->begintable($layoutsize);
@@ -4793,8 +5511,9 @@ class monthly_analyze_item_sales
         $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        $this->reporter->linecounter++;
+        $rowCounter += 1.0;
       }
+
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
@@ -4816,23 +5535,21 @@ class monthly_analyze_item_sales
       $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
+      $rowCounter += $rowHeight;
 
-      $this->reporter->linecounter += $lines;
-
-      // Accumulate totals
-      $subjan += $data->mojan;
-      $subfeb += $data->mofeb;
-      $submar += $data->momar;
-      $subapr += $data->moapr;
-      $submay += $data->momay;
-      $subjun += $data->mojun;
-      $subjul += $data->mojul;
-      $subaug += $data->moaug;
-      $subsep += $data->mosep;
-      $suboct += $data->mooct;
-      $subnov += $data->monov;
-      $subdec += $data->modec;
-      $subamt += $amt;
+      $subjan  += $data->mojan;
+      $subfeb  += $data->mofeb;
+      $submar  += $data->momar;
+      $subapr  += $data->moapr;
+      $submay  += $data->momay;
+      $subjun  += $data->mojun;
+      $subjul  += $data->mojul;
+      $subaug  += $data->moaug;
+      $subsep  += $data->mosep;
+      $suboct  += $data->mooct;
+      $subnov  += $data->monov;
+      $subdec  += $data->modec;
+      $subamt  += $amt;
 
       $gsubjan += $data->mojan;
       $gsubfeb += $data->mofeb;
@@ -4860,13 +5577,13 @@ class monthly_analyze_item_sales
       $totalmooct += $data->mooct;
       $totalmonov += $data->monov;
       $totalmodec += $data->modec;
-      $totalamt += $amt;
+      $totalamt   += $amt;
 
-      $currentPart = $rowPart;
+      $currentPart  = $rowPart;
       $currentBrand = $rowBrand;
     }
 
-    // Final brand subtotal
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
@@ -4888,7 +5605,6 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    // Final part subtotal
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
@@ -4910,7 +5626,7 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    // Grand Total
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
@@ -4919,15 +5635,15 @@ class monthly_analyze_item_sales
     $str .= $this->reporter->col(number_format($totalmofeb, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col(number_format($totalmomar, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col(number_format($totalmoapr, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmomay, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmojun, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmojul, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmoaug, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmosep, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmooct, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmonov, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalmodec, $ab), '80', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format($totalamt, $ab), '90', null, false, $border, 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmomay, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmojun, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmojul, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmoaug, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmosep, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmooct, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmonov, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalmodec, $ab), '80', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalamt, $ab), '90', null, false, '1px solid', 'TB', 'RT', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();

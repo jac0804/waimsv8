@@ -1623,26 +1623,26 @@ class ro
 
     PDF::MultiCell(60, 0, "TERMS", 'LT', 'C', false, 0); //10
     PDF::MultiCell(90, 0, "S.O.", 'LT', 'C', false, 0); //20
-    PDF::MultiCell(170, 0, "CUSTOMER NAME", 'LT', 'C', false, 0); //60
+    PDF::MultiCell(250, 0, "CUSTOMER NAME", 'LT', 'C', false, 0); //60
     PDF::MultiCell(180, 0, "ITEM", 'LT', 'C', false, 0); //60
     PDF::MultiCell(60, 0, "QTY", 'LT', 'C', false, 0); //10
     PDF::MultiCell(60, 0, "UNIT PRICE", 'LT', 'C', false, 0); //10
     PDF::MultiCell(90, 0, "AMOUNT", 'LT', 'C', false, 0); //10
     PDF::MultiCell(60, 0, "WEIGHT", 'LT', 'C', false, 0); //10
-    PDF::MultiCell(70, 0, "TOTAL", 'LT', 'C', false, 0); //10
-    PDF::MultiCell(80, 0, "DATE", 'LTR', 'C', false, 1);
+    PDF::MultiCell(70, 0, "TOTAL", 'LTR', 'C', false, 1); //10
+    // PDF::MultiCell(80, 0, "DATE", 'LTR', 'C', false, 1);
 
 
     PDF::MultiCell(60, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(90, 0, "", 'LB', 'C', false, 0);
-    PDF::MultiCell(170, 0, "", 'LB', 'C', false, 0);
+    PDF::MultiCell(250, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(180, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(90, 0, "", 'LB', 'C', false, 0);
     PDF::MultiCell(60, 0, "/PC", 'LB', 'C', false, 0);
-    PDF::MultiCell(70, 0, "KG", 'LB', 'C', false, 0);
-    PDF::MultiCell(80, 0, "APPROVED", 'LBR', 'C', false, 1);
+    PDF::MultiCell(70, 0, "KG", 'LBR', 'C', false, 1);
+    // PDF::MultiCell(80, 0, "APPROVED", 'LBR', 'C', false, 1);
   }
 
   public function loadingMap_PDF($params, $data)
@@ -1681,28 +1681,28 @@ class ro
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(90, 0, "", 'L', 'C', false, 0);
-    PDF::MultiCell(170, 0, "", 'L', 'C', false, 0);
+    PDF::MultiCell(250, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(180, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(90, 0, number_format($total[0]['ext'], 2), 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
-    PDF::MultiCell(70, 0, number_format($total[0]['totalkg'], 2), 'L', 'C', false, 0);
-    PDF::MultiCell(80, 0, "", 'LR', 'C', false, 1);
+    PDF::MultiCell(70, 0, number_format($total[0]['totalkg'], 2), 'LR', 'C', false, 1);
+    // PDF::MultiCell(80, 0, "", 'LR', 'C', false, 1);
 
     PDF::SetTextColor(0, 0, 0, 100);
 
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(90, 0, "", 'L', 'C', false, 0);
-    PDF::MultiCell(170, 0, "", 'L', 'C', false, 0);
+    PDF::MultiCell(250, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(180, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(90, 0, "", 'L', 'C', false, 0);
     PDF::MultiCell(60, 0, "", 'L', 'C', false, 0);
-    PDF::MultiCell(70, 0, "", 'L', 'C', false, 0);
-    PDF::MultiCell(80, 0, "", 'LR', 'C', false, 1);
+    PDF::MultiCell(70, 0, "", 'LR', 'C', false, 1);
+    // PDF::MultiCell(80, 0, "", 'LR', 'C', false, 1);
 
     $barcode = '';
     $subtotalqty = 0;
@@ -1736,9 +1736,9 @@ class ro
         // $arr_uom = $this->reporter->fixcolumn([$uom], '7', 0);
         $arr_weight = $this->reporter->fixcolumn([$weight], '20', 0);
         $arr_totalkg = $this->reporter->fixcolumn([$totalkg], '15', 0);
-        $arr_dateapproved = $this->reporter->fixcolumn([$dateapproved], '15', 0);
+        // $arr_dateapproved = $this->reporter->fixcolumn([$dateapproved], '15', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_terms, $arr_sodocno, $arr_customer, $arr_itemname, $arr_qty, $arr_gross, $arr_ext, $arr_weight, $arr_totalkg, $arr_dateapproved]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_terms, $arr_sodocno, $arr_customer, $arr_itemname, $arr_qty, $arr_gross, $arr_ext, $arr_weight, $arr_totalkg]); //, $arr_dateapproved
 
         $display = 0;
 
@@ -1746,14 +1746,14 @@ class ro
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(60, 0, ' ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(90, 0, ' ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(170, 0, ' ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(250, 0, ' ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(180, 0, ' ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(60, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(60, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(90, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(60, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(70, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(80, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(70, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          // PDF::MultiCell(80, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
         $docno = $sodocno;
@@ -1762,7 +1762,7 @@ class ro
 
           PDF::MultiCell(60, 0, ' ' . (isset($arr_terms[$r]) ? $arr_terms[$r] : ''), 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(90, 0, ' ' . (isset($arr_sodocno[$r]) ? $arr_sodocno[$r] : ''), 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(170, 0, ' ' . (isset($arr_customer[$r]) ? $arr_customer[$r] : ''), 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(250, 0, ' ' . (isset($arr_customer[$r]) ? $arr_customer[$r] : ''), 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(180, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
 
           PDF::MultiCell(60, 0, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -1772,12 +1772,12 @@ class ro
           PDF::MultiCell(60, 0, ' ' . (isset($arr_weight[$r]) ? $arr_weight[$r] : ''), 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
 
           if ($display == 0) {
-            PDF::MultiCell(70, 0, ' ' . (isset($arr_totalkg[$r]) ? $arr_totalkg[$r] : ''), 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 0, ' ' . (isset($arr_dateapproved[$r]) ? $arr_dateapproved[$r] : ''), 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(70, 0, ' ' . (isset($arr_totalkg[$r]) ? $arr_totalkg[$r] : ''), 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            // PDF::MultiCell(80, 0, ' ' . (isset($arr_dateapproved[$r]) ? $arr_dateapproved[$r] : ''), 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
             $display = 1;
           } else {
-            PDF::MultiCell(70, 0, ' ', 'L', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(70, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            // PDF::MultiCell(80, 0, ' ', 'LR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           }
         }
 

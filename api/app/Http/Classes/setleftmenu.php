@@ -84,9 +84,6 @@ class setleftmenu
       case 'BMS':
         $masterfile = ['parentmasterfile', 'bg', 'bu', 'infra', 'tl', 'by', 'wl'];
         break;
-      case 'AUTOSERV':
-        $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'itemquery', 'ml'];
-        break;
       default:
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster', 'stockcard', 'agent', 'warehouse', 'itemquery'];
         break;
@@ -200,6 +197,9 @@ class setleftmenu
       }
     }
 
+    if ($this->companysetup->getisautoservice($params)) {
+      array_push($masterfile, 'ml');
+    }
 
     return ['masterfile' => ['parent' => 1, 'modules' => $masterfile]];
   } // end function
@@ -1089,6 +1089,9 @@ class setleftmenu
       case 'QUEUING':
         $transactionutilities = ['parenttransactionutilities', 'prefix', 'executionlog'];
         break;
+      case 'PRODUCTPORTAL':
+        $transactionutilities = ['parenttransactionutilities', 'prefix', 'executionlog'];
+        break;
 
       default:
         switch ($companyid) {
@@ -1139,6 +1142,9 @@ class setleftmenu
         break;
       case 29: //
         array_push($transactionutilities, 'moduleapproval', 'adashboard');
+        break;
+      case 59: //roosevelt
+        array_push($transactionutilities, 'updatepricelist');
         break;
     }
 
@@ -1343,5 +1349,11 @@ class setleftmenu
   {
     $autoinquiry = ['parentautoinquiry', 'jobhistory', 'taskhistory', 'itemhistory'];
     return ['autoinquiry' => ['parent' => 49, 'modules' => $autoinquiry]];
+  }
+
+  public function productportal($config)
+  {
+    $productportal = ['parentproductportal', 'stockcard', 'brand', 'itemcategory', 'entrycrbrand', 'model', 'positions'];
+    return ['productportal' => ['parent' => 50, 'modules' => $productportal]];
   }
 } // end class

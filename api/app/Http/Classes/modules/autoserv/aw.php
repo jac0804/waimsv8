@@ -80,6 +80,7 @@ class aw
     public $showfilterlabel = [
         ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
         ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
+        ['val' => 'locked', 'label' => 'Locked', 'color' => 'primary'],
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
     public function __construct()
@@ -143,7 +144,6 @@ class aw
         $buttons['others']['items']['next'] = ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']];
         $buttons['others']['items']['last'] = ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']];
 
-
         return $buttons;
     } // end createHeadbutton
 
@@ -160,7 +160,7 @@ class aw
         // tax
         data_set($col2, 'tax.label', 'Tax %');
         data_set($col2, 'tax.readonly', false);
-        data_set($col2, 'tax.class', 'cstax sbccsenablealways');
+        data_set($col2, 'tax.class', 'cstax');
 
         // dateid
         data_set($col2, 'dateid.label', 'Work Order Date');
@@ -170,7 +170,7 @@ class aw
         data_set($col2, 'ref.label', 'Reference No');
         data_set($col2, 'kmno.label', 'KM #');
         data_set($col2, 'kmno.required', false);
-        data_set($col2, 'kmno.class', 'cskmno sbccsenablealways');
+        data_set($col2, 'kmno.class', 'cskmno');
 
         $fields = [
             ['byear', 'licenseno'],
@@ -203,30 +203,30 @@ class aw
 
         //license no
         data_set($col3, 'licenseno.readonly', false);
-        data_set($col3, 'licenseno.class', 'cslicenseno sbccsenablealways');
+        data_set($col3, 'licenseno.class', 'cslicenseno');
 
         // carmake
         data_set($col3, 'make.readonly', false);
         data_set($col3, 'make.required', false);
-        data_set($col3, 'make.class', 'csmake sbccsenablealways');
+        data_set($col3, 'make.class', 'csmake');
 
         // car model
         data_set($col3, 'modelname.label', 'Car Model');
         data_set($col3, 'modelname.type', 'input');
         data_set($col3, 'modelname.readonly', false);
-        data_set($col3, 'modelname.class', 'csmodel sbccsenablealways');
+        data_set($col3, 'modelname.class', 'csmodel');
 
         // type 
         data_set($col3, 'crtype.readonly', false);
         data_set($col3, 'crtype.required', false);
-        data_set($col3, 'crtype.class', 'cscrtype sbccsenablealways');
+        data_set($col3, 'crtype.class', 'cscrtype');
         data_set($col3, 'crtype.type', 'input');
         data_set($col3, 'crtype.label', 'Type');
 
         // submodel
         data_set($col3, 'submodel.readonly', false);
         data_set($col3, 'submodel.required', false);
-        data_set($col3, 'submodel.class', 'cssubmodel sbccsenablealways');
+        data_set($col3, 'submodel.class', 'cssubmodel');
 
         $fields = ['rem', 'recommend'];
         $col4 = $this->fieldClass->create($fields);
@@ -285,6 +285,8 @@ class aw
 
         // $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
         // $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+        $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+        $cols[$liststatus]['name'] = 'statuscolor';
         $cols = $this->tabClass->delcollisting($cols);
         return $cols;
     } // end createdoclisting
@@ -298,14 +300,12 @@ class aw
 
         $doc = $config['params']['doc'];
         $center = $config['params']['center'];
-        $status = "";
         $limit = '';
 
         $searchfield = [];
         $filtersearch = "";
         $search = $config['params']['search'];
 
-        $status = "'draft'";
         if ($search != "")
             $limit = 'limit 150';
         $orderby = "order by dateid desc, docno desc";
@@ -324,23 +324,30 @@ class aw
                 $filter = " and num.postdate is not null ";
                 break;
             case 'draft':
-                $filter = " and num.postdate is null ";
+                $filter = ' and num.postdate is null and head.lockdate is null ';
+                break;
+            case 'locked':
+                $filter = " and num.postdate is null and head.lockdate is not null ";
                 break;
             default:
                 $filter = "";
                 break;
         }
 
-        $qry = " 
-        select head.trno, head.docno, $status as status, head.createby, head.editby, head.viewby, date(head.dateid) as dateid
+        $qry = " select head.trno, head.docno,  case when lockdate is null then 'draft' else 'Locked' end  as status,
+        head.createby, head.editby, head.viewby, date(head.dateid) as dateid,
+        case when head.lockdate is not null then 'green' else 'red' end as statuscolor
         from awhead as head 
         left join transnum as num on num.trno = head.trno
+        where head.doc = ? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? $filtersearch $filter
         union all
-        select head.trno, head.docno, 'Posted' as status, head.createby, head.editby, head.viewby, date(head.dateid) as dateid
+        select head.trno, head.docno, 'POSTED' as status,
+        head.createby, head.editby, head.viewby, date(head.dateid) as dateid, 'grey' as statuscolor
         from hawhead as head 
         left join transnum as num on num.trno = head.trno
-        where head.doc = ? and num.center = ? $filtersearch $orderby $limit";
-        $data = $this->coreFunctions->opentable($qry, [$doc, $center]);
+        where head.doc = ? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? $filtersearch $filter
+        $orderby $limit";
+        $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     } // end loaddoclisting
 
@@ -367,8 +374,16 @@ class aw
             head.crtype, head.submodel, head.carengine, head.transmission,
             head.mvno, head.mileage, head.manufacturer, head.chassisno
             from " . $this->head . " as head
+            where head.trno = ?
+            union all
+            select head.trno, head.docno, head.doc, head.dateid, head.rem,
+            head.client, head.clientname, head.address, head.tax, head.ref, head.kmno, head.recommend,
+            head.cryear as byear, head.licenseno, head.make, head.modelname,
+            head.crtype, head.submodel, head.carengine, head.transmission,
+            head.mvno, head.mileage, head.manufacturer, head.chassisno
+            from " . $this->hhead . " as head
             where head.trno = ?";
-        $head = $this->coreFunctions->opentable($qry, [$trno]);
+        $head = $this->coreFunctions->opentable($qry, [$trno, $trno]);
 
         if (!empty($head)) {
             $stock = $this->openstock($trno, $config);
@@ -378,12 +393,20 @@ class aw
             if (isset($config['msg'])) {
                 $msg = $config['msg'];
             }
+            $postdate = $this->coreFunctions->datareader("select postdate as value from " . $this->tablenum . " where trno = ?", [$trno]);
+            $lockdate = $this->coreFunctions->datareader("
+            select lockdate as value from awhead where trno = ?
+            union all 
+            select lockdate as value from hawhead where trno = ?", [$trno, $trno]);
+            $lockdate = $lockdate != null ? true : false;
+            $postdate = $postdate != null ? true : false;
+
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
             return [
                 'head' => $head,
                 'griddata' => ['inventory' => $stock],
-                'islocked' => false,
-                'isposted' => false,
+                'islocked' => $lockdate,
+                'isposted' => $postdate,
                 'isnew' => false,
                 'status' => true,
                 'msg' => $msg,

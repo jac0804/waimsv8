@@ -31,7 +31,7 @@ class entryreplacementcheque
     public $tablelogs = 'table_log';
     public $htablelogs = 'htable_log';
     private $othersClass;
-    public $style = 'width:100%;max-width:1300px;';
+    public $style = 'width:100%;max-width:1400px;';
     private $fields = ['trno', 'line', 'refx', 'linex', 'rctrno', 'rcline'];
     public $showclosebtn = true;
     private $reporter;
@@ -64,7 +64,7 @@ class entryreplacementcheque
         $trno = $config['params']['row']['trno'];
         $isposted = $this->othersClass->isposted2($trno, "cntnum");
 
-        $columns = ['action', 'docno', 'bank', 'amount', 'checkdate', 'checkno'];
+        $columns = ['action', 'client', 'clientname', 'docno', 'bank', 'amount', 'checkdate', 'checkno'];
 
         foreach ($columns as $key => $value) {
             $$value = $key;
@@ -82,12 +82,22 @@ class entryreplacementcheque
         $obj[0][$this->gridname]['columns'][$bank]['style'] = "width:140pxwhiteSpace: normal;min-width:140px";
         $obj[0][$this->gridname]['columns'][$amount]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
         $obj[0][$this->gridname]['columns'][$checkno]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
+        $obj[0][$this->gridname]['columns'][$client]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
+        $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:250px;whiteSpace: normal;min-width:250px;";
 
         $obj[0][$this->gridname]['columns'][$docno]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$bank]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$amount]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$checkdate]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$checkno]['readonly'] = true;
+        $obj[0][$this->gridname]['columns'][$action]['btns']['delete']['confirm'] = true;
+        $obj[0][$this->gridname]['columns'][$action]['btns']['delete']['confirmlabel'] = 'Are you sure you want to delete?';
+
+        $obj[0][$this->gridname]['columns'][$client]['readonly'] = true;
+        $obj[0][$this->gridname]['columns'][$client]['type'] = 'input';
+        $obj[0][$this->gridname]['columns'][$client]['label'] = 'Customer Code';
+        $obj[0][$this->gridname]['columns'][$clientname]['readonly'] = true;
+        $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'Customer Name';
         return $obj;
     }
 
@@ -115,7 +125,7 @@ class entryreplacementcheque
     private function selectqry()
     {
         $qry = "head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
-        detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline";
+        detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,client.client,client.clientname";
         return $qry;
     }
 
@@ -127,6 +137,7 @@ class entryreplacementcheque
         $qry = "select " . $select . " from chequedetail as detail
 				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
+                left join client on client.client = d.client
 				where detail.trno = " . $row['trno'] . " and detail.line = " . $row['line'] . "";
         return $this->coreFunctions->opentable($qry);
     }
@@ -139,6 +150,7 @@ class entryreplacementcheque
         $qry = "select " . $select . " from chequedetail as detail
 				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
+                left join client on client.client = d.client
 				where detail.trno = " . $trno . " and detail.line = " . $line . " and  detail.rctrno = " . $rctrno . " and detail.rcline = " . $rcline . "";
         return $this->coreFunctions->opentable($qry);
     }
@@ -173,13 +185,13 @@ class entryreplacementcheque
     {
         $row = $config['params']['row'];
         $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rctrno = " . $row['rctrno'] . " and rcline = " . $row['rcline'] . "";
-        $this->coreFunctions->execqry($qry, 'delete', [$row['trno'], $row['line'], $row['rctrno'], $row['rcline']]);
+        $this->coreFunctions->execqry($qry, 'delete', []);
 
         if ($row['rctrno'] != 0) {
             $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $row['rctrno'], 'line' => $row['rcline']]);
         }
         $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL',  'REMOVE - Checkno: ' . $row['checkno']);
-        return ['status' => true, 'msg' => 'Successfully deleted.'];
+        return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadhead' => true, 'trno' => $row['trno']];
     }
     public function lookupsetup($config)
     {
@@ -202,7 +214,7 @@ class entryreplacementcheque
             'type' => 'multi',
             'rowkey' => 'rc',
             'title' => 'List of Replacement Checks',
-            'style' => 'width:800px;max-width:800px;'
+            'style' => 'width:1100px;max-width:1100px;'
         );
         $plotsetup = array(
             'plottype' => 'callback',
@@ -212,6 +224,8 @@ class entryreplacementcheque
         // lookup columns
         $cols = [
             ['name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'],
+            ['name' => 'client', 'label' => 'Customer Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'],
+            ['name' => 'clientname', 'label' => 'Customer Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'bank', 'label' => 'Bank', 'align' => 'left', 'field' => 'bank', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'branch', 'label' => 'Branch', 'align' => 'left', 'field' => 'branch', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'checkdate', 'label' => 'Check Date', 'align' => 'left', 'field' => 'checkdate', 'sortable' => true, 'style' => 'font-size:16px;'],
@@ -220,9 +234,10 @@ class entryreplacementcheque
 
         ];
         $qry = "select d.trno as rctrno,d.line as rcline,concat(d.trno,'~',d.line) as rc ,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate,
-         " . $row['trno'] . " as trno," . $row['line'] . " as line," . $row['refx'] . " as refx," . $row['linex'] . " as linex
+         " . $row['trno'] . " as trno," . $row['line'] . " as line," . $row['refx'] . " as refx," . $row['linex'] . " as linex,client.client,client.clientname
             from hrcdetail as d
             left join hrchead as h on h.trno=d.trno
+            left join client on client.client = d.client
             where ortrno = 0 and retrno=0";
         $data = $this->coreFunctions->opentable($qry);
 

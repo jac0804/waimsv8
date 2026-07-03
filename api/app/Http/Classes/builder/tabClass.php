@@ -464,6 +464,15 @@ class tabClass
 
     // setup of tab buttons
     $this->tabbuttons = array(
+      'testloc' => array(
+        'label' => 'Test',
+        'icon' => 'add_box',
+        'class' => 'btnadditem',
+        'lookupclass' => 'entrylocexpiry',
+        'action' => 'tableentry',
+        'access' => 'save',
+        'visible' => true
+      ),
       'generateclient' => array(
         'label' => 'Create Profile',
         'icon' => 'batch_prediction',
@@ -1209,7 +1218,7 @@ class tabClass
         'label' => 'multiaction',
         'icon' => 'add_box',
         'class' => 'btntableentry btnaddrecord',
-        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'tableupdateserv', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
+        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'tableupdateserv', 'tableupdateproductportal', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
         'action' => 'multiaction',
         'access' => 'additem',
         'visible' => true
@@ -2800,7 +2809,7 @@ class tabClass
         'visible' => true
       ),
 
-        'addvehicle' => array(
+      'addvehicle' => array(
         'label' => 'Add Vehicle',
         'icon' => 'add_box',
         'class' => 'btnaddvehicle',

@@ -94,46 +94,58 @@ class daily_sales_summary
         $posttype   = $config['params']['dataparams']['posttype'];
         switch ($posttype) {
             case '0': //posted
-                $query = "  select  count(distinct head.docno) as docno, date(head.dateid) as dateid,if(head.ctnsno='','',head.ctnsno) as carton,
+                $query = "  select  count(distinct head.docno) as docno, date(head.dateid) as dateid,
+                  sum(if(c.qty is not null and c.qty != 0 and head.pltrno != 0, stock.iss / c.qty, 0)) as carton,
                   sum(stock.ext) as totalsales,if(cat.cat_name='' or cat.cat_name is null,'No Category',cat.cat_name) as catname
                   from glhead as head
                   left join glstock as stock on stock.trno = head.trno
                   left join client as cl on cl.clientid=head.clientid
                   left join category_masterfile as cat on cl.category = cat.cat_id
+                  left join item on item.itemid = stock.itemid
+                  left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
                   group by head.docno,date(head.dateid),head.ctnsno,cat.cat_name  order by head.dateid,catname";
 
                 break;
             case '1': // unposted
-                $query = " select count(distinct head.docno) as docno, date(head.dateid) as dateid,if(head.ctnsno='','',head.ctnsno) as carton,
+                $query = " select count(distinct head.docno) as docno, date(head.dateid) as dateid,
+                  sum(if(c.qty is not null and c.qty != 0 and head.pltrno != 0, stock.iss / c.qty, 0)) as carton,
                   sum(stock.ext) as totalsales, if(cat.cat_name='' or cat.cat_name is null,'No Category',cat.cat_name) as catname
                   from lahead as head
                   left join lastock as stock on stock.trno = head.trno
                   left join client as cl on cl.client=head.client
                   left join category_masterfile as cat on cl.category = cat.cat_id
+                  left join item on item.itemid = stock.itemid
+                  left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
                   group by date(head.dateid),head.ctnsno, cat.cat_name  order by head.dateid,catname";
                 break;
             case '2': //all
                 $query = "
                   select count(distinct docno) as docno,dateid,carton,sum(totalsales) as totalsales,catname from (
-                  select head.docno, date(head.dateid) as dateid,if(head.ctnsno='','',head.ctnsno) as carton,
+                  select head.docno, date(head.dateid) as dateid,
+                    sum(if(c.qty is not null and c.qty != 0 and head.pltrno != 0, stock.iss / c.qty, 0)) as carton,
                   sum(stock.ext) as totalsales, if(cat.cat_name='' or cat.cat_name is null,'No Category',cat.cat_name) as catname
                   from lahead as head
                   left join lastock as stock on stock.trno = head.trno
                   left join client as cl on cl.client=head.client
                   left join category_masterfile as cat on cl.category = cat.cat_id
+                  left join item on item.itemid = stock.itemid
+                  left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
                   group by  head.docno,date(head.dateid),head.ctnsno,cat.cat_name
 
                   union all 
                   
-                  select  head.docno, date(head.dateid) as dateid,if(head.ctnsno='','',head.ctnsno) as carton,
+                  select  head.docno, date(head.dateid) as dateid,
+                    sum(if(c.qty is not null and c.qty != 0 and head.pltrno != 0, stock.iss / c.qty, 0)) as carton,
                   sum(stock.ext) as totalsales, if(cat.cat_name='' or cat.cat_name is null,'No Category',cat.cat_name) as catname
                   from glhead as head
                   left join glstock as stock on stock.trno = head.trno
                   left join client as cl on cl.clientid=head.clientid
                   left join category_masterfile as cat on cl.category = cat.cat_id
+                  left join item on item.itemid = stock.itemid
+                  left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
                   group by head.docno,date(head.dateid),head.ctnsno,cat.cat_name
                   order by date(dateid),catname) as xy
@@ -254,7 +266,8 @@ class daily_sales_summary
         $str .= $this->displayHeader($config, $layoutsize);
 
         foreach ($result as $key => $data) {
-            $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
+            // $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
+            $carton=$data->carton;
             $catname = $data->catname;
 
             $docno = $data->docno;
@@ -375,7 +388,8 @@ class daily_sales_summary
             $catname = $data->catname ?: 'No Category';
             $sales = (float)$data->totalsales;
             $docno = $data->docno;
-            $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
+            // $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
+            $carton = $data->carton;
 
             if ($prevDate != null && $currentDate != $prevDate) {
 

@@ -250,6 +250,10 @@ class trigger_masterfile
 		$this->entrycarmodel_triggers($config);
 		$this->entrytasklabor_ak_triggers($config);
 		$this->entryvehicle_triggers($config);
+
+		// SPORTRUNNER TRADING / BX TRADING
+		$this->entrypositions_triggers($config);
+		$this->entrycrbrand_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -309,7 +313,7 @@ class trigger_masterfile
 			} // end foreach
 		} // end if
 
-		$qry = "create TRIGGER $triggername AFTER UPDATE on $tablename FOR EACH ROW
+		$qry = "create TRIGGER $triggername AFTER UPDATE on `$tablename` FOR EACH ROW
 		        BEGIN
 		        " . $str . "
 		        END";
@@ -2793,7 +2797,7 @@ class trigger_masterfile
 			'Mechanic' =>  ['mecline' => [true, "clientname", "client", "clientid"]],
 			'Notes' => ['rem' => []]
 		];
-		$this->settriggermasterfilelogs($config,  $doc, 'pttask', 'masterfile_log', $fields, 'line', 'trno','','','jobline');
+		$this->settriggermasterfilelogs($config,  $doc, 'pttask', 'masterfile_log', $fields, 'line', 'trno', '', '', 'jobline');
 	}
 
 
@@ -2828,5 +2832,22 @@ class trigger_masterfile
 			'Labor'        => ['labor'        => []],
 		];
 		$this->settriggermasterfilelogs($config, 'customer', 'cvehicle', 'masterfile_log', $fields, 'line', 'clientid');
+	}
+
+	private function entrypositions_triggers($config)
+	{
+		$fields = [
+			'Positions'        => ['positions'        => []],
+		];
+		$this->settriggermasterfilelogs($config, 'entrypositions', 'positions', 'masterfile_log', $fields, 'line', 'id');
+	}
+
+	private function entrycrbrand_triggers($config)
+	{
+		$doc = 'ENTRYCRBRAND';
+		$fields = [
+			'Brand' => ['brand' => []]
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'carbrand', 'masterfile_log', $fields, 'id');
 	}
 }// end class

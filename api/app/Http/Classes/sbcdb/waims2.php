@@ -43,6 +43,21 @@ class waims2
     $this->coreFunctions->execqrynolog("ALTER TABLE execution_log DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci");
     $this->coreFunctions->execqrynolog("ALTER TABLE execution_log CHANGE querystring querystring LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL");
 
+    $this->coreFunctions->execqrynolog("ALTER TABLE cntnum_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE client_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $this->coreFunctions->execqrynolog("ALTER TABLE transnum_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE docunum_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE hrisnum_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE app_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE loan_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE leave_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    $this->coreFunctions->execqrynolog("ALTER TABLE client CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE obapplication CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE la_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE cmake CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
     goto _20240917Here;
 
     $qry = " CREATE TABLE `qtinfo` (
@@ -4408,5 +4423,14 @@ class waims2
              INDEX `Index_line`(`line`))
             ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("hchequedetail", $qry);
+    $this->coreFunctions->sbcaddcolumngrp(["qshead", "hqshead"], ["probability"],  "varchar(100) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["qshead", "hqshead"], ["ispaymentnotif"], "varchar(5) NOT NULL DEFAULT ''", 0);
+
+    // 2026 JUN 29 - FMM
+    // found-out upon doing database mirroring, the default values of the following fields is NULL
+    $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["itemid", "clientid", "whid"],  "INT(11) DEFAULT 0", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["cost", "length", "width", "wt"],  "DECIMAL(19,6) DEFAULT 0", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["qty", "bal"],  "DECIMAL(19,10) DEFAULT 0", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["isimport", "isupdate"],  "TINYINT(2) UNSIGNED DEFAULT 0", 0);
   }
 }

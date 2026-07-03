@@ -98,7 +98,22 @@ class reportlistClass
       $sbcscript = $this->config['docmodule']->sbcscript($this->config);
     }
 
-    $this->config['return'] = ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'reportdir' => $this->config['reportdir'], 'style' => $style, 'directprint' => $directprint, 'showemailbtn' => $showemailbtn,'sbcscript'=>$sbcscript];
+    $ismirrortrans = $this->companysetup->getmirrortrans($this->config['params']);
+
+    $this->config['return'] = [
+      'status' => true,
+      'msg' => 'Loaded Success',
+      'modulename' => $modulename,
+      'data' => $data,
+      'txtfield' => $txtfield,
+      'txtdata' => $txtdata,
+      'reportdir' => $this->config['reportdir'],
+      'style' => $style,
+      'directprint' => $directprint,
+      'showemailbtn' => $showemailbtn,
+      'sbcscript' => $sbcscript,
+      'ismirrortrans' =>  $ismirrortrans
+    ];
     return $this;
   }
 
@@ -135,7 +150,7 @@ class reportlistClass
         if (!$centeraccess) {
           if ($this->config['params']['dataparams']['center'] == '') {
 
-            if ($this->config['params']['companyid'] == 29 ) goto ContinueHere; //SBC
+            if ($this->config['params']['companyid'] == 29) goto ContinueHere; //SBC
             if ($this->config['params']['companyid'] == 56 && ($modulename == 'Monthly Summary of EWT Report' || $modulename == 'Homeworks Sales Report')) goto ContinueHere; //  homeworks
             $this->config['return']['report'] = $this->othersClass->custommsgreport($this->config, 'Select valid branch');
             return $this;
@@ -160,15 +175,15 @@ class reportlistClass
               goto ContinueHere; //SBC
             }
 
-            if ($this->config['params']['companyid'] == 60 && $modulename == 'Inventory Balance') {//transpower
-              goto ContinueHere; 
+            if ($this->config['params']['companyid'] == 60 && $modulename == 'Inventory Balance') { //transpower
+              goto ContinueHere;
             }
 
             $this->config['return']['report'] = $this->othersClass->custommsgreport($this->config, 'Select valid warehouse');
             return $this;
           } else {
-            if ($this->config['params']['companyid'] == 60 && $modulename == 'Inventory Balance') {//transpower
-              goto ContinueHere; 
+            if ($this->config['params']['companyid'] == 60 && $modulename == 'Inventory Balance') { //transpower
+              goto ContinueHere;
             }
             $qry = "select c.warehouse as value from center as c left join centeraccess as ca on ca.center=c.code left join useraccess as u on u.userid=ca.userid 
                       where u.username='" . $this->config['params']['user'] . "' and c.code='" . $this->config['params']['center'] . "' and c.warehouse='" . $this->config['params']['dataparams']['wh'] . "'";
@@ -187,7 +202,7 @@ class reportlistClass
     if ($this->config['params']['dataparams']['print'] == 'default' || $this->config['params']['dataparams']['print'] == 'excel' || $this->config['params']['dataparams']['print'] == 'mobile') {
       $this->config['return'] = $this->config['docmodule']->reportdata($this->config);
       $ret = $this->reportstrsave($this->config['return']['report']);
-      $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
+      $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'], 'count' => $ret['count'], 'callback' => true, 'action' => 'reportstr'];
 
       $this->config['return'] = array_merge($this->config['return'], $addreturn);
 
@@ -201,10 +216,10 @@ class reportlistClass
     } else if ($this->config['params']['dataparams']['print'] == 'CSV') {
       $this->config['return'] = $this->config['docmodule']->reportdatacsv($this->config);
       $ret = $this->csvbatchsave($this->config['return']['data']);
-      $addreturn = ['data' => $ret['data'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'csvbatch'];
-      
-       $this->config['return'] = array_merge($this->config['return'], $addreturn);
-    //  }
+      $addreturn = ['data' => $ret['data'], 'path' => $ret['filename'], 'count' => $ret['count'], 'callback' => true, 'action' => 'csvbatch'];
+
+      $this->config['return'] = array_merge($this->config['return'], $addreturn);
+      //  }
 
       return $this;
     } else if ($this->config['params']['dataparams']['print'] == 'PDFM') {
@@ -281,28 +296,28 @@ class reportlistClass
     //return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $ret['str'], 'params' => $this->reportParams, 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
 
 
-      $filename = 'reportstr/'.$this->config['params']['name'].$this->config['params']['user'];
-        // Create directory if it doesn't exist
-        if (!Storage::disk('sbcpath')->exists(dirname($filename))) {
-            Storage::disk('sbcpath')->makeDirectory(dirname($filename));
-        }
-        $chunks = str_split($str,40000000);
-        $count = 0;
-        $returnstr = '';
-        foreach ($chunks as $key => $value) {
-           if ($key == 0) {
-             $returnstr = $value;
-           } else {
-             $putResult = Storage::disk('sbcpath')->put($filename.$key.'.sbc', $value);            
-           }
-           $count = $key;
-        }
-        
-        return ['filename'=>$filename,'status'=>'ok', 'count'=>$count, 'str'=>$returnstr];
+    $filename = 'reportstr/' . $this->config['params']['name'] . $this->config['params']['user'];
+    // Create directory if it doesn't exist
+    if (!Storage::disk('sbcpath')->exists(dirname($filename))) {
+      Storage::disk('sbcpath')->makeDirectory(dirname($filename));
+    }
+    $chunks = str_split($str, 40000000);
+    $count = 0;
+    $returnstr = '';
+    foreach ($chunks as $key => $value) {
+      if ($key == 0) {
+        $returnstr = $value;
+      } else {
+        $putResult = Storage::disk('sbcpath')->put($filename . $key . '.sbc', $value);
+      }
+      $count = $key;
+    }
+
+    return ['filename' => $filename, 'status' => 'ok', 'count' => $count, 'str' => $returnstr];
   }
 
-    function csvbatchsave($data)
-    {
+  function csvbatchsave($data)
+  {
 
     // format: eto ung need ilagay sa file ng report tapos CSV ung Print Type
     //public function reportdatacsv($config)
@@ -311,31 +326,30 @@ class reportlistClass
     //    $ret = $this->reporter->csvbatchsave($config,$data);
     //    return ['status' => true, 'msg' => 'Generating CSV successfully', 'data' => $ret['data'], 'params' => $this->reportParams, 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'csvbatch','name'=>'chartOfAccount']; 
     //  }
- 
-      $filename = 'csvfile/'.$this->config['params']['name'].$this->config['params']['user'];        
-        // Create directory if it doesn't exist
-        if (!Storage::disk('sbcpath')->exists(dirname($filename))) {
-            Storage::disk('sbcpath')->makeDirectory(dirname($filename));
-        }
-        $str = json_encode($data);
-        $chunks = str_split($str,1000000000);
-        $count = 0;
-        $returnstr = '';
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-        $path=[];
-        foreach ($chunks as $key => $value) {
-           if ($key == 0) {
-             $returnstr = $value;
-           } else {
-             $putResult = Storage::disk('sbcpath')->put($filename.date_format(date_create($current_timestamp), 'mdYHis').$key.'.sbc', $value);            
-             array_push($path,$filename.date_format(date_create($current_timestamp), 'mdYHis').$key.'.sbc');
-           }
-           $count = $key;
-        }
-        $count=0;                    
-        return ['filename'=>$path,'status'=>'ok', 'count'=>$count, 'data'=>$returnstr];
 
+    $filename = 'csvfile/' . $this->config['params']['name'] . $this->config['params']['user'];
+    // Create directory if it doesn't exist
+    if (!Storage::disk('sbcpath')->exists(dirname($filename))) {
+      Storage::disk('sbcpath')->makeDirectory(dirname($filename));
     }
+    $str = json_encode($data);
+    $chunks = str_split($str, 1000000000);
+    $count = 0;
+    $returnstr = '';
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    $path = [];
+    foreach ($chunks as $key => $value) {
+      if ($key == 0) {
+        $returnstr = $value;
+      } else {
+        $putResult = Storage::disk('sbcpath')->put($filename . date_format(date_create($current_timestamp), 'mdYHis') . $key . '.sbc', $value);
+        array_push($path, $filename . date_format(date_create($current_timestamp), 'mdYHis') . $key . '.sbc');
+      }
+      $count = $key;
+    }
+    $count = 0;
+    return ['filename' => $path, 'status' => 'ok', 'count' => $count, 'data' => $returnstr];
+  }
 
 
   public function execute()

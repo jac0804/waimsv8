@@ -46,8 +46,6 @@ class changeshiftapplication
         'empid',
         'dateid',
         'rem',
-        'status',
-        'status2',
         'daytype',
         'orgdaytype',
         'reghrs'
@@ -510,7 +508,6 @@ class changeshiftapplication
         when csapp.status = 1 and csapp.status2 = 1 then 'APPROVED'
         when csapp.status = 2 or csapp.status2 = 2 then 'DISAPPROVED'
         end as status,
-
         csapp.reghrs,0 as dayn, 0 as shiftid,csapp.status2
         from changeshiftapp as csapp
         left join employee as emp on emp.empid = csapp.empid
@@ -634,20 +631,31 @@ class changeshiftapplication
         $data['schedin'] = $this->othersClass->sanitizekeyfield('schedin', $head['dateid'] . " " . $head['schedin']);
         $data['schedout'] = $this->othersClass->sanitizekeyfield('schedout', $head['dateid'] . " " . $head['schedout']);
 
+        switch ($companyid) {
+            case 53:
+                $torhrs = 9;
+                break;
+            default:
+                $torhrs = (int)$head['reghrs'] + 1;
+                break;
+        }
+
+        $date = new DateTime($data['schedin']);
+        $data['schedout'] = $date->modify('+' . $torhrs . ' hours');
 
         $daytype = $this->coreFunctions->datareader("select daytype as value from timecard where empid=? and date_format(dateid, '%Y-%m-%d') = ?", [$empid, date('Y-m-d', strtotime($data['dateid']))]);
         if ($data['daytype'] == "") {
             $data['daytype'] = $daytype;
         }
-
-        $shifthrs = $this->getday($config, $head['dayn'], $head['shiftid'], $data, $data['daytype']);
-        if (!empty($shifthrs)) {
-            $data['reghrs'] = $shifthrs[0]->tothrs;
-        } else {
-            $data['reghrs'] = 0;
+        if ($head['shiftid'] != 0) {
+            $shifthrs = $this->getday($config, $head['dayn'], $head['shiftid'], $data, $data['daytype']);
+            if (!empty($shifthrs)) {
+                $data['reghrs'] = $shifthrs[0]->tothrs;
+            } else {
+                $data['reghrs'] = 0;
+            }
         }
 
-        // $this->getnextday($config, $head['dateid'], $head['schedin'], $head['schedout']);
         $data['shftcode'] =  $this->othersClass->sanitizekeyfield('shiftcode', $head['shiftcode']);
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
         from employee as e
@@ -985,21 +993,5 @@ class changeshiftapplication
         }
 
         return $data;
-    }
-    public function getnextday($config, $dateid, $timein, $timeout)
-    {
-
-        $n_time = '00:00';
-        if ($timeout >= $n_time && $timeout < '06:00') {
-            $date = new DateTime("2025-01-01 $timeout");
-            $date->modify('+1 day');
-        }
-        $date1 = $date->format("Y-m-d H:i:s");
-        // var_dump($data1);
-        $schedin = $this->othersClass->sanitizekeyfield('schedin', ".$date1.");
-        $schedout = $this->othersClass->sanitizekeyfield('schedout', $date);
-        // var_dump($schedout);
-
-        return ['schedin' => $schedin, 'schedin' => $schedout];
     }
 } //end class

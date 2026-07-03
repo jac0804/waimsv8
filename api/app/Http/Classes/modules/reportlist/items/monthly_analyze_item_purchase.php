@@ -1627,17 +1627,6 @@ class monthly_analyze_item_purchase
     $i = 0;
     foreach ($result as $key => $data) {
 
-    // if ($rowcount >= $page) {
-
-    //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
-    //     if (!$allowfirstpage) {
-    //       $str .= $this->default_displayHeader($config);
-    //     }
-    //     $str .= $this->default_table_cols($layoutsize, $border, $font, $fontsize11, $config);
-
-    //     $page = $page + $count;
-    //   }
-
       if ($data->part == '') {
         $data->part = 'No ' . $partName;
 
@@ -1674,7 +1663,7 @@ class monthly_analyze_item_purchase
         $str .= $this->reporter->endtable();
         // $rowcount++;
 
-        $charsPerLine = 27;
+        $charsPerLine = 33;
         $estimatedLines = (int) ceil(mb_strlen($brandSubTotalLabel) / $charsPerLine);
         if ($estimatedLines < 1) {
           $estimatedLines = 1;
@@ -1796,13 +1785,13 @@ class monthly_analyze_item_purchase
       $str .= $this->reporter->col($mooct, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col($monov, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col($modec, '75', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
-      $str .= $this->reporter->col(number_format($amt, 2), '95', null, false, $border, '', 'RT', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col(number_format($amt, 2), '95', null, false, $border, '', 'R', $font, $font_size9, '', '', '', '');
       $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
       // $rowcount++;
 
-      $charsPerLine = 27; // tune this based on actual rendered behavior
+      $charsPerLine = 33; // tune this based on actual rendered behavior
       $estimatedLines = (int) ceil(mb_strlen($itemLabel) / $charsPerLine);
       if ($estimatedLines < 1) {
         $estimatedLines = 1;
@@ -1862,6 +1851,16 @@ class monthly_analyze_item_purchase
       $i++;
 
       if ($rowcount >= $page) {
+
+      // DEBUG: print the cumulative rowcount at this page break
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col("CUMULATIVE ROWCOUNT AT THIS BREAK: {$rowcount} (page budget was: {$page})", '1220', null, false, '', '', 'L', $font, $font_size9, 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        $this->coreFunctions->LogConsole($rowcount);
 
         $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
         if (!$allowfirstpage) {

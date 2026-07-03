@@ -2278,7 +2278,7 @@ class cv
 
 
     //check series setup
-    $chks = $this->coreFunctions->opentable('select trno from checksetup');
+    $chks = $this->coreFunctions->opentable('select line from checksetup');
     $detail = $this->opendetail($trno, $config);
     $search = "online";
     if (!empty($chks)) {
@@ -2946,11 +2946,11 @@ class cv
     $data = [];
 
     $companyid = $config['params']['companyid'];
+    $isreload = false;
     switch ($companyid) {
       case 27: //nte
       case 36: //rozlab
-      case 60: //transpower
-         $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
         if (!$isposted) {
 
           $result = $this->othersClass->posttransacctg($config);
@@ -2959,10 +2959,20 @@ class cv
           }
         }
         break;
+        case 60: //transpower
+        $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+        if (!$isposted) {
+          $result = $this->posttrans($config);
+          if (!$result['status']) {
+            return ['status' => false, 'msg' => $result['msg']];
+          }
+        }
+        $isreload = true;
+        break;
     }
 
     $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];
   }
 
   public function reportdata($config)

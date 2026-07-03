@@ -4083,6 +4083,20 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+
+            'brand2' => array(
+                'name' => 'brand2',
+                'type' => 'lookup',
+                'label' => 'Brand',
+                'labeldata' => 'brandid2~brandname2',
+                'class' => 'csbrand sbccsreadonly',
+                'lookupclass' => 'lookupbrand2',
+                'action' => 'lookupbrand',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
             'brandid' => array(
                 'name' => 'brand',
                 'type' => 'hidden',
@@ -20740,6 +20754,36 @@ class txtfieldClass
                 'required' => false
             ),
 
+            'ispaymentnotif' => array(
+                'name' => 'ispaymentnotif',
+                'type' => 'lookup',
+                'lookupclass' => 'lookupyesno',
+                'action' => 'lookuprandom',
+                'label' => 'Payment notification',
+                'class' => 'csispaymentnotif',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => true
+            ),
+            'carbrand' => array(
+                'name' => 'carbrand',
+                'type' => 'lookup',
+                'label' => 'Car Brand',
+                'class' => 'cscarbrand sbccsreadonly',
+                'lookupclass' => 'lookupcarbrand',
+                'action' => 'lookupcarbrand',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'kind' => array(
+                'name' => 'kind',
+                'type' => 'input',
+                'label' => 'Kind',
+                'class' => 'cskind',
+                'readonly' => false,
+                'style' => $this->style,
+            ),
 
 
         );

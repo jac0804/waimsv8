@@ -343,7 +343,7 @@ class pos
     $this->coreFunctions->sbccreatetable("hppstock", $qry);
     $this->coreFunctions->sbcaddcolumngrp(["pphead", "hpphead"], ["docno"], "varchar(20) NOT NULL DEFAULT ''", 1);
     $this->coreFunctions->sbcaddcolumngrp(["pphead", "hpphead"], ["isall"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
-    $this->coreFunctions->sbcaddcolumngrp(["pohead", "hpohead"], ["expiration"], "datetime DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["pohead", "hpohead"], ["expiration"], "datetime DEFAULT NULL", 1);
     $this->coreFunctions->sbcaddcolumn("itemlevel", "branchid", "int(11) NOT NULL DEFAULT '0'", 0);
 
     $qry = "CREATE TABLE `supplierlist` (
@@ -509,6 +509,8 @@ class pos
 
     $this->coreFunctions->sbcaddcolumngrp(["item", "uom", "iteminfo", "client", "clientinfo", "coa", "model_masterfile", "part_masterfile", "stockgrp_masterfile", "frontend_ebrands"], ["ismirror"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["item_class", "category_masterfile", "projectmasterfile", "itemcategory", "itemsubcategory"], ["ismirror"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["coa", "useraccess", "users", "moduleaccess", "center", "centeraccess", "ewtlist", "terms"], ["ismirror"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+
     $this->coreFunctions->sbcaddcolumngrp(["stockinfo", "hstockinfo"], ["acdisc", "valoramt", "soloamt"], "decimal(18,4) NOT NULL DEFAULT '0.0000'", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["stockinfo", "hstockinfo"], ["isdiplomat"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
@@ -524,5 +526,8 @@ class pos
 
     $this->coreFunctions->sbcaddcolumngrp(["stock"], ["isconverted"], "tinyint(2) NOT NULL DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["stock"], ["amt1", "amt2", "isqty2", "freight2", "srp"], "decimal(18,4) NOT NULL DEFAULT '0.0000'", 0);
+
+
+    
   } //end function
 } // end class

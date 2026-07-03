@@ -127,7 +127,7 @@ class generatemr
     {
         $dateid = $config['params']['dataparams']['dateid'];
         $date = new DateTime($dateid);
-        $qry = "select clientid,client,clientname,addr,terms,charge1 from client where charge1 <> 0 and iscustomer = 1 order by clientname";
+        $qry = "select clientid,client,clientname,addr,terms,charge1,tax,vattype from client where charge1 <> 0 and iscustomer = 1 order by clientname";
         $data = $this->coreFunctions->opentable($qry);
         $msg = '';
         $msg2 = '';
@@ -192,8 +192,8 @@ class generatemr
                         'wh' => $wh,
                         'forex' => $forex,
                         'deldate' => date('Y-m-d'),
-                        'tax' => 0,
-                        'vattype' => 'NON-VATABLE',
+                        'tax' => $data[$key]->tax,
+                        'vattype' => $data[$key]->vattype,
                         'rem' => "Service Fee for the month of " . date("F", strtotime($date->format('Y-m-d'))) . " " . date('Y', strtotime($date->format('Y-m-d')))
                     ];
 

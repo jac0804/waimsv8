@@ -160,6 +160,7 @@ class trigger
       'telephone' => ['tel' => []],
       'mobile' => ['tel2' => []],
       'fax' => ['fax' => []],
+      'Account Number' => ['accountnum' => []],
       'Tin' => ['tin' => []],
       'contact' => ['contact' => []],
       'agent' => ['agent' => []],
@@ -2892,7 +2893,7 @@ class trigger
     } // end if
 
 
-    $qry = "create TRIGGER $triggername $type on $tablename FOR EACH ROW
+    $qry = "create TRIGGER $triggername $type on `$tablename` FOR EACH ROW
             BEGIN
             " . $str . "
             " . $customizetrigger . "
@@ -5601,13 +5602,16 @@ class trigger
         delete from jobtask;
         delete from specialcomm;
         delete from multiapprover;
-        // delete from jbdetail;
+        -- delete from jbdetail;
         delete from cmodel;
         delete from ptjobs;
         delete from pttask;
         delete from ptstock;
         delete from cvehicle;
         delete from amjobs;
+        delete from carbrand;
+
+        delete from positions;
 
       END";
 

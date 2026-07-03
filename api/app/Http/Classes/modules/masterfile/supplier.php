@@ -418,6 +418,9 @@ class supplier
       case 8:
         array_push($fields, 'accountname', 'accountnum');
         break;
+      case 64: // excelin
+        array_push($fields, 'accountnum');
+        break;
       case 16: //ati
         array_push($fields, 'dvattype', 'prefix');
         break;

@@ -738,9 +738,10 @@ class re
             }
         }
         $qry = "select head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
-                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,'' as bgcolor from chequedetail as detail
+                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,client.client,client.clientname,'' as bgcolor from chequedetail as detail
 				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
+                left join client on client.client = d.client
 				where detail.trno = " . $trno . " and detail.line = " . $line . "";
         $data = $this->coreFunctions->opentable($qry);
         return ['status' => $status, 'msg' => $msg, 'tableentrydata' => $data, 'reloadtableentry' => true, 'reloadhead' => true];
@@ -1183,7 +1184,7 @@ class re
             $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'REMOVED ALL');
         }
         $this->logger->sbcwritelog($trno, $config, 'ACCTG', 'DELETED ALL ACCTG ENTRIES');
-        return ['status' => true, 'msg' => 'Successfully deleted.', 'accounting' => []];
+        return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
     }
 
     public function deleteitem($config)

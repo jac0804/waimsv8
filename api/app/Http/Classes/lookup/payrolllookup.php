@@ -351,7 +351,7 @@ class payrolllookup
 
     $plotsetup = array(
       'plottype' => 'plothead',
-      'plotting' => array('shiftcode' => 'shiftcode', 'schedin' => 'schedin', 'schedout' => 'schedout', 'dayn' => 'dayn', 'shiftid' => 'shiftid')
+      'plotting' => array('shiftcode' => 'shiftcode', 'schedin' => 'schedin', 'schedout' => 'schedout', 'dayn' => 'dayn', 'shiftid' => 'shiftid', 'reghrs' => 'reghrs')
     );
 
     $cols = array(
@@ -361,7 +361,7 @@ class payrolllookup
     );
 
     $qry = "
-    select detail.dayn,tm.line as shiftid,tm.shftcode as shiftcode, time(IFNULL(detail.schedin,'00:00:00')) as schedin, time(IFNULL(detail.schedout,'00:00:00')) as schedout 
+    select detail.dayn,tm.line as shiftid,tm.shftcode as shiftcode, time(IFNULL(detail.schedin,'00:00:00')) as schedin, time(IFNULL(detail.schedout,'00:00:00')) as schedout,detail.tothrs as reghrs
 	  from tmshifts as tm left join shiftdetail as detail on detail.shiftsid = tm.line
     where detail.dayn = $dayn ";
     $data = $this->coreFunctions->opentable($qry);

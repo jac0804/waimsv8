@@ -50,15 +50,16 @@ class viewar
     $due = 3;
     $receivedate = 4;
     $docno = 5;
-    $db = 6;
-    $cr = 7;
-    $bal = 8;
-    $ref = 9;
-    $rem = 10;
-    $krdoc = 11;
-    $kadoc = 12;
-    $rem1 = 13;
-    $tab = [$this->gridname => ['gridcolumns' => ['action', 'status', 'dateid', 'due', 'receivedate', 'docno', 'db', 'cr', 'bal', 'ref', 'rem', 'krdoc', 'kadoc', 'rem1']]];
+    $vat = 6;
+    $db = 7;
+    $cr = 8;
+    $bal = 9;
+    $ref = 10;
+    $rem = 11;
+    $krdoc = 12;
+    $kadoc = 13;
+    $rem1 = 14;
+    $tab = [$this->gridname => ['gridcolumns' => ['action', 'status', 'dateid', 'due', 'receivedate', 'docno', 'vat', 'db', 'cr', 'bal', 'ref', 'rem', 'krdoc', 'kadoc', 'rem1']]];
 
     $stockbuttons = ['referencemodule'];
 
@@ -82,6 +83,12 @@ class viewar
 
     if ($companyid != 39) { //not cbbsi
       $obj[0][$this->gridname]['columns'][$kadoc]['type'] = 'coldel';
+    }
+
+    if ($companyid != 29) { //not sbc
+      $obj[0][$this->gridname]['columns'][$vat]['type'] = 'coldel';
+    }else {
+      $obj[0][$this->gridname]['columns'][$vat]['style'] = "width:105px;whiteSpace: normal;min-width:105px;";
     }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -182,12 +189,12 @@ class viewar
           dateid, dateid as transdate, FORMAT(ifnull(db,2),2) as db,
           FORMAT(ifnull(cr,0),2) as cr,
           FORMAT(ifnull(balance,0),2) as bal,
-          ref, agent, rem1,rem,status,krdoc,kadoc,due, 'ARTAB' as tabtype from
+          ref, agent, rem1,rem, vat, status,krdoc,kadoc,due, 'ARTAB' as tabtype from
           (
             select cntnum.postdate, cntnum.doc as doc,arledger.docno,arledger.trno as trno,arledger.line as line,
             arledger.dateid as dateid,arledger.db,arledger.cr,arledger.bal,
             arledger.clientid as clientid,arledger.ref as ref,agent.client as agent,
-            detail.rem as rem1,head.rem as rem,
+            detail.rem as rem1,head.rem as rem, head.vattype as vat,
             ((case when (arledger.db > 0) then 1 else -(1) end) * arledger.bal) as balance,
             0 as fbal,head.ourref as reference,'POSTED' as status,
             ifnull(kr.docno,'') as krdoc,
@@ -205,7 +212,7 @@ class viewar
             UNION ALL
             select '' as postdate, `head`.`doc` as `doc`,head.docno,`head`.`trno` as `trno`,`detail`.`line` as `line`,`head`.`dateid` as `dateid`,
             ifnull(sum(detail.ext),0) as db,0 as `cr`,ifnull(sum(detail.ext),0) as `bal`,
-            `client`.`clientid` as `clientid`,'' as `ref`,head.agent as `agent`,`detail`.`rem` as `rem1`,`head`.`rem` as `rem`,
+            `client`.`clientid` as `clientid`,'' as `ref`,head.agent as `agent`,`detail`.`rem` as `rem1`,`head`.`rem` as `rem`, head.vattype as vat,
             sum(detail.ext) as `balance`,0 as `fbal`,'' as `reference`,'UNPOSTED' as `status`,'' as krdoc,'' as kadoc,ifnull(`head`.`due`,'') as `due`
             from `lahead` as head
             left join `lastock` as detail on `detail`.`trno` = `head`.`trno`
@@ -213,7 +220,7 @@ class viewar
             left join cntnum on cntnum.trno = head.trno
             where cntnum.doc = 'SJ' and client.clientid= $clientid and head.dateid>='$date' and cntnum.center = '$center' and detail.line is not null
             group by 
-            head.doc,head.docno,head.trno,detail.line,head.dateid,client.clientid,head.agent,detail.rem,head.rem,head.due
+            head.doc,head.docno,head.trno,detail.line,head.dateid,client.clientid,head.agent,detail.rem,head.rem, head.vattype,head.due
           ) as t  order by transdate desc, docno";
         break;
     }

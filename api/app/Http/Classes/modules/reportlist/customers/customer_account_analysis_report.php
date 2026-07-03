@@ -93,7 +93,7 @@ class customer_account_analysis_report
         return $this->coreFunctions->opentable($query);
     }
 
-    public function default_query($config)
+    public function default_querys($config)
     {
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -154,7 +154,81 @@ class customer_account_analysis_report
                             WHERE  date(head.dateid) between '$start' and '$end'   $filter  
                             group by head.trno,head.clientid, cl.clientname) as ax 
                             group by clientname";
-        // var_dump($query);
+        return $query;
+    }
+
+    public function default_query($config)
+    {
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+        $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        // $filtercenter = $config['params']['dataparams']['center'];
+        $client    = $config['params']['dataparams']['client'];
+        $clientid    = $config['params']['dataparams']['clientid'];
+        $filter = "";
+
+
+        if ($client != "") {
+            $filter .= " and cl.clientid='$clientid' ";
+        }
+
+        // if ($filtercenter != "") {
+        //     $filter = " and cntnum.center='$filtercenter'";
+        // }
+
+        $query = "
+                select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
+                 sum(amount) as uncleared_amt, sum(balance) as balance, clientname, sum(cleared_amount) as cleared_amount
+                  from (
+
+                  select sum(collectionamt) as collectionamt, sum(bounced) as bounced, 0 as amount,
+
+                            sum((select (case when ar.db > 0 then ar.bal else (ar.bal * -1) end) as balance
+                            from arledger as ar
+                            where ar.trno = ax.trno and ar.clientid = ax.clientid  and date(ar.dateid) <= '$end'  limit 1)) as balance,clientname, 0 as cleared_amount
+
+                    from (
+
+                    SELECT sum(if(left(coa.alias,2) in ('ca','cr','pc') and head.doc='cr', d.db, 0)) as collectionamt,
+                            0 as bounced,head.docno,
+                            head.trno,head.clientid,cl.clientname
+                            FROM glhead AS head
+                            LEFT JOIN gldetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.clientid = head.clientid
+                            LEFT JOIN coa ON d.acnoid = coa.acnoid
+                            LEFT JOIN cntnum on cntnum.trno = head.trno
+                            WHERE date(head.dateid) between '$start' and '$end'    $filter
+                            group by head.trno,head.clientid, cl.clientname,head.docno) as ax
+
+                            group by clientname
+
+                          union all
+
+                     SELECT 0 as collectionamt, 0 as bounced, sum(d.amount) as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            FROM hrchead AS head
+                            LEFT JOIN hrcdetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.client = d.client
+                            WHERE  d.rdtrno =0  and  date(head.dateid) between '$start' and '$end'    $filter
+                            group by head.trno,cl.clientid, cl.clientname
+
+
+                            union all
+
+                            SELECT 0 as collectionamt,
+                            sum(stock.amount) as bounced, 0 as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            FROM glhead AS head
+                            LEFT JOIN hparticulars AS stock on stock.trno = head.trno
+                            LEFT JOIN client as cl on cl.clientid = stock.clientid
+                            WHERE stock.retrno=0 and head.doc='BE' and date(head.dateid) between '$start' and '$end'    $filter
+                            group by head.trno,stock.clientid, cl.clientname
+
+                            union all
+
+                            SELECT 0 as collectionamt, 0 as bounced,  0 as amount, 0 as balance,cl.clientname, sum(d.amount) as cleared_amount
+                            FROM hrchead AS head
+                            LEFT JOIN hrcdetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.client = d.client
+                            WHERE  d.rdtrno != 0  and  date(head.dateid) between '$start' and '$end'    $filter
+                            group by head.trno,cl.clientid, cl.clientname ) as xd group by clientname";                            
         return $query;
     }
 
@@ -179,21 +253,21 @@ class customer_account_analysis_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, $border, '', 'C', $font, '14', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, $border, '', 'C', $font, $font_size, 'B', '', '') . '<br />';
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, $border, '', 'C', $font, '13', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, $border, '', 'C', $font, $font_size, 'B', '', '') . '<br />';
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, $border, '', 'C', $font, '13', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, $border, '', 'C', $font, $font_size, 'B', '', '') . '<br />';
         $str .= $this->reporter->endrow();
 
 
         // $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Customer Account Analysis Report', null, null, false, $border, '', 'C', $font, '13', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col('Customer Account Analysis Report', null, null, false, $border, '', 'C', $font, $font_size, 'B', '', '') . '<br />';
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -208,14 +282,14 @@ class customer_account_analysis_report
         $endd = new DateTime($enddate);
         $end = $endd->format('m/d/Y');
 
-        $str .= $this->reporter->col('From ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, '12', '', '', '');
+        $str .= $this->reporter->col('From ' . $start . ' TO ' . $end, null, null, '', $border, '', 'C', $font, $font_size, '', '', '');
 
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
-        $str .= $this->reporter->col('Customer: ' . strtoupper($clientname), null, null, '', $border, '', 'C', $font, '12', '', '', '');
+        $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, $font_size, '', '');
+        $str .= $this->reporter->col('Customer: ' . strtoupper($clientname), null, null, '', $border, '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -247,7 +321,7 @@ class customer_account_analysis_report
         $border = '1px solid';
 
         $font = $this->companysetup->getrptfont($config['params']);
-        $font_size = '11';
+        $font_size = '12';
 
         $result = $this->reportDefault($config);
 
@@ -299,7 +373,7 @@ class customer_account_analysis_report
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col('TOTAL CLEARED PAYMENTS', '490', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('', '290', null, false, $border, 'L', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col(number_format($result[0]->cleared_amount, 2), '290', null, false, $border, 'L', 'R', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col('', '10', null, false, $border, 'R', 'R', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->endrow();
 

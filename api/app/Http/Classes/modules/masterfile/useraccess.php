@@ -177,8 +177,8 @@ class useraccess
 
       if ($exist == '') {
         $idno = $this->coreFunctions->insertGetId('useraccess', $data);
-        if($config['params']['companyid']==55){//afli
-          $this->coreFunctions->execqry("insert into profile(doc,psection,pvalue,puser)values('theme','default','#35548c,#156aab,#223f73','".$data['username']."')");
+        if ($config['params']['companyid'] == 55) { //afli
+          $this->coreFunctions->execqry("insert into profile(doc,psection,pvalue,puser)values('theme','default','#35548c,#156aab,#223f73','" . $data['username'] . "')");
           $this->coreFunctions->execqry("insert into user_themer(userid, themecode) values($idno,'DEFAULT')");
         }
       } else {
@@ -226,6 +226,7 @@ class useraccess
       } else {
         $data['picture'] = $filename;
       }
+      $data['ismirror'] = 0;
       if ($this->coreFunctions->sbcupdate('useraccess', $data, ['userid' => $data['userid']]) == 0) {
         $msg = 'Failed to update User...';
       }
@@ -334,15 +335,20 @@ class useraccess
       $qry = "insert into moduleaccess (idno,attribute) values (?,?)";
       $rows = $this->coreFunctions->execqry($qry, "insert", [$userid, $attrib]);
 
-      $qry = "update users set attributes = concat(left(attributes," . $left . "), '1',
-      substr(attributes," . $right . ",length(attributes))) where idno=" . $userid;
+      $qry = "update users set attributes = concat(left(attributes," . $left . "), '1',substr(attributes," . $right . ",length(attributes))),ismirror=0 where idno=" . $userid;
       $row = $this->coreFunctions->execqry($qry, "update");
     } else {
       $qry = "delete from moduleaccess where idno = " . $userid . " and attribute = " . $attrib;
       $rows = $this->coreFunctions->execqry($qry, "delete");
-      $qry = "update users set attributes = concat(left(attributes," . $left . "), '0',substr(attributes," . $right . ",length(attributes))) where idno=" . $userid;
+      $qry = "update users set attributes = concat(left(attributes," . $left . "), '0',substr(attributes," . $right . ",length(attributes))),ismirror=0 where idno=" . $userid;
       $row = $this->coreFunctions->execqry($qry, "update");
     }
+
+    if ($this->companysetup->getmirrortrans($config['params'])) {
+      $qry = "update moduleaccess set ismirror=0 where idno = " . $userid;
+      $this->coreFunctions->execqry($qry, "delete");
+    }
+
     return $this->getattributedetailaccess($config);
   } //end function
 

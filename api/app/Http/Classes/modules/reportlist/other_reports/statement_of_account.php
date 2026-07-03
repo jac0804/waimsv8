@@ -86,17 +86,17 @@ class statement_of_account
         break;
     }
 
-    
+
     if ($companyid != 29) { //SBC MAIN
       data_set($col1, 'dateid.label', 'Balance as of');
       data_set($col1, 'dateid.readonly', false);
     }
-    
+
 
     data_set($col1, 'dclientname.lookupclass', 'lookupclient');
     data_set($col1, 'dclientname.label', 'Customer');
     data_set($col1, 'dclientname.label', 'Customer');
-    
+
 
     switch ($companyid) {
       case 3: // conti
@@ -223,35 +223,35 @@ class statement_of_account
         $reporttype = $config['params']['dataparams']['reporttype'];
         switch ($reporttype) {
           case '0': // summarized
-            $str= $this->SOA_SUMMARIZED_LAYOUT($config);
+            $str = $this->SOA_SUMMARIZED_LAYOUT($config);
             break;
           case '1': // detailed
-            $str= $this->GPC_SOA_DETAILED_LAYOUT($config);
+            $str = $this->GPC_SOA_DETAILED_LAYOUT($config);
             break;
         }
         break;
       case 32: //3m
-        $str= $this->mmm_defaultLayout($config);
+        $str = $this->mmm_defaultLayout($config);
         break;
       case 10: //afti
       case 12: //afti usd
-        $str= $this->report_soa_afti($config);
+        $str = $this->report_soa_afti($config);
         break;
       case 37: //mega crystal
-        $str= $this->report_megacrystal($config);
+        $str = $this->report_megacrystal($config);
         break;
       case 39: //cbbsi
         switch ($config['params']['dataparams']['customerfilter']) {
           case '2':
-            $str= $this->report_cbbsi_project_layout($config);
+            $str = $this->report_cbbsi_project_layout($config);
             break;
           default:
-            $str= $this->report_cbbsi_layout($config);
+            $str = $this->report_cbbsi_layout($config);
             break;
         }
         break;
       case 59: //roosevelt
-        $str= $this->reportDefaultLayout_roosevelt($config);
+        $str = $this->reportDefaultLayout_roosevelt($config);
         //  return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
         break;
       case 29: //sbc
@@ -259,26 +259,27 @@ class statement_of_account
         switch ($reporttype) {
           case '1': // default
             $str = $this->reportDefaultLayout($config);
-            
+
             break;
           case '0': // sbc format
-            
+
             $str = $this->sbc_layout($config);
             if (strpos($str, 'ERROR:') === 0) {
               $status = false;
               $msg = substr($str, 7);
-                // return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
+              // return ['status' => false, 'msg' => substr($str, 7),'report' => $str]; 
 
-                
-            // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
+
+              // $addreturn = ['report' => $ret['str'], 'path' => $ret['filename'],'count'=>$ret['count'],'callback'=>true,'action'=>'reportstr'];
             }
             // if (!empty($str)) {
             //     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
             // }
             break;
-          }
+        }
         break;
-      case 52: case 41: //technolab //labsolmla
+      case 52:
+      case 41: //technolab //labsolmla
         switch ($config['params']['dataparams']['radiotechlabcomp']) {
           case 'c0':
             $str = $this->technolab_layout($config);
@@ -289,9 +290,8 @@ class statement_of_account
         break;
     }
 
-    if($str!='' && $status){
+    if ($str != '' && $status) {
       return ['status' => true, 'msg' => $msg, 'report' => $str];
-
     }
   }
 
@@ -5585,7 +5585,7 @@ class statement_of_account
       case '0':
       case '2':
         if ($client != "") {
-          $filter = "and head.clientid='$clientid'";
+          $filter = "and client.clientid='$clientid'";
         }
         break;
       case '1':
@@ -5601,36 +5601,37 @@ class statement_of_account
     }
 
     $query = "select head.trno,'p' as tr, 1 as trsort, 
-     if(head.doc='BE',cl.client,client.client) as client,
-     if(head.doc='BE',cl.clientname,client.clientname) as clientname,
-     if(head.doc='BE',cl.addr,client.addr) as addr,head.terms,
-     if(head.doc='BE',cl.area,client.area) as area,
-    date(ar.dateid) as docdate, ar.docno as refno, ar.ref as applied, ar.db as debit, client.tel,
+     client.client as client,
+     client.clientname as clientname,
+     client.addr as addr,head.terms,
+     client.area as area,
+    date(ar.dateid) as docdate, case when head.doc IN ('AR', 'BE') then concat(left(ar.docno, 2),right(ar.docno, 4), '-', ar.ref)
+    else ar.docno end as refno, ar.ref as applied, ar.db as debit, client.tel,
     ar.cr as credit, (ar.bal) as balance, ag.client as agent, ag.clientname as agentname, head.due, head.yourref, head.rem,
     (case when head.doc='sj' then 'sales' else (case when head.doc='cm' then 'return' else 'adjustment' end) end) as trcode,
-    client.area, datediff('" . $asof . "', head.dateid) as elapse,count(distinct ar.docno) as cntdocno
+    client.area, datediff('" . $asof . "', head.dateid) as elapse,count(distinct ar.docno) as cntdocno, ar.ref, head.doc
 
     from (((glhead as head 
     left join arledger as ar on ar.trno=head.trno)
-    left join client on client.clientid=head.clientid)
+    left join client on client.clientid=ar.clientid)
     left join coa on coa.acnoid=ar.acnoid)
     left join client as ag on ag.clientid=ar.agentid
-    left join gldetail as gd on gd.trno = head.trno and  head.doc='BE'
-    left join client as cl on cl.clientid=gd.clientid
     left join cntnum as num on num.trno = head.trno
     where left(coa.alias,2)='ar'
     and num.center = '$center' 
-    and date(ar.dateid)<='$asof' and ar.bal<>0 and (client.client IS NOT NULL OR cl.client IS NOT NULL)
+    and date(ar.dateid)<='$asof' and ar.bal<>0 and (client.client IS NOT NULL)
     $code $filter 
     group by  head.trno,client.client, client.clientname, client.addr,head.terms,
     ar.dateid, ar.docno, ar.ref, ar.db, client.tel,
     ar.cr, ar.bal, ag.client, ag.clientname, head.due,
-    head.yourref, head.rem,head.doc,head.dateid,client.area,cl.client,cl.clientname,cl.addr,cl.area
-    order by clientname, docdate, refno";
+    head.yourref, head.rem,head.doc,head.dateid,client.area, ar.ref, head.doc
+    order by clientname, docdate, refno
+    limit 100";
 
     // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
+
 
   private function displayHeader_roosevelt($config, $cust)
   {
@@ -5645,11 +5646,18 @@ class statement_of_account
     $border = "1px solid ";
 
     if ($cust == 0) {
+      $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+      $headerdata = $this->coreFunctions->opentable($qry);
+
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-
-      $str .= $this->reporter->letterhead($center, $username, $config);
-
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -5663,13 +5671,13 @@ class statement_of_account
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('For the Period Ending ' . date('M-d-Y', strtotime($asof)), null, null, false, $border, '', 'C', 'Courier New', '10', 'B');
+      $str .= $this->reporter->col('For the Period Ending ' . date('M-d-Y', strtotime($asof)), null, null, false, $border, '', 'C', 'Courier New', '13', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -5684,13 +5692,13 @@ class statement_of_account
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('For the Period Ending ' . date('M-d-Y', strtotime($asof)), null, null, false, $border, '', 'C', 'Courier New', '10', 'B');
+      $str .= $this->reporter->col('For the Period Ending ' . date('M-d-Y', strtotime($asof)), null, null, false, $border, '', 'C', 'Courier New', '13', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -5725,7 +5733,7 @@ class statement_of_account
     $page = 50;
     $this->reporter->linecounter = 0;
     $str = '';
-    $font = "Century Gothic";
+    $font = "Corurier New";
     $fontsize = "10";
     $border = "1px solid ";
     $layoutsize = '1000';
@@ -6260,13 +6268,15 @@ class statement_of_account
   {
     $result = $this->rooseveltqry($config);
 
-    $count = 20; // maximun lines per page
+    $count = 20; // maximum lines per page
     $this->reporter->linecounter = 0;
     $str = '';
-    $font = "Tahoma";
-    $fontsize = "10";
+    $font = "Courier New";
+    $fontsize = "16";
     $border = "1px solid ";
     $layoutsize = '1000';
+
+    $PAGE_HEIGHT = 1270; // adjust to match your actual page height (px)
 
     $customer = '';
     $balance = 0;
@@ -6285,53 +6295,46 @@ class statement_of_account
     // Start of report
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->displayHeader_roosevelt($config, $next = 0);
+
+    // MAIN CONTAINER 
+    $str .= '<div style="width: 100%; min-height: ' . $PAGE_HEIGHT . 'px; position: relative;">';
+    $str .= '<div style="width: 100%; position: relative;">'; // content wrapper
+
     $str .= $this->reporter->begintable($layoutsize);
 
     foreach ($result as $key => $data) {
       //  Check kung new customer
       if ($customer != $data->clientname) {
-        // If not the first customer, close previous and page break
-        // if ($customer != "") {
-        //   $str .= $this->reporter->endtable();
-        //   $str .= $this->reporter->page_break();
-        //   // $str .= $this->reporter->page_break();
-        //   $str .= $this->displayHeader_roosevelt($config, $next = 1);
-        //   $str .= $this->reporter->begintable($layoutsize);
-        // }
-
+        // If not the first customer, close previous page + footer + page break
         if ($customer != "") {
-
           $str .= $this->reporter->endtable();
+          $str .= $this->reporter->begintable($layoutsize);
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '1000', null, false, $border, 'T', 'C', $font, $fontsize);
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
           // aging
           $str .= $this->reporter->begintable($layoutsize);
 
-          // $str .= $this->reporter->startrow();
-          // $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          // $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          // $str .= $this->reporter->endrow();
-
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '220', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
           $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
-          $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
+          $str .= $this->reporter->col('&nbsp;', '230', null, false,  '', '',  'L', $font, '5', '', '',  '');
           $str .= $this->reporter->endrow();
-
 
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '100');
-          $str .= $this->reporter->col('A/R Aging Summary', '200', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('A/R Aging Summary', '220', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
           $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
           $str .= $this->reporter->col('DOCUMENTS', '150', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
           $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
-          $str .= $this->reporter->col('TOTAL BALANCE', '150', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
-          $str .= $this->reporter->col('', '300');
+          $str .= $this->reporter->col('TOTAL BALANCE', '200', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('', '230');
           $str .= $this->reporter->endrow();
 
           $sum_docs = 0;
@@ -6341,36 +6344,48 @@ class statement_of_account
             $docs = $aging_summ[$keyA]['docs'];
             $bal = $aging_summ[$keyA]['bal'];
 
-            $sum_docs += $docs; //para sa summary total
+            $sum_docs += $docs;
             $sum_bal += $bal;
 
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '100');
-            $str .= $this->reporter->col($label, '200', null, false, '', 'LB', 'R', $font, $fontsize, '');
+            $str .= $this->reporter->col($label, '220', null, false, '', 'LB', 'R', $font, $fontsize, '');
             $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
             $str .= $this->reporter->col($docs ?: '', '150', null, false, '', 'LB', 'R', $font, $fontsize, '');
             $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, '');
-            $str .= $this->reporter->col($bal ? number_format($bal, 2) : '0.00', '150', null, false, '', 'LB', 'R', $font, $fontsize, '');
-            $str .= $this->reporter->col('', '300');
+            $str .= $this->reporter->col($bal ? number_format($bal, 2) : '0.00', '200', null, false, '', 'LB', 'R', $font, $fontsize, '');
+            $str .= $this->reporter->col('', '230');
             $str .= $this->reporter->endrow();
           }
 
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '100');
-          $str .= $this->reporter->col('Summary Total', '200', null, false, '', 'B', 'R', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('Summary Total', '220', null, false, '', 'B', 'R', $font, $fontsize, 'B');
           $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
           $str .= $this->reporter->col($sum_docs, '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
           $str .= $this->reporter->col('P', '50', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
-          $str .= $this->reporter->col(number_format($sum_bal, 2), '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
-          $str .= $this->reporter->col('', '300');
+          $str .= $this->reporter->col(number_format($sum_bal, 2), '200', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
+          $str .= $this->reporter->col('', '230');
           $str .= $this->reporter->endrow();
 
           $str .= $this->reporter->endtable();
 
+          $str .= '</div>'; // close content wrapper
+
+          // FOOTER  container
+          $str .= '<div style="width: 100%; position: absolute; bottom: 0; left: 0;">';
+          $str .= $this->footer($config);
+          $str .= '</div>';
+
+          $str .= '</div>'; // close main page container
+
           // Page break for next customer
           $str .= $this->reporter->page_break();
           $str .= $this->displayHeader_roosevelt($config, $next = 1);
-          $str .= $this->reporter->begintable($layoutsize);
+
+          // NEW page container for next customer
+          $str .= '<div style="width: 100%; min-height: ' . $PAGE_HEIGHT . 'px; position: relative;">';
+          $str .= '<div style="width: 100%; position: relative;">';
 
           // aging reset
           $aging_summ = [
@@ -6382,133 +6397,164 @@ class statement_of_account
         }
 
         $customer = $data->clientname;
+        $balance = 0; // reset running balance for new customer
         $this->reporter->linecounter = 0;
 
-        // $str .= $this->reporter->addline();
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('CUSTOMER : ', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($customer, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('CUSTOMER :', '130', null, false, $border, '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col(strtoupper($customer), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($data->addr, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('', '130', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col(strtoupper($data->addr), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($data->area, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('', '130', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col(strtoupper($data->area), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('<br>', null, null, false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
+        $str .= $this->reporter->col('', null, '10', false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         //Column Headers
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DATE', '100', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('DOCUMENT#', '230', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('TERMS', '250', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('DEBIT', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('CREDIT', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('BALANCE', '140', null, false, $border, 'LBR', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DATE', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DOCUMENT#', '210', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('TERMS', '113', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DEBIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('CREDIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('BALANCE', '179', null, false, $border, 'LBR', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
       }
 
       // check kung lalampas sa count
       if ($this->reporter->linecounter == $count) {
         $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '1000', null, false, $border, 'T', 'C', $font, $fontsize);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= '</div>'; // close content wrapper
+
+        // FOOTER pinned to bottom of this overflow page
+        $str .= '<div style="width: 100%; position: absolute; bottom: 0; left: 0;">';
+        $str .= $this->footer($config);
+        $str .= '</div>';
+
+        $str .= '</div>'; // close main page container
+
         $str .= $this->reporter->page_break();
         $this->reporter->linecounter = 0;
         $str .= $this->displayHeader_roosevelt($config, $next = 1);
 
+        // NEW page container (continuation of same customer)
+        $str .= '<div style="width: 100%; min-height: ' . $PAGE_HEIGHT . 'px; position: relative;">';
+        $str .= '<div style="width: 100%; position: relative;">';
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('CUSTOMER : ', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($customer, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('CUSTOMER :', '130', null, false, $border, '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col(strtoupper($customer), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($data->addr, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('', '130', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col(strtoupper($data->addr), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->col($data->area, '900', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('', '130', null, false, $border, '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col(strtoupper($data->area), '870', null, false, $border, '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', null, '10', false, '2px solid ', 'B', 'L', 'Courier New', '10', 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         // column headers
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DATE', '100', null, false, $border, 'TLB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('DOCUMENT#', '230', null, false, $border, 'TLB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('TERMS', '250', null, false, $border, 'TLB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('DEBIT', '140', null, false, $border, 'TLB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('CREDIT', '140', null, false, $border, 'TLB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('BALANCE', '140', null, false, $border, 'TLBR', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DATE', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DOCUMENT#', '210', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('TERMS', '113', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DEBIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('CREDIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('BALANCE', '179', null, false, $border, 'LBR', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
       }
 
       //  transaction line
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->docdate, '100', null, false, $border, 'LTRB', 'C', $font, $fontsize);
-      $str .= $this->reporter->col($data->refno, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize);
-      $str .= $this->reporter->col($data->terms, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize);
-      $str .= $this->reporter->col($data->debit == 0 ? '-' : number_format($data->debit, 2), '140', null, false, $border, 'LTRB', 'R', $font, $fontsize);
-      $str .= $this->reporter->col($data->credit == 0 ? '-' : number_format($data->credit, 2), '140', null, false, $border, 'LTRB', 'R', $font, $fontsize);
-      $str .= $this->reporter->col(number_format($data->balance, 2), '140', null, false, $border, 'LTRB', 'R', $font, $fontsize);
+      $str .= $this->reporter->col($data->docdate, '140', null, false, $border, 'LR', 'C', $font, $fontsize);
+      if ($data->doc == 'BE' || $data->doc == 'AR') {
+        $displayrefno = $data->refno;
+        $str .= $this->reporter->col($displayrefno, '210', null, false, $border, 'LR', 'C', $font, $fontsize);
+      } else {
+        $str .= $this->reporter->col($data->refno, '210', null, false, $border, 'LR', 'C', $font, $fontsize);
+      }
+      $str .= $this->reporter->col($data->terms, '113', null, false, $border, 'LR', 'C', $font, $fontsize);
+      $str .= $this->reporter->col($data->debit == 0 ? '-' : number_format($data->debit, 2), '179', null, false, $border, 'LR', 'R', $font, $fontsize);
+      $str .= $this->reporter->col($data->credit == 0 ? '-' : number_format($data->credit, 2), '179', null, false, $border, 'LR', 'R', $font, $fontsize);
 
+      $balance += ($data->debit - $data->credit);
+      $str .= $this->reporter->col(number_format($balance, 2), '179', null, false, $border, 'LR', 'R', $font, $fontsize);
       $str .= $this->reporter->endrow();
 
       if ($data->elapse == 30) {
         $aging_summ['30']['docs'] += $data->cntdocno;
-        $aging_summ['30']['bal'] += $data->balance;
+        $aging_summ['30']['bal'] += $data->debit - $data->credit;
       } elseif ($data->elapse >= 31 && $data->elapse <= 60) {
         $aging_summ['60']['docs'] += $data->cntdocno;
-        $aging_summ['60']['bal'] += $data->balance;
+        $aging_summ['60']['bal'] += $data->debit - $data->credit;
       } elseif ($data->elapse >= 61 &&  $data->elapse <= 120) {
         $aging_summ['120']['docs'] += $data->cntdocno;
-        $aging_summ['120']['bal'] += $data->balance;
+        $aging_summ['120']['bal'] += $data->debit - $data->credit;
       } elseif ($data->elapse > 120) {
         $aging_summ['over120']['docs'] += $data->cntdocno;
-        $aging_summ['over120']['bal'] += $data->balance;
+        $aging_summ['over120']['bal'] += $data->debit - $data->credit;
       }
 
       $this->reporter->linecounter++;
     }
 
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '1000', null, false, $border, 'T', 'C', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     //summary ng last customer
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable($layoutsize);
-    // $str .= $this->reporter->startrow();
-    // $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    // $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    // $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    // $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '5', '', '',  '');
-    $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '220', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->col('&nbsp;', '50', null, false,  '', '',  'L', $font, '5', '', '',  '');
-     $str .= $this->reporter->col('&nbsp;', '150', null, false,  '', '',  'L', $font, '5', '', '',  '');
-      $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '5', '', '',  '');
+    $str .= $this->reporter->col('&nbsp;', '250', null, false,  '', '',  'L', $font, '5', '', '',  '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
@@ -6517,8 +6563,8 @@ class statement_of_account
     $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
     $str .= $this->reporter->col('DOCUMENTS', '150', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('TOTAL BALANCE', '150', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('', '300');
+    $str .= $this->reporter->col('TOTAL BALANCE', '200', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('', '230');
     $str .= $this->reporter->endrow();
 
     $sum_docs = 0;
@@ -6527,31 +6573,107 @@ class statement_of_account
     foreach (['30' => '30 Days', '60' => '60 Days', '120' => '120 Days', 'over120' => 'Over 120 Days'] as $keyA => $label) {
       $docs = $aging_summ[$keyA]['docs'];
       $bal = $aging_summ[$keyA]['bal'];
-      $sum_docs += $docs; //para sa summary total
+      $sum_docs += $docs;
       $sum_bal += $bal;
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '100');
-      $str .= $this->reporter->col($label, '200', null, false, '', 'LB', 'R', $font, $fontsize, '');
+      $str .= $this->reporter->col($label, '220', null, false, '', 'LB', 'R', $font, $fontsize, '');
       $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, '');
       $str .= $this->reporter->col($docs ?: '', '150', null, false, '', 'LB', 'R', $font, $fontsize, '');
       $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
-      $str .= $this->reporter->col($bal ? number_format($bal, 2) : '0.00', '150', null, false, '', 'LB', 'R', $font, $fontsize, '');
-      $str .= $this->reporter->col('', '300');
+      $str .= $this->reporter->col($bal ? number_format($bal, 2) : '0.00', '200', null, false, '', 'LB', 'R', $font, $fontsize, '');
+      $str .= $this->reporter->col('', '230');
       $str .= $this->reporter->endrow();
     }
 
-
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100');
-    $str .= $this->reporter->col('Summary Total', '200', null, false, '', 'B', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('Summary Total', '220', null, false, '', 'B', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->col('', '50', null, false, '', 'LB', 'C', $font, $fontsize, 'B');
     $str .= $this->reporter->col($sum_docs, '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->col('P', '50', null, false, '', 'LB', 'R', $font, $fontsize, 'B');
-    $str .= $this->reporter->col(number_format($sum_bal, 2), '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('', '300');
+    $str .= $this->reporter->col(number_format($sum_bal, 2), '200', null, false, $border, 'T', 'R', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('', '230');
     $str .= $this->reporter->endrow();
 
+    $str .= '</div>'; // close content wrapper (last page)
+
+    // FOOTER for the last page
+    $str .= '<div style="width: 100%; position: absolute; bottom: 0; left: 0;">';
+    $str .= $this->footer($config);
+    $str .= '</div>';
+
+    $str .= '</div>'; // close main page container (last page)
+
     $str .= $this->reporter->endreport();
+    return $str;
+  }
+
+  public function footer($config)
+  {
+    $str = '';
+    $layoutsize = '1000';
+    $font = 'Tahoma';
+    $fontsize = '16';
+    $border = '1px solid';
+
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+
+    $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
+
+    // Spacer
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('&nbsp&nbsp;', null, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // Acknowledgement 
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 100, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col('Received from Roosevelt Chemical, Inc. the above invoices for verification and payment.', null, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // Spacer
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('&nbsp;', null, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // Received by 
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '100', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col('Received by :', '130', null, false, '', '', 'R', $font, $fontsize);
+    $str .= $this->reporter->col('', '450', null, false, '1px dashed', 'B', 'R', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', null, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // Date
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '150', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col('Date :', '80', null, false, '', '', 'R', $font, $fontsize);
+    $str .= $this->reporter->col('', '450', null, false, '1px dashed', 'B', 'R', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', null, null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($reporttimestamp, '500', null, false, '1px solid ', '', 'L', $font,  '12', '', '', '', 0, '', 0, 5);
+    $str .=  $this->reporter->col('', '300', null, false, '1px solid ', '', 'L', $font,  $fontsize, '', '', '', 0, '', 0, 5);
+    $str .= $this->reporter->pagenumber('Page', '200', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     return $str;
   }
 
@@ -6686,15 +6808,15 @@ class statement_of_account
 
     $result = $this->sbcqry($config);
     if ($this->isQueryError($result)) {
-        return "ERROR: Unknown database error in sbcqry";
+      return "ERROR: Unknown database error in sbcqry";
     }
 
     $allCollections = $this->sbccollectionqry($config);
     if ($this->isQueryError($allCollections)) {
-        return "ERROR: Unknown database error in sbccollectionqry";
+      return "ERROR: Unknown database error in sbccollectionqry";
     }
 
-    
+
 
     // Group collections by sales_trno
     $collectionMap = array();
@@ -6991,7 +7113,7 @@ class statement_of_account
     $str .= $this->sbc_footer($layoutsize, $border, $font, $fontsize, $username);
     $str .= $this->reporter->endreport();
 
-            
+
     $clientid = $config['params']['dataparams']['clientid'];
     $this->logger->sbcsoareportlog($username, $clientid, 'soalog');
 
@@ -7239,7 +7361,7 @@ class statement_of_account
     $str .= $this->reporter->endtable();
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-    $textlog = $username.' - '.$current_timestamp;
+    $textlog = $username . ' - ' . $current_timestamp;
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -7254,6 +7376,6 @@ class statement_of_account
 
   private function isQueryError($result)
   {
-      return is_array($result) && isset($result['status']) && $result['status'] === false;
+    return is_array($result) && isset($result['status']) && $result['status'] === false;
   }
 }//end class

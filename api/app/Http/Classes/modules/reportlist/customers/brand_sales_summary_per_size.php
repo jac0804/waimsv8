@@ -109,11 +109,8 @@ class brand_sales_summary_per_size
         return $this->coreFunctions->opentable($query);
     }
 
-
-
     public function uomlist($config)
     {
-
         $start    = date("Y-m-d", strtotime($config['params']['dataparams']['start']));;
         $end      = date("Y-m-d", strtotime($config['params']['dataparams']['end']));;
         $query = "select brandname,sum(netsales) as netsales,uom
@@ -177,7 +174,7 @@ class brand_sales_summary_per_size
         $unique_uoms = array_keys($unique_uoms); //unique uom
         //  pass the unique oum
         $uom_count = $this->count_all_oumlist($config, $unique_uoms);
-        $layoutsize = 250 + ($uom_count * 100);
+        $layoutsize = 250 + ($uom_count * 120);
 
 
         $qry = "select name,address,tel from center where code = '" . $center . "'";
@@ -226,7 +223,7 @@ class brand_sales_summary_per_size
         $str .= $this->reporter->col('BRAND DESCRIPTION', '250', null, false, '1px solid ', 'BT', 'C', $font, $font_size, 'B', '', '5px');
 
         foreach ($unique_uoms as $uom) {
-            $str .= $this->reporter->col(strtoupper($uom), '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '5px');
+            $str .= $this->reporter->col(strtoupper($uom), '120', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '5px');
         }
 
         $str .= $this->reporter->endrow();
@@ -237,7 +234,7 @@ class brand_sales_summary_per_size
         $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'C', $font, '4', 'B', '', '');
 
         foreach ($unique_uoms as $uom) {
-            $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', $font, '4', 'B', '', '');
+            $str .= $this->reporter->col('', '120', null, false, '1px solid ', '', 'C', $font, '4', 'B', '', '');
         }
         $str .= $this->reporter->endrow();
         return $str;
@@ -285,13 +282,13 @@ class brand_sales_summary_per_size
         $unique_uoms = array_keys($unique_uoms);
 
         $uom_count = $this->count_all_oumlist($config, $unique_uoms);
-        $layoutsize = 250 + ($uom_count * 100);
+        $layoutsize = 250 + ($uom_count * 120);
 
 
         $str = '';
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->displayHeader($config, $layoutsize);
-      
+
         $grandTotals = array_fill_keys($unique_uoms, 0);
         $pageTotals  = array_fill_keys($unique_uoms, 0);
 
@@ -310,7 +307,7 @@ class brand_sales_summary_per_size
                 $pageTotals[$uom]  += $num;
                 $grandTotals[$uom] += $num;
 
-                $str .= $this->reporter->col($val, '100', null, false, '1px dotted ', '', 'R', $font, $font_size, '', '', '', '');
+                $str .= $this->reporter->col($val, '120', null, false, '1px dotted ', '', 'R', $font, $font_size, '', '', '', '');
             }
 
 
@@ -321,7 +318,7 @@ class brand_sales_summary_per_size
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'L', $font, '4', '', '', '', '');
                 foreach ($unique_uoms as $uom) {
-                    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, '4', '', '', '', '');
+                    $str .= $this->reporter->col('', '120', null, false, $border, 'T', 'L', $font, '4', '', '', '', '');
                 }
                 $str .= $this->reporter->endtable();
                 $str .= $this->footer($config, $pageTotals, $unique_uoms, $layoutsize);
@@ -338,16 +335,16 @@ class brand_sales_summary_per_size
 
         foreach ($unique_uoms as $uom) {
             $val = $grandTotals[$uom] != 0 ? number_format($grandTotals[$uom], 2) : '';
-            $str .= $this->reporter->col($val, '100', null, false, '1px solid ', 'T', 'R', $font, '12', 'B', '', '', '');
+            $str .= $this->reporter->col($val, '120', null, false, '1px solid ', 'T', 'R', $font, '12', 'B', '', '', '');
         }
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable($layoutsize);
 
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp;', $layoutsize, null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->endrow();
+        // $str .= $this->reporter->startrow();
+        // $str .= $this->reporter->col('&nbsp;', $layoutsize, null, false,  '', '',  'L', $font, '2', '', '',  '');
+        // $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
 
@@ -375,7 +372,7 @@ class brand_sales_summary_per_size
         $str .= $this->reporter->col('PAGE TOTAL', '250', null, false, '1px solid ', 'T', 'L', $font, '12', 'B', '', '', '');
         foreach ($unique as $uom) {
             $val = $data[$uom] != 0 ? number_format($data[$uom], 2) : '';
-            $str .= $this->reporter->col($val, '100', null, false, '1px solid ', 'T', 'R', $font, '12', 'B', '', '', '');
+            $str .= $this->reporter->col($val, '120', null, false, '1px solid ', 'T', 'R', $font, '12', 'B', '', '', '');
         }
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();

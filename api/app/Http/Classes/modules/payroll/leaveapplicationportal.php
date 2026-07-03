@@ -164,6 +164,14 @@ class leaveapplicationportal
     }
 
     $curdate = $this->othersClass->getCurrentDate();
+
+
+    if ($companyid == 53) { //camera
+      $curdate = new DateTime($curdate);
+      $curdate->modify('-1 month');
+      $curdate = $curdate->format('Y-m-d');
+    }
+
     $id = $config['params']['adminid'];
 
     switch ($option) {
@@ -787,19 +795,6 @@ class leaveapplicationportal
       $this->coreFunctions->execqry("delete from pendingapp where doc = 'LEAVE' and trno = $trno and line= $line ", 'delete');
       $this->coreFunctions->execqry("delete from leavetrans where empid = $empid and line= $line and trno = $trno ", 'delete');
     }
-    // $data2 = ['empid' => $empid];
-    // $url = 'App\Http\Classes\modules\payrollentry\\' . 'leaveapplicationportalapproval';
-    // // $this->othersClass->insertPendingapp($trno, $line, 'LEAVE', $data2, $url, $config, 0, true);
-    // $status = true;
-    // $appstatus = $this->othersClass->insertUpdatePendingapp($trno, $line, 'LEAVE', $data2, $url, $config, 0, true, true);
-    // if ($appstatus['status']) {
-    //   // sending mail
-    //   if ($companyid == 53 || $companyid == 51) {
-    //   }
-    // } else {
-    //   $status = false;
-    //   $msg = $appstatus['msg'];
-    // }
     $submitdate = $this->othersClass->getCurrentTimeStamp();
     $this->logger->sbcmasterlog($trno, $config, "SUBMIT DATE : " . $submitdate);
     return ['row' => [], 'status' => $status, 'msg' => $msg, 'backlisting' => true];

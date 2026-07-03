@@ -250,20 +250,21 @@ class coa
       $data['acnoid'] = $acnoid;
       $this->logger->sbcwritelog($acnoid, $config, 'CREATE', $acnoid . ' - ' . $head['acno'] . ' - ' . $head['acnoname']);
     } else {
+      $data['ismirror'] = 0;
       $this->coreFunctions->sbcupdate('coa', $data, ['acnoid' => $head['acnoid']]);
       $acnoid = $head['acnoid'];
     }
 
     if ($this->getAccountChildren($head['parent'])) {
-      $updateqry = "update coa set detail = 0 where acno = '\\" . $head['parent'] . "'";
+      $updateqry = "update coa set detail = 0, ismirror=0 where acno = '\\" . $head['parent'] . "'";
     } else {
-      $updateqry = "update coa set detail = 1 where acno = '\\" . $head['parent'] . "'";
+      $updateqry = "update coa set detail = 1, ismirror=0 where acno = '\\" . $head['parent'] . "'";
     }
     $statusupdate = $this->coreFunctions->execqry($updateqry, 'update');
     if ($this->getAccountChildren($head['acno'])) {
-      $updateqry = "update coa set detail = 0 where acno = '\\" . $head['acno'] . "'";
+      $updateqry = "update coa set detail = 0, ismirror=0 where acno = '\\" . $head['acno'] . "'";
     } else {
-      $updateqry = "update coa set detail = 1 where acno = '\\" . $head['acno'] . "'";
+      $updateqry = "update coa set detail = 1, ismirror=0 where acno = '\\" . $head['acno'] . "'";
     }
     $statusupdate = $this->coreFunctions->execqry($updateqry, 'update');
     $data = $this->loaddata($config);

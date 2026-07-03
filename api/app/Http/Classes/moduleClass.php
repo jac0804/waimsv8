@@ -560,6 +560,7 @@ class moduleClass
 			$socketnotify = $this->companysetup->getsocketnotify($params);
 			$isnavigation = $this->companysetup->getisnavigation($params);
 			$isenterqty = $this->companysetup->getisenterqty($params);
+			$issuemultipleexpiry = $this->companysetup->getissuemultipleexpiry($params);
 			$lookupclientpermodule = $this->companysetup->getlookupclientpermodule($params);
 			return response()->json(['logintype' => $logintype, 'menus' => $menus, 'center' => $center, 'multicenter' => $multicenter, 'user' => $log, 'msg' => 'Login Success', 'status' => true, 'reportmenu' => $report, 'mailcount' => $mailcount, 'companyname' => $companyname, 'timer' => $timer, 'isautosaveacctgstock' => $isautosaveacctgstock, 'collapsiblehead' => $collapsiblehead, 'showloading' => $showloading, 'usecamera' => $usecamera, 'dashboardwh' => $dashboardwh, 'socketserver' => ['url' => $socketserver, 'notify' => $socketnotify], 'lookupclientpermodule' => $lookupclientpermodule, 'otherparams' => ['isnavigation' => $isnavigation, 'isenterqty' => $isenterqty]], 200);
 		} else {

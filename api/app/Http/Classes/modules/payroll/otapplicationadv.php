@@ -769,19 +769,6 @@ class otapplicationadv
                 $head['clientid'] = 0;
             } else {
                 $line = $this->coreFunctions->insertGetId($this->head, $data);
-                // if ($companyid == 58) {
-                //     $url = 'App\Http\Classes\modules\payroll\\' . 'otapplicationadv';
-                //     $appstatus = $this->othersClass->insertPendingapp(0, $line, 'OT', $data, $url, $config, 0, true);
-                //     if (!$appstatus['status']) {
-                //         $this->coreFunctions->execqry("delete from otapplication where line=".$line, 'delete');
-                //         $msg = $appstatus['msg'];
-                //         $status = $appstatus['status'];
-                //     } else {
-                //         goto log;
-                //     }
-                // } else {
-                //     log:
-                // }
                 $head['clientid']  = $line;
                 $this->logger->sbcmasterlog(
                     $line,
@@ -1077,10 +1064,8 @@ class otapplicationadv
                     left join employee as emp on emp.empid = otadv.empid
                     where otadv.line = $line ";
                     $data = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-                    // testing
                     $data2['empid'] = $data[0]['empid'];
                     $url = 'App\Http\Classes\modules\payroll\\' . 'otapplicationadv';
-                    // $result = $this->othersClass->insertPendingapp(0, $line, 'OT', $data2, $url, $config, 0, true);
                     $result = $this->othersClass->insertUpdatePendingapp(0, $line, 'OT', $data2, $url, $config, 0, true, true);
                     if (!$result['status']) {
                         $this->coreFunctions->sbcupdate($this->head, ['submitdate' => null], ['line' => $line]);

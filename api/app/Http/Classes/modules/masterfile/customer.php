@@ -612,6 +612,8 @@ class customer
     $rhhistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrhhistory']];
     $behistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewbehistory']];
     $rechistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrechistory']];
+    $customerlist = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewsistercompanies']];
+    
 
 
     //3/2/2023 FPY Testing
@@ -641,6 +643,12 @@ class customer
       if ($contactperson_access != 0) {
         $return['CONTACT PERSON'] = ['icon' => 'fa fa-list-ul', 'tab' => $contactperson];
       }
+    }
+
+     if ($companyid == 59) { // Roosevelt
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewsistercompanies', 'label' => 'CUSTOMER LIST']]; //viewsistercompanies
+      $customerlist = $this->tabClass->createtab($tab, []);
+        $return['CUSTOMER LIST'] = ['icon' => 'fa fa-users', 'tab' => $customerlist];
     }
 
 
@@ -727,6 +735,7 @@ class customer
           $return['RECEIVED CASH HISTORY'] = ['icon' => 'fas fa-money-bill-wave-alt', 'customform' => $rhhistory];
           $return['BOUNCED CHEQUE HISTORY'] = ['icon' => 'fas fa-money-check-alt', 'customform' => $behistory];
           $return['REPLACEMENT CHEQUE'] = ['icon' => 'fas fa-money-check', 'customform' => $rechistory];
+         
         }
         break;
     }
@@ -1011,7 +1020,7 @@ class customer
                 array_push($fields, 'tin', 'bstyle');
                 break;
               case 29: //sbc main
-                array_push($fields, 'tin', 'charge1', 'alias');
+                array_push($fields, 'dvattype', 'tin', 'charge1', 'alias');
                 break;
               case 43: //MIGHTY
               case 47: //kstar
@@ -1171,7 +1180,7 @@ class customer
             $fields = [];
             break;
           case 59: //roosevelt
-            $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'dparentcode', 'zipcode', 'lasttrans'];
+            $fields = ['dcategory', 'dcur', 'area', 'province', 'region', 'zipcode', 'lasttrans'];
             $allowedit = $this->othersClass->checkAccess($config['params']['user'], 23);
             if (!$allowedit) array_push($fields, 'updatenotes');
             break;
@@ -1217,7 +1226,7 @@ class customer
         array_push($fields, 'rem');
         break;
       case 59: //roosevelt
-        array_push($fields, 'type', 'ar');
+        array_push($fields, 'type', 'dparentcode', 'ar');
         break;
     }
 

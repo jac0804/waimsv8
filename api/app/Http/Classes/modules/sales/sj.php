@@ -758,6 +758,9 @@ class sj
         $buttons['others']['items']['uploadexcel'] = ['label' => 'Upload Items', 'todo' => ['type' => 'uploadexcel', 'action' => 'uploadexcel', 'lookupclass' => 'uploadexcel', 'access' => 'view']];
         $buttons['others']['items']['downloadexcel'] = ['label' => 'Download SJ Template', 'todo' => ['type' => 'downloadexcel', 'action' => 'downloadexcel', 'lookupclass' => 'downloadexcel', 'access' => 'view']];
         break;
+      default:
+        $buttons['others']['items']['testloc'] = ['label' => 'Test Loc', 'todo' => ['type' => 'testloc', 'action' => 'entrylocexpiry', 'lookupclass' => 'tableentry', 'access' => 'view']];
+      break;
     }
 
     if ($this->companysetup->getisshowmanual($config['params'])) {
@@ -1328,7 +1331,7 @@ class sj
       if ($companyid == 10 || $companyid == 12) { //afti, afti usd
         $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
       } else {
-        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
+      $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
       }
     } elseif ($ispallet) {
       $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
@@ -3566,9 +3569,6 @@ class sj
         break;
       case 'uploadexcel':
         return $this->othersClass->uploadexcel($config);
-        break;
-      case 'downloadexcel':
-        return $this->othersClass->downloadexcel($config);
         break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];

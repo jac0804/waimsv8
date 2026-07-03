@@ -67,6 +67,7 @@ class customer
                 ["label" => "Received Cash History", "value" => "cash", 'color' => 'red'],
                 ["label" => "Bounced Cheque History", "value" => "bounced", 'color' => 'red'],
                 ["label" => "Replacement Cheque", "value" => "replacement", 'color' => 'red'],
+                ["label" => "Customer Account Analysis Report", "value" => "analysis", 'color' => 'red'],
             ]);
         }
 
@@ -152,6 +153,9 @@ class customer
             case 'replacement':
                 $query = $this->default_REPLACEMENT_QUERY($config);
                 break;
+            case 'analysis':
+                $query = $this->default_analysis_QUERY($config);
+                break;    
         }
         return $this->coreFunctions->opentable($query);
     }
@@ -212,6 +216,9 @@ class customer
                 case 'replacement':
                     $str = $this->reportdefault_REPLACEMENT_PDF($config, $data);
                     break;
+                case 'analysis':
+                    $str = $this->reportdefault_analysis_PDF($config, $data);
+                    break;    
             }
         }
         return $str;
@@ -3548,4 +3555,263 @@ class customer
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
+
+
+
+     public function default_analysis_QUERY($config)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+      
+        $qry = "
+                select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
+                 sum(amount) as uncleared_amt, sum(balance) as balance, clientname, sum(cleared_amount) as cleared_amount
+                  from (
+
+                  select sum(collectionamt) as collectionamt, sum(bounced) as bounced, 0 as amount,
+
+                            sum((select (case when ar.db > 0 then ar.bal else (ar.bal * -1) end) as balance
+                            from arledger as ar
+                            where ar.trno = ax.trno and ar.clientid = ax.clientid  and date(ar.dateid) <= '$start'  limit 1)) as balance,clientname, 0 as cleared_amount
+
+                    from (
+
+                    SELECT sum(if(left(coa.alias,2) in ('ca','cr','pc') and head.doc='cr', d.db, 0)) as collectionamt,
+                            0 as bounced,head.docno,
+                            head.trno,head.clientid,cl.clientname
+                            FROM glhead AS head
+                            LEFT JOIN gldetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.clientid = head.clientid
+                            LEFT JOIN coa ON d.acnoid = coa.acnoid
+                            LEFT JOIN cntnum on cntnum.trno = head.trno
+                            WHERE date(head.dateid) <= '$start'   and cl.clientid=$clientid
+                            group by head.trno,head.clientid, cl.clientname,head.docno) as ax
+
+                            group by clientname
+
+                          union all
+
+                     SELECT 0 as collectionamt, 0 as bounced, sum(d.amount) as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            FROM hrchead AS head
+                            LEFT JOIN hrcdetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.client = d.client
+                            WHERE  d.rdtrno =0  and  date(head.dateid) <= '$start'   and cl.clientid=$clientid
+                            group by head.trno,cl.clientid, cl.clientname
+
+
+                            union all
+
+                            SELECT 0 as collectionamt,
+                            sum(stock.amount) as bounced, 0 as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            FROM glhead AS head
+                            LEFT JOIN hparticulars AS stock on stock.trno = head.trno
+                            LEFT JOIN client as cl on cl.clientid = stock.clientid
+                            WHERE stock.retrno=0 and head.doc='BE' and date(head.dateid) <= '$start'   and cl.clientid=$clientid
+                            group by head.trno,stock.clientid, cl.clientname
+
+                            union all
+
+                            SELECT 0 as collectionamt, 0 as bounced,  0 as amount, 0 as balance,cl.clientname, sum(d.amount) as cleared_amount
+                            FROM hrchead AS head
+                            LEFT JOIN hrcdetail AS d on d.trno = head.trno
+                            LEFT JOIN client as cl on cl.client = d.client
+                            WHERE  d.rdtrno != 0  and  date(head.dateid) <= '$start'   and cl.clientid=$clientid
+                            group by head.trno,cl.clientid, cl.clientname ) as xd group by clientname";    
+
+                            // var_dump($qry);
+        return $qry;
+    }
+
+
+     public function reportdefault_analysis_PDF($config, $data)
+    {
+        $center   = $config['params']['center'];
+        $username = $config['params']['user'];
+        $clientid = $config['params']['dataid'];
+        $companyid = $config['params']['companyid'];
+
+
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $prepared   = $config['params']['dataparams']['prepared'];
+        $approved   = $config['params']['dataparams']['approved'];
+        $received   = $config['params']['dataparams']['received'];
+        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+
+        $count = 55;
+        $page = 54;
+        $fontsize = "10";
+        $font = "";
+        $fontbold = "";
+
+        if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+        }
+
+        $qry = "select name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [800, 1000]);
+        PDF::SetMargins(40, 40);
+
+        PDF::SetFont($font, '', 9);
+        PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n");
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L');
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'L');
+        PDF::MultiCell(0, 0, "\n\n");
+
+
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(500, 0, "CUSTOMER LEDGER - CUSTOMER ACCOUNT ANALYSIS REPORT", '', 'L', false,0);
+        PDF::MultiCell(220, 0, "", '', '', false, 1);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(70, 20, "Customer : ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(290, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(60, 20, "As of: ", '', 'L', false, 0);
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(300, 20, $start, '', 'L', false, 1);
+
+
+        PDF::MultiCell(0, 0, "\n");
+
+
+        PDF::SetFont($font, '', 4);
+        PDF::MultiCell(300, 0, "", 'TL', '', false, 0);
+        PDF::MultiCell(200, 0, "", 'TL', '', false, 0);
+        PDF::MultiCell(10, 0, "", 'TR', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(300, 0, "PARTICULAR", 'L', 'C', false, 0);
+        PDF::MultiCell(200, 0, "AMOUNT", 'L', 'C', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        PDF::SetFont($font, '', 4);
+        PDF::MultiCell(300, 0, "", 'BL', '', false, 0);
+        PDF::MultiCell(200, 0, "", 'BL', '', false, 0);
+        PDF::MultiCell(10, 0, "", 'BR', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+
+        PDF::SetFont($font, '', 4);
+        PDF::MultiCell(300, 0, "", 'L', '', false, 0);
+        PDF::MultiCell(200, 0, "", 'L', '', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        $collectionamt =(isset($data[0]->collectionamt) ? number_format($data[0]->collectionamt, 2) : 0);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "TOTAL OR/CR AMOUNT", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $collectionamt !=0 ? $collectionamt : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        $uncleared =(isset($data[0]->uncleared_amt) ? number_format($data[0]->uncleared_amt, 2) : 0);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "UNCLEARED CHECKS", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $uncleared !=0 ? $uncleared : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        $bouncedamt =(isset($data[0]->bounced) ? number_format($data[0]->bounced, 2) : 0);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "BOUNCED CHECKS BALANCE", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $bouncedamt !=0 ? $bouncedamt : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+
+        $balance =(isset($data[0]->balance) ? number_format($data[0]->balance, 2) : 0);
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "ACCOUNT RECEIVABLE BALANCE", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $balance !=0 ? $balance : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+
+        $cleared =(isset($data[0]->cleared_amount) ? number_format($data[0]->cleared_amount, 2) : 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "TOTAL CLEARED PAYMENTS", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $cleared !=0 ? $cleared : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        $exposure=0;
+        $purchase=0;
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "TOTAL EXPOSURE", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $exposure !=0 ? number_format($exposure, 2) : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
+        PDF::MultiCell(290, 0, "TOTAL PURCHASES", '', 'L', false, 0);
+        PDF::MultiCell(200, 0, $purchase !=0 ? number_format($purchase, 2) : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", 'R', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+        PDF::SetFont($font, '', 4);
+        PDF::MultiCell(300, 0, "", 'BL', '', false, 0);
+        PDF::MultiCell(200, 0, "", 'BL', '', false, 0);
+        PDF::MultiCell(10, 0, "", 'BR', '', false, 0);
+        PDF::MultiCell(210, 0, "", '', '', false, 1);
+
+
+
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+        PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+        PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n");
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+        PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+        PDF::MultiCell(254, 0, $approved, '', 'L');
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
 }

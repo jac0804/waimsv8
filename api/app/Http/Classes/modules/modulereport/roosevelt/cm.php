@@ -600,7 +600,7 @@ class cm
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $count = $page = 25;
+    $count = $page = 23;
     $totalext = 0;
 
     $font = "";
@@ -641,8 +641,8 @@ class cm
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::SetXY($x, $y);
-          PDF::MultiCell(50, 15, ' ' . (isset($arr_sizeid[$r]) ? strtoupper($arr_sizeid[$r]) : ''), '', 'L', false, 0, $x,  $y, true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(400, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(63, 15, ' ' . (isset($arr_sizeid[$r]) ? strtoupper($arr_sizeid[$r]) : ''), '', 'L', false, 0, $x,  $y, true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(387, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(75, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(115, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
@@ -680,12 +680,18 @@ class cm
         $refs[] = $row['ref'];
       }
     }
+    $rem = (isset($data[0]['rem']) ? $data[0]['rem'] : '');
+    $rem = str_replace(array("\r\n", "\r", "\n"), ' ', $rem);
+
     $refString = implode(" ", array_unique($refs));
-    PDF::SetY(740);
+    $ref = $refString;
+    $ref = str_replace(array("\r\n", "\r", "\n"), ' ', $ref);
+    PDF::SetY(718);
     PDF::SetCellPaddings(2, 2, 2, 1);
-    // PDF::MultiCell(720, 0,  'Reason : ' . (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'L', false, 1);
-    PDF::MultiCell(720, 0,  '', '', 'L', false, 1);
-    PDF::MultiCell(720, 0,  'Reference Document No.: ' . $refString, '', 'L', false, 1);
+    PDF::MultiCell(720, 0,  'Reason : ' . $rem, '', 'L', false, 1);
+    // PDF::MultiCell(720, 0,  '', '', 'L', false, 1);
+    PDF::SetY(758);
+    PDF::MultiCell(720, 0,  'Reference Document No.: ' . $ref, '', 'L', false, 1);
 
     $words = $this->reporter->ftNumberToWordsConverter($totalext,  false) . ' ONLY';
 

@@ -687,18 +687,10 @@ class purchase_journal
       }
     } else { //summarized
       $layoutsize='800';
-      $desc=400;
-      $acnowidth = 100;
-      if($params['params']['companyid']==29){ //Sbc
-        $layoutsize = '1000';
-        $desc = 550;
-        $acnowidth = 150;
-
-      }
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('ACCOUNT CODE', $acnowidth, null, false, '1px solid ', 'B', 'L', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('ACCOUNT DESCRIPTION', $desc, null, false, '1px solid ', 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('ACCOUNT CODE', 100, null, false, '1px solid ', 'B', 'L', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 400, null, false, '1px solid ', 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DEBIT', 150, null, false, '1px solid ', 'B', 'R', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('CREDIT', 150, null, false, '1px solid ', 'B', 'R', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->endrow();
@@ -759,10 +751,6 @@ class purchase_journal
     } else {
 
        $layoutsize='800';
-      if($companyid==29){ //sbc
-        $layoutsize='1000';
-
-      }
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
@@ -795,18 +783,8 @@ class purchase_journal
       $str .= $this->reporter->pagenumber('Page');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-
-      // $str .= $this->reporter->printline();
-      if($companyid==29){ //sbc
-      $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('',$layoutsize, null, false, '1px solid ', 'T', 'L', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-      }else{
+    
       $str .= $this->reporter->printline();
-
-      }
      
 
 
@@ -971,15 +949,7 @@ class purchase_journal
     $str .= $this->GENERATE_DEFAULT_HEADER($params);
 
     $layoutsize=$this->reportParams['layoutSize'];
-    $descwidth=400;
-    $acnowidth=100;
     $fontsize10 = 10;
-    if($params['params']['companyid']==29){ //sbc
-    $layoutsize='1000';
-    $descwidth=550;
-    $acnowidth = 150;
-    $fontsize10 = 11;
-    }
     $str .= $this->default_table_cols($layoutsize, $border, $font, $fontsize11, $params);
     $totalsdb = 0;
     $totalscr = 0;
@@ -1000,8 +970,8 @@ class purchase_journal
         $db = '-';
       } //end if
 
-      $str .= $this->reporter->col($value->acno, $acnowidth, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->col($value->description, $descwidth, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($value->acno, 100, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col($value->description, 400, null, false, '1px solid ', '', 'L', $font, $fontsize10, '', '', '');
       $str .= $this->reporter->col($db, 150, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '', '', 0, '', 1);
       $str .= $this->reporter->col($cr, 150, null, false, '1px solid ', '', 'R', $font, $fontsize10, '', '', '', '', 0, '', 1);
       $totalsdb = $totalsdb + $value->debit;
@@ -1025,24 +995,15 @@ class purchase_journal
     } //end foreach
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('GRAND TOTAL :', $acnowidth, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('', $descwidth, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', 100, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 400, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col(NUMBER_FORMAT($totalsdb, 2), 150, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
     $str .= $this->reporter->col(NUMBER_FORMAT($totalsdb, 2), 150, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '', '', 0, '', 1);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    // $str .= $this->reporter->printline();
-    if ($params['params']['companyid'] == 29) { //sbc
-      $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', $layoutsize, null, false, '1px solid ', 'B', 'L', $font, $fontsize10, '', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-    } else {
-      $str .= $this->reporter->printline();
-
-    }
+   
+    $str .= $this->reporter->printline();
     $str .= $this->reporter->endreport();
     return $str;
   } //end fn
@@ -1430,12 +1391,12 @@ class purchase_journal
     
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('DATE', '70', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+          $str .= $this->reporter->col('DATE', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->col('DOC #', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('SUPPLIER NAME', '260', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+          $str .= $this->reporter->col('SUPPLIER NAME', '360', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->col('INVENTORY DEBIT', '120', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->col('A/P CREDIT', '100', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('ACCNT DESCRIPTION', '170', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+          $str .= $this->reporter->col('ACCNT DESCRIPTION', '160', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->col('DEBIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->col('CREDIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
           $str .= $this->reporter->endrow();
@@ -1467,7 +1428,7 @@ class purchase_journal
     $str .= $this->reporter->addline();
     $str .= $this->reporter->col($field1, '70', null, '', $border, '', 'CT', $font, $font_size, '', '', '');
     $str .= $this->reporter->col($field2, '80', null, '', $border, '', 'CT', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col($field3, '260', null, '', $border, '', 'LT', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col($field3, '360', null, '', $border, '', 'LT', $font, $font_size, '', '', '');
     $str .= $this->reporter->col($field4, '120', null, '', $border, '', 'RT', $font, $font_size, '', '', '');
     $str .= $this->reporter->col($field5, '100', null, '', $border, '', 'RT', $font, $font_size, '', '', '');
     $str .= $this->reporter->col($field6, '170', null, '', $border, '', 'LT', $font, $font_size, '', '', '');
@@ -1486,16 +1447,15 @@ class purchase_journal
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
     $fontsize10 = 9.3;
-    $layoutsize = 1000;
-    $pageLimit = 38;
+    $layoutsize = 1100;
+    $pageLimit = 35; //35
     $rowCount = 0;
     $str = '';
 
     if (empty($data)) {
       return $this->othersClass->emptydata($params);
     }
-
-    $str .= $this->reporter->beginreport();
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '20px;margin-top:10px;margin-left:50px');
     $str .= $this->SBC_DEFAULT_HEADER($params);
     $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize10, $params);
 
@@ -1517,12 +1477,12 @@ class purchase_journal
         //////
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(' ', 70, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-        $str .= $this->reporter->col(' ', 260, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+        $str .= $this->reporter->col(' ', 80, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+        $str .= $this->reporter->col(' ', 360, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->col(' ', 120, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
-        $str .= $this->reporter->col(' ', 170, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
+        $str .= $this->reporter->col(' ', 160, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->col(' ', 100, null, '', '1px dashed ', 'T', 'l', $font, $fontsize10, '', '', '5px');
         $str .= $this->reporter->endrow();
@@ -1539,7 +1499,7 @@ class purchase_journal
 
       $arr_date = $this->reporter->fixcolumn([$printDate], '10', 0);
       $arr_docno = $this->reporter->fixcolumn([$printDocno], '12', 0);
-      $arr_clname = $this->reporter->fixcolumn([$printClname], '35', 0);
+      $arr_clname = $this->reporter->fixcolumn([$printClname], '45', 0);
       $arr_regdb = $this->reporter->fixcolumn([$regdb], '15', 0);
       $arr_regcr = $this->reporter->fixcolumn([$regcr], '15', 0);
       $arr_acct = $this->reporter->fixcolumn([$value->sunacctname], '25', 0);
@@ -1610,12 +1570,12 @@ class purchase_journal
 
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->addline();
-    $str .= $this->reporter->col('', '70', null, false, '1px solid ', 'T', 'C', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'T', 'C', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('TOTAL :', '260', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'T', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL :', '360', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col(number_format($totalrdb, 2), '120', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col(number_format($totalrcr, 2), '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('', '170', null, false, '1px solid ', 'T', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', '150', null, false, '1px solid ', 'T', 'L', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col(number_format($totalsdb, 2), '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col(number_format($totalscr, 2), '100', null, false, '1px solid ', 'T', 'R', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -1625,12 +1585,5 @@ class purchase_journal
 
     return $str;
   }
-
-
-
-
-
-
-
 
 }//end class

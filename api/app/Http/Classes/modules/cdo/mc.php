@@ -876,7 +876,7 @@ class mc
             $postdetail = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
             if ($postdetail) {
                 $date = $this->othersClass->getCurrentTimeStamp();
-                $data = ['postdate' => $date, 'postedby' => $user];
+                $data = ['postdate' => $date, 'postedby' => $user, 'iscsv' => 0];
                 $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
                 $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
                 $this->coreFunctions->execqry("delete from " . $this->detail . " where trno=?", "delete", [$trno]);

@@ -2912,7 +2912,13 @@ class cm
     $data = [];
     $isreload = false;
     if ($config['params']['companyid'] == 60) { //transpower
-      $this->posttrans($config);
+      $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
+      if (!$isposted) {
+          $result = $this->posttrans($config);
+          if (!$result['status']) {
+              return ['status' => false, 'msg' => $result['msg']];
+          }
+      }
       $isreload = true;
     }
     $style = 'width:500px;max-width:500px;';

@@ -2670,13 +2670,16 @@ class dm
           'date' => $stock[$key]->dateid,
           'inventory' => $stock[$key]->asset !== '' ? $stock[$key]->asset : $invacct,
           'tax' =>  $tax,
-          'discamt' => $disc * $stock[$key]->iss,
+          'discamt' => round($disc * $stock[$key]->iss, 2),
           'cur' => $stock[$key]->cur,
           'forex' => $stock[$key]->forex,
           'cost' => round($stock[$key]->cost * $stock[$key]->iss, 2),
           'fcost' => round($stock[$key]->fcost * $stock[$key]->iss, 2),
           'projectid' => $stock[$key]->projectid,
         ];
+
+
+
         if ($companyid == 10) { //afti
           $params['branch'] = $stock[$key]->branch;
           $params['deptid'] = $stock[$key]->deptid;

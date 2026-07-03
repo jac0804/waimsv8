@@ -467,7 +467,7 @@ class leaveapplicationportalapproval
           if ($data['status'] == "A") {
             if ($companyid == 58) {
               $url = 'App\Http\Classes\modules\payrollentry\\' . 'leaveapplicationportalapproval';
-              $this->othersClass->updatePendingapp($val['trno'], $val['line'], 'LEAVE', $data, $url, $config);
+              $this->othersClass->insertUpdatePendingapp($val['trno'], $val['line'], 'LEAVE', $data, $url, $config);
             }
             $this->coreFunctions->execqry("update leavesetup set bal=bal-" . $val['adays'] . " where trno =?", 'update', [$val['trno']]);
           } else {

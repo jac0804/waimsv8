@@ -2257,7 +2257,7 @@ class gridbuttonClass
       ],
       'replacementcheque' => [
         'name' => 'tableentry',
-        'label' => 'Add Bounce Cheque',
+        'label' => 'Add Replacement Cheque',
         'icon' => 'add',
         'action' => 'tableentry',
         'class' => 'btnreplacementcheque',

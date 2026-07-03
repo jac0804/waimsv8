@@ -3462,9 +3462,6 @@ class sj
     $palletid = isset($config['params']['data']['palletid']) ? $config['params']['data']['palletid'] : 0;
     $weight = isset($config['params']['data']['weight']) ? $config['params']['data']['weight'] : 0;
     $expiry = '';
-    if (isset($config['params']['data']['expiry'])) {
-      $expiry = $config['params']['data']['expiry'];
-    }
 
     if ($this->companysetup->getiskgs($config['params'])) {
       $kgs = isset($config['params']['data']['kgs']) ? $config['params']['data']['kgs'] : 1;
@@ -3491,11 +3488,6 @@ class sj
     }
 
     $itemstatus = '';
-    if ($companyid == 22) { //EIPI
-      if (isset($config['params']['data']['itemstatus'])) {
-        $itemstatus = $config['params']['data']['itemstatus'];
-      }
-    }
 
     $line = 0;
 
@@ -3506,9 +3498,7 @@ class sj
         $line = 0;
       }
       $line = $line + 1;
-      if ($companyid == 21) { //kinggeorge
-        $this->logger->sbcwritelog($trno, $config, 'DEBUG', 'ADD - Line:' . $line . ' itemid:' . $itemid, $setlog ? $this->tablelogs : '');
-      }
+      
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
@@ -3524,22 +3514,12 @@ class sj
       $amt = $config['params']['data'][$this->damt];
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
-      if ($companyid == 21) { //kinggeorge
-        $this->logger->sbcwritelog($trno, $config, 'DEBUG', 'UPDATE - Line:' . $line . ' itemid:' . $itemid, $setlog ? $this->tablelogs : '');
-      }
+     
     }
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
-    if ($systemtype == 'REALESTATE') {
-      $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
-      $phaseid = $this->coreFunctions->getfieldvalue($this->head, "phaseid", "trno=?", [$trno]);
-      $modelid = $this->coreFunctions->getfieldvalue($this->head, "modelid", "trno=?", [$trno]);
-      $blklotid = $this->coreFunctions->getfieldvalue($this->head, "blklotid", "trno=?", [$trno]);
-      $amenityid = $this->coreFunctions->getfieldvalue($this->head, "amenityid", "trno=?", [$trno]);
-      $subamenityid = $this->coreFunctions->getfieldvalue($this->head, "subamenityid", "trno=?", [$trno]);
-    }
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -3604,54 +3584,8 @@ class sj
       'noprint' => $noprint
     ];
 
-    switch ($companyid) {
-      case 11: //summit
-        $data['rem'] = $rem;
-        break;
-      case 10: //afti
-        $data['projectid'] = $projectid;
-        $data['sgdrate'] = $sgdrate;
-        break;
-      case 22: //EIPI
-        $data['itemstatus'] = $itemstatus;
-        break;
-      case 60: //transpower
-        $data['porefx'] = $porefx;
-        $data['polinex'] = $polinex;
-        if ($action == 'insert') {
-          $wireitem = $this->coreFunctions->opentable("select startwire, endwire from item where itemid=? and iswireitem=1", [$data['itemid']]);
-          if (!empty($wireitem)) {
-            $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? union all select trno, startwire, endwire from glstock where itemid=?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$data['itemid'], $data['itemid']]);
-            if (!empty($lastitem)) {
-              $range = ($lastitem[0]->endwire - $lastitem[0]->startwire);
-              $data['startwire'] = $lastitem[0]->endwire + 1;
-              $data['endwire'] = $data['startwire'] + $range;
-            } else {
-              $data['startwire'] = $wireitem[0]->startwire;
-              $data['endwire'] = $wireitem[0]->endwire;
-            }
-          } else {
-            $data['agentamt'] = $data['startwire'] = $data['endwire'] = 0;
-          }
-        } else {
-          $agentamt = isset($config['params']['data']['agentamt']) ? $config['params']['data']['agentamt'] : 0;
-          $startwire = isset($config['params']['data']['startwire']) ? $config['params']['data']['startwire'] : 0;
-          $endwire = isset($config['params']['data']['endwire']) ? $config['params']['data']['endwire'] : 0;
-          $data['agentamt'] = $this->othersClass->sanitizekeyfield('agentamt', $agentamt);
-          $data['startwire'] = $this->othersClass->sanitizekeyfield('startwire', $startwire);
-          $data['endwire'] = $this->othersClass->sanitizekeyfield('endwire', $endwire);
-        }
-        break;
-    }
-
-    if ($systemtype == 'REALESTATE') {
-      $data['projectid'] = $projectid;
-      $data['phaseid'] = $phaseid;
-      $data['modelid'] = $modelid;
-      $data['blklotid'] = $blklotid;
-      $data['amenityid'] = $amenityid;
-      $data['subamenityid'] = $subamenityid;
-    }
+    $data['projectid'] = $projectid;
+    $data['sgdrate'] = $sgdrate;
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
@@ -3703,47 +3637,12 @@ class sj
         $havestock = true;
         $msg = 'Item was successfully added.';
 
-        switch ($this->companysetup->getsystemtype($config['params'])) {
-          case 'AIMS':
-            switch ($companyid) {
-              case 0: //main
-              case 10: //afti
-                $stockinfo_data = [
-                  'trno' => $trno,
-                  'line' => $line,
-                  'rem' => $rem
-                ];
-                $this->coreFunctions->sbcinsert('stockinfo', $stockinfo_data);
-                break;
-              case 19: //housegem
-                $stockinfo_data = [
-                  'trno' => $trno,
-                  'line' => $line,
-                  'weight' => $weight
-                ];
-                $this->coreFunctions->sbcinsert('stockinfo', $stockinfo_data);
-                break;
-              case 52: //technolab
-              case 41: //labsol manila
-              case 23: //labsol cebu
-                $stockinfo_data = [
-                  'trno' => $trno,
-                  'line' => $line,
-                  'itemdesc' => $itemdesc
-                ];
-                $this->coreFunctions->sbcinsert('stockinfo', $stockinfo_data);
-                break;
-            }
-            break;
-          case 'AIMSPAYROLL': //XCOMp
-            $stockinfo_data = [
-              'trno' => $trno,
-              'line' => $line,
-              'itemdesc' => $itemdesc
-            ];
-            $this->coreFunctions->sbcinsert('stockinfo', $stockinfo_data);
-            break;
-        }
+        $stockinfo_data = [
+          'trno' => $trno,
+          'line' => $line,
+          'rem' => $rem
+        ];
+        $this->coreFunctions->sbcinsert('stockinfo', $stockinfo_data);
 
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         if ($isnoninv == 0) {
@@ -3783,15 +3682,6 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
           }
-        } else if ($companyid == 60) { //transpower
-          if ($this->setservedpoitems($porefx, $polinex) == 0) {
-            $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-            $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'linex' => $line]);
-            $this->setservedpoitems($porefx, $polinex);
-            $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-            $return = false;
-            $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PO Qty.";
-          }
         } else {
           if ($this->setserveditems($refx, $linex) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
@@ -3819,37 +3709,11 @@ class sj
       $msg = '';
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
 
-      switch ($this->companysetup->getsystemtype($config['params'])) {
-        case 'AIMS':
-          switch ($companyid) {
-            case 52: //technolab
-            case 41: //labsol manila
-            case 23: //labsol cebu
-              $stockinfo_data = [
-                'trno' => $trno,
-                'line' => $line,
-                'itemdesc' => $itemdesc
-              ];
-              $checkstockinfo = $this->coreFunctions->getfieldvalue("stockinfo", "trno", "trno=? and line =?", [$trno, $line]);
-              if ($checkstockinfo == '') {
-                $this->coreFunctions->sbcinsert("stockinfo", $stockinfo_data);
-              } else {
-                $stockinfo_data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                $stockinfo_data['editby'] = $config['params']['user'];
-                foreach ($stockinfo_data as $key => $valueinfo) {
-                  $stockinfo_data[$key] = $this->othersClass->sanitizekeyfield($key, $stockinfo_data[$key]);
-                }
-                $this->coreFunctions->sbcupdate("stockinfo", $stockinfo_data, ['trno' => $trno, 'line' => $line]);
-              }
-              break;
-          }
-          break;
-      }
       if ($isnoninv == 0) {
         if ($ispallet) {
           $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
         } else {
-          $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $data['expiry'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
+          $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], '', $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
         }
         if ($cost != -1) {
           $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
@@ -3872,9 +3736,7 @@ class sj
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           if ($companyid == 10) { //afti
             $this->setservedsqitems($refx, $linex);
-          } else {
-            $this->setserveditems($refx, $linex);
-          }
+          } 
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Out of Stock.";
@@ -3890,19 +3752,6 @@ class sj
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
-      } else if ($companyid == 60) { //transpower
-        if ($porefx != 0) {
-          if ($this->setservedpoitems($porefx, $polinex) == 0) {
-            $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-            $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-            $this->setservedpoitems($porefx, $polinex);
-            $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-            $return = false;
-            $msg = "(" . $item[0]->barcode . ") Qty is Greater than PO Qty.";
-          }
-        } else {
-          goto setServed;
-        }
       } else {
         setServed:
         if ($this->setserveditems($refx, $linex) == 0) {
@@ -3914,31 +3763,6 @@ class sj
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
       }
-
-      if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
-        $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));
-        $weightout = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightout', 'trno=?', [$trno]));
-        $qry = "select sum(stock.iss) as value from lastock as stock
-        left join item as i on i.itemid=stock.itemid
-        where stock.trno =$trno
-        and stock.iscomponent=0 and i.fg_isfinishedgood=1
-        and i.body not in
-        ('MAYON TYPE 1P','MAYON TYPE 1T SUPER','MAYON TYPE 1T PREMIUM','MAYON TYPE 1T BICOL','MAYON PPC','MAYON GREEN')";
-
-        $qty = floatval($this->coreFunctions->datareader($qry));
-
-        $weightin = isset($weightin) ? $weightin : 0;
-        $weightout = isset($weightout) ? $weightout : 0;
-        $kilo = ($weightout - $weightin) / $qty;
-
-        $headinfo = [
-          'kilo' => $kilo
-        ];
-
-        $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ["trno" => $trno]);
-      }
-
-
 
       return ['status' => $return, 'msg' => $msg];
     }
@@ -3959,17 +3783,7 @@ class sj
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from stockinfo where trno=?', 'delete', [$trno]);
     foreach ($data as $key => $value) {
-      switch ($config['params']['companyid']) {
-        case 10: //afti
-          $this->setservedsqitems($data[$key]->refx, $data[$key]->linex);
-          break;
-        case 60: //transpower
-          $this->setservedpoitems($data[$key]->porefx, $data[$key]->polinex);
-          break;
-        default:
-          $this->setserveditems($data[$key]->refx, $data[$key]->linex);
-          break;
-      }
+      $this->setservedsqitems($data[$key]->refx, $data[$key]->linex);
     }
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];

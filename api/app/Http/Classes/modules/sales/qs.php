@@ -46,7 +46,7 @@ class qs
   public $hqty = 'iss';
   public $damt = 'isamt';
   public $hamt = 'amt';
-  public $fields = ['trno', 'docno', 'dateid',  'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',  'wh', 'address', 'agent', 'branch', 'deptid', 'position', 'agentcno', 'industry', 'shipid', 'billid', 'deldate', 'tax', 'vattype', 'shipcontactid', 'billcontactid', 'industryid', 'revisionref', 'projid'];
+  public $fields = ['trno', 'docno', 'dateid',  'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',  'wh', 'address', 'agent', 'branch', 'deptid', 'position', 'agentcno', 'industry', 'shipid', 'billid', 'deldate', 'tax', 'vattype', 'shipcontactid', 'billcontactid', 'industryid', 'revisionref', 'projid','probability'];
   public $except = ['trno', 'dateid', 'due', 'deldate'];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -504,7 +504,7 @@ class qs
     data_set($col2, 'agentcno.class', 'sbccsreadonly');
 
     if ($companyid == 10 || $companyid == 12) {
-      $fields = ['dbranchname', 'ddeptname', 'yourref', ['cur', 'forex'], 'revisionref', 'projid'];
+      $fields = ['dbranchname', 'ddeptname', 'yourref', ['cur', 'forex'], 'revisionref', 'projid','probability'];
       $col3 = $this->fieldClass->create($fields);
       data_set($col3, 'dbranchname.required', true);
       data_set($col3, 'ddeptname.required', true);
@@ -609,7 +609,7 @@ class qs
     $data[0]['tax'] = '0';
     $data[0]['vattype'] = '';
     $data[0]['dvattype'] = '';
-    // $data[0]['probability'] = '';
+    $data[0]['probability'] = '';
     $data[0]['shipcontactid'] = '0';
     $data[0]['billcontactid'] = '0';
     $data[0]['creditinfo'] = '';
@@ -670,7 +670,7 @@ class qs
          ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname,
          client.tin, head.position, agent.tel  as agentcno, ifnull(concat(rc.category, '~',rc.reqtype),'') as industry,
          head.shipid, head.billid,head.optrno,head.tax,head.vattype,head.shipcontactid, head.billcontactid,head.creditinfo,
-         concat(head.tax, '~', head.vattype) as dvattype,ifnull(category.cat_name, '') as category,head.industryid,head.projid";
+         concat(head.tax, '~', head.vattype) as dvattype,ifnull(category.cat_name, '') as category,head.industryid,head.projid,head.probability";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -750,7 +750,7 @@ class qs
          ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname,
          client.tin, head.position, agent.tel  as agentcno, head.industry,
          head.shipid, head.billid,head.optrno,head.tax,head.vattype,head.shipcontactid, head.billcontactid,head.creditinfo,
-         concat(head.tax, '~', head.vattype) as dvattype,head.industryid,head.projid";
+         concat(head.tax, '~', head.vattype) as dvattype,head.industryid,head.projid,head.probability";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -960,22 +960,29 @@ class qs
       return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
     }
 
-    $prob = $this->coreFunctions->datareader("select probability as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
-    if ($prob == '0%' || $prob == '0' || $prob == '') {
+    //$prob = $this->coreFunctions->datareader("select probability as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
+    $prob =  $this->coreFunctions->getfieldvalue($this->head, "probability", "trno=?", [$trno]);
+    if ($prob == '0%' || $prob == '0' || $prob == '') { 
       return ['status' => false, 'msg' => 'Posting failed. Please check probability.'];
       // $stock = $this->openstock($trno,$config);
       // foreach ($stock as $key => $value) {
       //   $this->coreFunctions->execqry('update ' . $this->stock . ' set void=1 where trno=? and line=?', 'update', [$stock[$key]->trno, $stock[$key]->line]);
       //   $this->coreFunctions->execqry('update ' . $this->sstock . ' set void=1 where trno=? and line=?', 'update', [$stock[$key]->trno, $stock[$key]->line]);
       // }      
-    } else {
-      $probline = $this->coreFunctions->datareader("select line as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
-      $this->coreFunctions->execqry("update qscalllogs set probability = '100%' where trno=? and line=?", 'update', [$trno, $probline]);
+    } 
+    else {
+      //$probline = $this->coreFunctions->datareader("select line as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
+      $this->coreFunctions->execqry("update ".$this->head." set probability = '100%' where trno=? ", 'update', [$trno]);
     }
 
     $ship = $this->coreFunctions->getfieldvalue("headinfotrans", "isshipmentnotif", "trno=?", [$trno]);
     if ($ship == '') {
       return ['status' => false, 'msg' => 'Posting failed. Shipment Permit Notification is required.'];
+    }
+
+    $ship = $this->coreFunctions->getfieldvalue($this->head, "ispaymentnotif", "trno=?", [$trno]);
+    if ($ship == '') {
+      return ['status' => false, 'msg' => 'Posting failed. Collection details are required.'];
     }
 
     $override = $this->othersClass->checkAccess($config['params']['user'], 1729);
@@ -1026,14 +1033,14 @@ class qs
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,branch,deptid,
       position, agentcno, industry, billid, shipid,optrno, shipcontactid, billcontactid,deldate,tax,vattype,pdate,creditinfo,
-      termsdetails,crtrno,industryid)
+      termsdetails,crtrno,industryid,probability,ispaymentnotif)
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       $podate,head.cur,head.branch,head.deptid, head.position, head.agentcno, head.industry, head.billid,
       head.shipid,head.optrno,head.shipcontactid,head.billcontactid,head.deldate,head.tax,head.vattype,
       $podate ,head.creditinfo,
-      head.termsdetails,head.crtrno,head.industryid
+      head.termsdetails,head.crtrno,head.industryid,head.probability,head.ispaymentnotif
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $this->coreFunctions->logconsole($qry);
@@ -1138,12 +1145,12 @@ class qs
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
   yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,agent,branch,deptid, 
   position, agentcno, industry, billid, shipid,optrno,shipcontactid,billcontactid,deldate,tax,vattype,creditinfo,
-  termsdetails,crtrno,sgdrate,industryid)
+  termsdetails,crtrno,sgdrate,industryid,probability,ispaymentnotif)
   select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
   head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
   head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.agent,head.branch,head.deptid,
   head.position, head.agentcno, head.industry, head.billid, head.shipid,head.optrno,head.shipcontactid,head.billcontactid,head.deldate,head.tax,head.vattype,head.creditinfo,
-  head.termsdetails,head.crtrno,head.sgdrate,head.industryid
+  head.termsdetails,head.crtrno,head.sgdrate,head.industryid,head.probability,head.ispaymentnotif
   from (" . $this->hhead . " as head 
   left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)
   left join client on client.client=head.client
@@ -2125,19 +2132,19 @@ class qs
           }
         } // end foreach
 
-        //calllogs 
-        $checkingcalllogs = $this->coreFunctions->datareader("select trno as value from qscalllogs where trno = ? ", [$trno], '', true);
-        if ($checkingcalllogs == 0) {
-          $data3 = [
-            'trno' => $trno,
-            'line' => 1,
-            'contact' => $data[0]->contactname,
-            'probability' => '25%',
-            'dateid' => $currentdate,
-            'starttime' => $currenttime
-          ];
-          $this->coreFunctions->sbcinsert('qscalllogs', $data3);
-        }
+        //calllogs  remove na as per sir TJ 6/27/2026
+        // $checkingcalllogs = $this->coreFunctions->datareader("select trno as value from qscalllogs where trno = ? ", [$trno], '', true);
+        // if ($checkingcalllogs == 0) {
+        //   $data3 = [
+        //     'trno' => $trno,
+        //     'line' => 1,
+        //     'contact' => $data[0]->contactname,
+        //     'probability' => '25%',
+        //     'dateid' => $currentdate,
+        //     'starttime' => $currenttime
+        //   ];
+        //   $this->coreFunctions->sbcinsert('qscalllogs', $data3);
+        // }
       } //end if
     } //end foreach
 

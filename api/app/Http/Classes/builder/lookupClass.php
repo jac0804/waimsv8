@@ -24,6 +24,7 @@ use App\Http\Requests;
 use App\Http\Classes\Logger;
 use App\Http\Classes\filesaving;
 use App\Http\Classes\common\payrollcommon;
+use App\Http\Classes\lookup\productportallookup;
 use DateTime;
 use DateInterval;
 
@@ -48,6 +49,7 @@ class lookupClass
   private $barangaylookup;
   private $autoservlookup;
   private $payrollcommon;
+  private $productportallookup;
 
 
   public function __construct()
@@ -70,6 +72,7 @@ class lookupClass
     $this->barangaylookup = new barangaylookup;
     $this->autoservlookup = new autoservlookup;
     $this->payrollcommon = new payrollcommon;
+    $this->productportallookup = new productportallookup;
   }
 
   //declaration of function to avoid double function
@@ -1909,6 +1912,18 @@ class lookupClass
 
       case 'lookupreimbursement':
       return $this->lookupreimbursement($config);
+      break;
+      
+      //sportrunner
+      case 'lookupcarbrand':
+          return $this->productportallookup->lookupcarbrand($config);
+        break;
+      case 'lookupposition':
+          return $this->productportallookup->lookupposition($config);
+      break;
+
+      case 'lookuptype':
+          return $this->lookuptype($config);
       break;
 
 
@@ -6042,10 +6057,19 @@ class lookupClass
 
     $data = $this->sqlquery->getpendingsodetailsperserial($config);
 
-    $plotsetup = array(
-      'plottype' => 'callback',
-      'action' => 'addserial'
-    );
+    if($this->companysetup->getissuemultipleexpiry($config['params'])){
+      $plotsetup = array(
+        'plottype' => 'callback',
+        //'action' => 'addserial'
+        'action' => 'issuemultipleexpiry'
+      );
+    }else{
+      $plotsetup = array(
+        'plottype' => 'callback',
+        'action' => 'addserial'
+      );
+    }
+    
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   } // end function
 
@@ -6138,7 +6162,6 @@ class lookupClass
     ini_set('memory_limit', '-1');
     ini_set('max_execution_time', 0);
 
-
     if ($config['params']['companyid'] == 56) {
 
       // $msg = 'UOM cannot be blank -' . $item[0]->barcode;
@@ -6159,9 +6182,8 @@ class lookupClass
       // return ['status' => false, 'msg' => $msg];
     }
 
-
-
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $ismultiloc = $this->companysetup->getissuemultipleexpiry($config['params']);
     $lookupsetup = array(
       'type' => 'singlesearch',
       'actionsearch' => 'searchitem',
@@ -6466,10 +6488,29 @@ class lookupClass
         break;
 
       default:
-        $plotsetup = array(
-          'plottype' => 'callback',
-          'action' => 'additem'
-        );
+        if($ismultiloc){
+          switch($config['params']['doc']){
+            case 'SJ':case 'DM': case 'TS':
+                $plotsetup = array(
+                  'plottype' => 'callback',
+                  'action' => 'issuemultipleexpiry'
+                );
+              break;
+            default:
+              $plotsetup = array(
+                'plottype' => 'callback',
+              'action' => 'additem'
+              );
+            break;
+          }
+          
+        }else{
+          $plotsetup = array(
+            'plottype' => 'callback',
+            'action' => 'additem'
+          );
+        }
+        
         break;
     }
 
@@ -11428,6 +11469,8 @@ class lookupClass
     // lookup columns
     $cols = array(
       array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'client', 'label' => 'Customer Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'clientname', 'label' => 'Customer Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'bank', 'label' => 'Bank', 'align' => 'left', 'field' => 'bank', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'branch', 'label' => 'Branch', 'align' => 'left', 'field' => 'branch', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'checkdate', 'label' => 'Check Date', 'align' => 'left', 'field' => 'checkdate', 'sortable' => true, 'style' => 'font-size:16px;'),
@@ -11435,9 +11478,10 @@ class lookupClass
       array('name' => 'amount', 'label' => 'Amount', 'align' => 'left', 'field' => 'amount', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $qry = "select d.trno,d.line,concat(d.trno,'~',d.line) as keyid,$line as reline,$betrno as betrno,$beline as beline,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate
+    $qry = "select d.trno,d.line,concat(d.trno,'~',d.line) as keyid,$line as reline,$betrno as betrno,$beline as beline,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate,client.client,client.clientname
             from hrcdetail as d
             left join hrchead as h on h.trno=d.trno
+            left join client on client.client = d.client
             where ortrno = 0 and retrno=0";
 
     $data = $this->coreFunctions->opentable($qry);
@@ -12642,7 +12686,7 @@ class lookupClass
   public function lookuparea($config)
   {
     //default
-    $plotting = array('area' => 'area');
+    $plotting = array('area' => 'area', 'province' => 'province');
     $plottype = 'plothead';
     $title = 'List of Area';
 
@@ -12657,11 +12701,21 @@ class lookupClass
       'plotting' => $plotting
     );
     // lookup columns
-    $cols = [
-      ['name' => 'area', 'label' => 'Area', 'align' => 'left', 'field' => 'area', 'sortable' => true, 'style' => 'font-size:16px;']
-    ];
-
-    $qry = "select distinct area from client order by area";
+      switch ($config['params']['companyid']) {
+      case 59: //roosevelt
+        $cols = [
+          ['name' => 'area', 'label' => 'Area', 'align' => 'left', 'field' => 'area', 'sortable' => true, 'style' => 'font-size:16px;'],
+          ['name' => 'province', 'label' => 'province', 'align' => 'left', 'field' => 'province', 'sortable' => true, 'style' => 'font-size:16px;']
+        ];
+        $qry = "select distinct area, province from client where area <> '' and area is not null order by area";
+        break;
+      default:
+        $cols = [
+          ['name' => 'area', 'label' => 'Area', 'align' => 'left', 'field' => 'area', 'sortable' => true, 'style' => 'font-size:16px;']
+        ];
+        $qry = "select distinct area from client order by area";
+        break;
+    }
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   } //end function
@@ -12874,6 +12928,11 @@ class lookupClass
         $plotting = array('brand' => 'brand', 'brandname' => 'brand', 'brandid' => 'brandid');
         $plottype = 'plotledger';
         break;
+
+      case 'lookupbrand2':
+      $plotting = array('brandname2' => 'brand', 'brandid2' => 'brandid');
+      $plottype = 'plothead';
+      break;
     }
     $title = 'List of Brand';
 
@@ -19991,7 +20050,7 @@ class lookupClass
         select 'Credit Card' as field1";
         break;
       case 'lookupyesno':
-        $plotting = array('isshipmentnotif' => 'field1');
+        $plotting = array('isshipmentnotif' => 'field1','ispaymentnotif'=>'field1');
         $plottype = 'plotledger';
         $title = '';
         $label = '';
@@ -25652,6 +25711,30 @@ class lookupClass
               select 'GAS' as reimbursement
               union all
               select 'MEAL' as reimbursement";
+    $data = $this->coreFunctions->opentable($query);
+ 
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+  public function lookuptype($config){
+   $title = 'List of Type';
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:100%;max-width:100%;'
+    );
+    $plotting = array('type' => 'type');
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+    $cols = array(
+      array('name' => 'type', 'label' => 'Type', 'align' => 'left', 'field' => 'type', 'sortable' => true, 'style' => 'font-size:16px;')
+    ); 
+    $query = "select 'LOWER' as type
+              union all
+              select 'UPPER' as type";
     $data = $this->coreFunctions->opentable($query);
  
 

@@ -45,6 +45,8 @@ class Logger
       $table = isset($config['docmodule']) ? $config['docmodule']->tablelogs : '';
     }
 
+    if ($table == '') return true;
+
     $current_timestamp = $this->getCurrentTimeStamp();
 
     switch ($table) {
@@ -170,11 +172,11 @@ class Logger
     $current_timestamp = $this->getCurrentTimeStamp();
     $current_year = $this->getCurrentYear();
     $current_month = $this->getCurrentMonth();
-    $username = $this->coreFunctions->datareader("select case e.alias when '' then SUBSTRING_INDEX(e.empfirst, ' ', 1) else e.alias end AS value from  employee as e where e.idbarcode ='".$user."'");
-    if($username == ''){
+    $username = $this->coreFunctions->datareader("select case e.alias when '' then SUBSTRING_INDEX(e.empfirst, ' ', 1) else e.alias end AS value from  employee as e where e.idbarcode ='" . $user . "'");
+    if ($username == '') {
       $username = $user;
     }
-    $textlog = $username.' - '.$current_timestamp;
+    $textlog = $username . ' - ' . $current_timestamp;
 
     if (!empty($date)) {
       $current_month = date("M", strtotime($date));
@@ -188,23 +190,22 @@ class Logger
 
     #one line per year per client
     #if existing, dont need to update/insert
-    
+
     $checkqry = "select line as value from $table where clientid = $clientid and year = $current_year and $current_month <> '' limit 1";
     $check = $this->coreFunctions->datareader($checkqry);
-    
+
     $data = ['clientid' => $clientid, 'year' => $current_year, $current_month => $textlog];
-    if(empty($check)){
+    if (empty($check)) {
 
       $onelineqry = "select line as value from $table where clientid = $clientid and year = $current_year limit 1";
       $onelineexist = $this->coreFunctions->datareader($onelineqry);
-      if(!empty($onelineexist)){
-        $this->coreFunctions->sbcupdate($table, $data, ['clientid' => $clientid,'year' => $current_year]);
-      }else{
+      if (!empty($onelineexist)) {
+        $this->coreFunctions->sbcupdate($table, $data, ['clientid' => $clientid, 'year' => $current_year]);
+      } else {
         $this->coreFunctions->sbcinsert($table, $data);
-
       }
     }
-    
+
     return true;
   } //END WRITE LOG  
 

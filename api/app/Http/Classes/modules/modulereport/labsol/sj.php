@@ -430,6 +430,7 @@ class sj
         $itemname = $data[$i]['itemname'] . ' ' . $data[$i]['loc'] . ' ' . $data[$i]['expiry'];
         $qty = number_format($data[$i]['qty'], 0);
         $uom = $data[$i]['uom'];
+        $disc = $data[$i]['disc'];
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
 
@@ -440,7 +441,7 @@ class sj
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
-
+        $totalamt = 0;
         $maxrow = $this->othersClass->getmaxcolumn([$arr_c, $arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_ext]);
         for ($r = 0; $r < $maxrow; $r++) {
           // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false)
@@ -451,6 +452,7 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $totalamt = $data[$i]['amt'] * $data[$i]['qty'];
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
@@ -458,7 +460,37 @@ class sj
           PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '190', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '260', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($totalamt, 2), '', 'R', false, 1, '624', '', false, 1);
+        }
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100);
+              $less = round($totalamt * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
+          }
+          $discamt = number_format($discamt, 2);
+
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(100, 0, '', '', 'C', false, 0, '15', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '55', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '190', '', false, 1);
+          PDF::MultiCell(300, 0, 'Discount ' . $disc, '', 'L', false, 0, '260', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '520', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '624', '', false, 1);
         }
 
         $totalext += $data[$i]['ext'];
@@ -819,13 +851,14 @@ class sj
         $amt = number_format($data[$i]['amt'], 2);
         $ext = number_format($data[$i]['ext'], 2);
         $uom = $data[$i]['uom'];
+        $disc = $data[$i]['disc'];
 
         $arr_uom = $this->reporter->fixcolumn([$uom], '10', 0);
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '150', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
-
+        $totalamt = 0;
         $maxrow = $this->othersClass->getmaxcolumn([$arr_uom, $arr_itemname, $arr_qty, $arr_amt, $arr_ext]);
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', 10);
@@ -834,13 +867,44 @@ class sj
           $item = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
+          $totalamt = $data[$i]['amt'] * $data[$i]['qty'];
 
           PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $qty, '', 'R', false, 0, '-39', '', false, 1);
           PDF::MultiCell(100, 0, $uom, '', 'L', false, 0, '70', '', false, 1);
           PDF::MultiCell(450, 0, $item, '', 'L', false, 0, '120', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '545', '', false, 1);
-          PDF::MultiCell(100, 0, $sub, '', 'R', false, 1, '658', '', false, 1);
+          PDF::MultiCell(100, 0, number_format($totalamt, 2), '', 'R', false, 1, '658', '', false, 1);
+        }
+        if ($disc != '') {
+          $discamt = 0;
+          // Hatiin by "/"
+          $parts = explode("/", $disc);
+
+          foreach ($parts as $d) {
+            $d = trim($d); // tanggal spaces
+            if (strpos($d, '%') !== false) {
+              // Remove % sign then convert to number
+              $percent = floatval(str_replace('%', '', $d));
+              // $less = $total * ($percent / 100); 
+              $less = round($totalamt * ($percent / 100), 2);
+              $discamt += $less;
+            } else {
+              // Fixed amount
+              // $less = floatval($d);
+              $less = round(floatval($d), 2);
+              $discamt += $less;
+            }
+          }
+          $discamt = number_format($discamt, 2);
+
+
+          PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(100, 0, '', '', 'R', false, 0, '-39', '', false, 1);
+          PDF::MultiCell(100, 0, '', '', 'L', false, 0, '70', '', false, 1);
+          PDF::MultiCell(450, 0, 'Discount' . ' ' . $disc, '', 'L', false, 0, '120', '', false, 1);
+          PDF::MultiCell(100, 0, $disc, '', 'R', false, 0, '545', '', false, 1);
+          PDF::MultiCell(100, 0, '-' . $discamt, '', 'R', false, 1, '658', '', false, 1);
         }
 
         $totalext += $data[$i]['ext'];
@@ -962,7 +1026,7 @@ class sj
       PDF::Cell($indent, $lineHeight, '', 0, 0); // empty space
       PDF::Cell($labelWidth, $lineHeight, $label != "" ? '' : '', 0, 0);
       PDF::Cell($colonWidth, $lineHeight, '', 0, 0);
-      if($label == 'Business Address'){
+      if ($label == 'Business Address') {
         PDF::SetFont($font, '', 13);
       }
       PDF::Cell(0, $lineHeight, $value, 0, 1);
@@ -1007,7 +1071,7 @@ class sj
       for ($i = 0; $i < count($data); $i++) {
         $maxrow = 1;
 
-        $itemname = $data[$i]['itemname'] . ' ' . $data[$i]['loc'] . ' ' . $data[$i]['expiry'];// $data[$i]['itemname'];
+        $itemname = $data[$i]['itemname'] . ' ' . $data[$i]['loc'] . ' ' . $data[$i]['expiry']; // $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 2);
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
@@ -1037,8 +1101,8 @@ class sj
       }
       PDF::MultiCell(0, 0, '', '', 'L', false, 1);
       PDF::MultiCell(10, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(720, 23.5, 'Notes: '.$data[0]['rem'], '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      
+      PDF::MultiCell(720, 23.5, 'Notes: ' . $data[0]['rem'], '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+
       $this->getlines($j);
       PDF::setCellPaddings(0, 0, 0, 0);
       $vat = 0;

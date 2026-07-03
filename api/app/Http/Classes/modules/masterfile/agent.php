@@ -242,6 +242,10 @@ class agent
       array_push($fields, 'agentcode', 'deptname', 'branchname', 'empcode');
     }
 
+    if ($companyid == 64) { //excelin
+      $fields = ['client', 'clientname', 'alias', 'addr', 'start', 'clientstatus', 'pricegroup', 'dwhname', 'pword'];
+    }
+
     if ($companyid == 52) { //technolab
       $fields = ['client', 'clientname', 'addr', 'start', 'clientstatus', 'alias'];
     }

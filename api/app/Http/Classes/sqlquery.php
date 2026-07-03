@@ -1577,6 +1577,7 @@ class sqlquery
 
     $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
+    $client = (isset($config['params']['client']) ? $config['params']['client'] : '');
     $moduletype = $config['params']['moduletype'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $addedfields = "";
@@ -1732,7 +1733,7 @@ class sqlquery
 
 
     //itemsearch
-    $qry .= "select sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
+    $qry .= "select '".$client."' as client,sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
     " . $itemname . "," . $uomfield . ",uom1.factor" . $amtfield . ",brand,ifnull(cls.cl_name,'') as class,body,
     ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
     round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color,
@@ -6002,7 +6003,7 @@ class sqlquery
     }
 
     // var_dump($bal);
-    $companyid = $config['params']['companyid'];
+    $companyid = isset($config['params']['companyid']) ? $config['params']['companyid'] : 0;
     $arap = $this->coreFunctions->getfieldvalue('gldetail', 'sum(db+cr)', 'trno=? and line=?', [$refx, $linex]);
     if ($istotal) {
       $alias = $this->coreFunctions->getfieldvalue('coa', 'left(alias,2)', 'acno=?', [$acno]);
@@ -6176,10 +6177,10 @@ class sqlquery
       $addonfields2 = ",ifnull(i.clientname,'') as planholder ";
       $addonfields3 = ",'' as planholder ";
     }
-    $addrem = " gldetail.rem ";
-    if ($config['params']['companyid'] == 37) { //megacrystal
-      $addrem = " (case when glhead.doc = 'SJ' then glhead.rem else gldetail.rem end) ";
-    }
+    $addrem = " if(gldetail.rem<>'',gldetail.rem,glhead.rem)  ";
+    // if ($config['params']['companyid'] == 37) { //megacrystal
+    //   $addrem = " (case when glhead.doc = 'SJ' then glhead.rem else gldetail.rem end) ";
+    // }
     if ($systype == 'REALESTATE') {
       $re_fields = ',gldetail.phaseid,gldetail.modelid,gldetail.blklotid,gldetail.amenityid,gldetail.subamenityid';
     }

@@ -2043,7 +2043,7 @@ class po
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
-        $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 5];
+        $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 5, 'iscsv' => 0];
         $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
         $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
@@ -4148,7 +4148,7 @@ class po
     if (!empty($data)) {
       return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data, 'pricelevel' => $data2];
     } else {
-      return ['status' => true, 'msg' => 'No Latest price found...', 'data' => $data, 'pricelevel' => $data2];
+      return ['status' => false, 'msg' => 'No Latest price found...', 'data' => $data, 'pricelevel' => $data2];
     }
   } // end function
 

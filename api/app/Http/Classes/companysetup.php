@@ -23,7 +23,7 @@ class companysetup
   private $tax;
   private $serial;
   public $isexpiry;
-  private $checkbelowcost;
+  private $checkbelowcost = false;
   private $wh;
   private $module;
   private $companyname;
@@ -134,6 +134,7 @@ class companysetup
   public $ismultiloc = false;
   public $isautoservice = false;
   public $ismirrortrans = false;
+  public $issuemultipleexpiry = false;
 
 
   public function __construct()
@@ -237,6 +238,23 @@ class companysetup
     $this->ismirrortrans = false;
 
     switch ($params['companyid']) {
+      case 70: //sportrunner
+        $this->clientlength = 15;
+        $this->documentlength = 15;
+        $this->barcodelength = 0;
+        $this->tax = 12;
+        $this->companyname = 'SPORTRUNNER';
+        $this->systemtype = 'PRODUCTPORTAL';
+        $this->isexpiry = false;
+        $this->isproject = false;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->istodo = false;
+        $this->ispurchasedisc = false;
+        $this->masterlimit = 500;
+        $this->reportpath = "\Http\Classes\modules\modulereport\sportrunner\\";
+        $this->ismysql8 = true;
+        break;
       case 69: //CEMPHIL
         $this->clientlength = 15;
         $this->documentlength = 15;
@@ -950,7 +968,7 @@ class companysetup
         $this->reportpath = "\Http\Classes\modules\modulereport\cdo\\";
         $this->showserialrem = false;
         $this->isshareinv = true;
-        // $this->ismirrortrans = true;
+        $this->ismirrortrans = true;
         break;
       case 39: //CBBSI
         $this->clientlength = 0;
@@ -1315,7 +1333,7 @@ class companysetup
         $this->documentlength = 15;
         $this->barcodelength = 0;
         $this->tax = 12;
-        $this->serial = false;
+        $this->serial = true;
         $this->companyname = 'LabSolution Technologies Inc.';
         $this->systemtype = 'AIMS';
         $this->isexpiry = true;
@@ -1328,6 +1346,7 @@ class companysetup
         $this->masterlimit = 500;
         $this->isshowmanual = true;
         $this->isglc = true;
+        $this->issuemultipleexpiry = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\labsolcebu\\";
         break;
       case 22: // petfoods eipi
@@ -1806,8 +1825,8 @@ class companysetup
         $this->showdept = false;
         $this->isshowtsso = false;
         $this->showloading = true;
-        $this->socketserver = 'https://op.sbc.ph:25384'; //'http://localhost:3000';//http://demo.queuing.solutionbasecorp.com:25763
-        $this->socketnotify = true;
+        // $this->socketserver = 'https://op.sbc.ph:25384'; //'http://localhost:3000';//http://demo.queuing.solutionbasecorp.com:25763
+        // $this->socketnotify = true;
         $this->isautoservice = true;
         break;
     }
@@ -2016,6 +2035,9 @@ class companysetup
             break;
           case 'AUTOSERV':
             $modulelist = ['masterfile', 'itemmaster', 'autoinquiry', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
+            break;
+          case 'PRODUCTPORTAL':
+            $modulelist = ['productportal', 'transactionutilities', 'accountutilities', 'dashboard'];
             break;
           case 'EAPPLICATION':
             $modulelist = ['operation', 'receivable', 'reportlist', 'masterfile', 'announcement', 'dashboard'];
@@ -3032,5 +3054,11 @@ class companysetup
   {
     $this->companylist($params);
     return $this->ismirrortrans;
+  }
+
+  public function getissuemultipleexpiry($params)
+  {
+    $this->companylist($params);
+    return $this->issuemultipleexpiry;
   }
 }

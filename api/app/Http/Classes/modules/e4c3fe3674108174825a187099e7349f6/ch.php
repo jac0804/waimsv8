@@ -1128,8 +1128,14 @@ class ch
     $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);
 
     //compute reverse
-    $amt = $ext / $qty;
-    $hamt = $amt / $factor;
+    if($qty<>0){
+      $amt = $ext / $qty;
+      $hamt = $amt / $factor;
+    }else{
+      $amt =0;
+      $hamt=0;
+    }
+   
 
     $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);

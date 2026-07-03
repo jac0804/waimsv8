@@ -488,40 +488,7 @@ class othersClass
 
     if ($exceptnum) goto StringOnlyHere;
 
-    $number = [];
-    array_push($number, 'isqty', 'isqty2', 'isqty3', 'iss', 'rrqty', 'qty', 'ext', 'rrcost', 'cost', 'isamt', 'amt', 'commamt');
-    array_push($number, 'range1', 'range2', 'sssee', 'ssser', 'eccer', 'ssstotal', 'mpfee', 'mpfer');
-    array_push($number, 'reghrs', 'absdays', 'latehrs', 'underhrs', 'ndiffhrs', 'ndiffot');
-    array_push($number, 'commvat', 'forex', 'crlimit', 'rrqty', 'freight', 'oqty', 'rrqty2', 'rrqty3', 'begqty', 'db', 'cr');
-    array_push($number, 'fdb', 'fcr', 'damt', 'reqqty', 'qa', 'rate', 'intclient', 'budget', 'forexid', 'critical', 'reorder');
-    array_push($number, 'amt2', 'icondition', 'sgdrate', 'appamt', 'famt', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9', 'markup');
-    array_push($number, 'tcp', 'orderterm', 'vat', 'amount', 'percentdisc', 'deductpercent', 'months', 'perc1', 'perc2', 'perc3');
-    array_push($number, 'perc4', 'perc5', 'perc6', 'perc7', 'perc8', 'perc9', 'perc10', 'deptid', 'noofitems', 'gcsubnoofitems');
-    array_push($number, 'addon', 'damt', 'dqty', 'tqty', 'diqty', 'floor', 'subproject', 'ar', 'ap', 'paid', 'boq', 'pr', 'po');
-    array_push($number, 'rr', 'jo', 'jc', 'mi', 'bal', 'drate', 'costcenterid', 'rcmonthjan', 'rcmonthfeb', 'rcmonthmar', 'rcmonthapr');
-    array_push($number, 'rcmonthmay', 'rcmonthjun', 'rcmonthjul', 'rcmonthaug', 'rcmonthsep', 'rcmonthoct', 'rcmonthnov', 'rcmonthdec');
-    array_push($number, 'amt1', 'amt2', 'amt3', 'amt4', 'amt5', 'amt10', 'amt11', 'amt12', 'amt13', 'amt14', 'leaserate', 'acrate');
-    array_push($number, 'cusarate', 'mcharge', 'percentsales', 'ms_freight', 'purchase', 'projectprice', 'purchaserid', 'priolvl');
-    array_push($number, 'r', 'w', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'delcharge', 'ocp', 'dollarprice', 'stageid', 'clientid');
-    array_push($number, 'dropoffwh', 'whid2', 'intransit', 'truckid', 'weight', 'capacity', 'reservationfee', 'farea', 'fpricesqm');
-    array_push($number, 'ftcplot', 'ftcphouse', 'fma1', 'fma2', 'fma3', 'finterestrate', 'fsellingpricegross', 'fdiscount');
-    array_push($number, 'fsellingpricenet', 'fmiscfee', 'fcontractprice', 'fmonthlydp', 'fmonthlyamortization', 'ffi', 'fmri');
-    array_push($number, 'cash', 'annual', 'semi', 'monthly', 'quarterly', 'processfee', 'dp', 'pf', 'nf', 'qty1', 'qty2', 'tqty');
-    array_push($number, 'batchsize', 'yield', 'categoryid', 'surcharge', 'leadfrom', 'leadto', 'nobidtotal', 'branch', 'duration');
-    array_push($number, 'distance', 'odostart', 'odoend', 'fuelconsumption', 'mktg', 'dc', 'bo', 'card', 'openingintro', 'e2e');
-    array_push($number, 'rebate', 'rtv', 'itemid', 'downpayment', 'citrno', 'projectid', 'phaseid', 'modelid', 'blklotid', 'amenityid');
-    array_push($number, 'subamenityid', 'ordernum', 'appline', 'valamt', 'cumsmt', 'delivery', 'consigneeid', 'shipperid', 'depdb');
-    array_push($number, 'depcr', 'catrno', 'shiftid', 'consignid', 'waivedspecs', 'fline', 'pitrno', 'petrno', 'maxqty', 'penalty');
-    array_push($number, 'batchid', 'customerid', 'acnoid', 'interest', 'pfnf', 'value', 'value2', 'mincome', 'mexp', 'branchid');
-    array_push($number, 'whid', 'othrs', 'earlyothrs', 'apothrs', 'apothrsextra', 'apndiffhrs', 'apndiffothrs', 'collection', 'deposit', 'begbal', 'endingbal');
-    array_push($number, 'balance', 'petty', 'avecost', 'prevamt', 'amount2', 'supervisorid', 'runtime', 'gp', 'roleid', 'divid');
-    array_push($number, 'isbrgy', 'price', 'empstatusid', 'rctrno', 'rcline', 'notedbyid', 'recappid', 'appdisid', 'tobranchid');
-    array_push($number, 'supid', 'ndesid', 'sectid', 'todeptid', 'countsupervisor', 'countapprover', 'count', 'charge1');
-    array_push($number, 'namt', 'namt2', 'nfamt', 'namt4', 'namt5', 'namt6', 'namt7', 'iseq', 'first', 'last', 'jobid', 'jobid2', 'branchid2', 'roleid2', 'loanlimit');
-    array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
-    array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
-    array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
-    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc');
+    $number = $this->getNumberFields();
 
     if ($companyid == 8 && $doc == 'PM') { //maxipro
       array_push($number, 'wac', 'jr');
@@ -775,15 +742,58 @@ class othersClass
     array_push($date, 'scheddate', 'receivedate', 'schedstarttime', 'schedendtime', 'warranty', 'trainee', 'enddate', 'podate', 'leasedate');
     array_push($date, 'schedin', 'schedout', 'deldate', 'returndate_sup', 'dateclose', 'startdate', 'effectivity', 'createdate', 'seendate');
     array_push($date, 'donedate', 'deadline', 'origdeadline', 'deadline2', 'conndate', 'disconndate', 'expirydate', 'refdate', 'datefrom');
-    array_push($date, 'dateto', 'shipdate', 'ordate', 'wbdate', 'dateid2', 'submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
+    array_push($date, 'dateto', 'shipdate', 'wbdate', 'dateid2', 'submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
     array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
     array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
     array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
-    array_push($date, 'regdate', 'promostart', 'promoend', 'lock', 'lasttrans', 'sjdate', 'printcheck');
+    array_push($date, 'regdate', 'promostart', 'promoend', 'checkerdate', 'dispatchdate', 'due', 'recondate', 'lock', 'lasttrans', 'sjdate', 'printcheck');
+    array_push($date, 'logisticdate', 'checkerrcvdate', 'forloaddate', 'checkerdone', 'releasedate', 'packdate', 'reservationdate', 'tripdate');
 
     return $date;
+  }
+
+
+  // separate function for date fields to reuse sanitizekeyfield function in outher process
+  function getNumberFields()
+  {
+    $number = [];
+    array_push($number, 'isqty', 'isqty2', 'isqty3', 'iss', 'rrqty', 'qty', 'ext', 'rrcost', 'cost', 'isamt', 'amt', 'commamt');
+    array_push($number, 'range1', 'range2', 'sssee', 'ssser', 'eccer', 'ssstotal', 'mpfee', 'mpfer');
+    array_push($number, 'reghrs', 'absdays', 'latehrs', 'underhrs', 'ndiffhrs', 'ndiffot');
+    array_push($number, 'commvat', 'forex', 'crlimit', 'rrqty', 'freight', 'oqty', 'rrqty2', 'rrqty3', 'begqty', 'db', 'cr');
+    array_push($number, 'fdb', 'fcr', 'damt', 'reqqty', 'qa', 'rate', 'intclient', 'budget', 'forexid', 'critical', 'reorder');
+    array_push($number, 'amt2', 'icondition', 'sgdrate', 'appamt', 'famt', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9', 'markup');
+    array_push($number, 'tcp', 'orderterm', 'vat', 'amount', 'percentdisc', 'deductpercent', 'months', 'perc1', 'perc2', 'perc3');
+    array_push($number, 'perc4', 'perc5', 'perc6', 'perc7', 'perc8', 'perc9', 'perc10', 'deptid', 'noofitems', 'gcsubnoofitems');
+    array_push($number, 'addon', 'damt', 'dqty', 'tqty', 'diqty', 'floor', 'subproject', 'ar', 'ap', 'paid', 'boq', 'pr', 'po');
+    array_push($number, 'rr', 'jo', 'jc', 'mi', 'bal', 'drate', 'costcenterid', 'rcmonthjan', 'rcmonthfeb', 'rcmonthmar', 'rcmonthapr');
+    array_push($number, 'rcmonthmay', 'rcmonthjun', 'rcmonthjul', 'rcmonthaug', 'rcmonthsep', 'rcmonthoct', 'rcmonthnov', 'rcmonthdec');
+    array_push($number, 'amt1', 'amt2', 'amt3', 'amt4', 'amt5', 'amt10', 'amt11', 'amt12', 'amt13', 'amt14', 'leaserate', 'acrate');
+    array_push($number, 'cusarate', 'mcharge', 'percentsales', 'ms_freight', 'purchase', 'projectprice', 'purchaserid', 'priolvl');
+    array_push($number, 'r', 'w', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'delcharge', 'ocp', 'dollarprice', 'stageid', 'clientid');
+    array_push($number, 'dropoffwh', 'whid2', 'intransit', 'truckid', 'weight', 'capacity', 'reservationfee', 'farea', 'fpricesqm');
+    array_push($number, 'ftcplot', 'ftcphouse', 'fma1', 'fma2', 'fma3', 'finterestrate', 'fsellingpricegross', 'fdiscount');
+    array_push($number, 'fsellingpricenet', 'fmiscfee', 'fcontractprice', 'fmonthlydp', 'fmonthlyamortization', 'ffi', 'fmri');
+    array_push($number, 'cash', 'annual', 'semi', 'monthly', 'quarterly', 'processfee', 'dp', 'pf', 'nf', 'qty1', 'qty2', 'tqty');
+    array_push($number, 'batchsize', 'yield', 'categoryid', 'surcharge', 'leadfrom', 'leadto', 'nobidtotal', 'branch', 'duration');
+    array_push($number, 'distance', 'odostart', 'odoend', 'fuelconsumption', 'mktg', 'dc', 'bo', 'card', 'openingintro', 'e2e');
+    array_push($number, 'rebate', 'rtv', 'itemid', 'downpayment', 'citrno', 'projectid', 'phaseid', 'modelid', 'blklotid', 'amenityid');
+    array_push($number, 'subamenityid', 'ordernum', 'appline', 'valamt', 'cumsmt', 'delivery', 'consigneeid', 'shipperid', 'depdb');
+    array_push($number, 'depcr', 'catrno', 'shiftid', 'consignid', 'waivedspecs', 'fline', 'pitrno', 'petrno', 'maxqty', 'penalty');
+    array_push($number, 'batchid', 'customerid', 'acnoid', 'interest', 'pfnf', 'value', 'value2', 'mincome', 'mexp', 'branchid');
+    array_push($number, 'whid', 'othrs', 'earlyothrs', 'apothrs', 'apothrsextra', 'apndiffhrs', 'apndiffothrs', 'collection', 'deposit', 'begbal', 'endingbal');
+    array_push($number, 'balance', 'petty', 'avecost', 'prevamt', 'amount2', 'supervisorid', 'runtime', 'gp', 'roleid', 'divid');
+    array_push($number, 'isbrgy', 'price', 'empstatusid', 'rctrno', 'rcline', 'notedbyid', 'recappid', 'appdisid', 'tobranchid');
+    array_push($number, 'supid', 'ndesid', 'sectid', 'todeptid', 'countsupervisor', 'countapprover', 'count', 'charge1');
+    array_push($number, 'namt', 'namt2', 'nfamt', 'namt4', 'namt5', 'namt6', 'namt7', 'iseq', 'first', 'last', 'jobid', 'jobid2', 'branchid2', 'roleid2', 'loanlimit');
+    array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
+    array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
+    array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
+    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc');
+
+    return $number;
   }
 
   function sbcdateformat($date, $c = '-', $f = 'Y-m-d')
@@ -2973,7 +2983,7 @@ class othersClass
         }
 
         $date = $this->getCurrentTimeStamp();
-        $data = ['postdate' => $date, 'postedby' => $user, 'tmpuser' => ''];
+        $data = ['postdate' => $date, 'postedby' => $user, 'tmpuser' => '', 'iscsv' => 0];
         $this->coreFunctions->sbcupdate($config['docmodule']->tablenum, $data, ['trno' => $trno]);
         $this->coreFunctions->execqry("delete from " . $config['docmodule']->head . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $config['docmodule']->detail . " where trno=?", "delete", [$trno]);
@@ -3489,7 +3499,7 @@ class othersClass
       }
 
       $date = $this->getCurrentTimeStamp();
-      $data = ['postdate' => $date, 'postedby' => $user, 'statid' => 12, 'tmpuser' => ''];
+      $data = ['postdate' => $date, 'postedby' => $user, 'statid' => 12, 'tmpuser' => '', 'iscsv' => 0];
 
 
       $this->coreFunctions->sbcupdate($config['docmodule']->tablenum, $data, ['trno' => $trno]);
@@ -3860,6 +3870,11 @@ class othersClass
     } else {
       $wh = $config['params']['data']['wh'];
     }
+
+    $costfilter = " and stock.cost<>0 ";
+    if($config['params']['companyid'] == 50){//unitech
+      $costfilter = "";
+    }
     $qry = "select ifnull($field,0) as value from(select head.docno,head.dateid,
           stock.cost,stock.uom,stock.disc,case head.forex when 0 then 1 else ifnull(head.forex,1) end as forex
           from lahead as head
@@ -3867,7 +3882,7 @@ class othersClass
           left join cntnum on cntnum.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','IS','AJ','CM','TS') and wh.client = ?
-          and stock.itemid = ? and stock.cost <> 0 and head.dateid<= ?
+          and stock.itemid = ? $costfilter and head.dateid<= ?
           UNION ALL
           select head.docno,head.dateid,stock.cost,
           stock.uom,stock.disc,case head.forex when 0 then 1 else ifnull(head.forex,1) end as forex from glhead as head
@@ -3876,7 +3891,7 @@ class othersClass
           left join client as wh on wh.clientid = stock.whid
           left join cntnum on cntnum.trno=head.trno
           where head.doc in ('RR','IS','AJ','CM','TS') and wh.client = ?
-          and stock.itemid = ?  and stock.cost <> 0 and head.dateid<= ?
+          and stock.itemid = ? $costfilter and head.dateid<= ?
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
     $data = $this->coreFunctions->datareader($qry, [$wh, $itemid, $dateid, $wh, $itemid, $dateid], '', true);
     return $data;
@@ -5490,6 +5505,13 @@ class othersClass
                   $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
                 }
               }
+              break;
+            case 'QS':
+              $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
+              if ($companyid == 10 || $companyid == 12) { //afti
+                $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d'), 'probability' => '25%'];
+              }
+
               break;
             default:
               switch ($doc) {
@@ -10009,156 +10031,180 @@ class othersClass
 
   public function insertUpdatePendingapp($trno, $line, $doc, $data, $url, $config, $userid = 0, $checkrolelevel = false, $isfirstapp = false, $approvernote = '', $notesender = '')
   {
-    $index = 1;
-    if ($isfirstapp) $index = 0;
-    $both = false;
-    $admin = $config['params']['adminid'];
-    $companyid = $config['params']['companyid'];
-    $skiprole = false;
-    if ($companyid == 58) { // cdohris
-      $skiprole = true;
-    }
-    $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
-    $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
-
-    $module = $this->coreFunctions->opentable("select line, approverseq from moduleapproval where modulename='" . $doc . "'");
-
-    //for socket message
-    $socketmsg = '';
-    $socket_username = '';
-    if ($this->companysetup->getsocketserver($config['params']) != '') {
-      $socket_username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$userid]);
-      $socket_name = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$userid]);
-
-      $_notesender = ($notesender != '' ? ' from ' . $notesender . '<br>' : '');
-
-      switch ($doc) {
-        case 'TM':
-          $tasktitle = $this->coreFunctions->datareader("select title as value from tmdetail where trno=? and line=?", [$trno, $line]);
-          $socketmsg = "Assigned task " . $tasktitle . " to " . $socket_name;
-
-          if ($approvernote == 'COMMENT') {
-            $tasktitle = $this->coreFunctions->datareader("select d.title as value from headprrem as rem left join tmdetail as d on d.trno=rem.tmtrno and d.line=rem.tmline where rem.tmtrno=? and rem.line=?", [$trno, $line]);
-            $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where tmtrno=? and line=?", [$trno, $line]);
-            if ($taskcomment != '')  $socketmsg = " New comment: " . $taskcomment . ' for task ' . $tasktitle;
-          }
-
-          if ($approvernote == 'RETURN') {
-            $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where tmtrno=? and line=?", [$trno, $line]);
-            if ($taskcomment != '') $socketmsg = "Return task " . $tasktitle . " to " . $socket_name;
-          }
-
-          if ($approvernote == 'FOR CHECKING') {
-            $socketmsg = "For Checking: " . $tasktitle;
-          }
-
-          break;
-        case 'DY':
-          if ($approvernote == 'FOR CHECKING') {
-            $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
-            if ($tasktitle != '') $socketmsg = "For checking task: " . $tasktitle;
-          }
-
-          if ($approvernote == 'RETURN') {
-            $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
-            if ($tasktitle != '') $socketmsg = "Return task: " . $tasktitle . " to " . $socket_name;
-          }
-
-          if ($approvernote == 'COMMENT') {
-            $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
-            $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where dytrno=? and line=?", [$trno, $line]);
-            if ($taskcomment != '')  $socketmsg = " New comment" . $_notesender . ": " . $taskcomment . ' for task ' . $tasktitle;
-          }
-          break;
+    try {
+      $index = 1;
+      if ($isfirstapp) $index = 0;
+      $both = false;
+      $admin = $config['params']['adminid'];
+      $companyid = $config['params']['companyid'];
+      $skiprole = false;
+      if ($companyid == 58) { // cdohris
+        $skiprole = true;
       }
-    }
-    //end for socket message
+      $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
+      $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
 
-    if ($userid != 0) {
-      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $userid, $approvernote]);
-      if ($socketmsg != '' && $socket_username != '') $this->socketmsg($config, $socketmsg, '', $socket_username);
-      return ['status' => true, 'msg' => ''];
-    } else {
-      if (!empty($module)) {
-        if ($module[0]->approverseq != '' && $module[0]->approverseq != null) {
-          if (str_contains($module[0]->approverseq, ' or ')) {
-            $approverseq = explode(' or ', $module[0]->approverseq);
-            $both = true;
-          } else {
-            $approverseq = explode(',', $module[0]->approverseq);
-          }
-          foreach ($approverseq as $akey => $apseq) $approverseq[$akey] = $approverseq[$akey] == 'Approver' ? 'isapprover' : 'issupervisor';
-        } else {
-          $approverseq = app($url)->approvers($config['params']);
+      $module = $this->coreFunctions->opentable("select line, approverseq from moduleapproval where modulename='" . $doc . "'");
+
+      //for socket message
+      $socketmsg = '';
+      $socket_username = '';
+      if ($this->companysetup->getsocketserver($config['params']) != '') {
+        $socket_username = $this->coreFunctions->getfieldvalue("client", "email", "clientid=?", [$userid]);
+        $socket_name = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$userid]);
+
+        $_notesender = ($notesender != '' ? ' from ' . $notesender . '<br>' : '');
+
+        switch ($doc) {
+          case 'TM':
+            $tasktitle = $this->coreFunctions->datareader("select title as value from tmdetail where trno=? and line=?", [$trno, $line]);
+            $socketmsg = "Assigned task " . $tasktitle . " to " . $socket_name;
+
+            if ($approvernote == 'COMMENT') {
+              $tasktitle = $this->coreFunctions->datareader("select d.title as value from headprrem as rem left join tmdetail as d on d.trno=rem.tmtrno and d.line=rem.tmline where rem.tmtrno=? and rem.line=?", [$trno, $line]);
+              $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where tmtrno=? and line=?", [$trno, $line]);
+              if ($taskcomment != '')  $socketmsg = " New comment: " . $taskcomment . ' for task ' . $tasktitle;
+            }
+
+            if ($approvernote == 'RETURN') {
+              $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where tmtrno=? and line=?", [$trno, $line]);
+              if ($taskcomment != '') $socketmsg = "Return task " . $tasktitle . " to " . $socket_name;
+            }
+
+            if ($approvernote == 'FOR CHECKING') {
+              $socketmsg = "For Checking: " . $tasktitle;
+            }
+
+            break;
+          case 'DY':
+            if ($approvernote == 'FOR CHECKING') {
+              $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
+              if ($tasktitle != '') $socketmsg = "For checking task: " . $tasktitle;
+            }
+
+            if ($approvernote == 'RETURN') {
+              $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
+              if ($tasktitle != '') $socketmsg = "Return task: " . $tasktitle . " to " . $socket_name;
+            }
+
+            if ($approvernote == 'COMMENT') {
+              $tasktitle = $this->coreFunctions->datareader("select rem as value from dailytask where trno=? union all select rem as value from hdailytask where trno=?", [$trno, $trno]);
+              $taskcomment = $this->coreFunctions->datareader("select rem as value from headprrem where dytrno=? and line=?", [$trno, $line]);
+              if ($taskcomment != '')  $socketmsg = " New comment" . $_notesender . ": " . $taskcomment . ' for task ' . $tasktitle;
+            }
+            break;
         }
-        if ($checkrolelevel) {
-          $empid = $data['empid'];
-          if ($both) {
-            $checksupervisor = $checkapprover = ['status' => true, 'msg' => ''];
-            $supervisor = $this->coreFunctions->getfieldvalue("employee", "supervisorid", "empid=?", [$empid]);
-            if ($supervisor != 0) {
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, 'issupervisor']);
+      }
+      //end for socket message
+
+      if ($userid != 0) {
+        $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $userid, $approvernote]);
+        if ($socketmsg != '' && $socket_username != '') $this->socketmsg($config, $socketmsg, '', $socket_username);
+        return ['status' => true, 'msg' => ''];
+      } else {
+        if (!empty($module)) {
+          if ($module[0]->approverseq != '' && $module[0]->approverseq != null) {
+            if (str_contains($module[0]->approverseq, ' or ')) {
+              $approverseq = explode(' or ', $module[0]->approverseq);
+              $both = true;
             } else {
-
-              $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and (issupervisor = 1 or isapprover = 1)");
-              if (!empty($multiapp)) {
-                foreach ($multiapp as $apps) {
-                  $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, 'issupervisor']);
-                }
-              } else {
-                // goto contcheckrolelevel;
-                $checksupervisor = $this->checkrolelevel('issupervisor', $empid, $trno, $line, $doc, $skiprole);
-                if (!$checkapprover['status']) {
-                  return  $checkapprover;
-                }
-              }
+              $approverseq = explode(',', $module[0]->approverseq);
             }
-
-            // $approver1 = $this->coreFunctions->getfieldvalue("employee", "approver1", "empid=?", [$empid]);
-            // if ($approver1 != 0) {
-            //   $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $approver1, 'isapprover']);
-            // } else {
-            //   $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and isapprover = 1");
-
-            //   if (!empty($multiapp)) {
-            //     foreach ($multiapp as $apps) {
-            //       $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, 'isapprover']);
-            //     }
-            //   } else {
-            //     // goto contcheckrolelevel;
-            //     $checkapprover = $this->checkrolelevel('isapprover', $empid, $trno, $line, $doc);
-            //     if (!$checkapprover['status']) {
-            //       return  $checkapprover;
-            //     }
-            //   }
-            // }
-
-
-
-            if ($checksupervisor['status'] && $checkapprover['status']) {
-              return ['status' => true, 'msg' => ''];
-            } else {
-              $msg1 = $checksupervisor['msg'] . ' ' . $checkapprover['msg'];
-              return ['status' => false, 'msg' => $msg1];
-            }
+            foreach ($approverseq as $akey => $apseq) $approverseq[$akey] = $approverseq[$akey] == 'Approver' ? 'isapprover' : 'issupervisor';
           } else {
-            if ($approverseq[$index] == 'issupervisor') {
+            $approverseq = app($url)->approvers($config['params']);
+          }
+          if ($checkrolelevel) {
+            $empid = $data['empid'];
+            if ($both) {
+              $checksupervisor = $checkapprover = ['status' => true, 'msg' => ''];
               $supervisor = $this->coreFunctions->getfieldvalue("employee", "supervisorid", "empid=?", [$empid]);
               if ($supervisor != 0) {
-                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, $approverseq[$index]]);
-                return ['status' => true, 'msg' => ''];
+                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, 'issupervisor']);
               } else {
 
-                $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and issupervisor = 1");
+                $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and (issupervisor = 1 or isapprover = 1)");
                 if (!empty($multiapp)) {
                   foreach ($multiapp as $apps) {
-
-                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $approverseq[$index]]);
+                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, 'issupervisor']);
                   }
-                  return ['status' => true, 'msg' => ''];
+                } else {
+                  // goto contcheckrolelevel;
+                  $checksupervisor = $this->checkrolelevel('issupervisor', $empid, $trno, $line, $doc, $skiprole);
+                  if (!$checkapprover['status']) {
+                    return  $checkapprover;
+                  }
                 }
-                // goto contcheckrolelevel;
+              }
 
+              // $approver1 = $this->coreFunctions->getfieldvalue("employee", "approver1", "empid=?", [$empid]);
+              // if ($approver1 != 0) {
+              //   $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $approver1, 'isapprover']);
+              // } else {
+              //   $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and isapprover = 1");
+
+              //   if (!empty($multiapp)) {
+              //     foreach ($multiapp as $apps) {
+              //       $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, 'isapprover']);
+              //     }
+              //   } else {
+              //     // goto contcheckrolelevel;
+              //     $checkapprover = $this->checkrolelevel('isapprover', $empid, $trno, $line, $doc);
+              //     if (!$checkapprover['status']) {
+              //       return  $checkapprover;
+              //     }
+              //   }
+              // }
+
+
+
+              if ($checksupervisor['status'] && $checkapprover['status']) {
+                return ['status' => true, 'msg' => ''];
+              } else {
+                $msg1 = $checksupervisor['msg'] . ' ' . $checkapprover['msg'];
+                return ['status' => false, 'msg' => $msg1];
+              }
+            } else {
+              if ($approverseq[$index] == 'issupervisor') {
+                $supervisor = $this->coreFunctions->getfieldvalue("employee", "supervisorid", "empid=?", [$empid]);
+                if ($supervisor != 0) {
+                  $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, $approverseq[$index]]);
+                  return ['status' => true, 'msg' => ''];
+                } else {
+
+                  $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and issupervisor = 1");
+                  if (!empty($multiapp)) {
+                    foreach ($multiapp as $apps) {
+
+                      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $approverseq[$index]]);
+                    }
+                    return ['status' => true, 'msg' => ''];
+                  }
+                  // goto contcheckrolelevel;
+
+                  if (isset($approverseq[$index])) {
+                    $resultrole = $this->checkrolelevel($approverseq[$index], $empid, $trno, $line, $doc, $skiprole);
+                    if (!$resultrole['status']) {
+                      return  $resultrole;
+                    }
+                  }
+                }
+              } else {
+                $approver1 = $this->coreFunctions->getfieldvalue("employee", "approver1", "empid=?", [$empid]);
+                if ($approver1 != 0) {
+                  $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $approver1, $approverseq[$index]]);
+                  return ['status' => true, 'msg' => ''];
+                } else {
+                  $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and isapprover = 1");
+                  if (!empty($multiapp)) {
+                    foreach ($multiapp as $apps) {
+
+                      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $approverseq[$index]]);
+                    }
+                    return ['status' => true, 'msg' => ''];
+                  }
+                }
+                // contcheckrolelevel:
                 if (isset($approverseq[$index])) {
                   $resultrole = $this->checkrolelevel($approverseq[$index], $empid, $trno, $line, $doc, $skiprole);
                   if (!$resultrole['status']) {
@@ -10166,344 +10212,84 @@ class othersClass
                   }
                 }
               }
-            } else {
-              $approver1 = $this->coreFunctions->getfieldvalue("employee", "approver1", "empid=?", [$empid]);
-              if ($approver1 != 0) {
-                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $approver1, $approverseq[$index]]);
-                return ['status' => true, 'msg' => ''];
-              } else {
-                $multiapp = $this->coreFunctions->opentable("select approverid as clientid from multiapprover where empid = '$empid' and  doc = '$doc' and isapprover = 1");
-                if (!empty($multiapp)) {
-                  foreach ($multiapp as $apps) {
-
-                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $approverseq[$index]]);
-                  }
-                  return ['status' => true, 'msg' => ''];
-                }
-              }
-              // contcheckrolelevel:
-              if (isset($approverseq[$index])) {
-                $resultrole = $this->checkrolelevel($approverseq[$index], $empid, $trno, $line, $doc, $skiprole);
-                if (!$resultrole['status']) {
-                  return  $resultrole;
-                }
+            }
+          } else {
+            checkOther:
+            $approvers = $this->coreFunctions->opentable("select p.clientid from approvers as p left join moduleapproval as m on m.line=p.trno where m.modulename='" . $doc . "' and p." . $approverseq[$index] . "=1");
+            if (!empty($approvers)) {
+              foreach ($approvers as $a) {
+                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $a->clientid, $approverseq[$index]]);
               }
             }
           }
         } else {
-          checkOther:
-          $approvers = $this->coreFunctions->opentable("select p.clientid from approvers as p left join moduleapproval as m on m.line=p.trno where m.modulename='" . $doc . "' and p." . $approverseq[$index] . "=1");
-          if (!empty($approvers)) {
-            foreach ($approvers as $a) {
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $a->clientid, $approverseq[$index]]);
-            }
-          }
+          return ['status' => false, 'msg' => 'Module approval not set.'];
         }
-      } else {
-        return ['status' => false, 'msg' => 'Module approval not set.'];
+        return ['status' => true, 'msg' => ''];
       }
-      return ['status' => true, 'msg' => ''];
+    } catch (Exception $e) {
+      return ['status' => false, 'msg' =>  $e->getMessage()];
     }
   }
 
   public function checkrolelevel($type, $empid, $trno, $line, $doc, $skiprole)
   {
-    $hasapprovers = false;
-    $level = $this->coreFunctions->datareader("select level as value from employee where empid=" . $empid, [], '', true);
-    $roleid = $this->coreFunctions->datareader("select roleid as value from employee where empid=" . $empid, [], '', true);
+    try {
+      $hasapprovers = false;
+      $level = $this->coreFunctions->datareader("select level as value from employee where empid=" . $empid, [], '', true);
+      $roleid = $this->coreFunctions->datareader("select roleid as value from employee where empid=" . $empid, [], '', true);
 
-    if ($skiprole) goto checklevel;
+      if ($skiprole) goto checklevel;
 
-    if ($roleid != 0) {
-      $approver = $this->coreFunctions->opentable("select er.empid, client.email from emprole as er left join employee as emp on emp.empid=er.empid left join client on client.clientid=emp.empid where er.roleid=" . $roleid . " and emp." . $type . "=1 and er.empid<>" . $empid);
-      if (!empty($approver)) {
+      if ($roleid != 0) {
+        $approver = $this->coreFunctions->opentable("select er.empid, client.email from emprole as er left join employee as emp on emp.empid=er.empid left join client on client.clientid=emp.empid where er.roleid=" . $roleid . " and emp." . $type . "=1 and er.empid<>" . $empid);
+        if (!empty($approver)) {
+          if ($level != 0) {
+            $hasapprovers = false;
+            foreach ($approver as $apps) {
+              if ($this->checkApproverAccess($apps, $level)) {
+                $hasapprovers = true;
+                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $type]);
+              }
+            }
+            if (!$hasapprovers) {
+              return ['status' => false, 'msg' => 'No approvers from role setup for this employee.'];
+            }
+          } else {
+            return ['status' => false, 'msg' => 'No level tagged for this employee.'];
+          }
+
+          return ['status' => true, 'msg' => ''];
+        } else {
+          //return ['status' => false, 'msg' => 'No approvers for this employee.'];
+          goto checklevel;
+        }
+      } else {
+        checklevel:
         if ($level != 0) {
           $hasapprovers = false;
-          foreach ($approver as $apps) {
-            if ($this->checkApproverAccess($apps, $level)) {
-              $hasapprovers = true;
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $type]);
+          $approvers = $this->coreFunctions->opentable("select a.clientid, client.email from approvers as a left join moduleapproval as m on m.line=a.trno left join client on client.clientid=a.clientid where m.modulename='" . $doc . "' and a." . $type . "=1");
+          if (!empty($approvers)) {
+            foreach ($approvers as $apps) {
+              if ($this->checkApproverAccess($apps, $level)) {
+                $hasapprovers = true;
+                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $type]);
+              }
             }
-          }
-          if (!$hasapprovers) {
-            return ['status' => false, 'msg' => 'No approvers from role setup for this employee.'];
+            if (!$hasapprovers) {
+              return ['status' => false, 'msg' => 'No approvers for this employee level.'];
+            }
+            return ['status' => true, 'msg' => ''];
+          } else {
+            return ['status' => false, 'msg' => 'No approvers for this employee.'];
           }
         } else {
           return ['status' => false, 'msg' => 'No level tagged for this employee.'];
         }
-
-        return ['status' => true, 'msg' => ''];
-      } else {
-        //return ['status' => false, 'msg' => 'No approvers for this employee.'];
-        goto checklevel;
       }
-    } else {
-      checklevel:
-      if ($level != 0) {
-        $hasapprovers = false;
-        $approvers = $this->coreFunctions->opentable("select a.clientid, client.email from approvers as a left join moduleapproval as m on m.line=a.trno left join client on client.clientid=a.clientid where m.modulename='" . $doc . "' and a." . $type . "=1");
-        if (!empty($approvers)) {
-          foreach ($approvers as $apps) {
-            if ($this->checkApproverAccess($apps, $level)) {
-              $hasapprovers = true;
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->clientid, $type]);
-            }
-          }
-          if (!$hasapprovers) {
-            return ['status' => false, 'msg' => 'No approvers for this employee level.'];
-          }
-          return ['status' => true, 'msg' => ''];
-        } else {
-          return ['status' => false, 'msg' => 'No approvers for this employee.'];
-        }
-      } else {
-        return ['status' => false, 'msg' => 'No level tagged for this employee.'];
-      }
-    }
-    return ['status' => true, 'msg' => []];
-  }
-
-  public function updatePendingapp($trno, $line, $doc, $data, $url, $config, $userid = 0, $checkrolelevel = false)
-  {
-    $admin = $config['params']['adminid'];
-    $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
-    $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
-    $module = $this->coreFunctions->opentable("select line, approverseq from moduleapproval where modulename='" . $doc . "'");
-    if ($userid != 0) {
-      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid) values(?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $userid]);
-    } else {
-      if (!empty($module)) {
-        if ($module[0]->approverseq != '' && $module[0]->approverseq != null) {
-          $approverseq = explode(',', $module[0]->approverseq);
-          foreach ($approverseq as $akey => $apseq) $approverseq[$akey] = $approverseq[$akey] == 'Approver' ? 'isapprover' : 'issupervisor';
-        } else {
-          $approverseq = app($url)->approvers($config['params']);
-        }
-        if ($checkrolelevel) {
-          $empid = $data['empid'];
-          if (isset($approverseq[1]) && $approverseq[1] == 'issupervisor') {
-            $supervisor = $this->coreFunctions->datareader("select supervisorid as value from employee where empid=" . $empid, [], '', true);
-            if ($supervisor != 0) {
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, $approverseq[1]]);
-              return ['status' => true, 'msg' => ''];
-            } else {
-              goto contcheckrolelevel;
-            }
-          } else {
-            contcheckrolelevel:
-            $level = $this->coreFunctions->datareader("select level as value from employee where empid=" . $empid, [], '', true);
-            $levelattr = [2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 2418, 2419];
-            $roleid = $this->coreFunctions->datareader("select roleid as value from employee where empid=" . $empid, [], '', true);
-            if ($roleid != 0) {
-              if (isset($approverseq[1])) {
-                $approver = $this->coreFunctions->opentable("select er.empid, client.email from emprole as er left join employee as emp on emp.empid=er.empid left join client on client.clientid=emp.empid where er.roleid=" . $roleid . " and emp." . $approverseq[1] . "=1");
-                if (!empty($approver)) {
-                  if ($level != 0) {
-                    $levelaccess = $levelattr[$level - 1];
-                    $hasapprovers = false;
-                    foreach ($approver as $apps) {
-                      $lattr = $this->getAccess($apps->email);
-                      if (!empty($lattr)) {
-                        if (substr($lattr[0]->attributes, $levelaccess - 1, 1) == 1) {
-                          $hasapprovers = true;
-                          $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $approverseq[1]]);
-                        }
-                      }
-                    }
-                    if (!$hasapprovers) {
-                      return ['status' => false, 'msg' => 'No approvers for this employee.'];
-                    }
-                  } else {
-                    return ['status' => false, 'msg' => 'No level tagged for this employee.'];
-                  }
-                  return ['status' => true, 'msg' => ''];
-                } else {
-                  return ['status' => false, 'msg' => 'No approvers for this employee.'];
-                }
-              }
-            } else {
-              checklevel:
-              if ($level != 0) {
-                if (isset($approverseq[1])) {
-                  $levelaccess = $levelattr[$level - 1];
-                  $hasapprovers = false;
-                  $approvers = $this->coreFunctions->opentable("select emp.empid, client.email from employee as emp left join client on client.clientid=emp.empid where emp." . $approverseq[1] . "=1");
-                  if (!empty($approvers)) {
-                    foreach ($approvers as $apps) {
-                      $lattr = $this->getAccess($apps->email);
-                      if (!empty($lattr)) {
-                        if (substr($lattr[0]->attributes, $levelaccess - 1, 1) == 1) {
-                          $hasapprovers = true;
-                          $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $approverseq[1]]);
-                        }
-                      }
-                    }
-                    if (!$hasapprovers) {
-                      return ['status' => false, 'msg' => 'No approvers for this employee level.'];
-                    }
-                  } else {
-                    return ['status' => false, 'msg' => 'No approvers for this employee.'];
-                  }
-                }
-              } else {
-                return ['status' => false, 'msg' => 'No level tagged for this employee.'];
-              }
-            }
-          }
-        } else {
-          if ($supervisor && ($approverseq[0] == 'issupervisor' || $approverseq[0] == 'isotapprover')) {
-            if (isset($approverseq[1])) {
-              if ($approverseq[1] == 'isapprover') {
-                $approvers = $this->coreFunctions->opentable("select p.clientid from approvers as p left join moduleapproval as m on m.line=p.trno where m.modulename='" . $doc . "' and p.isapprover=1");
-                if (!empty($approvers)) {
-                  foreach ($approvers as $a) {
-                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $a->clientid, $approverseq[1]]);
-                  }
-                } else {
-                  $approvers2 = $this->coreFunctions->opentable("select empid from employee where isapprover=1");
-                  if (!empty($approvers2)) {
-                    foreach ($approvers2 as $a2) {
-                      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $a2->empid, $approverseq[1]]);
-                    }
-                  }
-                }
-              }
-            }
-          } else if ($approver && $approverseq[0] == 'isapprover') {
-            if (isset($approverseq[1])) {
-              if ($approverseq[1] == 'issupervisor') {
-                $supervisors = $this->coreFunctions->opentable("select p.clientid from approvers as p left join moduleapproval as m on m.line=p.trno where m.modulename='" . $doc . "' and p.issupervisor=1");
-                if (!empty($supervisors)) {
-                  foreach ($supervisors as $s) {
-                    $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $s->clientid, $approverseq[1]]);
-                  }
-                } else {
-                  $supervisors2 = $this->coreFunctions->opentable("select empid from employee where isapprover=1");
-                  if (!empty($supervisors2)) {
-                    foreach ($supervisors2 as $a2) {
-                      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $a2->empid, $approverseq[1]]);
-                    }
-                  }
-                }
-              }
-            }
-          }
-          return ['status' => true, 'msg' => ''];
-        }
-      }
-    }
-    return ['status' => true, 'msg' => ''];
-  }
-
-  public function insertPendingapp($trno, $line, $doc, $data, $url, $config, $userid = 0, $checkrolelevel = false)
-  {
-    $module = $this->coreFunctions->opentable("select line, approverseq from moduleapproval where modulename='" . $doc . "'");
-    if ($userid != 0) {
-      $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid) values(?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $userid]);
-    } else {
-      if (!empty($module)) {
-        if ($module[0]->approverseq != '' && $module[0]->approverseq != null) {
-          $approverseq = explode(',', $module[0]->approverseq);
-          foreach ($approverseq as $akey => $apseq) $approverseq[$akey] = $approverseq[$akey] == 'Approver' ? 'isapprover' : 'issupervisor';
-        } else {
-          $approverseq = app($url)->approvers($config['params']);
-        }
-        if ($checkrolelevel) {
-          $empid = $config['params']['adminid'];
-          if ($approverseq[0] == 'issupervisor') {
-            $supervisor = $this->coreFunctions->datareader("select supervisorid as value from employee where empid=" . $empid, [], '', true);
-            if ($supervisor != 0) {
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $supervisor, $approverseq[0]]);
-              return ['status' => true, 'msg' => ''];
-            } else {
-              goto contcheckrolelevel;
-            }
-          } else {
-            contcheckrolelevel:
-            $level = $this->coreFunctions->datareader("select level as value from employee where empid=" . $empid, [], '', true);
-            $levelattr = [2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 2418, 2419];
-            $roleid = $this->coreFunctions->datareader("select roleid as value from employee where empid=" . $empid, [], '', true);
-            if ($roleid != 0) {
-              $approver = $this->coreFunctions->opentable("select er.empid, client.email from emprole as er left join employee as emp on emp.empid=er.empid left join client on client.clientid=emp.empid where er.roleid=" . $roleid . " and emp." . $approverseq[0] . "=1");
-              if (!empty($approver)) {
-                if ($level != 0) {
-                  $levelaccess = $levelattr[$level - 1];
-                  $hasapprovers = false;
-                  foreach ($approver as $apps) {
-                    $lattr = $this->getAccess($apps->email);
-                    if (!empty($lattr)) {
-                      if (substr($lattr[0]->attributes, $levelaccess - 1, 1) == 1) {
-                        $hasapprovers = true;
-                        $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $approverseq[0]]);
-                      }
-                    }
-                  }
-                  if (!$hasapprovers) {
-                    return ['status' => false, 'msg' => 'No approvers for this employee.'];
-                  }
-                } else {
-                  return ['status' => false, 'msg' => 'No level tagged for this employee.'];
-                }
-                return ['status' => true, 'msg' => ''];
-              } else {
-                goto checklevel;
-              }
-            } else {
-              checklevel:
-              if ($level != 0) {
-                $levelaccess = $levelattr[$level - 1];
-                $hasapprovers = false;
-                $approvers = $this->coreFunctions->opentable("select emp.empid, client.email from employee as emp left join client on client.clientid=emp.empid where emp." . $approverseq[0] . "=1");
-                if (!empty($approvers)) {
-                  foreach ($approvers as $apps) {
-                    $lattr = $this->getAccess($apps->email);
-                    if (!empty($lattr)) {
-                      if (substr($lattr[0]->attributes, $levelaccess - 1, 1) == 1) {
-                        $hasapprovers = true;
-                        $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $apps->empid, $approverseq[0]]);
-                      }
-                    }
-                  }
-                  if (!$hasapprovers) {
-                    return ['status' => false, 'msg' => 'No approvers for this employee level.'];
-                  }
-                } else {
-                  return ['status' => false, 'msg' => 'No approvers for this employee.'];
-                }
-              } else {
-                return ['status' => false, 'msg' => 'No level tagged for this employee.'];
-              }
-              return ['status' => true, 'msg' => ''];
-            }
-          }
-        } else {
-          $supapprovers = $this->coreFunctions->opentable("select clientid from approvers where trno=" . $module[0]->line . " and " . $approverseq[0] . "=1");
-          if (!empty($supapprovers)) {
-            foreach ($supapprovers as $sa) {
-              $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $sa->clientid, $approverseq[0]]);
-            }
-          } else {
-            if ($approverseq[0] == 'issupervisor' && $checkrolelevel) {
-              $checksupervisor = $this->coreFunctions->datareader("select supervisorid as value from employee where empid=" . $data['empid'], [], '', true);
-              if ($checksupervisor != 0) {
-                $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $checksupervisor, $approverseq[0]]);
-              }
-            } else if ($approverseq[0] == 'isapprover' && $checkrolelevel) {
-              $checkapprovers = $this->coreFunctions->opentable("select empid from employee where isapprover=1");
-              if (!empty($checkapprovers)) {
-                foreach ($checkapprovers as $approver) {
-                  $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$trno, $line, $doc, $approver->empid, $approverseq[0]]);
-                }
-              } else {
-                return ['status' => false, 'msg' => 'No approvers for this user.'];
-              }
-            } else {
-              return ['status' => false, 'msg' => 'No approvers for this user..'];
-            }
-          }
-          return ['status' => true, 'msg' => ''];
-        }
-      }
+      return ['status' => true, 'msg' => []];
+    } catch (Exception $e) {
+      return ['status' => false, 'msg' =>  $e->getMessage()];
     }
   }
 

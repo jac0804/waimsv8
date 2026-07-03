@@ -1934,6 +1934,14 @@ class aj
         break;
     }
 
+    $costfilter = " and stock.rrcost <>0 ";
+    $costfilter2 = " and stock.cost <>0 ";
+    
+    if($companyid == 50){//unitech
+      $costfilter = "";
+      $costfilter2 = "";
+    }
+
     if ($defuominout) {
       $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from (select head.docno,head.dateid,
           stock.cost as amt,stock.uom,stock.disc
@@ -1944,7 +1952,7 @@ class aj
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
           and item.barcode = ?
-          and stock.rrcost <> 0 and cntnum.trno <>? " . $filter . "
+           $costfilter and cntnum.trno <>? " . $filter . "
           UNION ALL
           select head.docno,head.dateid,stock.rrcost as amt,
           stock.uom,stock.disc from glhead as head
@@ -1955,7 +1963,7 @@ class aj
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
           and item.barcode = ?
-          and stock." . $this->damt . " <> 0 and cntnum.trno <>? " . $filter . "
+           $costfilter and cntnum.trno <>? " . $filter . "
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
       $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
     } else {
@@ -1997,7 +2005,7 @@ class aj
         left join client as wh on wh.clientid=stock.whid
         where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
         and item.barcode = ?
-        and stock.rrcost <> 0 and cntnum.trno <>?
+         $costfilter and cntnum.trno <>?
         UNION ALL
         select head.docno,head.dateid,(stock.rrcost*if(head.forex=0,1,head.forex)) as amt,
         stock.uom,stock.disc from glhead as head
@@ -2008,7 +2016,7 @@ class aj
         left join client as wh on wh.clientid=stock.whid
         where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
         and item.barcode = ? 
-        and stock." . $this->damt . " <> 0 and cntnum.trno <>?
+         $costfilter and cntnum.trno <>?
         order by dateid desc limit 5) as tbl order by dateid desc limit 1";
         $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
       }
@@ -2024,7 +2032,7 @@ class aj
           left join item on item.itemid = stock.itemid
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ? and cntnum.trno <>? and stock.cost<>0 " . $filter . "
+          and item.barcode = ? and cntnum.trno <>? $costfilter2 " . $filter . "
           UNION ALL
           select head.docno,head.dateid,stock.cost as amt,
           item.uom,stock.disc from glhead as head
@@ -2034,7 +2042,7 @@ class aj
           left join cntnum on cntnum.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ? and  cntnum.trno <>?  and stock.cost<>0 " . $filter . "
+          and item.barcode = ? and  cntnum.trno <>?  $costfilter2 " . $filter . "
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
       $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
     }

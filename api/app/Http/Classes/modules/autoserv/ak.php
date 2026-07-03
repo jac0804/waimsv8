@@ -230,7 +230,7 @@ class ak
                 $filter = " and num.postdate is not null ";
                 break;
             case 'draft':
-                $filter = " and num.postdate is null ";
+                $filter = ' and num.postdate is null and head.lockdate is null ';
                 break;
             case 'locked':
                 $filter = "  and head.lockdate is not null and num.postdate is null ";

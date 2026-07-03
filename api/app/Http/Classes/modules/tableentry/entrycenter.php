@@ -284,6 +284,7 @@ class entrycenter
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
+          $data2['ismirror'] = 0;
           $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
         }
       } // end if
@@ -322,6 +323,7 @@ class entrycenter
         $count = $this->coreFunctions->datareader($qry, [$ocode]);
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
+        $data['ismirror'] = 0;
 
         if ($count != '') {
           $data['code'] = $ocode;
