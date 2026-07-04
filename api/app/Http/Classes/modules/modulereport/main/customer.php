@@ -3566,51 +3566,37 @@ class customer
 
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
       
-        $qry = "
-                select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
-                 sum(amount) as uncleared_amt, sum(balance) as balance, clientname, sum(cleared_amount) as cleared_amount
-                  from (
-
-                  select sum(collectionamt) as collectionamt, sum(bounced) as bounced, 0 as amount,
-
-                            sum((select (case when ar.db > 0 then ar.bal else (ar.bal * -1) end) as balance
-                            from arledger as ar
-                            where ar.trno = ax.trno and ar.clientid = ax.clientid  and date(ar.dateid) <= '$start'  limit 1)) as balance,clientname, 0 as cleared_amount
-
-                    from (
-
-                    SELECT sum(if(left(coa.alias,2) in ('ca','cr','pc') and head.doc='cr', d.db, 0)) as collectionamt,
-                            0 as bounced,head.docno,
-                            head.trno,head.clientid,cl.clientname
+         $query="     select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
+                           sum(amount) as uncleared_amt, sum(balance) as balance, clientname, sum(cleared_amount) as cleared_amount
+                           from (
+                            SELECT sum(if(left(coa.alias,2) in ('ca','cr','pc') and head.doc='cr', d.db, 0)) as collectionamt,0 as bounced,
+                                   0 as amount, 0 as balance, cl.clientname,0 as cleared_amount
                             FROM glhead AS head
                             LEFT JOIN gldetail AS d on d.trno = head.trno
                             LEFT JOIN client as cl on cl.clientid = head.clientid
                             LEFT JOIN coa ON d.acnoid = coa.acnoid
                             LEFT JOIN cntnum on cntnum.trno = head.trno
                             WHERE date(head.dateid) <= '$start'   and cl.clientid=$clientid
-                            group by head.trno,head.clientid, cl.clientname,head.docno) as ax
-
                             group by clientname
 
-                          union all
+                            union all
 
-                     SELECT 0 as collectionamt, 0 as bounced, sum(d.amount) as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            SELECT 0 as collectionamt, 0 as bounced, sum(d.amount) as amount, 0 as balance,cl.clientname,0 as cleared_amount
                             FROM hrchead AS head
                             LEFT JOIN hrcdetail AS d on d.trno = head.trno
                             LEFT JOIN client as cl on cl.client = d.client
                             WHERE  d.rdtrno =0  and  date(head.dateid) <= '$start'   and cl.clientid=$clientid
-                            group by head.trno,cl.clientid, cl.clientname
+                            group by cl.clientname
 
 
                             union all
 
-                            SELECT 0 as collectionamt,
-                            sum(stock.amount) as bounced, 0 as amount, 0 as balance,cl.clientname,0 as cleared_amount
+                            SELECT 0 as collectionamt, sum(stock.amount) as bounced, 0 as amount, 0 as balance,cl.clientname,0 as cleared_amount
                             FROM glhead AS head
                             LEFT JOIN hparticulars AS stock on stock.trno = head.trno
                             LEFT JOIN client as cl on cl.clientid = stock.clientid
-                            WHERE stock.retrno=0 and head.doc='BE' and date(head.dateid) <= '$start'   and cl.clientid=$clientid
-                            group by head.trno,stock.clientid, cl.clientname
+                            WHERE stock.retrno=0 and head.doc='BE' and date(head.dateid) <= '$start'   and cl.clientid=$clientid 
+                            group by  cl.clientname
 
                             union all
 
@@ -3618,11 +3604,18 @@ class customer
                             FROM hrchead AS head
                             LEFT JOIN hrcdetail AS d on d.trno = head.trno
                             LEFT JOIN client as cl on cl.client = d.client
-                            WHERE  d.rdtrno != 0  and  date(head.dateid) <= '$start'   and cl.clientid=$clientid
-                            group by head.trno,cl.clientid, cl.clientname ) as xd group by clientname";    
+                            WHERE  d.rdtrno != 0  and  date(head.dateid) <= '$start'   and cl.clientid=$clientid 
+                            group by cl.clientname
 
-                            // var_dump($qry);
-        return $qry;
+                            union all
+
+                            select 0 as collectionamt,0 as bounced,  0 as amount, sum(if(ar.db <> 0, ar.db,0)) as balance, cl.clientname,0 as cleared_amount
+                            from arledger as ar
+                            left join client as cl on cl.clientid=ar.clientid
+                            where   date(ar.dateid)  <= '$start'   and cl.clientid=$clientid
+                            group by cl.clientname) as ax
+                            group by clientname";  
+        return $query;
     }
 
 

@@ -516,6 +516,7 @@ class companysetup
         $this->isfa = false;
         $this->masterlimit = 500;
         $this->isglc = true;
+        $this->showloading = true;
         $this->isshortcutpo = true;
         $this->isshortcutso = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\roosevelt\\";

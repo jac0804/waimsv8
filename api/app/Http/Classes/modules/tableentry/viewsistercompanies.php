@@ -75,11 +75,12 @@ class viewsistercompanies
         $obj[0][$this->gridname]['columns'][$client]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
         $obj[0][$this->gridname]['columns'][$customer]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
 
-        $obj[0][$this->gridname]['columns'][$code]['label'] = "Parent Code";
+        $obj[0][$this->gridname]['columns'][$code]['label'] = "Parent Code & Type";
         $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Parent Name";
         $obj[0][$this->gridname]['columns'][$clientname]['readonly'] =true;
-        $obj[0][$this->gridname]['columns'][$client]['label'] = "Customer Code";
+        $obj[0][$this->gridname]['columns'][$client]['type'] = "input";
+        $obj[0][$this->gridname]['columns'][$client]['label'] = "Customer Code & Type";
         $obj[0][$this->gridname]['columns'][$client]['readonly'] =true;
         $obj[0][$this->gridname]['columns'][$customer]['label'] = "Customer Name";
         $obj[0][$this->gridname]['columns'][$customer]['readonly'] =true;
@@ -101,11 +102,12 @@ class viewsistercompanies
         $parentcode = $this->coreFunctions->getfieldvalue("client", "grpcode", "clientid=?", [$tableid]);
         $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode]);
 
-        $qry="select parent.client as code, parent.clientname, 
-                concat(parent.client,' - ',parent.clientname) as description,cl.client, cl.clientname as customer
+        $qry="select concat(parent.type,' - ',parent.client) as code, parent.clientname, 
+                concat(parent.client,' - ',parent.clientname) as description,
+                concat(cl.type,' - ',cl.client) as client, cl.clientname as customer
                 from client as cl
                 left join client as parent on parent.client=cl.grpcode
-                where parent.clientid=$parentid";
+                where parent.clientid=$parentid and cl.clientid <>$parentid";
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }

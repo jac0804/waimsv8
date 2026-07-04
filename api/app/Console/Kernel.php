@@ -21,6 +21,8 @@ class Kernel extends ConsoleKernel
         Commands\DLMirrorMasters::class,
         Commands\ComputeLeave::class,
         Commands\UpdateDailyTask::class,
+        Commands\StandardMirror::class,
+        Commands\StandardDLMirror::class,
     ];
 
     /**
@@ -40,6 +42,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('sbcupdate:dlmirrormasters')->everyMinute()->withoutOverlapping(10)->runInBackground();
         $schedule->command('sbcupdate:computeleave')->everyMinute()->withoutOverlapping(10)->runInBackground();
         $schedule->command('sbcupdate:updatedailytask')->everyMinute()->withoutOverlapping(10)->runInBackground();
+
+        $schedule->command('sbcupdate:standardmirror')->everyMinute()->withoutOverlapping(10)->runInBackground();
+        $schedule->command('sbcupdate:standarddlmirror')->everyMinute()->withoutOverlapping(10)->runInBackground();
     }
 
     protected function commands()

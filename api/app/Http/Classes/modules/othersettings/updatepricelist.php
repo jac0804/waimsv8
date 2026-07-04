@@ -32,6 +32,7 @@ class updatepricelist
     private $coreFunctions;
     private $othersClass;
     public $style = 'width:100%;max-width:100%;';
+    public $tablelogs = 'masterfile_log';
     public $issearchshow = true;
     public $showclosebtn = false;
     private $logger;
@@ -140,10 +141,18 @@ class updatepricelist
     public function pricelist($config)
     {
         $params = $config['params']['dataparams'];
-        $pricelevel = $params['selectprefix']['value'];
+
+        $pricelevel = '';
+        if (!empty($params['selectprefix'])) {
+            $pricelevel = $params['selectprefix']['value'];
+        }
+        $basis = '';
+        if (!empty($params['operator'])) {
+            $basis = $params['operator']['value'];
+        }
         $rate = $params['rate'];
         $type = $params['type'];
-        $basis = $params['operator']['value']; //basis
+
 
         if ($pricelevel == '') {
             return ['status' => false, 'msg' => 'Please select Price Level.'];
@@ -158,16 +167,8 @@ class updatepricelist
             return ['status' => false, 'msg' => 'Please select Price Basis.'];
         }
 
-        switch ($type) {
-            case 'LOWER':
-                $operator = '-';
-                break;
-            case 'UPPER':
-                $operator = '+';
-                break;
-        }
         switch ($pricelevel) {
-            case 'dealer':
+            case 'dealer2':
                 $amt = 'amt2';
                 break;
             case 'industrial':
@@ -177,33 +178,62 @@ class updatepricelist
                 $amt = 'amt4';
                 break;
         }
-        $this->updatepricelist($config, $operator, $amt, $rate, $basis);
-        return ['status' => true, 'msg' => 'Price list updated successfully.', 'action' => 'load'];
+        $result = $this->updatepricelist($config, $type, $amt, $rate, $basis, $pricelevel);
+
+        return ['status' => $result['status'], 'msg' => $result['msg'], 'action' => 'load'];
     }
-    public function updatepricelist($config, $operator, $amt, $rate, $basis)
+    public function updatepricelist($config, $type, $amt, $rate, $basis, $pricelevel)
     {
-        $item = [];
-        $query = "select $amt,amt,cost,itemid from item";
+        $items = [];
+        $query = "select $amt,amt,itemid,uom from item";
         $data = $this->coreFunctions->opentable($query);
 
         foreach ($data as $key => $value) {
 
-            $price = $value[$amt];
-            if ($basis == 'cost') {
+            if ($basis == 'cost') { //lastescost option
+                $price = $this->coreFunctions->datareader("select rr.cost as value from rrstatus as rr
+                left join cntnum as num on num.trno = rr.trno 
+                where rr.itemid = ? and rr.uom =? and num.doc = 'RR' 
+                order by rr.dateid desc limit 1", [$value->itemid, $value->uom], '', true);
             } else {
-                // $basis == 'price';
+                $price = $value->amt; //dealer option
+            }
+            switch ($type) {
+                case 'LOWER':
+                    $operator = '-';
+                    break;
+                case 'UPPER':
+                    $operator = '+';
+                    break;
             }
             if ($operator == '+') {
                 $newprice = $price + ($price * ($rate / 100));
             } else {
                 $newprice = $price - ($price * ($rate / 100));
             }
-            array_push($item, [
-                'itemid' => $value['itemid'],
-                $amt     => $newprice
+
+            array_push($items, [
+                'itemid' => $value->itemid,
+                $amt    => $newprice
             ]);
         }
+        $chunks = array_chunk($items, 100);
 
-        return ['status' => true, 'msg' => 'Price list updated successfully.', 'action' => 'load'];
+        $msg = "Update Records Successfully";
+        $status = true;
+        foreach ($chunks as $k => $item) {
+            foreach ($item as $row) {
+                $update = $this->coreFunctions->sbcupdate('item', [$amt => $row[$amt]], ['itemid' => $row['itemid']]);
+                $this->coreFunctions->LogConsole('Update records: ' . $update);
+                if (!$update) {
+                    $status = false;
+                    $msg = "Update Record Failed";
+                    break;
+                }
+            }
+            $this->coreFunctions->LogConsole('Processed 100 records.');
+        }
+        $this->logger->sbcmasterlog(0, $config,  $msg . ' - Price Level: ' . $pricelevel . ' - Rate: ' . $rate . ' - Type: ' . $type . ' - Price Basis: ' . $basis);
+        return ['status' => $status, 'msg' => $msg];
     }
 } //end class

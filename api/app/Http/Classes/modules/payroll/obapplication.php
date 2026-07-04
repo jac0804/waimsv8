@@ -469,7 +469,7 @@ class obapplication
         break;
       case 'initial':
         // $addcase = "if(submitdate is null,'INITIAL APPROVED','SUBMITTED')";
-        $filteroption = " where obapp.empid=" . $id . " and (obapp.status='E' and obapp.status2='E') and (obapp.initialstatus2 = 'A' and obapp.initialstatus = 'A')  and obapp.initialapp is not null";
+        $filteroption = " where obapp.empid=" . $id . " and ((obapp.status2='E' or obapp.status2='A') and obapp.status <> 'A') and (obapp.initialstatus2 = 'A' and obapp.initialstatus = 'A')  and obapp.initialapp is not null";
         break;
       case 'approved':
 

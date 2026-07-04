@@ -5625,9 +5625,7 @@ class statement_of_account
     ar.dateid, ar.docno, ar.ref, ar.db, client.tel,
     ar.cr, ar.bal, ag.client, ag.clientname, head.due,
     head.yourref, head.rem,head.doc,head.dateid,client.area, ar.ref, head.doc
-    order by clientname, docdate, refno
-    limit 100";
-
+    order by clientname, docdate, refno";
     // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
@@ -5645,10 +5643,12 @@ class statement_of_account
     $fontsize = "11";
     $border = "1px solid ";
 
-    if ($cust == 0) {
-      $qry = "select code,name,address,tel from center where code = '" . $center . "'";
-      $headerdata = $this->coreFunctions->opentable($qry);
+    // Fetch company/center info 
+    $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
 
+    $str .= '<br/><br/><br/>';
+    if ($cust == 0) {
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
@@ -5662,12 +5662,6 @@ class statement_of_account
       $str .= $this->reporter->endtable();
 
       $str .= '<br>';
-
-      // $str .= $this->reporter->begintable($width);
-      // $str .= $this->reporter->startrow();
-      // $str .= $this->reporter->col('<br>');
-      // $str .= $this->reporter->endrow();
-      // $str .= $this->reporter->endtable();
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
@@ -5687,6 +5681,19 @@ class statement_of_account
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
     } else { //next=1
+
+      // Company header (Shown on every page)
+      $str .= $this->reporter->begintable($width);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'C', $font,  '18', 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
 
       $str .= '<br>';
 
@@ -6276,7 +6283,7 @@ class statement_of_account
     $border = "1px solid ";
     $layoutsize = '1000';
 
-    $PAGE_HEIGHT = 1270; // adjust to match your actual page height (px)
+    $PAGE_HEIGHT = 1255; // adjust to match your actual page height (px)
 
     $customer = '';
     $balance = 0;
