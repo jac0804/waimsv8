@@ -70,11 +70,16 @@ class StandardDLMirror extends Command
                 $this->coreFunction->sbclogger("Creating temp tables", 'MIRROR');
                 $this->mirrorClass->createTempTables();
 
+                $this->mirrorClass->ftpcreatefolder();
+                $this->mirrorClass->ftpcreatefolder("downloaded");
+
                 $this->coreFunction->sbclogger("Checking pending temp tables", 'MIRROR');
                 if($this->mirrorClass->checkPendingTempTables()){
 
-                    $this->coreFunction->sbclogger("Extract files", 'MIRROR');
+                    $this->coreFunction->sbclogger("Downloading files from ftp server", 'MIRROR');
+                    $this->mirrorClass->downloadFromFtp();
 
+                    $this->coreFunction->sbclogger("Extract files", 'MIRROR');
                     if ($this->mirrorClass->ftpextractmirrorfiles()) {
                         $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
 

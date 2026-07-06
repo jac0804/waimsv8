@@ -107,42 +107,44 @@ class accounts_receivable_reports
         //     $filter .= " and cntnum.center='$filtercenter'";
         // }
 
-        $query = "select clientname,sum(balance) as balance from (
-                select detail.client as clientname, sum(detail.amount) as balance
-                from hrchead as head
-                left join hrcdetail as detail on detail.trno=head.trno
-                left join transnum as trnum on trnum.trno=head.trno
-                where head.doc ='rc' and head.dateid <= '" . $asof . "' " . $filter . "
-                group by detail.client
-                union all
-                select client.clientname, sum(stock.ext) as balance
-                from lahead as head
-                left join lastock as stock on stock.trno=head.trno
-                left join client on client.client=head.client
-                left join cntnum on cntnum.trno=head.trno
-                where head.doc ='cm' and head.dateid <= '" . $asof . "' " . $filter . "   
-                group by client.clientname
-                union all
-                select client.clientname,sum(detail.db-detail.cr) as balance
-                from lahead as head
-                left join ladetail as detail on detail.trno=head.trno
-                left join client on client.client=head.client
-                left join coa on coa.acnoid=detail.acnoid
-                left join cntnum on cntnum.trno=head.trno
-                where left(coa.alias,2)='AR' and head.dateid <= '" . $asof . "' " . $filter . "    
-                group by client.clientname
-                union all
-                select client.clientname,
-                sum(case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance
-                from arledger as detail
-                left join client on client.clientid=detail.clientid
-                left join cntnum on cntnum.trno=detail.trno
-                left join glhead as head on head.trno=detail.trno
-                where detail.bal<>0 and iscustomer = 1 and head.dateid <= '" . $asof . "' " . $filter . " 
-                group by client.clientname
-                order by clientname) as x
-            group by clientname
-            order by clientname";
+        $query = "select clientname,sum(balance) as balance, sum(pdc_balance) as pdc_balance from (
+            select client.clientname, 0 as balance, sum(detail.amount) as pdc_balance
+            from hrchead as head
+            left join hrcdetail as detail on detail.trno=head.trno
+            left join transnum as trnum on trnum.trno=head.trno
+            left join client on client.client=detail.client
+            where head.doc ='rc' and head.dateid <= '" . $asof . "' " . $filter . "
+            group by client.clientname
+            union all
+            select client.clientname, sum(stock.ext) as balance, 0 as pdc_balance
+            from lahead as head
+            left join lastock as stock on stock.trno=head.trno
+            left join client on client.client=head.client
+            left join cntnum on cntnum.trno=head.trno
+            where head.doc ='cm' and head.dateid <= '" . $asof . "' " . $filter . "   
+            group by client.clientname
+            union all
+            select client.clientname,sum(detail.db-detail.cr) as balance, 0 as pdc_balance
+            from lahead as head
+            left join ladetail as detail on detail.trno=head.trno
+            left join client on client.client=head.client
+            left join coa on coa.acnoid=detail.acnoid
+            left join cntnum on cntnum.trno=head.trno
+            where left(coa.alias,2)='AR' and head.dateid <= '" . $asof . "' " . $filter . "    
+            group by client.clientname
+            union all
+            select client.clientname,
+            sum(case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,
+            0 as pdc_balance
+            from arledger as detail
+            left join client on client.clientid=detail.clientid
+            left join cntnum on cntnum.trno=detail.trno
+            left join glhead as head on head.trno=detail.trno
+            where detail.bal<>0 and iscustomer = 1 and head.dateid <= '" . $asof . "' " . $filter . " 
+            group by client.clientname
+            order by clientname) as x
+        group by clientname
+        order by clientname";
         return $query;
     }
 
@@ -214,6 +216,11 @@ class accounts_receivable_reports
         return $str;
     }
 
+    private function formatBalance($value)
+    {
+        return $value == 0 ? '-' : number_format($value, 2);
+    }
+
     public function reportDefaultLayout($config)
     {
 
@@ -235,13 +242,14 @@ class accounts_receivable_reports
         $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '25px;margin-top:25px;margin-left:45px;margin-right:35px;');
         $str .= $this->default_displayHeader($config);
         $grandtotal = 0;
+        $grand = 0;
         foreach ($result as $key => $data) {
             $str .= $this->reporter->addline();
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col($key + 1 . '.', '50', null, false, '1px dotted', '', 'L', $font, $font_size, '', '', '', '');
             $str .= $this->reporter->col($data->clientname, '600', null, false, '1px dotted', '', 'L', $font, $font_size, '', '', '', '');
-            $str .= $this->reporter->col(number_format($data->balance, 2), '225', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
-            $str .= $this->reporter->col(number_format($data->balance, 2), '225', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
+            $str .= $this->reporter->col($this->formatBalance($data->balance, 2), '225', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
+            $str .= $this->reporter->col($this->formatBalance($data->balance + $data->pdc_balance, 2), '225', null, false, '1px dotted', '', 'R', $font, $font_size, '', '', '', '');
             $str .= $this->reporter->endrow();
 
             if ($this->reporter->linecounter == $page) {
@@ -252,13 +260,14 @@ class accounts_receivable_reports
             }
 
             $grandtotal += $data->balance;
+            $grand += $data->pdc_balance + $data->balance;
         }
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('GRANDTOTAL: ', '650', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '', '', '');
-        $str .= $this->reporter->col(number_format($grandtotal, 2), '225', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
-        $str .= $this->reporter->col(number_format($grandtotal, 2), '225', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->col($this->formatBalance($grandtotal, 2), '225', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
+        $str .= $this->reporter->col($this->formatBalance($grand, 2), '225', null, false,  $border, 'TB', 'R', $font, $font_size, 'B', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 

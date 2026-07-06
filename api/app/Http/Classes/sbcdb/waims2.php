@@ -4432,6 +4432,5 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["cost", "length", "width", "wt"],  "DECIMAL(19,6) DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["qty", "bal"],  "DECIMAL(19,10) DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["isimport", "isupdate"],  "TINYINT(2) UNSIGNED DEFAULT 0", 0);
-    
   }
 }

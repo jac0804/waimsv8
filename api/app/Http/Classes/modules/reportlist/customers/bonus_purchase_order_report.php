@@ -239,8 +239,7 @@ class bonus_purchase_order_report
         $font = 'CALIBRI';
         $font_size = '14';
         $result = $this->reportDefault($config);
-        $count = 30;
-        $page = 34;
+        $count = 38;
         $this->reporter->linecounter = 0;
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
@@ -249,7 +248,7 @@ class bonus_purchase_order_report
 
         $str = '';
         $layoutsize = '1100';
-        $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '25px;margin-top:25px;margin-left:50px;margin-right:35px;');
+        $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '25px;margin-top:0px;margin-left:50px;margin-right:35px;');
         $str .= $this->default_displayHeader($config);
         $str .= $this->reporter->begintable($layoutsize);
         $areas = '';
@@ -266,13 +265,13 @@ class bonus_purchase_order_report
 
                 // I-print muna ang area total ng previous area (kung meron)
                 if ($areas != ''  && !$areaTotalPrinted) {
-                    $str .= $this->reporter->addline();
+                    $this->reporter->linecounter++;
                     $str .= $this->reporter->startrow();
                     $str .= $this->reporter->col('', '50', null, false, $border, 'TLB', 'L', $font, $font_size, 'B', '',  '5px');
                     $str .= $this->reporter->col('AREA TOTAL', '750', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '5px');
                     $str .= $this->reporter->col(number_format($tlcarton, 2), '200', null, false, $border, 'TLBR', 'R', $font, $font_size, 'B', '', '5px');
                     $str .= $this->reporter->endrow();
-                    $str .= $this->reporter->addline();
+                    $this->reporter->linecounter++;
 
                     // add area totals to grand total
                     $grand_cr += $tlcarton;
@@ -282,6 +281,7 @@ class bonus_purchase_order_report
 
                     //space bago magheader
                     $str .= $this->reporter->startrow();
+                    $this->reporter->linecounter += 0.39;
                     $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '4', '', '',  '');
                     $str .= $this->reporter->col('&nbsp;', '700', null, false,  '', '',  'L', $font, '4', '', '',  '');
                     $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '4', '', '',  '');
@@ -293,7 +293,7 @@ class bonus_purchase_order_report
                 // I-print ang bagong area header
                 $areas = $data->area;
                 $province = $data->province;
-                $str .= $this->reporter->addline();
+                $this->reporter->linecounter++;
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('>>', '100', null, false, $border, 'TLB', 'C', $font, $font_size + 1, 'B', '', '5px');
                 $str .= $this->reporter->col(''.strtoupper($areas).'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
@@ -307,28 +307,37 @@ class bonus_purchase_order_report
 
             // I-print ang bawat client row sa loob ng area
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('', '100', null, false,  $border, 'L', 'L', $font, $font_size, '', '',  '2px');
-            $str .= $this->reporter->col($data->clientname, '700', null, false,  $border, '', 'L', $font, $font_size, '', '',  '2px');
-            $str .= $this->reporter->col(number_format($carton, 2), '200', null, false,  $border, 'LR', 'R', $font, $font_size, '', '',  '2px');
+            $str .= $this->reporter->col('', '100', null, false,  $border, 'TL', 'L', $font, $font_size, '', '',  '2px');
+            $str .= $this->reporter->col($data->clientname, '700', null, false,  $border, 'T', 'L', $font, $font_size, '', '',  '2px');
+            $str .= $this->reporter->col(number_format($carton, 2), '200', null, false,  $border, 'TLR', 'R', $font, $font_size, '', '',  '2px');
             $str .= $this->reporter->endrow();
 
-            $this->reporter->linecounter++;
+            $this->countline(['clientname' => $data->clientname], ['clientname' => 60]);
 
             // accumulate area totals
             $tlcarton += $carton;
 
-            if ($this->reporter->linecounter >= $count) {
+            $nextclientname = isset($result[$key + 1]) ? $result[$key + 1]->clientname : '';
+            $upcoming = $this->countline(['clientname' => $nextclientname], ['clientname' => 60], false);
+
+            $nextareacheck = isset($result[$key + 1]) ? $result[$key + 1]->area : null;
+            $areatransitionlines = 0;
+            if ($nextareacheck !== null && $nextareacheck != $areas) {
+                $areatransitionlines = 1 + 0.39 + 1;
+            }
+
+            if ($this->reporter->linecounter + $upcoming + $areatransitionlines >= $count) {
 
                 $nextarea = isset($result[$key + 1]) ? $result[$key + 1]->area : null; //if the next area is the same as the current
                 $isLastOfArea = ($nextarea != $areas);
-                 if ($isLastOfArea) {
-                    $str .= $this->reporter->addline();
+                if ($isLastOfArea) {
+                    $this->reporter->linecounter++;
                     $str .= $this->reporter->startrow();
                     $str .= $this->reporter->col('', '50', null, false, $border, 'TLB', 'L', $font, $font_size, 'B', '',  '5px');
                     $str .= $this->reporter->col('AREA TOTAL', '750', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '5px');
                     $str .= $this->reporter->col(number_format($tlcarton, 2), '200', null, false, $border, 'TLBR', 'R', $font, $font_size, 'B', '', '5px');
                     $str .= $this->reporter->endrow();
-                    $str .= $this->reporter->addline();
+                    $this->reporter->linecounter++;
 
                     // add area totals to grand total
                     $grand_cr += $tlcarton;
@@ -338,6 +347,7 @@ class bonus_purchase_order_report
 
                     //space bago magheader
                     $str .= $this->reporter->startrow();
+                    $this->reporter->linecounter += 0.39;
                     $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, '4', '', '',  '');
                     $str .= $this->reporter->col('&nbsp;', '700', null, false,  '', '',  'L', $font, '4', '', '',  '');
                     $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, '4', '', '',  '');
@@ -355,7 +365,7 @@ class bonus_purchase_order_report
                 $str .= $this->reporter->pagenumber('Page ', '200', null, true, $border, '', 'R', $font, 13, '', '',  '5px');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
-
+                $this->pagelinecount = 0;
                 $str .= $this->reporter->endtable();
                 $str .= $this->reporter->page_break();
 
@@ -373,13 +383,14 @@ class bonus_purchase_order_report
                 $str .= $this->reporter->col(strtoupper($areas).'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
                 $str .= $this->reporter->col('&nbsp;', '200', null, false, $border, 'TBR', 'C', $font, $font_size + 1, 'B', '', '5px');
                 $str .= $this->reporter->endrow();
+                $this->reporter->linecounter++;
                 }
             }
         }
 
         // Pag natapos ang loop, i-print ang last area total
         if ($areas != '' && !$areaTotalPrinted) {
-            $str .= $this->reporter->addline();
+            $this->reporter->linecounter++;
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '100', null, true, $border, 'TLB', 'L', $font, $font_size, 'B', '', '5px');
             $str .= $this->reporter->col('AREA TOTAL', '700', null, true, $border, 'TB', 'L', $font, $font_size, 'B', '', '5px');
@@ -391,6 +402,7 @@ class bonus_purchase_order_report
         }
 
         $str .= $this->reporter->startrow();
+        $this->reporter->linecounter += 0.5;
         $str .= $this->reporter->col('&nbsp;', '100', null, false,  '', '',  'L', $font, $font_size, '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '700', null, false,  '', '',  'L', $font, $font_size, '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '200', null, false,  '', '',  'L', $font, $font_size, '', '',  '');
@@ -420,5 +432,31 @@ class bonus_purchase_order_report
         $str .= $this->reporter->endreport();
 
         return $str;
+    }
+
+    public $pagelinecount = 0;
+    function countline($col = [], $len = [], $commit = true)
+    {
+        if (!empty($col)) {
+            $arr = [];
+            foreach ($col as $key => $txt) {
+                $collen = isset($len[$key]) ? $len[$key] : 0;
+                if ($collen > 0) {
+                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));  
+                }
+            }
+            $lines = $this->othersClass->getmaxcolumn($arr);  //whichever column wrapped into the most lines
+            if ($commit) { //used by $upcoming to check if the next row will exceed the page limit
+                $this->reporter->linecounter = $this->reporter->linecounter + $lines;
+                $this->pagelinecount = $this->pagelinecount + $lines;
+            }
+            return $lines;
+        } else {
+            if ($commit) {
+                $this->reporter->linecounter++;
+                $this->pagelinecount++;
+            }
+            return 1;
+        }
     }
 }//end class

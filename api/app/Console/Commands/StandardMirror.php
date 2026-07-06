@@ -53,7 +53,7 @@ class StandardMirror extends Command
         $currentdate = date('Y-m-d');
 
         $currenttime = date('Y-m-d H:i:s');
-        if($currenttime >= $currentdate . ' 06:00:00' && $currenttime < $currentdate . ' 21:00:00'){
+        if($currenttime >= $currentdate . ' 06:00:00' && $currenttime < $currentdate . ' 20:00:00'){
             $this->coreFunction->sbclogger("No mirror within operating hours", 'MIRROR2');
             return;
         }
@@ -68,6 +68,9 @@ class StandardMirror extends Command
 
                 $syncing = ['doc' => 'IOU', 'psection' => 'MIRROR', 'pvalue' => 1];
                 $this->coreFunction->sbcinsert("profile", $syncing);
+
+                $this->mirrorClass->ftpcreatefolder();
+                $this->mirrorClass->ftpcreatefolder("uploaded");
 
                 $this->mirrorClass->masterfilemirror("item", ["itemid"]);
                 $this->mirrorClass->masterfilemirror("uom", ["itemid", "uom"]);
@@ -96,7 +99,13 @@ class StandardMirror extends Command
                 $this->mirrorClass->masterfilemirror("ewtlist", ["line"]);
                 $this->mirrorClass->masterfilemirror("terms", ["line"]);
 
+                $this->coreFunction->sbclogger('uploading files', "MIRROR");
+                $this->mirrorClass->processMirrorFolder();
+
                 $this->mirrorClass->transactionsmirror("");
+
+                $this->coreFunction->sbclogger('uploading files', "MIRROR");
+                $this->mirrorClass->processMirrorFolder();
 
                 $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
 

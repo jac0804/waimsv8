@@ -104,7 +104,7 @@ class daily_sales_summary
                   left join item on item.itemid = stock.itemid
                   left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
-                  group by head.docno,date(head.dateid),head.ctnsno,cat.cat_name  order by head.dateid,catname";
+                  group by date(head.dateid),cat.cat_name  order by head.dateid,catname";
 
                 break;
             case '1': // unposted
@@ -118,11 +118,11 @@ class daily_sales_summary
                   left join item on item.itemid = stock.itemid
                   left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
-                  group by date(head.dateid),head.ctnsno, cat.cat_name  order by head.dateid,catname";
+                  group by date(head.dateid), cat.cat_name  order by head.dateid,catname";
                 break;
             case '2': //all
                 $query = "
-                  select count(distinct docno) as docno,dateid,carton,sum(totalsales) as totalsales,catname from (
+                  select count(distinct docno) as docno,dateid,sum(carton) as carton,sum(totalsales) as totalsales,catname from (
                   select head.docno, date(head.dateid) as dateid,
                     sum(if(c.qty is not null and c.qty != 0 and head.pltrno != 0, stock.iss / c.qty, 0)) as carton,
                   sum(stock.ext) as totalsales, if(cat.cat_name='' or cat.cat_name is null,'No Category',cat.cat_name) as catname
@@ -133,7 +133,7 @@ class daily_sales_summary
                   left join item on item.itemid = stock.itemid
                   left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
-                  group by  head.docno,date(head.dateid),head.ctnsno,cat.cat_name
+                  group by  date(head.dateid),head.docno,cat.cat_name
 
                   union all 
                   
@@ -147,9 +147,9 @@ class daily_sales_summary
                   left join item on item.itemid = stock.itemid
                   left join carton as c on c.sizeid=stock.uom and c.brandid=item.brand
                   where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
-                  group by head.docno,date(head.dateid),head.ctnsno,cat.cat_name
-                  order by date(dateid),catname) as xy
-                  group by dateid,carton,catname order by dateid,catname";
+                  group by date(head.dateid),head.docno,cat.cat_name
+                  order by dateid,catname) as xy
+                  group by dateid,catname order by dateid,catname";
                 break;
         }
         // var_dump($query);

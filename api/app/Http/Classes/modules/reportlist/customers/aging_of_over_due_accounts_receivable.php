@@ -162,7 +162,7 @@ class aging_of_over_due_accounts_receivable
               group by clientname,elapse,agentname,area
               order by agentname,area";
 
-        Logger($qry);
+        // Logger($qry);
         return $qry;
     }
 
@@ -312,6 +312,8 @@ class aging_of_over_due_accounts_receivable
         $subtote = 0;
         $subgt = 0;
 
+        // wrap-aware line counting settings for clientname column (col width 440)
+        $charsPerLine = 55; // tune this to match actual rendered width/font
 
         $agent = "";
 
@@ -466,7 +468,12 @@ class aging_of_over_due_accounts_receivable
             // $rowCount++;
             $agent = $data[$i]['agentname'];
 
-
+            // wrap-aware line counting: if clientname wraps into multiple lines,
+            // bump linecounter by the extra lines so page-break timing stays accurate
+            $clientLines = max(1, ceil(strlen($data[$i]['clientname']) / $charsPerLine));
+            if ($clientLines > 1) {
+                $this->reporter->linecounter += ($clientLines - 1);
+            }
 
             $tota = $tota + $a;
             $totb = $totb + $b;

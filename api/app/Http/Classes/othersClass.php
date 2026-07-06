@@ -746,7 +746,7 @@ class othersClass
     array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
     array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
-    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate');
+    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate', 'otherleadtime', 'paymentdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
     array_push($date, 'regdate', 'promostart', 'promoend', 'checkerdate', 'dispatchdate', 'due', 'recondate', 'lock', 'lasttrans', 'sjdate', 'printcheck');
     array_push($date, 'logisticdate', 'checkerrcvdate', 'forloaddate', 'checkerdone', 'releasedate', 'packdate', 'reservationdate', 'tripdate');

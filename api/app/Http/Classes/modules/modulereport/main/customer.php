@@ -3609,7 +3609,7 @@ class customer
 
                             union all
 
-                            select 0 as collectionamt,0 as bounced,  0 as amount, sum(if(ar.db <> 0, ar.db,0)) as balance, cl.clientname,0 as cleared_amount
+                            select 0 as collectionamt,0 as bounced,  0 as amount, sum(if(ar.bal <> 0, ar.bal,0)) as balance, cl.clientname,0 as cleared_amount
                             from arledger as ar
                             left join client as cl on cl.clientid=ar.clientid
                             where   date(ar.dateid)  <= '$start'   and cl.clientid=$clientid

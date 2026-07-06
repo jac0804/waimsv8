@@ -714,7 +714,14 @@ class jc
       }
       foreach ($stock as $key => $value) {
         $params = [];
-        $disc = $stock[$key]->rrcost - ($this->othersClass->discount($stock[$key]->rrcost, $stock[$key]->disc));
+        if ($this->companysetup->getisdiscperqty($config['params'])) {
+          $discamt = $stock[$key]->rrcost - ($this->othersClass->discount($stock[$key]->rrcost, $stock[$key]->disc));
+          $disc = $discamt * $stock[$key]->rrqty;
+        } else {
+          $disc = ($stock[$key]->rrcost * $stock[$key]->rrqty) - ($this->othersClass->discount($stock[$key]->rrcost * $stock[$key]->rrqty, $stock[$key]->disc));
+        }
+
+        
         if ($vat != 0) {
           $tax = round(($stock[$key]->ext / $tax1), 2);
           $tax = round($stock[$key]->ext - $tax, 2);

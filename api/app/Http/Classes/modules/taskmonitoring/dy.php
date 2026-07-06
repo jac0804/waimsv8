@@ -475,6 +475,8 @@ class dy
     // var_dump($data);
     // break;
     if ($isupdate) {
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
       if ($head['empid'] != $head['userid']) {
         $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno]);
         return ['status' =>  true, 'msg' => $msg, 'trno' => $trno, 'clientid' => $trno];

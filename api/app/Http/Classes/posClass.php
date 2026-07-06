@@ -2818,6 +2818,7 @@ class posClass
       case 'CV':
       case 'CR':
       case 'DS':
+      case 'GJ':  
         $numtable = 'cntnum';
         $tables = ['cntnum', 'glhead', 'gldetail', 'arledger', 'apledger', 'caledger', 'cbledger', 'crledger', 'hdetailinfo', 'hcntnuminfo'];
         break;

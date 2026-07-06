@@ -1487,39 +1487,6 @@ class pending_sales_orders
 
     switch ($config['params']['dataparams']['reporttype']) {
       case '0': //Summarized
-        // $query = "select cgrp, igrp, clientname, itemname, groupid, brand, class, sum(qa) as qa,
-        //       sum(qty) as qty, sum(unserved) as unserved, sum(unservedamt) as unservedamt, uom, itemid,
-        //       barcode, subcode, partno, category, subcatname from (
-        //         select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
-        //           client.clientname, item.itemname, item.groupid, item.brand, item.class, stock.qa,stock.iss as qty,
-        //           (stock.iss-stock.qa) as unserved, (stock.iss-stock.qa)*stock.amt as unservedamt, item.uom, item.itemid,
-        //           item.barcode,'' as subcode,'' as partno, cat.name as category, subcat.name as subcatname
-        //         from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-        //           left join item on item.itemid=stock.itemid)
-        //           left join client on client.client=head.client 
-        //           left join client as agent on agent.client=head.agent
-        //           left join transnum on transnum.trno=head.trno          
-        //           left join itemcategory as cat on cat.line = item.category
-        //           left join itemsubcategory as subcat on subcat.line = item.subcat
-        //         where stock.void=0 and (stock.iss-stock.qa)>0   and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-        //         union all
-        //         select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
-        //           client.clientname, item.itemname, item.groupid, item.brand, item.class, stock.qa,stock.iss as qty,
-        //           (stock.iss-stock.qa) as unserved, (stock.iss-stock.qa)*stock.amt as unservedamt, item.uom, item.itemid,
-        //           item.barcode,'' as subcode,'' as partno, cat.name as category, subcat.name as subcatname
-        //         from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-        //           left join item on item.itemid=stock.itemid)
-        //           left join client on client.client=head.client 
-        //           left join client as agent on agent.client=head.agent
-        //           left join transnum on transnum.trno=head.trno
-        //           left join itemcategory as cat on cat.line = item.category
-        //           left join itemsubcategory as subcat on subcat.line = item.subcat
-        //         where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0 ) as t
-        //         group by cgrp, igrp, clientname, itemname, groupid, brand, class, uom, itemid, barcode, subcode, partno, category, subcatname";
-
-        // break;
-
-
         if ($typeofreport == 'client') { // client summarized
           $query = "  select cgrp,clientname,area,areaname, sum(unservedamt) as unservedamt,
                               sum(servedamt) as servedamt,
@@ -1531,7 +1498,8 @@ class pending_sales_orders
                               sum(stock.qa*stock.amt) as servedamt,
                               sum(stock.iss*stock.amt) as totalamt,
                               sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-                              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+                              from ((sohead as head 
+                              left join sostock as stock on stock.trno=head.trno)
                               left join item on item.itemid=stock.itemid)
                               left join client on client.client=head.client
                               left join client as agent on agent.client=head.agent
@@ -1540,7 +1508,7 @@ class pending_sales_orders
                               left join itemsubcategory as subcat on subcat.line = item.subcat
                               where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
                               group by client.clientname, client.area, client.province
-
+ 
                               union all
                               select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
                               sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
@@ -1598,8 +1566,7 @@ class pending_sales_orders
                             group by igrp,itemname, scategory ";
         }
         break;
-      default: //Detailed
-
+      case '1': //Detailed
         if ($typeofreport == 'client') { // client detailed
           $query = "select client.clientname as cgrp, head.docno,
               client.clientname,
@@ -1618,7 +1585,7 @@ class pending_sales_orders
               left join itemsubcategory as subcat on subcat.line = item.subcat
               where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
               group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province
-
+ 
               union all
               select client.clientname as cgrp, head.docno, client.clientname, 
               date(head.dateid) as dateid,
@@ -1670,9 +1637,137 @@ class pending_sales_orders
               left join itemsubcategory as subcat on subcat.line = item.subcat
               where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . " and item.isofficesupplies= 0 ";
         }
+        break;
+      case '2': // Insufficient summary
+        // build on-hand subquery by item (convert by uom.factor)
+        $balqry = "select rr.itemid,ifnull(sum(rr.bal / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0) as qtyonhand
+          from rrstatus rr
+          left join uom on uom.itemid=rr.itemid and uom.uom=rr.uom
+          where rr.bal>0
+          group by rr.itemid";
+
+        if ($typeofreport == 'client') { // client insufficient summary
+          $query = "select cgrp,clientname,area,areaname,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
+                sum(qtyonhand)-sum(pending) as diff from (
+            select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
+            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+            group by client.clientname, client.area, client.province, item.itemid
+ 
+            union all
+ 
+            select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
+            group by client.clientname, client.area, client.province, item.itemid
+          ) as t
+          group by cgrp,clientname,area,areaname";
+        } else { // item insufficient summary
+          $query = "select igrp,itemname,scategory,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
+                sum(qtyonhand)-sum(pending) as diff from (
+            select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
+            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+            group by igrp, item.itemname, subcat.name, item.itemid
+ 
+            union all
+ 
+            select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
+            group by igrp, item.itemname, subcat.name, item.itemid
+          ) as t
+          group by igrp,itemname, scategory";
+        }
+        break;
+      case '3': // Insufficient detail (per order line)
+        if ($typeofreport == 'client') {
+          $query = "select client.clientname as cgrp, head.docno,
+              client.clientname,
+              date(head.dateid) as dateid,
+              item.itemname,
+              stock.iss as quantity,
+              stock.qa as served,
+              (stock.iss-stock.qa) as pending,
+              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt
+              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
+              ";
+        } else {
+          $query = "select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
+              client.clientname, item.itemname, item.sizeid as size,
+              date(head.dateid) as dateid, stock.iss as quantity,
+              stock.qa as served,(stock.iss-stock.qa) as pending,
+              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
+              union all
+              select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
+              client.clientname, item.itemname, item.sizeid as size,
+              date(head.dateid) as dateid, stock.iss as quantity,
+              stock.qa as served,(stock.iss-stock.qa) as pending,
+              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+              left join item on item.itemid=stock.itemid)
+              left join client on client.client=head.client
+              left join client as agent on agent.client=head.agent
+              left join transnum on transnum.trno=head.trno
+              left join itemcategory as cat on cat.line = item.category
+              left join itemsubcategory as subcat on subcat.line = item.subcat
+              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . " and item.isofficesupplies= 0";
+        }
+        break;
     }
 
     $query .= " order by $order ";
+    // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
 
@@ -1844,15 +1939,15 @@ class pending_sales_orders
       case '3':
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DATE', '110', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DATE', '100', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('DOC #', '150', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '10', null, false, $border, 'TBL', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($sortyname, '290', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($sortyname, '240', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
 
-        $str .= $this->reporter->col('ITEM & SIZE', '135', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('QUANTITY', '135', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('SERVED', '135', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('PENDING', '135', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('ITEM & SIZE', '270', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('QUANTITY', '110', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('SERVED', '110', null, false, $border, 'TBL', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('PENDING', '110', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -2709,68 +2804,60 @@ class pending_sales_orders
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-left:50px;');
     $str .= $this->default_displayHeader_roosevelt($config);
 
-    $item = null;
-    $unservedamt = 0;
+    $quantityamt = 0;
     $servedamt = 0;
-    $cancelamt = 0;
-    $totalamt = 0;
-    $grand_unserved = 0;
+    $pendingamt = 0;
+    $grand_quantity = 0;
     $grand_served = 0;
-    $grand_cancel = 0;
-    $grand_total = 0;
+    $grand_pending = 0;
 
-    $isContinuation = false;
     $areas = '';
     $areaname = '';
+
     foreach ($result as $key => $data) {
 
-      $unserved = $data->unservedamt;
-      $served = $data->servedamt;
-      $cancel = $data->cancelamt;
-      $total = $data->totalamt;
+      $quantity = isset($data->quantity) ? $data->quantity : 0;
+      $served = isset($data->served) ? $data->served : 0;
+      $pending = isset($data->pending) ? $data->pending : 0;
 
       if ($areas != $data->area) {
 
         if ($areas != '') {
 
-          $unservedamts = $unservedamt;
+          $quantityamts = $quantityamt;
           $servedamts = $servedamt;
-          $cancelamts = $cancelamt;
-          $totalamts = $totalamt;
+          $pendingamts = $pendingamt;
 
+          // AREA TOTAL row - 7 columns, widths match header/grand total (110,150,10,425,135,135,135 = 1100)
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->addline();
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('AREA TOTAL', '290', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($cancelamts != 0 ? number_format($cancelamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('AREA TOTAL', '425', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->endtable();
 
-          $grand_unserved += $unservedamt;
+          $grand_quantity += $quantityamt;
           $grand_served += $servedamt;
-          $grand_cancel += $cancelamt;
-          $grand_total += $totalamt;
+          $grand_pending += $pendingamt;
 
-          $unservedamt = 0;
+          $quantityamt = 0;
           $servedamt = 0;
-          $cancelamt = 0;
-          $totalamt = 0;
+          $pendingamt = 0;
 
-          //space bago magheader
+          // spacer row before next area header (8 columns, matches data row widths)
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '110', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '10', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '290', null, false, '', '', 'L', $font, '4', '', '', '', '');
-          $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
@@ -2781,26 +2868,27 @@ class pending_sales_orders
 
         $areas = $data->area;
         $areaname = $data->areaname;
+
+        // Area group header - 7 columns, widths (110,150,10,425,135,135,135 = 1100)
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '110', null, false, $border, 'TLB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '150', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col(strtoupper($areas) . ' - ' . strtoupper($areaname), '400', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TBR', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col(strtoupper($areas) . ' - ' . strtoupper($areaname), '425', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TBR', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->addline();
       }
 
-      $unserveds = $unserved;
+      $quantitys = $quantity;
       $serveds = $served;
-      $cancels = $cancel;
-      $totals = $total;
+      $pendings = $pending;
 
+      // Data row - 8 columns: Date, DocNo, spacer, Client, Item, Quantity, Served, Pending (1100 total)
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
@@ -2808,71 +2896,49 @@ class pending_sales_orders
       $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($data->clientname, '290', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($unserveds != 0 ? number_format($unserveds, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->itemname, '135', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($cancels != 0 ? number_format($cancels, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($totals != 0 ? number_format($totals, 2) : '', '135', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '135', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $unservedamt += $unserved;
+      $quantityamt += $quantity;
       $servedamt += $served;
-      $cancelamt += $cancel;
-      $totalamt += $total;
+      $pendingamt += $pending;
 
-      // pagination
+      // pagination (left disabled, matching original)
       // if ($this->reporter->linecounter >= $page) {
-      //   $str .= $this->reporter->begintable($layoutsize);
-      //   $str .= $this->reporter->startrow();
-      //   $str .= $this->reporter->col('', '110', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '150', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '10', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '290', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->endrow();
-      //   $str .= $this->reporter->endtable();
-
-      //   $isContinuation = true;
-      //   $continuedArea = $areas;
-
-      //   $str .= $this->reporter->page_break();
-      //   $str .= $this->default_displayHeader_roosevelt($config, true, $continuedArea);
-      //   // FIX: reopen a table context after the page break, matching the item report
-      //   $str .= $this->reporter->begintable($layoutsize);
-      //   $page = $page + $count;
+      //   ...
       // }
     }
 
     if ($areas != '') {
 
-      $unservedamts = $unservedamt;
+      $quantityamts = $quantityamt;
       $servedamts = $servedamt;
-      $cancelamts = $cancelamt;
-      $totalamts = $totalamt;
+      $pendingamts = $pendingamt;
 
+      // last area's AREA TOTAL row - matches the mid-loop version
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col('AREA TOTAL', '290', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($cancelamts != 0 ? number_format($cancelamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('AREA TOTAL', '425', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $grand_unserved += $unservedamt;
+      $grand_quantity += $quantityamt;
       $grand_served += $servedamt;
-      $grand_cancel += $cancelamt;
-      $grand_total += $totalamt;
+      $grand_pending += $pendingamt;
     }
 
+    // spacer before grand total (8 columns, matches data row widths)
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('&nbsp;', '110', null, false, '', '', 'L', $font, '4', '', '', '', '');
@@ -2882,20 +2948,19 @@ class pending_sales_orders
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
-    $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    // GRAND TOTAL row - now correctly bound to grand_quantity / grand_served / grand_pending
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col('GRAND TOTAL', '290', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_unserved != 0 ? number_format($grand_unserved, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('GRAND TOTAL', '425', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_cancel != 0 ? number_format($grand_cancel, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_total != 0 ? number_format($grand_total, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2903,7 +2968,6 @@ class pending_sales_orders
 
     return $str;
   }
-
   public function detail_insufficient_item_roosevelt($config)
   {
     $result = $this->roosevelt_qry($config);
@@ -2923,63 +2987,55 @@ class pending_sales_orders
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-left:50px;');
     $str .= $this->default_displayHeader_roosevelt($config);
 
-    $item = null;
-    $unservedamt = 0;
+    $quantityamt = 0;
     $servedamt = 0;
-    $cancelamt = 0;
-    $totalamt = 0;
-    $grand_unserved = 0;
+    $pendingamt = 0;
+    $grand_quantity = 0;
     $grand_served = 0;
-    $grand_cancel = 0;
-    $grand_total = 0;
+    $grand_pending = 0;
 
     $scategory = null;
-    $isContinuation = false;
 
     foreach ($result as $key => $data) {
 
-      $unserved = $data->unservedamt;
-      $served = $data->servedamt;
-      $cancel = $data->cancelamt;
-      $total = $data->totalamt;
+      $quantity = isset($data->quantity) ? $data->quantity : 0;
+      $served = isset($data->served) ? $data->served : 0;
+      $pending = isset($data->pending) ? $data->pending : 0;
 
       if ($scategory !== $data->scategory) {
 
-        // I-print muna ang sub total ng previous subcategory 
+        // I-print muna ang sub total ng previous subcategory
         if ($scategory !== null) {
 
-          $unservedamts = $unservedamt;
+          $quantityamts = $quantityamt;
           $servedamts = $servedamt;
-          $cancelamts = $cancelamt;
-          $totalamts = $totalamt;
+          $pendingamts = $pendingamt;
 
+          // SUB TOTAL row - 7 columns, widths (110,150,10,425,135,135,135 = 1100)
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->addline();
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('SUB TOTAL', '290', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($cancelamts != 0 ? number_format($cancelamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '390', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('SUB TOTAL', '270', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
           // add sub total to grand total
-          $grand_unserved += $unservedamt;
+          $grand_quantity += $quantityamt;
           $grand_served += $servedamt;
-          $grand_cancel += $cancelamt;
-          $grand_total += $totalamt;
+          $grand_pending += $pendingamt;
 
           // reset sub totals
-          $unservedamt = 0;
+          $quantityamt = 0;
           $servedamt = 0;
-          $cancelamt = 0;
-          $totalamt = 0;
+          $pendingamt = 0;
 
-          //space bago magheader
+          //space bago magheader (8 columns, matches data row widths)
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '110', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
@@ -2989,110 +3045,85 @@ class pending_sales_orders
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
-          $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->addline();
         }
 
-        // I-print ang bagong subcategory header
+        // I-print ang bagong subcategory header - 7 columns (110,150,10,425,135,135,135 = 1100)
         $scategory = $data->scategory;
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '110', null, false, $border, 'TLB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col($scategory, '400', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col('', '120', null, false, $border, 'TBR', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        // $str .= $this->reporter->col('', '150', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'LTB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('>>', '100', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col($scategory, '585', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('', '135', null, false, $border, 'TBR', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->addline();
       }
 
-      $unserveds = $unserved;
+      $quantitys = $quantity;
       $serveds = $served;
-      $cancels = $cancel;
-      $totals = $total;
+      $pendings = $pending;
 
-      // I-print ang bawat item row sa loob ng subcategory
+      // I-print ang bawat order line sa loob ng subcategory - 8 columns (110,150,10,290,135,135,135,135 = 1100)
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->dateid, '110', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->dateid, '100', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($data->itemname, '290', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($unserveds != 0 ? number_format($unserveds, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($cancels != 0 ? number_format($cancels, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($totals != 0 ? number_format($totals, 2) : '', '135', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->clientname, '240', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->itemname . ' - ' . $data->size, '270', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '110', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       // accumulate sub totals
-      $unservedamt += $unserved;
+      $quantityamt += $quantity;
       $servedamt += $served;
-      $cancelamt += $cancel;
-      $totalamt += $total;
+      $pendingamt += $pending;
 
-      // pagination
+      // pagination (left disabled, matching original)
       // if ($this->reporter->linecounter >= $page) {
-      //   $str .= $this->reporter->begintable($layoutsize);
-      //   $str .= $this->reporter->startrow();
-      //   $str .= $this->reporter->col('', '110', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '150', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '10', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '290', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->col('', '135', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '2px');
-      //   $str .= $this->reporter->endrow();
-      //   $str .= $this->reporter->endtable();
-
-      //   $isContinuation = true;
-      //   $continuedCategory = ($scategory !== '') ? $scategory : 'NO SUBCATEGORY';
-
-      //   $str .= $this->reporter->page_break();
-      //   $str .= $this->default_displayHeader_roosevelt($config, true, $continuedCategory);
-      //   $str .= $this->reporter->begintable($layoutsize);
-      //   $page = $page + $count;
+      //   ...
       // }
     }
 
     // Pag natapos ang loop, i-print ang last sub total
     if ($scategory !== null) {
 
-      $unservedamts = $unservedamt;
+      $quantityamts = $quantityamt;
       $servedamts = $servedamt;
-      $cancelamts = $cancelamt;
-      $totalamts = $totalamt;
+      $pendingamts = $pendingamt;
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('', '100', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('', '390', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col('SUB TOTAL', '290', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($cancelamts != 0 ? number_format($cancelamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('SUB TOTAL', '270', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       // add last sub total
-      $grand_unserved += $unservedamt;
+      $grand_quantity += $quantityamt;
       $grand_served += $servedamt;
-      $grand_cancel += $cancelamt;
-      $grand_total += $totalamt;
+      $grand_pending += $pendingamt;
     }
 
+    // spacer before grand total (8 columns, matches data row widths)
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('&nbsp;', '110', null, false, '', '', 'L', $font, '4', '', '', '', '');
@@ -3102,20 +3133,19 @@ class pending_sales_orders
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
-    $str .= $this->reporter->col('&nbsp;', '135', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->addline();
 
+    // GRAND TOTAL row - correctly bound to grand_quantity / grand_served / grand_pending
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('', '100', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('', '390', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col('GRAND TOTAL', '290', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_unserved != 0 ? number_format($grand_unserved, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_cancel != 0 ? number_format($grand_cancel, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_total != 0 ? number_format($grand_total, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('GRAND TOTAL', '270', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3170,33 +3200,30 @@ class pending_sales_orders
       if ($areas != $data->area) {
 
         if ($areas != '') {
-          $unservedamts = $unservedamt;
-          $servedamts = $servedamt;
-          $cancelamts = $cancelamt;
-          $totalamts = $totalamt;
+          $pendingamts = $pendingamt;
+          $qtyonhandamts = $qtyonhandamt;
+          $diffamts = $diffamt;
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col('SUB TOTAL', '650', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($qtyonhandamts != 0 ? number_format($qtyonhandamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($diffamts != 0 ? number_format($diffamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
           // add subtotal to grand total
-          $grand_unserved += $unservedamt;
-          $grand_served += $servedamt;
-          $grand_cancel += $cancelamt;
-          $grand_total += $totalamt;
+          $grand_pending += $pendingamt;
+          $grand_qtyonhand += $qtyonhandamt;
+          $grand_diff += $diffamt;
 
           // reset running totals
-          $unservedamt = 0;
-          $servedamt = 0;
-          $cancelamt = 0;
-          $totalamt = 0;
+          $pendingamt = 0;
+          $qtyonhandamt = 0;
+          $diffamt = 0;
 
           // spacer row before next header
           $str .= $this->reporter->begintable($layoutsize);
@@ -3229,18 +3256,17 @@ class pending_sales_orders
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+      $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
       $str .= $this->reporter->col($data->clientname, '650', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($unserveds != 0 ? number_format($unserveds, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($cancels != 0 ? number_format($cancels, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($totals != 0 ? number_format($totals, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($qtyonhands != 0 ? number_format($qtyonhands, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($diffs != 0 ? number_format($diffs, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $unservedamt += $unserved;
-      $servedamt += $served;
-      $cancelamt += $cancel;
-      $totalamt += $total;
+      $pendingamt += $pending;
+      $qtyonhandamt += $qtyonhand;
+      $diffamt += $diff;
 
       // pagination  (optional)
       if ($this->reporter->linecounter >= $page) {
@@ -3264,26 +3290,24 @@ class pending_sales_orders
     // last group's subtotal
     if ($areas != '') {
 
-      $unservedamts = $unservedamt;
-      $servedamts = $servedamt;
-      $cancelamts = $cancelamt;
-      $totalamts = $totalamt;
+      $pendingamts = $pendingamt;
+      $qtyonhandamts = $qtyonhandamt;
+      $diffamts = $diffamt;
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('SUB TOTAL', '650', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($qtyonhandamts != 0 ? number_format($qtyonhandamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($diffamts != 0 ? number_format($diffamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $grand_unserved += $unservedamt;
-      $grand_served += $servedamt;
-      $grand_cancel += $cancelamt;
-      $grand_total += $totalamt;
+      $grand_pending += $pendingamt;
+      $grand_qtyonhand += $qtyonhandamt;
+      $grand_diff += $diffamt;
     }
 
     $unservedamts = $unservedamt;
@@ -3295,9 +3319,9 @@ class pending_sales_orders
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('GRAND TOTAL', '650', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_unserved != 0 ? number_format($grand_unserved, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_total != 0 ? number_format($grand_total, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_qtyonhand != 0 ? number_format($grand_qtyonhand, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_diff != 0 ? number_format($grand_diff, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3348,33 +3372,30 @@ class pending_sales_orders
 
         if ($scategory != '') {
 
-          $unservedamts = $unservedamt;
-          $servedamts = $servedamt;
-          $cancelamts = $cancelamt;
-          $totalamts = $totalamt;
+          $pendingamts = $pendingamt;
+          $qtyonhandamts = $qtyonhandamt;
+          $diffamts = $diffamt;
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col('SUB TOTAL', '660', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($qtyonhandamts != 0 ? number_format($qtyonhandamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($diffamts != 0 ? number_format($diffamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
           // add subtotal to grand total
-          $grand_unserved += $unservedamt;
-          $grand_served += $servedamt;
-          $grand_cancel += $cancelamt;
-          $grand_total += $totalamt;
+          $grand_pending += $pendingamt;
+          $grand_qtyonhand += $qtyonhandamt;
+          $grand_diff += $diffamt;
 
           // reset running totals
-          $unservedamt = 0;
-          $servedamt = 0;
-          $cancelamt = 0;
-          $totalamt = 0;
+          $pendingamt = 0;
+          $qtyonhandamt = 0;
+          $diffamt = 0;
 
           //space bago magheader
           $str .= $this->reporter->begintable($layoutsize);
@@ -3404,26 +3425,24 @@ class pending_sales_orders
         $str .= $this->reporter->endtable();
       }
 
-      $unserveds = $unserved;
+      $quantitys = $quantity;
       $serveds = $served;
-      $cancels = $cancel;
-      $totals = $total;
+      $pendings = $pending;
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($data->itemname, '660', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($unserveds != 0 ? number_format($unserveds, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($totals != 0 ? number_format($totals, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $unservedamt += $unserved;
+      $quantityamt += $quantity;
       $servedamt += $served;
-      $cancelamt += $cancel;
-      $totalamt += $total;
+      $pendingamt += $pending;
 
       // pagination (optional)
       if ($this->reporter->linecounter >= $page) {
@@ -3449,35 +3468,33 @@ class pending_sales_orders
     // last subcategory's subtotal
     if ($scategory != '') {
 
-      $unservedamts = $unservedamt;
+      $quantityamts = $quantityamt;
       $servedamts = $servedamt;
-      $cancelamts = $cancelamt;
-      $totalamts = $totalamt;
+      $pendingamts = $pendingamt;
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('SUB TOTAL', '660', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($unservedamts != 0 ? number_format($unservedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamt, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($totalamts != 0 ? number_format($totalamt, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $grand_unserved += $unservedamt;
+      $grand_quantity += $quantityamt;
       $grand_served += $servedamt;
-      $grand_cancel += $cancelamt;
-      $grand_total += $totalamt;
+      $grand_pending += $pendingamt;
     }
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('GRAND TOTAL', '660', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_unserved != 0 ? number_format($grand_unserved, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_total != 0 ? number_format($grand_total, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
