@@ -1327,11 +1327,16 @@ class sj
     $companyid = $config['params']['companyid'];
     $isserial = $this->companysetup->getserial($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
+    $issuemultiloc = $this->companysetup->getissuemultipleexpiry($config['params']);
     if ($isserial) {
       if ($companyid == 10 || $companyid == 12) { //afti, afti usd
         $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
       } else {
-      $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
+        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
+        if($issuemultiloc){
+          $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
+        }
+      
       }
     } elseif ($ispallet) {
       $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];

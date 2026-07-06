@@ -2839,7 +2839,7 @@ class trigger_masterfile
 		$fields = [
 			'Positions'        => ['positions'        => []],
 		];
-		$this->settriggermasterfilelogs($config, 'entrypositions', 'positions', 'masterfile_log', $fields, 'line', 'id');
+		$this->settriggermasterfilelogs($config, 'entrypositions', 'positions', 'masterfile_log', $fields, 'id', 'id');
 	}
 
 	private function entrycrbrand_triggers($config)

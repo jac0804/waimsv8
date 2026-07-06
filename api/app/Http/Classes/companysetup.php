@@ -1792,10 +1792,10 @@ class companysetup
         $this->documentlength = 15;
         $this->barcodelength = 20;
         $this->tax = 12;
-        $this->serial = false;
+        $this->serial = true;
         $this->companyname = 'ABC Corp.';
         $this->systemtype = 'AIMS';
-        $this->isexpiry = false;
+        $this->isexpiry = true;
         $this->checkbelowcost = true;
         $this->isproject = false;
         $this->iscreateversion = false;
@@ -1829,6 +1829,7 @@ class companysetup
         // $this->socketserver = 'https://op.sbc.ph:25384'; //'http://localhost:3000';//http://demo.queuing.solutionbasecorp.com:25763
         // $this->socketnotify = true;
         $this->isautoservice = true;
+        $this->issuemultipleexpiry = true;
         break;
     }
   }

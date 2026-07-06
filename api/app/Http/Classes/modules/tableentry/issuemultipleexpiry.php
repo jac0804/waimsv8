@@ -33,6 +33,7 @@ class issuemultipleexpiry
   public $showclosebtn = true;
   private $reporter;
   public $logger;
+  private $sqlquery;
   private $reportheader;
 
 
@@ -44,6 +45,7 @@ class issuemultipleexpiry
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->logger = new Logger;
+    $this->sqlquery = new sqlquery;
   }
 
   public function getAttrib()
@@ -128,8 +130,10 @@ class issuemultipleexpiry
     $path = $this->getapppath($config['params']['doc']);
     $rows = [];
     $refx =0;
+    $client ='';
     if (!empty($data)) {
       $refx = $data[0]['refx'];
+      $client = $data[0]['client'];
       foreach ($data as $key2 => $value) {
         $config['params']['data']['uom'] = $data[$key2]['uom'];
         $config['params']['data']['itemid'] = $data[$key2]['itemid'];
@@ -147,30 +151,33 @@ class issuemultipleexpiry
 
         $return = app($path)->additem('insert', $config);
         if ($return['status']) {
-          // if (app($path)->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
-          //   $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-          //   $line = $return['row'][0]->line;
-          //   $config['params']['trno'] = $trno;
-          //   $config['params']['line'] = $line;
-          //   $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-          //   $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
-          //   $row = $this->openstockline($config);
-          //   $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
-          // } else {
-          //   if ($sline != '') {
-          //     $line = $return['row'][0]->line;
-          //     $this->othersClass->insertserialout($sline, $trno, $line, $data[$key2]->loc);
-          //   }
-          // }
-          array_push($rows, $return['row'][0]);
+          if($data[$key2]['refx'] !=0){
+            if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
+              $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+              $line = $return['row'][0]->line;
+              $config['params']['trno'] = $trno;
+              $config['params']['line'] = $line;
+              $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
+              $row = app($path)->openstockline($config);
+              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+            }
+          }
+          
+          //array_push($rows, $return['row'][0]);
         }
       } // end foreach
     } //end if
 
-    if($refx !=0){
-      return ['status' => true, 'msg'=> 'Success','closemodal' =>true , 'lookupdata'=>[]];
+  $stock = app($path)->openstock($trno,$config);
+
+    if($refx != 0){
+      //condition per lookup
+      $config['params']['client'] = $client;
+      $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
+      return ['status' => true, 'msg'=> 'Success','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
-      return ['status' => true, 'msg'=> 'Success','closemodal' =>true,'row'=>$rows];
+      return ['status' => true, 'msg'=> 'Success','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
     
   } //end function
@@ -216,22 +223,40 @@ class issuemultipleexpiry
     $uom = '';
     $amt =0;
     $disc ='';
+    $ref = '';
+    $client ='';
+
+    if (isset($row['docno'])){
+      $ref= $row['docno'];
+    }
 
     if (isset($row['refx'])){
       $refx= $row['refx'];
     }
 
     if (isset($row['linex'])){
-      $refx= $row['linex'];
+      $linex= $row['linex'];
     }
 
     if (isset($row['uom'])){
       $uom= $row['uom'];
     }
 
+    if (isset($row['amt'])){
+      $amt= $row['amt'];
+    }
+
+    if (isset($row['disc'])){
+      $disc= $row['disc'];
+    }
+
+    if (isset($row['client'])){
+      $client= $row['client'];
+    }
+
     if($refx == 0){
       $config['params']['barcode'] = $row['barcode'];
-      $config['params']['client'] = $row['client'];
+      $config['params']['client'] = $row['client'];      
 
       $path = $this->getapppath($doc);
       $latesprice = app($path)->getlatestprice($config);
@@ -244,7 +269,7 @@ class issuemultipleexpiry
     }
     
     
-    $qry = "select $refx as refx, $linex as linex,'".$uom."' as uom,'".$disc."' as disc,".$amt." as amt,item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh,
+    $qry = "select '".$client."' as client,$refx as refx, $linex as linex,'".$uom."' as uom,'".$disc."' as disc,".$amt." as amt,'".$ref."' as docno,item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh,
     format(sum(bal),2) as bal from rrstatus as rr left join item on item.itemid = rr.itemid
     left join client as wh on wh.clientid = rr.whid
     where rr.itemid =? and rr.bal<>0  " . $filtersearch . " group by  item.barcode,item.itemname,wh.client,rr.loc,rr.expiry order by rr.expiry";

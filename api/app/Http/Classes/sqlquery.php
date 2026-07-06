@@ -4867,7 +4867,7 @@ class sqlquery
               FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,stock.uom,item.itemid,
               FORMAT((stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
               FORMAT(((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,stock.loc,head.yourref,
-              0 as trno, 0 as line,stock.rem
+              0 as trno, 0 as line,stock.rem,head.client
               from hsohead as head
               right join hsostock as stock on stock.trno = head.trno
               left join item on item.itemid=stock.itemid
