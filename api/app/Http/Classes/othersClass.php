@@ -5506,13 +5506,6 @@ class othersClass
                 }
               }
               break;
-            case 'QS':
-              $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d')];
-              if ($companyid == 10 || $companyid == 12) { //afti
-                $head = ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'client' => $data[0]->client, 'clientname' => $data[0]->clientname, 'address' => $data[0]->address, 'rem' => $data[0]->rem, 'dateid' => date('Y-m-d'), 'probability' => '25%'];
-              }
-
-              break;
             default:
               switch ($doc) {
                 case 'RRCV':
@@ -5852,6 +5845,9 @@ class othersClass
                   $head['billcontactid'] = $data[0]->billcontactid;
                   $head['shipcontactid'] = $data[0]->shipcontactid;
                   $head['deldate'] = date('Y-m-d');
+                  if($config['params']['companyid'] == 10){
+                    $head['probability'] ='25%';
+                  }
                   break;
               }
               break;

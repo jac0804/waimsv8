@@ -6499,7 +6499,7 @@ class lookupClass
             default:
               $plotsetup = array(
                 'plottype' => 'callback',
-              'action' => 'additem'
+                'action' => 'additem'
               );
             break;
           }

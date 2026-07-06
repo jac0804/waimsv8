@@ -308,34 +308,33 @@ class forecast_report
       switch ($probability) {
         case '25%': //1yr
           $qdate = strtotime($data->quodate);
-          if ($config['params']['companyid'] == 10){ //afti
-            $closingdate = strtotime("+1 year", $qdate);
-          }else{
-            $closingdate = "December";
-          }
+          $closingdate =  strtotime("+1 year", $qdate);
           break;
         case '50%': //9months
           $qdate = strtotime($data->quodate);
           if ($config['params']['companyid'] == 10){ //afti
             $closingdate = strtotime("+9 month", $qdate);
           }else{
-            $closingdate = strtotime("+6 month", $qdate);
+            $closingdate =  strtotime("+6 month", $qdate);
           }
           break;
         case '75%': //3mos
           $qdate = strtotime($data->quodate);
-          $closingdate = date("F", strtotime("+3 month", $qdate));
+          $closingdate =strtotime("+3 month", $qdate);
           break;
         case '90%': //within the month
           $closingdate = strtotime($data->quodate);
           break;
         case '100%': //same on the date
-          $closingdate = strtotime($data->due);
+          $closingdate = strtotime($data->quodate);
           break;
+        default:
+          $closingdate =strtotime($data->quodate);
+        break;
       }
 
-      $closing = $closingdate ? date("F", $closingdate) : "";
-      $closingyr = $closingdate ? date("Y", $closingdate) : "";
+      $closing = date("F", $closingdate);
+      $closingyr =date("Y", $closingdate);
 
       $so = $this->coreFunctions->datareader("select ifnull(dateid,'') as value from (select sq.dateid from sqhead as sq left join hqshead as qs on qs.sotrno = sq.trno where qs.client = '" . $data->client . "'
       union all select sq.dateid from hsqhead as sq left join hqshead as qs on qs.sotrno = sq.trno where qs.client = '" . $data->client . "') as a order by dateid desc limit 1");
