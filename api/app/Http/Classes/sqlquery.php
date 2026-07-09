@@ -5018,7 +5018,7 @@ class sqlquery
             and cntnum.center = ?";
       $filter =  [$client, $center];
     } else {
-      $condition = "where head.doc in ('SJ','SD','SE','SF','CI') and client.client = ? and  stock.iss>stock.qa
+      $condition = "where head.doc in ('SJ','SD','SE','SF','CI','MJ') and client.client = ? and  stock.iss>stock.qa
             and cntnum.center = ? and head.cur = ? and stock.void = 0";
       $filter = [$client, $center, $cur];
     }
@@ -5048,7 +5048,6 @@ class sqlquery
             left join client on client.clientid=head.clientid
             $condition
             group by stock.trno,head.docno,head.dateid,head.yourref,head.ourref,client.clientid";
-
     $this->coreFunctions->LogConsole($qry);
     $data = $this->coreFunctions->opentable($qry, $filter);
     return $data;
@@ -5062,7 +5061,7 @@ class sqlquery
     $cur = $this->coreFunctions->getfieldvalue("lahead", "cur", "trno = ?", [$trno]);
     $qafield = "FORMAT((stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
               FORMAT((stock.iss-stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,";
-    $condition = "and head.doc in ('SJ','SD','SE','SF','CI') and client.client=? and stock.iss>stock.qa and cntnum.center=? and head.cur = ?";
+    $condition = "and head.doc in ('SJ','SD','SE','SF','CI','MJ') and client.client=? and stock.iss>stock.qa and cntnum.center=? and head.cur = ?";
     $qrydata = [$client, $center, $cur];
     $join = "";
 

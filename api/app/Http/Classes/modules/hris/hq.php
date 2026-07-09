@@ -564,6 +564,7 @@ class hq
         $htable = $this->hhead;
         $tablenum = $this->tablenum;
         $condition = '';
+        $blnFixUser = false;
 
         if ($config['params']['companyid'] == 58) { //cdo
             $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 5437);
@@ -575,12 +576,14 @@ class hq
                     if ($checkapprover != 0) {
                     } else {
                         $condition = " and head.empid=$id ";
+                        $blnFixUser = true;
                     }
 
                     if ($viewaccessdept) {
                         $deptid = $this->coreFunctions->getfieldvalue("employee", "deptid", "empid=?", [$id], '', true);
                         if ($deptid != 0) {
                             $condition = " and d.clientid=" . $deptid;
+                            if($blnFixUser) $condition = " and (head.empid=$id or d.clientid=" . $deptid . ')';
                         }
                     }
                 }

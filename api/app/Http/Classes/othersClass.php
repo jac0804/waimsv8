@@ -746,7 +746,7 @@ class othersClass
     array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
     array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');
-    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate', 'otherleadtime', 'paymentdate');
+    array_push($date, 'approvedbuddate', 'disapprovedbuddate', 'whmandate', 'ardate', 'encodeddate', 'sdate1', 'sdate2', 'editdate', 'otherleadtime', 'paymentdate', 'statdate');
     array_push($date, 'depodate', 'lpaydate', 'pickerstart', 'duedate', 'lockdate', 'crtldate', 'clearday', 'cleardate', 'pickerend', 'viewdate', 'receiveddate');
     array_push($date, 'regdate', 'promostart', 'promoend', 'checkerdate', 'dispatchdate', 'due', 'recondate', 'lock', 'lasttrans', 'sjdate', 'printcheck');
     array_push($date, 'logisticdate', 'checkerrcvdate', 'forloaddate', 'checkerdone', 'releasedate', 'packdate', 'reservationdate', 'tripdate');
@@ -762,7 +762,7 @@ class othersClass
     array_push($number, 'isqty', 'isqty2', 'isqty3', 'iss', 'rrqty', 'qty', 'ext', 'rrcost', 'cost', 'isamt', 'amt', 'commamt');
     array_push($number, 'range1', 'range2', 'sssee', 'ssser', 'eccer', 'ssstotal', 'mpfee', 'mpfer');
     array_push($number, 'reghrs', 'absdays', 'latehrs', 'underhrs', 'ndiffhrs', 'ndiffot');
-    array_push($number, 'commvat', 'forex', 'crlimit', 'rrqty', 'freight', 'oqty', 'rrqty2', 'rrqty3', 'begqty', 'db', 'cr');
+    array_push($number, 'commvat', 'forex', 'crlimit', 'freight', 'oqty', 'rrqty2', 'rrqty3', 'begqty', 'db', 'cr');
     array_push($number, 'fdb', 'fcr', 'damt', 'reqqty', 'qa', 'rate', 'intclient', 'budget', 'forexid', 'critical', 'reorder');
     array_push($number, 'amt2', 'icondition', 'sgdrate', 'appamt', 'famt', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9', 'markup');
     array_push($number, 'tcp', 'orderterm', 'vat', 'amount', 'percentdisc', 'deductpercent', 'months', 'perc1', 'perc2', 'perc3');
@@ -794,6 +794,253 @@ class othersClass
     array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc');
 
     return $number;
+  }
+
+
+  function buildSanitizeLookups($doc, $companyid, $exceptpcase, $exceptnum , $tableDates )
+  {
+    $acctcode = ['contra', 'acno', 'tfaccount', 'asset', 'liability', 'revenue', 'expense', 'rev', 'waybill', 'salesreturn', 'ass'];
+    if ($doc != 'AGENT') {
+      $acctcode[] = 'parent';
+    }
+
+    $number = [];
+    if (!$exceptnum) {
+      $number = $this->getNumberFields();
+
+      if ($companyid == 8 && $doc == 'PM') { //maxipro
+        array_push($number, 'wac', 'jr');
+      }
+      if ($doc == 'STOCKCARD') {
+        array_push($number, 'insurance');
+      }
+      if ($companyid == 34) { //evergreen
+        if ($doc == 'AF' || $doc == 'CP') {
+          unset($number['ext']);
+        }
+      }
+    }
+
+    $boolean = [];
+    array_push($boolean, 'void', 'isewt', 'istax', 'isvat', 'isvewt', 'ismain', 'isinactive', 'isactive', 'isnopay', 'issynced', 'isdriver', 'ispayroll');
+    array_push($boolean, 'ispassenger', 'isshow', 'iscompute', 'isparenttotal', 'isgeneric', 'isexisted', 'isnsi', 'ists', 'iscldetails');
+    array_push($boolean, 'waivedqty', 'isstudent', 'isold', 'isnew', 'isforeign', 'isadddrop', 'iscrossenrollee', 'istransferee');
+    array_push($boolean, 'islateenrollee', 'issubmitted', 'isapprove', 'isofficesupplies', 'ispaid', 'isreturn', 'ispartial', 'ispa');
+    array_push($boolean, 'ispa2', 'isreturned', 'isrefunded', 'inactive', 'issmoking', 'isdefault', 'isdefault2', 'w1', 'w2', 'w3', 'w4', 'w5');
+    array_push($boolean, 'halt', 'w13', 'earnded', 'isadmin', 'isimport', 'fg_isfinishedgood', 'isexpedite', 'isprefer', 'subinv', 'ispermanent');
+    array_push($boolean, 'isloc', 'istrip', 'fg_isequipmenttool', 'ishired', 'issy', 'isgradeschool', 'ishighschool', 'isho', 'isoracle');
+    array_push($boolean, 'forreturn', 'isapprover', 'islabor', 'isserial', 'isbilling', 'isshipping', 'isbranch', 'isfa', 'isassetwh');
+    array_push($boolean, 'isgeneratefa', 'isenconvertgrade', 'ischiconvertgrade', 'isconduct', 'ischinese', 'noprint', 'isexhibit', 'isseminar');
+    array_push($boolean, 'dropoff', 'isadv', 'iscanvassonly', 'serialized', 'ispickupdate', 'ismanual', 'issales', 'issalesdef', 'isapproved');
+    array_push($boolean, 'ismon', 'ismon_am', 'ismon_pm', 'istue', 'istue_am', 'istue_pm', 'iswed', 'iswed_am', 'iswed_pm', 'isthu');
+    array_push($boolean, 'isthu_am', 'isthu_pm', 'isfri', 'isfri_am', 'isfri_pm', 'issat', 'issat_am', 'issat_pm', 'issun', 'issun_am');
+    array_push($boolean, 'issun_pm', 'isdp', 'isencashment', 'isonlineencashment', 'isvatzerorated', 'isnotarizedcert', 'lastdp', 'noncomm');
+    array_push($boolean, 'invnotrequired', 'isconfirmed', 'isacknowledged', 'ischqreleased', 'ispaid', 'isconsumable', 'isrepair', 'isexcess');
+    array_push($boolean, 'isplanholder', 'isnotallow', 'ispartialpaid', 'isactivity', 'issp', 'ismc', 'isinvoice', 'atm', 'isss', 'isprojexp');
+    array_push($boolean, 'isorder', 'ischannel', 'default_in', 'default_out', 'uom_inactive', 'isreasoncode', 'ishelper', 'isreassigned', 'ispexp');
+    array_push($boolean, 'isonelog', 'isbank', 'isnonserial', 'isbrgyoff', 'isbusiness', 'isallowliquor', 'issupervisor', 'isapprover', 'isdiminishing');
+    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible');
+
+    // $date = $this->othersClass->getDateFields(); // fetched ONCE here
+
+    $inList = "'" . implode("','", $tableDates) . "'";
+    $sql = "SELECT DISTINCT LCASE(COLUMN_NAME) AS col FROM information_schema.columns WHERE table_schema = '" . env('DB_DATABASE') . "' AND table_name IN ($inList) AND data_type IN ('date', 'datetime') ORDER BY col";
+    $result = $this->coreFunctions->opentable($sql);
+
+    $date = array_map(function ($row) {
+      $row = (array) $row;
+      return $row['col'];
+    }, $result);
+
+    switch ($companyid) {
+      case 10: //afti
+      case 12: //afti usd
+        break;
+      default:
+        array_push($date, 'starttime', 'endtime');
+        switch (strtolower($doc)) {
+          case 'hstockinfo':
+          case 'stockinfo':
+            break;
+          default:
+            array_push($date, 'leadfrom', 'leadto');
+            break;
+        }
+        break;
+    }
+
+    $dateonly = ['dateonly'];
+
+    switch ($companyid) {
+      case 16: //ati
+        $toupper = [];
+        $propercase = ['salutation', 'fname', 'mname', 'lname', 'uom'];
+        break;
+      case 6: //mitsukoshi
+        $toupper = ['itemname', 'clientname'];
+        $propercase = [];
+        break;
+      case 37: //mega crystal
+        $toupper = [];
+        $propercase = [];
+        if ($doc == 'STOCKCARD') {
+          $toupper = ['itemname', 'uom', 'partno', 'body', 'sizeid', 'color'];
+        }
+        if ($doc == 'CUSTOMER' || $doc == 'SUPPLIER') {
+          $toupper = ['clientname', 'addr', 'ship'];
+        }
+        break;
+      case 46: //morningsteel
+      case 29: //sbc
+        $toupper = [];
+        $propercase = [];
+        if ($doc == 'CUSTOMER' || $doc == 'SUPPLIER') {
+          $toupper = ['clientname'];
+        }
+        break;
+      case 47: //kstar
+        $toupper = [];
+        if ($doc != 'AGENT') {
+          $toupper = ['clientname'];
+        }
+        $propercase = [];
+        break;
+      case 45: //pdpi payroll
+        $toupper = [];
+        $propercase = [];
+        if ($doc == 'EMPLOYEE') {
+          $toupper = ['emplast', 'empfirst', 'empmiddle'];
+        }
+        break;
+      case 48: //seastar
+        $toupper = [];
+        $propercase = [];
+        switch ($doc) {
+          case 'CUSTOMER':
+          case 'SUPPLIER':
+          case 'WAREHOUSE':
+            $toupper = ['clientname', 'addr', 'ship', 'email', 'tel', 'fax', 'tel2', 'tin', 'contact', 'rem', 'type', 'groupid'];
+            break;
+          case 'LL':
+            $toupper = ['ourref', 'vessel', 'plateno', 'voyageno', 'sealno', 'yourref', 'unit', 'loadedby', 'rem'];
+            break;
+          case 'SJ':
+            $toupper = ['client', 'clientname', 'address', 'yourref', 'ourref', 'rem', 'itemdesc', 'unit'];
+            break;
+        }
+        break;
+      default:
+        $toupper = [];
+        $propercase = [];
+        break;
+    }
+
+    if (!empty($exceptpcase)) {
+      foreach ($exceptpcase as $expc) {
+        $index = array_search($expc, $propercase);
+        if ($index !== false) {
+          unset($propercase[$index]);
+        }
+      }
+    }
+
+    // Convert every membership list to a flipped hash map ONCE, so lookups become O(1) isset() instead of O(n) in_array()
+    return [
+      'acctcode'   => array_flip($acctcode),
+      'number'     => array_flip($number),
+      'boolean'    => array_flip($boolean),
+      'date'       => array_flip($date),
+      'dateonly'   => array_flip($dateonly),
+      'toupper'    => array_flip($toupper),
+      'propercase' => array_flip($propercase),
+      'except_striptag' => array_flip(['addr', 'rem', 'itemdesc', 'creditinfo', 'accessories', 'itemdescription', 'poterms', 'itemrem', 'task']),
+      'exceptnum'  => $exceptnum,
+      'doc'        => $doc,
+    ];
+  }
+
+  function sanitizekeyfieldFast($key, $str, $lookups)
+  {
+    $doc = $lookups['doc'];
+
+    $str = str_replace("'", "`", $str);
+    $str = str_replace("’", "`", $str);
+    $str = stripslashes($str);
+
+    if (!isset($lookups['except_striptag'][$key])) {
+      $str = strip_tags($str);
+      $str = str_replace('"', "”", $str);
+    }
+
+    if (isset($lookups['acctcode'][$key])) {
+      if ($str != '') {
+        $str = '\\' . $str;
+      } else {
+        if ($doc == 'COA' && $key == 'parent') {
+          $str = '\\';
+        }
+      }
+    }
+
+    if (!$lookups['exceptnum'] && isset($lookups['number'][$key])) {
+      $str = str_replace(',', '', $str);
+      $str = str_replace(' ', '', $str);
+
+      if (!is_numeric($str)) {
+        $str = 0;
+      }
+      if ($str == '' || $str === null || $str === '') {
+        $str = 0;
+      }
+      if ($key == 'db' || $key == 'cr') {
+        $str = number_format($str, 2, '.', '');
+      }
+    }
+
+    if (isset($lookups['date'][$key])) {
+      $str = str_replace(',', '', $str);
+      if ($str == '' || $str === null || $str == '0000-00-00 00:00:00' || $str == '0000/00/00' || $str == 'Invalid date' || $str == '0000-00-00') {
+        $str = null;
+      } else {
+        if (is_numeric($str)) {
+          $UNIX_DATE = ($str - 25569) * 86400;
+          $tempstr = new DateTime("@$UNIX_DATE");
+          $str = $tempstr->format('Y-m-d H:i:s');
+        } else {
+          $str = date_format(date_create($str), "Y-m-d H:i:s");
+        }
+      }
+    }
+
+    if (isset($lookups['dateonly'][$key])) {
+      $str = str_replace(',', '', $str);
+      if ($str == '' || $str === null || $str == '0000-00-00 00:00:00' || $str == '0000/00/00' || $str == 'Invalid date') {
+        $str = null;
+      } else {
+        $str = date_format(date_create($str), "Y-m-d");
+      }
+    }
+
+    if (isset($lookups['boolean'][$key])) {
+      $str = $this->is_true($str) ? 1 : 0;
+    }
+
+    if (isset($lookups['propercase'][$key])) {
+      $result = "";
+      $words = explode(" ", $str);
+      for ($i = 0; $i < count($words); $i++) {
+        $s = strtolower($words[$i]);
+        $s = substr_replace($s, strtoupper(substr($s, 0, 1)), 0, 1);
+        $result .= "$s ";
+      }
+      $str = trim($result);
+    }
+
+    if (isset($lookups['toupper'][$key])) {
+      $str = trim(strtoupper($str));
+    }
+
+    return $str;
   }
 
   function sbcdateformat($date, $c = '-', $f = 'Y-m-d')
@@ -9195,6 +9442,7 @@ class othersClass
       case 'CH':
       case 'ON':
       case 'AM':
+      case 'RI':
         $table = 'cntnum_picture';
         $trno = $config['params']['trno'];
         break;

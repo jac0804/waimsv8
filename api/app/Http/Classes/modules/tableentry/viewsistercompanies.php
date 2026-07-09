@@ -100,7 +100,8 @@ class viewsistercompanies
     {
         $tableid = $config['params']['tableid'];
         $parentcode = $this->coreFunctions->getfieldvalue("client", "grpcode", "clientid=?", [$tableid]);
-        $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode]);
+        $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode],'', true);
+
 
         $qry="select concat(parent.type,' - ',parent.client) as code, parent.clientname, 
                 concat(parent.client,' - ',parent.clientname) as description,

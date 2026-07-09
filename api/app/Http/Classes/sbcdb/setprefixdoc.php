@@ -130,7 +130,9 @@ class setprefixdoc
       'RO' => ['prefix' => 'RP', 'title' => 'Request Order'],
       'CH' => ['prefix' => 'SI', 'title' => 'Consign Invoice'],
       'ON' => ['prefix' => 'OI', 'title' => 'Outright Invoice'],
-      'DR' => ['prefix' => 'DR', 'title' => 'Delivery Receipt']
+      'DR' => ['prefix' => 'DR', 'title' => 'Delivery Receipt'],
+      'RI' => ['prefix' => 'RI', 'title' => 'Repossesed Units'],
+      'FU' => ['prefix' => 'FU', 'title' => 'Financing']
     ];
 
     switch ($params['companyid']) {

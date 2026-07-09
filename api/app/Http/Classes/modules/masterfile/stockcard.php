@@ -817,6 +817,8 @@ class stockcard
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewpromoperitem', 'label' => 'PROMO PER ITEM']];
     $pospromoperitem = $this->tabClass->createtab($tab, []);
 
+    $financerates = ['customform' => ['action' => 'customform', 'lookupclass' => 'financerates']];
+
     $commissionrate = [];
     if ($companyid == 64) { //yulick
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycommission', 'label' => 'SPECIAL COMMISSION RATE BRACKET']];
@@ -956,6 +958,10 @@ class stockcard
         $changecode = ['customform' => ['action' => 'customform', 'lookupclass' => 'changebarcode']];
         $return['CHANGE BARCODE'] = ['icon' => 'fa fa-qrcode', 'customform' => $changecode];
       }
+    }
+
+    if ($config['params']['companyid'] == 40) { //cdo
+      $return['FINANCE RATES'] = ['icon' => 'fas fa-wallet', 'customform' => $financerates];
     }
     return $return;
   }

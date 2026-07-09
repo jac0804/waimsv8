@@ -5411,12 +5411,12 @@ class dashboardClass
 
     $bday = $this->coreFunctions->opentable("select emp.empfirst, emp.emplast, emp.bday, DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.bday,'%m-%d')), '" . $curdate . "') AS agecount, 
           DATE_FORMAT(emp.bday, '%M %d, %Y') AS bdayname, DATE_FORMAT(emp.bday, '%M %d') AS bdayname2,
-              CONCAT(TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "'),
+              CONCAT((TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "')+1),
                   CASE 
-                      WHEN TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "') % 100 BETWEEN 11 AND 13 THEN 'th'
-                      WHEN TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "') % 10 = 1 THEN 'st'
-                      WHEN TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "') % 10 = 2 THEN 'nd'
-                      WHEN TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "') % 10 = 3 THEN 'rd'
+                      WHEN (TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "')+1) % 100 BETWEEN 11 AND 13 THEN 'th'
+                      WHEN (TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "')+1) % 10 = 1 THEN 'st'
+                      WHEN (TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "')+1) % 10 = 2 THEN 'nd'
+                      WHEN (TIMESTAMPDIFF(YEAR, emp.bday, '" . $curdate . "')+1) % 10 = 3 THEN 'rd'
                       ELSE 'th'
                   END
               ) AS age, client.picture, ifnull(job.jobtitle,'') AS job
@@ -5485,7 +5485,7 @@ class dashboardClass
       ], 'data' => $row3]);
     }
 
-    $anniv = $this->coreFunctions->opentable("select client.clientname, date(emp.hired) AS hired, TIMESTAMPDIFF(YEAR, emp.hired, '" . $curdate . "') AS yrs, 
+    $anniv = $this->coreFunctions->opentable("select client.clientname, date(emp.hired) AS hired, (TIMESTAMPDIFF(YEAR, emp.hired, '" . $curdate . "')+1) AS yrs, 
           DATEDIFF(concat(YEAR('" . $curdate . "'),'-',date_format(emp.hired,'%m-%d')), '" . $curdate . "') AS annivcount,
           client.picture, ifnull(job.jobtitle,'') AS job, DATE_FORMAT(emp.hired, '%M %d, %Y') as hiredname
           FROM employee AS emp LEFT JOIN client ON client.clientid=emp.empid LEFT JOIN jobthead AS job ON job.line=emp.jobid

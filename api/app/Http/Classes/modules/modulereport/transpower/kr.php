@@ -374,47 +374,106 @@ class kr
     $countarr = 0;
     $tldb=0;
     $tlcr=0;
+    $totall = 0;
+    $totalr = 0;
 
     if (!empty($data)) {
       $totaldb = 0;
       $totalcr = 0;
-      for ($i = 0; $i < count($data); $i++) {
+      $rowsPerColumn = 2;
+      $rowsPerPage = $rowsPerColumn * 2; //28
 
-        $maxrow = 1;
-        $sjdocno = $data[$i]['sjdocno'];
-        $ref = $data[$i]['ref2'];
-        $postdate = $data[$i]['postdate'];
-        $debit = number_format($data[$i]['db'], $decimalcurr);
-        $credit = number_format($data[$i]['cr'], $decimalcurr);
-        $debit = $debit <= 0 ? '-' : $debit;
-        $credit = $credit <= 0 ? '-' : $credit;
+        for ($p = 0; $p < count($data); $p += $rowsPerPage) {
 
-        $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
-        $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
-        $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
-        $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
-        $arr_sjdocno= $this->reporter->fixcolumn([$sjdocno], '15', 0);
+        $startY = PDF::GetY();
+        // left column
+        PDF::SetY($startY);
+        for ($i = $p; $i < min($p + $rowsPerColumn, count($data)); $i++) { //min (current count + limit vs total count); 
+          $maxrow = 1;
+          $ref = $data[$i]['ref2'];
+          $postdate = $data[$i]['postdate'];
+          $debit = number_format($data[$i]['db'], $decimalcurr);
+          $credit = number_format(($data[$i]['cr']) * -1, $decimalcurr);
+          $debit = $debit <= 0 ? '-' : $debit;
+          $credit = $credit == 0 ? '-' : $credit;
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_sjdocno,$arr_ref, $arr_postdate, $arr_debit, $arr_credit]);
+          $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+          $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+          $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+          $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
 
-        for ($r = 0; $r < $maxrow; $r++) {
-          PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(150, 0, (isset($arr_sjdocno[$r]) ? $arr_sjdocno[$r] : ''), '', 'L', false, 0, '', '', false, 1);
-          PDF::MultiCell(250, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0, '', '', false, 1);
-          PDF::MultiCell(100, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
-          PDF::MultiCell(100, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(100, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 1, '', '', false, 1);
+          $showdebit = $data[$i]['db'] > 0;
+
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_ref, $arr_postdate, $arr_debit, $arr_credit]);
+
+          for ($r = 0; $r < $maxrow; $r++) {
+            PDF::SetY(PDF::GetY());
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(96, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(96, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(111, 0, ($showdebit ? ($arr_debit[$r]) : ($arr_credit[$r])), '', 'R', false, 1, '', '', false, 1);
+          }
+
+          $totaldb += $data[$i]['db'];
+          $totall += $data[$i]['db'];
         }
-        $totaldb += $data[$i]['db'];
-        $totalcr += $data[$i]['cr'];
+        //TOTAL - Left
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(100, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(100, 0, 'Total: ', '', 'R', false, 0);
+        PDF::MultiCell(110, 0, $totall, '', 'R', false, 0);
+        PDF::MultiCell(390, 0, '', '', 'R', false);
 
-        if (intVal($i) + 1 == $page) {
+        $leftEndY = PDF::GetY();
+
+        // right column
+        PDF::SetXY(420, $startY);
+        for ($i = $p + $rowsPerColumn; $i < min($p + $rowsPerPage, count($data)); $i++) {  //$p + 14; starts from 15 until 28
+
+          $maxrow = 1;
+          $ref = $data[$i]['ref2'];
+          $postdate = $data[$i]['postdate'];
+          $debit = number_format($data[$i]['db'], $decimalcurr);
+          $debit = $debit <= 0 ? '-' : $debit;
+
+          $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+          $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+          $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_ref, $arr_postdate, $arr_debit]);
+
+          for ($r = 0; $r < $maxrow; $r++) {
+            PDF::SetXY(420, PDF::GetY());
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(96, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(96, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(111, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 1, '', '', false, 1);
+          }
+
+          $totaldb += $data[$i]['db'];
+          $totalr += $data[$i]['db'];
+        }
+        //TOTAL - Right
+        PDF::SetXY(423,($leftEndY- 15));
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(100, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(100, 0, 'Total: ', '', 'R', false, 0);
+        PDF::MultiCell(110, 0, $totalr, '', 'R', false, 0);
+        PDF::MultiCell(390, 0, '', '', 'R', false);
+
+        $rightEndY = PDF::GetY();
+
+        if ($p + $rowsPerPage < count($data)) {
           $this->kr_new_header($params, $data);
-          $page += $count;
         }
       }
     }
 
+    PDF::SetY(max($leftEndY, $rightEndY));
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
 
@@ -424,12 +483,15 @@ class kr
      $totaldb = number_format($totaldb, $decimalcurr);
      $totalcr = number_format($totalcr, $decimalcurr);
      $tldb = $totaldb <= 0 ? '-' : $totaldb;
-     $tlcr = $totalcr <= 0 ? '-' : $totalcr;
+    //  $tlcr = $totalcr <= 0 ? '-' : $totalcr;
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(500, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
-    PDF::MultiCell(100, 0, $tldb, '', 'R', false, 0);
-    PDF::MultiCell(100, 0, $tlcr, '', 'R', false, 0);
+    PDF::MultiCell(100, 0, '('.count($data). ' invoice/s )', '', 'L', false, 0);
+    PDF::MultiCell(100, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
+    PDF::MultiCell(110, 0, $tldb, '', 'R', false, 0);
+    PDF::MultiCell(390, 0, '', '', 'R', false);
+
+   
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
@@ -600,13 +662,15 @@ class kr
     PDF::MultiCell(700, 0, '', 'T');
 
               PDF::SetFont($font, 'B', 13);
-              PDF::MultiCell(150, 0, "SJ DOC#", '', 'C', false, 0);
-              PDF::MultiCell(250, 0, "REFERENCE#", '', 'C', false, 0);
+              PDF::MultiCell(100, 0, "REFERENCE#", '', 'C', false, 0);
               PDF::MultiCell(100, 0, "DATE", '', 'C', false, 0);
-              PDF::MultiCell(100, 0, "DEBIT", '', 'C', false, 0);
-              PDF::MultiCell(100, 0, "CREDIT", '', 'C', false);
+              PDF::MultiCell(115, 0, "AMOUNT", '', 'C', false, 0);
+              PDF::MultiCell(70, 0, "", '', 'C', false, 0);
+              PDF::MultiCell(100, 0, "REFERENCE#", '', 'C', false, 0);
+              PDF::MultiCell(100, 0, "DATE", '', 'C', false, 0);
+              PDF::MultiCell(115, 0, "AMOUNT", '', 'C', false);
 
-    $dotted_style = array(
+   $dotted_style = array(
       'width' => 0.3,
       'cap' => 'butt',
       'join' => 'miter',
@@ -616,6 +680,16 @@ class kr
     );
     PDF::SetLineStyle($dotted_style);
     PDF::SetFont($font, '', 5);
-    PDF::MultiCell(700, 0, '', 'B');
+    PDF::MultiCell(96, 0, '', 'B', false, 0, 0);
+    PDF::MultiCell(6, 0, '', '', false, 0, 0);
+    PDF::MultiCell(96, 0, '', 'B', false, 0, 0);
+    PDF::MultiCell(6, 0, '', '', false, 0, 0);
+    PDF::MultiCell(111, 0, '', 'B', false, 0, 0);
+    PDF::MultiCell(70, 0, '', '', false, 0, 0);
+    PDF::MultiCell(96, 0, '', 'B', false, 0, 0);
+    PDF::MultiCell(6, 0, '', '', false, 0, 0);
+    PDF::MultiCell(96, 0, '', 'B', false, 0, 0);
+    PDF::MultiCell(6, 0, '', '', false, 0, 0);
+    PDF::MultiCell(111, 0, '', 'B', false, 0, 1);
   }
 }

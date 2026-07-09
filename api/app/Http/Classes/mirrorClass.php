@@ -60,13 +60,11 @@ class mirrorClass
 
     public function masterfilemirror($table, $uniquefield)
     {
-        ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '-1');
 
         $this->coreFunctions->sbclogger("Creating " . $table . " file", 'MIRROR');
 
         try {
-            $sql = "select * from " . $table . " where ismirror=0 order by " . $uniquefield[0];
+            $sql = "select * from " . $table . " where ismirror=0 order by " . $uniquefield[0] . ' limit 10000';
             $item = $this->coreFunctions->opentable($sql);
             $item2 = json_decode(json_encode($item), true);
 
@@ -162,13 +160,20 @@ class mirrorClass
         $columns = null;
         $rows = [];
 
+        $arrDateCols = $this->coreFunctions->opentable("select lcase(COLUMN_NAME) as col_name  FROM information_schema.columns WHERE table_schema = '" . env('DB_DATABASE') . "' and  table_name = '" . $table . "' and data_type in ('date', 'datetime') ORDER BY ordinal_position");
+        $arrDateCols = array_column(json_decode(json_encode($arrDateCols), true), 'col_name');
+        $invalidDates = ['',  '0', '0.000000', '0000-00-00', '0000-00-00 00:00:00', 'NULL', 'null'];
+
         foreach ($nums as $nn) {
             $arr1 = (array)$nn;
 
             foreach ($arr1 as $arrkey => $arr) {
-                $arr1[$arrkey] = $this->posClass->removeNewlines(trim($arr1[$arrkey]));
-                $arr1[$arrkey] = $this->othersClass->sanitizekeyfield($arrkey, $arr1[$arrkey], $table);
-                if ($arr1[$arrkey] === null) $arr1[$arrkey] = "NULL";
+                // Check null BEFORE trim, not after
+                if ($arr1[$arrkey] === null) {
+                    $arr1[$arrkey] = "NULL";
+                } else {
+                    $arr1[$arrkey] = $this->posClass->removeNewlines(trim($arr1[$arrkey]));
+                }
 
                 if($table == 'client'){
                     if($arrkey == 'userid') {
@@ -176,14 +181,9 @@ class mirrorClass
                     }
                 }
 
-                if ($this->posClass->isDateField($arrkey)) {
-                    $stringDate = ['invoicedate'];
-
-                    if (in_array($arrkey, $stringDate)) {
-                        $arr1[$arrkey] = "";
-                    } else {
-                        $returndate = $this->posClass->getDateSQLValue($arr1[$arrkey]);
-                        if ($returndate == null) $arr1[$arrkey] = "NULL";
+                if(in_array(strtolower($arrkey), $arrDateCols)){
+                    if (in_array($arr1[$arrkey], $invalidDates)) {
+                        $arr1[$arrkey] = "NULL";
                     }
                 }
             }
@@ -977,7 +977,7 @@ class mirrorClass
         });
 
         if (empty($files)) {
-            $this->coreFunctions->sbclogger('No .sbc files to process.', "MIRROR");
+            $this->coreFunctions->sbclogger('No .sbc files to process.', "MIRROR3");
             return ['status' => $status];
         }
 
@@ -995,7 +995,7 @@ class mirrorClass
 
             try {
                 if (!Storage::disk($localDisk)->exists($filePath)) {
-                    $this->coreFunctions->sbclogger('file missing before upload: ' . $filename, "MIRROR");
+                    $this->coreFunctions->sbclogger('file missing before upload: ' . $filename, "MIRROR3");
                     continue;
                 }
 
@@ -1010,14 +1010,14 @@ class mirrorClass
                 if ($uploaded) {
                     $destination = $archiveFolder . '/' . $filename;
                     Storage::disk($localDisk)->move($filePath, $destination);
-                    $this->coreFunctions->sbclogger('uploaded (' . $counter . ') ' . $filename, "MIRROR");
+                    $this->coreFunctions->sbclogger('uploaded (' . $counter . ') ' . $filename, "MIRROR3");
                 } else {
-                    $this->coreFunctions->sbclogger('upload failed (' . $counter . ') ' . $filename, "MIRROR");
+                    $this->coreFunctions->sbclogger('upload failed (' . $counter . ') ' . $filename, "MIRROR3");
                     $status = false;
                 }
             } catch (\Exception $e) {
                 $status = false;
-                $this->coreFunctions->sbclogger('processMirrorFolder - ' . $filename . ' - ' . $e->getMessage(), "MIRROR");
+                $this->coreFunctions->sbclogger('processMirrorFolder - ' . $filename . ' - ' . $e->getMessage(), "MIRROR3");
             } finally {
                 if (is_resource($stream)) {
                     fclose($stream);

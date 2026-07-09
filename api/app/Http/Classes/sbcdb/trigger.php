@@ -2803,6 +2803,7 @@ class trigger
     $this->px_triggers();
     $this->pt_triggers();
     $this->amjob_triggers();
+    $this->financerate_triggers();
     // $this->pw_triggers();
     // $this->hpw_triggers();
     // ADD HERE-->
@@ -4826,6 +4827,21 @@ class trigger
     $fields = ['Job Notes' => ['rem' => []]];
     $this->settriggerlogs('amjobs_update', 'AFTER UPDATE', 'amjobs', 'table_log', $fields, 'trno', '');
     //END AMJOBs TRIGGER ===================================================================================================================
+  }
+
+  private function financerate_triggers()
+  {
+    $fields = [
+      'Terms'     => ['terms'  => []],
+      'Downpayemnt'       => ['dp' => []],
+      'Interest'   => ['interest' => []],
+      'Factor'   => ['factor' => []],
+      'Penalty'      => ['penalty' => []],
+      'Miscfee'       => ['miscfee' => []],
+      'Rebate' => ['rebate' => []],
+    ];
+    $this->settriggerlogs('financerate_update', 'AFTER UPDATE', 'mcfinancerate', 'item_log', $fields, 'itemid', 'STOCKCARD');
+    //END financerate TRIGGER ===================================================================================================================
   }
 
 

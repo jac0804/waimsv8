@@ -46,6 +46,9 @@ class StandardMirror extends Command
      */
     public function handle()
     {
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '-1');
+
         $this->coreFunction = new coreFunctions;
         $this->mirrorClass = new mirrorClass;
 
@@ -99,13 +102,7 @@ class StandardMirror extends Command
                 $this->mirrorClass->masterfilemirror("ewtlist", ["line"]);
                 $this->mirrorClass->masterfilemirror("terms", ["line"]);
 
-                $this->coreFunction->sbclogger('uploading files', "MIRROR");
-                $this->mirrorClass->processMirrorFolder();
-
                 $this->mirrorClass->transactionsmirror("");
-
-                $this->coreFunction->sbclogger('uploading files', "MIRROR");
-                $this->mirrorClass->processMirrorFolder();
 
                 $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'MIRROR']);
 

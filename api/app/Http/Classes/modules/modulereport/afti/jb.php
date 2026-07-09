@@ -116,7 +116,7 @@ class jb
               ship.addr as shipaddr,ship.contact as shipcontact,ship.contactno as shipcontactno,
               client.tel2, client.contact as suppcontact,'' as empcode, '' as empname,
               '' as emptel2,stockinfo.rem as inforem,head.tax, head.vattype, brands.brand_desc,
-              iteminfo.itemdescription, whreceiver.clientname as whreceivername, head.cur,sr.clientname as srclientname, head.yourref
+              iteminfo.itemdescription, whreceiver.clientname as whreceivername, head.cur,sr.clientname as srclientname, head.yourref,stock.sortline
             from johead as head
             left join jostock as stock on stock.trno=head.trno
             left join client on client.client=head.client
@@ -145,7 +145,7 @@ class jb
               ship.addr as shipaddr,ship.contact as shipcontact,ship.contactno as shipcontactno,
               client.tel2, client.contact as suppcontact,'' as empcode, '' as empname,
               '' as emptel2,stockinfo.rem as inforem,head.tax, head.vattype, brands.brand_desc,
-              iteminfo.itemdescription, whreceiver.clientname as whreceivername, head.cur,sr.clientname as srclientname, head.yourref
+              iteminfo.itemdescription, whreceiver.clientname as whreceivername, head.cur,sr.clientname as srclientname, head.yourref,stock.sortline
             from hjohead as head
             left join hjostock as stock on stock.trno=head.trno
             left join client on client.client=head.client
@@ -162,7 +162,7 @@ class jb
             left join client as whreceiver on whreceiver.clientid = head.whreceiver
             left join hsrhead as sr on sr.trno = stock.refx
             left join transnum as num on num.trno=head.trno
-            where head.doc='jb' and stock.void<>1  and head.trno='$trno' order by stock.sortline";
+            where head.doc='jb' and stock.void<>1  and head.trno='$trno' order by sortline";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;

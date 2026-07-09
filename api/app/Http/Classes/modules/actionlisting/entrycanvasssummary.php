@@ -287,8 +287,12 @@ class entrycanvasssummary
     {
         $data = [];
         $row = $config['params']['row'];
+        $dateTables = ['cdstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['editby'] = $config['params']['user'];
         $data['editdate'] =  $this->othersClass->getCurrentTimeStamp();

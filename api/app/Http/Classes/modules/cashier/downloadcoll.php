@@ -79,10 +79,11 @@ class downloadcoll
 
     foreach ($columns as $key => $value) {
       $$value = $key;
-  }
+    }
 
     $tab = [$this->gridname => [
-      'gridcolumns' => $columns,  'totalfield' => 'amount',
+      'gridcolumns' => $columns,
+      'totalfield' => 'amount',
     ]];
     $stockbuttons = [];
 
@@ -115,7 +116,7 @@ class downloadcoll
 
     $col1 = $this->fieldClass->create($fields);
 
-    $fields = ['refresh','dlsales','dlpurchase']; //,'dlpurchret'
+    $fields = ['refresh', 'dlsales', 'dlpurchase']; //,'dlpurchret'
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'refresh.action', 'load');
@@ -123,7 +124,7 @@ class downloadcoll
     data_set($col2, 'dlsales.action', 'download');
     data_set($col2, 'dlsales.label', 'Download Collections from WAIMS');
     data_set($col2, 'dlpurchase.action', 'dlclient');
-     data_set($col2, 'dlpurchase.label', 'Download Customers from WAIMS');
+    data_set($col2, 'dlpurchase.label', 'Download Customers from WAIMS');
 
     // $fields = ['dlpurchase'];
     // $col3 = $this->fieldClass->create($fields);
@@ -167,7 +168,7 @@ class downloadcoll
       case 'load':
         return $this->loaddata($config, $config['params']['dataparams']['start'], $config['params']['dataparams']['end']);
         break;
-      
+
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $action . ')'];
         break;
@@ -179,7 +180,7 @@ class downloadcoll
     $center = $config['params']['center'];
     $start = $this->othersClass->sbcdateformat($start);
     $end = $this->othersClass->sbcdateformat($end);
-    
+
     $qry = "select h.doc,h.trno,num.dstrno,left(h.dateid,10) as dateid,left(h.checkdate,10) as checkdate,h.checkinfo,h.docno,h.clientid,h.clientname,h.rem,
     format(h.amount,2) as amount,h.yourref as crno,'' as orno, h.sicsino,h.drno,h.trnxtype,h.modeofpayment,num.center,c.client,h.createby,'' as bank, 0 as mpid
     from hmchead as h  left join transnum as num on num.trno = h.trno left join client as c on c.clientid = h.clientid 
@@ -192,7 +193,7 @@ class downloadcoll
     left join coa on coa.acnoid = h.bank
     where num.isdownloaded =0 and num.center = ? and date(h.dateid) between ? and ?";
 
-    $data = $this->coreFunctions->opentable($qry,[$center,$start,$end,$center,$start,$end],'mysql2');
+    $data = $this->coreFunctions->opentable($qry, [$center, $start, $end, $center, $start, $end], 'mysql2');
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
   }
 
@@ -203,8 +204,8 @@ class downloadcoll
     $date2 =  $this->othersClass->sbcdateformat($config['params']['dataparams']['end']);
     $center = $config['params']['center'];
 
-//----add checking/updating for dstrno ------------
-//add checking ng unposted trans
+    //----add checking/updating for dstrno ------------
+    //add checking ng unposted trans
     // $qry = "select d.trno,d.dateid,c.acnoname as bank from dxhead as d left join transnum as num on num.trno = d.trno left join coa as c on c.acnoid = d.bank where num.center=? and date(d.dateid) between ? and ? 
     // union all
     // select d.trno,d.dateid,c.acnoname as bank from hdxhead as d left join transnum as num on num.trno = d.trno left join coa as c on c.acnoid = d.bank where center = ? and date(d.dateid) between ? and ?";
@@ -217,7 +218,7 @@ class downloadcoll
     //       foreach($ctrno as $c=>$l){
     //         $this->coreFunctions->execqry("update tcoll set dstrno = ".$uds[$m]['trno'].",depodate ='".$uds[$m]['dateid']."',bank = '".$uds[$m]['bank']."' where trno = ". $ctrno[$c]->trno,'update');
     //       }
-            
+
     //     }
     // }
 
@@ -233,37 +234,41 @@ class downloadcoll
     left join coa on coa.acnoid = h.bank
     where num.isdownloaded =0 and num.center = ? and date(h.dateid) between ? and ?";
 
-    $data = $this->coreFunctions->opentable($qry,[$center,$date1,$date2,$center,$date1,$date2],'mysql2');
+    $data = $this->coreFunctions->opentable($qry, [$center, $date1, $date2, $center, $date1, $date2], 'mysql2');
     $data = json_decode(json_encode($data), true);
     $d = [];
-    $insert =[];
+    $insert = [];
     ini_set('max_execution_time', 0);
-    
+
+    $dateTables = ['tcoll'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     //downloading mc
     if (!empty($data)) {
       foreach ($data as $k => $v) {
-        $this->coreFunctions->execqry("delete from tcoll where trno = ". $data[$k]['trno'],'delete');
+        $this->coreFunctions->execqry("delete from tcoll where trno = " . $data[$k]['trno'], 'delete');
 
-        $d['trno']= $data[$k]['trno'];
-        $d['docno']= $data[$k]['docno'];
-        $d['center']= $data[$k]['center'];
-        $d['doc']= $data[$k]['doc'];
-        $d['dateid']= $data[$k]['dateid'];
-        $d['checkdate']= $data[$k]['checkdate'];
-        $d['checkinfo']= $data[$k]['checkinfo'];
-        $d['client']= $data[$k]['client'];
-        $d['clientname']= $data[$k]['clientname'];
-        $d['createby']= $data[$k]['createby'];
-        $d['amount']= $this->othersClass->sanitizekeyfield("amt",$data[$k]['amount']);
-        $d['yourref']= $data[$k]['crno'];
-        $d['sicsino']= $data[$k]['sicsino'];
-        $d['drno']= $data[$k]['drno'];
-        $d['dstrno']= $data[$k]['dstrno'];
-        $d['bank']= $data[$k]['bank'];
+        $d['trno'] = $data[$k]['trno'];
+        $d['docno'] = $data[$k]['docno'];
+        $d['center'] = $data[$k]['center'];
+        $d['doc'] = $data[$k]['doc'];
+        $d['dateid'] = $data[$k]['dateid'];
+        $d['checkdate'] = $data[$k]['checkdate'];
+        $d['checkinfo'] = $data[$k]['checkinfo'];
+        $d['client'] = $data[$k]['client'];
+        $d['clientname'] = $data[$k]['clientname'];
+        $d['createby'] = $data[$k]['createby'];
+        // $d['amount'] = $this->othersClass->sanitizekeyfield("amt", $data[$k]['amount']);
+        $d['amount'] = $this->othersClass->sanitizekeyfieldFast("amt", $data[$k]['amount'], $lookups);
+
+        $d['yourref'] = $data[$k]['crno'];
+        $d['sicsino'] = $data[$k]['sicsino'];
+        $d['drno'] = $data[$k]['drno'];
+        $d['dstrno'] = $data[$k]['dstrno'];
+        $d['bank'] = $data[$k]['bank'];
         $d['dlby'] = $config['params']['users'];
         $d['dldate'] =  $this->othersClass->getCurrentTimeStamp();
-        $d['mpid'] =  ($data[$k]['mpid'] == 0) ? $this->coreFunctions->getfieldvalue("reqcategory","line","category = '". $data[$k]['modeofpayment']."' and ispaymode =1") : $data[$k]['mpid'];
-        
+        $d['mpid'] =  ($data[$k]['mpid'] == 0) ? $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = '" . $data[$k]['modeofpayment'] . "' and ispaymode =1") : $data[$k]['mpid'];
+
         // if($data[$k]['dstrno']!=0){
         //   $isposted = $this->othersClass->isposted2($data[$k]['dstrno'],"transnum",'mysql2');
         //   if($isposted == 1){
@@ -276,80 +281,80 @@ class downloadcoll
         //   $d['depodate'] = $depdate;
         //   $d['bank'] = $bank;
         // }       
-        
-        //get trnxid, purpose, mode base on reference of MC
-        $reftrno = $this->coreFunctions->datareader("select ifnull(refx,0) as value from hmcdetail where trno=?",[$data[$k]['trno']],'mysql2');
 
-        if($reftrno == 0){
-            $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'downpayment' and ispaytype =1");
-            $d['trnxtid'] =0;
-        }else{
-            $qry = "select num.doc,h.docno,m.name as modeofsales from glhead as h left join cntnum as num on num.trno = h.trno left join mode_masterfile as m on m.line = h.modeofsales where num.trno =  ".$reftrno;
-            $this->coreFunctions->LogConsole($qry);
-            $ref = $this->coreFunctions->opentable($qry,[],'mysql2');
-            if(!empty($ref)){
-                if($ref[0]->doc == 'MJ'){                
-                    switch (strtoupper($ref[0]->modeofsales)){
-                        case 'CASH':
-                            $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'cash collection' and isttype =1");
-                            $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'CASH' and ispaytype =1");
-                            break;
-                        case 'INHOUSE INSTALLMENT':
-                            $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'Inhouse Collection' and isttype =1");
-                            $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'Monthly Payment' and ispaytype =1");
-                            break;
-                        default:
-                            $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'Bank Financing' and isttype =1");
-                            $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'Monthly Payment' and ispaytype =1");
-                        break;
-                    }
-                    $d['trnxtype'] ='MC UNIT';
-                }else{
-                    $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'spareparts' and ispaytype =1");
-                    $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory","line","category = 'Spareparts' and isttype =1");
-                    $d['trnxtype'] ='SPAREPARTS';
-                }
+        //get trnxid, purpose, mode base on reference of MC
+        $reftrno = $this->coreFunctions->datareader("select ifnull(refx,0) as value from hmcdetail where trno=?", [$data[$k]['trno']], 'mysql2');
+
+        if ($reftrno == 0) {
+          $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'downpayment' and ispaytype =1");
+          $d['trnxtid'] = 0;
+        } else {
+          $qry = "select num.doc,h.docno,m.name as modeofsales from glhead as h left join cntnum as num on num.trno = h.trno left join mode_masterfile as m on m.line = h.modeofsales where num.trno =  " . $reftrno;
+          $this->coreFunctions->LogConsole($qry);
+          $ref = $this->coreFunctions->opentable($qry, [], 'mysql2');
+          if (!empty($ref)) {
+            if ($ref[0]->doc == 'MJ') {
+              switch (strtoupper($ref[0]->modeofsales)) {
+                case 'CASH':
+                  $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'cash collection' and isttype =1");
+                  $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'CASH' and ispaytype =1");
+                  break;
+                case 'INHOUSE INSTALLMENT':
+                  $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'Inhouse Collection' and isttype =1");
+                  $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'Monthly Payment' and ispaytype =1");
+                  break;
+                default:
+                  $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'Bank Financing' and isttype =1");
+                  $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'Monthly Payment' and ispaytype =1");
+                  break;
+              }
+              $d['trnxtype'] = 'MC UNIT';
+            } else {
+              $d['ppid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'spareparts' and ispaytype =1");
+              $d['trnxtid'] = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = 'Spareparts' and isttype =1");
+              $d['trnxtype'] = 'SPAREPARTS';
             }
+          }
         }
 
         $this->coreFunctions->LogConsole($qry);
 
-        if($this->coreFunctions->sbcinsert("tcoll",$d) == 1){
-            $qry="update transnum set isdownloaded = 1 where trno = ". $data[$k]['trno'];
-            $this->coreFunctions->LogConsole($qry);
-            $this->coreFunctions->execqry($qry,'update',[],'mysql2');
+        if ($this->coreFunctions->sbcinsert("tcoll", $d) == 1) {
+          $qry = "update transnum set isdownloaded = 1 where trno = " . $data[$k]['trno'];
+          $this->coreFunctions->LogConsole($qry);
+          $this->coreFunctions->execqry($qry, 'update', [], 'mysql2');
         }
-        
       }
     }
-    $this->loaddata($config,$date1,$date2);
+    $this->loaddata($config, $date1, $date2);
     return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
   }
 
-  private function downloadclient(){
+  private function downloadclient()
+  {
     $qry = "select c.clientid,c.client,c.clientname,c.addr,c.bday,cl.bplace,cl.citizenship,cl.civilstatus,cl.father,cl.mother,c.sex,c.position,c.tel2,c.accountid,c.terms,c.province,c.region,c.zipcode,c.status,
     c.agent,c.tin,c.email,c.iscustomer,c.isfp,cl.bplace,cl.citizenship,cl.civilstatus,cl.father,cl.mother,cl.height,cl.weight,cl.fname,cl.mname,cl.lname from client as c left join clientinfo as cl on cl.clientid = c.clientid where c.iscustomer =1 or c.isfp =1  and c.isdownloaded = 0";
-    $uds = $this->coreFunctions->opentable($qry,[],'mysql2');
+    $uds = $this->coreFunctions->opentable($qry, [], 'mysql2');
     $uds = json_decode(json_encode($uds), true);
     $this->coreFunctions->LogConsole($qry);
     $cl = [];
     $info = [];
-    foreach($uds as $m => $u){
-      $cl['client']=$uds[$m]['client'];
-      $cl['clientname']=$uds[$m]['clientname'];
-      $cl['addr'] =$uds[$m]['addr'];
+    foreach ($uds as $m => $u) {
+      $cl['client'] = $uds[$m]['client'];
+      $cl['clientname'] = $uds[$m]['clientname'];
+      $cl['addr'] = $uds[$m]['addr'];
       $cl['bday'] = $uds[$m]['bday'];
       $cl['sex'] = $uds[$m]['sex'];
       $cl['position'] = $uds[$m]['position'];
       $cl['tel2'] = $uds[$m]['tel2'];
       $cl['accountid'] = $uds[$m]['accountid'];
       $cl['terms'] = $uds[$m]['terms'];
-      $cl['province'] =$uds[$m]['province'];
+      $cl['province'] = $uds[$m]['province'];
       $cl['region'] = $uds[$m]['region'];
       $cl['zipcode'] = $uds[$m]['zipcode'];
       $cl['status'] = $uds[$m]['status'];
       $cl['agent'] = $uds[$m]['agent'];
-      $cl['tin'] =$uds[$m]['tin'];
+      $cl['tin'] = $uds[$m]['tin'];
       $cl['email'] = $uds[$m]['email'];
       $cl['iscustomer'] = $uds[$m]['iscustomer'];
       $cl['isfp'] = $uds[$m]['isfp'];
@@ -365,34 +370,23 @@ class downloadcoll
       $info['mname'] = $uds[$m]['mname'];
       $info['lname'] = $uds[$m]['lname'];
 
-      $ins = $this->coreFunctions->insertGetId("client",$cl);
-      if($ins !=0){
-        $this->coreFunctions->execqry("update client set isdownloaded = 1 where clientid = ?","update",[$uds[$m]['clientid']],'mysql2');
+      $ins = $this->coreFunctions->insertGetId("client", $cl);
+      if ($ins != 0) {
+        $this->coreFunctions->execqry("update client set isdownloaded = 1 where clientid = ?", "update", [$uds[$m]['clientid']], 'mysql2');
         $info['clientid'] = $ins;
-        $this->coreFunctions->sbcinsert("clientinfo",$info);
+        $this->coreFunctions->sbcinsert("clientinfo", $info);
       }
-      
-      
     }
-    
-    $this->coreFunctions->execqry("delete from coa","delete");
-    $dlcoa = $this->coreFunctions->opentable("select acnoid,acno,acnoname,levelid,alias,cat,parent,detail from coa",[],'mysql2');
+
+    $this->coreFunctions->execqry("delete from coa", "delete");
+    $dlcoa = $this->coreFunctions->opentable("select acnoid,acno,acnoname,levelid,alias,cat,parent,detail from coa", [], 'mysql2');
     $dlcoa = json_decode(json_encode($dlcoa), true);
-    foreach($dlcoa as $c => $x){
+    foreach ($dlcoa as $c => $x) {
       $this->coreFunctions->execqry("insert into coa (acnoid,acno,acnoname,levelid,alias,cat,parent,detail) values 
-      (".$dlcoa[$c]['acnoid'].",'".$dlcoa[$c]['acno']."','".$dlcoa[$c]['acnoname']."',".$dlcoa[$c]['levelid'].",'".$dlcoa[$c]['alias']."','".$dlcoa[$c]['cat']."','".$dlcoa[$c]['parent']."',".$dlcoa[$c]['detail'].")","insert");
+      (" . $dlcoa[$c]['acnoid'] . ",'" . $dlcoa[$c]['acno'] . "','" . $dlcoa[$c]['acnoname'] . "'," . $dlcoa[$c]['levelid'] . ",'" . $dlcoa[$c]['alias'] . "','" . $dlcoa[$c]['cat'] . "','" . $dlcoa[$c]['parent'] . "'," . $dlcoa[$c]['detail'] . ")", "insert");
     }
-    
+
 
     return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
-
   }
-
-
-
-
-
-
 } //end class
-
-

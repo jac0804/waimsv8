@@ -39,7 +39,7 @@ class dx
     public $htablelogs = 'htransnum_log';
     public $tablelogs_del = 'del_transnum_log';
     public $defaultContra = 'CB';
-    private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'amount', 'bank','mpid','checkinfo'];
+    private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'amount', 'bank', 'mpid', 'checkinfo'];
     private $except = ['trno', 'dateid'];
     public $showfilteroption = true;
     public $showfilter = true;
@@ -231,9 +231,9 @@ class dx
     public function createtabbutton($config)
     {
         $companyid = $config['params']['companyid'];
-        if($companyid==57){
+        if ($companyid == 57) {
             return [];
-        }else{
+        } else {
             $tbuttons = ['undepositeddscollection', 'deleteallitem'];
             foreach ($tbuttons as $key => $value) {
                 $$value = $key;
@@ -243,12 +243,11 @@ class dx
 
             return $obj;
         }
-        
     }
 
     public function createHeadField($config)
     {
-        $fields = ['docno', 'dacnoname','modeofpayment2'];
+        $fields = ['docno', 'dacnoname', 'modeofpayment2'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'docno.label', 'Transaction#');
         data_set($col1, 'dacnoname.label', 'Bank');
@@ -256,14 +255,14 @@ class dx
         data_set($col1, 'dacnoname.required', true);
 
 
-        $fields = ['dateid', 'amount','checkinfo'];
+        $fields = ['dateid', 'amount', 'checkinfo'];
         $col2 = $this->fieldClass->create($fields);
 
-        
+
         data_set($col2, 'checkinfo.action', 'lookupcashiercheck');
         data_set($col2, 'checkinfo.label', 'Check #');
 
-        
+
         data_set($col2, 'checkinfo.type', 'lookup');
         data_set($col2, 'checkinfo.lookupclass', 'lookupcashiercheck');
 
@@ -287,7 +286,7 @@ class dx
         $data[0]['rem'] = '';
         $data[0]['amount'] = 0;
         $data[0]['bank'] = 0;
-        
+
         $data[0]['mpid'] = '';
         $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
         $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
@@ -377,20 +376,24 @@ class dx
             unset($head['docno']);
         }
 
+        $dateTables = ['dxhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
 
-        if($head['modeofpayment2']=='CHECK'){
-            $cetrno = $this->coreFunctions->datareader("select trno as value from hcehead where checkinfo  =?",[$head['checkinfo']]);
-            $this->coreFunctions->sbcupdate('transnum', ['dstrno' => $head['trno']], ['trno' => $cetrno]);    
+        if ($head['modeofpayment2'] == 'CHECK') {
+            $cetrno = $this->coreFunctions->datareader("select trno as value from hcehead where checkinfo  =?", [$head['checkinfo']]);
+            $this->coreFunctions->sbcupdate('transnum', ['dstrno' => $head['trno']], ['trno' => $cetrno]);
         }
 
         if ($isupdate) {
@@ -401,9 +404,6 @@ class dx
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno']);
-
-            
-            
         }
     } // end function
 
@@ -419,7 +419,7 @@ class dx
         $this->deleteallitem($config);
         $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
         $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
-        $this->coreFunctions->sbcupdate('transnum', ['dstrno' => 0], ['dstrno' => $trno]);   
+        $this->coreFunctions->sbcupdate('transnum', ['dstrno' => 0], ['dstrno' => $trno]);
         $this->othersClass->deleteattachments($config);
         $this->logger->sbcdel_log($trno, $config, $docno);
         return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
@@ -437,7 +437,7 @@ class dx
         //         return ['status' => false, 'msg' => 'Posting failed. No collections to post.'];
         //     }
         // }
-        
+
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
         if ($this->othersClass->isposted($config)) {
@@ -472,18 +472,17 @@ class dx
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
         $dateid = $this->coreFunctions->datareader('select dateid as value from ' . $this->hhead . ' where trno=?', [$trno]);
-        $close = $this->coreFunctions->datareader("select dateid as value from eod where center = '".$center."' order by dateid desc limit 1");
-       
+        $close = $this->coreFunctions->datareader("select dateid as value from eod where center = '" . $center . "' order by dateid desc limit 1");
 
-        if($close !=''){
+
+        if ($close != '') {
             $dateid = $this->othersClass->sbcdateformat($dateid);
             $close = $this->othersClass->sbcdateformat($close);
-            if($dateid<=$close){
-                return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Date already close.'];   
+            if ($dateid <= $close) {
+                return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Date already close.'];
             }
-    
         }
-        
+
         $qry = "insert into " . $this->head . "(trno,doc,docno,dateid,rem,yourref,ourref,bank,amount,
         mpid,checkinfo,
         createdate,createby,editby,editdate,lockdate,lockuser)
@@ -592,51 +591,51 @@ class dx
         // if($companyid==57){
         //     return [];
         // }else{
-            // $columns = [
-            //     'action',
-            //     'dateid',
-            //     'checkdate',
-            //     'checkinfo',
-            //     'amount',
-            //     'docno',
-            //     'clientname',
-            //     'rem'
-            // ];
+        // $columns = [
+        //     'action',
+        //     'dateid',
+        //     'checkdate',
+        //     'checkinfo',
+        //     'amount',
+        //     'docno',
+        //     'clientname',
+        //     'rem'
+        // ];
 
-            // foreach ($columns as $key => $value) {
-            //     $$value = $key;
-            // }
+        // foreach ($columns as $key => $value) {
+        //     $$value = $key;
+        // }
 
-            // $tab = [$this->gridname => ['gridcolumns' => $columns]];
-            // $stockbuttons = ['delete'];
+        // $tab = [$this->gridname => ['gridcolumns' => $columns]];
+        // $stockbuttons = ['delete'];
 
-            // $obj = $this->tabClass->createtab($tab, $stockbuttons);
-            // $obj[0][$this->gridname]['label'] = 'COLLECTIONS';
-            // $obj[0][$this->gridname]['totalfield'] = 'amount';
-            // $obj[0][$this->gridname]['descriptionrow'] = '';
-            // $obj[0][$this->gridname]['columns'][$clientname]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'NAME';
-            // $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-            // $obj[0][$this->gridname]['columns'][$dateid]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$dateid]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+        // $obj = $this->tabClass->createtab($tab, $stockbuttons);
+        // $obj[0][$this->gridname]['label'] = 'COLLECTIONS';
+        // $obj[0][$this->gridname]['totalfield'] = 'amount';
+        // $obj[0][$this->gridname]['descriptionrow'] = '';
+        // $obj[0][$this->gridname]['columns'][$clientname]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'NAME';
+        // $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        // $obj[0][$this->gridname]['columns'][$dateid]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$dateid]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
 
-            // $obj[0][$this->gridname]['columns'][$checkdate]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$checkdate]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+        // $obj[0][$this->gridname]['columns'][$checkdate]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$checkdate]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
 
-            // $obj[0][$this->gridname]['columns'][$checkinfo]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$checkinfo]['readonly'] = true;
 
-            // $obj[0][$this->gridname]['columns'][$amount]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$amount]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+        // $obj[0][$this->gridname]['columns'][$amount]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$amount]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
 
-            // $obj[0][$this->gridname]['columns'][$docno]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$docno]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        // $obj[0][$this->gridname]['columns'][$docno]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$docno]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
 
-            // $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
-            // $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+        // $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
+        // $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
 
-            // return $obj;
+        // return $obj;
         //}
-        
+
     }
 
     public function opendetailline($trno, $config)

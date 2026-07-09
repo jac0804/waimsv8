@@ -126,6 +126,10 @@ class timein
         $timeinout = $this->othersClass->getCurrentTimeStamp();
         $dateid = strtotime($timeinout);
 
+        $dateTables = ['timerec'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+
         if (isset($config['params']['gridheaddata']['mode'])) {
             if (isset($config['params']['gridheaddata']['mode']['label']) != '') {
                 $dayn = $this->getDay($dateid);
@@ -139,7 +143,8 @@ class timein
                 ];
                 $msg = '';
                 foreach ($datas as $key => $value2) {
-                    $datas[$key] = $this->othersClass->sanitizekeyfield($key, $datas[$key]);
+                    // $datas[$key] = $this->othersClass->sanitizekeyfield($key, $datas[$key]);
+                    $datas[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datas[$key], $lookups);
                 }
                 $dateid = strtotime($timeinout);
                 $qry = "select timeinout,mode from timerec where userid = $empid and date(timeinout) = '" . date('Y-m-d', $dateid) . "' and mode = '$mode' limit 1";
@@ -207,7 +212,7 @@ class timein
                                         }
                                     }
                                 }
-                                 // check count BI 
+                                // check count BI 
                                 if ($countbi == 2) {
                                     $msg = "You don't have any ";
                                     if ($resultdata[0]['mode'] == $mode) {

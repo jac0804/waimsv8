@@ -148,8 +148,8 @@ class sales_summary_per_item_per_price
     $filterp = '';
     $filteru = '';
 
-    if ($clientname != "") {
-      $filteru .= " and head.client = '" . $clientid . "'";
+    if ($client != "") {
+      $filteru .= " and head.client = '" . $client . "'";
       $filterp .= " and head.clientid = '" . $clientid . "'";
     }
 
@@ -161,10 +161,6 @@ class sales_summary_per_item_per_price
       $agent = $config['params']['dataparams']['agent'];
       $agentid = $config['params']['dataparams']['agentid'];
 
-      if ($dclientname != "") {
-        $filteru .= " and head.client='$client'";
-        $filterp .= " and head.clientid=" . $clientid;
-      }
       if ($agentname != "") {
         $filteru .= " and head.agent='$agent'";
         $filterp .= " and head.agentid=" . $agentid;
@@ -222,7 +218,7 @@ class sales_summary_per_item_per_price
       left join uom on uom.itemid=stock.itemid and uom.uom=stock.uom
       WHERE head.doc = 'SJ' and date(head.dateid) between '$start' and '$end' $filterp $filterproj
     ) as a 
-    LEFT JOIN item ON item.itemid=a.itemid
+     JOIN item ON item.itemid=a.itemid
     WHERE ''='' $filter
     group by barcode,itemname,a.uom, a.isamt
     order by itemname";
@@ -251,6 +247,7 @@ class sales_summary_per_item_per_price
       $font_size = 10;
       $count = 50;
       $page = 50;
+      $layoutsize = 1000;
       $font = $this->companysetup->getrptfont($params['params']);
       $this->reporter->linecounter = 0;
       $result = $this->reportDefault($params, $data);
@@ -258,8 +255,8 @@ class sales_summary_per_item_per_price
         return $this->othersClass->emptydata($params, $data);
       }
 
-      $str .= $this->reporter->beginreport('800');
-      $str .= $this->SALES_RETURN_PER_ITEM_HEADER($params, $data);
+      $str .= $this->reporter->beginreport($layoutsize);
+      $str .= $this->SALES_RETURN_PER_ITEM_HEADER($params, $data, $layoutsize);
 
       $gt = 0;
       for ($i = 0; $i < count($data); $i++) {
@@ -275,7 +272,7 @@ class sales_summary_per_item_per_price
         $str .= $this->reporter->addline();
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col($data[$i]['barcode'], '160', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col($data[$i]['itemname'], '300', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data[$i]['itemname'], '410', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->col(number_format($qty, 2), '80', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data[$i]['uom'], '80', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col(number_format($cost, 2), '90', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -287,7 +284,7 @@ class sales_summary_per_item_per_price
       $str .= '<br>';
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '160', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col('', '300', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col('', '410', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', '80', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col('', '90', null, false, '1px solid ', 'T', 'C', $font, $font_size, 'B', '', '');
@@ -302,7 +299,7 @@ class sales_summary_per_item_per_price
     }
   }
 
-  private function SALES_RETURN_PER_ITEM_HEADER($params, $data)
+  private function SALES_RETURN_PER_ITEM_HEADER($params, $data, $layoutsize)
   {
     $font = $this->companysetup->getrptfont($params['params']);
     $font_size = 10;
@@ -358,12 +355,12 @@ class sales_summary_per_item_per_price
     }
 
     $str = '';
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->letterhead($center, $username, $params);
     $str .= $this->reporter->endtable();
     $str .= '<br/>';
 
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable($layoutsize);
 
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('SALES SUMMARY PER ITEM PER PRICE', null, null, false, '1px solid ', '', '', $font, '18', 'B', '', '') . '<br />';
@@ -375,64 +372,98 @@ class sales_summary_per_item_per_price
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-
-    if ($companyid == 14) { //majesty
-      $str .= $this->reporter->col('Customer: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($clientname, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Division: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($group, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Classification: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($class, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Group: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($group, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Class: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($class, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    switch ($companyid) {
+      case 39: // cbbsi
+        $str .= $this->reporter->col('Group: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($group, '350', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Class:', '80', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($class, '320', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        break;
+      case 17: // unihome
+        $str .= $this->reporter->col('Group: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($group, '130', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Class', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($class, '130', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '120', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        break;
+      case 14: //majesty
+        $str .= $this->reporter->col('Customer: ', '70', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($clientname, '210', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Division: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($group, '170', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Classification: ', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($class, '170', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        break;
+      default:
+        $str .= $this->reporter->col('Group: ', '60', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($group, '330', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Class: ', '60', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($class, '330', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        break;
     }
 
-    $str .= $this->reporter->col('Category: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col($category, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Category:', '70', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($category, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
     if ($params['params']['companyid'] == 17) { //unihome
-      $str .= $this->reporter->col('Agent: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($agentname, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('Agent: ', '80', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col($agentname, '120', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
     }
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
 
     switch ($params['params']['companyid']) {
-      case 17: //UNIHOME
       case 39: //CBBSI
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Brand: ', '49', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($brand, '120.5', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Part: ', '49', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($part, '150.5', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Sub Category: ', '120', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($subcat, '150.5', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Project: ', '50', null, false, '1px solid', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($project, '150.5', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Customer: ', '50', null, false, '1px solid', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($clientname, '400', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Brand: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($brand, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Part: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($part, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Sub Category:', '80', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($subcat, '120', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Project:', '60', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($project, '140', null, false, '1px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Customer: ', '70', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($clientname, '150', null, false, '1px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        break;
+      case 17: //UNIHOME
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Brand: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($brand, '130', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Part: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($part, '130', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Sub Category: ', '80', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($subcat, '120', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Project: ', '70', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($project, '150', null, false, '1px solid', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Customer: ', '80', null, false, '1px solid', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($clientname, '120', null, false, '1px solid', '', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         break;
       case 14: //majesty
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Brand: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($brand, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Principal: ', '50', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($part, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Sub Category: ', '98', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Brand: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($brand, '210', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Principal: ', '60', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($part, '170', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Sub Category: ', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col($subcat, '170', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '70', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         break;
       default:
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Brand: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($brand, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Part: ', '50', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($part, '216', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Sub Category: ', '96', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col($subcat, '170', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Brand: ', '60', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($brand, '330', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Part: ', '60', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($part, '330', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('Sub Category:', '70', null, false, '1px solid ', '', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($subcat, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         break;
     }
@@ -440,10 +471,10 @@ class sales_summary_per_item_per_price
 
     $str .= $this->reporter->printline();
 
-    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Barcode', '160', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');
-    $str .= $this->reporter->col('Itemname', '300', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');
+    $str .= $this->reporter->col('Itemname', '410', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');
     $str .= $this->reporter->col('Qty', '80', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');
     $str .= $this->reporter->col('Unit', '80', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');
     $str .= $this->reporter->col('Avg Cost', '90', null, false, '1px solid ', 'B', 'C', $font, $font_size, 'B', '', '', '');

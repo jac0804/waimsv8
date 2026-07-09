@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Http\Classes\coreFunctions;
 use App\Http\Classes\companysetup;
 use App\Http\Classes\othersClass;
+use Monolog\Logger;
 
 use function PHPSTORM_META\type;
 
@@ -4432,5 +4433,22 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["cost", "length", "width", "wt"],  "DECIMAL(19,6) DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["qty", "bal"],  "DECIMAL(19,10) DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["rrstatus"], ["isimport", "isupdate"],  "TINYINT(2) UNSIGNED DEFAULT 0", 0);
+
+    $qry = "CREATE TABLE `mcfinancerate` (
+            `itemid` int(11) NOT NULL DEFAULT '0',
+            `terms` VARCHAR(30) NOT NULL DEFAULT '',
+            `dp` DECIMAL(18,2) NOT NULL DEFAULT '0.00',
+            `interest` decimal(18,6) NOT NULL DEFAULT '0.000000',
+            `factor` decimal(19,6) NOT NULL DEFAULT '0.000000',
+            `penalty` VARCHAR(5) NOT NULL DEFAULT '',
+            `miscfee` decimal(18,6) NOT NULL DEFAULT '0.000000',
+            `rebate` decimal(18,4) NOT NULL DEFAULT '0',
+            `editby` varchar(100) NOT NULL DEFAULT '',
+            `editdate` datetime DEFAULT NULL,
+            `encodedby` varchar(100) NOT NULL DEFAULT '',
+            `encodeddate` datetime DEFAULT NULL,
+             INDEX `Index_itemid`(`itemid`))
+            ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("mcfinancerate", $qry);
   }
 }

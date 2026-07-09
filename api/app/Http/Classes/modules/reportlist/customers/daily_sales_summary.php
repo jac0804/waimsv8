@@ -233,7 +233,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('DATE', '250', null, false, '1px solid ', 'BTL', 'C', $font, $font_size, 'B', '', '5px');
         $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false, '1px solid ', 'BTL', 'C', $font, $font_size, 'B', '', '5px');
         $str .= $this->reporter->col('TOTAL CTNS', '225', null, false, '1px solid ', 'BTL', 'C', $font, $font_size, 'B', '', '5px');
-        $str .= $this->reporter->col('SALES AMOUNT', '300', null, false, '1px solid ', 'BTLR', 'C', $font, $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('SALES AMOUNT', '290', null, false, '1px solid ', 'BTL', 'C', $font, $font_size, 'B', '', '5px');
+        $str .= $this->reporter->col('', '10', null, false, '1px solid ', 'BTR', 'C', $font, $font_size, 'B', '', '5px');
         $str .= $this->reporter->endrow();
         // $str .= $this->reporter->endtable();
 
@@ -242,105 +243,105 @@ class daily_sales_summary
     }
 
 
-    public function report_SUMMARIZED_Layout_org($config)
-    {
-        $border = '1px solid';
-        $font = $this->companysetup->getrptfont($config['params']);
-        $font_size = '11';
+    // public function report_SUMMARIZED_Layout_org($config)
+    // {
+    //     $border = '1px solid';
+    //     $font = $this->companysetup->getrptfont($config['params']);
+    //     $font_size = '11';
 
-        $result = $this->reportDefault($config);
+    //     $result = $this->reportDefault($config);
 
-        $count = 33;
-        $page = 34;
-        $this->reporter->linecounter = 0;
+    //     $count = 33;
+    //     $page = 34;
+    //     $this->reporter->linecounter = 0;
 
-        if (empty($result)) {
-            return $this->othersClass->emptydata($config);
-        }
+    //     if (empty($result)) {
+    //         return $this->othersClass->emptydata($config);
+    //     }
 
-        $str = '';
-        $layoutsize = '1000';
-
-
-        $str .= $this->reporter->beginreport($layoutsize);
-        $str .= $this->displayHeader($config, $layoutsize);
-
-        foreach ($result as $key => $data) {
-            // $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
-            $carton=$data->carton;
-            $catname = $data->catname;
-
-            $docno = $data->docno;
-
-            $str .= $this->reporter->addline();
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data->dateid, '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col($data->docno, '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col($carton != 0 ? number_format($carton, 2) : '', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col(number_format($data->totalsales, 2), '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->endrow();
-
-            $str .= $this->reporter->begintable($layoutsize);
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col('TOTAL CTNS', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->col('SALES AMOUNT', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
-
-            if ($this->reporter->linecounter == $page) {
-
-                $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '250', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
-                $str .= $this->reporter->col('', '225', null, false,  $border, 'T',  'L', $font, '', '', '', '');
-                $str .= $this->reporter->col('', '225', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
-                $str .= $this->reporter->col('', '300', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
-                $str .= $this->reporter->endrow();
+    //     $str = '';
+    //     $layoutsize = '1000';
 
 
+    //     $str .= $this->reporter->beginreport($layoutsize);
+    //     $str .= $this->displayHeader($config, $layoutsize);
 
-                $str .= $this->reporter->endtable();
-                $str .= $this->reporter->page_break();
-                $str .= $this->displayHeader($config, $layoutsize);
-                $page = $page + $count;
-            }
-        }
+    //     foreach ($result as $key => $data) {
+    //         // $carton = (int) ($data->carton != '' ? preg_replace('/\D+/', '', $data->carton) : 0);
+    //         $carton=$data->carton;
+    //         $catname = $data->catname;
 
-        /// NEW ROW HERE 
-        $str .= $this->reporter->endtable();
+    //         $docno = $data->docno;
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp;', '250', null, false,  '', '',  'L', $font, '6', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '6', '', '', '');
-        $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '6', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '6', '', '',  '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+    //         $str .= $this->reporter->addline();
+    //         $str .= $this->reporter->startrow();
+    //         $str .= $this->reporter->col($data->dateid, '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col($data->docno, '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col($carton != 0 ? number_format($carton, 2) : '', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col(number_format($data->totalsales, 2), '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->endrow();
+
+    //         $str .= $this->reporter->begintable($layoutsize);
+    //         $str .= $this->reporter->startrow();
+    //         $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col('TOTAL CTNS', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->col('SALES AMOUNT', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
+    //         $str .= $this->reporter->endrow();
+    //         $str .= $this->reporter->endtable();
+
+    //         if ($this->reporter->linecounter == $page) {
+
+    //             $str .= $this->reporter->startrow();
+    //             $str .= $this->reporter->col('', '250', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
+    //             $str .= $this->reporter->col('', '225', null, false,  $border, 'T',  'L', $font, '', '', '', '');
+    //             $str .= $this->reporter->col('', '225', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
+    //             $str .= $this->reporter->col('', '300', null, false,  $border, 'T',  'L', $font, '', '', '',  '');
+    //             $str .= $this->reporter->endrow();
 
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('TOTAL CTNS', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('SALES AMOUNT', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('GRAND TOTAL', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->col('', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->endreport();
+    //             $str .= $this->reporter->endtable();
+    //             $str .= $this->reporter->page_break();
+    //             $str .= $this->displayHeader($config, $layoutsize);
+    //             $page = $page + $count;
+    //         }
+    //     }
 
-        return $str;
-    }
+    //     /// NEW ROW HERE 
+    //     $str .= $this->reporter->endtable();
+
+    //     $str .= $this->reporter->begintable($layoutsize);
+    //     $str .= $this->reporter->startrow();
+    //     $str .= $this->reporter->col('&nbsp;', '250', null, false,  '', '',  'L', $font, '6', '', '',  '');
+    //     $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '6', '', '', '');
+    //     $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '6', '', '',  '');
+    //     $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '6', '', '',  '');
+    //     $str .= $this->reporter->endrow();
+    //     $str .= $this->reporter->endtable();
+
+
+    //     $str .= $this->reporter->begintable($layoutsize);
+    //     $str .= $this->reporter->startrow();
+    //     $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('TOTAL CTNS', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('SALES AMOUNT', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->endrow();
+    //     $str .= $this->reporter->endtable();
+
+    //     $str .= $this->reporter->begintable($layoutsize);
+    //     $str .= $this->reporter->startrow();
+    //     $str .= $this->reporter->col('GRAND TOTAL', '250', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('', '225', null, false,  $border, 'L', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->col('', '300', null, false,  $border, 'LR', 'C', $font, $font_size, '', '', '2px', '');
+    //     $str .= $this->reporter->endrow();
+    //     $str .= $this->reporter->endtable();
+    //     $str .= $this->reporter->endreport();
+
+    //     return $str;
+    // }
 
     public function report_SUMMARIZED_Layout($config)
     {
@@ -356,7 +357,7 @@ class daily_sales_summary
         }
 
         $str = '';
-        $layoutsize = '1000';
+        $layoutsize = 1000;
         $count = 40; // bilang ng lines bago mag page break
         $page = $count;
         $this->reporter->linecounter = 0;
@@ -399,7 +400,8 @@ class daily_sales_summary
                 $str .= $this->reporter->col($prevDate, '250', null, false, $border, 'L', 'C', $font, $font_size);
                 $str .= $this->reporter->col(number_format($totalInvoices, 0), '225', null, false, $border, 'L', 'C', $font, $font_size);
                 $str .= $this->reporter->col(number_format($totalCartons, 2), '225', null, false, $border, 'L', 'C', $font, $font_size);
-                $str .= $this->reporter->col(number_format($totalSales, 2), '300', null, false, $border, 'LR', 'C', $font, $font_size);
+                $str .= $this->reporter->col(number_format($totalSales, 2), '290', null, false, $border, 'L', 'R', $font, $font_size);
+                $str .= $this->reporter->col('', '10', null, false, $border, 'R', 'R', $font, $font_size);
                 $str .= $this->reporter->endrow();
 
                 //  idagdag sa grand total 
@@ -424,7 +426,8 @@ class daily_sales_summary
                 $str .= $this->reporter->col('&nbsp;', '250', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
                 $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
                 $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
-                $str .= $this->reporter->col('&nbsp;', '300', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+                $str .= $this->reporter->col('&nbsp;', '290', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+                $str .= $this->reporter->col('&nbsp;', '10', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
@@ -434,7 +437,8 @@ class daily_sales_summary
                 $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
                 $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
                 $str .= $this->reporter->col('TOTAL CTNS', '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
-                $str .= $this->reporter->col('SALES AMOUNT', '300', null, false, $border, 'TLRB', 'C', $font, $font_size, 'B');
+                $str .= $this->reporter->col('SALES AMOUNT', '290', null, false, $border, 'TLB', 'R', $font, $font_size, 'B');
+                $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size, 'B');
                 $str .= $this->reporter->endrow();
 
                 foreach ($page_summary as $ctype => $sum) {
@@ -443,7 +447,8 @@ class daily_sales_summary
                     $str .= $this->reporter->col($ctype, '250', null, false, $border, 'L', 'C', $font, $font_size);
                     $str .= $this->reporter->col(number_format($sum['inv'], 0), '225', null, false, $border, 'L', 'C', $font, $font_size);
                     $str .= $this->reporter->col(number_format($sum['ctns'], 2), '225', null, false, $border, 'L', 'C', $font, $font_size);
-                    $str .= $this->reporter->col(number_format($sum['sales'], 2), '300', null, false, $border, 'LR', 'C', $font, $font_size);
+                    $str .= $this->reporter->col(number_format($sum['sales'], 2), '290', null, false, $border, 'L', 'R', $font, $font_size);
+                    $str .= $this->reporter->col('', '10', null, false, $border, 'R', '', $font, $font_size);
                     $str .= $this->reporter->endrow();
 
                     $pagetl_invoice += $sum['inv'];
@@ -482,7 +487,8 @@ class daily_sales_summary
             $str .= $this->reporter->col($prevDate, '250', null, false, $border, 'L', 'C', $font, $font_size);
             $str .= $this->reporter->col(number_format($totalInvoices, 0), '225', null, false, $border, 'L', 'C', $font, $font_size);
             $str .= $this->reporter->col(number_format($totalCartons, 2), '225', null, false, $border, 'L', 'C', $font, $font_size);
-            $str .= $this->reporter->col(number_format($totalSales, 2), '300', null, false, $border, 'LR', 'C', $font, $font_size);
+            $str .= $this->reporter->col(number_format($totalSales, 2), '290', null, false, $border, 'L', 'R', $font, $font_size);
+            $str .= $this->reporter->col('', '10', null, false, $border, 'R', 'R', $font, $font_size);
             $str .= $this->reporter->endrow();
 
             // idagdag sa grand total
@@ -498,7 +504,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -507,7 +514,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('CUSTOMER TYPE', '250', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
         $str .= $this->reporter->col('TOTAL INVOICES', '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
         $str .= $this->reporter->col('TOTAL CTNS', '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
-        $str .= $this->reporter->col('SALES AMOUNT', '300', null, false, $border, 'TLRB', 'C', $font, $font_size, 'B');
+        $str .= $this->reporter->col('SALES AMOUNT', '290', null, false, $border, 'TLB', 'R', $font, $font_size, 'B');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size, 'B');
         $str .= $this->reporter->endrow();
 
         foreach ($page_summary as $ctype => $sum) {
@@ -515,7 +523,8 @@ class daily_sales_summary
             $str .= $this->reporter->col($ctype, '250', null, false, $border, 'L', 'C', $font, $font_size);
             $str .= $this->reporter->col(number_format($sum['inv'], 0), '225', null, false, $border, 'L', 'C', $font, $font_size);
             $str .= $this->reporter->col(number_format($sum['ctns'], 2), '225', null, false, $border, 'L', 'C', $font, $font_size);
-            $str .= $this->reporter->col(number_format($sum['sales'], 2), '300', null, false, $border, 'LR', 'C', $font, $font_size);
+            $str .= $this->reporter->col(number_format($sum['sales'], 2), '290', null, false, $border, 'L', 'R', $font, $font_size);
+            $str .= $this->reporter->col('', '10', null, false, $border, 'R', 'R', $font, $font_size);
             $str .= $this->reporter->endrow();
             $pagetl_invoice += $sum['inv'];
             $pagetl_ctns += $sum['ctns'];
@@ -529,14 +538,16 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  $border, 'T',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('PAGE TOTAL', '250', null, false, $border, 'TBL', 'C', $font, $font_size, 'B', '', '2px', '');
         $str .= $this->reporter->col(number_format($pagetl_invoice, 0), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B', '', '2px', '');
         $str .= $this->reporter->col(number_format($pagetl_ctns, 2), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B', '', '2px', '');
-        $str .= $this->reporter->col(number_format($pagetl_sales, 2), '300', null, false, $border, 'LTRB', 'C', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col(number_format($pagetl_sales, 2), '290', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '2px', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -547,7 +558,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  $border, '',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, '',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, '',  'L', $font, '4', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  $border, '',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  $border, '',  'L', $font, '4', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  $border, '',  'L', $font, '4', '', '',  '');
         $str .= $this->reporter->endrow();
 
 
@@ -555,7 +567,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('GRAND TOTAL', '250', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
         $str .= $this->reporter->col(number_format($grandInvoices, 0), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
         $str .= $this->reporter->col(number_format($grandCartons, 2), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B');
-        $str .= $this->reporter->col(number_format($grandSales, 2), '300', null, false, $border, 'TLRB', 'C', $font, $font_size, 'B');
+        $str .= $this->reporter->col(number_format($grandSales, 2), '290', null, false, $border, 'TLB', 'R', $font, $font_size, 'B');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -565,7 +578,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  '', '',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
@@ -576,7 +590,8 @@ class daily_sales_summary
         $str .= $this->reporter->col($formattedDate, '250', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col(' ', '225', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col(' ', '225', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->pagenumber('Page', '300', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->pagenumber('Page', '290', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -602,7 +617,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  $border, 'T',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
@@ -610,7 +626,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('PAGE TOTAL', '250', null, false, $border, 'TBL', 'C', $font, $font_size, 'B', '', '2px', '');
         $str .= $this->reporter->col(number_format($data1, 0), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B', '', '2px', '');
         $str .= $this->reporter->col(number_format($data2, 2), '225', null, false, $border, 'TLB', 'C', $font, $font_size, 'B', '', '2px', '');
-        $str .= $this->reporter->col(number_format($data3, 2), '300', null, false, $border, 'LTRB', 'C', $font, $font_size, 'B', '', '2px', '');
+        $str .= $this->reporter->col(number_format($data3, 2), '290', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '2px', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'TRB', 'R', $font, $font_size, 'B', '', '2px', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -620,7 +637,8 @@ class daily_sales_summary
         $str .= $this->reporter->col('&nbsp;', '250', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->col('&nbsp;', '225', null, false,  '', '',  'L', $font, '2', '', '',  '');
-        $str .= $this->reporter->col('&nbsp;', '300', null, false,  '', '',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '290', null, false,  '', '',  'L', $font, '2', '', '',  '');
+        $str .= $this->reporter->col('&nbsp;', '10', null, false,  '', '',  'L', $font, '2', '', '',  '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
@@ -631,7 +649,8 @@ class daily_sales_summary
         $str .= $this->reporter->col($formattedDate, '250', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col(' ', '225', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->col(' ', '225', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
-        $str .= $this->reporter->pagenumber('Page', '300', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->pagenumber('Page', '290', null, '', $border, '', 'R', $font, $font_size, '', '', '2px', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '2px', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         // $str .= $this->reporter->endreport();

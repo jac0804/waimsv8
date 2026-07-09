@@ -32,7 +32,7 @@ class updatepricelist
     private $coreFunctions;
     private $othersClass;
     public $style = 'width:100%;max-width:100%;';
-    public $tablelogs = 'masterfile_log';
+    public $tablelogs = 'item_log';
     public $issearchshow = true;
     public $showclosebtn = false;
     private $logger;
@@ -185,54 +185,52 @@ class updatepricelist
     public function updatepricelist($config, $type, $amt, $rate, $basis, $pricelevel)
     {
         $items = [];
-        $query = "select $amt,amt,itemid,uom from item";
+        $query = "select $amt,amt,itemid from item";
         $data = $this->coreFunctions->opentable($query);
-
-        foreach ($data as $key => $value) {
-
-            if ($basis == 'cost') { //lastescost option
-                $price = $this->coreFunctions->datareader("select rr.cost as value from rrstatus as rr
-                left join cntnum as num on num.trno = rr.trno 
-                where rr.itemid = ? and rr.uom =? and num.doc = 'RR' 
-                order by rr.dateid desc limit 1", [$value->itemid, $value->uom], '', true);
-            } else {
-                $price = $value->amt; //dealer option
-            }
-            switch ($type) {
-                case 'LOWER':
-                    $operator = '-';
-                    break;
-                case 'UPPER':
-                    $operator = '+';
-                    break;
-            }
-            if ($operator == '+') {
-                $newprice = $price + ($price * ($rate / 100));
-            } else {
-                $newprice = $price - ($price * ($rate / 100));
-            }
-
-            array_push($items, [
-                'itemid' => $value->itemid,
-                $amt    => $newprice
-            ]);
-        }
-        $chunks = array_chunk($items, 100);
 
         $msg = "Update Records Successfully";
         $status = true;
-        foreach ($chunks as $k => $item) {
-            foreach ($item as $row) {
-                $update = $this->coreFunctions->sbcupdate('item', [$amt => $row[$amt]], ['itemid' => $row['itemid']]);
-                $this->coreFunctions->LogConsole('Update records: ' . $update);
-                if (!$update) {
-                    $status = false;
-                    $msg = "Update Record Failed";
-                    break;
+        $user = $config['parama']['user'];
+        $date = $this->othersClass->getCurrentTimeStamp();
+        $chunks = array_chunk($data, 100);
+        foreach ($chunks as $key => $item) {
+
+            foreach ($item as $value) {
+                if ($basis == 'cost') { //lastescost option
+                    $price = $this->coreFunctions->datareader("select rr.cost as value from rrstatus as rr
+                    left join cntnum as num on num.trno = rr.trno 
+                    where rr.itemid = ? and num.doc = 'RR' 
+                    order by rr.dateid desc limit 1", [$value->itemid], '', true);
+                } else {
+                    $price = $value->amt; //dealer option
+                }
+                switch ($type) {
+                    case 'LOWER':
+                        $operator = '-';
+                        break;
+                    case 'UPPER':
+                        $operator = '+';
+                        break;
+                }
+                if($price !=0){
+                    if ($operator == '+') {
+                        $newprice = $price + ($price * ($rate / 100));
+                    } else {
+                        $newprice = $price - ($price * ($rate / 100));
+                    }
+
+                    $update = $this->coreFunctions->sbcupdate('item', [$amt => $newprice, 'editdate' => $date, 'editby' => $user], ['itemid' => $value->itemid]);
+                    if (!$update) {
+                        $status = false;
+                        $msg = "Update Record Failed";
+                        break;
+                    }
+                    $this->logger->sbcwritelog($value->itemid, $config, 'UPDATE PRICE LIST', $msg . ' - Price Level: ' . $pricelevel . ' - Rate: ' . $rate . ' - Type: ' . $type . ' - Price Basis: ' .$price. '('.$basis.')');
                 }
             }
             $this->coreFunctions->LogConsole('Processed 100 records.');
         }
+        $this->tablelogs = 'masterfile_log';
         $this->logger->sbcmasterlog(0, $config,  $msg . ' - Price Level: ' . $pricelevel . ' - Rate: ' . $rate . ' - Type: ' . $type . ' - Price Basis: ' . $basis);
         return ['status' => $status, 'msg' => $msg];
     }

@@ -2271,7 +2271,12 @@ class lookupClass
           );
         }
         break;
-
+        case 'financeterms':
+          $plotsetup = array(
+            'plottype' => 'plotledger',
+            'plotting' => array('terms' => 'terms')
+          );
+          break;
       default:
         if ($config['params']['companyid'] == 19 && $config['params']['doc'] == 'SJ') { //housegem
           $callbackfieldhead = array('deldate');
@@ -6499,7 +6504,7 @@ class lookupClass
             default:
               $plotsetup = array(
                 'plottype' => 'callback',
-                'action' => 'additem'
+              'action' => 'additem'
               );
             break;
           }

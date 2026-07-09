@@ -117,10 +117,13 @@ class monthly_analyze_item_sales
   public function paramsdata($config)
   {
     // NAME NG INPUT YUNG NAKA ALIAS
+    $companyid = $config['params']['companyid'];
     $analyzedby = "value";
     if ($config['params']['companyid'] == 60) { //transpower
       $analyzedby = "unit";
     }
+    $center = $config['params']['center'];
+    $wh = $this->coreFunctions->getfieldvalue("center", "warehouse", "code=?", [$center]);
     $paramstr = "select 
           'default' as print,
           0 as clientid,
@@ -257,6 +260,36 @@ class monthly_analyze_item_sales
     return $this->coreFunctions->opentable($query);
   }
 
+  public function TRANSPOWER_ALL($config, $itemid)
+  {
+    $companyid = $config['params']['companyid'];
+    $wh = $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
+    $year = $config['params']['dataparams']['year'];
+
+    $filter = '';
+
+    if ($wh != "") {
+      $filter .= " and stock.whid= '$whid'";
+    }
+
+    $posted = "select sum(x.qty - x.iss)  as balance
+        from (select sum(stock.qty) as qty,
+        sum(stock.iss) as iss
+        from lahead as head
+        left join lastock as stock on stock.trno = head.trno
+        left join item on item.itemid = stock.itemid
+        where year(head.dateid)=$year and stock.itemid = $itemid $filter
+        union all
+        select sum(stock.qty) as qty,
+        sum(stock.iss) as iss
+        from glhead as head
+        left join glstock as stock on stock.trno = head.trno
+        left join item on item.itemid = stock.itemid
+        where year(head.dateid)=$year and stock.itemid = $itemid $filter
+        ) as x";
+    return $posted;
+  }
 
   public function TRANSPOWER_QUERY_POSTED($config)
   {
@@ -268,12 +301,15 @@ class monthly_analyze_item_sales
     $brandname    = $config['params']['dataparams']['brandname'];
     $categoryname = $config['params']['dataparams']['categoryname'];
     $subcatname   =  $config['params']['dataparams']['subcatname'];
-    $wh           = $config['params']['dataparams']['wh'];
+    $wh = $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
+    $classic = $config['params']['dataparams']['classic'];
+    $classid = $config['params']['dataparams']['classid'];
+    $modelname = $config['params']['dataparams']['modelname'];
+    $modelid = $config['params']['dataparams']['modelid'];
     $year         = $config['params']['dataparams']['year'];
     $analyzedby   = $config['params']['dataparams']['analyzedby'];
     $itemtype     = $config['params']['dataparams']['itemtype'];
-    $agent        = $config['params']['dataparams']['agent'];
-    $agentid        = $config['params']['dataparams']['agentid'];
 
     $filter = '';
     $filter1 = '';
@@ -305,9 +341,13 @@ class monthly_analyze_item_sales
       $clientid = $config['params']['dataparams']['clientid'];
       $filter .= " and client.clientid=" . $clientid;
     }
+    if ($wh == '') {
+      $center = $config['params']['center'];
+      $minmax = $this->coreFunctions->getfieldvalue("center", "warehouse", "code=?", [$center]);
+    }
     if ($wh != "") {
-      $whid = $config['params']['dataparams']['whid'];
-      $filter .= " and stock.whid=" . $whid;
+      $filter .= " and stock.whid= '$whid'";
+      $minmax = $wh;
     }
 
     if ($analyzedby == "unit") {
@@ -315,511 +355,22 @@ class monthly_analyze_item_sales
     } else {
       $war = "stock.ext";
     }
-
-    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-    //   $project = $config['params']['dataparams']['project'];
-    //   $dept = $config['params']['dataparams']['ddeptname'];
-    //   $indus = $config['params']['dataparams']['industry'];
-
-    //   if ($project != "") {
-    //     $projectid = $config['params']['dataparams']['projectid'];
-    //     $filter1 .= " and head.projectid=" . $projectid;
-    //   }
-    //   if ($dept != "") {
-    //     $deptid = $config['params']['dataparams']['deptid'];
-    //     $filter1 .= " and head.deptid=" . $deptid;
-    //   }
-    //   if ($indus != "") {
-    //     $filter1 .= " and client.industry='$indus'";
-    //   }
-    // } else if ($companyid == 59) { //roosevelt
-    //   $area = $config['params']['dataparams']['area'];
-    //   $filter1 .= " and client.area='" . $area . "'";
-    // } else {
     $filter1 = "";
-    // }
 
-
-    $classid = '';
-    $modelid = '';
-    $addfields = '';
-    $leftjoin_class = '';
-    $transpowerfield = '';
-    $gtranspowerfield = '';
-    $transpowerfield2 = '';
-    $transpowerfieldgroup = '';
-
-    // if ($companyid == 60) {
-    $classid = $config['params']['dataparams']['classid'];
-    $modelid = $config['params']['dataparams']['modelid'];
-    $whid      = $config['params']['dataparams']['wh'];
-
-    // $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
-    // left join itemlevel as itlevel on itlevel.itemid = item.itemid';
-
-    // if ($whid != '') {
-    //   $transpowerfield  = ",ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,'') as itemmin, ifnull(itlevel.max,'') as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid";
-    //   $transpowerfield2 = "ifnull(x.classname,'') as classname, ifnull(x.itemmin,'') as itemmin, ifnull(x.itemmax,'') as itemmax, x.itemid, x.whid,";
-    //   $addfields        = 'ifnull((select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss),0) as balance,';
-    //   $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
-    //   $transpowerfieldgroup = "x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,";
-    // } else {
-    //   $transpowerfield  = ",ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,'') as itemmin, ifnull(itlevel.max,'') as itemmax, sum(stock.iss) as iss, item.itemid";
-    //   $transpowerfield2 = "ifnull(x.classname,'') as classname, ifnull(x.itemmin,'') as itemmin, ifnull(x.itemmax,'') as itemmax, x.itemid,";
-    //   $addfields        = 'ifnull((select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss),0) as balance,';
-    //   $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
-    //   $transpowerfieldgroup = "x.classname, x.itemmin, x.itemmax, x.itemid, ";
-    // }
-
-    if ($classid != "") {
+    if ($classic != "") {
       $filter1 .= " and ic.cl_id=" . $classid;
     }
-    if ($modelid != "") {
+    if ($modelname != "") {
       $filter1 .= " and mm.model_id=" . $modelid;
     }
-    // }
-
-    // $agfield = '';
-    // $agfield2 = '';
-    // $grpagent = '';
-    // if ($companyid == 23) {
-    //   $agfield = "agentname, ";
-    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
-    //   $grpagent = "agent.clientname, ";
-
-    //   if ($agentid != "") {
-    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
-    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
-    //   }
-    // // }
-    // $sort = "order by part, brand, barcode, itemname";
-    // if ($companyid == 60) {
-    //   $sort = "order by part, brand, itemname, barcode";
-    // }
-
-    // var_dump($config['params']['dataparams']);
-
-    $whfilter = '';
-    $whfield = '';
-    $whfield2 = '';
-    if ($whid != '') {
-      $whfilter .= 'and whid = x.whid';
-      $whfield = 'x.whid,';
-      $whfield2 = ', stock.whid';
-    }
-
-    $query = "select 
-    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
-    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
-    
-    barcode,size,uom,category,groupid,ifnull(category1,'') as category1, ifnull(subcatname,'') as subcatname, part, brand, model,body, upper(itemname) as itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
-      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
-      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
-      select item.barcode, client.clientname, item.sizeid as size,'p' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
-      ifnull(frontend_ebrands.brand_desc,'NO BRAND') as brand, 
-      cat.name as category1, subcat.name as subcatname,
-      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
-      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr, item.category,
-      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
-      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
-      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
-      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
-      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
-      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
-      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
-      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
-      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
-      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
-      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, 
-      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
-      item.itemid $whfield2
-      from ((glhead as head left join glstock as stock on stock.trno=head.trno)
-      left join client on client.clientid=head.clientid)
-      left join item on item.itemid=stock.itemid
-      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
-      left join part_masterfile as parts on parts.part_id = item.part
-      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
-      left join model_masterfile as mm on mm.model_id = item.model
-      left join cntnum on cntnum.trno=head.trno
-      left join itemcategory as cat on cat.line = item.category
-      left join itemsubcategory as subcat on subcat.line = item.subcat
-      left join client as agent on agent.clientid = head.agentid
-      left join item_class as ic on ic.cl_id = item.class  
-      left join itemlevel as itlevel on itlevel.itemid = item.itemid
-      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
-      group by 
-      item.barcode, client.clientname,item.sizeid,
-      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
-      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
-      ifnull(mm.model_name,'NO MODEL'),
-      ifnull(parts.part_name,'NO PART'),
-      item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname, 
-      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x
-      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname, uom
-      order by part, brand, itemname, barcode";
-    // var_dump($query);
-    // return 0;
-    return $query;
-  }
-
-  public function TRANSPOWER_QUERY_UNPOSTED($config)
-  {
-    $companyid    = $config['params']['companyid'];
-    $client       = $config['params']['dataparams']['client'];
-    $barcode      = $config['params']['dataparams']['barcode'];
-    $partname     = $config['params']['dataparams']['partname'];
-    $groupname    = $config['params']['dataparams']['stockgrp'];
-    $brandname    = $config['params']['dataparams']['brandname'];
-    $categoryname = $config['params']['dataparams']['categoryname'];
-    $subcatname   =  $config['params']['dataparams']['subcatname'];
-    $wh           = $config['params']['dataparams']['wh'];
-    $year         = $config['params']['dataparams']['year'];
-    $analyzedby   = $config['params']['dataparams']['analyzedby'];
-    $itemtype     = $config['params']['dataparams']['itemtype'];
-    $agent        = $config['params']['dataparams']['agent'];
-    $agentid        = $config['params']['dataparams']['agentid'];
-
-    $filter = '';
-    $filter1 = '';
-    if ($barcode != "") {
-      $itemid = $config['params']['dataparams']['itemid'];
-      $filter .= " and stock.itemid=" . $itemid;
-    }
-    if ($brandname != "") {
-      $brandid = $config['params']['dataparams']['brandid'];
-      $filter .= " and item.brand=" . $brandid;
-    }
-    if ($groupname != "") {
-      $groupid = $config['params']['dataparams']['groupid'];
-      $filter .= " and item.groupid=" . $groupid;
-    }
-    if ($categoryname != "") {
-      $category = $config['params']['dataparams']['category'];
-      $filter .= " and item.category='$category'";
-    }
-    if ($subcatname != "") {
-      $subcat = $config['params']['dataparams']['subcat'];
-      $filter .= " and item.subcat='$subcat'";
-    }
-    if ($partname != "") {
-      $partid = $config['params']['dataparams']['partid'];
-      $filter .= " and item.part=" . $partid;
-    }
-    if ($client != "") {
-      $clientid = $config['params']['dataparams']['clientid'];
-      $filter .= " and client.clientid=" . $clientid;
-    }
-    if ($wh != "") {
-      $whid = $config['params']['dataparams']['whid'];
-      $filter .= " and stock.whid=" . $whid;
-    }
-
-    if ($analyzedby == "unit") {
-      $war = "stock.iss";
-    } else {
-      $war = "stock.ext";
-    }
-
-    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-    //   $project = $config['params']['dataparams']['project'];
-    //   $dept = $config['params']['dataparams']['ddeptname'];
-    //   $indus = $config['params']['dataparams']['industry'];
-
-    //   if ($project != "") {
-    //     $projectid = $config['params']['dataparams']['projectid'];
-    //     $filter1 .= " and head.projectid=" . $projectid;
-    //   }
-    //   if ($dept != "") {
-    //     $deptid = $config['params']['dataparams']['deptid'];
-    //     $filter1 .= " and head.deptid=" . $deptid;
-    //   }
-    //   if ($indus != "") {
-    //     $filter1 .= " and client.industry='$indus'";
-    //   }
-    // } else if ($companyid == 59) { //roosevelt
-    //   $area = $config['params']['dataparams']['area'];
-    //   $filter1 .= " and client.area='" . $area . "'";
-    // } else {
-    $filter1 = "";
-    // }
-
-    $agfield = '';
-    $agfield2 = '';
-    $grpagent = '';
-    // if ($companyid == 23) {
-    //   $agfield = "agentname, ";
-    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
-    //   $grpagent = "agent.clientname, ";
-
-    //   if ($agentid != "") {
-    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
-    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
-    //   }
-    // }
-
-    $sort = "order by $agfield part, brand, barcode, itemname";
-    if ($companyid == 60) { //transpower
-      $sort = "order by itemname,barcode,part, brand";
-    }
-
-
-    $classid = '';
-    $modelid = '';
-    $addfields = '';
-    $leftjoin_class = '';
-    $transpowerfield = '';
-    $gtranspowerfield = '';
-    $transpowerfield2 = '';
-
-    // if ($companyid == 60) {
-    $classid = $config['params']['dataparams']['classid'];
-    $modelid = $config['params']['dataparams']['modelid'];
-    $whid      = $config['params']['dataparams']['wh'];
-
-    //   $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
-    //   left join itemlevel as itlevel on itlevel.itemid = item.itemid';
-
-    //   if ($whid != '') {
-    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid';
-    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,';
-    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss) as balance,';
-    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
-    //   } else {
-    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid';
-    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid,';
-    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss) as balance,';
-    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
-    //   }
-
-    //   if ($classid != "") {
-    //     $filter1 .= " and ic.cl_id=" . $classid;
-    //   }
-    //   if ($modelid != "") {
-    //     $filter1 .= " and mm.model_id=" . $modelid;
-    //   }
-    // }
-
-
-    $whfilter = '';
-    $whfield = '';
-    $whfield2 = '';
-    if ($whid != '') {
-      $whfilter .= 'and whid = x.whid';
-      $whfield = 'x.whid,';
-      $whfield2 = ', stock.whid';
-    }
-
-    $query = "select 
-    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
-    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
-    barcode, size, uom,category, groupid, part, brand,category1, subcatname, model,body, 
-    upper(itemname) as itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
-      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
-      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec from (
-      select item.barcode, client.clientname, item.sizeid as size,'u' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
-      ifnull(frontend_ebrands.brand_desc, 'NO BRAND') as brand, 
-      cat.name as category1, subcat.name as subcatname,
-      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
-      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr,
-      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
-      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
-      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
-      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
-      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
-      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
-      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
-      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
-      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
-      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
-      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
-      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, 
-      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
-      item.itemid $whfield2
-      from ((lahead as head left join lastock as stock on stock.trno=head.trno)
-      left join client on client.client=head.client)
-      left join item on item.itemid=stock.itemid
-      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
-      left join part_masterfile as parts on parts.part_id = item.part
-      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
-      left join model_masterfile as mm on mm.model_id = item.model
-      left join cntnum on cntnum.trno=head.trno
-      left join itemcategory as cat on cat.line = item.category
-      left join itemsubcategory as subcat on subcat.line = item.subcat
-      left join client as agent on agent.client = head.agent
-      left join item_class as ic on ic.cl_id = item.class  
-      left join itemlevel as itlevel on itlevel.itemid = item.itemid
-      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
-      group by 
-      item.barcode, client.clientname,item.sizeid,
-      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
-      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
-      ifnull(mm.model_name,'NO MODEL'),
-      ifnull(parts.part_name,'NO PART'),
-      item.body,item.itemname, year(head.dateid),
-      item.category,frontend_ebrands.brand_desc,category1,subcatname,
-      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x 
-      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
-      order by part, brand, itemname, barcode";
-    // var_dump($query);
-    return $query;
-  }
-
-  private function TRANSPOWER_QUERY_ALL($config)
-  {
-    $companyid    = $config['params']['companyid'];
-    $client       = $config['params']['dataparams']['client'];
-    $barcode      = $config['params']['dataparams']['barcode'];
-    $partname     = $config['params']['dataparams']['partname'];
-    $groupname    = $config['params']['dataparams']['stockgrp'];
-    $brandname    = $config['params']['dataparams']['brandname'];
-    $categoryname = $config['params']['dataparams']['categoryname'];
-    $subcatname   =  $config['params']['dataparams']['subcatname'];
-    $wh           = $config['params']['dataparams']['wh'];
-    $year         = $config['params']['dataparams']['year'];
-    $analyzedby   = $config['params']['dataparams']['analyzedby'];
-    $itemtype     = $config['params']['dataparams']['itemtype'];
-    $agent        = $config['params']['dataparams']['agent'];
-    $agentid        = $config['params']['dataparams']['agentid'];
-
-    $filter = '';
-    $filter1 = '';
-    if ($barcode != "") {
-      $itemid = $config['params']['dataparams']['itemid'];
-      $filter .= " and stock.itemid=" . $itemid;
-    }
-    if ($brandname != "") {
-      $brandid = $config['params']['dataparams']['brandid'];
-      $filter .= " and item.brand=" . $brandid;
-    }
-    if ($groupname != "") {
-      $groupid = $config['params']['dataparams']['groupid'];
-      $filter .= " and item.groupid=" . $groupid;
-    }
-    if ($categoryname != "") {
-      $category = $config['params']['dataparams']['category'];
-      $filter .= " and item.category='$category'";
-    }
-    if ($subcatname != "") {
-      $subcat = $config['params']['dataparams']['subcat'];
-      $filter .= " and item.subcat='$subcat'";
-    }
-    if ($partname != "") {
-      $partid = $config['params']['dataparams']['partid'];
-      $filter .= " and item.part=" . $partid;
-    }
-    if ($client != "") {
-      $clientid = $config['params']['dataparams']['clientid'];
-      $filter .= " and client.clientid=" . $clientid;
-    }
-    if ($wh != "") {
-      $whid = $config['params']['dataparams']['whid'];
-      $filter .= " and stock.whid=" . $whid;
-    }
-
-    if ($analyzedby == "unit") {
-      $war = "stock.iss";
-    } else {
-      $war = "stock.ext";
-    }
-
-    // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-    //   $project = $config['params']['dataparams']['project'];
-    //   $dept = $config['params']['dataparams']['ddeptname'];
-    //   $indus = $config['params']['dataparams']['industry'];
-
-    //   if ($project != "") {
-    //     $projectid = $config['params']['dataparams']['projectid'];
-    //     $filter1 .= " and head.projectid=" . $projectid;
-    //   }
-    //   if ($dept != "") {
-    //     $deptid = $config['params']['dataparams']['deptid'];
-    //     $filter1 .= " and head.deptid=" . $deptid;
-    //   }
-    //   if ($indus != "") {
-    //     $filter1 .= " and client.industry='$indus'";
-    //   }
-    // } else if ($companyid == 59) { //roosevelt
-    //   $area = $config['params']['dataparams']['area'];
-    //   $filter1 .= "and client.area='" . $area . "'";
-    // } else {
-    $filter1 = "";
-    // }
-
-    $agfield = '';
-    $agfield2 = '';
-    $grpagent = '';
-    // if ($companyid == 23) {
-    //   $agfield = "agentname, ";
-    //   $agfield2 = "ifnull(agent.clientname, '') as agentname, ";
-    //   $grpagent = "agent.clientname, ";
-
-    //   if ($agentid != "") {
-    //     $agentid = str_replace("~", ",", $config['params']['dataparams']['agentid']);
-    //     $filter1 .= " and agent.clientid in (" . $agentid . ")";
-    //   }
-    // }
-
-
-
-    // $sort = "order by $agfield part, brand, barcode, itemname";
-    // if ($companyid == 60) { //transpower
-    //   $sort = "order by itemname,barcode,part, brand";
-    // }
-
-
-    $classid = '';
-    $modelid = '';
-    $addfields = '';
-    $leftjoin_class = '';
-    $transpowerfield = '';
-    $gtranspowerfield = '';
-    $transpowerfield2 = '';
-
-    // if ($companyid == 60) {
-    $classid = $config['params']['dataparams']['classid'];
-    $modelid = $config['params']['dataparams']['modelid'];
-    $whid      = $config['params']['dataparams']['wh'];
-
-    //   $leftjoin_class = 'left join item_class as ic on ic.cl_id = item.class  
-    //   left join itemlevel as itlevel on itlevel.itemid = item.itemid';
-
-    //   if ($whid != '') {
-    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid, stock.whid';
-    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid, x.whid,';
-    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid and whid = x.whid) - sum(x.iss) as balance,';
-    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid';
-    //   } else {
-    //     $transpowerfield  = ',ic.cl_name as classname, itlevel.min as itemmin, itlevel.max as itemmax, sum(stock.iss) as iss, item.itemid';
-    //     $transpowerfield2 = 'x.classname, x.itemmin, x.itemmax, x.itemid,';
-    //     $addfields        = '(select sum(bal) from rrstatus where itemid = x.itemid) - sum(x.iss) as balance,';
-    //     $gtranspowerfield = ',ic.cl_name, itlevel.min, itlevel.max, item.itemid';
-    //   }
-
-    //   if ($classid != "") {
-    //     $filter1 .= " and ic.cl_id=" . $classid;
-    //   }
-    //   if ($modelid != "") {
-    //     $filter1 .= " and mm.model_id=" . $modelid;
-    //   }
-    // }
-
-
-    $whfilter = '';
-    $whfield = '';
-    $whfield2 = '';
-    if ($whid != '') {
-      $whfilter .= 'and whid = x.whid';
-      $whfield = 'x.whid,';
-      $whfield2 = ', stock.whid';
-    }
 
 
     $query = "select 
-    ifnull(x.classname,'') as classname, ifnull(x.itemmin,0) as itemmin, ifnull(x.itemmax,0) as itemmax, x.itemid, $whfield
-    ifnull((select sum(bal) from rrstatus where itemid = x.itemid $whfilter) - sum(x.iss),0) as balance,
-     barcode,size,uom,category, groupid,category1, subcatname, part, brand, model,body, upper(itemname) as itemname, yr, sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      ifnull(max(x.classname),'') as classname, ifnull(max(x.itemmin),0) as itemmin, ifnull(max(x.itemmax),0) as itemmax, x.itemid,
+      max(barcode) as barcode, max(size) as size, max(uom) as uom, max(category) as category, max(groupid) as groupid,
+      max(category1) as category1, max(subcatname) as subcatname, max(part) as part, max(brand) as brand,
+      max(model) as model, max(body) as body, upper(max(itemname)) as itemname, max(yr) as yr,
+      sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
       sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
       sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
       from (
@@ -840,11 +391,11 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
       sum(case when month(head.dateid)=12 then $war else 0 end) as modec, 
-      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
-      item.itemid $whfield2
+      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.qty) as qty,  sum(stock.iss) as iss, 
+      item.itemid , stock.whid
       from ((glhead as head left join glstock as stock on stock.trno=head.trno)
       left join client on client.clientid=head.clientid)
-      left join item on item.itemid=stock.itemid
+      join item on item.itemid=stock.itemid
       left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
       left join part_masterfile as parts on parts.part_id = item.part
       left join frontend_ebrands on item.brand=frontend_ebrands.brandid
@@ -854,7 +405,7 @@ class monthly_analyze_item_sales
       left join itemsubcategory as subcat on subcat.line = item.subcat
       left join client as agent on agent.clientid = head.agentid
       left join item_class as ic on ic.cl_id = item.class  
-      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid and itlevel.center='$minmax'
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
       group by 
       item.barcode, client.clientname,item.sizeid,
@@ -864,7 +415,266 @@ class monthly_analyze_item_sales
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
       item.category,frontend_ebrands.brand_desc,category1,subcatname, 
-      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2
+      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid , stock.whid) as x
+      group by x.itemid, yr, x.whid
+      order by part, brand, itemname, barcode";
+    return $query;
+  }
+
+  public function TRANSPOWER_QUERY_UNPOSTED($config)
+  {
+    $companyid    = $config['params']['companyid'];
+    $client       = $config['params']['dataparams']['client'];
+    $barcode      = $config['params']['dataparams']['barcode'];
+    $partname     = $config['params']['dataparams']['partname'];
+    $groupname    = $config['params']['dataparams']['stockgrp'];
+    $brandname    = $config['params']['dataparams']['brandname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $subcatname   =  $config['params']['dataparams']['subcatname'];
+    $wh = $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
+    $classic = $config['params']['dataparams']['classic'];
+    $classid = $config['params']['dataparams']['classid'];
+    $modelname = $config['params']['dataparams']['modelname'];
+    $modelid = $config['params']['dataparams']['modelid'];
+    $year         = $config['params']['dataparams']['year'];
+    $analyzedby   = $config['params']['dataparams']['analyzedby'];
+    $itemtype     = $config['params']['dataparams']['itemtype'];
+
+    $filter = '';
+    $filter1 = '';
+    if ($barcode != "") {
+      $itemid = $config['params']['dataparams']['itemid'];
+      $filter .= " and stock.itemid=" . $itemid;
+    }
+    if ($brandname != "") {
+      $brandid = $config['params']['dataparams']['brandid'];
+      $filter .= " and item.brand=" . $brandid;
+    }
+    if ($groupname != "") {
+      $groupid = $config['params']['dataparams']['groupid'];
+      $filter .= " and item.groupid=" . $groupid;
+    }
+    if ($categoryname != "") {
+      $category = $config['params']['dataparams']['category'];
+      $filter .= " and item.category='$category'";
+    }
+    if ($subcatname != "") {
+      $subcat = $config['params']['dataparams']['subcat'];
+      $filter .= " and item.subcat='$subcat'";
+    }
+    if ($partname != "") {
+      $partid = $config['params']['dataparams']['partid'];
+      $filter .= " and item.part=" . $partid;
+    }
+    if ($client != "") {
+      $clientid = $config['params']['dataparams']['clientid'];
+      $filter .= " and client.clientid=" . $clientid;
+    }
+    if ($wh == '') {
+      $center = $config['params']['center'];
+      $minmax = $this->coreFunctions->getfieldvalue("center", "warehouse", "code=?", [$center]);
+    }
+    if ($wh != "") {
+      $filter .= " and stock.whid= '$whid'";
+      $minmax = $wh;
+    }
+
+    if ($analyzedby == "unit") {
+      $war = "stock.iss";
+    } else {
+      $war = "stock.ext";
+    }
+    $filter1 = "";
+
+    if ($classic != "") {
+      $filter1 .= " and ic.cl_id=" . $classid;
+    }
+    if ($modelname != "") {
+      $filter1 .= " and mm.model_id=" . $modelid;
+    }
+
+
+    $query = "select 
+      ifnull(max(x.classname),'') as classname, ifnull(max(x.itemmin),0) as itemmin, ifnull(max(x.itemmax),0) as itemmax, x.itemid,
+      max(barcode) as barcode, max(size) as size, max(uom) as uom, max(category) as category, max(groupid) as groupid,
+      max(category1) as category1, max(subcatname) as subcatname, max(part) as part, max(brand) as brand,
+      max(model) as model, max(body) as body, upper(max(itemname)) as itemname, max(yr) as yr,
+      sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
+      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
+      from (
+      select item.barcode, client.clientname, item.sizeid as size,'u' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, 
+      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax,sum(stock.qty) as qty, sum(stock.iss) as iss, 
+      item.itemid,  stock.whid
+      from ((lahead as head left join lastock as stock on stock.trno=head.trno)
+      left join client on client.client=head.client)
+       join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.client = head.agent
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid and itlevel.center='$minmax'
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname,
+      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid) as x
+      group by x.itemid, yr, x.whid
+      order by part, brand, itemname, barcode";
+    return $query;
+  }
+
+  private function TRANSPOWER_QUERY_ALL($config)
+  {
+    $companyid    = $config['params']['companyid'];
+    $client       = $config['params']['dataparams']['client'];
+    $barcode      = $config['params']['dataparams']['barcode'];
+    $partname     = $config['params']['dataparams']['partname'];
+    $groupname    = $config['params']['dataparams']['stockgrp'];
+    $brandname    = $config['params']['dataparams']['brandname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $subcatname   =  $config['params']['dataparams']['subcatname'];
+    $wh = $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
+    $classic = $config['params']['dataparams']['classic'];
+    $classid = $config['params']['dataparams']['classid'];
+    $modelname = $config['params']['dataparams']['modelname'];
+    $modelid = $config['params']['dataparams']['modelid'];
+    $year         = $config['params']['dataparams']['year'];
+    $analyzedby   = $config['params']['dataparams']['analyzedby'];
+    $itemtype     = $config['params']['dataparams']['itemtype'];
+
+    $filter = '';
+    $filter1 = '';
+    if ($barcode != "") {
+      $itemid = $config['params']['dataparams']['itemid'];
+      $filter .= " and stock.itemid=" . $itemid;
+    }
+    if ($brandname != "") {
+      $brandid = $config['params']['dataparams']['brandid'];
+      $filter .= " and item.brand=" . $brandid;
+    }
+    if ($groupname != "") {
+      $groupid = $config['params']['dataparams']['groupid'];
+      $filter .= " and item.groupid=" . $groupid;
+    }
+    if ($categoryname != "") {
+      $category = $config['params']['dataparams']['category'];
+      $filter .= " and item.category='$category'";
+    }
+    if ($subcatname != "") {
+      $subcat = $config['params']['dataparams']['subcat'];
+      $filter .= " and item.subcat='$subcat'";
+    }
+    if ($partname != "") {
+      $partid = $config['params']['dataparams']['partid'];
+      $filter .= " and item.part=" . $partid;
+    }
+    if ($client != "") {
+      $clientid = $config['params']['dataparams']['clientid'];
+      $filter .= " and client.clientid=" . $clientid;
+    }
+    if ($wh == '') {
+      $center = $config['params']['center'];
+      $minmax = $this->coreFunctions->getfieldvalue("center", "warehouse", "code=?", [$center]);
+    }
+    if ($wh != "") {
+      $filter .= " and stock.whid= '$whid'";
+      $minmax = $wh;
+    }
+
+    if ($analyzedby == "unit") {
+      $war = "stock.iss";
+    } else {
+      $war = "stock.ext";
+    }
+    $filter1 = "";
+
+    if ($classic != "") {
+      $filter1 .= " and ic.cl_id=" . $classid;
+    }
+    if ($modelname != "") {
+      $filter1 .= " and mm.model_id=" . $modelid;
+    }
+
+    $query = "select 
+      ifnull(max(x.classname),'') as classname, ifnull(max(x.itemmin),0) as itemmin, ifnull(max(x.itemmax),0) as itemmax, x.itemid,
+      max(barcode) as barcode, max(size) as size, max(uom) as uom, max(category) as category, max(groupid) as groupid,
+      max(category1) as category1, max(subcatname) as subcatname, max(part) as part, max(brand) as brand,
+      max(model) as model, max(body) as body, upper(max(itemname)) as itemname, max(yr) as yr,
+      sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun, sum(mojul) as mojul, sum(moaug) as moaug,
+      sum(mosep) as mosep, sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
+      from (
+      select item.barcode, client.clientname, item.sizeid as size,'p' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
+      ifnull(frontend_ebrands.brand_desc,'NO BRAND') as brand, 
+      cat.name as category1, subcat.name as subcatname,
+      ifnull(parts.part_name,'NO PART') as part, ifnull(mm.model_name,'NO MODEL') as model,item.body,
+      ifnull(item.itemname,'') as itemname, year(head.dateid) as yr, item.category,
+      sum(case when month(head.dateid)=1 then $war else 0 end) as mojan,
+      sum(case when month(head.dateid)=2 then $war  else 0 end) as mofeb,
+      sum(case when month(head.dateid)=3 then $war  else 0 end) as momar,
+      sum(case when month(head.dateid)=4 then $war  else 0 end) as moapr,
+      sum(case when month(head.dateid)=5 then $war  else 0 end) as momay,
+      sum(case when month(head.dateid)=6 then $war  else 0 end) as mojun,
+      sum(case when month(head.dateid)=7 then $war  else 0 end) as mojul,
+      sum(case when month(head.dateid)=8 then $war  else 0 end) as moaug,
+      sum(case when month(head.dateid)=9 then $war  else 0 end) as mosep,
+      sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
+      sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
+      sum(case when month(head.dateid)=12 then $war else 0 end) as modec, 
+      item.uom,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.qty) as qty,  sum(stock.iss) as iss, 
+      item.itemid , stock.whid
+      from ((glhead as head left join glstock as stock on stock.trno=head.trno)
+      left join client on client.clientid=head.clientid)
+      join item on item.itemid=stock.itemid
+      left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+      left join part_masterfile as parts on parts.part_id = item.part
+      left join frontend_ebrands on item.brand=frontend_ebrands.brandid
+      left join model_masterfile as mm on mm.model_id = item.model
+      left join cntnum on cntnum.trno=head.trno
+      left join itemcategory as cat on cat.line = item.category
+      left join itemsubcategory as subcat on subcat.line = item.subcat
+      left join client as agent on agent.clientid = head.agentid
+      left join item_class as ic on ic.cl_id = item.class  
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid and itlevel.center='$minmax'
+      where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
+      group by 
+      item.barcode, client.clientname,item.sizeid,
+      ifnull(stockgrp.stockgrp_name,'NO GROUP'),
+      ifnull(frontend_ebrands.brand_desc, 'NO BRAND'),
+      ifnull(mm.model_name,'NO MODEL'),
+      ifnull(parts.part_name,'NO PART'),
+      item.body,item.itemname, year(head.dateid),
+      item.category,frontend_ebrands.brand_desc,category1,subcatname, 
+      item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid , stock.whid
       UNION ALL
 
       select item.barcode, client.clientname, item.sizeid as size,'u' as tr, ifnull(stockgrp.stockgrp_name,'NO GROUP') as groupid, 
@@ -884,11 +694,11 @@ class monthly_analyze_item_sales
       sum(case when month(head.dateid)=10 then $war else 0 end) as mooct,
       sum(case when month(head.dateid)=11 then $war else 0 end) as monov,
       sum(case when month(head.dateid)=12 then $war else 0 end) as modec,item.category, 
-      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax, sum(stock.iss) as iss, 
-      item.itemid $whfield2
+      item.uom ,ifnull(ic.cl_name,'') as classname, ifnull(itlevel.min,0) as itemmin, ifnull(itlevel.max,0) as itemmax,sum(stock.qty) as qty, sum(stock.iss) as iss, 
+      item.itemid,  stock.whid
       from ((lahead as head left join lastock as stock on stock.trno=head.trno)
       left join client on client.client=head.client)
-      left join item on item.itemid=stock.itemid
+       join item on item.itemid=stock.itemid
       left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
       left join part_masterfile as parts on parts.part_id = item.part
       left join frontend_ebrands on item.brand=frontend_ebrands.brandid
@@ -898,7 +708,7 @@ class monthly_analyze_item_sales
       left join itemsubcategory as subcat on subcat.line = item.subcat
       left join client as agent on agent.client = head.agent
       left join item_class as ic on ic.cl_id = item.class  
-      left join itemlevel as itlevel on itlevel.itemid = item.itemid
+      left join itemlevel as itlevel on itlevel.itemid = item.itemid and itlevel.center='$minmax'
       where head.doc in ('sj','mj','sd','se','sf') and year(head.dateid)=$year and item.isimport in $itemtype $filter $filter1 and item.isofficesupplies=0
       group by 
       item.barcode, client.clientname,item.sizeid,
@@ -908,10 +718,9 @@ class monthly_analyze_item_sales
       ifnull(parts.part_name,'NO PART'),
       item.body,item.itemname, year(head.dateid),
       item.category,frontend_ebrands.brand_desc,category1,subcatname,
-      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid $whfield2) as x
-      group by x.classname, x.itemmin, x.itemmax, x.itemid, $whfield part, brand, barcode, size, category, groupid,  model,body, itemname, yr,category1,subcatname,uom
-      order by part, brand, itemname, barcode
-      limit 100";
+      item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid) as x
+      group by x.itemid, yr, x.whid
+      order by part, brand, itemname, barcode";
     return $query;
   }
 
@@ -4323,6 +4132,40 @@ class monthly_analyze_item_sales
   }
 
   //transpower
+  private function mergeDuplicateItemRows($result)
+  {
+    $merged = [];
+
+    foreach ($result as $row) {
+      $key = $row->barcode . '|' . $row->itemname;
+
+      if (!isset($merged[$key])) {
+        // clone so we don't mutate the original object reference
+        $merged[$key] = clone $row;
+        continue;
+      }
+
+      // Sum monthly and balance figures
+      $merged[$key]->mojan   += $row->mojan;
+      $merged[$key]->mofeb   += $row->mofeb;
+      $merged[$key]->momar   += $row->momar;
+      $merged[$key]->moapr   += $row->moapr;
+      $merged[$key]->momay   += $row->momay;
+      $merged[$key]->mojun   += $row->mojun;
+      $merged[$key]->mojul   += $row->mojul;
+      $merged[$key]->moaug   += $row->moaug;
+      $merged[$key]->mosep   += $row->mosep;
+      $merged[$key]->mooct   += $row->mooct;
+      $merged[$key]->monov   += $row->monov;
+      $merged[$key]->modec   += $row->modec;
+      $merged[$key]->balance += $row->balance;
+
+      $merged[$key]->itemmin = max($merged[$key]->itemmin, $row->itemmin);
+      $merged[$key]->itemmax = max($merged[$key]->itemmax, $row->itemmax);
+    }
+
+    return array_values($merged);
+  }
   private function transpower_displayHeader($config)
   {
     $border = '1px solid';
@@ -4501,6 +4344,7 @@ class monthly_analyze_item_sales
     $fontsize = '8';
 
     $result     = $this->reportDefault($config);
+
     $analyzedby = $config['params']['dataparams']['analyzedby'];
     $uom        = $config['params']['dataparams']['uom'];
 
@@ -4513,7 +4357,7 @@ class monthly_analyze_item_sales
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-
+    $result = $this->mergeDuplicateItemRows($result);
     $str = '';
     $layoutsize = '1400';
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:150px');
@@ -4577,6 +4421,11 @@ class monthly_analyze_item_sales
 
     foreach ($result as $key => $data) {
       $currentIndex++;
+
+      $balanceQry = $this->TRANSPOWER_ALL($config, $data->itemid);
+      $balanceResult = $this->coreFunctions->opentable($balanceQry);
+      $data->balance = (!empty($balanceResult) && isset($balanceResult[0]->balance)) ? $balanceResult[0]->balance : 0;
+
 
       $uombal = 0;
       if ($uom != "") {

@@ -113,8 +113,13 @@ select head.trno,left(head.dateid,10) as dateid,head.docno,p.name as project,'Bu
   {
     $data = [];
     $row = $config['params']['row'];
+    
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $line = $this->coreFunctions->insertGetId($this->table, $data);

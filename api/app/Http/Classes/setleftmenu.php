@@ -367,7 +367,7 @@ class setleftmenu
         $sales = ['parentsales', 'qt', 'so', 'dr', 'dn', 'sk', 'ck', 'cm', 'dp',  'mr', 'mi'];
         break;
       case 40: //cdocycles
-        $sales = ['parentsales', 'so', 'sj', 'cm', 'ci', 'mc', 'closingmccollection', 'dx'];
+        $sales = ['parentsales', 'so', 'sj', 'cm', 'ci', 'mc', 'closingmccollection', 'dx', 'ri', 'fu'];
         break;
       case 69: // Cemphil
       case 24: //goodfound

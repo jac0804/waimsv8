@@ -177,6 +177,7 @@ class coreFunctions
 				case "DLOCK":
 				case "MIRROR":
 				case "MIRROR2":
+				case "MIRROR3": //uploading logs
 					$this->sbcinsert("pos_log", ['e_detail' => $type, 'querystring' => $txt, 'date_executed' => $current_timestamp]);
 					break;
 				default:

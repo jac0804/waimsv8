@@ -23,6 +23,7 @@ class Kernel extends ConsoleKernel
         Commands\UpdateDailyTask::class,
         Commands\StandardMirror::class,
         Commands\StandardDLMirror::class,
+        Commands\StandardUploadMirror::class,
     ];
 
     /**
@@ -45,6 +46,8 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('sbcupdate:standardmirror')->everyMinute()->withoutOverlapping(10)->runInBackground();
         $schedule->command('sbcupdate:standarddlmirror')->everyMinute()->withoutOverlapping(10)->runInBackground();
+
+        $schedule->command('sbcupdate:standarduploadmirror')->everyMinute()->withoutOverlapping(10)->runInBackground();
     }
 
     protected function commands()

@@ -1489,285 +1489,374 @@ class pending_sales_orders
       case '0': //Summarized
         if ($typeofreport == 'client') { // client summarized
           $query = "  select cgrp,clientname,area,areaname, sum(unservedamt) as unservedamt,
-                              sum(servedamt) as servedamt,
-                              sum(totalamt) as totalamt,
-                              sum(cancelamt) as cancelamt from (
-                              select client.clientname as cgrp,
-                              client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-                              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-                              sum(stock.qa*stock.amt) as servedamt,
-                              sum(stock.iss*stock.amt) as totalamt,
-                              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-                              from ((sohead as head 
-                              left join sostock as stock on stock.trno=head.trno)
-                              left join item on item.itemid=stock.itemid)
-                              left join client on client.client=head.client
-                              left join client as agent on agent.client=head.agent
-                              left join transnum on transnum.trno=head.trno
-                              left join itemcategory as cat on cat.line = item.category
-                              left join itemsubcategory as subcat on subcat.line = item.subcat
-                              where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-                              group by client.clientname, client.area, client.province
- 
-                              union all
-                              select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-                              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-                              sum(stock.qa*stock.amt) as servedamt,
-                              sum(stock.iss*stock.amt) as totalamt,
-                              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-                              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-                              left join item on item.itemid=stock.itemid)
-                              left join client on client.client=head.client
-                              left join client as agent on agent.client=head.agent
-                              left join transnum on transnum.trno=head.trno
-                              left join itemcategory as cat on cat.line = item.category
-                              left join itemsubcategory as subcat on subcat.line = item.subcat
-                              where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
-                              group by client.clientname, client.area, client.province ) as xd
-                          group by cgrp,clientname,area,areaname ";
+            sum(servedamt) as servedamt,
+            sum(totalamt) as totalamt,
+            sum(cancelamt) as cancelamt from (
+            select client.clientname as cgrp,
+            client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((sohead as head 
+            left join sostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+            group by client.clientname, client.area, client.
+            union all
+            select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
+            group by client.clientname, client.area, client.province ) as xd
+            group by cgrp,clientname,area,areaname ";
         } else { //item summarized
           $query = "select igrp,itemname,scategory,sum(unservedamt) as unservedamt,
-                sum(servedamt) as servedamt,
-                sum(totalamt) as totalamt,
-                sum(cancelamt) as cancelamt
-                from (
-                select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
-                              item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-                              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-                              sum(stock.qa*stock.amt) as servedamt,
-                              sum(stock.iss*stock.amt) as totalamt,
-                              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-                              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-                              left join item on item.itemid=stock.itemid)
-                              left join client on client.client=head.client
-                              left join client as agent on agent.client=head.agent
-                              left join transnum on transnum.trno=head.trno
-                              left join itemcategory as cat on cat.line = item.category
-                              left join itemsubcategory as subcat on subcat.line = item.subcat
-                              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-                              group by igrp,  item.itemname, subcat.name
-                              union all
-                              select   concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,  
-                              item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-                              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-                              sum(stock.qa*stock.amt) as servedamt,
-                              sum(stock.iss*stock.amt) as totalamt,
-                              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-                              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-                              left join item on item.itemid=stock.itemid)
-                              left join client on client.client=head.client 
-                              left join client as agent on agent.client=head.agent
-                              left join transnum on transnum.trno=head.trno
-                              left join itemcategory as cat on cat.line = item.category
-                              left join itemsubcategory as subcat on subcat.line = item.subcat
-                              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-                              and item.isofficesupplies= 0
-                              group by igrp,  item.itemname, subcat.name) as xy
-                            group by igrp,itemname, scategory ";
+            sum(servedamt) as servedamt,
+            sum(totalamt) as totalamt,
+            sum(cancelamt) as cancelamt
+            from (
+            select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
+            item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+            group by igrp,  item.itemname, subcat.name
+            union all
+            select   concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,  
+            item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client 
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+            and item.isofficesupplies= 0
+            group by igrp,  item.itemname, subcat.name) as xy
+            group by igrp,itemname, scategory ";
         }
         break;
       case '1': //Detailed
         if ($typeofreport == 'client') { // client detailed
           $query = "select client.clientname as cgrp, head.docno,
-              client.clientname,
-              date(head.dateid) as dateid,
-              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-              sum(stock.qa*stock.amt) as servedamt,
-              sum(stock.iss*stock.amt) as totalamt,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client 
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
-              group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province
- 
-              union all
-              select client.clientname as cgrp, head.docno, client.clientname, 
-              date(head.dateid) as dateid,
-              sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
-              sum(stock.qa*stock.amt) as servedamt,
-              sum(stock.iss*stock.amt) as totalamt,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
-              and transnum.center='001'  and item.isofficesupplies= 0
-              group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province ";
+            client.clientname,
+            date(head.dateid) as dateid,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client 
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
+            group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province
+            union all
+            select client.clientname as cgrp, head.docno, client.clientname, 
+            date(head.dateid) as dateid,
+            sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
+            sum(stock.qa*stock.amt) as servedamt,
+            sum(stock.iss*stock.amt) as totalamt,
+            if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
+            and transnum.center='001'  and item.isofficesupplies= 0
+            group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province ";
         } else { // item detailed
           $query = "select
-              concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
-              client.clientname, item.itemname,
-              date(head.dateid) as dateid, stock.qa,
-              (stock.iss-stock.qa)*stock.amt as unservedamt, stock.qa*stock.amt as servedamt,stock.iss*stock.amt as totalamt,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
-              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client 
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno          
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
-              union all
-              select
-              concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
-              client.clientname, item.itemname,
-              date(head.dateid) as dateid, stock.qa,
-              (stock.iss-stock.qa)*stock.amt as unservedamt, stock.qa*stock.amt as servedamt,stock.iss*stock.amt as totalamt,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
-              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client 
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . " and item.isofficesupplies= 0 ";
+            concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
+            client.clientname, item.itemname,
+            date(head.dateid) as dateid, stock.qa,
+            (stock.iss-stock.qa)*stock.amt as unservedamt, stock.qa*stock.amt as servedamt,stock.iss*stock.amt as totalamt,
+            if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client 
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno          
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
+            union all
+            select
+            concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
+            client.clientname, item.itemname,
+            date(head.dateid) as dateid, stock.qa,
+            (stock.iss-stock.qa)*stock.amt as unservedamt, stock.qa*stock.amt as servedamt,stock.iss*stock.amt as totalamt,
+            if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+            if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+            left join item on item.itemid=stock.itemid)
+            left join client on client.client=head.client 
+            left join client as agent on agent.client=head.agent
+            left join transnum on transnum.trno=head.trno
+            left join itemcategory as cat on cat.line = item.category
+            left join itemsubcategory as subcat on subcat.line = item.subcat
+            where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . " and item.isofficesupplies= 0 ";
         }
         break;
       case '2': // Insufficient summary
-        // build on-hand subquery by item (convert by uom.factor)
-        $balqry = "select rr.itemid,ifnull(sum(rr.bal / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0) as qtyonhand
-          from rrstatus rr
-          left join uom on uom.itemid=rr.itemid and uom.uom=rr.uom
-          where rr.bal>0
-          group by rr.itemid";
+        /**
+         * 1. pending:
+         *    - Calculation: SUM(stock.iss - stock.qa)
+         *    - Meaning: Total quantity ordered but not yet served/fulfilled
+         *    - Source: Difference between issued (iss) and quantity accepted (qa)
+         * 2. qtyonhand:
+         *    - Calculation: SUM(rr.bal / UOM.factor) from rrstatus table
+         *    - Meaning: Current physical inventory available on hand
+         *    - Source: Inventory status table (rrstatus) converted to base UOM
+         *    - Note: Uses MAX() in subquery since inventory is same per item regardless of client
+         * 3. diff:
+         *    - Calculation: SUM(qtyonhand) - SUM(pending)
+         *    - Meaning: Stock surplus/deficit (negative = insufficient stock)
+         *    - Shows if available inventory can cover all pending orders
+         * DATA SOURCES:
+         * - sohead/sostock: Current sales orders
+         * - hsohead/hsostock: Historical sales orders
+         * - rrstatus: Current inventory status
+         * - Filters applied based on client, item, date range, etc.
+         */
 
-        if ($typeofreport == 'client') { // client insufficient summary
+        // Subquery to calculate current inventory on-hand per item
+        // Converts balance to base UOM using UOM factor
+        $balqry = "select rr.itemid,ifnull(sum(rr.bal / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0) as qtyonhand
+              from rrstatus rr
+              left join uom on uom.itemid=rr.itemid and uom.uom=rr.uom
+              where rr.bal>0
+              group by rr.itemid";
+
+        if ($typeofreport == 'client') {
+          /**
+           * CLIENT INSUFFICIENT SUMMARY
+           * Groups pending orders and inventory by client
+           * Shows which clients have orders that cannot be fulfilled due to insufficient stock
+           */
           $query = "select cgrp,clientname,area,areaname,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
-                sum(qtyonhand)-sum(pending) as diff from (
-            select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
-            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
-            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-            group by client.clientname, client.area, client.province, item.itemid
- 
-            union all
- 
-            select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
-            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
-            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
-            group by client.clientname, client.area, client.province, item.itemid
-          ) as t
-          group by cgrp,clientname,area,areaname";
-        } else { // item insufficient summary
-          $query = "select igrp,itemname,scategory,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
-                sum(qtyonhand)-sum(pending) as diff from (
-            select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
-            from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
-            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-            group by igrp, item.itemname, subcat.name, item.itemid
- 
-            union all
- 
-            select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-              sum(stock.iss-stock.qa) as pending, ifnull(itembal.qtyonhand,0) as qtyonhand
-            from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
-            where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
-            group by igrp, item.itemname, subcat.name, item.itemid
-          ) as t
-          group by igrp,itemname, scategory";
+                      sum(qtyonhand)-sum(pending) as diff from (
+                      select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                      sum(stock.iss-stock.qa) as pending, 
+                      max(ifnull(itembal.qtyonhand,0)) as qtyonhand
+                      from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+                      left join item on item.itemid=stock.itemid)
+                      left join client on client.client=head.client
+                      left join client as agent on agent.client=head.agent
+                      left join transnum on transnum.trno=head.trno
+                      left join itemcategory as cat on cat.line = item.category
+                      left join itemsubcategory as subcat on subcat.line = item.subcat
+                      left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+                      where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+                      group by client.clientname, client.area, client.province, item.itemid
+
+                      union all
+
+                      select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                      sum(stock.iss-stock.qa) as pending, 
+                      max(ifnull(itembal.qtyonhand,0)) as qtyonhand
+                      from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+                      left join item on item.itemid=stock.itemid)
+                      left join client on client.client=head.client
+                      left join client as agent on agent.client=head.agent
+                      left join transnum on transnum.trno=head.trno
+                      left join itemcategory as cat on cat.line = item.category
+                      left join itemsubcategory as subcat on subcat.line = item.subcat
+                      left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+                      where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
+                      group by client.clientname, client.area, client.province, item.itemid
+                      ) as t
+                      group by cgrp,clientname,area,areaname";
+        } else {
+          /**
+           * ITEM INSUFFICIENT SUMMARY
+           * Groups pending orders and inventory by item
+           * Shows which items are insufficient to cover all pending orders
+           */
+          $query = "select igrp,itemname,size,scategory,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
+                      sum(qtyonhand)-sum(pending) as diff from (
+                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size, 
+                      ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+                      sum(stock.iss-stock.qa) as pending, 
+                      max(ifnull(itembal.qtyonhand,0)) as qtyonhand
+                      from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+                      left join item on item.itemid=stock.itemid)
+                      left join client on client.client=head.client
+                      left join client as agent on agent.client=head.agent
+                      left join transnum on transnum.trno=head.trno
+                      left join itemcategory as cat on cat.line = item.category
+                      left join itemsubcategory as subcat on subcat.line = item.subcat
+                      left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+                      where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
+                      group by igrp, item.itemname, item.sizeid, subcat.name, item.itemid
+
+                      union all
+
+                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size, 
+                      ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
+                      sum(stock.iss-stock.qa) as pending, 
+                      max(ifnull(itembal.qtyonhand,0)) as qtyonhand
+                      from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+                      left join item on item.itemid=stock.itemid)
+                      left join client on client.client=head.client
+                      left join client as agent on agent.client=head.agent
+                      left join transnum on transnum.trno=head.trno
+                      left join itemcategory as cat on cat.line = item.category
+                      left join itemsubcategory as subcat on subcat.line = item.subcat
+                      left join (" . $balqry . ") as itembal on itembal.itemid=item.itemid
+                      where stock.void=0 and (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . " and item.isofficesupplies= 0
+                      group by igrp, item.itemname, item.sizeid, subcat.name, item.itemid
+                      ) as t
+                      group by igrp,itemname, size, scategory";
         }
         break;
       case '3': // Insufficient detail (per order line)
+        /**
+         * 1. quantity:
+         *    - Calculation: stock.iss
+         *    - Meaning: Total quantity ordered for this line item
+         *    - Source: Issue quantity from sales order
+         * 2. served:
+         *    - Calculation: stock.qa
+         *    - Meaning: Quantity already fulfilled/served
+         *    - Source: Quantity accepted (qa) from sales order
+         * 3. pending:
+         *    - Calculation: (stock.iss - stock.qa)
+         *    - Meaning: Remaining quantity not yet served
+         *    - Source: Difference between ordered and served
+         * 4. cancelamt:
+         *    - Calculation: IF(void=1, (stock.iss - stock.qa), 0)
+         *    - Meaning: Marks pending items as cancelled if order is voided
+         *    - Source: Void flag in order header
+         * DATA SOURCES:
+         * - sohead/sostock: Current sales orders with line details
+         * - hsohead/hsostock: Historical sales orders
+         * - Shows each order line with client, item, dates and quantities
+         */
         if ($typeofreport == 'client') {
+          /**
+           * CLIENT INSUFFICIENT DETAIL
+           * Shows pending items per client at individual order line level
+           */
           $query = "select client.clientname as cgrp, head.docno,
-              client.clientname,
-              date(head.dateid) as dateid,
-              item.itemname,
-              stock.iss as quantity,
-              stock.qa as served,
-              (stock.iss-stock.qa) as pending,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt
-              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
-              ";
+                    client.clientname,
+                    date(head.dateid) as dateid,
+                    item.itemname,  item.sizeid as size, 
+                    stock.iss as quantity,
+                    stock.qa as served,
+                    (stock.iss-stock.qa) as pending,
+                    if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                    if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt
+                    from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+                    left join item on item.itemid=stock.itemid)
+                    left join client on client.client=head.client
+                    left join client as agent on agent.client=head.agent
+                    left join transnum on transnum.trno=head.trno
+                    left join itemcategory as cat on cat.line = item.category
+                    left join itemsubcategory as subcat on subcat.line = item.subcat
+                    where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
+
+                    union all
+
+                    select client.clientname as cgrp, head.docno,
+                    client.clientname,
+                    date(head.dateid) as dateid,
+                    item.itemname, item.sizeid as size,
+                    stock.iss as quantity,
+                    stock.qa as served,
+                    (stock.iss-stock.qa) as pending,
+                    if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                    if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt
+                    from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+                    left join item on item.itemid=stock.itemid)
+                    left join client on client.client=head.client
+                    left join client as agent on agent.client=head.agent
+                    left join transnum on transnum.trno=head.trno
+                    left join itemcategory as cat on cat.line = item.category
+                    left join itemsubcategory as subcat on subcat.line = item.subcat
+                    where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . " and item.isofficesupplies= 0";
         } else {
+          /**
+           * ITEM INSUFFICIENT DETAIL
+           * Shows pending items per item at individual order line level
+           * Includes subcategory information for better categorization
+           */
           $query = "select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
-              client.clientname, item.itemname, item.sizeid as size,
-              date(head.dateid) as dateid, stock.iss as quantity,
-              stock.qa as served,(stock.iss-stock.qa) as pending,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
-              from ((sohead as head left join sostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
-              union all
-              select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
-              client.clientname, item.itemname, item.sizeid as size,
-              date(head.dateid) as dateid, stock.iss as quantity,
-              stock.qa as served,(stock.iss-stock.qa) as pending,
-              if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-              if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
-              from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
-              left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client
-              left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno
-              left join itemcategory as cat on cat.line = item.category
-              left join itemsubcategory as subcat on subcat.line = item.subcat
-              where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . " and item.isofficesupplies= 0";
+                    client.clientname, item.itemname, item.sizeid as size,
+                    date(head.dateid) as dateid, 
+                    stock.iss as quantity,
+                    stock.qa as served,
+                    (stock.iss-stock.qa) as pending,
+                    if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                    if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+                    from ((sohead as head left join sostock as stock on stock.trno=head.trno)
+                    left join item on item.itemid=stock.itemid)
+                    left join client on client.client=head.client
+                    left join client as agent on agent.client=head.agent
+                    left join transnum on transnum.trno=head.trno
+                    left join itemcategory as cat on cat.line = item.category
+                    left join itemsubcategory as subcat on subcat.line = item.subcat
+                    where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . "
+                    union all
+                    select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
+                    client.clientname, item.itemname, item.sizeid as size,
+                    date(head.dateid) as dateid, 
+                    stock.iss as quantity,
+                    stock.qa as served,
+                    (stock.iss-stock.qa) as pending,
+                    if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
+                    if( stock.void=1, (stock.iss-stock.qa), 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
+                    from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
+                    left join item on item.itemid=stock.itemid)
+                    left join client on client.client=head.client
+                    left join client as agent on agent.client=head.agent
+                    left join transnum on transnum.trno=head.trno
+                    left join itemcategory as cat on cat.line = item.category
+                    left join itemsubcategory as subcat on subcat.line = item.subcat
+                    where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . ' ' . $datefilter . " and item.isofficesupplies= 0";
         }
         break;
     }
 
     $query .= " order by $order ";
-    // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
 
@@ -1825,8 +1914,18 @@ class pending_sales_orders
         $rptlabel = 'PENDING SALES ORDERS';
         break;
       case '2':
+        if ($typeofreport == 'client') {
+          $rptlabel = 'INSUFFICIENT QUANTITY FOR PENDING ORDER SUMMARY(CUSTOMER)';
+        } else {
+          $rptlabel = 'INSUFFICIENT QUANTITY FOR PENDING ORDER SUMMARY(ITEM)';
+        }
+        break;
       case '3':
-        $rptlabel = 'INSUFFICIENT QUANTITY FOR PENDING ORDER';
+        if ($typeofreport == 'client') {
+          $rptlabel = 'INSUFFICIENT QUANTITY FOR PENDING ORDER DETAIL(CUSTOMER)';
+        } else {
+          $rptlabel = 'INSUFFICIENT QUANTITY FOR PENDING ORDER DETAIL(ITEM)';
+        }
         break;
     }
 
@@ -2828,17 +2927,18 @@ class pending_sales_orders
           $servedamts = $servedamt;
           $pendingamts = $pendingamt;
 
-          // AREA TOTAL row - 7 columns, widths match header/grand total (110,150,10,425,135,135,135 = 1100)
+          // 100, 390, 10, 270, 110, 110, 110 = 1100
+          // AREA TOTAL row
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->addline();
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '110', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('', '390', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col('AREA TOTAL', '425', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col('AREA TOTAL', '270', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->endtable();
@@ -2888,18 +2988,19 @@ class pending_sales_orders
       $serveds = $served;
       $pendings = $pending;
 
-      // Data row - 8 columns: Date, DocNo, spacer, Client, Item, Quantity, Served, Pending (1100 total)
+      // 100, 150, 10, 240, 270, 110, 110, 110 = 1100
+      // Data row 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->dateid, '110', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->dateid, '100', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($data->clientname, '290', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($data->itemname, '135', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '135', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '135', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->clientname, '240', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->itemname . ' - <i>' . $data->size . '</i>', '270', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '110', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -2919,17 +3020,18 @@ class pending_sales_orders
       $servedamts = $servedamt;
       $pendingamts = $pendingamt;
 
+      // 100, 390, 10, 270, 110, 110, 110 = 1100
       // last area's AREA TOTAL row - matches the mid-loop version
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('', '100', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('', '390', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col('AREA TOTAL', '425', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col('AREA TOTAL', '270', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -2941,7 +3043,7 @@ class pending_sales_orders
     // spacer before grand total (8 columns, matches data row widths)
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('&nbsp;', '110', null, false, '', '', 'L', $font, '4', '', '', '', '');
+    $str .= $this->reporter->col('&nbsp;', '100', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '10', null, false, '', '', 'L', $font, '4', '', '', '', '');
     $str .= $this->reporter->col('&nbsp;', '290', null, false, '', '', 'L', $font, '4', '', '', '', '');
@@ -2951,16 +3053,17 @@ class pending_sales_orders
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    // GRAND TOTAL row - now correctly bound to grand_quantity / grand_served / grand_pending
+    // 100, 390, 10, 270, 110, 110, 110 = 1100
+    // GRAND TOTAL
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '110', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col('', '150', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('', '100', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('', '390', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col('GRAND TOTAL', '425', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '135', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('GRAND TOTAL', '270', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '110', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2998,9 +3101,9 @@ class pending_sales_orders
 
     foreach ($result as $key => $data) {
 
-      $quantity = isset($data->quantity) ? $data->quantity : 0;
-      $served = isset($data->served) ? $data->served : 0;
-      $pending = isset($data->pending) ? $data->pending : 0;
+      $quantity = $data->quantity;
+      $served = $data->served;
+      $pending = $data->pending;
 
       if ($scategory !== $data->scategory) {
 
@@ -3011,7 +3114,7 @@ class pending_sales_orders
           $servedamts = $servedamt;
           $pendingamts = $pendingamt;
 
-          // SUB TOTAL row - 7 columns, widths (110,150,10,425,135,135,135 = 1100)
+          // SUB TOTAL
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->addline();
           $str .= $this->reporter->startrow();
@@ -3070,7 +3173,6 @@ class pending_sales_orders
       $quantitys = $quantity;
       $serveds = $served;
       $pendings = $pending;
-
       // I-print ang bawat order line sa loob ng subcategory - 8 columns (110,150,10,290,135,135,135,135 = 1100)
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
@@ -3079,7 +3181,7 @@ class pending_sales_orders
       $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'L', 'CT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($data->clientname, '240', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($data->itemname . ' - ' . $data->size, '270', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->itemname . ' - <i>' . $data->size . '</i>', '270', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '110', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '110', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
@@ -3175,27 +3277,20 @@ class pending_sales_orders
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-left:50px;');
     $str .= $this->default_displayHeader_roosevelt($config);
 
-    $unservedamt = 0;
-    $servedamt = 0;
-    $cancelamt = 0;
-    $totalamt = 0;
-    $grand_unserved = 0;
-    $grand_served = 0;
-    $grand_cancel = 0;
-    $grand_total = 0;
+    $pendingamt = 0;
+    $qtyonhandamt = 0;
+    $diffamt = 0;
+    $grand_pending = 0;
+    $grand_qtyonhand = 0;
+    $grand_diff = 0;
 
     $areas = '';
-    $province = '';
 
     foreach ($result as $key => $data) {
-      $unserved = $data->unservedamt;
-      $served = $data->servedamt;
-      $cancel = $data->cancelamt;
-      $total = $data->totalamt;
-      $unserveds = $unserved;
-      $serveds = $served;
-      $cancels = $cancel;
-      $totals = $total;
+
+      $pending = $data->pending;
+      $qtyonhand = $data->qtyonhand;
+      $diff = $data->diff;
 
       if ($areas != $data->area) {
 
@@ -3204,6 +3299,7 @@ class pending_sales_orders
           $qtyonhandamts = $qtyonhandamt;
           $diffamts = $diffamt;
 
+          // SUB TOTAL row - 10,650,145,145,150 = 1100
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
@@ -3236,10 +3332,9 @@ class pending_sales_orders
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->addline();
-
         }
 
-        // i-print ang bagong subcategory header
+        // i-print ang bagong area header
         $areas = $data->area;
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -3253,6 +3348,11 @@ class pending_sales_orders
         $str .= $this->reporter->endtable();
       }
 
+      $pendings = $pending;
+      $qtyonhands = $qtyonhand;
+      $diffs = $diff;
+
+      // data row - 10,650,145,145,150 = 1100
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
@@ -3268,21 +3368,23 @@ class pending_sales_orders
       $qtyonhandamt += $qtyonhand;
       $diffamt += $diff;
 
-      // pagination  (optional)
+      // pagination (optional)
       if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '10', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
-        $str .= $this->reporter->col('', '660', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col('', '650', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '145', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '145', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '150', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
+        $continuedArea = $areas;
+
         $str .= $this->reporter->page_break();
-        $str .= $this->default_displayHeader_roosevelt($config);
-        $str .= $this->reporter->endtable();
+        $str .= $this->default_displayHeader_roosevelt($config, true, $continuedArea);
+        $str .= $this->reporter->begintable($layoutsize);
         $page = $page + $count;
       }
     }
@@ -3310,11 +3412,18 @@ class pending_sales_orders
       $grand_diff += $diffamt;
     }
 
-    $unservedamts = $unservedamt;
-    $servedamts = $servedamt;
-    $cancelamts = $cancelamt;
-    $totalamts = $totalamt;
+    // spacer before grand total
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('&nbsp;', '10', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '650', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
+    // GRAND TOTAL row
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
@@ -3350,22 +3459,20 @@ class pending_sales_orders
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-left:50px;');
     $str .= $this->default_displayHeader_roosevelt($config);
 
-    $unservedamt = 0;
-    $servedamt = 0;
-    $cancelamt = 0;
-    $totalamt = 0;
-    $grand_unserved = 0;
-    $grand_served = 0;
-    $grand_cancel = 0;
-    $grand_total = 0;
+    $pendingamt = 0;
+    $qtyonhandamt = 0;
+    $diffamt = 0;
+    $grand_pending = 0;
+    $grand_qtyonhand = 0;
+    $grand_diff = 0;
 
     $scategory = '';
 
     foreach ($result as $key => $data) {
-      $unserved = $data->unservedamt;
-      $served = $data->servedamt;
-      $cancel = $data->cancelamt;
-      $total = $data->totalamt;
+
+      $pending = isset($data->pending) ? $data->pending : 0;
+      $qtyonhand = isset($data->qtyonhand) ? $data->qtyonhand : 0;
+      $diff = isset($data->diff) ? $data->diff : 0;
 
       // group by subcategory
       if ($scategory != $data->scategory) {
@@ -3376,10 +3483,10 @@ class pending_sales_orders
           $qtyonhandamts = $qtyonhandamt;
           $diffamts = $diffamt;
 
+          // SUB TOTAL
           $str .= $this->reporter->begintable($layoutsize);
-          $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
-          $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+          $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('SUB TOTAL', '660', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
           $str .= $this->reporter->col($qtyonhandamts != 0 ? number_format($qtyonhandamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
@@ -3397,27 +3504,26 @@ class pending_sales_orders
           $qtyonhandamt = 0;
           $diffamt = 0;
 
-          //space bago magheader
+          // spacer row before next header 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('&nbsp;', '10', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->col('&nbsp;', '660', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
-          $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
-          $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
-          $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+          $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+          $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->addline();
         }
 
-        // i-print ang bagong subcategory header
+        // subcategory header
         $scategory = $data->scategory;
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->addline();
         $str .= $this->reporter->col('', '10', null, false, $border, 'TLB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
-        $str .= $this->reporter->col(strtoupper($scategory), '660', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col('>> ', '100', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
+        $str .= $this->reporter->col(strtoupper($scategory), '550', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->col('', '145', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->col('', '145', null, false, $border, 'TB', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
         $str .= $this->reporter->col('', '150', null, false, $border, 'TBR', 'L', $font, $fontsize + 1, 'B', '', '', '5px');
@@ -3425,30 +3531,31 @@ class pending_sales_orders
         $str .= $this->reporter->endtable();
       }
 
-      $quantitys = $quantity;
-      $serveds = $served;
       $pendings = $pending;
+      $qtyonhands = $qtyonhand;
+      $diffs = $diff;
 
+      // data row 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col('', '10', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($data->itemname, '660', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($quantitys != 0 ? number_format($quantitys, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($serveds != 0 ? number_format($serveds, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
-      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($data->itemname, '550', null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col('<i>' . $data->size . '</i>', '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($pendings != 0 ? number_format($pendings, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($qtyonhands != 0 ? number_format($qtyonhands, 2) : '', '145', null, false, $border, 'L', 'RT', $font, $fontsize, '', '', '', '2px');
+      $str .= $this->reporter->col($diffs != 0 ? number_format($diffs, 2) : '', '150', null, false, $border, 'LR', 'RT', $font, $fontsize, '', '', '', '2px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $quantityamt += $quantity;
-      $servedamt += $served;
       $pendingamt += $pending;
+      $qtyonhandamt += $qtyonhand;
+      $diffamt += $diff;
 
       // pagination (optional)
       if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '10', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '660', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '145', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col('', '145', null, false, $border, 'T', '', $font, $fontsize, '', '', '', '');
@@ -3468,33 +3575,42 @@ class pending_sales_orders
     // last subcategory's subtotal
     if ($scategory != '') {
 
-      $quantityamts = $quantityamt;
-      $servedamts = $servedamt;
       $pendingamts = $pendingamt;
+      $qtyonhandamts = $qtyonhandamt;
+      $diffamts = $diffamt;
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->col('SUB TOTAL', '660', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($quantityamts != 0 ? number_format($quantityamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($servedamts != 0 ? number_format($servedamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($pendingamts != 0 ? number_format($pendingamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($qtyonhandamts != 0 ? number_format($qtyonhandamts, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+      $str .= $this->reporter->col($diffamts != 0 ? number_format($diffamts, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $grand_quantity += $quantityamt;
-      $grand_served += $servedamt;
       $grand_pending += $pendingamt;
+      $grand_qtyonhand += $qtyonhandamt;
+      $grand_diff += $diffamt;
     }
 
+    // spacer before grand total
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '10', null, true, $border, 'T', 'L', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col('&nbsp;', '660', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '145', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->col('&nbsp;', '150', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // GRAND TOTAL row
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('GRAND TOTAL', '660', null, true, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_quantity != 0 ? number_format($grand_quantity, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_served != 0 ? number_format($grand_served, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
-    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_pending != 0 ? number_format($grand_pending, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_qtyonhand != 0 ? number_format($grand_qtyonhand, 2) : '', '145', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
+    $str .= $this->reporter->col($grand_diff != 0 ? number_format($grand_diff, 2) : '', '150', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '', '5px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3502,4 +3618,5 @@ class pending_sales_orders
 
     return $str;
   }
+
 }//end class

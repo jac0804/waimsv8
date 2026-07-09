@@ -310,8 +310,13 @@ class canvassapproval
   {
     $data = [];
     $row = $config['params']['row'];
+
+    $dateTables = ['hcdstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $line = $this->coreFunctions->insertGetId($this->table, $data);
@@ -382,9 +387,7 @@ class canvassapproval
     return $this->coreFunctions->opentable("select '" . $statrem . "' as statrem, '" . $clientname . "' as clientname");
   }
 
-  public function loadheaddata($config)
-  {
-  }
+  public function loadheaddata($config) {}
 
   public function tableentrystatus($config)
   {
@@ -528,6 +531,9 @@ class canvassapproval
     $status = true;
     $msg = '';
 
+    $dateTables = ['hcdstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($config['params']['data'] as $key => $value) {
 
       $reqqty = $value['QTY'];
@@ -565,8 +571,11 @@ class canvassapproval
                       $uom = isset($value["UOM"]) ? $value["UOM"] : '';
                       $status = 1;
 
-                      $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-                      $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+                      // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+                      // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+                      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+                      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
                       $itemid = $this->coreFunctions->getfieldvalue("hcdstock", "itemid", "trno=? and line=?", [$trno, $line]);
                       if ($itemid == '') {

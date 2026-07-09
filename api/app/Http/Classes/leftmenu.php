@@ -10573,5 +10573,55 @@ class leftmenu
         return "($sort,$p,'updatepricelist','/headtable/othersettings/updatepricelist','Update Price List','fa fa-sort-amount-up-alt sub_menu_ico',5890," . $params['levelid'] . ")";
     } //end function
 
+    public function fu($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $modulename = 'Financing';
+        $qry = "(5907,0,'" . $modulename . "','',0,'\\50230','$parent',0,'0',0," . $params['levelid'] . "),
+        (5908,0,'Allow View Transaction','FU',0,'\\502301','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5909,0,'Allow Click Edit Button','FU',0,'\\502302','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5910,0,'Allow Click New  Button','FU',0,'\\502303','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5911,0,'Allow Click Save Button','FU',0,'\\502304','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5912,0,'Allow Click Delete Button','FU',0,'\\502305','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5913,0,'Allow Click Print Button','FU',0,'\\502306','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5914,0,'Allow Click Lock Button','FU',0,'\\502307','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5915,0,'Allow Click UnLock Button','FU',0,'\\502308','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5916,0,'Allow Click Post Button','FU',0,'\\502309','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5917,0,'Allow Click UnPost Button','FU',0,'\\5023010','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5918,0,'Allow Change Amount','FU',0,'\\5023011','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5919,0,'Allow View Transaction Accounting','FU',0,'\\5023012','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5920,0,'Allow Click Release','FU',0,'\\5023013','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5921,0,'Allow View WH Info','FU',0,'\\5023014','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5922,1,'Allow View Financing','FU',0,'\\5023015','\\50230',0,'0',0," . $params['levelid'] . ")";
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'FU','/module/cdo/fu','Financing','fa fa-money-check sub_menu_ico',5907," . $params['levelid'] . ")";
+    }
+
+    public function ri($params, $parent, $sort)
+    {
+        $p = $parent;
+        $parent = '\\' . $parent;
+        $qry = "(5891,0,'Repossesed Units','',0,'\\614','$parent',0,'0',0," . $params['levelid'] . "),
+        (5892,0,'Allow View Transaction RI','RI',0,'\\61401','\\614',0,'0',0," . $params['levelid'] . "),
+        (5893,0,'Allow Click Edit Button RI','',0,'\\61402','\\614',0,'0',0," . $params['levelid'] . "),
+        (5894,0,'Allow Click New  Button RI','',0,'\\61403','\\614',0,'0',0," . $params['levelid'] . "),
+        (5895,0,'Allow Click Save  Button RI','',0,'\\61404','\\614',0,'0',0," . $params['levelid'] . "),
+        (5896,0,'Allow Click Delete Button RI','',0,'\\61405','\\614',0,'0',0," . $params['levelid'] . "),
+        (5897,0,'Allow Click Print  Button RI','',0,'\\61406','\\614',0,'0',0," . $params['levelid'] . "),
+        (5898,0,'Allow Click Lock Button RI','',0,'\\61407','\\614',0,'0',0," . $params['levelid'] . "),
+        (5899,0,'Allow Click UnLock Button RI','',0,'\\61408','\\614',0,'0',0," . $params['levelid'] . "),
+        (5900,0,'Allow Click Post Button RI','',0,'\\61409','\\614',0,'0',0," . $params['levelid'] . "),
+        (5901,0,'Allow Click UnPost  Button RI','',0,'\\61410','\\614',0,'0',0," . $params['levelid'] . "),
+        (5902,0,'Allow View Transaction Accounting RI','',0,'\\61411','\\614',0,'0',0," . $params['levelid'] . "),
+        (5903,0,'Allow Change Amount RI','',0,'\\61412','\\614',0,'0',0," . $params['levelid'] . "),
+        (5904,1,'Allow Click Add Item RI','',0,'\\61413','\\614',0,'0',0," . $params['levelid'] . "),
+        (5905,1,'Allow Click Edit Item RI','',0,'\\61414','\\614',0,'0',0," . $params['levelid'] . "),
+        (5906,1,'Allow Click Delete Item RI','',0,'\\61415','\\614',0,'0',0," . $params['levelid'] . ")";
+        $folder = 'sales';
+        $this->insertattribute($params, $qry);
+        return "($sort,$p,'RI','/module/" . $folder . "/ri','Repossesed Units','fa fa-motorcycle sub_menu_ico',5891," . $params['levelid'] . ")";
+    } //end function
+
 
 }//end  

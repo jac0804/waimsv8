@@ -12662,16 +12662,28 @@ class sj
     PDF::SetFont($font, '', 14);
     PDF::MultiCell(169, 20, strtoupper(isset($data[0]['bstyle']) ? $data[0]['bstyle'] : ''), '', 'L', false, 1);
 
+    $maxrow = 1;
+    $address =  $data[0]['address'];
+    $terms =  $data[0]['terms'];
+    $arr_address = $this->reporter->fixcolumn([$address], '33', 0);
+    $arr_terms = $this->reporter->fixcolumn([$terms], '15', 0);
+    $maxrow = $this->othersClass->getmaxcolumn([$arr_address, $arr_terms]);
 
-    PDF::SetFont($font, '', 13);
-    PDF::MultiCell(25, 20, '', '', 'L', false, 0);
-    PDF::MultiCell(60, 20, "Address:", '', 'L', false, 0, '', '', true);
-    PDF::SetFont($font, '', 14);
-    PDF::MultiCell(440, 20, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::SetFont($font, '', 13);
-    PDF::MultiCell(60, 20, 'Terms:', '', 'L', false, 0);
-    PDF::SetFont($font, '', 14);
-    PDF::MultiCell(179, 20, strtoupper(isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1);
+    for ($i = 0; $i < $maxrow; $i++) {
+
+      PDF::SetFont($font, '', 13);
+      PDF::MultiCell(25, 20, '', '', 'L', false, 0);
+      PDF::MultiCell(60, 20, $i == 0 ? "Address:" : '', '', 'L', false, 0, '', '', true);
+
+      PDF::SetFont($font, '', 14);
+      PDF::MultiCell(440, 20, isset($arr_address[$i]) ? $arr_address[$i] : '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+
+      PDF::SetFont($font, '', 13);
+      PDF::MultiCell(60, 20, $i == 0 ? 'Terms:' : '', '', 'L', false, 0);
+
+      PDF::SetFont($font, '', 14);
+      PDF::MultiCell(179, 20, isset($arr_terms[$i]) ? strtoupper($arr_terms[$i]) : '', '', 'L', false, 1);
+    }
 
 
     PDF::SetFont($font, '', 8);

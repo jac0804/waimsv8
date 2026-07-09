@@ -1567,22 +1567,22 @@ class moduleClass
 				}
 
 				if ($this->config['params']['companyid'] == '57') {
-					$withtrans = $this->coreFunctions->getfieldvalue("transnum", "trno", "center=? ", [$this->config['params']['center']], "docno desc"); 
-					if($withtrans !=''){
-						$lastend = $this->coreFunctions->getfieldvalue("eod", "dateid", "dateid = CURDATE() - INTERVAL 1 DAY and center=? and closeby = ?", [$this->config['params']['center'],$this->config['params']['user']], "");
-						if ($lastend == '') {							
-							$curend = $this->coreFunctions->getfieldvalue("eod", "left(dateid,10)", "center=? and closeby = ?", [$this->config['params']['center'],$this->config['params']['user']], " dateid desc");
-							$this->config['return'] = ['head' => [], 'griddata' => [], 'islocked' => false, 'isposted' => false, 'status' => false, 'msg' => 'Previous date/s not yet close. Please go to End of Day to close previous dates. Last Closing date is '. $curend, 'clickobj' => [], 'backlisting' => false];
+					$withtrans = $this->coreFunctions->getfieldvalue("transnum", "trno", "center=? ", [$this->config['params']['center']], "docno desc");
+					if ($withtrans != '') {
+						$lastend = $this->coreFunctions->getfieldvalue("eod", "dateid", "dateid = CURDATE() - INTERVAL 1 DAY and center=? and closeby = ?", [$this->config['params']['center'], $this->config['params']['user']], "");
+						if ($lastend == '') {
+							$curend = $this->coreFunctions->getfieldvalue("eod", "left(dateid,10)", "center=? and closeby = ?", [$this->config['params']['center'], $this->config['params']['user']], " dateid desc");
+							$this->config['return'] = ['head' => [], 'griddata' => [], 'islocked' => false, 'isposted' => false, 'status' => false, 'msg' => 'Previous date/s not yet close. Please go to End of Day to close previous dates. Last Closing date is ' . $curend, 'clickobj' => [], 'backlisting' => false];
 							return $this;
 						}
-					}					
+					}
 				}
 
 
 				if ($this->config['params']['companyid'] == 8) { //maxipro
 					switch ($this->config['params']['doc']) {
 						case 'RQ':
-						$viewall = $this->othersClass->checkAccess($this->config['params']['user'], 2272);
+							$viewall = $this->othersClass->checkAccess($this->config['params']['user'], 2272);
 							break;
 						case 'JR':
 							$viewall = $this->othersClass->checkAccess($this->config['params']['user'], 2445);

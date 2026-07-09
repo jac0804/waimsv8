@@ -818,11 +818,14 @@ class ci
             unset($this->fields[1]);
             unset($head['docno']);
         }
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -1504,10 +1507,15 @@ class ci
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
-
+        $dateTables = ['lahead', 'lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+        $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+        
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
         $factor = 1;
@@ -1536,7 +1544,8 @@ class ci
 
         $hamt = $computedata['amt'] * $curtopeso;
 
-        $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+        // $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+        $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
         $data = [
             'trno' => $trno,
@@ -1565,7 +1574,8 @@ class ci
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -2221,6 +2231,9 @@ class ci
         }
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
+        $dateTables = ['lahead', 'lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
           item.expense,stock.isamt,stock.disc,stock.isqty,stock.cost,stock.iss,stock.fcost,head.projectid,client.rev,stock.rebate,head.taxdef,m.name as trnxtype,head.modeofpayment
           from ' . $this->head . ' as head left join ' . $this->stock . ' as stock on stock.trno=head.trno
@@ -2326,7 +2339,7 @@ class ci
                     $this->distribution($params, $config);
                 }
             }
-        }
+        } 
 
         if ($delcharge != 0) {
             $qry = "select client,forex,dateid,cur,branch,deptid,contra from " . $this->head . " where trno = ?";
@@ -2344,7 +2357,8 @@ class ci
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -2565,9 +2579,13 @@ class ci
         $data2 = json_decode(json_encode($data), true);
         $exec = true;
         $deci = $this->companysetup->getdecimal('price', $config['params']);
+        $dateTables = ['sohead', 'lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($data2 as $key => $value) {
-            $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-            $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
+            // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
+            $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+            // $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
+            $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
             $computedata = $this->othersClass->computestock(
                 $damt * $head['forex'],
                 $data[$key]->disc,
@@ -2577,7 +2595,8 @@ class ci
             );
 
             $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-            $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+            // $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+            $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt'], $lookups);
 
             $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
         }

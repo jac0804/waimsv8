@@ -89,10 +89,14 @@ class viewtermstaxcharges
           data_set($col1, 'termsdetails.readonly', false);
         }
 
-        data_set($col1, 'dvattype.lookupclass', 'customvattype');
+        if ($allowedit) {
+          data_set($col1, 'dvattype.lookupclass', 'customvattype');
+          data_set($col1, 'dvattype.type', 'lookup');
+        }
+       
         data_set($col1, 'dvattype.label', 'Taxes And Charge');
         data_set($col1, 'refresh.label', 'save');
-        data_set($col1, 'dvattype.type', 'lookup');
+        
       }
     }
 

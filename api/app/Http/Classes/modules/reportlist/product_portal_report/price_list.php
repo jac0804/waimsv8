@@ -115,18 +115,19 @@ class price_list
                 break;
         }
 
-        // left join carbrand as cb on cb.id = i.carid
-        // left join positions as p on p.id = info.positionid
 
         $query = "select ifnull(cat.name, '') as category, ifnull(b.brand_desc, '') as brand, partno, othcode as equiv, ifnull(m.model_name, '') as crmodel,
-        'yrmodel' as yrmodel, 'p.positions' as position,
+        p.positions, cb.brand as cbrand, info.fyear as yrmodel,
         `type` as stype, amt as price
         from item as i
         left join iteminfo as info on info.itemid = i.itemid
         left join model_masterfile as m on m.model_id = i.model
         left join itemcategory as cat on cat.line = i.category
         left join frontend_ebrands as b on b.brandid = i.brand
+        left join carbrand as cb on cb.id = i.carid
+        left join positions as p on p.id = info.positionid
         $orderby";
+        // var_dump($query);
         return $this->coreFunctions->opentable($query);
     }
 
@@ -193,16 +194,17 @@ class price_list
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
+        // 25, 110, 115, 125, 80, 110, 110, 115
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '25', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , '');
-        $str .= $this->reporter->col('PART #', '110', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('EQUIVALENT #', '115', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('CAR MODEL', '135', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('YEAR MODEL', '90', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('POSITION', '110', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('SIZE/TYPE', '100', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('PRICE', '115', null, false, '2px solid', 'TB', 'CT', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col('', '25', null, false, '2px solid', 'TB', 'C', $font, $fontsize , '');
+        $str .= $this->reporter->col('PART #', '110', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col('EQUIVALENT #', '115', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B');
+        $str .= $this->reporter->col('CAR MODEL', '125', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B');
+        $str .= $this->reporter->col('YEAR MODEL', '80', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B');
+        $str .= $this->reporter->col('POSITION', '110', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col('SIZE/TYPE', '110', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col('PRICE', '115', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -244,7 +246,7 @@ class price_list
                     $grpLabel = $data->category; 
                     break;
                 case 3: 
-                    $grpLabel = $data->carbrand; 
+                    $grpLabel = $data->cbrand; 
                     break;
                 default: 
                     $grpLabel = '';
@@ -267,6 +269,7 @@ class price_list
                 $rowCount++;
             }
 
+            // 25, 110, 115, 125, 80, 110, 110, 115
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '25', null, false, '2px solid', '', 'CT', $font, $fontsize , '');
@@ -274,7 +277,7 @@ class price_list
             $str .= $this->reporter->col($data->equiv, '115', null, false, '2px solid', '', 'LT', $font, $fontsize , '');
             $str .= $this->reporter->col($data->crmodel, '125', null, false, '2px solid', '', 'LT', $font, $fontsize , '');
             $str .= $this->reporter->col($data->yrmodel, '80', null, false, '2px solid', '', 'CT', $font, $fontsize , '');
-            $str .= $this->reporter->col($data->position, '110', null, false, '2px solid', '', 'CT', $font, $fontsize , '', '', '');
+            $str .= $this->reporter->col($data->positions, '110', null, false, '2px solid', '', 'LT', $font, $fontsize , '', '', '');
             $str .= $this->reporter->col($data->stype, '110', null, false, '2px solid', '', 'CT', $font, $fontsize , '', '', '');
             $str .= $this->reporter->col($data->price != 0 ? number_format($data->price, 2) : '-', '115', null, false, '2px solid', '', 'RT', $font, $fontsize , '', '', '');
             $str .= $this->reporter->endrow();

@@ -72,16 +72,16 @@ class endofday
     //     'amount',
     //     'deduction'
     //   ];
-  
+
     //   foreach ($columns as $key => $value) {
     //     $$value = $key;
     // }
-  
+
     //   $tab = [$this->gridname => [
     //     'gridcolumns' => $columns
     //   ]];
     //   $stockbuttons = [];
-  
+
     //   $obj = $this->tabClass->createtab($tab, $stockbuttons);
     //   $obj[0][$this->gridname]['descriptionrow'] = [];
     //   $obj[0][$this->gridname]['label'] = 'TRANSACTIONS';
@@ -103,10 +103,10 @@ class endofday
 
   public function createHeadField($config)
   {
-    $fields = ['dateid','begbal','totalcoll'];
+    $fields = ['dateid', 'begbal', 'totalcoll'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dateid.readonly', false);
-    $fields = ['totaldep','endingbal',['refresh','dlsales']]; 
+    $fields = ['totaldep', 'endingbal', ['refresh', 'dlsales']];
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'refresh.action', 'load');
@@ -138,26 +138,26 @@ class endofday
     select curdate() as dateid, 
     0.00 as begbal, 0.00 as endingbal, 0.00 as totalcoll, 0.00 as totaldep
   ");
-      if (!empty($data)) {
-          return $data[0];
-      } else {
-          return [];
-      }
+    if (!empty($data)) {
+      return $data[0];
+    } else {
+      return [];
+    }
   }
 
   public function headtablestatus($config)
   {
     $action = $config['params']["action2"];
     $center = $config['params']['center'];
-   
+
 
     switch ($action) {
       case 'close':
         $d = $config['params']['dataparams'];
         $dateid = date('Y-m-d', strtotime($d['dateid']));
 
-        if($d['totalcoll'] ==0 && $d['totaldep'] == 0 && $d['endingbal'] ==0 ){
-          return  ['status' => 'false', 'msg' => 'No data to check. Please Load data first.','action' => 'load'];
+        if ($d['totalcoll'] == 0 && $d['totaldep'] == 0 && $d['endingbal'] == 0) {
+          return  ['status' => 'false', 'msg' => 'No data to check. Please Load data first.', 'action' => 'load'];
         }
 
         $ins['dateid'] = $d['dateid'];
@@ -168,7 +168,7 @@ class endofday
         $ins['closeby'] = $config['params']['user'];
         $ins['center'] = $config['params']['center'];
 
-        $qry ="select category, sum(amount) as amount from (select r.category,h.amount
+        $qry = "select category, sum(amount) as amount from (select r.category,h.amount
         from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.center = ?  and date(h.dateid) <= ? and h.dstrno=0 and r.category in ('cash','check')
         union all
         select r.category, h.amount
@@ -186,44 +186,47 @@ class endofday
         from hdxhead as h left join transnum as num on num.trno = h.trno
         left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where num.center = ? and date(h.dateid) <= ?  and r.category in ('cash','check')) as a group by category";
 
-        $col = $this->coreFunctions->opentable($qry,[$center,$dateid,$center,$dateid,$center,$dateid,$center,$dateid]);
-        
+        $col = $this->coreFunctions->opentable($qry, [$center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid]);
+
         $cash = 0;
-        $checks =0;
-        
-        foreach($col as $c =>$v){
-          if(strtoupper($col[$c]->category) =='CASH'){
+        $checks = 0;
+
+        foreach ($col as $c => $v) {
+          if (strtoupper($col[$c]->category) == 'CASH') {
             $cash += $col[$c]->amount;
-          }else{
-            $checks +=$col[$c]->amount;
+          } else {
+            $checks += $col[$c]->amount;
           }
         }
 
         $ins['cash'] = $cash;
-        $ins['checks'] =$checks;
+        $ins['checks'] = $checks;
+
+        $dateTables = ['eod'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
         foreach ($ins as $key => $value) {
-            $ins[$key] = $this->othersClass->sanitizekeyfield($key, $ins[$key]);
-        }     
-        
-        if($this->coreFunctions->sbcinsert('eod',$ins)==1){
-            $dateid = date('Y-m-d', strtotime($d['dateid']));
-            $status = $this->coreFunctions->sbcupdate("profile", ["pvalue" => $dateid], ['doc' => 'SYSL']);
-            if($status){
-              return  ['status' => 'true', 'msg' => 'Closed Successfully','action' => 'load'];//$this->loaddata($config,$config['params']['dataparams']['dateid']);
-            }else{
-              return  ['status' => 'false', 'msg' => 'Error on closing.','action' => 'load'];
-            }
-            
-        }else{
-          return  ['status' => 'false', 'msg' => 'Already Close.','action' => 'load'];
+          // $ins[$key] = $this->othersClass->sanitizekeyfield($key, $ins[$key]);
+          $ins[$key] = $this->othersClass->sanitizekeyfieldFast($key, $ins[$key], $lookups);
+        }
+
+        if ($this->coreFunctions->sbcinsert('eod', $ins) == 1) {
+          $dateid = date('Y-m-d', strtotime($d['dateid']));
+          $status = $this->coreFunctions->sbcupdate("profile", ["pvalue" => $dateid], ['doc' => 'SYSL']);
+          if ($status) {
+            return  ['status' => 'true', 'msg' => 'Closed Successfully', 'action' => 'load']; //$this->loaddata($config,$config['params']['dataparams']['dateid']);
+          } else {
+            return  ['status' => 'false', 'msg' => 'Error on closing.', 'action' => 'load'];
+          }
+        } else {
+          return  ['status' => 'false', 'msg' => 'Already Close.', 'action' => 'load'];
         }
         //return $this->downloadmcdx($config);
         break;
       case 'load':
         return $this->loaddata($config, $config['params']['dataparams']['dateid']);
         break;
-      
+
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $action . ')'];
         break;
@@ -237,76 +240,79 @@ class endofday
     $user = $config['params']['user'];
     $dateid = $this->othersClass->sbcdateformat($dateid);
 
-    $closed = $this->coreFunctions->getfieldvalue("eod","line","date(dateid) = ? and center=? and closeby = ?",[$dateid,$center,$user],'',true);
-    if($closed !=0){
+    $closed = $this->coreFunctions->getfieldvalue("eod", "line", "date(dateid) = ? and center=? and closeby = ?", [$dateid, $center, $user], '', true);
+    if ($closed != 0) {
       return ['status' => false, 'msg' => 'This date is already close.', 'action' => 'load'];
     }
 
-    $unposted = $this->coreFunctions->datareader("select trno  as value  from (select num.trno from cehead as ce left join transnum as num on num.trno = ce.trno where num.center ='".$center."' and date(ce.dateid)='".$dateid."' and ce.createby = '".$user."' union all 
-    select ce.trno from dxhead as ce left join transnum as num on num.trno = ce.trno  where num.center ='".$center."' and date(ce.dateid)='".$dateid."' and dx.createby = '".$user."') as a limit 1");
-    if($unposted !=0){
+    $unposted = $this->coreFunctions->datareader("select trno  as value  from (select num.trno from cehead as ce left join transnum as num on num.trno = ce.trno where num.center ='" . $center . "' and date(ce.dateid)='" . $dateid . "' and ce.createby = '" . $user . "' union all 
+    select ce.trno from dxhead as ce left join transnum as num on num.trno = ce.trno  where num.center ='" . $center . "' and date(ce.dateid)='" . $dateid . "' and dx.createby = '" . $user . "') as a limit 1");
+    if ($unposted != 0) {
       return ['status' => false, 'msg' => 'There are unposted transactions.', 'action' => 'load'];
     }
 
     $qry = "select category,format(sum(amount),2) as amount,format(sum(deduction),2) as deduction from (select r.category,h.amount,0 as deduction
-    from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.center = ? and date(h.dateid) = ? and h.createby = '".$user."'
+    from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     union all
     select r.category, h.amount,0  as deduction
     from hcehead as h left join transnum as num on num.trno = h.trno
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 
     left join reqcategory as rr on rr.line = h.trnxtid and rr.isttype =1
-    where rr.category not in ('REFUND','SUBSIDY') and num.center = ? and date(h.dateid) = ? and h.createby = '".$user."'
+    where rr.category not in ('REFUND','SUBSIDY') and num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     union all
      select r.category, 0 as amount,h.amount as deduction
     from hcehead as h left join transnum as num on num.trno = h.trno
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1
-    left join reqcategory as rr on rr.line = h.trnxtid and rr.isttype =1 where rr.category  in ('refund','subsidy')  and num.center = ?   and date(h.dateid) = ? and h.createby = '".$user."'
+    left join reqcategory as rr on rr.line = h.trnxtid and rr.isttype =1 where rr.category  in ('refund','subsidy')  and num.center = ?   and date(h.dateid) = ? and h.createby = '" . $user . "'
     union all
     select r.category,0 as amount,h.amount as deduction
-    from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.dstrno<>0 and h.center = ?   and date(h.depodate) = ? and h.createby = '".$user."'
+    from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.dstrno<>0 and h.center = ?   and date(h.depodate) = ? and h.createby = '" . $user . "'
     union all
 select r.category, 0 as amount,h.amount as deduction
     from hcehead as h left join transnum as num on num.trno = h.trno
-    left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where r.category not in ('cash','check') and num.center = ? and date(h.dateid) = ? and h.createby = '".$user."'
+    left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where r.category not in ('cash','check') and num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     union all
     select r.category, 0 as amount,h.amount as deduction
     from hdxhead as h left join transnum as num on num.trno = h.trno 
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 
-    where  r.category  in ('cash','check') and  num.center = ? and date(h.dateid) = ? and h.createby = '".$user."'
+    where  r.category  in ('cash','check') and  num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     ) as h group by category";
-    $data = $this->coreFunctions->opentable($qry,[$center,$dateid,$center,$dateid,$center,$dateid,$center,$dateid,$center,$dateid,$center,$dateid]);
+    $data = $this->coreFunctions->opentable($qry, [$center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid]);
 
-    $totalcoll =0;
-    $totaldep =0;
-    $endingbal=0;
-    $begbal =0;
-    if($config['params']['dataparams']['begbal'] !=0){
-      $begbal = $this->othersClass->sanitizekeyfield("amt",$config['params']['dataparams']['begbal']);
-    }else{
-      $begbal = $this->coreFunctions->getfieldvalue("eod","ifnull(endingbal,0)","date(dateid)<? and closeby = ?",[$dateid,$user],"dateid desc",true);
+    $totalcoll = 0;
+    $totaldep = 0;
+    $endingbal = 0;
+    $begbal = 0;
+
+    $dateTables = ['eod'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+    if ($config['params']['dataparams']['begbal'] != 0) {
+      // $begbal = $this->othersClass->sanitizekeyfield("amt", $config['params']['dataparams']['begbal']);
+      $begbal = $this->othersClass->sanitizekeyfieldFast("amt", $config['params']['dataparams']['begbal'], $lookups);
+    } else {
+      $begbal = $this->coreFunctions->getfieldvalue("eod", "ifnull(endingbal,0)", "date(dateid)<? and closeby = ?", [$dateid, $user], "dateid desc", true);
     }
-   
-    
-    foreach ($data as $key => $value) {        
-        $value->amount = $this->othersClass->sanitizekeyfield('amt',$value->amount);
-        $value->deduction = $this->othersClass->sanitizekeyfield('amt',$value->deduction);
-        $totalcoll = $totalcoll + $value->amount;
-        $totaldep = $totaldep + $value->deduction;       
+
+
+    foreach ($data as $key => $value) {
+      // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
+      // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+      $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
+      $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
+      $totalcoll = $totalcoll + $value->amount;
+      $totaldep = $totaldep + $value->deduction;
     }
 
     $endingbal = ($begbal + $totalcoll) - $totaldep;
 
-    $ret['dateid']= $dateid;
-    $ret['begbal'] = number_format($begbal,2);
-    $ret['totalcoll'] = number_format($totalcoll,2);
-    $ret['totaldep'] = number_format($totaldep,2);
-    $ret['endingbal'] = number_format($endingbal,2);
-    
-    return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data],'data'=>$ret];
+    $ret['dateid'] = $dateid;
+    $ret['begbal'] = number_format($begbal, 2);
+    $ret['totalcoll'] = number_format($totalcoll, 2);
+    $ret['totaldep'] = number_format($totaldep, 2);
+    $ret['endingbal'] = number_format($endingbal, 2);
+
+
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data], 'data' => $ret];
   }
-
-
- 
-
-
 } //end class

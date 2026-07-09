@@ -1960,7 +1960,7 @@ class ch
     // $fontsize1 = 11;
 
     $add = isset($data[0]['address']) ? trim($data[0]['address']) : '';
-    $maxChars = 65; //56
+    $maxChars = 60; //65
     $fontsize1 = 9; //9.5
 
     $lines = explode("\n", wordwrap($add, $maxChars, "\n", false));
@@ -3291,7 +3291,7 @@ PDF::MultiCell(150, 0, strtoupper($received), '', 'C', false, 0);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     $add = isset($data[0]['address']) ? trim($data[0]['address']) : '';
-    $maxChars = 65; //56
+    $maxChars = 60; //65
     $fontsize1 = 9; //9.5
 
     $lines = explode("\n", wordwrap($add, $maxChars, "\n", false));

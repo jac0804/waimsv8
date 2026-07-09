@@ -162,7 +162,7 @@ class ce
         data_set($col1, 'modeofpayment2.required', true);
         data_set($col1, 'modeofpayment2.error', false);
 
-        $fields = ['dateid', ['yourref', 'ourref'], ['sicsino', 'drno'],['rslip','dacnoname'], 'amount', 'bank', ['checkinfo', 'checkdate']];
+        $fields = ['dateid', ['yourref', 'ourref'], ['sicsino', 'drno'], ['rslip', 'dacnoname'], 'amount', 'bank', ['checkinfo', 'checkdate']];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'yourref.label', 'CR #');
         data_set($col2, 'ourref.label', 'OR#');
@@ -171,7 +171,7 @@ class ce
         data_set($col2, 'amount.error', false);
         data_set($col2, 'dacnoname.lookupclass', 'CB');
         data_set($col2, 'dacnoname.label', 'Transfer to Bank');
-       
+
 
         data_set($col2, 'checkinfo.type', 'lookup');
         data_set($col2, 'checkinfo.lookupclass', 'lookupdcchecks');
@@ -179,7 +179,7 @@ class ce
         data_set($col2, 'checkinfo.addedparams', ['client']);
 
         if ($noeditdate) data_set($col2, 'dateid.class', 'sbccsreadonly');
-        $fields = ['rem', 'rem2','deposit'];
+        $fields = ['rem', 'rem2', 'deposit'];
         $col3 = $this->fieldClass->create($fields);
         data_set($col3, 'rem2.type', 'input');
         data_set($col3, 'rem2.label', 'MC Unit');
@@ -209,7 +209,7 @@ class ce
 
     public function createdoclisting()
     {
-        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname','amount','modeofpayment', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'amount', 'modeofpayment', 'yourref', 'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -310,7 +310,7 @@ class ce
         $data[0]['docno'] = $docno;
         $data[0]['dateid'] = $this->othersClass->getCurrentDate();
         $data[0]['checkdate'] = $this->othersClass->getCurrentDate();
-        $data[0]['clientid'] = $this->coreFunctions->getfieldvalue("client","clientid","client ='WALK-IN'");
+        $data[0]['clientid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client ='WALK-IN'");
         $data[0]['clientname'] = 'WALK-IN';
         $data[0]['client'] = 'WALK-IN';
         $data[0]['checkinfo'] = '';
@@ -331,7 +331,7 @@ class ce
         $data[0]['deposit'] = '';
         $data[0]['rslip'] = '';
         $data[0]['mpid'] = '';
-        $data[0]['modeofpayment2'] = '';        
+        $data[0]['modeofpayment2'] = '';
         $data[0]['purposeofpayment'] = '';
         $data[0]['trnxtype2'] = '';
         $data[0]['rctrno'] = 0;
@@ -348,11 +348,15 @@ class ce
             unset($head['docno']);
         }
 
+        $dateTables = ['cehead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -360,30 +364,27 @@ class ce
         if ($isupdate) {
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['editby'] = $config['params']['user'];
-            $rcref = $this->coreFunctions->datareader("select concat(rctrno,'~',rcline) as value from ".$this->head." where trno  =?",[$head['trno']]);
+            $rcref = $this->coreFunctions->datareader("select concat(rctrno,'~',rcline) as value from " . $this->head . " where trno  =?", [$head['trno']]);
             $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
 
-            if($rcref !=""){
-                $rc = explode("~",$rcref);
-                if($rc[0]!=0){
-                    if($head['rctrno']!=0){
-                        if($rc[0] != $head['rctrno'] && $rc[1] != $head['rcline']){
+            if ($rcref != "") {
+                $rc = explode("~", $rcref);
+                if ($rc[0] != 0) {
+                    if ($head['rctrno'] != 0) {
+                        if ($rc[0] != $head['rctrno'] && $rc[1] != $head['rcline']) {
                             $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => $head['trno']], ['trno' => $head['rctrno'], 'line' => $head['rcline']]);
                         }
-                        
                     }
-                }else{
+                } else {
                     $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => $head['trno']], ['trno' => $head['rctrno'], 'line' => $head['rcline']]);
                 }
-                
             }
-            
         } else {
             $data['doc'] = $config['params']['doc'];
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
-            if($head['rctrno']!=0){
+            if ($head['rctrno'] != 0) {
                 $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => $head['trno']], ['trno' => $head['rctrno'], 'line' => $head['rcline']]);
             }
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
@@ -508,21 +509,21 @@ class ce
 
         $dstrno = $this->coreFunctions->datareader('select dstrno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
-        if($dstrno !=0){
-            return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Already deposited.'];   
+        if ($dstrno != 0) {
+            return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Already deposited.'];
         }
 
         $dateid = $this->coreFunctions->datareader('select dateid as value from ' . $this->hhead . ' where trno=?', [$trno]);
-        $close = $this->coreFunctions->datareader("select ifnull(dateid,'') as value from eod where center ='".$center."' order by dateid desc limit 1");
+        $close = $this->coreFunctions->datareader("select ifnull(dateid,'') as value from eod where center ='" . $center . "' order by dateid desc limit 1");
 
-        
-        if($close !=''){
+
+        if ($close != '') {
             $dateid = $this->othersClass->sbcdateformat($dateid);
             $close = $this->othersClass->sbcdateformat($close);
 
-            if($dateid <= $close){
-                return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Date already close.'];   
-           }
+            if ($dateid <= $close) {
+                return ['trno' => $trno, 'status' => false, 'msg' => 'Unable to unpost. Date already close.'];
+            }
         }
 
         $qry = "insert into " . $this->head . "(trno,doc,docno,clientid,clientname,address,dateid,rem,amount,bank,checkinfo,
@@ -561,9 +562,9 @@ class ce
         $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
         $this->othersClass->deleteattachments($config);
 
-        
+
         if (floatval($rctrno) != 0) {
-          $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => 0], ['trno' => $rctrno, 'line' => $rcline]);
+            $this->coreFunctions->sbcupdate('hrcdetail', ['ortrno' => 0], ['trno' => $rctrno, 'line' => $rcline]);
         }
         $this->logger->sbcdel_log($trno, $config, $docno);
 

@@ -2065,16 +2065,20 @@ class posClass
 
   public function getalltransdoc($doc, $table)
   {
-    $qry = "select trno, doc, docno, postdate, 0 as unposted from cntnum where postdate is not null and year(postdate)<=2025 and iscsv=0
+    $qry = "select trno, doc, docno, postdate, 0 as unposted from cntnum where postdate is not null and iscsv=0
           union all
-          select trno, doc, docno, postdate, 0 as unposted from transnum where postdate is not null and year(postdate)<=2025 and iscsv=0 
+          select trno, doc, docno, postdate, 0 as unposted from transnum where postdate is not null and iscsv=0 
           union all 
-          select trno, doc, docno, postdate, 1 as unposted from unpostedtrans where year(postdate)<=2025 order by postdate limit 5000";
+          select trno, doc, docno, postdate, 1 as unposted from unpostedtrans order by postdate limit 10000";
     return $this->coreFunctions->opentable($qry);
   }
 
   public function gettransactionsqry($table, $trno)
   {
+    $arrDateCols = $this->coreFunctions->opentable("select lcase(COLUMN_NAME) FROM information_schema.columns WHERE table_schema = '" . env('DB_DATABASE') . "' and  table_name = '" . $table . "' and data_type in ('date', 'datetime') ORDER BY ordinal_position");
+    $arrDateCols = array_column(json_decode(json_encode($arrDateCols), true), 'col_name');
+    $invalidDates = ['',  '0', '0.000000', '0000-00-00', '0000-00-00 00:00:00', 'NULL', 'null'];
+
     $qry = "select COLUMN_NAME FROM information_schema.columns WHERE table_schema = '" . env('DB_DATABASE') . "' and table_name = '" . $table . "' ORDER BY ordinal_position";
     $a = $this->coreFunctions->opentable($qry);
     $selects = '';
@@ -2095,17 +2099,16 @@ class posClass
         foreach ($nums as $nkey => $nn) {
           $arr1 = (array)$nn;
           foreach ($arr1 as $arrkey => $arr) {
-            $arr1[$arrkey] = $this->removeNewlines(trim($arr1[$arrkey]));
-            $arr1[$arrkey] = $this->othersClass->sanitizekeyfield($arrkey, $arr1[$arrkey], $table);
-            if ($arr1[$arrkey] === null) $arr1[$arrkey] = "NULL";
+            // Check null BEFORE trim, not after
+            if ($arr1[$arrkey] === null) {
+              $arr1[$arrkey] = "NULL";
+            } else {
+              $arr1[$arrkey] = $this->removeNewlines(trim($arr1[$arrkey]));
+            }
 
-            if ($this->isDateField($arrkey)) {
-              $stringDate = ['invoicedate_xxx'];
-              if (in_array($arrkey, $stringDate)) {
-                $arr1[$arrkey] = "";
-              } else {
-                $returndate = $this->getDateSQLValue($arr1[$arrkey]);
-                if ($returndate == null) $arr1[$arrkey] = "NULL";
+            if (in_array(strtolower($arrkey), $arrDateCols)) {
+              if (in_array($arr1[$arrkey], $invalidDates)) {
+                $arr1[$arrkey] = "NULL";
               }
             }
           }
@@ -2202,7 +2205,7 @@ class posClass
     ini_set('memory_limit', '-1');
 
     try {
-      $sql = "select * from " . $table . " where ismirror=0 order by " . $uniquefield[0];
+      $sql = "select * from " . $table . " where ismirror=0 order by " . $uniquefield[0] . ' limit 10000';
       $item = $this->coreFunctions->opentable($sql);
       $item2 = json_decode(json_encode($item), true);
 

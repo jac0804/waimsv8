@@ -361,7 +361,8 @@ class uploadingutility
           ['label' => 'New Employees', 'value' => 'newemployeepayroll', 'color' => 'green'],
           ['label' => 'Update Employees', 'value' => 'updateemployeepayroll', 'color' => 'green'],
           ['label' => 'Upload Rates', 'value' => 'updateemployeerate', 'color' => 'green'],
-          ['label' => 'Upload Allowance', 'value' => 'newallowance', 'color' => 'green']
+          ['label' => 'Upload Allowance', 'value' => 'newallowance', 'color' => 'green'],
+          ['label' => 'Upload Timecard', 'value' => 'timecard', 'color' => 'green']
         ));
         break;
 
@@ -2692,6 +2693,7 @@ class uploadingutility
     $blnIsert = true;
 
     $blndbtable = false;
+    $arrUniques = [];
 
     $tabletype = '';
     switch ($type) {
@@ -2770,6 +2772,10 @@ class uploadingutility
         break;
       case 'newallowance':
         $tabletype = 'allowsetup';
+        break;
+      case 'timecard':
+        $tabletype = 'timecard';
+        $arrUniques = ['empid', 'dateid'];
         break;
     }
 
@@ -3036,7 +3042,8 @@ class uploadingutility
                     }
                   } else {
                     $status = false;
-                    $msg .= $check['msg'] . '<br>';
+                    // $msg .= $check['msg'] . '<br>';
+                    $msg = $this->addMsg($msg, $check['msg']);
                     // goto exithere;
                     goto NextLoopHere;
                   }
@@ -3605,6 +3612,20 @@ class uploadingutility
             case 'allowsetup':
               $exist = 0;
               break;
+            case 'timecard':
+              $arrFilters = [];
+              $valuefilter = [];
+
+              foreach ($arrUniques as $keyU) {
+                $arrFilters[] = $keyU . '=?';
+                $valuefilter[] = $valtoinsert[$keyU];
+              }
+
+              $fieldfilter = implode(' AND ', $arrFilters);
+              $qry = "DELETE FROM " . $table . " WHERE " . $fieldfilter;
+              $this->coreFunctions->execqry($qry, 'delete', $valuefilter);
+              $exist = 0;
+              break;
             default:
               if ($type == 'uploaddbtable') {
                 $exist = 0;
@@ -3747,7 +3768,19 @@ class uploadingutility
           // var_dump($datatoupdate);
           // return 0;
 
-          $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, [$unique => $valtoinsert[$unique]]);
+          switch ($tabletype) {
+            case 'timecard':
+              $wherefilter = [];
+              foreach ($arrUniques as $keyU) {
+                $wherefilter[$keyU] = $valtoinsert[$keyU];
+              }
+              $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, $wherefilter);
+              break;
+
+            default:
+              $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, [$unique => $valtoinsert[$unique]]);
+              break;
+          }
         }
 
 
@@ -3977,11 +4010,11 @@ class uploadingutility
           }
         } else {
           $status = false;
-          $msg .= $uniqueval . ', failed to upload. ' . $this->coreFunctions->errmsg . ' ';
+          $msg .= $valtoinsert[$unique] . ', failed to upload. ' . $this->coreFunctions->errmsg . '<br>';
         }
       } catch (Exception $e) {
         $status = false;
-        $msg .= "(" . $valtoinsert[$uniqueval] . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
+        $msg .= "(" . $valtoinsert[$unique] . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
         goto exithere;
       }
 
@@ -4056,6 +4089,7 @@ class uploadingutility
       case 'ratesetup';
       case 'codehead':
       case 'allowsetup':
+      case 'timecard':
         return $field;
         break;
       default:
@@ -4104,6 +4138,7 @@ class uploadingutility
         break;
       case 'ratesetup':
       case 'allowsetup':
+      case 'timecard':
         return 'empid';
         break;
       case 'codehead':
@@ -4157,7 +4192,8 @@ class uploadingutility
         break;
 
       case 'employeecode':
-        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance') {
+      case 'empcode':
+        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance' || $type == 'timecard') {
           return 'empid';
         } else {
           return 'client';
@@ -5057,6 +5093,14 @@ class uploadingutility
     }
   }
 
+  private function addMsg($old, $new){
+    if (strpos($old, $new) !== false) {
+      return $old;
+    }else{
+      return ($old == '' ? $new : $old . '<br>' . $new);
+    }
+  }
+
   private function linktoothertable($field, $value, $excelheader, $tablename, $uniqueval, $uploadtype)
   {
     $success = true;
@@ -5113,7 +5157,7 @@ class uploadingutility
           $qry = "select line as value from reqcategory where isreassigned=1 and category='" . $value . "'";
           break;
         case 'empid':
-          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance') {
+          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance' || $uploadtype == 'timecard') {
             $qry = "select clientid as value from client where isemployee=1 and client='" . $value . "'";
           }
           break;

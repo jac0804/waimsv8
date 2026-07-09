@@ -358,9 +358,20 @@ class bankrecon
         $deductions = $config['params']['dataparams']['deduction'];
         $endbal =  $config['params']['dataparams']['endbal'];
 
-        $interest = $this->othersClass->sanitizekeyfield('amt', $interest);
-        $deductions = $this->othersClass->sanitizekeyfield('amt', $deductions);
-        $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
+
+        //new sanitize
+        $dateTables = ['gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+        $interest = $this->othersClass->sanitizekeyfieldFast('amt', $interest, $lookups);
+        $deductions = $this->othersClass->sanitizekeyfieldFast('amt', $deductions, $lookups);
+        $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);
+
+        //old way sanitize
+        // $interest = $this->othersClass->sanitizekeyfield('amt', $interest);
+        // $deductions = $this->othersClass->sanitizekeyfield('amt', $deductions);
+        // $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
+
 
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);
@@ -478,8 +489,17 @@ class bankrecon
         $diff = $config['params']['dataparams']['difference'];
         $endbal = $config['params']['dataparams']['endbal'];
 
-        $diff = $this->othersClass->sanitizekeyfield('amt', $diff);
-        $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
+        //new sanitize
+        $dateTables = ['gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+        $diff = $this->othersClass->sanitizekeyfieldFast('amt', $diff, $lookups);
+        $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);
+
+
+        //old way sanitize
+        // $diff = $this->othersClass->sanitizekeyfield('amt', $diff);
+        // $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
 
         $clearday = $this->othersClass->sbcdateformat($clearday);
         $date1 = $this->othersClass->sbcdateformat($date1);

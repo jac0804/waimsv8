@@ -264,7 +264,8 @@ class tc
             'ref',
             'amount',
             'deduction',
-            'balance', 'itemname'
+            'balance',
+            'itemname'
         ];
 
         foreach ($columns as $key => $value) {
@@ -437,11 +438,16 @@ class tc
             unset($this->fields[1]);
             unset($head['docno']);
         }
+
+        $dateTables = ['tchead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -452,7 +458,7 @@ class tc
             $data['amount'] = $data['petty'];
         }
 
-        $prevbal = $this->coreFunctions->datareader("select endingbal as value from htchead left join cntnum on cntnum.trno = htchead.trno where date(htchead.dateid) < '" . $data['dateid'] . "' and htchead.trno <> " . $head['trno'] . " and cntnum.center ='".$center."' order by dateid desc limit 1");
+        $prevbal = $this->coreFunctions->datareader("select endingbal as value from htchead left join cntnum on cntnum.trno = htchead.trno where date(htchead.dateid) < '" . $data['dateid'] . "' and htchead.trno <> " . $head['trno'] . " and cntnum.center ='" . $center . "' order by dateid desc limit 1");
 
         if ($prevbal != 0) {
             $data['amount'] = $prevbal;
@@ -599,9 +605,14 @@ class tc
             $runningbal = $begbal;
         }
 
+        $dateTables = ['tcdetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($detail as $key => $value) {
-            $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
+            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
+            $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);
             $value->amount = number_format($value->amount, 2);
             $value->deduction = number_format($value->deduction, 2);
@@ -636,9 +647,14 @@ class tc
             $runningbal = $begbal;
         }
 
+        $dateTables = ['tcdetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($detail as $key => $value) {
-            $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
+            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
+            $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);
             $value->amount = number_format($value->amount, 2);
             $value->deduction = number_format($value->deduction, 2);
@@ -857,8 +873,14 @@ class tc
             'amount' => $amount,
             'deduction' => $deduction
         ];
+
+        $dateTables = ['tcdetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -906,9 +928,14 @@ class tc
             $runningbal = $begbal;
         }
 
+        $dateTables = ['tchead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($stock as $key => $value) {
-            $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
+            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
+            $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
+            $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);
             $value->amount = number_format($value->amount, 2);
             $value->deduction = number_format($value->deduction, 2);
