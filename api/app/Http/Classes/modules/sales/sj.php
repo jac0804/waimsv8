@@ -625,6 +625,7 @@ class sj
   {
     $companyid = $config['params']['companyid'];
     $isshortcutso = $this->companysetup->getisshortcutso($config['params']);
+    $issuemultiloc = $this->companysetup->getissuemultipleexpiry($config['params']);
 
     $fields = [];
     switch ($companyid) {
@@ -636,12 +637,14 @@ class sj
         break;
     }
 
-    if ($isshortcutso) {
-      $allownew = $this->othersClass->checkAccess($config['params']['user'], 171);
-      if ($allownew == '1') {
-        array_push($fields, 'pickpo');
+    if(!$issuemultiloc){
+      if ($isshortcutso) {
+        $allownew = $this->othersClass->checkAccess($config['params']['user'], 171);
+        if ($allownew == '1') {
+          array_push($fields, 'pickpo');
+        }
       }
-    }
+    }    
 
     $col1 = $this->fieldClass->create($fields);
     if ($companyid == 20) { //proline
