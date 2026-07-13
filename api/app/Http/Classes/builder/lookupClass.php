@@ -1926,6 +1926,11 @@ class lookupClass
           return $this->lookuptype($config);
       break;
 
+      //addded 2026-07-09
+      case 'lookupsupplier':
+        return $this->lookupsupplier($config);
+        break;
+
 
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
@@ -25742,6 +25747,33 @@ class lookupClass
               select 'UPPER' as type";
     $data = $this->coreFunctions->opentable($query);
  
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function lookupsupplier($config)
+  {
+    $plotting = array();
+
+    $plotting = array('clientid' => 'clientid', 'supplier' => 'supplier');
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'LIST OF Supplier',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'supplier', 'label' => 'Supplier Name', 'align' => 'left', 'field' => 'supplier', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ];
+
+    $qry = "select clientid, client as sclient, clientname as supplier from client where issupplier = 1";
+    $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }

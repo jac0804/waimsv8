@@ -78,6 +78,15 @@ class commissionlist
         $obj[0][$this->gridname]['columns'][$status]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$startdate]['type'] = 'input';
         $obj[0][$this->gridname]['columns'][$enddate]['type'] = 'input';
+
+
+        $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
+        $obj[0][$this->gridname]['columns'][$startdate]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";
+        $obj[0][$this->gridname]['columns'][$startdate]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$enddate]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$comm1]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$comm2]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
+        $obj[0][$this->gridname]['columns'][$comm3]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
         return $obj;
     }
 

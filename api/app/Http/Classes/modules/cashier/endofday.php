@@ -91,7 +91,29 @@ class endofday
     //   $obj[0][$this->gridname]['columns'][$category]['type'] = 'label';
     //   $obj[0][$this->gridname]['columns'][$amount]['type'] = 'label';
     //return $obj;
-    return [];
+
+
+    // $columns = ['action', 'dateid', 'username', 'amt1', 'amt2', 'amt3'];
+    // foreach ($columns as $key => $value) {
+    //         $$value = $key; }
+
+    //   $tab = [$this->gridname => ['gridcolumns' => $columns  ]];
+    //   $stockbuttons = ['delete'];
+    //   $obj = $this->tabClass->createtab($tab, $stockbuttons);
+    //     // action
+    //   $obj[0][$this->gridname]['columns'][0]['style'] = "width:90px;whiteSpace: normal;min-width:200px;";
+      $obj=[];
+      return $obj;
+  }
+
+   public function createtab2($access, $config)
+  {
+      // $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'endofdayhistory', 'label' => 'History']];
+      // $comments = $this->tabClass->createtab($tab, []);
+      // $return['HISTORY'] = ['icon' => 'fa fa-comment', 'tab' => $comments];
+
+    $return=[];
+    return $return;
   }
 
   public function createtabbutton($config)
@@ -103,6 +125,7 @@ class endofday
 
   public function createHeadField($config)
   {
+    $allowviewhistory = $this->othersClass->checkAccess($config['params']['user'], 5925);
     $fields = ['dateid', 'begbal', 'totalcoll'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dateid.readonly', false);
@@ -115,7 +138,15 @@ class endofday
     data_set($col2, 'dlsales.label', 'Close');
     data_set($col2, 'endingbal.label', 'Ending Balance');
 
-    return array('col1' => $col1, 'col2' => $col2);
+    // $fields = [];
+
+    // if($allowviewhistory){
+    //   $fields = ['loadhistory']; // loadhistory
+    // }
+    
+    // $col3 = $this->fieldClass->create($fields);
+
+    return array('col1' => $col1, 'col2' => $col2); //, 'col3' => $col3
   }
 
   public function paramsdata($config)
@@ -226,7 +257,9 @@ class endofday
       case 'load':
         return $this->loaddata($config, $config['params']['dataparams']['dateid']);
         break;
-
+      // case "history":
+      //   return $this->loadhistorydata($config);
+      //   break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $action . ')'];
         break;
@@ -268,7 +301,7 @@ class endofday
     select r.category,0 as amount,h.amount as deduction
     from tcoll as h left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where h.dstrno<>0 and h.center = ?   and date(h.depodate) = ? and h.createby = '" . $user . "'
     union all
-select r.category, 0 as amount,h.amount as deduction
+    select r.category, 0 as amount,h.amount as deduction
     from hcehead as h left join transnum as num on num.trno = h.trno
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 where r.category not in ('cash','check') and num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     union all
@@ -277,6 +310,8 @@ select r.category, 0 as amount,h.amount as deduction
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 
     where  r.category  in ('cash','check') and  num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     ) as h group by category";
+    
+    // var_dump($qry, [$center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid]);
     $data = $this->coreFunctions->opentable($qry, [$center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid]);
 
     $totalcoll = 0;
@@ -315,4 +350,17 @@ select r.category, 0 as amount,h.amount as deduction
 
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data], 'data' => $ret];
   }
+
+
+   public function loadhistorydata($config)
+  {
+
+    $qry="select e.line, date(e.dateid) as dateid, e.closeby as username, e.collection as amt1, e.deposit as amt2, e.endingbal as amt3 from eod as e";
+    $data = $this->coreFunctions->opentable($qry);
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
+    // return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
+  }
+
+
+
 } //end class

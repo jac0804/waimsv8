@@ -6247,6 +6247,9 @@ class leftmenu
                 (1729,1,'Allow Override Plan Limit','',0,'\\811','$parent',0,'0',0," . $params['levelid'] . "),
                 (4098,0,'Allow to search & view transactions','',0,'\\823','$parent',0,'0',0," . $params['levelid'] . ")";
                 break;
+            case 'PRODUCTPORTAL':
+                $qry = "(360,0,'TRANSACTION UTILITIES','',0,'$parent','\\',0,'0',0," . $params['levelid'] . ")";
+                break;
             default:
                 $qry = "(360,0,'TRANSACTION UTILITIES','',0,'$parent','\\',0,'0',0," . $params['levelid'] . "),
                 (368,0,'Allow View Transaction Cost','',0,'\\809','$parent',0,'0',0," . $params['levelid'] . "),
@@ -6311,7 +6314,8 @@ class leftmenu
         switch ($systemtype) {
             case 'VSCHED':
             case 'ATI':
-                $modules = "',docprefix,audittrail,audittrail' ";
+            case 'PRODUCTPORTAL':
+                $modules = "',docprefix,audittrail' ";
                 break;
             case 'EAPPLICATION':
                 $modules = "',docprefix,terms,audittrail,'";
@@ -6457,6 +6461,14 @@ class leftmenu
         if (strstr($systype, "AMS")) {
             $rr = "";
             $dm = "";
+        }
+
+        if (strstr($systype, "PRODUCTPORTAL")) {
+            $qry = "(1053,0,'DASHBOARD','',0,'$parent','\\',0,'0',0," . $params['levelid'] . ")";
+            $rr = "";
+            $dm = "";
+            $payable = "";
+            $receivable = "";
         }
 
         if ($acctgdashboard) {
@@ -9093,7 +9105,9 @@ class leftmenu
     {
         $p = $parent;
         $parent = '\\' . $parent;
-        $qry = "(5109,0,'End of Day','',0,'\\3223','$parent',0,'0',0," . $params['levelid'] . ")";
+        $qry = "(5109,0,'End of Day','',0,'\\3223','$parent',0,'0',0," . $params['levelid'] . "),
+                (5925,1,'Allow View End of Day History','',0,'\\322301','\\3223',0,'0',0," . $params['levelid'] . "),
+                (5926,1,'Allow Delete End of Day History','',0,'\\322302','\\3223',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'terms','/headtable/cashier/endofday','End Of Day','fa fa-hourglass-end sub_menu_ico',5109," . $params['levelid'] . ")";
     } //end function

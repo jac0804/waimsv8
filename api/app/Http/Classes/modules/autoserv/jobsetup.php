@@ -226,11 +226,14 @@ class jobsetup
         }
         $clientid = 0;
         $msg = '';
+        $dateTables = ['jobthead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (isset($head[$key])) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if 
             }
         }

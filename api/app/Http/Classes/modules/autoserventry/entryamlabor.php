@@ -58,7 +58,7 @@ class entryamlabor
     $columns = ['jobcode', 'jobtitle', 'code', 'description', 'cost', 'mechanic', 'rate', 'rem']; //viewing
 
     if ($descriptions != '') {
-      $columns = ['action', 'code', 'description', 'cost', 'mechanic','rate', 'rem']; //mechanic
+      $columns = ['action', 'code', 'description', 'cost', 'mechanic', 'rate', 'rem']; //mechanic
     }
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
@@ -117,7 +117,7 @@ class entryamlabor
       $obj[0][$this->gridname]['columns'][$jobtitle]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; text-align: left';
       $obj[0][$this->gridname]['columns'][$jobcode]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: left';
 
-       $obj[0][$this->gridname]['columns'][$mechanic]['type'] ='label';
+      $obj[0][$this->gridname]['columns'][$mechanic]['type'] = 'label';
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -223,11 +223,14 @@ class entryamlabor
     $trno = $config['params']['tableid'];
     $msg = "All saved successfully.";
     $stat = true;
+    $dateTables = ['amtask'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
@@ -267,8 +270,12 @@ class entryamlabor
     $row = $config['params']['row'];
     $doc = $config['params']['doc'];
     $data = [];
+
+    $dateTables = ['amtask'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     foreach ($this->fields as $key2 => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0) { // insert

@@ -146,13 +146,19 @@ class entryvehicle
     {
         $data = [];
         $row = $config['params']['row'];
+        $dateTables = ['cvehicle'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
-        $data['carid']      = $this->othersClass->sanitizekeyfield('carid', $row['carid']);
-        $data['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $row['cmodelline']);
-        $data['clientid'] = $config['params']['tableid']; 
+        // $data['carid']      = $this->othersClass->sanitizekeyfield('carid', $row['carid']);
+        // $data['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $row['cmodelline']);
+
+        $data['carid'] = $this->othersClass->sanitizekeyfieldFast('carid', $row['carid'], $lookups);
+        $data['cmodelline'] = $this->othersClass->sanitizekeyfieldFast('cmodelline', $row['cmodelline'], $lookups);
+        $data['clientid'] = $config['params']['tableid'];
 
         if ($data['carid'] == 0 || $data['cmodelline'] == 0) {
             $data[0]['bgcolor'] = 'bg-red-2';
@@ -238,15 +244,20 @@ class entryvehicle
     {
         $clientid = $config['params']['tableid'];
         $data = $config['params']['data'];
+        $dateTables = ['cvehicle'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
-                $data2['carid']      = $this->othersClass->sanitizekeyfield('carid', $data[$key]['carid']);
-                $data2['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $data[$key]['cmodelline']);
+                // $data2['carid']      = $this->othersClass->sanitizekeyfield('carid', $data[$key]['carid']);
+                // $data2['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $data[$key]['cmodelline']);
+                $data2['carid'] = $this->othersClass->sanitizekeyfieldFast('carid', $data[$key]['carid'], $lookups);
+                $data2['cmodelline'] = $this->othersClass->sanitizekeyfieldFast('cmodelline', $data[$key]['cmodelline'], $lookups);
                 $data2['clientid']   = $clientid;
 
                 if ($data[$key]['line'] == 0) {
@@ -256,7 +267,6 @@ class entryvehicle
                     $line = $this->coreFunctions->insertGetId($this->table, $data2);
 
                     $this->logger->sbcmasterlog($clientid, $config, 'INSERT CAR MODEL' . ' - MODELLINE: ' . $data[$key]['cmodelline'] . ' - LINE: ' . $data[$key]['line']);
-
                 } else {
                     $data2['editby']     = $config['params']['user'];
                     $data2['editdate']   = $this->othersClass->getCurrentTimeStamp();
@@ -270,26 +280,28 @@ class entryvehicle
         return ['status' => true, 'msg' => 'Saved all Successfully', 'data' => $returndata, 'row' => $returndata];
     }
 
-    public function lookupsetup($config){
+    public function lookupsetup($config)
+    {
         $lookupclass2 = $config['params']['lookupclass2'];
-        switch ($lookupclass2){
+        switch ($lookupclass2) {
             case 'whlog':
                 return $this->lookuplogs($config);
-            break;
+                break;
             case 'lookupvehicle':
                 return $this->lookupvehicle($config);
                 break;
             default:
                 return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup...'];
-            break;
+                break;
         }
     }
 
-    public function lookupvehicle($config){
+    public function lookupvehicle($config)
+    {
         // $plotting = array('cmake' => 'cmake', 'model' => 'model', 'cryear' => 'cryear', 'crtype' => 'crtype', 'sub_model' => 'sub_model', 'carid' => 'carid', 'cmodelline' => 'cmodelline');
         $lookupsetup = array(
             'type' => 'multi',
-            'rowkey' =>'cmodelline',
+            'rowkey' => 'cmodelline',
             'title' => 'List Of Vehicle',
             'style' => 'width:900px;max-width:900px;'
         );
@@ -305,7 +317,7 @@ class entryvehicle
             ['name' => 'cryear', 'label' => 'Year', 'align' => 'left', 'field' => 'cryear', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'crtype', 'label' => 'Type', 'align' => 'left', 'field' => 'crtype', 'sortable' => true, 'style' => 'font-size:16px;'],
             ['name' => 'sub_model', 'label' => 'Sub Model', 'align' => 'left', 'field' => 'sub_model', 'sortable' => true, 'style' => 'font-size:16px;'],
-            ];
+        ];
 
         $filtersearch = "";
         if (isset($config['params']['search'])) {
@@ -370,24 +382,24 @@ class entryvehicle
 
     public function lookuplogs($config)
     {
-      $doc = 'CUSTOMER';
-      $lookupsetup = array(
-        'type' => 'show',
-        'title' => 'Vehicle Master Logs',
-        'style' => 'width:100%;max-width:90%;height:50%;'
-      );
+        $doc = 'CUSTOMER';
+        $lookupsetup = array(
+            'type' => 'show',
+            'title' => 'Vehicle Master Logs',
+            'style' => 'width:100%;max-width:90%;height:50%;'
+        );
 
-      // lookup columns
-      $cols = array(
-        array('name' => 'user', 'label' => 'User', 'align' => 'left', 'field' => 'user', 'sortable' => true, 'style' => 'font-size:16px;'),
-        array('name' => 'task', 'label' => 'Task', 'align' => 'left', 'field' => 'task', 'sortable' => true, 'style' => 'font-size:16px;'),
-        array('name' => 'dateid', 'label' => 'Date Occured', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;')
+        // lookup columns
+        $cols = array(
+            array('name' => 'user', 'label' => 'User', 'align' => 'left', 'field' => 'user', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'task', 'label' => 'Task', 'align' => 'left', 'field' => 'task', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'dateid', 'label' => 'Date Occured', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;')
 
-      );
+        );
 
-      $trno = $config['params']['tableid'];
+        $trno = $config['params']['tableid'];
 
-      $qry = "
+        $qry = "
         select trno, doc, task, log.user, dateid, 
         if(pic='','blank_user.png',pic) as pic
         from " . $this->tablelogs . " as log
@@ -400,8 +412,8 @@ class entryvehicle
         left join useraccess as u on u.username=log.user
         where log.doc = '" . $doc . "' and log.trno = '" . $trno . "'";
 
-      $qry = $qry . " order by dateid desc";
-      $data = $this->coreFunctions->opentable($qry);
-      return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
+        $qry = $qry . " order by dateid desc";
+        $data = $this->coreFunctions->opentable($qry);
+        return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
     }
 }

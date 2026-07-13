@@ -165,11 +165,9 @@ class leaveapplicationportal
 
     $curdate = $this->othersClass->getCurrentDate();
 
-
+    $prstart = 'prdstart';
     if ($companyid == 53) { //camera
-      $curdate = new DateTime($curdate);
-      $curdate->modify('-1 month');
-      $curdate = $curdate->format('Y-m-d');
+      $prstart = 'dateid';
     }
 
     $id = $config['params']['adminid'];
@@ -199,7 +197,7 @@ class leaveapplicationportal
             left join employee as e on e.empid=s.empid
             left join client as cl on cl.clientid = e.empid
             left join paccount as p on p.line=s.acnoid
-            where cl.clientid = '$id' and date('" . $curdate . "') between date(prdstart) and date(prdend) "  . $filteroption . " " . $filtersearch . "
+            where cl.clientid = '$id' and date('" . $curdate . "') between date($prstart) and date(prdend) "  . $filteroption . " " . $filtersearch . "
             order by CONCAT(e.emplast,', ',e.empfirst,' ',e.empmiddle), p.codename";
         break;
     }

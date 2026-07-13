@@ -502,6 +502,10 @@ class so
       $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
+
+    $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
+    $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+
     $obj[0][$this->gridname]['addfieldtotal'] = [['field' => 'agentamt', 'fields' => ['isqty', '*', 'agentamt'], 'label' => 'Total Agent Amount:']];
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;

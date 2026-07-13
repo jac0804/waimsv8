@@ -464,19 +464,23 @@ class aw
             unset($this->fields[array_search('docno', $this->fields)]);
             unset($head['docno']);
         }
+        $dateTables = ['awhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 }
             }
         }
 
         // map byear to cryear
         if (isset($head['byear'])) {
-            $data['cryear'] = $this->othersClass->sanitizekeyfield('cryear', $head['byear'], '', $companyid);
+            // $data['cryear'] = $this->othersClass->sanitizekeyfield('cryear', $head['byear'], '', $companyid);
+            $data['cryear'] = $this->othersClass->sanitizekeyfieldFast('cryear', $head['byear'], $lookups);
         }
 
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -620,6 +624,8 @@ class aw
             'jobid' => $jobid,
             'rem' => $rem,
         ];
+        $dateTables = ['sohead', 'headinfotrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

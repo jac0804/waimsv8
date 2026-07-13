@@ -971,6 +971,12 @@ class po
       $obj[0]['inventory']['columns'][$amt1]['type'] = 'coldel';
     }
 
+    if($companyid == 60) { //transpower
+      $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
+      $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+    }
+
+
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }

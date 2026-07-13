@@ -135,6 +135,10 @@ class SBCPDF
 
             $style = $this->styler($w, $h, $bg, $b, $b_, $al, $f, $fs,  $fw, $fc, $pad, $m);
 
+            if($len ==''){
+                $len = 0;
+            }
+            
             if ($len != 0) {
                 $this->breakword($txt, $key, $len, $col, $style, $linecounter);
             } else {
@@ -410,6 +414,8 @@ class SBCPDF
         $val4 = '';
         $linenum = 0;
         $sam = ucwords($txt[$key]);
+
+        
 
         if ($key >= 0) {
             $linenum = ceil(strlen($sam) / $len);

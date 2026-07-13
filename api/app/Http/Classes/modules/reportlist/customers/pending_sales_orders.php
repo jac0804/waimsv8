@@ -365,14 +365,14 @@ class pending_sales_orders
             concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
             client.clientname, item.itemname, item.groupid, item.brand, item.class,
             date(head.dateid) as dateid, stock.qa,
-            stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+            stock.iss as qty, (stock.iss-stock.qa) as unserved,
             (stock.iss-stock.qa)*stock.amt as unservedamt, stock.amt,
             item.uom,head.ourref,
             head.yourref, item.itemid,'' as barcode,'' as subcode,'' as partno,
             cat.name as category, subcat.name as subcatname
             from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
             left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
@@ -385,16 +385,16 @@ class pending_sales_orders
             concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
             client.clientname, item.itemname, item.groupid, item.brand, item.class,
             date(head.dateid) as dateid, stock.qa,
-            stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+            stock.iss as qty, (stock.iss-stock.qa) as unserved,
             (stock.iss-stock.qa)*stock.amt as unservedamt, stock.amt,
             item.uom,head.ourref,
             head.yourref, item.itemid,'' as barcode,'' as subcode,'' as partno,
             cat.name as category, subcat.name as subcatname
             from ((sohead as head left join sostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
-            left join transnum on transnum.trno=head.trno          
+            left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
             left join itemsubcategory as subcat on subcat.line = item.subcat
             where stock.void=0 and (stock.iss-stock.qa)>0 " . $filter . " " . $datefilter;
@@ -437,7 +437,7 @@ class pending_sales_orders
         break;
       case 6: //mitsukoshi
         $query = "
-          
+
           select client.clientname as cgrp,
           concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
           client.clientname, item.itemname, item.groupid, item.brand, item.class, date(head.dateid) as dateid, stock.qa,
@@ -511,9 +511,9 @@ class pending_sales_orders
                   item.barcode,'' as subcode,'' as partno, cat.name as category, subcat.name as subcatname
                 from ((sohead as head left join sostock as stock on stock.trno=head.trno)
                   left join item on item.itemid=stock.itemid)
-                  left join client on client.client=head.client 
+                  left join client on client.client=head.client
                   left join client as agent on agent.client=head.agent
-                  left join transnum on transnum.trno=head.trno          
+                  left join transnum on transnum.trno=head.trno
                   left join itemcategory as cat on cat.line = item.category
                   left join itemsubcategory as subcat on subcat.line = item.subcat
                 where stock.void=0 and (stock.iss-stock.qa)>0 " . $filter . '' . $datefilter . "
@@ -524,7 +524,7 @@ class pending_sales_orders
                   item.barcode,'' as subcode,'' as partno, cat.name as category, subcat.name as subcatname
                 from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
                   left join item on item.itemid=stock.itemid)
-                  left join client on client.client=head.client 
+                  left join client on client.client=head.client
                   left join client as agent on agent.client=head.agent
                   left join transnum on transnum.trno=head.trno
                   left join itemcategory as cat on cat.line = item.category
@@ -542,16 +542,16 @@ class pending_sales_orders
               concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
               client.clientname, item.itemname, item.groupid, item.brand, item.class,
               date(head.dateid) as dateid, stock.qa,
-              stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+              stock.iss as qty, (stock.iss-stock.qa) as unserved,
               (stock.iss-stock.qa)*stock.amt as unservedamt,
               item.uom,head.ourref,
               head.yourref, item.itemid,item.barcode,'' as subcode,'' as partno,
               cat.name as category, subcat.name as subcatname
               from ((sohead as head left join sostock as stock on stock.trno=head.trno)
               left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client 
+              left join client on client.client=head.client
               left join client as agent on agent.client=head.agent
-              left join transnum on transnum.trno=head.trno          
+              left join transnum on transnum.trno=head.trno
               left join itemcategory as cat on cat.line = item.category
               left join itemsubcategory as subcat on subcat.line = item.subcat
               where stock.void=0 and (stock.iss-stock.qa)>0 " . $filter . " " . $datefilter . "
@@ -560,14 +560,14 @@ class pending_sales_orders
               concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
               client.clientname, item.itemname, item.groupid, item.brand, item.class,
               date(head.dateid) as dateid, stock.qa,
-              stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+              stock.iss as qty, (stock.iss-stock.qa) as unserved,
               (stock.iss-stock.qa)*stock.amt as unservedamt,
               item.uom,head.ourref,
               head.yourref, item.itemid,item.barcode,'' as subcode,'' as partno,
               cat.name as category, subcat.name as subcatname
               from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
               left join item on item.itemid=stock.itemid)
-              left join client on client.client=head.client 
+              left join client on client.client=head.client
               left join client as agent on agent.client=head.agent
               left join transnum on transnum.trno=head.trno
               left join itemcategory as cat on cat.line = item.category
@@ -590,16 +590,16 @@ class pending_sales_orders
           concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
           client.clientname, item.itemname, item.groupid, item.brand, item.class,
           date(head.dateid) as dateid, stock.qa,
-          stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+          stock.iss as qty, (stock.iss-stock.qa) as unserved,
           (stock.iss-stock.qa)*stock.amt as unservedamt,
           item.uom,head.ourref,
           head.yourref, item.itemid,item.barcode,'' as subcode,'' as partno,
           cat.name as category, subcat.name as subcatname " . $addfield . "
           from ((sohead as head left join sostock as stock on stock.trno=head.trno)
           left join item on item.itemid=stock.itemid)
-          left join client on client.client=head.client 
+          left join client on client.client=head.client
           left join client as agent on agent.client=head.agent
-          left join transnum on transnum.trno=head.trno          
+          left join transnum on transnum.trno=head.trno
           left join itemcategory as cat on cat.line = item.category
           left join itemsubcategory as subcat on subcat.line = item.subcat
           where stock.void=0 and (stock.iss-stock.qa)>0 " . $filter . " " . $datefilter . "
@@ -608,14 +608,14 @@ class pending_sales_orders
           concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
           client.clientname, item.itemname, item.groupid, item.brand, item.class,
           date(head.dateid) as dateid, stock.qa,
-          stock.iss as qty, (stock.iss-stock.qa) as unserved, 
+          stock.iss as qty, (stock.iss-stock.qa) as unserved,
           (stock.iss-stock.qa)*stock.amt as unservedamt,
           item.uom,head.ourref,
           head.yourref, item.itemid,item.barcode,'' as subcode,'' as partno,
           cat.name as category, subcat.name as subcatname " . $addfield . "
           from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
           left join item on item.itemid=stock.itemid)
-          left join client on client.client=head.client 
+          left join client on client.client=head.client
           left join client as agent on agent.client=head.agent
           left join transnum on transnum.trno=head.trno
           left join itemcategory as cat on cat.line = item.category
@@ -1498,7 +1498,7 @@ class pending_sales_orders
             sum(stock.qa*stock.amt) as servedamt,
             sum(stock.iss*stock.amt) as totalamt,
             sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
-            from ((sohead as head 
+            from ((sohead as head
             left join sostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
             left join client on client.client=head.client
@@ -1507,7 +1507,7 @@ class pending_sales_orders
             left join itemcategory as cat on cat.line = item.category
             left join itemsubcategory as subcat on subcat.line = item.subcat
             where (stock.iss-stock.qa)>0  and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
-            group by client.clientname, client.area, client.
+            group by client.clientname, client.area, client.province
             union all
             select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
             sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
@@ -1546,7 +1546,7 @@ class pending_sales_orders
             where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . '' . $datefilter . "
             group by igrp,  item.itemname, subcat.name
             union all
-            select   concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,  
+            select   concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
             item.itemname, ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
             sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
             sum(stock.qa*stock.amt) as servedamt,
@@ -1554,7 +1554,7 @@ class pending_sales_orders
             sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
             from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
             left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
@@ -1577,7 +1577,7 @@ class pending_sales_orders
             sum(if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0)) as cancelamt
             from ((sohead as head left join sostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
             left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
@@ -1585,7 +1585,7 @@ class pending_sales_orders
             where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
             group by client.clientname, head.docno,client.clientname,date(head.dateid),client.area, client.province
             union all
-            select client.clientname as cgrp, head.docno, client.clientname, 
+            select client.clientname as cgrp, head.docno, client.clientname,
             date(head.dateid) as dateid,
             sum((stock.iss-stock.qa)*stock.amt) as unservedamt,
             sum(stock.qa*stock.amt) as servedamt,
@@ -1612,9 +1612,9 @@ class pending_sales_orders
             if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
             from ((sohead as head left join sostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
-            left join transnum on transnum.trno=head.trno          
+            left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
             left join itemsubcategory as subcat on subcat.line = item.subcat
             where (stock.iss-stock.qa)>0 and date(head.dateid) between '$start' and '$end' " . $filter . " " . $datefilter . "
@@ -1628,7 +1628,7 @@ class pending_sales_orders
             if( stock.void=1, (stock.iss-stock.qa)*stock.amt, 0) as cancelamt, ifnull(subcat.name, 'No Subcategory') as scategory
             from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
             left join item on item.itemid=stock.itemid)
-            left join client on client.client=head.client 
+            left join client on client.client=head.client
             left join client as agent on agent.client=head.agent
             left join transnum on transnum.trno=head.trno
             left join itemcategory as cat on cat.line = item.category
@@ -1675,7 +1675,7 @@ class pending_sales_orders
           $query = "select cgrp,clientname,area,areaname,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
                       sum(qtyonhand)-sum(pending) as diff from (
                       select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-                      sum(stock.iss-stock.qa) as pending, 
+                      sum(stock.iss-stock.qa) as pending,
                       max(ifnull(itembal.qtyonhand,0)) as qtyonhand
                       from ((sohead as head left join sostock as stock on stock.trno=head.trno)
                       left join item on item.itemid=stock.itemid)
@@ -1691,7 +1691,7 @@ class pending_sales_orders
                       union all
 
                       select client.clientname as cgrp, client.clientname, if(client.area ='', 'No Area', client.area) as area, client.province as areaname,
-                      sum(stock.iss-stock.qa) as pending, 
+                      sum(stock.iss-stock.qa) as pending,
                       max(ifnull(itembal.qtyonhand,0)) as qtyonhand
                       from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
                       left join item on item.itemid=stock.itemid)
@@ -1713,9 +1713,9 @@ class pending_sales_orders
            */
           $query = "select igrp,itemname,size,scategory,sum(pending) as pending,sum(qtyonhand) as qtyonhand,
                       sum(qtyonhand)-sum(pending) as diff from (
-                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size, 
+                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size,
                       ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-                      sum(stock.iss-stock.qa) as pending, 
+                      sum(stock.iss-stock.qa) as pending,
                       max(ifnull(itembal.qtyonhand,0)) as qtyonhand
                       from ((sohead as head left join sostock as stock on stock.trno=head.trno)
                       left join item on item.itemid=stock.itemid)
@@ -1730,9 +1730,9 @@ class pending_sales_orders
 
                       union all
 
-                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size, 
+                      select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, item.itemname, item.sizeid as size,
                       ifnull(subcat.name, 'NO SUBCATEGORY') as scategory,
-                      sum(stock.iss-stock.qa) as pending, 
+                      sum(stock.iss-stock.qa) as pending,
                       max(ifnull(itembal.qtyonhand,0)) as qtyonhand
                       from ((hsohead as head left join hsostock as stock on stock.trno=head.trno)
                       left join item on item.itemid=stock.itemid)
@@ -1779,7 +1779,7 @@ class pending_sales_orders
           $query = "select client.clientname as cgrp, head.docno,
                     client.clientname,
                     date(head.dateid) as dateid,
-                    item.itemname,  item.sizeid as size, 
+                    item.itemname,  item.sizeid as size,
                     stock.iss as quantity,
                     stock.qa as served,
                     (stock.iss-stock.qa) as pending,
@@ -1821,7 +1821,7 @@ class pending_sales_orders
            */
           $query = "select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
                     client.clientname, item.itemname, item.sizeid as size,
-                    date(head.dateid) as dateid, 
+                    date(head.dateid) as dateid,
                     stock.iss as quantity,
                     stock.qa as served,
                     (stock.iss-stock.qa) as pending,
@@ -1838,7 +1838,7 @@ class pending_sales_orders
                     union all
                     select concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
                     client.clientname, item.itemname, item.sizeid as size,
-                    date(head.dateid) as dateid, 
+                    date(head.dateid) as dateid,
                     stock.iss as quantity,
                     stock.qa as served,
                     (stock.iss-stock.qa) as pending,
@@ -2328,7 +2328,7 @@ class pending_sales_orders
 
       if ($scategory !== $data->scategory) {
 
-        // I-print muna ang sub total ng previous subcategory 
+        // I-print muna ang sub total ng previous subcategory
         if ($scategory !== null) {
 
           $unservedamts = $unservedamt;
@@ -2989,7 +2989,7 @@ class pending_sales_orders
       $pendings = $pending;
 
       // 100, 150, 10, 240, 270, 110, 110, 110 = 1100
-      // Data row 
+      // Data row
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->addline();
       $str .= $this->reporter->startrow();
@@ -3504,7 +3504,7 @@ class pending_sales_orders
           $qtyonhandamt = 0;
           $diffamt = 0;
 
-          // spacer row before next header 
+          // spacer row before next header
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '660', null, false, '', '', 'L', $font, '5', '', '', '', '2px');
@@ -3535,7 +3535,7 @@ class pending_sales_orders
       $qtyonhands = $qtyonhand;
       $diffs = $diff;
 
-      // data row 
+      // data row
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();

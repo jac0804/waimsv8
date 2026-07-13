@@ -218,12 +218,14 @@ class inventory_balance
   {
     $companyid = $config['params']['companyid'];
     $dataformat = 'dcurrent';
+    $start = "left(now(),10) ";
     if ($companyid == 60) {
       $dataformat = 'dhistory';
+      $start = "CONCAT(YEAR(CURDATE()), '-01-01')";
     }
     $paramstr = "select 
     'default' as print,
-    left(now(),10) as start,
+    $start as start,
     left(now(),10) as end,
     '' as client,
     '' as clientname,

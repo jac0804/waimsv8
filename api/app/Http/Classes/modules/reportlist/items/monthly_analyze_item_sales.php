@@ -416,7 +416,7 @@ class monthly_analyze_item_sales
       item.body,item.itemname, year(head.dateid),
       item.category,frontend_ebrands.brand_desc,category1,subcatname, 
       item.uom ,ic.cl_name, itlevel.min, itlevel.max, item.itemid , stock.whid) as x
-      group by x.itemid, yr, x.whid
+      group by x.itemid, yr
       order by part, brand, itemname, barcode";
     return $query;
   }
@@ -546,7 +546,7 @@ class monthly_analyze_item_sales
       item.body,item.itemname, year(head.dateid),
       item.category,frontend_ebrands.brand_desc,category1,subcatname,
       item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid) as x
-      group by x.itemid, yr, x.whid
+      group by x.itemid, yr
       order by part, brand, itemname, barcode";
     return $query;
   }
@@ -719,7 +719,7 @@ class monthly_analyze_item_sales
       item.body,item.itemname, year(head.dateid),
       item.category,frontend_ebrands.brand_desc,category1,subcatname,
       item.uom  ,ic.cl_name, itlevel.min, itlevel.max, item.itemid, stock.whid) as x
-      group by x.itemid, yr, x.whid
+      group by x.itemid, yr
       order by part, brand, itemname, barcode";
     return $query;
   }
@@ -4132,40 +4132,6 @@ class monthly_analyze_item_sales
   }
 
   //transpower
-  private function mergeDuplicateItemRows($result)
-  {
-    $merged = [];
-
-    foreach ($result as $row) {
-      $key = $row->barcode . '|' . $row->itemname;
-
-      if (!isset($merged[$key])) {
-        // clone so we don't mutate the original object reference
-        $merged[$key] = clone $row;
-        continue;
-      }
-
-      // Sum monthly and balance figures
-      $merged[$key]->mojan   += $row->mojan;
-      $merged[$key]->mofeb   += $row->mofeb;
-      $merged[$key]->momar   += $row->momar;
-      $merged[$key]->moapr   += $row->moapr;
-      $merged[$key]->momay   += $row->momay;
-      $merged[$key]->mojun   += $row->mojun;
-      $merged[$key]->mojul   += $row->mojul;
-      $merged[$key]->moaug   += $row->moaug;
-      $merged[$key]->mosep   += $row->mosep;
-      $merged[$key]->mooct   += $row->mooct;
-      $merged[$key]->monov   += $row->monov;
-      $merged[$key]->modec   += $row->modec;
-      $merged[$key]->balance += $row->balance;
-
-      $merged[$key]->itemmin = max($merged[$key]->itemmin, $row->itemmin);
-      $merged[$key]->itemmax = max($merged[$key]->itemmax, $row->itemmax);
-    }
-
-    return array_values($merged);
-  }
   private function transpower_displayHeader($config)
   {
     $border = '1px solid';
@@ -4251,7 +4217,7 @@ class monthly_analyze_item_sales
 
 
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('Transaction : ' . strtoupper($posttype), '220', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Transaction : ' . strtoupper($posttype), '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
     $str .= $this->reporter->col('Analyze By : ' . strtoupper($analyzedby), '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
     $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
     if ($subcatname == '') {
@@ -4264,23 +4230,30 @@ class monthly_analyze_item_sales
     } else {
       $str .= $this->reporter->col('Agent : ' . $agent, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
     }
-    $str .= $this->reporter->pagenumber('Page', '380', null, false, '1px solid ', '', 'R', $font, $font_size, '', $padding, $margin);
+
+    if ($whname == '') {
+      $str .= $this->reporter->col('Warehouse : ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    } else {
+      $str .= $this->reporter->col('Warehouse : ' . $whname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    }
     $str .= $this->reporter->endrow();
 
 
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, $font_size, '', '', '');
     if ($class == '') {
-      $str .= $this->reporter->col('Class : ALL', '400', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      $str .= $this->reporter->col('Class : ALL', null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
     } else {
-      $str .= $this->reporter->col('Class : ' . $class, '400', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      $str .= $this->reporter->col('Class : ' . $class, null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
     }
     if ($model == '') {
-      $str .= $this->reporter->col('Model : ALL', '1000', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      $str .= $this->reporter->col('Model : ALL', null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
     } else {
-      $str .= $this->reporter->col('Model : ' . $model, '1000', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+      $str .= $this->reporter->col('Model : ' . $model, null, null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
     }
-
     $str .= $this->reporter->col('', '0', null, false, '', '', '', '', '', '', '', '');
+    $str .= $this->reporter->col('', '0', null, false, '', '', '', '', '', '', '', '');
+    $str .= $this->reporter->col('', '0', null, false, '', '', '', '', '', '', '', '');
+    $str .= $this->reporter->pagenumber('Page', null, null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -4357,7 +4330,6 @@ class monthly_analyze_item_sales
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    $result = $this->mergeDuplicateItemRows($result);
     $str = '';
     $layoutsize = '1400';
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:150px');
@@ -4424,7 +4396,7 @@ class monthly_analyze_item_sales
 
       $balanceQry = $this->TRANSPOWER_ALL($config, $data->itemid);
       $balanceResult = $this->coreFunctions->opentable($balanceQry);
-      $data->balance = (!empty($balanceResult) && isset($balanceResult[0]->balance)) ? $balanceResult[0]->balance : 0;
+      $balance = (!empty($balanceResult) && isset($balanceResult[0]->balance)) ? $balanceResult[0]->balance : 0;
 
 
       $uombal = 0;
@@ -4673,7 +4645,7 @@ class monthly_analyze_item_sales
       $str .= $this->reporter->col($monov, '67', '', false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($modec, '67', '', false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col(number_format($amt, $ab), '70', '', false, $border, '', 'R', $font, $fontsize, '', '', '', '');
-      $str .= $this->reporter->col($data->balance == 0 ? '-' : number_format($data->balance, 2), '65', '', false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($balance == 0 ? '-' : number_format($balance, 2), '65', '', false, $border, '', 'R', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($data->itemmin == 0 ? '-' : number_format($data->itemmin, 2), '50', '', false, $border, '', 'R', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($data->itemmax == 0 ? '-' : number_format($data->itemmax, 2), '50', '', false, $border, '', 'R', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col($data->uom, '50', '', false, $border, '', 'C', $font, $fontsize, '', '', '', '');

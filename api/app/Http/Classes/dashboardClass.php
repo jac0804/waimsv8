@@ -608,6 +608,8 @@ class dashboardClass
     }
 
     switch ($systemtype) {
+      case 'PRODUCTPORTAL':
+        break;
       case 'PAYROLLPORTAL':
       case 'PAYROLL':
       case 'HRIS':
@@ -903,8 +905,9 @@ class dashboardClass
     }
 
     //start graphs
-
     switch ($systemtype) {
+      case 'PRODUCTPORTAL':
+        break;
       case 'PAYROLLPORTAL':
       case 'PAYROLL':
       case 'HRISPAYROLL':
@@ -1002,6 +1005,7 @@ class dashboardClass
         }
         break;
       case 'QUEUING':
+      case 'PRODUCTPORTAL':
         break;
       default:
         $this->eventandholidaycalendar();
@@ -1043,6 +1047,7 @@ class dashboardClass
         }
         break;
       case 'QUEUING':
+      case 'PRODUCTPORTAL':
         break;
       default:
         $this->notice();

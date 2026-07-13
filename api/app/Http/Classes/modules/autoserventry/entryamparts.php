@@ -58,11 +58,11 @@ class entryamparts
     public function createTab($config)
     {
         $descriptions = isset($config['params']['row']['description']) ? $config['params']['row']['description'] : '';
-        $columns = [ 'subcode','task','jobcode', 'jobtitle','barcode', 'isqty', 'uom', 'itemname', 'whname', 'isamt', 'disc', 'ext', 'rem']; // 'packname'
-       
+        $columns = ['subcode', 'task', 'jobcode', 'jobtitle', 'barcode', 'isqty', 'uom', 'itemname', 'whname', 'isamt', 'disc', 'ext', 'rem']; // 'packname'
+
         if ($descriptions != '') {
-        $columns = ['action',  'barcode', 'isqty', 'uom', 'itemname', 'whname', 'isamt', 'disc', 'ext', 'rem' ]; // 'packname'
-         }
+            $columns = ['action',  'barcode', 'isqty', 'uom', 'itemname', 'whname', 'isamt', 'disc', 'ext', 'rem']; // 'packname'
+        }
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         foreach ($columns as $key => $value) {
@@ -93,7 +93,7 @@ class entryamparts
             $obj[0][$this->gridname]['columns'][$action]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
             $obj[0][$this->gridname]['columns'][1]['btns']['delete']['label'] = 'delete';
             $obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
-        }else{
+        } else {
             $obj[0][$this->gridname]['columns'][$isqty]['type'] = 'label';
             $obj[0][$this->gridname]['columns'][$isamt]['type'] = 'label';
             $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
@@ -125,9 +125,6 @@ class entryamparts
 
             $obj[0][$this->gridname]['columns'][$jobtitle]['style'] = 'width:200px;whiteSpace: normal;min-width:200px; text-align: left';
             $obj[0][$this->gridname]['columns'][$jobcode]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: left';
-
-
-
         }
 
 
@@ -141,11 +138,11 @@ class entryamparts
     public function createtabbutton($config)
     {
         $rows = isset($config['params']['row']) ? $config['params']['row'] : '';
-       if ($rows != '') {
-        $tbuttons = ['addoutlet', 'saveallentry'];
-        $obj = $this->tabClass->createtabbutton($tbuttons);
-        $obj[0]['lookupclass'] = 'addparts';
-        $obj[0]['action'] = 'lookupsetup';
+        if ($rows != '') {
+            $tbuttons = ['addoutlet', 'saveallentry'];
+            $obj = $this->tabClass->createtabbutton($tbuttons);
+            $obj[0]['lookupclass'] = 'addparts';
+            $obj[0]['action'] = 'lookupsetup';
         } else {
             //viewing
             $tbuttons = [];
@@ -156,28 +153,28 @@ class entryamparts
 
     public function loaddata($config)
     {
-    
+
         // $row = isset($config['params']['sourcerow']) ? $config['params']['sourcerow'] :  $config['params']['row'] ;
         $row = isset($config['params']['sourcerow']) ? $config['params']['sourcerow'] : (isset($config['params']['row']) ? $config['params']['row'] : 0);
-        $condition="";
-        $join="";
-        $hjoin ="";
+        $condition = "";
+        $join = "";
+        $hjoin = "";
         $orderby = " order by line";
-        $fieldh="";
-        if($row != 0){
+        $fieldh = "";
+        if ($row != 0) {
             $jobline = $row['jobline'];
             $taskline = $row['taskline'];
-            $condition= " and stock.jobline = $jobline and stock.taskline = $taskline";
-        }else{
-            $join=" left join amtask as jt on jt.line=stock.taskline
+            $condition = " and stock.jobline = $jobline and stock.taskline = $taskline";
+        } else {
+            $join = " left join amtask as jt on jt.line=stock.taskline
              left join jobtask as jj on jj.line=jt.laborline
              left join amjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
              left join jobthead as joo on joo.line=jo.jobid ";
-             $hjoin=" left join hamtask as jt on jt.line=stock.taskline
+            $hjoin = " left join hamtask as jt on jt.line=stock.taskline
              left join jobtask as jj on jj.line=jt.laborline
              left join hamjobs as jo on jo.line=jt.jobline and jo.trno=jt.trno
              left join jobthead as joo on joo.line=jo.jobid ";
-            $fieldh=", jj.code as subcode, jj.description as task,joo.jobtitle, joo.docno as jobcode";
+            $fieldh = ", jj.code as subcode, jj.description as task,joo.jobtitle, joo.docno as jobcode";
             $orderby = " order by jobcode";
         }
         $trno = $config['params']['tableid'];
@@ -214,7 +211,7 @@ class entryamparts
 
         $orderby";
 
-        $data = $this->coreFunctions->opentable($qry, [$trno,$trno]);
+        $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
         return $data;
     }
 
@@ -239,11 +236,15 @@ class entryamparts
         $trno = $config['params']['tableid'];
         $doc = $config['params']['doc'];
         $tableid = $config['params']['tableid'];
+
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 $computedata = $this->computepartsprice($config, $data[$key]);
 
@@ -288,8 +289,13 @@ class entryamparts
         $trno = $config['params']['tableid'];
         $user = $config['params']['user'];
         $data = [];
+
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $computedata = $this->computepartsprice($config, $row);
 

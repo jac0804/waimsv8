@@ -381,8 +381,8 @@ class mirrorClass
                 'centeraccess',
                 'ewtlist',
                 'terms',
-                'trans',
-                'unposted'
+                'unposted',
+                'trans'
             ];
 
             $prioDoc = ['PR', 'PO', 'RR', 'DM', 'SO', 'SJ', 'MJ', 'CI', 'CM', 'MC', 'IS', 'AJ', 'TS', 'ST', 'AP', 'PV', 'CV', 'AR', 'KR', 'CR', 'DS'];

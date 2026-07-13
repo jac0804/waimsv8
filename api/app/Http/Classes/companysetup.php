@@ -251,6 +251,7 @@ class companysetup
         $this->isfa = false;
         $this->istodo = false;
         $this->ispurchasedisc = false;
+        $this->dashboardwh = false;
         $this->masterlimit = 500;
         $this->reportpath = "\Http\Classes\modules\modulereport\sportrunner\\";
         $this->ismysql8 = true;

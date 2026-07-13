@@ -54,51 +54,21 @@ class fu
     private $fields = [
         'trno',
         'docno',
-        'dateid',
-        'due',
         'client',
         'clientname',
-        //'yourref',
-        // 'ourref',
-        // 'crref',
-        'rem',
-        'terms',
-        'forex',
-        'cur',
-        'wh',
         'address',
+        'branch',
         'contra',
         'tax',
         'vattype',
-        'agent',
-        'projectid',
-        'creditinfo',
-        'billid',
-        'shipid',
-        'branch',
-        'deptid',
-        'taxdef',
-        'billcontactid',
-        'shipcontactid',
-        'ms_freight',
-        'mlcp_freight',
-        'shipto',
-        'salestype',
-        'sotrno',
-        'statid',
-        'deldate',
-        'istrip',
-        'ewt',
-        'ewtrate',
+        'terms',
+        'dateid',
+        'rem',
         'modeofsales',
-        'fpid'
-        // 'rfno',
-        // 'chsino',
-        // 'swsno'
-
+        'supplier',
     ];
-    private $otherfields = ['trno', 'downpayment', 'fmiscfee'];
-    private $except = ['trno', 'dateid', 'due', 'creditinfo'];
+    private $otherfields = ['trno', 'downpayment', 'interestrate', 'fma1', 'fma2', 'penalty', 'rebate', 'fmiscfee'];
+    private $except = ['trno', 'dateid'];
     private $acctg = [];
     public $showfilteroption = true;
     public $showfilter = true;
@@ -343,6 +313,89 @@ class fu
         return [];
     }
 
+    public function createHeadField($config)
+    {
+        $inv = $this->companysetup->isinvonly($config['params']);
+        $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4850);
+
+        $fields = ['docno', 'dbranchname', 'client', 'clientname', 'address', 'modeofsales'];
+        // 
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'client.label', 'Customer');
+        data_set($col1, 'client.lookupclass', 'customer');
+        data_set($col1, 'clientname.label', 'Name');
+        data_set($col1, 'clientname.class', 'csclientname sbccsreadonly');
+        data_set($col1, 'address.class', 'csaddress  sbccsreadonly');
+        data_set($col1, 'docno.label', 'Transaction#');
+
+        $fields = [['dateid', 'terms'], 'supplier', 'dacnoname', 'dvattype', 'rem'];
+
+        $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'terms.lookupclass', 'financeterms');
+        data_set($col2, 'supplier.label', 'Supplier');
+        data_set($col2, 'supplier.type', 'lookup');
+        data_set($col2, 'supplier.action', 'lookupsupplier');
+        data_set($col2, 'supplier.class', 'cssupplier sbccsreadonly');
+        data_set($col2, 'supplier.lookupclass', 'lookupsupplier');
+        data_set($col2, 'dacnoname.label', 'AR Account');
+        data_set($col2, 'dacnoname.lookupclass', 'AR');
+        data_set($col2, 'dacnoname.type', 'input');
+        data_set($col2, 'dacnoname.readonly', false);
+        data_set($col2, 'terms.readonly', false);
+        data_set($col2, 'rem.readonly', false);
+
+        $fields = ['downpayment', 'interestrate', 'fma2', 'penalty', 'rebate', 'fmiscfee', 'fma1'];
+
+        $col3 = $this->fieldClass->create($fields);
+        data_set($col3, 'downpayment.label', 'Down Payment');
+        data_set($col3, 'interestrate.label', 'Interest Rate(%)');
+        data_set($col3, 'fma2.label', 'Factor');
+        data_set($col3, 'penalty.label', 'Penalty(%)');
+        data_set($col3, 'penalty.readonly', false);
+        data_set($col3, 'rebate.readonly', false);
+        data_set($col3, 'fma1.label', 'Monthly Amortization');
+
+        if ($this->companysetup->getistodo($config['params'])) {
+            array_push($fields, 'donetodo');
+        }
+
+        return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
+    }
+
+    public function createnewtransaction($docno, $params)
+    {
+        $data = [];
+        $data[0]['trno'] = 0;
+        $data[0]['docno'] = $docno;
+        $data[0]['branchcode'] = '';
+        $data[0]['branchname'] = '';
+        $data[0]['dbranchname'] = '';
+        $data[0]['branch'] = 0;
+        $data[0]['client'] = '';
+        $data[0]['clientname'] = '';
+        $data[0]['address'] = '';
+        $data[0]['modeofsales'] = '';
+        $data[0]['dateid'] = $this->othersClass->getCurrentDate();
+        $data[0]['terms'] = '';
+        $data[0]['supplier'] = '';
+        $data[0]['dacnoname'] = '';
+        $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
+        $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
+        $data[0]['dvattype'] = '';
+        $data[0]['tax'] = 12;
+        $data[0]['vattype'] = 'VATABLE';
+        $data[0]['rem'] = '';
+        // $data[0]['rem'] = $this->coreFunctions->getfieldvalue('glhead', 'rem', 'rem=?', [$data[0]['rem']]);
+        $data[0]['downpayment'] = 0.00;
+        $data[0]['interestrate'] = 0;
+        $data[0]['fma2'] = 0;
+        $data[0]['penalty'] = 0;
+        $data[0]['rebate'] = 0.00;
+        $data[0]['fmiscfee'] = 0.00;
+        $data[0]['fma1'] = 0;
+        return $data;
+    }
+
     public function loadheaddata($config)
     {
         $doc = $config['params']['doc'];
@@ -390,8 +443,13 @@ class fu
         head.rem,
         head.vattype,
         '' as dvattype,
-        ifnull(format(hinfo.downpayment,2),'') as downpayment, 
-        ifnull(hinfo.fmiscfee,'') as fmiscfee
+        format(ifnull(hinfo.downpayment,0),2) as downpayment, 
+        ifnull(format(hinfo.interestrate,2),'') as interestrate,
+        ifnull(hinfo.fma2,0) as fma2,
+        ifnull(hinfo.penalty,0) as penalty,
+        format(ifnull(hinfo.rebate,0),2) as rebate,
+        format(ifnull(hinfo.fmiscfee,0),2) as fmiscfee,
+        format(ifnull(hinfo.fma1,0),2) as fma1
         ";
 
         $qry = $qryselect . " from $table as head
@@ -401,10 +459,12 @@ class fu
         left join client as b on b.clientid = head.branch
         left join cntnuminfo as hinfo on hinfo.trno = head.trno
         left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
+
         where head.trno = ? and num.doc=? and num.center = ? 
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.clientid = client.clientid
+        left join coa on coa.acno=head.contra
         left join client as b on b.clientid = head.branch
         left join hcntnuminfo as hinfo on hinfo.trno = head.trno
         left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
@@ -412,75 +472,92 @@ class fu
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
-        $head[0]['trno'] = 0;
-        $head[0]['docno'] = '';
-        return ['status' => false, 'isnew' => true, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Data Head Fetched Failed'];
+        if (!empty($head)) {
+            $viewdate = $this->othersClass->getCurrentTimeStamp();
+            $viewby = $config['params']['user'];
+            $msg = 'Data Fetched Success';
+            if (isset($config['msg'])) {
+                $msg = $config['msg'];
+            }
+            $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
+
+            return [
+                'head' => $head,
+                'griddata' => ['inventory' => []], // fu has no stock grid
+                'isnew' => false,
+                'status' => true,
+                'msg' => $msg
+            ];
+        } else {
+
+
+            $head[0]['trno'] = 0;
+            $head[0]['docno'] = '';
+            return ['status' => false, 'isnew' => true, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Data Head Fetched Failed'];
+        }
     }
 
-    public function createHeadField($config)
+    public function updatehead($config, $isupdate)
     {
-        // $inv = $this->companysetup->isinvonly($config['params']);
-        // $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4850);
-
-        $fields = ['docno', 'branchname', 'client', 'clientname', 'address', 'modeofsales'];
-        // 
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.label', 'customer');
-        data_set($col1, 'client.readonly', true);
-        data_set($col1, 'clientname.label', 'Name');
-        data_set($col1, 'clientname.readonly', true);
-        data_set($col1, 'address.readonly', true);
-        data_set($col1, 'docno.label', 'Transaction#');
-
-        $fields = [['dateid', 'terms'], 'dclientname', 'dacnoname', 'dvattype', 'rem'];
-
-        $col2 = $this->fieldClass->create($fields);
-        data_set($col2, 'dacnoname.label', 'AR Account');
-        data_set($col2, 'dacnoname.lookupclass', 'AR');
-        data_set($col2, 'dacnoname.type', 'input');
-        data_set($col2, 'dacnoname.readonly', true);
-        data_set($col2, 'terms.readonly', true);
-        data_set($col2, 'rem.readonly', true);
-
-        $fields = ['downpayment', 'interestrate', 'rrfactor', 'penaltyamt', 'rebate', 'fmiscfee', 'fmonthlyamortization'];
-
-        $col3 = $this->fieldClass->create($fields);
-        data_set($col3, 'downpayment.label', 'Down Payment');
-        data_set($col3, 'interestrate.label', 'Interest Rate(%)');
-        data_set($col3, 'penaltyamt.label', 'Penalty(%)');
-        data_set($col3, 'fmonthlyamortization.label', 'Monthly Amortization');
-
-        if ($this->companysetup->getistodo($config['params'])) {
-            array_push($fields, 'donetodo');
+        $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
+        $data = [];
+        $dataother = [];
+        if ($isupdate) {
+            unset($this->fields[1]);
+            unset($head['docno']);
         }
 
-        return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
-    }
+        foreach ($this->fields as $key) {
+            if (array_key_exists($key, $head)) {
+                $data[$key] = $head[$key];
+                if (!in_array($key, $this->except)) {
+                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                } //end if
+            }
+        }
 
-    public function createnewtransaction($docno, $params)
-    {
-        $data = [];
-        $data[0]['trno'] = 0;
-        $data[0]['docno'] = $docno;
-        $data[0]['branchname'] = '';
-        $data[0]['dbranchname'] = '';
-        $data[0]['client'] = '';
-        $data[0]['clientname'] = '';
-        $data[0]['address'] = '';
-        $data[0]['modeofsales'] = '';
-        $data[0]['dateid'] = $this->othersClass->getCurrentDate();
-        $data[0]['terms'] = '';
-        $data[0]['dclientname'] = '';
-        $data[0]['dacnoname'] = '';
-        $data[0]['dvattype'] = '';
-        $data[0]['rem'] = '';
-        $data[0]['downpayment'] = 0.00;
-        $data[0]['interestrate'] = 0;
-        $data[0]['rrfactor'] = 0;
-        $data[0]['penaltyamt'] = 0;
-        $data[0]['rebate'] = 0.00;
-        $data[0]['fmiscfee'] = 0.00;
-        $data[0]['fmonthlyamortization'] = 0;
-        return $data;
-    }
+
+        foreach ($this->otherfields as $key) {
+            $dataother[$key] = $head[$key];
+            if (!in_array($key, $this->except)) {
+                $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+            } //end if
+        }
+
+        $data['modeofsales'] = $head['line'];
+        $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+        $data['editby'] = $config['params']['user'];
+
+        if (strtoupper($head['modeofsales']) == 'INHOUSE INSTALLMENT') {
+            $days = 30;
+            $newDate = new DateTime($data['dateid']);
+            $terms = new DateInterval('P' . $days . 'D');
+            $newDate->add($terms);
+            $data['due']  = $newDate->format('Y-m-d');
+        }
+
+        if ($isupdate) {
+            $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+            $this->othersClass->getcreditinfo($config, $this->head);
+            // $this->recomputestock($head, $config);
+        } else {
+            $data['doc'] = $config['params']['doc'];
+            $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['createby'] = $config['params']['user'];
+            $this->coreFunctions->sbcinsert($this->head, $data);
+            $this->othersClass->getcreditinfo($config, $this->head);
+            $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
+        }
+
+
+        $infotransexist = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$head['trno']]);
+
+        if ($infotransexist == '') {
+            $this->coreFunctions->sbcinsert("cntnuminfo", $dataother);
+        } else {
+            $this->coreFunctions->sbcupdate("cntnuminfo", $dataother, ['trno' => $head['trno']]);
+        }
+    } // end function
 }//end class

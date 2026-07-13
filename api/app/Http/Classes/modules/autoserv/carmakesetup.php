@@ -273,11 +273,14 @@ class carmakesetup
             return ['status' => false, 'msg' => 'Car Make name already exists.', 'clientid' => $isupdate ? $head['clientid'] : 0];
         }
 
+        $dateTables = ['cmake'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (isset($head[$key])) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 }
             }
         }
@@ -298,7 +301,7 @@ class carmakesetup
         $stock = $this->openstock($clientid, $config);
         return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid, 'griddata' => ['cmodel' => $stock]];
     }
-    
+
     public function newclient($config)
     {
         $data = $this->resetdata($config['newclient']);
@@ -325,6 +328,6 @@ class carmakesetup
 
     public function sbcscript($config)
     {
-      return $this->scbscript->carmakesetup($config);
+        return $this->scbscript->carmakesetup($config);
     }
 }

@@ -102,13 +102,19 @@ class viewsistercompanies
         $parentcode = $this->coreFunctions->getfieldvalue("client", "grpcode", "clientid=?", [$tableid]);
         $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode],'', true);
 
+        $condition = '';
+        
+        if($parentid !=0){
+            $condition = " where parent.clientid=$parentid and cl.clientid <>$parentid ";
+        }
+
 
         $qry="select concat(parent.type,' - ',parent.client) as code, parent.clientname, 
                 concat(parent.client,' - ',parent.clientname) as description,
                 concat(cl.type,' - ',cl.client) as client, cl.clientname as customer
                 from client as cl
                 left join client as parent on parent.client=cl.grpcode
-                where parent.clientid=$parentid and cl.clientid <>$parentid";
+                $condition";
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }

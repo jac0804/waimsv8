@@ -144,23 +144,35 @@ class othersClass
       }
     }
     $table = $config['docmodule']->tablenum;
-    $document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno]);
-    if ($document === '' || $document === null) {
-      return false;
-    } else {
+    //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno]);
+    $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno]);
+
+    if(!empty($document)){
+      if ($document[0]->postdate === '' || $document[0]->postdate === null) {
+        return false;
+      } else {
+        return true;
+      }
+    }else{
       return true;
     }
+    
   } //end fn
 
   public function isposted2($trno, $table, $connection = '')
   {
-    $document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno], $connection);
-
-    if ($document === '' || $document === null) {
-      return false;
-    } else {
+    //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno], $connection);
+    $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno], $connection);
+    if(!empty($document)){
+      if ($document[0]->postdate === '' || $document[0]->postdate === null) {
+        return false;
+      } else {
+        return true;
+      }
+    }else{
       return true;
     }
+    
   } //end fn
   public function isapproved($trno, $table)
   {
