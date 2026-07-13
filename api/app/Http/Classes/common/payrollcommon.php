@@ -4952,7 +4952,7 @@ class payrollcommon
             $this->coreFunctions->execqry("delete from " . $transtable . " where empid=" . $empid . " and batchid=" . $batchid);
 
             $amtDeduction = 0;
-            $qry = "select trno,docno,dateid,acnoid,amt,w1,w2,w3,w4,w5,priority,amortization,effdate,balance,camt from " . $setuptable . " where empid=" . $empid . "  and halt=0 and (amortization<>0 or camt<>0) and balance<>0 and date(effdate)<= date('" . $startdate . "') " . $week . " order by camt desc,priority";
+            $qry = "select trno,docno,dateid,acnoid,amt,w1,w2,w3,w4,w5,priority,amortization,effdate,balance,camt,isdeductible from " . $setuptable . " where empid=" . $empid . "  and halt=0 and (amortization<>0 or camt<>0) and ((balance<>0 and isdeductible=0) or isdeductible=1) and date(effdate)<= date('" . $startdate . "') " . $week . " order by camt desc,priority";
             $deduct = $this->coreFunctions->opentable($qry);
 
             foreach ($deduct as $key => $value) {
@@ -4972,10 +4972,14 @@ class payrollcommon
                 if ($value->camt != 0) {
                     $value->amortization = $value->camt;
                 }
-                if ($value->balance > $value->amortization) {
+                if ($value->isdeductible == 0) {
+                    if ($value->balance > $value->amortization) {
+                        $data['cr'] = $value->amortization;
+                    } else {
+                        $data['cr'] = $value->balance;
+                    }
+                }else{
                     $data['cr'] = $value->amortization;
-                } else {
-                    $data['cr'] = $value->balance;
                 }
                 $data['docno'] = $value->docno;
                 $rawdata = $this->sanitizelocal($data);
@@ -4986,13 +4990,16 @@ class payrollcommon
                         $amtDeduction += $data['cr'];
                         $this->addProccessAccount($empid, $batchid, $alias, $batchdate, 0, $data['cr'], 51, $value->acnoid);
 
-                        $appliedamt = $this->coreFunctions->datareader("select ifnull(sum(cr),0) as value from " . $transtable . " where trno=?", [$value->trno], '', true);
-
-                        $newbalance = $value->amt - $appliedamt;
-                        $this->coreFunctions->execqry("update " . $setuptable . " set balance = " . $newbalance . ", editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where trno=" . $value->trno);
+                        if ($value->isdeductible == 0) {
+                            $appliedamt = $this->coreFunctions->datareader("select ifnull(sum(cr),0) as value from " . $transtable . " where trno=?", [$value->trno], '', true);
+                            $newbalance = $value->amt - $appliedamt;
+                            $this->coreFunctions->execqry("update " . $setuptable . " set balance = " . $newbalance . ", editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where trno=" . $value->trno);
+                        }
+                       
                     } else {
                         return 'Missing alias for account id ' . $value->acnoid;
                     }
+
                 }
             }
             //end of Deductions
@@ -5956,8 +5963,8 @@ class payrollcommon
     public function getShiftDetails($empid)
     {
         $qry = "select s.tschedin, s.tschedout, s.flexit, s.gtin, s.gbrkin, s.ndifffrom, s.ndiffto, s.elapse, s.isfixhrs, s.isonelog
-      from tmshifts as s left join employee as e on e.shiftid=s.line where e.empid = ?  limit 1";
-        return $this->coreFunctions->opentable($qry, [$empid]);
+      from tmshifts as s left join employee as e on e.shiftid=s.line where e.empid = " . $empid . "  limit 1";
+        return $this->coreFunctions->opentable($qry);
     }
 
     public function checktimecard($empid, $dateid)

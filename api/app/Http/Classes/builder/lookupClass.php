@@ -20137,6 +20137,7 @@ class lookupClass
         $title = 'List of Mode of Payments';
         $label = 'Mode of Payment';
         switch ($doc) {
+          case 'FU':
           case 'MJ':
             $title = 'List of Mode of Sales';
             $label = 'Mode of Sales';
@@ -25755,7 +25756,7 @@ class lookupClass
   {
     $plotting = array();
 
-    $plotting = array('clientid' => 'clientid', 'supplier' => 'supplier');
+    $plotting = array('clientid' => 'clientid', 'supplier' => 'supplier', 'supplierid' => 'supplierid');
     $lookupsetup = array(
       'type' => 'single',
       'title' => 'LIST OF Supplier',
@@ -25772,7 +25773,7 @@ class lookupClass
       ['name' => 'supplier', 'label' => 'Supplier Name', 'align' => 'left', 'field' => 'supplier', 'sortable' => true, 'style' => 'font-size:16px;'],
       ];
 
-    $qry = "select clientid, client as sclient, clientname as supplier from client where issupplier = 1";
+    $qry = "select clientid as supplierid, client as sclient, clientname as supplier from client where issupplier = 1";
     $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

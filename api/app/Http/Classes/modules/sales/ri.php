@@ -116,15 +116,15 @@ class ri
       // 'change' => 194, remove change doc
       'delete' => 5896,
       'print' => 5897,
-      'lock' => 5898,
-      'unlock' => 5899,
+      'lock' => 5927,
+      'unlock' => 5928,
       'post' => 5900,
-      'unpost' => 5901,
-      'acctg' => 5902,
-      'changeamt' => 5903,
-      'additem' => 5904,
-      'edititem' => 5905,
-      'deleteitem' => 5906
+      'unpost' => 5929,
+      'acctg' => 5930,
+      'changeamt' => 5931,
+      'additem' => 5932,
+      'edititem' => 5933,
+      'deleteitem' => 5934
     );
     return $attrib;
   }

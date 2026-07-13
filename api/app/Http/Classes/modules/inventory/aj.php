@@ -674,10 +674,10 @@ class aj
       $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
     }
 
-    if ($companyid == 42) { //pdpi
-      $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
-    }
+    // if ($companyid == 42) { //pdpi
+    //   $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+    //   $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
+    // }
 
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
@@ -1956,7 +1956,7 @@ class aj
           left join item on item.itemid = stock.itemid
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ?
+          and item.barcode = ? and stock.qty<>0
            $costfilter and cntnum.trno <>? " . $filter . "
           UNION ALL
           select head.docno,head.dateid,stock.rrcost as amt,
@@ -1967,7 +1967,7 @@ class aj
           left join cntnum on cntnum.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ?
+          and item.barcode = ? and stock.qty<>0
            $costfilter and cntnum.trno <>? " . $filter . "
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
       $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
@@ -1985,7 +1985,7 @@ class aj
           left join item on item.itemid = stock.itemid
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
-          and item.barcode = ?
+          and item.barcode = ? and stock.qty<>0
           and stock.rrcost <> 0 and cntnum.trno <>?
           UNION ALL
           select head.docno,head.dateid,(stock.rrcost*if(head.forex=0,1,head.forex)) as amt,
@@ -1996,7 +1996,7 @@ class aj
           left join cntnum on cntnum.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
-          and item.barcode = ? 
+          and item.barcode = ?  and stock.qty<>0
           and stock." . $this->damt . " <> 0 and cntnum.trno <>?
           order by dateid desc limit 5) as tbl ";
         $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $trno, $center, $barcode, $trno]);
@@ -2009,7 +2009,7 @@ class aj
         left join item on item.itemid = stock.itemid
         left join client as wh on wh.clientid=stock.whid
         where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
-        and item.barcode = ?
+        and item.barcode = ? and stock.qty<>0
          $costfilter and cntnum.trno <>?
         UNION ALL
         select head.docno,head.dateid,(stock.rrcost*if(head.forex=0,1,head.forex)) as amt,
@@ -2020,7 +2020,7 @@ class aj
         left join cntnum on cntnum.trno=head.trno
         left join client as wh on wh.clientid=stock.whid
         where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ? " . $filter . "
-        and item.barcode = ? 
+        and item.barcode = ?  and stock.qty<>0
          $costfilter and cntnum.trno <>?
         order by dateid desc limit 5) as tbl order by dateid desc limit 1";
         $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
@@ -2037,7 +2037,7 @@ class aj
           left join item on item.itemid = stock.itemid
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ? and cntnum.trno <>? $costfilter2 " . $filter . "
+          and item.barcode = ? and stock.qty<>0 and cntnum.trno <>? $costfilter2 " . $filter . "
           UNION ALL
           select head.docno,head.dateid,stock.cost as amt,
           item.uom,stock.disc from glhead as head
@@ -2047,7 +2047,7 @@ class aj
           left join cntnum on cntnum.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           where head.doc in ('RR','CM','IS','AJ','TS') and cntnum.center = ?
-          and item.barcode = ? and  cntnum.trno <>?  $costfilter2 " . $filter . "
+          and item.barcode = ? and stock.qty<>0 and  cntnum.trno <>?  $costfilter2 " . $filter . "
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
       $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $trno, $center, $barcode, $trno]);
     }

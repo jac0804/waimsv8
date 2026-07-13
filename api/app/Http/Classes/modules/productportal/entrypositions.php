@@ -154,7 +154,7 @@ class entrypositions
                     $this->logger->sbcmasterlog(
                         $id,
                         $config,
-                        ' CREATE - ' . (isset($data[$key]['positions']) ? $data[$key]['positions'] : '')
+                        ' CREATE - Position : ' . $data[$key]['position']
                     );
                 } else {
                     $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -163,6 +163,11 @@ class entrypositions
                         $this->table,
                         $data2,
                         ['id' => $data[$key]['id']]
+                    );
+                    $this->logger->sbcmasterlog(
+                        $data[$key]['id'],
+                        $config,
+                        ' UPDATE - Position : ' . $data[$key]['position']
                     );
                 }
             }
@@ -190,7 +195,7 @@ class entrypositions
                 $this->logger->sbcmasterlog(
                     $id,
                     $config,
-                    ' CREATE - Task Description :' . $row['position']
+                    ' CREATE - Position : ' . $row['position']
 
                 );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
@@ -203,6 +208,11 @@ class entrypositions
 
             if ($this->coreFunctions->sbcupdate($this->table, $data, ['id' => $row['id']]) == 1) {
                 $returnrow = $this->loaddataperrecord($row['id']);
+                $this->logger->sbcmasterlog(
+                    $row['id'],
+                    $config,
+                    ' UPDATE - Position : ' . $row['position']
+                );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
                 return ['status' => false, 'msg' => 'Saving failed.'];
@@ -215,7 +225,7 @@ class entrypositions
         $row = $config['params']['row'];
         $qry = "delete from " . $this->table . " where id=?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['id']]);
-        $this->logger->sbcdelmaster_log($row['id'], $config, 'REMOVE - ' . $row['position']);
+        $this->logger->sbcdelmaster_log($row['id'], $config, 'REMOVE - Posistion : ' . $row['position']);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 

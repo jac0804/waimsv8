@@ -135,8 +135,13 @@ class entryexaminees
         $trno = $config['params']['tableid'];
 
         $data = ['qid' => $trno, 'appid' => $row['empid']];
+
+        $dateTables = ['examinees'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $existclient = $this->coreFunctions->getfieldvalue("examinees", "appid", "qid=? and appid=?", [$trno, $data['appid']]);

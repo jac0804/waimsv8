@@ -478,7 +478,7 @@ class pv
         $obj[0]['accounting']['columns'][$type]['type'] = 'coldel';
         break;
       default:
-        if ($companyid != 8 && $companyid != 39) {
+        if ($companyid != 8 && $companyid != 39 && $companyid != 68) {
           $obj[0]['accounting']['columns'][$project]['type'] = 'coldel';
         }
 

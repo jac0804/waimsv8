@@ -131,9 +131,9 @@ class pv
         case 0: // VOUCHER
           $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
           break;
-          // case 1:
-          //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
-          //   break;
+        // case 1:
+        //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
+        //   break;
         case 2:
           $str = $this->rpt_CV_WTAXREPORT($data, $config);
           break;
@@ -292,15 +292,23 @@ class pv
     PDF::MultiCell(700, 25, '', '', 'R', false);
 
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(500, 25, 'ACCOUNTING ENTRY', 'TBL', 'C', false, 0);
-    PDF::MultiCell(100, 25, 'DEBIT', 'TBL', 'R', false, 0);
-    PDF::MultiCell(100, 25, 'CREDIT', 'TBLR', 'R', false);
+    if ($companyid == 68) { //jda 
+      PDF::MultiCell(350, 25, 'ACCOUNTING ENTRY', 'TBL', 'C', false, 0);
+      PDF::MultiCell(150, 25, 'PROJECT', 'TBL', 'C', false, 0);
+      PDF::MultiCell(100, 25, 'DEBIT', 'TBL', 'R', false, 0);
+      PDF::MultiCell(100, 25, 'CREDIT', 'TBLR', 'R', false);
+    } else {
+      PDF::MultiCell(500, 25, 'ACCOUNTING ENTRY', 'TBL', 'C', false, 0);
+      PDF::MultiCell(100, 25, 'DEBIT', 'TBL', 'R', false, 0);
+      PDF::MultiCell(100, 25, 'CREDIT', 'TBLR', 'R', false);
+    }
 
 
     $totaldb = 0;
     $totalcr = 0;
     $acname = "";
     $drem = "";
+    $projects = "";
 
     for ($i = 0; $i < count($data); $i++) {
       $debit = number_format($data[$i]['db'], 2);
@@ -313,16 +321,29 @@ class pv
         $acname = $data[$i]['acnoname'];
       }
 
+      if ($projects == $data[$i]['projects']) {
+        $projects = "";
+      } else {
+        $projects = $data[$i]['projects'];
+      }
+
+
       if ($drem == $data[$i]['drem']) {
         $drem = "";
       } else {
         $drem = $data[$i]['drem'] != '' ? ' - ' . $data[$i]['drem'] : '';
       }
       PDF::SetFont($font, '', 11);
-      PDF::MultiCell(500, 25, $acname . $drem . ' ' . $data[$i]['project'], 'TBL', 'L', false, 0);
-
-      PDF::MultiCell(100, 25, $debit, 'TBL', 'R', false, 0);
-      PDF::MultiCell(100, 25, $credit, 'TBLR', 'R', false);
+      if ($companyid == 68) { //jda
+        PDF::MultiCell(350, 25, $acname . $drem . ' ' . $data[$i]['project'], 'TBL', 'L', false, 0);
+        PDF::MultiCell(150, 25, $projects, 'TBL', 'L', false, 0);
+        PDF::MultiCell(100, 25, $debit, 'TBL', 'R', false, 0);
+        PDF::MultiCell(100, 25, $credit, 'TBLR', 'R', false);
+      } else {
+        PDF::MultiCell(500, 25, $acname . $drem . ' ' . $data[$i]['project'], 'TBL', 'L', false, 0);
+        PDF::MultiCell(100, 25, $debit, 'TBL', 'R', false, 0);
+        PDF::MultiCell(100, 25, $credit, 'TBLR', 'R', false);
+      }
     }
 
 
@@ -1330,7 +1351,7 @@ class pv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -1340,7 +1361,7 @@ class pv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1664,20 +1685,22 @@ class pv
         $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms,
           head.rem as hrem,head.rem, detail.rem as drem, head.yourref, head.ourref,
           coa.acno, coa.acnoname, detail.ref, detail.postdate, detail.db, detail.cr,
-          detail.client as dclient, detail.checkno, head.project
+          detail.client as dclient, detail.checkno, head.project, project.name as projects
           from lahead as head 
           left join ladetail as detail on detail.trno=head.trno 
           left join client on client.client=head.client
           left join coa on coa.acnoid=detail.acnoid
+          left join projectmasterfile as project on project.line = detail.projectid
           where head.doc='pv' and md5(head.trno)='" . md5($trno) . "'
           union all
           select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms,
           head.rem as hrem,head.rem, detail.rem as drem, head.yourref, head.ourref,
           coa.acno, coa.acnoname, detail.ref, detail.postdate, detail.db, detail.cr,
-          dclient.client as dclient, detail.checkno, head.project
+          dclient.client as dclient, detail.checkno, head.project, project.name as projects
           from glhead as head 
           left join gldetail as detail on detail.trno=head.trno 
           left join client on client.clientid=head.clientid
+          left join projectmasterfile as project on project.line = detail.projectid
           left join coa on coa.acnoid=detail.acnoid left join client as dclient on dclient.clientid=detail.clientid
           where head.doc='pv' and md5(head.trno)='" . md5($trno) . "'";
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);

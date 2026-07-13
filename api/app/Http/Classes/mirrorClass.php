@@ -93,7 +93,7 @@ class mirrorClass
 
                 // --- Time CSV file write ---
                 $fileStart = microtime(true);
-                $this->ftpcreatefilelocal($csv, $table, 1, ".b" . $counter);
+                $result = $this->ftpcreatefilelocal($csv, $table, 1, ".b" . $counter);
                 $fileElapsed = round(microtime(true) - $fileStart, 3);
 
                 $this->coreFunctions->sbclogger(
@@ -102,7 +102,7 @@ class mirrorClass
                     'MIRROR'
                 );
 
-                $this->markBatchMirrored($table, $uniquefield, $batch);
+                if ($result['status']) $this->markBatchMirrored($table, $uniquefield, $batch);
 
                 $counter += 1;
             }
@@ -160,9 +160,10 @@ class mirrorClass
         $columns = null;
         $rows = [];
 
-        $arrDateCols = $this->coreFunctions->opentable("select lcase(COLUMN_NAME) as col_name  FROM information_schema.columns WHERE table_schema = '" . env('DB_DATABASE') . "' and  table_name = '" . $table . "' and data_type in ('date', 'datetime') ORDER BY ordinal_position");
-        $arrDateCols = array_column(json_decode(json_encode($arrDateCols), true), 'col_name');
         $invalidDates = ['',  '0', '0.000000', '0000-00-00', '0000-00-00 00:00:00', 'NULL', 'null'];
+
+        $dateTables = [$table];
+        $lookups = $this->othersClass->buildSanitizeLookups($table, 0, [], false, $dateTables);
 
         foreach ($nums as $nn) {
             $arr1 = (array)$nn;
@@ -175,15 +176,25 @@ class mirrorClass
                     $arr1[$arrkey] = $this->posClass->removeNewlines(trim($arr1[$arrkey]));
                 }
 
-                if($table == 'client'){
-                    if($arrkey == 'userid') {
-                        if($arr1[$arrkey] == '') $arr1[$arrkey] = 0;
+                if ($table == 'client') {
+                    if ($arrkey == 'userid') {
+                        if ($arr1[$arrkey] == '') $arr1[$arrkey] = 0;
                     }
                 }
 
-                if(in_array(strtolower($arrkey), $arrDateCols)){
+                if (isset($lookups['date'][$arrkey])) {
                     if (in_array($arr1[$arrkey], $invalidDates)) {
                         $arr1[$arrkey] = "NULL";
+                    }
+                }
+
+                if (isset($lookups['acctcode'][$arrkey])) {
+                    if ($arr1[$arrkey] != '') {
+                        $arr1[$arrkey] = '\\\\' . $arr1[$arrkey];
+                    } else {
+                        if ($table == 'COA' && $arrkey == 'parent') {
+                            $arr1[$arrkey] = '\\\\';
+                        }
                     }
                 }
             }
@@ -274,7 +285,7 @@ class mirrorClass
 
                     $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
                     $elapsed = $start->diffInSeconds($end);
-                    $this->coreFunctions->sbclogger('Created csv('. $transCtr.'):' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno . ' - ' . $elapsed . ' seconds', 'MIRROR');
+                    $this->coreFunctions->sbclogger('Created csv(' . $transCtr . '):' . $doc1->doc . ', docno:' . $doc1->docno . ', trno:' . $doc1->trno . ' - ' . $elapsed . ' seconds', 'MIRROR');
 
                     $transCtr += 1;
                 }
@@ -744,7 +755,8 @@ class mirrorClass
         }
     }
 
-    function truncateTempTable($table){
+    function truncateTempTable($table)
+    {
         try {
             $this->coreFunctions->execqry("truncate table " . $table . "_mirror");
             return true;
@@ -754,12 +766,13 @@ class mirrorClass
         }
     }
 
-    function checkPendingTempTables(){
- 
+    function checkPendingTempTables()
+    {
+
         $tables = $this->posClass->getMasterTables();
 
         if (empty($tables)) {
-           return true;
+            return true;
         }
 
         $selects = array_map(function ($table) {
@@ -767,17 +780,17 @@ class mirrorClass
             return "select count(1), '{$table}' as tblname from {$mirrorTable} having count(1)>0";
         }, $tables);
 
-        $sql = implode(' union all ' , $selects) . ';';
+        $sql = implode(' union all ', $selects) . ';';
 
         $tables = $this->coreFunctions->opentable($sql);
         foreach ($tables as $key => $value) {
-            if($this->updateTempToLiveTable($value->tblname, $value->tblname)){
-                if($this->insertTempToLiveTable($value->tblname, $value->tblname)){
+            if ($this->updateTempToLiveTable($value->tblname, $value->tblname)) {
+                if ($this->insertTempToLiveTable($value->tblname, $value->tblname)) {
                     $this->truncateTempTable($value->tblname);
-                }else{
+                } else {
                     return false;
                 }
-            }else{
+            } else {
                 return false;
             }
         }
@@ -785,7 +798,8 @@ class mirrorClass
         return true;
     }
 
-    function getPrimaryKey($table){
+    function getPrimaryKey($table)
+    {
         $primaryKey = [];
         switch ($table) {
             case 'item':
@@ -859,17 +873,27 @@ class mirrorClass
 
     public function ftpcreatefilelocal($csv, $type, $iscurtime = 1, $batch = '')
     {
-        date_default_timezone_set('Asia/Singapore');
-        $current_timestamp = date('Y-m-dH.i.s');
-        if ($csv != '') {
-            if ($iscurtime == 1) {
-                $this->ftpwritefilelocal('/mirror/' . $type . '~' . $current_timestamp . $batch, $csv);
-            } else {
-                $this->ftpdeletefilelocal('mirror/' . $type . '.sbc');
-                $this->ftpwritefilelocal('/mirror/' . $type, $csv);
+        $status = true;
+        $msg = '';
+
+        try {
+            date_default_timezone_set('Asia/Singapore');
+            $current_timestamp = date('Y-m-dH.i.s');
+            if ($csv != '') {
+                if ($iscurtime == 1) {
+                    $this->ftpwritefilelocal('/mirror/' . $type . '~' . $current_timestamp . $batch, $csv);
+                } else {
+                    $this->ftpdeletefilelocal('mirror/' . $type . '.sbc');
+                    $this->ftpwritefilelocal('/mirror/' . $type, $csv);
+                }
             }
+        } catch (\Throwable $th) {
+            $this->coreFunctions->sbclogger("Failed to geneate CSV - " . $th->getMessage());
+            $status = false;
+            $msg = $th->getMessage();
         }
-        return 'true';
+
+        return ['status' => $status, 'msg' => $msg];
     }
 
     public function ftpcreatefiletranslocal($csv, $doc, $docno, $trno, $filetype = 'trans', $mirror = false)
@@ -880,27 +904,36 @@ class mirrorClass
             $this->ftpwritefilelocal('/mirror/' . $filetype . '~' . $doc . '~' . $docno . '~' . $trno . '~' . $current_timestamp, $csv, $mirror);
         }
         return 'true';
-    }    
+    }
 
     public function ftpwritefilelocal($filename, $content)
     {
-        $ftp = 'local';
 
-        Storage::disk($ftp)->put($filename . '.tmp', $content);
-        if (is_array($this->ftpfilecheckendfile($filename . '.tmp'))) {
-            Storage::disk($ftp)->move($filename . '.tmp', $filename . '.sbc');
-        } else {
-            Storage::disk($ftp)->delete($filename . '.tmp');
+        try {
+            $ftp = 'local';
+            Storage::disk($ftp)->put($filename . '.tmp', $content);
+            if (is_array($this->ftpfilecheckendfile($filename . '.tmp'))) {
+                Storage::disk($ftp)->move($filename . '.tmp', $filename . '.sbc');
+            } else {
+                Storage::disk($ftp)->delete($filename . '.tmp');
+            }
+        } catch (\Throwable $th) {
+            throw $th;
         }
+
         return ['status' => true];
     } //end function
 
     public function ftpdeletefilelocal($filename)
     {
-        $ftp = 'local';
+        try {
+            $ftp = 'local';
 
-        if (Storage::disk($ftp)->exists($filename)) {
-            Storage::disk($ftp)->delete($filename);
+            if (Storage::disk($ftp)->exists($filename)) {
+                Storage::disk($ftp)->delete($filename);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
         }
 
         return ['status' => true];
@@ -957,7 +990,7 @@ class mirrorClass
     }
 
 
-    public function processMirrorFolder()
+    public function processMirrorFolder_bk()
     {
         $status = true;
 
@@ -1026,6 +1059,183 @@ class mirrorClass
 
             $counter += 1;
         }
+
+        return ['status' => $status];
+    }
+
+    public function processMirrorFolder()
+    {
+        $status = true;
+
+        $localDisk = 'local';
+        $ftpDisk = 'ftpmirror';
+        $sourceFolder = 'mirror';
+        $remoteFolder = 'MIRROR';
+        $allowedExtension = 'sbc';
+
+        $yearMonth = \Carbon\Carbon::now('Asia/Manila')->format('Y-m');
+        $archiveFolder = $sourceFolder . '/uploaded/' . $yearMonth;
+
+        // Get all files, then filter to .sbc only
+        $allFiles = Storage::disk($localDisk)->files($sourceFolder);
+        $files = array_filter($allFiles, function ($filePath) use ($allowedExtension) {
+            return strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === $allowedExtension;
+        });
+
+        if (empty($files)) {
+            $this->coreFunctions->sbclogger('No .sbc files to process.', "MIRROR3");
+            return ['status' => $status];
+        }
+
+        // Ensure archive folder exists before moving anything into it
+        if (!Storage::disk($localDisk)->exists($archiveFolder)) {
+            Storage::disk($localDisk)->makeDirectory($archiveFolder);
+        }
+
+        $groupedFiles = collect($files)
+            ->map(function ($file) {
+                $filename = basename($file);
+                return (object) [
+                    'filename' => $filename,
+                    'fullpath' => $file,
+                    'prefix' => explode('~', $filename)[0]
+                ];
+            })
+            ->groupBy('prefix')
+            ->map(function ($group, $prefix) {
+                return (object) [
+                    'prefix' => $prefix,
+                    'count' => $group->count(),
+                    'items' => $group->values(), // keep filename+fullpath paired together
+                ];
+            })
+            ->sortBy('prefix');
+
+        $prioFile = [
+            'item',
+            'uom',
+            'iteminfo',
+            'client',
+            'clientinfo',
+            'model_masterfile',
+            'part_masterfile',
+            'stockgrp_masterfile',
+            'frontend_ebrands',
+            'item_class',
+            'category_masterfile',
+            'projectmasterfile',
+            'itemcategory',
+            'itemsubcategory',
+            'coa',
+            'useraccess',
+            'users',
+            'moduleaccess',
+            'center',
+            'centeraccess',
+            'ewtlist',
+            'terms',
+            'unposted',
+            'trans'
+        ];
+
+        $sortedPrefixes = $this->sortByPriority($groupedFiles->keys()->toArray(), $prioFile);
+
+        $this->coreFunctions->LogConsole($sortedPrefixes);
+
+        foreach ($sortedPrefixes as $prefix) {
+            $prefixGroup = $groupedFiles->get($prefix);
+            $items = $prefixGroup ? $prefixGroup->items : collect();
+
+            $this->coreFunctions->sbclogger('Found ' . $items->count() . ' file(s) for prefix: ' . $prefix, 'MIRROR');
+
+            $sortedItems = $items
+                ->sortBy(function ($item) {
+                    return $this->extractSortKey($item->filename);
+                })
+                ->values();
+
+            $counter = 1;
+            foreach ($sortedItems as $item) {
+                $this->coreFunctions->LogConsole('File ' . $item->filename . ' - ' . $item->fullpath);
+
+                $filename = basename($item->fullpath);
+                $remotePath = $remoteFolder . '/' . $filename; // e.g. MIRROR/center~2026-07-04...sbc
+                $stream = null;
+
+                try {
+                    if (!Storage::disk($localDisk)->exists($item->fullpath)) {
+                        $this->coreFunctions->sbclogger('file missing before upload: ' . $filename, "MIRROR3");
+                        continue;
+                    }
+
+                    $stream = Storage::disk($localDisk)->readStream($item->fullpath);
+                    $uploaded = Storage::disk($ftpDisk)->put($remotePath, $stream);
+
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                        $stream = null;
+                    }
+
+                    if ($uploaded) {
+                        $destination = $archiveFolder . '/' . $filename;
+                        Storage::disk($localDisk)->move($item->fullpath, $destination);
+                        $this->coreFunctions->sbclogger('uploaded (' . $counter . ') ' . $filename, "MIRROR3");
+                    } else {
+                        $this->coreFunctions->sbclogger('upload failed (' . $counter . ') ' . $filename, "MIRROR3");
+                        $status = false;
+                    }
+                } catch (\Exception $e) {
+                    $status = false;
+                    $this->coreFunctions->sbclogger('processMirrorFolder - ' . $filename . ' - ' . $e->getMessage(), "MIRROR3");
+                } finally {
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
+                $counter += 1;
+            }
+        }
+
+        // $counter = 1;
+
+        // foreach ($files as $filePath) {
+        //     $filename = basename($filePath);
+        //     $remotePath = $remoteFolder . '/' . $filename; // e.g. MIRROR/center~2026-07-04...sbc
+        //     $stream = null;
+
+        //     try {
+        //         if (!Storage::disk($localDisk)->exists($filePath)) {
+        //             $this->coreFunctions->sbclogger('file missing before upload: ' . $filename, "MIRROR3");
+        //             continue;
+        //         }
+
+        //         $stream = Storage::disk($localDisk)->readStream($filePath);
+        //         $uploaded = Storage::disk($ftpDisk)->put($remotePath, $stream);
+
+        //         if (is_resource($stream)) {
+        //             fclose($stream);
+        //             $stream = null;
+        //         }
+
+        //         if ($uploaded) {
+        //             $destination = $archiveFolder . '/' . $filename;
+        //             Storage::disk($localDisk)->move($filePath, $destination);
+        //             $this->coreFunctions->sbclogger('uploaded (' . $counter . ') ' . $filename, "MIRROR3");
+        //         } else {
+        //             $this->coreFunctions->sbclogger('upload failed (' . $counter . ') ' . $filename, "MIRROR3");
+        //             $status = false;
+        //         }
+        //     } catch (\Exception $e) {
+        //         $status = false;
+        //         $this->coreFunctions->sbclogger('processMirrorFolder - ' . $filename . ' - ' . $e->getMessage(), "MIRROR3");
+        //     } finally {
+        //         if (is_resource($stream)) {
+        //             fclose($stream);
+        //         }
+        //     }
+
+        //     $counter += 1;
+        // }
 
         return ['status' => $status];
     }
@@ -1142,5 +1352,4 @@ class mirrorClass
             return false;
         }
     }
-
 }

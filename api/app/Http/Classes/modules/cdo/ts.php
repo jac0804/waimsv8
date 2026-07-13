@@ -681,11 +681,15 @@ class ts
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -694,7 +698,8 @@ class ts
     foreach ($this->otherfields as $key) {
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
-        $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+        // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+        $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
       }
     }
 
@@ -1463,9 +1468,15 @@ class ts
       $config['params']['line'] = $line;
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
 
     if ($systemtype == 'REALESTATE') {
@@ -1530,7 +1541,8 @@ class ts
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1926,14 +1938,19 @@ class ts
         }
       }
 
+      $dateTables = ['lastock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
       //computecosting
       $this->coreFunctions->LogConsole(($eline));
       if ($eline <> '') {
         $cost = $this->othersClass->computecostingserial($item[0]->itemid, $item[0]->whid, $trno, $line, $qty, $doc, '', $eline, $loc);
         if ($cost != -1) {
           $cost2 = $cost / $item[0]->uomfactor;
-          $damt = $this->othersClass->sanitizekeyfield('amt', $cost2);
-          $dqty = $this->othersClass->sanitizekeyfield('amt', $qty);
+          $damt = $this->othersClass->sanitizekeyfieldFast('amt', $cost2, $lookups);
+          $dqty = $this->othersClass->sanitizekeyfieldFast('amt', $qty, $lookups);
+          // $damt = $this->othersClass->sanitizekeyfield('amt', $cost2);
+          // $dqty = $this->othersClass->sanitizekeyfield('amt', $qty);
           $computedata = $this->othersClass->computestock($damt, '', $dqty, $item[0]->uomfactor);
           $cost2 = $cost / $item[0]->uomfactor;
           $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => $dqty, $this->hqty => $computedata['qty'], 'cost' => $cost, 'amt' => $cost, 'isamt' => $cost2, 'ext' => $computedata['ext'], 'isqty2' => 0], ['trno' => $trno, 'line' => $line]);

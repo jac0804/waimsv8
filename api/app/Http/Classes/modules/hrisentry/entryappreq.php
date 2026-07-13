@@ -30,7 +30,7 @@ class entryappreq
   private $logger;
   private $othersClass;
   public $style = 'width:1100px;max-width:1100px;';
-  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid', 'expiry','irno'];
+  private $fields = ['empid', 'reqs', 'submitdate', 'notes', 'issubmitted', 'pin', 'reqid', 'expiry', 'irno'];
   public $showclosebtn = false;
   private $hrislookup;
 
@@ -57,10 +57,10 @@ class entryappreq
 
   public function createTab($config)
   {
-   $companyid = $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
 
-    $gridcols = ['action', 'pin', 'reqs', 'submitdate','irno', 'expiry', 'notes', 'issubmitted'];
+    $gridcols = ['action', 'pin', 'reqs', 'submitdate', 'irno', 'expiry', 'notes', 'issubmitted'];
     $stockbuttons = ['save', 'delete'];
 
     foreach ($gridcols as $key => $value) {
@@ -89,7 +89,7 @@ class entryappreq
       $obj[0][$this->gridname]['columns'][$submitdate]['type'] = "coldel";
       $obj[0][$this->gridname]['columns'][$expiry]['type'] = "date";
       $obj[0][$this->gridname]['columns'][$expiry]['readonly'] = false;
-      if($companyid ==68){ //JDA
+      if ($companyid == 68) { //JDA
         $obj[0][$this->gridname]['columns'][$irno]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
         $obj[0][$this->gridname]['columns'][$irno]['label'] = "No";
         $obj[0][$this->gridname]['columns'][$irno]['type'] = "input";
@@ -97,10 +97,9 @@ class entryappreq
     } else {
 
       $obj[0][$this->gridname]['columns'][$expiry]['type'] = "coldel";
-      
     }
 
-   
+
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -134,11 +133,11 @@ class entryappreq
   private function selectqry($config)
   {
     $companyid = $config['params']['companyid'];
-    $submitdate="";
-    if($companyid==68){//jda
-      $submitdate=", if(submitdate is not null, date(submitdate), date(expiry)) as expiry";//date galing sa applicant ledger
-    }else{
-      $submitdate=",date(expiry) as expiry";
+    $submitdate = "";
+    if ($companyid == 68) { //jda
+      $submitdate = ", if(submitdate is not null, date(submitdate), date(expiry)) as expiry"; //date galing sa applicant ledger
+    } else {
+      $submitdate = ",date(expiry) as expiry";
     }
     $qry = "line,empid,reqs,date(submitdate) as submitdate,notes,pin,case when issubmitted=0 then 'false' else 'true' end as issubmitted,reqid,irno $submitdate ";
 
@@ -151,11 +150,14 @@ class entryappreq
     $data = $config['params']['data'];
     $doc = $config['params']['doc'];
 
+    $dateTables = ['arequire'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $logexp = '';
         if ($doc == 'EMPLOYEE') {
@@ -198,8 +200,13 @@ class entryappreq
     $doc = $config['params']['doc'];
     $data = [];
     $row = $config['params']['row'];
+
+    $dateTables = ['arequire'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $logexp = '';
     if ($doc == 'EMPLOYEE') {
@@ -209,7 +216,7 @@ class entryappreq
     } else {
       $config['params']['doc'] = strtoupper('app_req');
     }
-    if($data['expiry']==""){
+    if ($data['expiry'] == "") {
       $data['expiry'] = NULL;
     }
     if ($row['line'] == 0) {
@@ -290,7 +297,7 @@ class entryappreq
     $select = $this->selectqry($config);
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . " where  empid=? and line=?";
-   
+
     $data = $this->coreFunctions->opentable($qry, [$empid, $line]);
     return $data;
   }

@@ -204,7 +204,7 @@ class pdailytask
 
                     if(dt.statid in (1,6),'true','false') as iscomplete,
                     dt.ischecker, date(dt.startchecker) as startchecker,assigned.clientname as assignto, dt.empid,
-                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category
+                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category,req.line as catline
 
                    from dailytask as dt
                    left join client as c on c.clientid = dt.clientid
@@ -227,7 +227,7 @@ class pdailytask
                     if(dt.statid in (5,0) and dt.isprev = 1 and dt.tasktrno = 0,'false','true') as iscancel,
                     if(dt.statid in (1,6),'true','false') as iscomplete,
                     dt.ischecker, date(dt.startchecker) as startchecker,assigned.clientname as assignto, dt.empid, 
-                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category
+                    dt.origtrno, dt.refx, ifnull(tm.userid,0) as tmuserid, ifnull(dt.rem1,'') as rem1, dt.createdate,ifnull(dt.assignedid,0) as assignedid,req.category,req.line as catline
 
                    from hdailytask as dt
                    left join client as c on c.clientid = dt.clientid

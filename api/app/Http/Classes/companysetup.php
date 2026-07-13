@@ -971,6 +971,7 @@ class companysetup
         $this->showserialrem = false;
         $this->isshareinv = true;
         $this->ismirrortrans = true;
+        $this->ispr = true;
         break;
       case 39: //CBBSI
         $this->clientlength = 0;
@@ -1795,7 +1796,7 @@ class companysetup
         $this->tax = 12;
         $this->serial = true;
         $this->companyname = 'ABC Corp.';
-        $this->systemtype = 'AIMS';
+        $this->systemtype = 'MMS';
         $this->isexpiry = true;
         $this->checkbelowcost = true;
         $this->isproject = false;

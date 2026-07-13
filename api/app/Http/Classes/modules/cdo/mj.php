@@ -885,7 +885,7 @@ class mj
     }
 
     $dateTables = ['lahead', 'cntnum'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -3553,9 +3553,13 @@ class mj
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     $deci = $this->companysetup->getdecimal('price', $config['params']);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
+      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
+      // $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
       $computedata = $this->othersClass->computestock(
         $damt * $head['forex'],
         $data[$key]->disc,
@@ -3565,7 +3569,8 @@ class mj
       );
 
       $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-      $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+      // $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+      $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
       $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }

@@ -79,7 +79,7 @@ class kr
     $query = "select head.client,date(head.dateid) as dateid,
               head.docno,
               head.clientname, head.address, head.yourref, head.ourref,
-              ar.db,ar.cr,head2.ourref as ref2,head2.docno as sjdocno, date(ar.dateid) as postdate
+              ar.db,ar.cr,head2.ourref as ref2,concat(left(head2.docno,3),right(head2.docno,5)) as sjdocno, date(ar.dateid) as postdate
 
               from (krhead as head
               left join arledger as ar on ar.kr=head.trno)
@@ -92,7 +92,7 @@ class kr
               select head.client,date(head.dateid) as dateid,
               head.docno,
               head.clientname, head.address, head.yourref, head.ourref,
-              ar.db,ar.cr,  head2.ourref as ref2,head2.docno as sjdocno, date(ar.dateid) as postdate
+              ar.db,ar.cr,  head2.ourref as ref2,concat(left(head2.docno,3),right(head2.docno,5)) as sjdocno, date(ar.dateid) as postdate
 
               from (hkrhead as head
               left join arledger as ar on ar.kr=head.trno)

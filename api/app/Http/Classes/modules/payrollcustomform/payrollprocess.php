@@ -805,6 +805,8 @@ class payrollprocess
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
     $check_access = $this->othersClass->checkAccess($config['params']['user'], 2483);
 
+    $msg = '';
+
     if (!$check_access) {
       return ['status' => false, 'msg' => 'Invalid Access, Compute Timecard'];
     }
@@ -889,6 +891,9 @@ class payrollprocess
 
     foreach ($data as $key => $val) {
 
+      $empName  = $val->clientname;
+      unset($val->clientname);    
+
       $shift = $this->payrollcommon->getShiftDetails($val->empid);
 
       unset($val->bgcolor);
@@ -933,7 +938,7 @@ class payrollprocess
         case 'RESTDAY':
         case 'LEG':
         case 'SP':
-          if ($val->actualin == null && $val->actualout == null) {
+          if ($val->actualin == null || $val->actualout == null) {
             $val->reghrs = 0;
           } else {
             $val->reghrs = $schedin->diffInMinutes($schedout, false);
@@ -950,7 +955,7 @@ class payrollprocess
           break;
       }
 
-      if ($val->actualin == null && $val->actualout == null) {
+      if ($val->actualin == null || $val->actualout == null) {
         $absent = $val->reghrs;
       } else {
         // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
@@ -1250,35 +1255,43 @@ class payrollprocess
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      $this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]]);
-
-      if ($config['params']['companyid'] == 45) { //pdpi payroll
-        if ($val['reghrs'] > 0) {
-          // $totloghrs = $this->coreFunctions->datareader("select ifnull(sum(tothrs),0) as value from empprojdetail where empid=" . $val["empid"] . " and date(dateid)='" . $val["dateid"] . "'", [], '', true);
-          if ($totloghrs > 0) {
-            $emprate = $this->coreFunctions->opentable("select basicrate, `type` from ratesetup where empid=" . $val["empid"] . " and date('" . $end . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1");
-            $rate = 0;
-            $daysInMonth = $this->companysetup->getpayroll_daysInMonth($config['params']);
-            if (!empty($emprate)) {
-              switch ($emprate[0]->type) {
-                case "M":
-                  $rate = round($emprate[0]->basicrate / $daysInMonth, 2);
-                  break;
-                case "S":
-                  $rate = round(($emprate[0]->basicrate / $daysInMonth) / 2, 2);
-                  break;
-                default;
-                  $rate = round($emprate[0]->basicrate / 8, 2);
-                  break;
+      if($this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+        if ($config['params']['companyid'] == 45) { //pdpi payroll
+          if ($val['reghrs'] > 0) {
+            // $totloghrs = $this->coreFunctions->datareader("select ifnull(sum(tothrs),0) as value from empprojdetail where empid=" . $val["empid"] . " and date(dateid)='" . $val["dateid"] . "'", [], '', true);
+            if ($totloghrs > 0) {
+              $emprate = $this->coreFunctions->opentable("select basicrate, `type` from ratesetup where empid=" . $val["empid"] . " and date('" . $end . "') between date(dateeffect) and date(dateend) order by dateend desc limit 1");
+              $rate = 0;
+              $daysInMonth = $this->companysetup->getpayroll_daysInMonth($config['params']);
+              if (!empty($emprate)) {
+                switch ($emprate[0]->type) {
+                  case "M":
+                    $rate = round($emprate[0]->basicrate / $daysInMonth, 2);
+                    break;
+                  case "S":
+                    $rate = round(($emprate[0]->basicrate / $daysInMonth) / 2, 2);
+                    break;
+                  default;
+                    $rate = round($emprate[0]->basicrate / 8, 2);
+                    break;
+                }
               }
+              $this->coreFunctions->execqry("update empprojdetail set achrs=round((tothrs/" . $totloghrs . ")*" . $val['reghrs'] . ",2),rate=" . $rate . " where empid=" . $val["empid"] . " and date(dateid)='" . $val["dateid"] . "'");
             }
-            $this->coreFunctions->execqry("update empprojdetail set achrs=round((tothrs/" . $totloghrs . ")*" . $val['reghrs'] . ",2),rate=" . $rate . " where empid=" . $val["empid"] . " and date(dateid)='" . $val["dateid"] . "'");
           }
         }
+      }else{
+        $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
+
+
     }
 
-    return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    if ($msg != '') {
+      return ['status' => false, 'msg' => $msg];
+    } else {
+      return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    }
   }
 
   public function computetimecard_cdo($config, $blnExtract = false)
@@ -1291,6 +1304,8 @@ class payrollprocess
     $end = $config['params']['dataparams']['enddate'];
     $empdivid = $config['params']['dataparams']['empdivid'];
     $empbranchid = $config['params']['dataparams']['empbranchid'];
+
+    $msg = '';
 
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
     if ($checkall) {
@@ -1399,6 +1414,8 @@ class payrollprocess
 
       // $val["dateid"]
 
+      $empName  = $val->clientname;
+      unset($val->clientname);      
       unset($val->bgcolor);
 
       $absent = 0;
@@ -1443,7 +1460,7 @@ class payrollprocess
       switch ($val->daytype) {
         case 'RESTDAY':
         case 'LEG':
-          if ($val->actualin == null && $val->actualout == null) {
+          if ($val->actualin == null || $val->actualout == null) {
             $val->reghrs = 0;
           } else {
             $val->reghrs = $schedin->diffInMinutes($schedout, false);
@@ -1459,7 +1476,7 @@ class payrollprocess
           }
           break;
         case 'SP': //compute working hrs based on timein not schedule
-          if ($val->actualin == null && $val->actualout == null) {
+          if ($val->actualin == null || $val->actualout == null) {
             $val->reghrs = 0;
           } else {
             $val->reghrs = $actualin->diffInMinutes($actualout, false);
@@ -1489,7 +1506,7 @@ class payrollprocess
           break;
       }
 
-      if ($val->actualin == null && $val->actualout == null) {
+      if ($val->actualin == null || $val->actualout == null) {
         $absent = $val->reghrs;
       } else {
         // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
@@ -1831,10 +1848,16 @@ class payrollprocess
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      $this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]]);
+      if(!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+        $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
+      }
     }
 
-    return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    if ($msg != '') {
+      return ['status' => false, 'msg' => $msg];
+    } else {
+      return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    }
   }
 
   public function computetimecard_onesky($config, $blnExtract = false)
@@ -1847,6 +1870,8 @@ class payrollprocess
     $end = $config['params']['dataparams']['enddate'];
     $empdivid = $config['params']['dataparams']['empdivid'];
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
+
+    $msg = '';
 
     if ($checkall) {
       $empid = 0;
@@ -1870,7 +1895,7 @@ class payrollprocess
     //RESET DAYTYPE
     $qry = "update timecard as t left join employee as e on e.empid = t.empid 
       set t.daytype ='WORKING' 
-      where t.daytype not in('WORKING','RESTDAY') and date(t.DateID) between '" . $start . "' and '"  . $end . "' and e.isactive=1 " . $filteremplvl;
+      where t.daytype not in('WORKING','RESTDAY') and date(t.DateID) between '" . $start . "' and '"  . $end . "' and e.divid=" . $empdivid . " and e.isactive=1 " . $filteremplvl;
 
     if (!$checkall) {
       $qry .= " and e.empid=" . $empid;
@@ -1892,7 +1917,7 @@ class payrollprocess
         }
         $qry .= "else t.daytype end ";
 
-        $qry .= "where t.dateid='" . $val->dateid . "' and e.isactive=1 " . $filteremplvl;
+        $qry .= "where t.dateid='" . $val->dateid . "' and e.divid=" . $empdivid . " and e.isactive=1 " . $filteremplvl;
         if (!$checkall) {
           $qry .= "and t.empid=" . $empid;
         }
@@ -1905,7 +1930,7 @@ class payrollprocess
     $qry = "update timecard as t left join employee as e on e.empid = t.empid 
       set otapproved = 0, ndiffapproved = 0, isprevwork =0, RDapprvd=0, 
       RDOTapprvd=0, LEGapprvd=0, LEGOTapprvd=0, SPapprvd=0, SPOTapprvd=0, ndiffsapprvd=0, earlyotapproved=0 
-      where t.dateid between '" . $start . "' and '" . $end . "' and e.isactive=1 " . $filteremplvl;
+      where t.dateid between '" . $start . "' and '" . $end . "' and e.divid=" . $empdivid . " and e.isactive=1 " . $filteremplvl;
     if (!$checkall) {
       $qry .= "and e.empid=" . $empid;
     }
@@ -1917,7 +1942,7 @@ class payrollprocess
     }
 
     $this->coreFunctions->LogConsole('->computetimecard-getschedule');
-    $data = $this->getempschedule($empid, $start, $end, 0, 0, $filteremplvl);
+    $data = $this->getempschedule($empid, $start, $end, 0, $empdivid, $filteremplvl);
 
     if (empty($data)) {
       $this->coreFunctions->LogConsole('No schedule');
@@ -1925,6 +1950,9 @@ class payrollprocess
 
     foreach ($data as $key => $val) {
 
+      $empName  = $val->clientname;
+
+      unset($val->clientname);
       unset($val->issupervisor);
       unset($val->isapprover);
       unset($val->classrate);
@@ -1989,7 +2017,7 @@ class payrollprocess
         case 'RESTDAY':
         case 'LEG':
         case 'SP':
-          if ($val->actualin == null && $val->actualout == null) {
+          if ($val->actualin == null || $val->actualout == null) {
             $val->reghrs = 0;
           } else {
             $val->reghrs = $actualin->diffInMinutes($actualout, false);
@@ -2010,7 +2038,7 @@ class payrollprocess
           break;
       }
 
-      if ($val->actualin == null && $val->actualout == null) {
+      if ($val->actualin == null || $val->actualout == null) {
         $absent = $val->reghrs;
       } else {
         // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
@@ -2264,11 +2292,17 @@ class payrollprocess
       $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
 
       if (!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])) {
-        return ['status' => false, 'msg' => 'Failed to compute timecard', 'action' => 'load'];
+        $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
     }
 
-    return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    if($msg != ''){
+      return ['status' => false, 'msg' => $msg];
+    }else{
+      return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    }
+
+  
   }
 
   public function computetimecard_jda($config, $blnExtract = false)
@@ -2289,6 +2323,8 @@ class payrollprocess
     $paygroupsetup = $this->coreFunctions->opentable("select line, othrs, spot, ndiffhrs, s3maxbracket from paygroup");
     $paygroupsetup = json_decode(json_encode($paygroupsetup), true);
     // Logger("paygroupsetup: " . json_encode($paygroupsetup));
+
+    $msg = '';
 
     if (!$check_access) {
       return ['status' => false, 'msg' => 'Invalid Access, Compute Timecard'];
@@ -2376,6 +2412,9 @@ class payrollprocess
 
       $shift = $this->payrollcommon->getShiftDetails($val->empid);
 
+      $empName  = $val->clientname;
+
+      unset($val->clientname);
       unset($val->bgcolor);
 
       $pgline = $val->pgline;
@@ -2425,7 +2464,7 @@ class payrollprocess
         case 'RESTDAY':
         case 'LEG':
         case 'SP':
-          if ($val->actualin == null && $val->actualout == null) {
+          if ($val->actualin == null || $val->actualout == null) {
             $val->reghrs = 0;
           } else {
             $val->reghrs = $schedin->diffInMinutes($schedout, false);
@@ -2442,7 +2481,7 @@ class payrollprocess
           break;
       }
 
-      if ($val->actualin == null && $val->actualout == null) {
+      if ($val->actualin == null || $val->actualout == null) {
         $absent = $val->reghrs;
       } else {
         // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
@@ -2713,8 +2752,16 @@ class payrollprocess
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      $this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]]);
+      if(!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+        $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
+      }
     }
+
+    if ($msg != '') {
+      return ['status' => false, 'msg' => $msg];
+    } else {
+      return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
+    }    
 
     return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
   }
@@ -2828,7 +2875,7 @@ class payrollprocess
       if ($branchid != 0) $filter .= " and e.branchid=" . $branchid;
     }
 
-    $qry = "select t.empid, t.`daytype`, date(t.dateid) as dateid, 
+    $qry = "select t.empid, client.clientname, t.`daytype`, date(t.dateid) as dateid, 
       date_format(t.schedin,'%Y-%m-%d %H:%i') as schedin, date_format(t.schedout,'%Y-%m-%d %H:%i') as schedout,
       date_format(t.schedbrkin,'%Y-%m-%d %H:%i') as schedbrkin, date_format(t.schedbrkout,'%Y-%m-%d %H:%i') as schedbrkout, 
       date_format(t.actualin,'%Y-%m-%d %H:%i') as actualin, date_format(t.actualout,'%Y-%m-%d %H:%i') as actualout, 
@@ -2838,7 +2885,7 @@ class payrollprocess
       date_format(t.brk2ndin,'%Y-%m-%d %H:%i') as brk2ndin,date_format(t.brk2ndout,'%Y-%m-%d %H:%i') as brk2ndout,
       t.otapproved, t.ndiffsapprvd, t.Ndiffapproved, t.legapprvd, t.legotapprvd,  t.spapprvd, t.spotapprvd, e.issupervisor, e.isapprover, t.earlyothrs,e.classrate,
       t.sphrs, t.pgline, t.legotmulti, t.spotmulti, t.ndiffmulti, t.maxsss, '' as bgcolor
-      from timecard as t left join employee as e on e.empid=t.empid
+      from timecard as t left join employee as e on e.empid=t.empid join client on client.clientid=e.empid
       where date(t.dateid)>='" . $start . "' and date(t.dateid)<='" . $end . "'" . $filter  . $filteremplvl . " order by t.dateid";
     // $this->coreFunctions->LogConsole($qry);
     return $this->coreFunctions->opentable($qry);

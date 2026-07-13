@@ -482,10 +482,10 @@ class gj
         break;
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['accounting']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['accounting']['columns'][$rem]['type'] = 'textarea';
-    }  
+    }
 
 
 
@@ -810,7 +810,7 @@ class gj
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'],  $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {

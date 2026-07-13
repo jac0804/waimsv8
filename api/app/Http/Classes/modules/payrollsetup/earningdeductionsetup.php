@@ -215,11 +215,11 @@ class earningdeductionsetup
     data_set($col3, 'bal.type', 'cinput');
 
     $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], 'halt'];
-    if ($config['params']['companyid'] == 68) { //JDA
+    if ($config['params']['companyid'] == 68 || $config['params']['companyid'] == 62) { //JDA| onesky
       $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], ['halt', 'isdeductible']];
     }
     $col4 = $this->fieldClass->create($fields);
-    if ($config['params']['companyid'] == 68) { //JDA
+    if ($config['params']['companyid'] == 68 || $config['params']['companyid'] == 62) { //JDA | onesky
       data_set($col4, 'isdeductible.label', 'Deduct always w/out checking balance');
     }
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);

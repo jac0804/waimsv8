@@ -819,7 +819,7 @@ class ci
             unset($head['docno']);
         }
         $dateTables = ['lahead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
@@ -2596,7 +2596,7 @@ class ci
 
             $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
             // $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
-            $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt'], $lookups);
+            $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
             $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
         }

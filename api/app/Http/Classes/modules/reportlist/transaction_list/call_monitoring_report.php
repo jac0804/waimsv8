@@ -191,7 +191,7 @@ class call_monitoring_report
         qs.industry, calls.contact, calls.calltype, '' as sourcename, calls.rem
         from hqshead as qs
         left join client on client.client = qs.client
-        left join qscalllogs as calls on calls.trno = qs.trno
+        left join hqscalllogs as calls on calls.trno = qs.trno
         left join client as agent on agent.client = qs.agent
         where date(calls.dateid) between '$start' and '$end' $filterQS
      ";

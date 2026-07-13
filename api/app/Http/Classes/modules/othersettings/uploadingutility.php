@@ -314,7 +314,7 @@ class uploadingutility
 
       case 43: //mighty
       case 68: //jda
-        data_set($col1, 'optionuploading.options',  array(
+        $options = [
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'green'],
           ['label' => 'New Customers', 'value' => 'newcustomer', 'color' => 'green'],
           ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
@@ -327,8 +327,14 @@ class uploadingutility
           ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
           ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
           ['label' => 'Update Agent', 'value' => 'updateagent', 'color' => 'green'],
-          ['label' => 'Update Employee', 'value' => 'updateemployeepayroll', 'color' => 'green']
-        ));
+          ['label' => 'Update Employee', 'value' => 'updateemployeepayroll', 'color' => 'green']];
+
+          if($config['params']['companyid'] == 68){ //jda
+          array_push($options, 
+            ['label' => 'Update Employee Requirements', 'value' => 'updatereq', 'color' => 'green']
+           );
+          }
+        data_set($col1, 'optionuploading.options', $options );
         break;
 
       case 56: //homeworks
@@ -422,6 +428,7 @@ class uploadingutility
       case 43: //mighty
       case 68: //jda
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloademployeeexcel'];
+        if($config['params']['companyid'] == 68) array_push($fields, 'downloademprequirements');
         break;
       case 47: //kstar
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadcustomerexcelmaster', 'downloaditemexcelmaster'];
@@ -612,6 +619,7 @@ class uploadingutility
       case 'downloadwnexcel':
       case 'downloadpnpcsrexcelmaster':
       case 'downloadbarcodelist':
+      case 'downloademprequirements':
         $result = $this->setupexceltemplate($config);
         $result['filename'] = str_replace("download", "", $action) . 'Template';
         return $result;
@@ -1812,6 +1820,20 @@ class uploadingutility
           ]]
         ];
         break;
+      case 'downloademprequirements':
+        return [
+          'status' => true,
+          'msg' => 'Employee Requirements template ready to Download',
+          'name' => 'employeerequirements',
+          'data' => [[
+            'EmployeeCode' => '',
+            'Code' => '',
+            'Requirement' => '',
+            'No' => '',
+            'Expiry' => ''
+          ]]
+        ];
+        break;
       default:
         return ['status' => false, 'msg' => $action . ' template is not exists'];
         break;
@@ -2777,6 +2799,10 @@ class uploadingutility
         $tabletype = 'timecard';
         $arrUniques = ['empid', 'dateid'];
         break;
+      case 'updatereq':
+        $tabletype = 'erequire';
+        $arrUniques = ['empid', 'pin'];
+        break;
     }
 
     $isvalidtempate = $this->validatetemplate($config, $tabletype, $type);
@@ -2796,6 +2822,7 @@ class uploadingutility
       case 'updateprice':
       case 'updatemeter':
       case 'updateemployeepayroll':
+      case 'updatereq':
         $blnIsert = false;
         break;
     }
@@ -3360,6 +3387,10 @@ class uploadingutility
             $valtoinsert['dateend'] = isset($valtoinsert['dateend']) ? $valtoinsert['dateend'] : '9999-12-31';
             $valtoinsert['type'] = $this->coreFunctions->getfieldvalue("employee", "classrate", 'empid=?', [$valtoinsert['empid']]);
             break;
+          case 'erequire':
+            $reqid = $this->coreFunctions->datareader("select line as value from emprequire where code = '". $valtoinsert['pin']."'",[],'',true);
+            $valtoinsert['reqid'] = $reqid;
+            break;
         }
 
         //$this->coreFunctions->LogConsole(json_encode($valtoinsert));
@@ -3626,6 +3657,17 @@ class uploadingutility
               $this->coreFunctions->execqry($qry, 'delete', $valuefilter);
               $exist = 0;
               break;
+              case 'erequire':
+              $arrFilters = [];
+              $valuefilter = [];
+
+              foreach ($arrUniques as $keyU) {
+                $arrFilters[] = $keyU . '=?';
+                $valuefilter[] = $valtoinsert[$keyU];
+              }
+              $fieldfilter = implode(' AND ', $arrFilters);
+              $exist = $this->coreFunctions->datareader('select line as value from erequire where '. $fieldfilter, $valuefilter,'',true);
+                break;
             default:
               if ($type == 'uploaddbtable') {
                 $exist = 0;
@@ -3770,6 +3812,7 @@ class uploadingutility
 
           switch ($tabletype) {
             case 'timecard':
+            case 'erequire':
               $wherefilter = [];
               foreach ($arrUniques as $keyU) {
                 $wherefilter[$keyU] = $valtoinsert[$keyU];
@@ -3894,7 +3937,7 @@ class uploadingutility
 
           if ($insert) {
             if (!empty($employeeinfo)) {
-              $employeeinfo['empid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$valtoinsert['client']]);
+              $employeeinfo['empid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$valtoinsert['client']], '' ,true);
               if ($employeeinfo['empid'] != 0) {
 
                 if (isset($employeeinfo['tin'])) if ($employeeinfo['tin'] != '') $employeeinfo['chktin'] = 1;
@@ -4092,6 +4135,9 @@ class uploadingutility
       case 'timecard':
         return $field;
         break;
+      case 'erequire':
+        return $field;
+        break;
       default:
         return '';
         break;
@@ -4144,6 +4190,9 @@ class uploadingutility
       case 'codehead':
         return 'code';
         break;
+      case 'erequire':
+        return 'pin';
+        break;
       default:
         return '';
         break;
@@ -4193,7 +4242,7 @@ class uploadingutility
 
       case 'employeecode':
       case 'empcode':
-        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance' || $type == 'timecard') {
+        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance' || $type == 'timecard' || $type == 'updatereq') {
           return 'empid';
         } else {
           return 'client';
@@ -5005,7 +5054,6 @@ class uploadingutility
       case 'chksss':
       case 'chkphealth':
       case 'chkpibig':
-      case 'meal':
       case 'atm':
       case 'regular':
       case 'resigned':
@@ -5045,6 +5093,9 @@ class uploadingutility
         return 'isreversewireitem';
         break;
       case 'code':
+        if($type == 'updatereq'){
+          return 'pin';
+        }
         return 'client';
         break;
       case 'mobile/tel2':
@@ -5070,6 +5121,12 @@ class uploadingutility
         break;
       case 'Color':
         return 'color';
+        break;
+      case 'no':
+        return 'irno';
+        break;
+      case 'requirement':
+        return 'reqs';
         break;
 
       default:
@@ -5157,7 +5214,7 @@ class uploadingutility
           $qry = "select line as value from reqcategory where isreassigned=1 and category='" . $value . "'";
           break;
         case 'empid':
-          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance' || $uploadtype == 'timecard') {
+          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance' || $uploadtype == 'timecard' || $uploadtype == 'updatereq') {
             $qry = "select clientid as value from client where isemployee=1 and client='" . $value . "'";
           }
           break;
@@ -5388,6 +5445,12 @@ class uploadingutility
             $check = $this->isexist($field, $val, 'name', $tablename);
             break;
         }
+        break;
+        case 'erequire':
+          switch ($field) {
+            case 'expiry':
+              break;
+          }
         break;
     }
     $result = $this->padslashes($field, $result);
@@ -6027,7 +6090,8 @@ class uploadingutility
       'jobid2',
       'branchid2',
       'resigned',
-      'lastbatch'
+      'lastbatch',
+      'mealdeduc'
     ];
 
     if (in_array($key, $arr)) {

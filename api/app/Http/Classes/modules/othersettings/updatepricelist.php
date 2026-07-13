@@ -55,8 +55,8 @@ class updatepricelist
     public function getAttrib()
     {
         $attrib = array(
-            'view' => 5890,
-            'save' => 5890
+            'view' => 5935,
+            'save' => 5935
         );
         return $attrib;
     }

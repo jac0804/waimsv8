@@ -1672,7 +1672,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["ndiffhrs"], "DECIMAL(18,5) NOT NULL DEFAULT '0.00000'", 0);
 		$this->coreFunctions->sbcaddcolumn("paygroup", "s3maxbracket", "int(2) NOT NULL DEFAULT '0'");
 
-		$this->coreFunctions->sbcaddcolumn("standardsetup", "isdeductible", "tinyint(1) NOT NULL DEFAULT '0'");
+		$this->coreFunctions->sbcaddcolumngrp(["standardsetup", "standardsetupadv"], ["isdeductible"], "tinyint(1) NOT NULL DEFAULT '0'");
 
 		$this->coreFunctions->sbcaddcolumn("timecard", "pgline", "int(4) unsigned NOT NULL DEFAULT '0'");
 

@@ -4450,5 +4450,8 @@ class waims2
              INDEX `Index_itemid`(`itemid`))
             ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("mcfinancerate", $qry);
+
+    // Added 07/10/2026
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["supplierid"], "int(11) NOT NULL DEFAULT '0'", 0);
   }
 }

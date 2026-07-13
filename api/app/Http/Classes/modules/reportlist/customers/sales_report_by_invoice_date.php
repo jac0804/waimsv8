@@ -135,7 +135,7 @@ class sales_report_by_invoice_date
         select
           'Posted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             case when head.amount > 0 then head.amount
             else sum(stock.ext) end as amount,
             head.address, head.trno, head.vattype
@@ -144,12 +144,12 @@ class sales_report_by_invoice_date
             left join hsistock as stock on stock.trno = head.trno
             left join client on head.clientid = client.clientid
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'ch'  $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype, head.amount
+            group by right(head.docno, 5), head.clientname, head.dateid, address, trno, client.tin, vattype, head.amount,client.registername
             union all
             select
           'Posted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             sum(stock.ext) as amount , head.address, head.trno, head.vattype
             from glhead as head
             left join cntnum as num on num.trno = head.trno
@@ -157,7 +157,7 @@ class sales_report_by_invoice_date
             left join glstock as stock on stock.trno = num2.trno
             left join client on head.clientid = client.clientid
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'on'   $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
+            group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype
             order by docno
         ";
                 break;
@@ -167,7 +167,7 @@ class sales_report_by_invoice_date
         select
           'Unposted' as status,
           right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-          head.clientname, 
+          head.clientname as clientname2, client.registername as clientname,
           case when head.amount > 0 then head.amount
           else sum(stock.ext) end as amount,
           head.address, head.trno, head.vattype
@@ -176,12 +176,12 @@ class sales_report_by_invoice_date
           left join sistock as stock on stock.trno = head.trno
           left join client on head.client = client.client
           where date(head.dateid) between '$start' and '$end'  and head.doc = 'ch'   $filter
-          group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype, head.amount
+          group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype, head.amount
           union all
         select
           'Unposted' as status,
           right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-          head.clientname, 
+         head.clientname as clientname2, client.registername as clientname,
           sum(stock.ext) as amount, head.address, head.trno, head.vattype
           from lahead as head
           left join cntnum as num on num.trno = head.trno
@@ -190,7 +190,7 @@ class sales_report_by_invoice_date
           left join glstock as stock on stock.trno = ghead.trno
           left join client on head.client = client.client
           where date(head.dateid) between '$start' and '$end'  and head.doc = 'on'   $filter
-          group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
+          group by right(head.docno, 5),head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype
           order by docno
         ";
                 break;
@@ -199,7 +199,7 @@ class sales_report_by_invoice_date
           select
           'Posted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             case when head.amount > 0 then head.amount
             else sum(stock.ext) end as amount,
             head.address, head.trno, head.vattype
@@ -208,12 +208,12 @@ class sales_report_by_invoice_date
             left join hsistock as stock on stock.trno = head.trno
             left join client on head.clientid = client.clientid
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'ch'  $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype, head.amount
+            group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype, head.amount
             union all
             select
           'Posted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             sum(stock.ext) as amount , head.address, head.trno, head.vattype
             from glhead as head
             left join cntnum as num on num.trno = head.trno
@@ -221,12 +221,12 @@ class sales_report_by_invoice_date
             left join glstock as stock on stock.trno = num2.trno
             left join client on head.clientid = client.clientid
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'on'   $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
+            group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype
             union all
             select
           'Unposted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             case when head.amount > 0 then head.amount
             else sum(stock.ext) end as amount,
             head.address, head.trno, head.vattype
@@ -235,12 +235,12 @@ class sales_report_by_invoice_date
             left join sistock as stock on stock.trno = head.trno
             left join client on head.client = client.client
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'ch'   $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype, head.amount
+            group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype, head.amount
             union all
             select
           'Unposted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
-            head.clientname, 
+            head.clientname as clientname2, client.registername as clientname,
             sum(stock.ext) as amount, head.address, head.trno, head.vattype
             from lahead as head
             left join cntnum as num on num.trno = head.trno
@@ -249,7 +249,7 @@ class sales_report_by_invoice_date
             left join glstock as stock on stock.trno = ghead.trno
             left join client on head.client = client.client
             where date(head.dateid) between '$start' and '$end'  and head.doc = 'on'   $filter
-            group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
+            group by right(head.docno, 5), head.clientname,client.registername, head.dateid, address, trno, client.tin, vattype
             order by docno
           ";
                 break;

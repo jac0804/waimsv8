@@ -10582,9 +10582,9 @@ class leftmenu
     {
         $p = $parent;
         $parent = '\\' . $parent;
-        $qry = "(5890,0,'Update Price List','',0,'\\24048','$parent',0,0,0," . $params['levelid'] . ")";
+        $qry = "(5935,0,'Update Price List','',0,'\\24048','$parent',0,0,0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry); //<i class="fas fa-sort-amount-up-alt"></i>
-        return "($sort,$p,'updatepricelist','/headtable/othersettings/updatepricelist','Update Price List','fa fa-sort-amount-up-alt sub_menu_ico',5890," . $params['levelid'] . ")";
+        return "($sort,$p,'updatepricelist','/headtable/othersettings/updatepricelist','Update Price List','fa fa-sort-amount-up-alt sub_menu_ico',5935," . $params['levelid'] . ")";
     } //end function
 
     public function fu($params, $parent, $sort)
@@ -10607,13 +10607,16 @@ class leftmenu
         (5919,0,'Allow View Transaction Accounting','FU',0,'\\5023012','\\50230',0,'0',0," . $params['levelid'] . "),
         (5920,0,'Allow Click Release','FU',0,'\\5023013','\\50230',0,'0',0," . $params['levelid'] . "),
         (5921,0,'Allow View WH Info','FU',0,'\\5023014','\\50230',0,'0',0," . $params['levelid'] . "),
-        (5922,1,'Allow View Financing','FU',0,'\\5023015','\\50230',0,'0',0," . $params['levelid'] . ")";
+        (5922,1,'Allow View Financing','FU',0,'\\5023015','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5936,1,'Allow Click Add Item FU','',0,'\\5023016','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5937,1,'Allow Click Edit Item FU','',0,'\\5023017','\\50230',0,'0',0," . $params['levelid'] . "),
+        (5938,1,'Allow Click Delete Item FU','',0,'\\5023018','\\50230',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'FU','/module/cdo/fu','Financing','fa fa-money-check sub_menu_ico',5907," . $params['levelid'] . ")";
     }
 
     public function ri($params, $parent, $sort)
-    {
+    { 
         $p = $parent;
         $parent = '\\' . $parent;
         $qry = "(5891,0,'Repossesed Units','',0,'\\614','$parent',0,'0',0," . $params['levelid'] . "),
@@ -10623,15 +10626,15 @@ class leftmenu
         (5895,0,'Allow Click Save  Button RI','',0,'\\61404','\\614',0,'0',0," . $params['levelid'] . "),
         (5896,0,'Allow Click Delete Button RI','',0,'\\61405','\\614',0,'0',0," . $params['levelid'] . "),
         (5897,0,'Allow Click Print  Button RI','',0,'\\61406','\\614',0,'0',0," . $params['levelid'] . "),
-        (5898,0,'Allow Click Lock Button RI','',0,'\\61407','\\614',0,'0',0," . $params['levelid'] . "),
-        (5899,0,'Allow Click UnLock Button RI','',0,'\\61408','\\614',0,'0',0," . $params['levelid'] . "),
+        (5927,0,'Allow Click Lock Button RI','',0,'\\61407','\\614',0,'0',0," . $params['levelid'] . "),
+        (5928,0,'Allow Click UnLock Button RI','',0,'\\61408','\\614',0,'0',0," . $params['levelid'] . "),
         (5900,0,'Allow Click Post Button RI','',0,'\\61409','\\614',0,'0',0," . $params['levelid'] . "),
-        (5901,0,'Allow Click UnPost  Button RI','',0,'\\61410','\\614',0,'0',0," . $params['levelid'] . "),
-        (5902,0,'Allow View Transaction Accounting RI','',0,'\\61411','\\614',0,'0',0," . $params['levelid'] . "),
-        (5903,0,'Allow Change Amount RI','',0,'\\61412','\\614',0,'0',0," . $params['levelid'] . "),
-        (5904,1,'Allow Click Add Item RI','',0,'\\61413','\\614',0,'0',0," . $params['levelid'] . "),
-        (5905,1,'Allow Click Edit Item RI','',0,'\\61414','\\614',0,'0',0," . $params['levelid'] . "),
-        (5906,1,'Allow Click Delete Item RI','',0,'\\61415','\\614',0,'0',0," . $params['levelid'] . ")";
+        (5929,0,'Allow Click UnPost  Button RI','',0,'\\61410','\\614',0,'0',0," . $params['levelid'] . "),
+        (5930,0,'Allow View Transaction Accounting RI','',0,'\\61411','\\614',0,'0',0," . $params['levelid'] . "),
+        (5931,0,'Allow Change Amount RI','',0,'\\61412','\\614',0,'0',0," . $params['levelid'] . "),
+        (5932,1,'Allow Click Add Item RI','',0,'\\61413','\\614',0,'0',0," . $params['levelid'] . "),
+        (5933,1,'Allow Click Edit Item RI','',0,'\\61414','\\614',0,'0',0," . $params['levelid'] . "),
+        (5934,1,'Allow Click Delete Item RI','',0,'\\61415','\\614',0,'0',0," . $params['levelid'] . ")";
         $folder = 'sales';
         $this->insertattribute($params, $qry);
         return "($sort,$p,'RI','/module/" . $folder . "/ri','Repossesed Units','fa fa-motorcycle sub_menu_ico',5891," . $params['levelid'] . ")";

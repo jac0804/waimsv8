@@ -1000,10 +1000,10 @@ class rr
       case 42: //pdpi
         $obj[0]['inventory']['columns'][$rem]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
+       // $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+        //$obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
         break;
       case 40: //cdo

@@ -1006,10 +1006,8 @@ class employee
 
     $condition = "";
     $paygroup = 'paygroup.paygroup';
-    $groupbypaygroup = 'paygroup.paygroup';
     if ($companyid == 43) {
       $paygroup = "concat(paygroup.code,'~',paygroup.paygroup)";
-      $groupbypaygroup = "paygroup.code,paygroup.paygroup";
     }
     if ($companyid == 51 || $companyid == 53) { // camera, ulitc
       $condition = " and " . $this->headOther . ".resigned is null ";
@@ -1051,7 +1049,7 @@ class employee
                dept.client as dept, dept.clientname as deptname,
                ifnull(`div`.divcode, '') as division,ifnull(`div`.divname, '') as divname,
                ifnull(sect.sectcode, '') as orgsection,ifnull(sect.sectname, '') as sectionname,$jobtitle,
-               jt.docno as jobcode,group_concat(jd.description) as jobdesc, ts.shftcode as shiftcode,
+               jt.docno as jobcode,jd.description as jobdesc, ts.shftcode as shiftcode,
                supervisor.clientid as supervisorid,supervisor.client as supervisorcode, 
                supervisor.clientname as supervisor, empstat.empstatus as empdesc, 
                " . $this->headOther . ".idbarcode,role.name as rolename, 
@@ -1097,22 +1095,7 @@ class employee
     left join client as branch on branch.clientid = " . $this->headOther . ".branchid
     left join client as app on app.clientid = " . $this->headOther . ".approver1
   
-    where " . $this->head . ".clientid = ? $condition
-    group by clientid, employee.empid, atype, djobtitle, radioteu, employee.paymode, employee.dept, deptname,
-    employee.division, div.divname, employee.orgsection, sect.sectname, sectionname, jobtitle, employee.jobtitle,employee.jobcode,
-    employee.shiftcode, dept.client, clientname, employee.bday, employee.email, isemployee, addr, picture,
-    emplast, empfirst, empfirst, empmiddle, hired, city, country, telno, mobileno, citizenship,
-    maidname, gender, remarks, status, zipcode, religion, alias, jobid, level, isactive, lastbatch, mapp,
-    agency, empstat.empstatus, aplcode, jgrade, emprank, emploc, emptype, resigned, regular, prob, idbarcode, tin,
-    sss, phic, hdmf, bankacct, atm, employee.paymode, employee.classrate, emprate, teu, nodeps, chksss, chktin, chkphealth,
-    chkpibig, dyear, sssdef, philhdef, pibigdef, wtaxdef, shiftid, blood, paygroup, paygroup.paygroup, cola, divid,
-    deptid, sectid, contact1, relation1, addr1, homeno1, mobileno1, officeno1, ext1, notes1, contact2, relation2,
-    permanentaddr,contacts.addr2, homeno2, mobileno2, officeno2, ext2, notes2,client.client,div.divcode,sect.sectcode,jt.docno,ts.shftcode,client.bday,
-    supervisor.clientid, supervisor.client, supervisor.clientname, employee.supervisorid, isapprover, issupervisor,iscustomer,isagent,isemployee,isdepartment,
-    issupplier,iswarehouse,isinactive,rolename, roleid, nochild,
-    trainee,biometricid,biometric.terminal,projectid,project.name,employee.itemid,item.itemname, obapp1.clientname,obapp2.clientname,
-    branch.clientname,isbank,branch.client,employee.branchid, empnoref, callsign,app.client,
-    app.clientname,otsupervisorid,employee.empstatus,approver1,is13th,mealdeduc,client.floor,employee.bank, $groupbypaygroup";
+    where " . $this->head . ".clientid = ? $condition";
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
     if (!empty($head)) {
       foreach ($this->blnfields as $key => $value) {

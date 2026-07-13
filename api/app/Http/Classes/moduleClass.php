@@ -789,6 +789,7 @@ class moduleClass
 			case 'OTHERCHARGES':
 			case 'EMPPROJECTLOGB':
 			case 'AK':
+			case 'CI':
 				$this->config['isposted'] = false;
 				$this->config['islocked'] = false;
 				break;
@@ -1494,7 +1495,7 @@ class moduleClass
 				$bal = $this->coreFunctions->datareader("select sum(r.bal) as value from rrstatus as r 
 				left join client as w on w.clientid = r.whid where r.itemid = " . $item['itemid'] . " and w.client = '" . $item['wh'] . "' and r.loc = '" . $item['loc'] . "'");
 				if ($bal < $item['qty']) {
-					$this->config['return'] = ['status' => false, 'msg' => 'item out of stock'];
+					$this->config['return'] = ['status' => false, 'msg' => 'Item out of stock'];
 				} else {
 					$docnolength = $this->companysetup->getdocumentlength($this->config['params']);
 					$pref = $this->othersClass->last_bref($this->config);

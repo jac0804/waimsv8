@@ -2809,6 +2809,18 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+            'downloademprequirements' => array(
+                'name' => 'downloadexcel',
+                'type' => 'actionbtn',
+                'label' => 'Download Emp Requirements Templete ',
+                'class' => 'csupdate',
+                'action' => 'downloademprequirements',
+                'lookupclass' => 'downloademprequirements',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'access' => 'view'
+            ),
             'exportcsv' => array(
                 'name' => 'exportcsv',
                 'type' => 'actionbtn',

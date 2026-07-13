@@ -302,9 +302,16 @@ class entrycrbrand
   {
     $row = $config['params']['row'];
 
+    $qry1 = "select carid as value from item where carid = ? limit 1";
+    $count = $this->coreFunctions->datareader($qry1, [$row['id']]);
+
+    if ($count != '') {
+        return ['status' => false, 'msg' => 'Car Brand already has Stock Card items attached...'];
+    }
+
+    $this->coreFunctions->LogConsole($row);
     $qry = "delete from " . $this->table . " where id = ?";
     $this->coreFunctions->execqry($qry, 'delete', [$row['id']]);
-    $count = $this->coreFunctions->datareader($qry, [$row['brand']]);
 
     $this->logger->sbcdelmaster_log($row['id'], $config, 'REMOVE - ' . $row['brand']);
     return ['status' => true, 'msg' => 'Successfully deleted.'];

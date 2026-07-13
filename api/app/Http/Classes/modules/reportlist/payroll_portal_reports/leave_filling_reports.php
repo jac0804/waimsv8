@@ -197,6 +197,18 @@ class leave_filling_reports
         }
 
         switch ($companyid) {
+            case 51: //ulitc
+                $orderby = "order by cl.clientname,lt.effectivity";
+                break;
+            case 53: //camera
+                $orderby = "order by lt.effectivity";
+                break;
+            default:
+                $orderby = "order by cl.clientname";
+                break;
+        }
+
+        switch ($companyid) {
             case 53: // camera
             case 51: // ulitc
                 $query = "
@@ -224,7 +236,7 @@ class leave_filling_reports
                 group by ls.docno,ls.trno,cl.clientname,ls.days,ls.empid,ls.acnoid,lt.effectivity,
                 lt.dateid,app.clientname,app2.clientname,lt.remarks,lt.status2,lt.status,
                 lt.date_approved_disapproved,lt.date_approved_disapproved2,
-                lt.disapproved_remarks2,lt.disapproved_remarks,b.batch,lt.fillingtype,p.codename,lt.adays order by lt.effectivity";
+                lt.disapproved_remarks2,lt.disapproved_remarks,b.batch,lt.fillingtype,p.codename,lt.adays $orderby ";
                 break;
 
             default:
@@ -236,7 +248,7 @@ class leave_filling_reports
                 left join client as cl on cl.clientid=e.empid
                 $leftjoin
                 where $status $filter date(lt.effectivity) between '" . $datestart . "' and '" . $dateend . "' $filteremp
-                group by ls.docno,ls.trno,client,ls.days,ls.empid,ls.acnoid order by cl.clientname";
+                group by ls.docno,ls.trno,client,ls.days,ls.empid,ls.acnoid $orderby";
                 break;
         }
 

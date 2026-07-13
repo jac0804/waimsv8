@@ -145,33 +145,43 @@ class othersClass
     }
     $table = $config['docmodule']->tablenum;
     //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno]);
-    $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno]);
+    if($trno<>0){
+      $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno]);
 
-    if(!empty($document)){
-      if ($document[0]->postdate === '' || $document[0]->postdate === null) {
-        return false;
-      } else {
+      if(!empty($document)){
+        if ($document[0]->postdate === '' || $document[0]->postdate === null) {
+          return false;
+        } else {
+          return true;
+        }
+      }else{
         return true;
       }
     }else{
-      return true;
+      return false;
     }
+    
     
   } //end fn
 
   public function isposted2($trno, $table, $connection = '')
   {
     //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno], $connection);
-    $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno], $connection);
-    if(!empty($document)){
-      if ($document[0]->postdate === '' || $document[0]->postdate === null) {
-        return false;
-      } else {
+    if($trno<>0){
+      $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno], $connection);
+      if(!empty($document)){
+        if ($document[0]->postdate === '' || $document[0]->postdate === null) {
+          return false;
+        } else {
+          return true;
+        }
+      }else{
         return true;
       }
     }else{
-      return true;
+      return false;
     }
+    
     
   } //end fn
   public function isapproved($trno, $table)
@@ -809,7 +819,7 @@ class othersClass
   }
 
 
-  function buildSanitizeLookups($doc, $companyid, $exceptpcase, $exceptnum , $tableDates )
+  function buildSanitizeLookups($doc, $companyid, $exceptpcase, $exceptnum, $tableDates)
   {
     $acctcode = ['contra', 'acno', 'tfaccount', 'asset', 'liability', 'revenue', 'expense', 'rev', 'waybill', 'salesreturn', 'ass'];
     if ($doc != 'AGENT') {
@@ -4131,7 +4141,7 @@ class othersClass
     }
 
     $costfilter = " and stock.cost<>0 ";
-    if($config['params']['companyid'] == 50){//unitech
+    if ($config['params']['companyid'] == 50) { //unitech
       $costfilter = "";
     }
     $qry = "select ifnull($field,0) as value from(select head.docno,head.dateid,
@@ -6104,8 +6114,8 @@ class othersClass
                   $head['billcontactid'] = $data[0]->billcontactid;
                   $head['shipcontactid'] = $data[0]->shipcontactid;
                   $head['deldate'] = date('Y-m-d');
-                  if($config['params']['companyid'] == 10){
-                    $head['probability'] ='25%';
+                  if ($config['params']['companyid'] == 10) {
+                    $head['probability'] = '25%';
                   }
                   break;
               }

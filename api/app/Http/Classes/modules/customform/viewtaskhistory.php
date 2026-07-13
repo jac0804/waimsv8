@@ -83,15 +83,33 @@ class viewtaskhistory
     data_set($col1, 'category.class', 'cscategory');
     data_set($col1, 'category.readonly', false);
 
-    $categorylist = $this->coreFunctions->datareader("select group_concat(category) as value from reqcategory where istaskcat=1", [], '', true);
-    if ($categorylist != '') {
-      $catlist = explode(",", $categorylist);
-      $list = array();
-      foreach ($catlist as $key) {
-        array_push($list, ['label' => $key, 'value' => $key]);
-      }
-      data_set($col1, 'category.options', $list);
+    // $categorylist = $this->coreFunctions->datareader("select group_concat(category) as value from reqcategory where istaskcat=1", [], '', true);
+    // if ($categorylist != '') {
+    //   $catlist = explode(",", $categorylist);
+    //   $list = array();
+    //   foreach ($catlist as $key) {
+    //     array_push($list, ['label' => $key, 'value' => $key]);
+    //   }
+    //   data_set($col1, 'category.options', $list);
+    // }
+
+   $categorylist="select category, line from  reqcategory where  istaskcat = 1";
+   $data = $this->coreFunctions->opentable($categorylist);
+
+    if (!empty($data)) {
+        $list = [];
+
+        foreach ($data as $row) {
+            $list[] = [
+                'label' => $row->category,
+                'value' => $row->line,
+            ];
+        }
+
+        data_set($col1, 'category.options', $list);
     }
+
+
 
     $fields = ['update'];
 
@@ -138,6 +156,7 @@ class viewtaskhistory
     //userid
     $userid = isset($config['params']['row']['userid']) ? $config['params']['row']['userid'] : 0;
     $category = isset($config['params']['row']['category']) ? $config['params']['row']['category'] : '';
+    $categoryline = isset($config['params']['row']['catline']) ? $config['params']['row']['catline'] : 0;
 
 
     // $qry = "select '$trno' as tmtrno,'$line' as tmline,'' as createby,'' as createdate, '" . $otherTrnoField . "' as othertrnofield, " . $otherTrnoVal . " as othertrnoval, 'Low' as selectprefix";
@@ -169,11 +188,15 @@ class viewtaskhistory
              (select dt.trno from hdailytask as dt
               $filter and dt.ischecker = 0 order by trno asc limit 1) as dytrno,
               " . $refx . " as refx, '" . $solution . "' as rem1, '$ctrno' as checkertrno,
-              dt.rem , '$checkerid' as checkerid , '$statid' as statid,  " . $userid . " as currentuserid,'" . $category . "' as category
+              dt.rem , '$checkerid' as checkerid , '$statid' as statid,  " . $userid . " as currentuserid,'" . $category . "' as category, " . $categoryline . " as catline
             from hdailytask as dt  $filter  
             group by dt.donedate,dt.rem order by donedate desc";
 
     $data = $this->coreFunctions->opentable($qry);
+
+
+
+
     return $data;
   }
 
@@ -208,10 +231,19 @@ class viewtaskhistory
       $checkerid = $config['params']['dataparams']['checkerid'];
       $rem = $config['params']['dataparams']['rem'];
       $statid = $config['params']['dataparams']['statid'];
+      $catid=0;
+      $categoryid= isset($config['params']['dataparams']['catline']) ? $config['params']['dataparams']['catline'] : 0;
+       //from the dropdown
+       $drpcategoryid = isset($config['params']['dataparams']['category']['value']) ? $config['params']['dataparams']['category']['value'] : 0;
+       if($drpcategoryid != 0){
+         $catid= $drpcategoryid;
+        }else{
+         $catid= $categoryid != 0 ? $categoryid : 0;
+        }
+     
 
-      $category = isset($config['params']['dataparams']['category']['value']) ? $config['params']['dataparams']['category']['value'] : '';
-      $catname = trim($category);
-      $catid = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category=?", [$catname]);
+      // $catname = trim($category);
+      // $catid = $this->coreFunctions->getfieldvalue("reqcategory", "line", "category=?", [$catname]);
 
       $credituserid = $this->coreFunctions->getfieldvalue("credithead", "userid", "userid=?", [$tmuserid]);
       $cdatehere = $this->coreFunctions->getfieldvalue("credithead", "dateid", "userid=? and date_format(dateid, '%Y-%m-%d')=?", [$tmuserid, $dateToSave]);
@@ -250,11 +282,18 @@ class viewtaskhistory
           }
           //update category
           if ($refx == 0) {
-            $updatedailytask = $this->coreFunctions->sbcupdate('tmdetail', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $trno, 'line' => $line]);
+              if($catid !=0 ){
+              $updatedailytask = $this->coreFunctions->sbcupdate('tmdetail', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $trno, 'line' => $line]);
+              }
+            
           } else {
-            $updatedailytask = $this->coreFunctions->sbcupdate('hdailytask', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $refx]);
+
+              if($catid !=0 ){
+                $updatedailytask = $this->coreFunctions->sbcupdate('hdailytask', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $refx]);
+              }
           }
         } else { //may userid na sa head
+
           // if($cdatehere != null || $cdatehere != ''){ //pag may existing sa head na same month at user
           $cheadtrno = $this->coreFunctions->getfieldvalue("credithead", "trno", "userid=? and date_format(dateid, '%Y-%m-%d')=?", [$tmuserid, $dateToSave]);
           // $inshead = $this->coreFunctions->getfieldvalue("credithead", "trno", "userid=?", [$tmuserid]);
@@ -275,9 +314,13 @@ class viewtaskhistory
 
           //update category
           if ($refx == 0) {
-            $updatedailytask = $this->coreFunctions->sbcupdate('tmdetail', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $trno, 'line' => $line]);
+             if($catid !=0 ){
+             $updatedailytask = $this->coreFunctions->sbcupdate('tmdetail', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $trno, 'line' => $line]);
+             }
           } else {
-            $updatedailytask = $this->coreFunctions->sbcupdate('hdailytask', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $refx]);
+             if($catid !=0 ){
+             $updatedailytask = $this->coreFunctions->sbcupdate('hdailytask', ['taskcatid' => $catid], ['userid' => $tmuserid, 'trno' => $refx]);
+             }
           }
 
           $qryhead = "select totalhrs,totalpts,totalrt from credithead where userid=? and date_format(dateid, '%Y-%m-%d')=?";
