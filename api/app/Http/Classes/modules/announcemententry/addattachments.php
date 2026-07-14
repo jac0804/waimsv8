@@ -61,11 +61,11 @@ class addattachments
     $columns = ['action', 'ext', 'title'];
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
-    
+
     $stockbuttons = ['view', 'download'];
-    
-    if ($config['params']['doc'] != 'TK'){
-      array_push($stockbuttons,'delete');
+
+    if ($config['params']['doc'] != 'TK') {
+      array_push($stockbuttons, 'delete');
     }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -81,31 +81,30 @@ class addattachments
   public function createtabbutton($config)
   {
     $addattachment = $this->othersClass->checkAccess($config['params']['user'], 5471);
-   
-    if($config['params']['companyid'] == 29){
-       
-       if ($config['params']['doc'] != 'TK' && $addattachment == '1') {
+
+    if ($config['params']['companyid'] == 29) {
+
+      if ($config['params']['doc'] != 'TK' && $addattachment == '1') {
         $tbuttons = ['adddocument'];
-        } else {
-            $tbuttons = [];
-        }
-      
-    }else{//kapag hindi 29
-        $tbuttons = ['adddocument'];
+      } else {
+        $tbuttons = [];
       }
-    
+    } else { //kapag hindi 29
+      $tbuttons = ['adddocument'];
+    }
+
     $obj = $this->tabClass->createtabbutton($tbuttons);
     $obj[0]['action'] = 'adddocument';
-    
-    switch ($config['params']['doc']){
+
+    switch ($config['params']['doc']) {
       case "TM":
       case "TK":
-        $obj[0]['lookupclass'] = ['table' => $this->table, 'field' => 'picture', 'fieldid' => 'line', 'folder' => 'waims_attachments', 'trno' => $config['params']['row']['trno'],'tmline' => $config['params']['row']['line']];
+        $obj[0]['lookupclass'] = ['table' => $this->table, 'field' => 'picture', 'fieldid' => 'line', 'folder' => 'waims_attachments', 'trno' => $config['params']['row']['trno'], 'tmline' => $config['params']['row']['line']];
         break;
       case "DY":
         $obj[0]['lookupclass'] = ['table' => $this->table, 'field' => 'picture', 'fieldid' => 'line', 'folder' => 'waims_attachments', 'trno' => $config['params']['tableid'], 'tmline' => 0];
         break;
-        default:
+      default:
         $obj[0]['lookupclass'] = ['table' => $this->table, 'field' => 'picture', 'fieldid' => 'line', 'folder' => 'waims_attachments', 'trno' => $config['params']['row']['line']];
         break;
     }
@@ -117,8 +116,8 @@ class addattachments
   public function add($config)
   {
     $id = $config['params']['sourcerow']['line'];
-    $tmline =0;
-    if($config['params']['doc'] == 'TM'){
+    $tmline = 0;
+    if ($config['params']['doc'] == 'TM') {
       $id = $config['params']['sourcerow']['trno'];
       $tmline = $config['params']['sourcerow']['line'];
     }
@@ -163,25 +162,25 @@ class addattachments
   public function loaddata($config)
   {
     $doc = $config['params']['doc'];
-    $addf=" and doc='".$doc."' ";
+    $addf = " and doc='" . $doc . "' ";
     $tableid = isset($config['params']['row']) ? $config['params']['row']['line'] : ($config['params']['tableid'] != 0 ? $config['params']['tableid'] : $config['params']['trno']);
 
     //$tmline =  isset($config['params']['row']) ? $config['params']['row']['line'] : (isset($config['params']['addedparams']['tmline']) ? $config['params']['addedparams']['tmline'] : 0);
     //$this->coreFunctions->logconsole($tmline.'-tmline--trno'. $tableid.'doc-'. $config['params']['doc'] );
-    if($config['params']['doc'] == 'TM'){
-      $tableid = isset($config['params']['row']) ? $config['params']['row']['trno'] : ($config['params']['tableid'] != 0 ? $config['params']['tableid'] : $config['params']['trno']);    
+    if ($config['params']['doc'] == 'TM') {
+      $tableid = isset($config['params']['row']) ? $config['params']['row']['trno'] : ($config['params']['tableid'] != 0 ? $config['params']['tableid'] : $config['params']['trno']);
       $tmline =  isset($config['params']['row']) ? $config['params']['row']['line'] : (isset($config['params']['addedparams']['tmline']) ? $config['params']['addedparams']['tmline'] : 0);
-      $addf = " and doc in ('TK','TM') and tmline = ".$tmline;
+      $addf = " and doc in ('TK','TM') and tmline = " . $tmline;
     }
 
-    if($config['params']['doc']=='TK'){
+    if ($config['params']['doc'] == 'TK') {
       $tableid = isset($config['params']['row']) ? $config['params']['row']['trno'] : (isset($config['params']['addedparams']['trno']) ? $config['params']['addedparams']['trno'] : 0);
       $tmline =  isset($config['params']['row']) ? $config['params']['row']['line'] : (isset($config['params']['addedparams']['tmline']) ? $config['params']['addedparams']['tmline'] : 0);
-      $addf = " and doc in ('TK','TM') and tmline = ".$tmline;
+      $addf = " and doc in ('TK','TM') and tmline = " . $tmline;
     }
 
-    $qry = "select 'notice' as type, md5(trno) as trno2, md5(line) as line2, trno, line, title, picture as picture, substring_index(picture,'.',-1) as ext, '' as bgcolor from " . $this->table . " where trno=?  ".$addf." order by line";
-    
+    $qry = "select 'notice' as type, md5(trno) as trno2, md5(line) as line2, trno, line, title, picture as picture, substring_index(picture,'.',-1) as ext, '' as bgcolor from " . $this->table . " where trno=?  " . $addf . " order by line";
+
     $data = $this->coreFunctions->opentable($qry, [$tableid]);
     $data = $this->getFileTypes($data);
     $this->coreFunctions->logconsole($qry);
@@ -217,11 +216,17 @@ class addattachments
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    
+
+    $dateTables = ['waims_attachments'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $this->coreFunctions->insertGetId($this->table, $data2);

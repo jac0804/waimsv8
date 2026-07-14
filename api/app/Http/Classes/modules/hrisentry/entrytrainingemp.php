@@ -117,8 +117,13 @@ class entrytrainingemp
     $row = $config['params'][$row];
     $doc = $config['params']['doc'];
     $id = $config['params']['tableid'];
+
+    $dateTables = ['trainingdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     $data['trno'] = $config['params']['tableid'];

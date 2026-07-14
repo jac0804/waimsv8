@@ -120,12 +120,17 @@ class approvebr
 
   public function loaddata($config)
   {
+    $companyid=$config['params']['companyid'];
     $rows = $config['params']['rows'];
     $user = $config['params']['user'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
+    $dateTables = ['brstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($rows as $key) {
-      $amount = $this->othersClass->sanitizekeyfield("amount", $key['amount']);
+      // $amount = $this->othersClass->sanitizekeyfield("amount", $key['amount']);
+      $amount = $this->othersClass->sanitizekeyfieldFast("amount", $key['amount'], $lookups);
       $this->coreFunctions->execqry('update brstock set amount=?, editby = ?,editdate=? where trno=? and line=?', 'update', [$amount, $user, $current_timestamp, $key['trno'], $key['line']]);
       $this->coreFunctions->execqry('update brstock set status = ?,approvedby =?,approveddate=? where trno=? and line=?', 'update', [$key['status'], $user, $current_timestamp, $key['trno'], $key['line']]);
     }

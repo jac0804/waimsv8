@@ -2504,22 +2504,25 @@ class income_statement
         $str .= $this->reporter->addline();
 
         $str .= $this->reporter->col($data[$i]['acnoname'], '580', null, false, '1px solid ', '', '', $font, $fontsize, '', '', '0px 0px 0px ' . $indent . 'px');
-        if ($data[$i]['amt'] == 0) {
-          $amt = '';
-        } else {
-          $amt = number_format($data[$i]['amt'], $decimal_currency);
-        }
+        // if ($data[$i]['amt'] == 0) {
+        //   $amt = '';
+        // } else {
+        //   $amt = number_format($data[$i]['amt'], $decimal_currency);
+        // }
+
+        $amt = number_format($data[$i]['amt'], $decimal_currency);
 
 
-        if ($data[$i]['total'] == 0) {
-          $total = '';
-        } else {
-          if ($amt == 0) {
-            $total = number_format($data[$i]['total'], 2);
-          } else {
-            $total = '';
-          }
-        }
+        // if ($data[$i]['total'] == 0) {
+        //   $total = '';
+        // } else {
+        //   if ($amt == 0) {
+        //     $total = number_format($data[$i]['total'], 2);
+        //   } else {
+        //     $total = '';
+        //   }
+        // }
+        $total = number_format($data[$i]['total'], 2);
 
         $is_total = 0;
         foreach ($key_words_total as $key => $keyword) {

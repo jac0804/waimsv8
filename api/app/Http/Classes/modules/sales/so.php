@@ -654,6 +654,9 @@ class so
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
 
+    
+    $viewfieldsforgate2users = $this->othersClass->checkAccess($config['params']['user'], 5939);
+
     switch ($companyid) {
       case 47: //kitchenstar
         $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'itemdesc', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode'];
@@ -827,6 +830,15 @@ class so
         $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'ORDER FORM';
+        break;
+      case 24: //goodfound
+        
+        if ($viewfieldsforgate2users == '0') {
+          $obj[0]['inventory']['columns'][$isamt]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+        }
+
         break;
       default:
         $obj[0]['inventory']['columns'][$weight]['type'] = 'coldel';

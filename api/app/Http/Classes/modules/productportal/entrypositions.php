@@ -113,14 +113,14 @@ class entrypositions
         }
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        $qry = "select " . $select . " from " . $this->table . " where 1 = 1 " . $filtersearch . " order by id";
+        $qry = "select distinct " . $select . " from " . $this->table . " where 1 = 1 " . $filtersearch . " order by id";
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }
 
     public function selectqry()
     {
-        $qry = "positions.positions as position, id";
+        $qry = "positions.id, positions.positions as position";
         return $qry;
     }
 
@@ -164,11 +164,6 @@ class entrypositions
                         $data2,
                         ['id' => $data[$key]['id']]
                     );
-                    $this->logger->sbcmasterlog(
-                        $data[$key]['id'],
-                        $config,
-                        ' UPDATE - Position : ' . $data[$key]['position']
-                    );
                 }
             }
         }
@@ -208,11 +203,6 @@ class entrypositions
 
             if ($this->coreFunctions->sbcupdate($this->table, $data, ['id' => $row['id']]) == 1) {
                 $returnrow = $this->loaddataperrecord($row['id']);
-                $this->logger->sbcmasterlog(
-                    $row['id'],
-                    $config,
-                    ' UPDATE - Position : ' . $row['position']
-                );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
                 return ['status' => false, 'msg' => 'Saving failed.'];

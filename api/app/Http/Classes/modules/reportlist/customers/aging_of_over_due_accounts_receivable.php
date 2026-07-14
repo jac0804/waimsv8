@@ -157,10 +157,9 @@ class aging_of_over_due_accounts_receivable
               left join glhead as head on head.trno=detail.trno
               left join client as agent on agent.clientid=head.agentid
               where detail.bal<>0 and client.iscustomer = 1 and datediff(now(), head.dateid) >= 150 and head.dateid<='$asof' $filter
-              group by clientname,elapse,agentname,client.area
-              order by clientname ) as x
+              group by clientname,elapse,agentname,client.area ) as x
               group by clientname,elapse,agentname,area
-              order by agentname, clientname";
+              order by area,BINARY  UPPER(clientname)";
 
         // Logger($qry);
         return $qry;

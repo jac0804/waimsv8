@@ -1365,6 +1365,7 @@ class menusetupclient
         "(805,1,'Allow Click Add Item SO','',0,'\\50114','\\501',0,'0',0)",
         "(806,1,'Allow Click Edit Item SO','',0,'\\50115','\\501',0,'0',0)",
         "(807,1,'Allow Click Delete Item SO','',0,'\\50116','\\501',0,'0',0)",
+        "(5939,1,'Allow View Fields for Gate 2 Users SO','',0,'\\50124','\\501',0,'0',0)",
         //$sj_access
         "(168,0,'Sales Journal','',0,'\\502','\\5',0,'0',0)",
         "(169,0,'Allow View Transaction SJ','SJ',0,'\\50201','\\502',0,'0',0)",

@@ -412,6 +412,7 @@ class cm
 
   public function updatehead($config, $isupdate)
   {
+    $companyid =  $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
@@ -419,7 +420,7 @@ class cm
       unset($head['docno']);
     }
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
@@ -672,6 +673,7 @@ class cm
   // insert and update detail
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
     $trno = $config['params']['trno'];
@@ -766,8 +768,8 @@ class cm
       'checkno' => $checkno,
       'damt' => $damt
     ];
-    $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);

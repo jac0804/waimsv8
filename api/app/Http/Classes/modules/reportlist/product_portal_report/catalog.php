@@ -137,11 +137,12 @@ class catalog
         }
 
         $query = "
-        select i.itemname, cat.name as categoryname, part.part_name as partname,i.picture,br1.brand_desc
+        select i.itemname, cat.name as categoryname, i.partno as partname,i.picture,br1.brand_desc,car.brand as carbrand
         from item as i
         left join frontend_ebrands as br1 on br1.brandid=i.brand
         left join itemcategory as cat on cat.line=i.category
-        left join part_masterfile as part on part.part_id= i.part where 1=1 $filter";
+        left join carbrand as car on car.id=i.carid
+        where 1=1 $filter";
         return $query;
     }
 
@@ -165,73 +166,6 @@ class catalog
     return $str;
   }
 
- 
-
-  public function reportDefaultLayout_DETAILEDs($config)
-{
-    $result = $this->reportDefault($config);
-    $count = 5;
-    $page = 5;
-    $str = '';
-    $layoutsize = '1000';
-    $font = $this->companysetup->getrptfont($config['params']);
-    $fontsize = "14";
-    $border = "1px solid ";
-
-    if (empty($result)) {
-        return $this->othersClass->emptydata($config);
-    }
-
-    $str .= $this->reporter->beginreport($layoutsize);
-    $str .= $this->default_displayHeader($config);
-    $str .= $this->reporter->begintable($layoutsize);
-
-    foreach ($result as $key => $data) {
-
-      $hasData =
-            !empty($data->picture) ||
-            !empty($data->brand_desc) ||
-            !empty($data->categoryname) ||
-            (isset($data->carbrand) && !empty($data->carbrand)) ||
-            !empty($data->partname);
-
-        if (!$hasData) {
-            continue;
-        }
-
-        $picture = 'PICTURE';
-
-        if (!empty($data->picture)) {
-            $src = asset(ltrim($data->picture, '/'));
-            $picture = '<img src="' . $src . '" style="width:275px;height:275px;object-fit:contain;">';
-        }
-
-        $details  = 'Item Brand: <b>' . (!empty($data->brand_desc) ? $data->brand_desc : '') . '</b><br>';
-        $details .= 'Item Category: <b>' . (!empty($data->categoryname) ? $data->categoryname : '') . '</b><br>';
-        $details .= 'Car Brand: <b>' . (!empty($data->carbrand) ? $data->carbrand : '') . '</b><br>';
-        $details .= 'Part No: <b>' . (!empty($data->partname) ? $data->partname : '') . '</b>';
-        $str .= $this->reporter->addline();
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($picture, '275', '20', false, $border, '', 'L', $font, $fontsize, '', '', '');
-         $str .= $this->reporter->col('', '50', '20', false, '', '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($details, '675', '20', false, '', '', 'L', $font, $fontsize, '', '', '');
-      
-        if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $str .= $this->default_displayHeader($config);
-        $str .= $this->reporter->begintable($layoutsize);
-        $page = $page + $count;
-      }
-
-
-    }
-
-    $str .= $this->reporter->endtable();
-    $str .= $this->reporter->endreport();
-
-    return $str;
-}
 
 
 public function reportDefaultLayout_DETAILED($config)
@@ -258,16 +192,17 @@ public function reportDefaultLayout_DETAILED($config)
     foreach ($result as $key => $data) {
 
         // SKIP KAPAG WALANG LAMAN ANG PRODUCT
-        $hasData =
-            !empty($data->picture) ||
-            !empty($data->brand_desc) ||
-            !empty($data->categoryname) ||
-            (isset($data->carbrand) && !empty($data->carbrand)) ||
-            !empty($data->partname);
+        // $hasData =
+        //     !empty($data->itemname) ||
+        //     !empty($data->picture) ||
+        //     !empty($data->brand_desc) ||
+        //     !empty($data->categoryname) ||
+        //     (isset($data->carbrand) && !empty($data->carbrand)) ||
+        //     !empty($data->partname);
 
-        if (!$hasData) {
-            continue;
-        }
+        // if (!$hasData) {
+        //     continue;
+        // }
 
         // Ito ang frame ng picture.
         // Kung gusto mong palakihin o paliitin ang image box,
@@ -278,7 +213,8 @@ public function reportDefaultLayout_DETAILED($config)
         <div style="width:180px; height:135px; border:1px solid #dcdcdc;background:#ffffff;text-align:center;  line-height:135px;font-size:11px; ">PICTURE </div>';
 
         if (!empty($data->picture)) {
-            $src = asset(ltrim($data->picture, '/'));
+            // $src = asset(ltrim($data->picture, '/'));
+            $src = asset('/public' . ltrim($data->picture));
             // ACTUAL IMAGE SETTINGS
             // width:165px  = lapad ng actual image
             // height:125px = taas ng actual image
@@ -323,6 +259,14 @@ public function reportDefaultLayout_DETAILED($config)
             <td>:</td>
             <td><b>' . (!empty($data->partname) ? $data->partname : '') . '</b></td>
         </tr>';
+
+       
+        $details .= '
+        <tr>
+            <td style="color:#666;">Description</td>
+            <td>:</td>
+            <td><b>' . (!empty($data->itemname) ? $data->itemname : '') . '</b></td>
+        </tr>';  
 
         $details .= '</table>';
 

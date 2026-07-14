@@ -613,7 +613,7 @@ class rt
     }
 
     $dateTables = ['pohead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {

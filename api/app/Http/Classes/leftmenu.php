@@ -302,6 +302,9 @@ class leftmenu
             case 36: //rozlab
                 $qry = $qry . ",(4037,1,'Allow Change Discount SO','',0,'\\50121','\\501',0,'0',0," . $params['levelid'] . ")";
                 break;
+            case 24: //goodfound
+                $qry .=  ",(5939,1,'Allow View Fields for Gate 2 Users SO','',0,'\\50124','\\501',0,'0',0," . $params['levelid'] . ")";
+                break;
             case 60: //transpower
                 $qry .=  ",(5489,0,'Allow Click Change Code Button','',0,'\\50122','\\501',0,'0',0," . $params['levelid'] . ")";
                 break;

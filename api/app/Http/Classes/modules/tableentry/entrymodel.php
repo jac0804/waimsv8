@@ -104,7 +104,7 @@ class entrymodel
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";
     $obj[0][$this->gridname]['columns'][2]['style'] = "width:800px;whiteSpace: normal;min-width:800px;";
     $obj[0][$this->gridname]['columns'][2]['label'] = "Description";
-    $obj[0][$this->gridname]['columns'][2]['type'] = "cinput";
+    $obj[0][$this->gridname]['columns'][2]['type'] = "input";
     switch ($companyid) {
       case 40: //cdo
         $obj[0][$this->gridname]['columns'][2]['maxlength'] = 50;

@@ -3538,15 +3538,15 @@ class payroll_register
         $mealdeduction = 0;
         $tempid = 0;
       }
-      if ($count == $countemp) {
-        $countemp = 0;
+      // if ($count == $countemp) {
+      //   $countemp = 0;
         $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $str .= $this->one_sky_header_org($config, $layoutsize, $result);
+        // $str .= $this->reporter->page_break();
+        // $str .= $this->one_sky_header_org($config, $layoutsize, $result);
         // $str .= $this->reporter->endrow();
         $str .= $this->reporter->begintable($layoutsize);
         // $str .= $this->reporter->endtable();
-      }
+      // }
     }
     $str .= $this->reporter->endtable();
 

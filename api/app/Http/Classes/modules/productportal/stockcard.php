@@ -289,7 +289,11 @@ class stockcard
         $fields = 'item.itemid, item.barcode as docno';
 
         foreach ($this->fields as $key => $value) {
-            $fields = $fields . ',item.' . $value;
+            if($value == 'amt'){
+                $fields = $fields . ",format(item.$value,2) as amt";
+            }else {
+                $fields = $fields . ',item.' . $value;
+            }
         }
 
         foreach ($this->iteminfo as $key => $value) {

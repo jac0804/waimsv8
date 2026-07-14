@@ -151,13 +151,17 @@ class entrycanvasssummary
     {
         $data = [];
         $row = $config['params']['row'];
+        $dateTables = ['cdstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['editby'] = $config['params']['user'];
         $data['editdate'] =  $this->othersClass->getCurrentTimeStamp();
         $this->coreFunctions->sbcupdate($this->stock, $data, ['line' => $row['line'], 'trno' => $row['trno']]);
         $returnrow = $this->loaddataperrecord($config, $row['trno'], $row['line']);
+        var_dump($data);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
     } //end function
 
@@ -166,12 +170,12 @@ class entrycanvasssummary
         $center = $config['params']['center'];
         $select = $this->selectqry($config);
         $query = "select " . $select . " 
-              from cdhead as head
-              left join cdstock as stock on stock.trno = head.trno
-              left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
-              left join transnum as num on num.trno=head.trno
-              left join trxstatus as stat on stat.line=num.statid
-              where head.doc= 'cd' and num.center = $center and num.statid=45 and stock.trno = ? and stock.line = ?";
+        from cdhead as head
+        left join cdstock as stock on stock.trno = head.trno
+        left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+        left join transnum as num on num.trno=head.trno
+        left join trxstatus as stat on stat.line=num.statid
+        where head.doc= 'cd' and num.center = $center and num.statid=45 and stock.trno = ? and stock.line = ?";
         $data = $this->coreFunctions->opentable($query, [$trno, $line]);
         return $data;
     }
@@ -181,13 +185,13 @@ class entrycanvasssummary
         $center = $config['params']['center'];
         $select = $this->selectqry($config);
         $query = "select " . $select . " 
-              from cdhead as head
-              left join cdstock as stock on stock.trno = head.trno
-              left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
-              left join transnum as num on num.trno=head.trno
-              left join trxstatus as stat on stat.line=num.statid
-              where head.doc= 'cd' and num.center= $center and num.statid=45 
-              order by info.ctrlno, head.docno";
+        from cdhead as head
+        left join cdstock as stock on stock.trno = head.trno
+        left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
+        left join transnum as num on num.trno=head.trno
+        left join trxstatus as stat on stat.line=num.statid
+        where head.doc= 'cd' and num.center= $center and num.statid=45 
+        order by info.ctrlno, head.docno";
         $data = $this->coreFunctions->opentable($query);
         return $data;
     }

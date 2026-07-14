@@ -327,14 +327,16 @@ class uploadingutility
           ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
           ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
           ['label' => 'Update Agent', 'value' => 'updateagent', 'color' => 'green'],
-          ['label' => 'Update Employee', 'value' => 'updateemployeepayroll', 'color' => 'green']];
+          ['label' => 'Update Employee', 'value' => 'updateemployeepayroll', 'color' => 'green']
+        ];
 
-          if($config['params']['companyid'] == 68){ //jda
-          array_push($options, 
+        if ($config['params']['companyid'] == 68) { //jda
+          array_push(
+            $options,
             ['label' => 'Update Employee Requirements', 'value' => 'updatereq', 'color' => 'green']
-           );
-          }
-        data_set($col1, 'optionuploading.options', $options );
+          );
+        }
+        data_set($col1, 'optionuploading.options', $options);
         break;
 
       case 56: //homeworks
@@ -428,7 +430,7 @@ class uploadingutility
       case 43: //mighty
       case 68: //jda
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloademployeeexcel'];
-        if($config['params']['companyid'] == 68) array_push($fields, 'downloademprequirements');
+        if ($config['params']['companyid'] == 68) array_push($fields, 'downloademprequirements');
         break;
       case 47: //kstar
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadcustomerexcelmaster', 'downloaditemexcelmaster'];
@@ -3388,7 +3390,7 @@ class uploadingutility
             $valtoinsert['type'] = $this->coreFunctions->getfieldvalue("employee", "classrate", 'empid=?', [$valtoinsert['empid']]);
             break;
           case 'erequire':
-            $reqid = $this->coreFunctions->datareader("select line as value from emprequire where code = '". $valtoinsert['pin']."'",[],'',true);
+            $reqid = $this->coreFunctions->datareader("select line as value from emprequire where code = '" . $valtoinsert['pin'] . "'", [], '', true);
             $valtoinsert['reqid'] = $reqid;
             break;
         }
@@ -3657,7 +3659,7 @@ class uploadingutility
               $this->coreFunctions->execqry($qry, 'delete', $valuefilter);
               $exist = 0;
               break;
-              case 'erequire':
+            case 'erequire':
               $arrFilters = [];
               $valuefilter = [];
 
@@ -3666,8 +3668,8 @@ class uploadingutility
                 $valuefilter[] = $valtoinsert[$keyU];
               }
               $fieldfilter = implode(' AND ', $arrFilters);
-              $exist = $this->coreFunctions->datareader('select line as value from erequire where '. $fieldfilter, $valuefilter,'',true);
-                break;
+              $exist = $this->coreFunctions->datareader('select line as value from erequire where ' . $fieldfilter, $valuefilter, '', true);
+              break;
             default:
               if ($type == 'uploaddbtable') {
                 $exist = 0;
@@ -3937,13 +3939,13 @@ class uploadingutility
 
           if ($insert) {
             if (!empty($employeeinfo)) {
-              $employeeinfo['empid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$valtoinsert['client']], '' ,true);
+              $employeeinfo['empid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$valtoinsert['client']], '', true);
               if ($employeeinfo['empid'] != 0) {
 
-                if (isset($employeeinfo['tin'])) if ($employeeinfo['tin'] != '') $employeeinfo['chktin'] = 1;
-                if (isset($employeeinfo['sss'])) if ($employeeinfo['sss'] != '') $employeeinfo['chksss'] = 1;
-                if (isset($employeeinfo['phic'])) if ($employeeinfo['phic'] != '') $employeeinfo['chkphealth'] = 1;
-                if (isset($employeeinfo['hdmf'])) if ($employeeinfo['hdmf'] != '') $employeeinfo['chkpibig'] = 1;
+                if (isset($employeeinfo['tin'])) if ($employeeinfo['tin'] != '') $employeeinfo['chktin'] = $employeeinfo['tin'];
+                if (isset($employeeinfo['sss'])) if ($employeeinfo['sss'] != '') $employeeinfo['chksss'] = $employeeinfo['sss'];
+                if (isset($employeeinfo['phic'])) if ($employeeinfo['phic'] != '') $employeeinfo['chkphealth'] = $employeeinfo['phic'];
+                if (isset($employeeinfo['hdmf'])) if ($employeeinfo['hdmf'] != '') $employeeinfo['chkpibig'] = $employeeinfo['hdmf'];
 
                 foreach ($employeeinfo as $kemp => $valemp) {
                   $employeeinfo[$kemp] = $this->othersClass->sanitizekeyfield($kemp, $valemp, '', $companyid);;
@@ -5093,7 +5095,7 @@ class uploadingutility
         return 'isreversewireitem';
         break;
       case 'code':
-        if($type == 'updatereq'){
+        if ($type == 'updatereq') {
           return 'pin';
         }
         return 'client';
@@ -5150,10 +5152,11 @@ class uploadingutility
     }
   }
 
-  private function addMsg($old, $new){
+  private function addMsg($old, $new)
+  {
     if (strpos($old, $new) !== false) {
       return $old;
-    }else{
+    } else {
       return ($old == '' ? $new : $old . '<br>' . $new);
     }
   }
@@ -5446,11 +5449,11 @@ class uploadingutility
             break;
         }
         break;
-        case 'erequire':
-          switch ($field) {
-            case 'expiry':
-              break;
-          }
+      case 'erequire':
+        switch ($field) {
+          case 'expiry':
+            break;
+        }
         break;
     }
     $result = $this->padslashes($field, $result);

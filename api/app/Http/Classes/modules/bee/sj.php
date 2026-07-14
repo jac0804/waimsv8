@@ -40,6 +40,7 @@ class sj
   public $htablelogs = 'htable_log';
   public $tablelogs_del = 'del_table_log';
   private $stockselect;
+  
   public $defaultContra = 'IS1';
 
   private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'address', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'projectid'];
@@ -123,7 +124,7 @@ class sj
     $condition = '';
     $searchfilter = $config['params']['search'];
     $limit = '';
-
+    $filtersearch = '';
     if (isset($config['params']['search'])) {
       $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
       $search = $config['params']['search'];
@@ -415,16 +416,19 @@ class sj
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid =  $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
-
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if    
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -665,6 +669,7 @@ class sj
   // insert and update detail
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
     $trno = $config['params']['trno'];
@@ -759,9 +764,12 @@ class sj
       'checkno' => $checkno,
       'damt' => $damt
     ];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

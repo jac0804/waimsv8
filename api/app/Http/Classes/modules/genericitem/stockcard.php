@@ -509,10 +509,13 @@ class stockcard
       unset($this->fields[1]);
     }
     $itemid = 0;
+    $dateTables = ['item', 'uom'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+        // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if
     }
 

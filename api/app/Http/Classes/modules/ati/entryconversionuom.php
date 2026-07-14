@@ -97,8 +97,11 @@ class entryconversionuom
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['uomlist'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value], '', $companyid);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value], '', $companyid);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($data['uom'] == '') {

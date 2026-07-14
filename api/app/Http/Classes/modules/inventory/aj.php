@@ -692,8 +692,8 @@ class aj
     if ($companyid != 56) {
       $obj[0]['inventory']['columns'][$reasonname]['type'] = 'coldel';
     }
-    
-    if($companyid == 60) { //transpower
+
+    if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
@@ -999,11 +999,15 @@ class aj
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1575,6 +1579,9 @@ class aj
     $projectid = 0;
     $reasonid = 0;
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     if (isset($config['params']['data']['disc'])) {
       $disc = $config['params']['data']['disc'];
     }
@@ -1651,10 +1658,15 @@ class aj
         $projectid = $config['params']['data']['projectid'];
       }
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
-    $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
+    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
+    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
+    $iss = $this->othersClass->sanitizekeyfieldFast('iss', $iss, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
     if ($systemtype == 'REALESTATE') {
       $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
@@ -1674,9 +1686,14 @@ class aj
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       $isnoninv =  $item[0]->isnoninv;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $rrqty = $this->othersClass->sanitizekeyfield('rrqty', $rrqty);
-    $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $rrqty = $this->othersClass->sanitizekeyfield('rrqty', $rrqty);
+    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $rrqty = $this->othersClass->sanitizekeyfieldFast('rrqty', $rrqty, $lookups);
+    $iss = $this->othersClass->sanitizekeyfieldFast('iss', $iss, $lookups);
+
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $rrqty = round($rrqty, $this->companysetup->getdecimal('qty', $config['params']));
     $computedata = $this->othersClass->computestock($amt, $disc, $rrqty, $factor, $vat, 'P', $kgs);
@@ -1751,7 +1768,8 @@ class aj
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1941,8 +1959,8 @@ class aj
 
     $costfilter = " and stock.rrcost <>0 ";
     $costfilter2 = " and stock.cost <>0 ";
-    
-    if($companyid == 50){//unitech
+
+    if ($companyid == 50) { //unitech
       $costfilter = "";
       $costfilter2 = "";
     }
@@ -2323,6 +2341,9 @@ class aj
         break;
     }
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     $stock = $this->coreFunctions->opentable($qry, [$trno]);
     $tax = 0;
     if (!empty($stock)) {
@@ -2371,7 +2392,8 @@ class aj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         if ($this->acctg[$key]['cr'] < 0) {
           $this->acctg[$key]['db'] =  ($this->acctg[$key]['cr']) * -1;
@@ -2480,11 +2502,16 @@ class aj
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       $this->othersClass->logConsole(json_encode($value));
 
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty =  round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
+      // $dqty =  round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty =  round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
       $computedata = $this->othersClass->computestock($damt, $data[$key]->disc, $dqty, $data[$key]->uomfactor);
 

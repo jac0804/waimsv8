@@ -764,7 +764,7 @@ class othersClass
     array_push($date, 'scheddate', 'receivedate', 'schedstarttime', 'schedendtime', 'warranty', 'trainee', 'enddate', 'podate', 'leasedate');
     array_push($date, 'schedin', 'schedout', 'deldate', 'returndate_sup', 'dateclose', 'startdate', 'effectivity', 'createdate', 'seendate');
     array_push($date, 'donedate', 'deadline', 'origdeadline', 'deadline2', 'conndate', 'disconndate', 'expirydate', 'refdate', 'datefrom');
-    array_push($date, 'dateto', 'shipdate', 'wbdate', 'dateid2', 'submitdate', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
+    array_push($date, 'dateto', 'shipdate', 'wbdate', 'dateid2', 'submitdate', 'expiry', 'expiry2', 'schedin', 'schedout', 'disapprovedate');
     array_push($date, 'approveddate', 'approveddate2', 'disapproveddate', 'disapproveddate2', 'approvedate2', 'disapprovedate2');
     array_push($date, 'approvedate', 'date_approved_disapproved', 'date_approved_disapproved2', 'brk1stin', 'brk1stout', 'brk2ndin');
     array_push($date, 'brk2ndout', 'prevdate', 'checkdate', 'empstatdate', 'jobdate', 'dateend', 'voiddate', 'bday2', 'tdate1');

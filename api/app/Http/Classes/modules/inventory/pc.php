@@ -589,7 +589,7 @@ class pc
         $obj[0]['inventory']['showtotal'] = false;
       }
     }
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
@@ -859,6 +859,9 @@ class pc
     $data = [];
     $info = [];
 
+    $dateTables = ['pchead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -867,7 +870,8 @@ class pc
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1247,10 +1251,13 @@ class pc
                and stock.void=0";
 
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
+      $dateTables = ['pcstock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
+          // $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
+          $data[$key2]->rrqty = $this->othersClass->sanitizekeyfieldFast("qty", $data[$key2]->rrqty, $lookups);
 
-          $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
 
           $line = $this->coreFunctions->getfieldvalue($this->stock, "line", "trno=? and itemid=? ", [$trno, $data[$key2]->itemid], '', true);
 
@@ -1353,10 +1360,14 @@ class pc
                         where stock.trno = ? and stock.line=? " . $filtercenter . " 
                and stock.void=0 and stock.ispc=0";
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
+      $dateTables = ['pcstock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
-          $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
+          // $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
+          $data[$key2]->rrqty = $this->othersClass->sanitizekeyfieldFast("qty", $data[$key2]->rrqty, $lookups);
+
 
           $line = $this->coreFunctions->getfieldvalue($this->stock, "line", "trno=? and itemid=? ", [$trno, $data[$key2]->itemid], '', true);
 
@@ -1659,6 +1670,9 @@ class pc
     $oqty = 0;
     $amt = 0;
 
+    $dateTables = ['pcstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     if (isset($config['params']['data']['oqty'])) {
       $oqty = $config['params']['data']['oqty'];
     }
@@ -1728,8 +1742,13 @@ class pc
       }
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+
+
     $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
 
 
@@ -1801,7 +1820,8 @@ class pc
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

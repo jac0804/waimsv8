@@ -725,7 +725,7 @@ class ts
       }
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
@@ -1074,11 +1074,15 @@ class ts
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1086,7 +1090,8 @@ class ts
     $dataother = [];
     foreach ($this->otherfields as $key) {
       $dataother[$key] = $head[$key];
-      $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+      // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+      $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -2020,6 +2025,9 @@ class ts
     $rem = '';
     $loc = '';
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     if (isset($config['params']['data']['rem'])) {
       $rem = $config['params']['data']['rem'];
     }
@@ -2125,9 +2133,13 @@ class ts
       }
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
 
     if ($systemtype == 'REALESTATE') {
@@ -2204,7 +2216,8 @@ class ts
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

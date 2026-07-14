@@ -241,7 +241,7 @@ class companysetup
       case 70: //sportrunner
         $this->clientlength = 15;
         $this->documentlength = 15;
-        $this->barcodelength = 0;
+        $this->barcodelength = 15;
         $this->tax = 12;
         $this->companyname = 'SPORTRUNNER';
         $this->systemtype = 'PRODUCTPORTAL';

@@ -214,9 +214,14 @@ class approvedcanvass
 
   public function paramsdata($config)
   {
+    $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
     $barcode = isset($config['params']['row']['barcode']) ? $config['params']['row']['barcode'] : '';
-    $rrcost = isset($config['params']['row']['rrcost']) ? $this->othersClass->sanitizekeyfield('qty', $config['params']['row']['rrcost'])  : 0;
+
+    $dateTables = ['hstockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    $rrcost = isset($config['params']['row']['rrcost']) ? $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['row']['rrcost'], $lookups)  : 0;
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $arrfilter = [];
 
@@ -305,6 +310,7 @@ class approvedcanvass
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $rows = $config['params']['rows'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
@@ -317,7 +323,7 @@ class approvedcanvass
 
     foreach ($rows as $key) {
       if ($config['params']['companyid'] == 16) { //ati
-        if ($key['status'] == 1) {
+        if ($key['status'] == 1) { 
           if ($key['waivedqty'] == 0) {
 
             $basetotal = $key['rrqty2'] * $key['factor'];
@@ -424,9 +430,14 @@ class approvedcanvass
           $item[0]->factor = $this->othersClass->val($item[0]->factor);
           if ($item[0]->factor !== 0) $factor = $item[0]->factor;
         }
+        $dateTables = ['hcdstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        $key['rrcost'] = $this->othersClass->sanitizekeyfield('amt',  $key['rrcost']);
-        $key['rrqty'] = $this->othersClass->sanitizekeyfield('qty',  $key['rrqty']);
+        // $key['rrcost'] = $this->othersClass->sanitizekeyfield('amt',  $key['rrcost']);
+        // $key['rrqty'] = $this->othersClass->sanitizekeyfield('qty',  $key['rrqty']);
+
+        $key['rrcost'] = $this->othersClass->sanitizekeyfieldFast('amt',  $key['rrcost'], $lookups);
+        $key['rrqty'] = $this->othersClass->sanitizekeyfieldFast('qty',  $key['rrqty'], $lookups);
 
         $computedata = $this->othersClass->computestock($key['rrcost'], $key['disc'], $key['rrqty'], $factor);
 
@@ -438,7 +449,8 @@ class approvedcanvass
           'editdate' => $this->othersClass->getCurrentTimeStamp()
         ];
         foreach ($stock as $key2 => $value) {
-          $stock[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
+          // $stock[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
+          $stock[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
 
         $this->coreFunctions->sbcupdate('hcdstock', $stock, ['trno' => $key['trno'], 'line' => $key['line']]);
@@ -522,9 +534,14 @@ class approvedcanvass
           $stockinfo['carem'] = $key['carem'];
         }
       }
+
+      $dateTables = ['hstockinfotrans'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
       foreach ($stockinfo as $key2 => $value) {
-        $stockinfo[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
-      }
+        // $stockinfo[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
+        $stockinfo[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
+        }
       $this->coreFunctions->sbcupdate('hstockinfotrans', $stockinfo, ['trno' => $key['trno'], 'line' => $key['line']]);
     }
 

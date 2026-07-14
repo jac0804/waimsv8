@@ -420,6 +420,8 @@ class rr
       unset($this->fields[1]);
       unset($head['docno']);
     }
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
@@ -664,6 +666,7 @@ class rr
   // insert and update detail
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
     $trno = $config['params']['trno'];
@@ -758,9 +761,11 @@ class rr
       'checkno' => $checkno,
       'damt' => $damt
     ];
-
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

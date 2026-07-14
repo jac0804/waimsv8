@@ -40,24 +40,71 @@ class va
   private $stockselect;
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'whid', 'yourref', 'ourref', 'notes',
+    'trno',
+    'docno',
+    'dateid',
+    'whid',
+    'yourref',
+    'ourref',
+    'notes',
 
-    'port', 'arrival', 'departure', 'timeatsea', 'enginerpm',
-    'avespeed', 'enginefueloil',
-    'cylinderoil', 'enginelubeoil', 'hiexhaust', 'loexhaust',
-    'exhaustgas', 'hicoolwater', 'locoolwater', 'lopress',
-    'fwpress', 'airpress', 'airinletpress', 'coolerin',
-    'coolerout', 'coolerfwin', 'coolerfwout', 'seawatertemp',
+    'port',
+    'arrival',
+    'departure',
+    'timeatsea',
+    'enginerpm',
+    'avespeed',
+    'enginefueloil',
+    'cylinderoil',
+    'enginelubeoil',
+    'hiexhaust',
+    'loexhaust',
+    'exhaustgas',
+    'hicoolwater',
+    'locoolwater',
+    'lopress',
+    'fwpress',
+    'airpress',
+    'airinletpress',
+    'coolerin',
+    'coolerout',
+    'coolerfwin',
+    'coolerfwout',
+    'seawatertemp',
     'engroomtemp',
 
-    'begcash', 'addcash', 'usagefeeamt', 'mooringamt', 'coastguardclearanceamt',
-    'pilotageamt', 'lifebouyamt', 'bunkeringamt', 'sopamt', 'othersamt',
-    'purchaseamt', 'crewsubsistenceamt', 'waterexpamt', 'localtranspoamt',
-    'others2amt', 'reqcash',
-    'usagefee', 'mooring', 'coastguardclearance',
-    'pilotage', 'lifebouy', 'bunkering',
-    'sop', 'others', 'purchase', 'crewsubsistence',
-    'waterexp', 'localtranspo', 'others2', 'totalcash', 'totalexpenses', 'cashbalance'
+    'begcash',
+    'addcash',
+    'usagefeeamt',
+    'mooringamt',
+    'coastguardclearanceamt',
+    'pilotageamt',
+    'lifebouyamt',
+    'bunkeringamt',
+    'sopamt',
+    'othersamt',
+    'purchaseamt',
+    'crewsubsistenceamt',
+    'waterexpamt',
+    'localtranspoamt',
+    'others2amt',
+    'reqcash',
+    'usagefee',
+    'mooring',
+    'coastguardclearance',
+    'pilotage',
+    'lifebouy',
+    'bunkering',
+    'sop',
+    'others',
+    'purchase',
+    'crewsubsistence',
+    'waterexp',
+    'localtranspo',
+    'others2',
+    'totalcash',
+    'totalexpenses',
+    'cashbalance'
   ];
 
   private $except = ['trno'];
@@ -192,34 +239,68 @@ class va
   {
     //TAB1
     $fields = [
-      'port', 'arrival', 'departure', 'enginerpm', 'timeatsea', 'avespeed', 'enginefueloil',
-      'cylinderoil', 'enginelubeoil', 'hiexhaust'
+      'port',
+      'arrival',
+      'departure',
+      'enginerpm',
+      'timeatsea',
+      'avespeed',
+      'enginefueloil',
+      'cylinderoil',
+      'enginelubeoil',
+      'hiexhaust'
     ];
     $col1 = $this->fieldClass->create($fields);
 
     $fields = [
-      'loexhaust', 'exhaustgas',
-      'hicoolwater', 'locoolwater', 'lopress', 'fwpress', 'airpress', 'airinletpress'
+      'loexhaust',
+      'exhaustgas',
+      'hicoolwater',
+      'locoolwater',
+      'lopress',
+      'fwpress',
+      'airpress',
+      'airinletpress'
     ];
     $col2 = $this->fieldClass->create($fields);
 
     $fields = [
-      'coolerin', 'coolerout',
-      'coolerfwin', 'coolerfwout', 'seawatertemp', 'engroomtemp',
+      'coolerin',
+      'coolerout',
+      'coolerfwin',
+      'coolerfwout',
+      'seawatertemp',
+      'engroomtemp',
     ];
     $col3 = $this->fieldClass->create($fields);
 
 
 
     $fields = [
-      'begcashlabel', 'addcashlabel', 'usagefee', 'mooring', 'coastguardclearance', 'pilotage',
-      'lifebouy', 'bunkering', 'sop', 'others'
+      'begcashlabel',
+      'addcashlabel',
+      'usagefee',
+      'mooring',
+      'coastguardclearance',
+      'pilotage',
+      'lifebouy',
+      'bunkering',
+      'sop',
+      'others'
     ];
     $col11 = $this->fieldClass->create($fields);
 
     $fields = [
-      'begcash', 'addcash', 'usagefeeamt', 'mooringamt', 'coastguardclearanceamt', 'pilotageamt',
-      'lifebouyamt', 'bunkeringamt', 'sopamt', 'othersamt'
+      'begcash',
+      'addcash',
+      'usagefeeamt',
+      'mooringamt',
+      'coastguardclearanceamt',
+      'pilotageamt',
+      'lifebouyamt',
+      'bunkeringamt',
+      'sopamt',
+      'othersamt'
     ];
     $col22 = $this->fieldClass->create($fields);
 
@@ -235,14 +316,28 @@ class va
     data_set($col22, 'othersamt.label', '');
 
     $fields = [
-      'purchase', 'crewsubsistence', 'waterexp', 'localtranspo', 'others2', 'totalcashlabel', 'totalexpenseslabel',
-      'cashbalancelabel', 'reqcashlabel'
+      'purchase',
+      'crewsubsistence',
+      'waterexp',
+      'localtranspo',
+      'others2',
+      'totalcashlabel',
+      'totalexpenseslabel',
+      'cashbalancelabel',
+      'reqcashlabel'
     ];
     $col33 = $this->fieldClass->create($fields);
 
     $fields = [
-      'purchaseamt', 'crewsubsistenceamt', 'waterexpamt', 'localtranspoamt', 'others2amt', 'totalcash', 'totalexpenses',
-      'cashbalance', 'reqcash'
+      'purchaseamt',
+      'crewsubsistenceamt',
+      'waterexpamt',
+      'localtranspoamt',
+      'others2amt',
+      'totalcash',
+      'totalexpenses',
+      'cashbalance',
+      'reqcash'
     ];
     $col44 = $this->fieldClass->create($fields);
     data_set($col44, 'purchaseamt.label', '');
@@ -454,11 +549,16 @@ class va
     }
     $clientid = 0;
     $msg  = '';
+
+    $dateTables = ['rvoyage'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
