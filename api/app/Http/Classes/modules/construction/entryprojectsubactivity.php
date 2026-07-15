@@ -173,8 +173,12 @@ class entryprojectsubactivity
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
     $msg = '';
+
+    $dateTables = ['bastock', 'psubactivity'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];
@@ -195,7 +199,8 @@ class entryprojectsubactivity
           $data[$key]['activity'] = $config['params']['sourcerow']['substageline'];
           $data[$key]['subactivity'] = $data[$key]['subline'];
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
 
           $data2['editby'] = $config['params']['user'];
@@ -234,7 +239,9 @@ class entryprojectsubactivity
               if (floatval($data2['rrqty']) > floatval($existqty)) {
                 $returndata = $this->loaddata($config);
                 return [
-                  'status' => true, 'msg' => "The QTY is greater than Existing QTY", 'data' => $returndata,
+                  'status' => true,
+                  'msg' => "The QTY is greater than Existing QTY",
+                  'data' => $returndata,
                 ];
               }
             }
@@ -244,7 +251,8 @@ class entryprojectsubactivity
         } else {    // pm update       
           $trno = $config['params']['tableid'];
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
 
           $exist = $this->coreFunctions->getfieldvalue($this->table, "line", "trno =? and line = ? and subproject =? and stage =? and subactid =?", [$data2['trno'], $data2['line'], $data2['subproject'], $data2['stage'], $data2['subactid']]);

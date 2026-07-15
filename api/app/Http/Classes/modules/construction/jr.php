@@ -818,11 +818,16 @@ class jr
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $ext = $config['params']['data']['ext'];
     $void = 'false';
+
+    $dateTables = ['prstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
     }
@@ -906,7 +911,8 @@ class jr
       'stageid' => $stageid
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

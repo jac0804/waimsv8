@@ -186,6 +186,9 @@ class entryconversionuom
     $data = $config['params']['data'];
     $datatest = [];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['uomlist'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
 
     foreach ($data as $key => $value) {
       foreach ($this->fields as $key2 => $value2) {
@@ -202,7 +205,8 @@ class entryconversionuom
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], '', $companyid);
+          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], '', $companyid);
+          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], $lookups);
         }
 
         if ($data[$key]['line'] == 0) {

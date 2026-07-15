@@ -107,7 +107,7 @@ class lost
 
     public function loaddata($config)
     {
-
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['dataparams'];
 
         if (empty($head['reason'])) {
@@ -130,10 +130,15 @@ class lost
             'lostdate' => $date,
             'reason' => $head['reason']
         ];
+
+        $dateTables = ['pxhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (isset($data[$key])) {
                 $data[$key] = $data[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
             }
         }
 

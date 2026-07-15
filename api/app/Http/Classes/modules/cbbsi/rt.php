@@ -1277,6 +1277,8 @@ class rt
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
+    $companyid = ['params']['companyid'];
+
     $ref = '';
 
     if (isset($config['params']['data']['ref'])) {
@@ -1306,7 +1308,7 @@ class rt
     }
 
     $dateTables = ['postock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -1450,12 +1452,14 @@ class rt
 
   public function recomputecost($head, $config)
   {
+    $companyid = ['params']['companyid'];
+
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
 
     $dateTables = ['postock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data2 as $key => $value) {
       // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);

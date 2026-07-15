@@ -219,12 +219,13 @@ class entryamlabor
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
     $trno = $config['params']['tableid'];
     $msg = "All saved successfully.";
     $stat = true;
     $dateTables = ['amtask'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
@@ -267,12 +268,13 @@ class entryamlabor
   public function save($config)
   {
     $trno = $config['params']['tableid'];
+    $companyid = $config['params']['companyid'];
     $row = $config['params']['row'];
     $doc = $config['params']['doc'];
     $data = [];
 
     $dateTables = ['amtask'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key2 => $value) {
       // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);

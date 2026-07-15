@@ -357,11 +357,12 @@ class bankrecon
         $interest = $config['params']['dataparams']['interest'];
         $deductions = $config['params']['dataparams']['deduction'];
         $endbal =  $config['params']['dataparams']['endbal'];
+        $companyid = $config['params']['companyid'];
 
 
         //new sanitize
         $dateTables = ['gldetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'],  $companyid, [], false, $dateTables);
 
         $interest = $this->othersClass->sanitizekeyfieldFast('amt', $interest, $lookups);
         $deductions = $this->othersClass->sanitizekeyfieldFast('amt', $deductions, $lookups);
@@ -488,10 +489,12 @@ class bankrecon
 
         $diff = $config['params']['dataparams']['difference'];
         $endbal = $config['params']['dataparams']['endbal'];
+        $companyid = $config['params']['companyid'];
+
 
         //new sanitize
         $dateTables = ['gldetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $diff = $this->othersClass->sanitizekeyfieldFast('amt', $diff, $lookups);
         $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);

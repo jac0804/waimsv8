@@ -179,8 +179,8 @@ class ch
 
     $dateid = "left(head.dateid,10) as dateid";
     $orderby = "order by dateid desc, docno desc";
-
-    if ($searchfilter == "") $limit = 'limit 150';
+    $translimit = $this->companysetup->gettransactionlimit($config['params']);
+    if ($searchfilter == "") $limit = 'limit '.$translimit;
     $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
     $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
 

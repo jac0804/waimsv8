@@ -190,6 +190,7 @@ class leloan
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $button = $config['params']['action2'];
     $trno = $config['params']['dataparams']['trno'];
     $head = [];
@@ -202,22 +203,37 @@ class leloan
     $info['intannum'] = $config['params']['dataparams']['intannum'];
     $info['voidint'] = $config['params']['dataparams']['voidint'];
     $loanamt = $config['params']['dataparams']['amount'];
+
+    $dateTables = ['eahead','eainfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     
     switch ($button){
-      case 'update':        
-        $info['pf'] = $this->othersClass->sanitizekeyfield('amt', $config['params']['dataparams']['pf']);
-        $info['amortization'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['amortization']);
-        $info['penalty'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['penalty']);
-        $info['nf'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['nf']);
+      case 'update': 
+         
+        // $info['pf'] = $this->othersClass->sanitizekeyfield('amt', $config['params']['dataparams']['pf']);
+        // $info['amortization'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['amortization']);
+        // $info['penalty'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['penalty']);
+        // $info['nf'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['nf']);
+
+        $info['pf'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['pf'],$lookups);
+        $info['amortization'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['amortization'],$lookups);
+        $info['penalty'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['penalty'],$lookups);
+        $info['nf'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['nf'],$lookups);
         
         if($info['intannum']!=0){
           $head['interest'] = $info['intannum']/12;
         }
 
-        $head['interest'] = $this->othersClass->sanitizekeyfield('amt',$head['interest']);
-        $info['intannum'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['intannum']);
+        // $head['interest'] = $this->othersClass->sanitizekeyfield('amt',$head['interest']);
+        // $info['intannum'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['intannum']);
 
-        $info['voidint'] = $this->othersClass->sanitizekeyfield('qty',$config['params']['dataparams']['voidint']);
+        // $info['voidint'] = $this->othersClass->sanitizekeyfield('qty',$config['params']['dataparams']['voidint']);
+
+
+        $head['interest'] = $this->othersClass->sanitizekeyfieldFast('amt',$head['interest'],$lookups);
+        $info['intannum'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['intannum'],$lookups);
+
+        $info['voidint'] = $this->othersClass->sanitizekeyfieldFast('qty',$config['params']['dataparams']['voidint'],$lookups);
 
         $this->coreFunctions->sbcupdate('eahead', $head, ['trno' => $trno]);
         $this->coreFunctions->sbcupdate('eainfo', $info, ['trno' => $trno]);
@@ -232,6 +248,7 @@ class leloan
   } //end function
 
   private function compute($config){
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $head = [];
     $info = [];
@@ -248,6 +265,10 @@ class leloan
     $rdate = strtotime($this->coreFunctions->getfieldvalue("eahead","dateid","trno=?",[$trno]));
     $pdate = date("Y-m-d",$rdate);
     $msg = 'Computed Successfully';
+    
+    $dateTables = ['eainfo','tempdetailinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
       $dinfo =[];
       $di=[];
       if($loanamt != 0){
@@ -272,8 +293,8 @@ class leloan
 
           $principal = $loanamt / ($config['params']['dataparams']['terms']+$freeintmos);
           $amort = $principal+$interest+$pf+$nf+$dst+$mri;
-
-          $info['amortization'] = $this->othersClass->sanitizekeyfield("amt", $amort);
+          
+          $info['amortization'] = $this->othersClass->sanitizekeyfieldFast("amt", $amort, $lookups);
           $this->coreFunctions->sbcupdate('eainfo', ['amortization'=>round($amort,2)], ['trno' => $trno]);         
                     
           $loanproc = 0;
@@ -356,7 +377,7 @@ class leloan
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($dinfo as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $dinfo[$key]['editdate'] = $current_timestamp;
             $dinfo[$key]['editby'] = $config['params']['user'];
@@ -415,7 +436,7 @@ class leloan
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($dinfo as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $dinfo[$key]['editdate'] = $current_timestamp;
             $dinfo[$key]['editby'] = $config['params']['user'];

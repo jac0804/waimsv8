@@ -321,14 +321,14 @@ class leavebatchcreation
           $data['prdstart'] = $leavestart;
           $data['prdend'] = $leaveend;
           $this->coreFunctions->sbcupdate('leavesetup', $data, ['trno' => $exists]);
-          $this->voidprevious($data['empid'],  $data['dateid']);
+          $this->voidprevious($data['empid'],  $data['dateid'],  $data['acnoid']);
         } else {
           if ($isnopay) {
             $data['bal'] = $bal;
           }
           $data['docno'] = $this->getlastDocno($config);
           $this->coreFunctions->sbcinsert('leavesetup', $data);
-          $this->voidprevious($data['empid'],  $data['dateid']);
+          $this->voidprevious($data['empid'],  $data['dateid'],  $data['acnoid']);
         }
       }
     }
@@ -419,11 +419,11 @@ class leavebatchcreation
           $data['prdstart'] = $leavestart;
           $data['prdend'] = $leaveend;
           $this->coreFunctions->sbcupdate('leavesetup', $data, ['trno' => $exists]);
-          $this->voidprevious($data['empid'],  $data['dateid']);
+          $this->voidprevious($data['empid'],  $data['dateid'], $data['acnoid']);
         } else {
           $data['docno'] = $this->getlastDocno($config);
           $this->coreFunctions->sbcinsert('leavesetup', $data);
-          $this->voidprevious($data['empid'],  $data['dateid']);
+          $this->voidprevious($data['empid'],  $data['dateid'], $data['acnoid']);
         }
       }
     }
@@ -431,9 +431,9 @@ class leavebatchcreation
     return ['status' => true, 'msg' => 'Successfully created', 'action' => 'load', 'griddata' => ['entrygrid' => []]];
   }
 
-  private function voidprevious($empid, $year)
+  private function voidprevious($empid, $year, $acnoid)
   {
-    $this->coreFunctions->execqry("update leavesetup set bal=0 where empid=" . $empid . " and bal<>0 and dateid<'" . $year . "'");
+    $this->coreFunctions->execqry("update leavesetup set bal=0 where empid=" . $empid . " and acnoid=" . $acnoid . " and bal<>0 and dateid<'" . $year . "'");
   }
 
   private function getlastDocno($config)

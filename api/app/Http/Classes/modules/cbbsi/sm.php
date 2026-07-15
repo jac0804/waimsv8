@@ -479,6 +479,8 @@ class sm
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = ['params']['companyid'];
+
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -486,7 +488,7 @@ class sm
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -663,6 +665,8 @@ class sm
   public function createdistribution($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = ['params']['companyid'];
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -754,7 +758,7 @@ class sm
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
     if (!empty($this->acctg)) {
@@ -1084,6 +1088,8 @@ class sm
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
+    $companyid = ['params']['companyid'];
+
     $charges = '';
     $ref = '';
     $lastcost = 0;
@@ -1132,7 +1138,7 @@ class sm
     }
 
     $dateTables = ['snstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -1363,6 +1369,8 @@ class sm
   public function computefreight($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = ['params']['companyid'];
+
     $freight = $this->coreFunctions->getfieldvalue("cntnuminfo", "freight", "trno=?", [$trno]);
     $forex = $this->coreFunctions->getfieldvalue($this->head, "forex", "trno=?", [$trno]);
     $tax = $this->coreFunctions->getfieldvalue($this->head, "tax", "trno=?", [$trno]);
@@ -1373,7 +1381,7 @@ class sm
     $total = 0;
 
     $dateTables = ['snstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $this->coreFunctions->LogConsole('freight: ' . $freight);
     if ($freight <> 0) {

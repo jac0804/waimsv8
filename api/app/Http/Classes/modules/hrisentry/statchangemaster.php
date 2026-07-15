@@ -112,9 +112,10 @@ class statchangemaster
   public function save($config)
   {
     $data = [];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['statchange'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
@@ -172,8 +173,9 @@ class statchangemaster
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $companyid = $config['params']['companyid'];
     $dateTables = ['statchange'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];

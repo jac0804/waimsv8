@@ -159,8 +159,10 @@ class pcfcurrency
 
   public function headtablestatus($config)
   {
+    $companyid = $config['params']['companyid'];
     $action = $config['params']["action2"];
-
+    $dateTables = ['pcfcur'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     switch ($action) {
       case "refresh":
@@ -170,9 +172,12 @@ class pcfcurrency
         $data = [];
         $head = $config['params']['dataparams'];
 
-        $data['oandaphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['oandaphpusd']);
-        $data['oandausdphp'] = $this->othersClass->sanitizekeyfield('amt', $head['oandausdphp']);
-        $data['osphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['osphpusd']);
+        // $data['oandaphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['oandaphpusd']);
+        // $data['oandausdphp'] = $this->othersClass->sanitizekeyfield('amt', $head['oandausdphp']);
+        // $data['osphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['osphpusd']);
+        $data['oandaphpusd'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['oandaphpusd'], $lookups);
+        $data['oandausdphp'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['oandausdphp'], $lookups);
+        $data['osphpusd'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['osphpusd'], $lookups);
 
         $data['dateid'] = $this->othersClass->getCurrentTimeStamp();
         $data['createby'] = $config['params']['user'];

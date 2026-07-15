@@ -128,6 +128,7 @@ class replenish
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $rows = $config['params']['rows'];
     $user = $config['params']['user'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -146,22 +147,28 @@ class replenish
     //     $runningbal = $begbal;
     // }
 
+     $dateTables = ['tcdetail','tchead'];
+     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($rows as $key) {
       $config['params']['row']['trno'] = $rows[0]['trno'];
       $this->coreFunctions->execqry('update tcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
       $this->coreFunctions->execqry('update htcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
-      $amount = $this->othersClass->sanitizekeyfield('amt',  $key['amount']);
-      $deduction = $this->othersClass->sanitizekeyfield('amt',  $key['deduction']);
+      // $amount = $this->othersClass->sanitizekeyfield('amt',  $key['amount']);
+      // $deduction = $this->othersClass->sanitizekeyfield('amt',  $key['deduction']);
+      $amount = $this->othersClass->sanitizekeyfieldFast('amt',  $key['amount'], $lookups);
+      $deduction = $this->othersClass->sanitizekeyfieldFast('amt',  $key['deduction'], $lookups);
       $runningbal = $runningbal +($deduction  - $amount);
     }
 
-    $runningbal = $this->othersClass->sanitizekeyfield('amt', $runningbal);
+    $runningbal = $this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
 
     $line = $this->coreFunctions->getfieldvalue("tcdetail","max(line)+1","trno=?",[$trno]);
 
     $r['trno']=$trno;
     $r['line']=$line;
-    $r['amount']=$this->othersClass->sanitizekeyfield('amt', $runningbal);
+    // $r['amount']=$this->othersClass->sanitizekeyfield('amt', $runningbal);
+    $r['amount']=$this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
     $r['deduction'] = 0;
     $r['isreplenish'] = 1;
     $r['rem'] = 'Replenishment';

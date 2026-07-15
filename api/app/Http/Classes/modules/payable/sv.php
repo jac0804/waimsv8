@@ -488,13 +488,15 @@ class sv
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = ['params']['companyid'];
+
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
 
     $dateTables = ['svhead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -935,6 +937,8 @@ class sv
     $rem = $config['params']['data']['rem'];
     $client = $config['params']['data']['client'];
     $project = $config['params']['data']['project'];
+    $companyid = ['params']['companyid'];
+
     $refx = 0;
     $linex = 0;
     $ref = '';
@@ -1028,7 +1032,7 @@ class sv
     ];
 
     $dateTables = ['svdetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

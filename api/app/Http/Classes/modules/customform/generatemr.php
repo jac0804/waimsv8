@@ -125,6 +125,7 @@ class generatemr
     }
     public function generatemr($config)
     {
+        $companyid = $config['params']['companyid'];
         $dateid = $config['params']['dataparams']['dateid'];
         $date = new DateTime($dateid);
         $qry = "select clientid,client,clientname,addr,terms,charge1,tax,vattype from client where charge1 <> 0 and iscustomer = 1 order by clientname";
@@ -197,10 +198,12 @@ class generatemr
                         'rem' => "Service Fee for the month of " . date("F", strtotime($date->format('Y-m-d'))) . " " . date('Y', strtotime($date->format('Y-m-d')))
                     ];
 
-
+                    $dateTables = ['lahead','lastock'];
+                    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
                     foreach ($datahead as $key2 => $val) {
                         if (!in_array($key, $this->except)) {
-                            $datahead[$key2] = $this->othersClass->sanitizekeyfield($key2, $datahead[$key2]);
+                            // $datahead[$key2] = $this->othersClass->sanitizekeyfield($key2, $datahead[$key2]);
+                               $datahead[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $datahead[$key2], $lookups);
                         } //end if
                     }
                     $datahead['createdate'] = $datenow;
@@ -222,13 +225,17 @@ class generatemr
                                 $item[0]->factor = $this->othersClass->val($item[0]->factor);
                                 if ($item[0]->factor !== 0) $factor = $item[0]->factor;
                             }
+                            
                             $amt = $data[$key]->charge1;
-                            $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+                            // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+                            $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
                             $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
-                            $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+                            // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+                            $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
                             $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, $cur, $kgs);
                             $hamt = $computedata['amt'] * $forex;
-                            $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+                            // $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+                            $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
                             $ext = number_format($qty * $amt, 2);
                             $hamt = number_format($hamt, 2);
@@ -257,7 +264,8 @@ class generatemr
                                 'whid' => $whid,
                             ];
                             foreach ($datastock as $key2 => $val) {
-                                $datastock[$key2] = $this->othersClass->sanitizekeyfield($key2, $datastock[$key2]);
+                                // $datastock[$key2] = $this->othersClass->sanitizekeyfield($key2, $datastock[$key2]);
+                                $datastock[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $datastock[$key2], $lookups);
                             }
                             $datastock['encodeddate'] = $datenow;
                             $datastock['encodedby'] = $user;

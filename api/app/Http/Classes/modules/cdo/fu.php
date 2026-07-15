@@ -595,7 +595,7 @@ class fu
         }
 
         $dateTables = ['lahead', 'cntnum'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
@@ -1048,6 +1048,7 @@ class fu
     // insert and update item
     public function additem($action, $config, $setlog = false)
     {
+        $companyid = $config['params']['companyid'];
         $ispallet = $this->companysetup->getispallet($config['params']);
         $uom = $config['params']['data']['uom'];
 
@@ -1068,7 +1069,7 @@ class fu
         }
 
         $dateTables = ['lastock', 'stockinfo'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $rebate = 0;
         $refx = 0;

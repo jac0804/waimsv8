@@ -838,6 +838,7 @@ class dm
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
 
 
@@ -847,7 +848,7 @@ class dm
     }
 
     $dateTables = ['lahead', 'cntnuminfo'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -1508,6 +1509,7 @@ class dm
   {
     $ispallet = $this->companysetup->getispallet($config['params']);
     $isproject = $this->companysetup->getisproject($config['params']);
+    $companyid = $config['params']['companyid'];
 
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
@@ -1609,7 +1611,7 @@ class dm
       $config['params']['line'] = $line;
     }
     $dateTables = ['lastock', 'stockinfo'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
@@ -2072,6 +2074,7 @@ class dm
   public function createdistribution($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = $config['params']['companyid'];
     $periodic = $this->companysetup->getisperiodic($config['params']);
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -2124,7 +2127,7 @@ class dm
       }
     }
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {

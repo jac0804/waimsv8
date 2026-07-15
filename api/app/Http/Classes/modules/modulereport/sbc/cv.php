@@ -343,21 +343,21 @@ class cv
         PDF::SetFont($fontbold, '', 14);
         PDF::MultiCell(300, 5, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(280, 5, "Docno #: ", '', 'R', false, 0, '',  '');
+        PDF::MultiCell(280, 5, "Docno #: ", '', 'R', false, 0, '', '');
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(120, 5, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'R', false);
 
         PDF::SetFont($fontbold, '', 14);
         PDF::MultiCell(300, 5, '', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(280, 5, "", '', 'R', false, 0, '',  '');
+        PDF::MultiCell(280, 5, "", '', 'R', false, 0, '', '');
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(120, 5, '', 'T', 'R', false);
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(70, 5, 'PAYEE : ', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(425, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
+        PDF::MultiCell(425, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '', '');
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(85, 5, 'DATE:', '', 'R', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
@@ -366,7 +366,7 @@ class cv
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(70, 5, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '',  '');
+        PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '', '');
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(85, 5, '', '', 'R', false, 0);
         PDF::SetFont($font, '', $fontsize);
@@ -375,7 +375,7 @@ class cv
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(70, 5, 'ADDRESS : ', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(425, 5, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '');
+        PDF::MultiCell(425, 5, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '', '');
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(85, 5, 'REFERENCE # :', '', 'R', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
@@ -384,7 +384,7 @@ class cv
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(70, 5, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '',  '');
+        PDF::MultiCell(425, 5, '', 'T', 'L', false, 0, '', '');
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(85, 5, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize);
@@ -448,7 +448,7 @@ class cv
             for ($i = 0; $i < count($data); $i++) {
                 $maxrow = 1;
 
-                $acno =  $data[$i]['acno'];
+                $acno = $data[$i]['acno'];
                 $acnonamedescs = $data[$i]['acnoname'];
                 $checkno = $data[$i]['checkno'];
                 $pdate = $data[$i]['pdate'];
@@ -457,6 +457,7 @@ class cv
 
                 $credit = number_format($data[$i]['cr'], $decimalcurr);
                 $credit = $credit < 0 ? '-' : $credit;
+                $ref = isset($data[$i]['ref']) ? $data[$i]['ref'] : '';
                 $drem = $data[$i]['drem'];
 
                 $acnoname_with_check = $acnonamedescs;
@@ -479,19 +480,26 @@ class cv
                 for ($r = 0; $r < $maxrow; $r++) {
 
                     PDF::SetFont($font, '', $fontsize);
-                    PDF::MultiCell(60, 15, ' ' . (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(155, 15, ' ' . (isset($arr_acnonamedescs[$r]) ? $arr_acnonamedescs[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(60, 15, ' ' . (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(155, 15, ' ' . (isset($arr_acnonamedescs[$r]) ? $arr_acnonamedescs[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
 
                     $dateValue = isset($arr_pdate[$r]) ? $arr_pdate[$r] : '';
                     $formattedDate = !empty($dateValue) ? date('m/d/Y', strtotime($dateValue)) : '';
-                    PDF::MultiCell(65, 15, ' ' . $formattedDate, '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(60, 15, ' ' . (isset($arr_debit[$r]) ? ($arr_debit[$r] == 0 ? '-' : $arr_debit[$r]) : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(60, 15, ' ' . (isset($arr_credit[$r]) ? ($arr_credit[$r] == 0 ? '-' : $arr_credit[$r]) : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(5, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(310, 15, (isset($arr_drem[$r]) ? $arr_drem[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-                }
-                $totaldb += $data[$i]['db'];
-                $totalcr += $data[$i]['cr'];
+                    PDF::MultiCell(65, 15, ' ' . $formattedDate, '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(60, 15, ' ' . (isset($arr_debit[$r]) ? ($arr_debit[$r] == 0 ? '-' : $arr_debit[$r]) : ''), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(60, 15, ' ' . (isset($arr_credit[$r]) ? ($arr_credit[$r] == 0 ? '-' : $arr_credit[$r]) : ''), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(5, 15, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                    // PDF::MultiCell(310, 15, (isset($arr_drem[$r]) ? $arr_drem[$r] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+                    $dremtext = isset($arr_drem[$r]) ? $arr_drem[$r] : '';
+                    if ($r == 0 && !empty($ref)) {
+                        $coltext = (!empty($ref) ? $ref . ' - ' : '') . $dremtext;
+                    } else {
+                        $coltext = $dremtext;
+                    }
+                    PDF::MultiCell(310, 15, $coltext, '', 'L', false, 1, '', '', true, 0, true, true, 0, 'M', false);
+                    }
+                    $totaldb += $data[$i]['db'];
+                    $totalcr += $data[$i]['cr'];
 
 
                 if (PDF::getY() > 900) {
@@ -602,7 +610,7 @@ class cv
             // PDF::MultiCell(420, 5, 'CCCCCCCCCCCC', '', 'R',false,0);
             PDF::MultiCell(100, 5, '', '', 'C', false);
 
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
 
             PDF::MultiCell(120, 5, '', '', 'C', false, 0);
             PDF::setFontSpacing(2);
@@ -919,7 +927,7 @@ class cv
             PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
             switch ($data['head'][0]['month']) {
-                    // case '1': case '2': case '3':
+                // case '1': case '2': case '3':
                 case '1':
                 case '4':
                 case '7':
@@ -927,9 +935,9 @@ class cv
                     PDF::MultiCell(95, $max_height, number_format($data['detail'][$key]['oamt'], 2), 'LRB', 'R', false, 0);
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
-                    $totalwtx1 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx1 += $data['detail'][$key]['oamt'];
                     break;
-                    // case '4': case '5': case '6':
+                // case '4': case '5': case '6':
                 case '2':
                 case '5':
                 case '8':
@@ -937,13 +945,13 @@ class cv
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     PDF::MultiCell(95, $max_height, number_format($data['detail'][$key]['oamt'], 2), 'LRB', 'R', false, 0);
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
-                    $totalwtx2 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx2 += $data['detail'][$key]['oamt'];
                     break;
                 default:
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     PDF::MultiCell(95, $max_height, number_format($data['detail'][$key]['oamt'], 2), 'LRB', 'R', false, 0);
-                    $totalwtx3 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx3 += $data['detail'][$key]['oamt'];
                     break;
             }
             $total = number_format($data['detail'][$key]['oamt'], 2);
@@ -1198,7 +1206,7 @@ class cv
 
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
             PDF::MultiCell(720, 0, '***' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);
         }
 
@@ -1283,7 +1291,7 @@ class cv
 
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
             PDF::MultiCell(30, 0, '', '', 'C', false, 0);
             PDF::MultiCell(690, 0, '**' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY**', '', 'L', false);
         }
@@ -1366,7 +1374,7 @@ class cv
 
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
             PDF::MultiCell(30, 0, '', '', 'C', false, 0);
             PDF::MultiCell(690, 0, '**' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY**', '', 'L', false);
         }
@@ -1588,7 +1596,7 @@ class cv
             $str .= $this->reporter->endtable();
 
             $str .= $this->reporter->begintable('920');
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '50', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '30px', '4px');
             $str .= $this->reporter->col($this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '900', null, false, '1px solid ', '', 'L', 'Verdana', '10', '', '30px', '4px');
@@ -2064,7 +2072,7 @@ class cv
                     $str .= $this->reporter->col(number_format($data['detail'][$key]['oamt'], 2), '95', null, false, '2px solid', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col('', '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col('', '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
-                    $totalwtx1 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx1 += $data['detail'][$key]['oamt'];
                     break;
                 case '2':
                 case '5':
@@ -2073,13 +2081,13 @@ class cv
                     $str .= $this->reporter->col('', '95', null, false, '2px solid', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col(number_format($data['detail'][$key]['oamt'], 2), '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col('', '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
-                    $totalwtx2 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx2 += $data['detail'][$key]['oamt'];
                     break;
                 default:
                     $str .= $this->reporter->col('', '95', null, false, '2px solid', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col('', '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
                     $str .= $this->reporter->col(number_format($data['detail'][$key]['oamt'], 2), '95', null, false, '2px solid ', 'LRB', 'R', 'Century Gothic', '10', '', '', '');
-                    $totalwtx3 +=  $data['detail'][$key]['oamt'];
+                    $totalwtx3 += $data['detail'][$key]['oamt'];
                     break;
             }
             $total = number_format($data['detail'][$key]['oamt'], 2);
@@ -2510,7 +2518,7 @@ class cv
 
             $str .= "<div style='margin-top: 3px;'>";
             $str .= $this->reporter->begintable('920');
-            $dd = number_format((float)$cc, 2, '.', '');
+            $dd = number_format((float) $cc, 2, '.', '');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '30px', '4px');
             $str .= $this->reporter->col('***' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY***', '900', null, false, '1px solid ', '', 'L', 'Verdana', '13', '', '30px', '4px');
@@ -2542,46 +2550,46 @@ class cv
         if ($number == 0) {
             return 'Zero';
         } else {
-            $hyphen      = ' ';
+            $hyphen = ' ';
             $conjunction = ' ';
-            $separator   = ' ';
-            $negative    = 'negative ';
-            $decimal     = ' and ';
-            $dictionary  = array(
-                0                   => '',
-                1                   => 'One',
-                2                   => 'Two',
-                3                   => 'Three',
-                4                   => 'Four',
-                5                   => 'Five',
-                6                   => 'Six',
-                7                   => 'Seven',
-                8                   => 'Eight',
-                9                   => 'Nine',
-                10                  => 'Ten',
-                11                  => 'Eleven',
-                12                  => 'Twelve',
-                13                  => 'Thirteen',
-                14                  => 'Fourteen',
-                15                  => 'Fifteen',
-                16                  => 'Sixteen',
-                17                  => 'Seventeen',
-                18                  => 'Eighteen',
-                19                  => 'Nineteen',
-                20                  => 'Twenty',
-                30                  => 'Thirty',
-                40                  => 'Forty',
-                50                  => 'Fifty',
-                60                  => 'Sixty',
-                70                  => 'Seventy',
-                80                  => 'Eighty',
-                90                  => 'Ninety',
-                100                 => 'Hundred',
-                1000                => 'Thousand',
-                1000000             => 'Million',
-                1000000000          => 'Billion',
-                1000000000000       => 'Trillion',
-                1000000000000000    => 'Quadrillion',
+            $separator = ' ';
+            $negative = 'negative ';
+            $decimal = ' and ';
+            $dictionary = array(
+                0 => '',
+                1 => 'One',
+                2 => 'Two',
+                3 => 'Three',
+                4 => 'Four',
+                5 => 'Five',
+                6 => 'Six',
+                7 => 'Seven',
+                8 => 'Eight',
+                9 => 'Nine',
+                10 => 'Ten',
+                11 => 'Eleven',
+                12 => 'Twelve',
+                13 => 'Thirteen',
+                14 => 'Fourteen',
+                15 => 'Fifteen',
+                16 => 'Sixteen',
+                17 => 'Seventeen',
+                18 => 'Eighteen',
+                19 => 'Nineteen',
+                20 => 'Twenty',
+                30 => 'Thirty',
+                40 => 'Forty',
+                50 => 'Fifty',
+                60 => 'Sixty',
+                70 => 'Seventy',
+                80 => 'Eighty',
+                90 => 'Ninety',
+                100 => 'Hundred',
+                1000 => 'Thousand',
+                1000000 => 'Million',
+                1000000000 => 'Billion',
+                1000000000000 => 'Trillion',
+                1000000000000000 => 'Quadrillion',
                 1000000000000000000 => 'Quintillion'
             );
 
@@ -2613,8 +2621,8 @@ class cv
                     break;
 
                 case $number < 100:
-                    $tens   = ((int) ($number / 10)) * 10;
-                    $units  = $number % 10;
+                    $tens = ((int) ($number / 10)) * 10;
+                    $units = $number % 10;
                     $string = $dictionary[$tens];
                     if ($units) {
                         $string .= $hyphen . $dictionary[$units];
@@ -2622,7 +2630,7 @@ class cv
                     break;
 
                 case $number < 1000:
-                    $hundreds  = $number / 100;
+                    $hundreds = $number / 100;
                     $remainder = $number % 100;
                     $string = $dictionary[$hundreds] . ' ' . $dictionary[100];
                     if ($remainder) {
@@ -2643,7 +2651,7 @@ class cv
             } //end switch
             if (null !== $fraction && is_numeric($fraction)) {
 
-                $string .= $decimal . ' ' . $fraction .  '/100';
+                $string .= $decimal . ' ' . $fraction . '/100';
                 $words = array();
                 $string .= implode(' ', $words);
             } //end if

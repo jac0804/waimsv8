@@ -129,9 +129,10 @@ class entrynotice
   {
     $data = $config['params']['data'];
     $maxLength = 100;
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['waims_notice'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];
@@ -174,9 +175,10 @@ class entrynotice
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['waims_notice'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);

@@ -1395,6 +1395,7 @@ class pr
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -1433,7 +1434,7 @@ class pr
       $config['params']['line'] = $line;
     }
     $dateTables = ['prstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);

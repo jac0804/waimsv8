@@ -236,11 +236,17 @@ class entryprojectstages
   //case (jc+mi) when 0 then 0 else concat(ifnull(round(((jc+mi)/cost)*100,2),0),'%') end as 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
     $data['trno'] = $config['params']['tableid'];
+
+    $dateTables = ['stages'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
@@ -275,12 +281,18 @@ class entryprojectstages
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
+
+    $dateTables = ['stages'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], $config['params']['doc'], $config['params']['companyid']);
+          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], $config['params']['doc'], $config['params']['companyid']);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups, $config['params']['doc'], $config['params']['companyid']);
         }
 
         $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();

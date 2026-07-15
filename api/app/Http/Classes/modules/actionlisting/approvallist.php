@@ -113,9 +113,10 @@ select head.trno,left(head.dateid,10) as dateid,head.docno,p.name as project,'Bu
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
     
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);

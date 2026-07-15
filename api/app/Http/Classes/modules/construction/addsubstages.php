@@ -100,10 +100,11 @@ class addsubstages
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $companyid = $config['params']['companyid'];
     unset($data['newtrans']);
 
     $dateTables = ['substages'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];
@@ -130,9 +131,10 @@ class addsubstages
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['substages'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);

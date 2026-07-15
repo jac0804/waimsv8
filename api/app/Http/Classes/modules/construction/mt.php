@@ -468,6 +468,7 @@ class mt
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
@@ -475,11 +476,15 @@ class mt
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -552,7 +557,12 @@ class mt
 
   public function createdistribution($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
+
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -607,7 +617,8 @@ class mt
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -889,6 +900,7 @@ class mt
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
@@ -913,6 +925,9 @@ class mt
     $palletid2 = 0;
     $locid2 = 0;
     $stageid = 0;
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (isset($config['params']['data']['loc2'])) {
       $loc2 = $config['params']['data']['loc2'];
@@ -1027,7 +1042,8 @@ class mt
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

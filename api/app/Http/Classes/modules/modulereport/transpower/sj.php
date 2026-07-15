@@ -12934,7 +12934,7 @@ class sj
         $maxWidth = 358;
         $itemname = $data[$i]['itemname'];
 
-        $qty = number_format($data[$i]['qty'], 0);
+        $qty = rtrim(rtrim($data[$i]['qty'], '0'), '.');
 
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
@@ -13273,7 +13273,8 @@ class sj
         $maxWidth = 358;
         $itemname = $data[$i]['itemname'];
 
-        $qty = number_format($data[$i]['qty'], 0);
+        // $qty = number_format($data[$i]['qty'], 0);
+        $qty = rtrim(rtrim($data[$i]['qty'], '0'), '.');
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
         $disc = $data[$i]['disc'];
@@ -13906,7 +13907,8 @@ class sj
         $barcode = $data[$i]['barcode'];
         $itemname = $data[$i]['itemname'];
 
-        $qty = number_format($data[$i]['qty'], 0);
+        // $qty = number_format($data[$i]['qty'], 0);
+        $qty = rtrim(rtrim($data[$i]['qty'], '0'), '.');
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
         $disc = $data[$i]['disc'];
@@ -14123,7 +14125,8 @@ class sj
         $maxrow = 1;
         $barcode = $data[$i]['barcode'];
         $itemname = $data[$i]['itemname'];
-        $qty = number_format($data[$i]['qty'], 0);
+        // $qty = number_format($data[$i]['qty'], 0);
+        $qty = rtrim(rtrim($data[$i]['qty'], '0'), '.');
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
         $disc = $data[$i]['disc'];

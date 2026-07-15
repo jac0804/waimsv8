@@ -2416,6 +2416,7 @@ class cv
     $postdate = $config['params']['data']['postdate'];
     $rem = $config['params']['data']['rem'];
     $client = $config['params']['data']['client'];
+    $companyid = $config['params']['companyid'];
 
     switch ($config['params']['action']) {
       case 'getpcvselected':
@@ -2555,7 +2556,7 @@ class cv
       }
     }
     $dateTables = ['ladetail', 'detailinfo', 'hsvhead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $db = $this->othersClass->sanitizekeyfield('db', $db);
     // $cr = $this->othersClass->sanitizekeyfield('cr', $cr);
@@ -2991,15 +2992,19 @@ class cv
     $trno = $config['params']['trno'];
     $client = $this->coreFunctions->getfieldvalue("lahead", "client", "trno=?", [$trno]);
     $docno = $this->coreFunctions->getfieldvalue("lahead", "docno", "trno=?", [$trno]);
+    $companyid = $config['params']['companyid'];
 
     $rows = [];
 
     $totalpo = 0;
     $insert_success = true;
 
+    $dateTables = ['lahead', 'cntnuminfo', 'cvitems'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($config['params']['rows'] as $key => $value) {
       // $config['params']['rows'][$key]['ext'] = $this->othersClass->sanitizekeyfield("ext", $config['params']['rows'][$key]['ext']);
-      $config['params']['rows'][$key]['ext'] = $this->othersClass->sanitizekeyfield("ext", $config['params']['rows'][$key]['ext'], $lookups);
+      $config['params']['rows'][$key]['ext'] = $this->othersClass->sanitizekeyfieldFast("ext", $config['params']['rows'][$key]['ext'], $lookups);
       $totalpo = $totalpo + $config['params']['rows'][$key]['ext'];
     }
 
@@ -3150,6 +3155,7 @@ class cv
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -3310,7 +3316,7 @@ class cv
 
 
       $dateTables = ['ladetail'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       if (!empty($this->acctg)) {
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -3348,7 +3354,7 @@ class cv
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
-
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -3484,7 +3490,7 @@ class cv
       }
 
       $dateTables = ['ladetail'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       if (!empty($this->acctg)) {
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();

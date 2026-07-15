@@ -111,9 +111,10 @@ class entryreturnitem
         $data = [];
         $row = $config['params'][$row];
         $doc = $config['params']['doc'];
+        $companyid = ['params']['companyid'];
 
         $dateTables = ['returnitemdetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
             // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
@@ -162,9 +163,10 @@ class entryreturnitem
         $data = $config['params']['data'];
         $trno = $config['params']['tableid'];
         $doc = $config['params']['doc'];
+        $companyid = ['params']['companyid'];
 
         $dateTables = ['returnitemdetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             $data2 = [];

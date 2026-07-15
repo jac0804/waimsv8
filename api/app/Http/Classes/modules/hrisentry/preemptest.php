@@ -113,9 +113,10 @@ class preemptest
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['preemp'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
@@ -173,9 +174,10 @@ class preemptest
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['preemp'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];

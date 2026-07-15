@@ -214,9 +214,10 @@ class entrycanvassapproval
         $status = true;
         $blnApproved = false;
         $deleterow = false;
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['hstockinfotrans', 'hcdstock', 'hprstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($row as $key2 => $value) {
             // $rows[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
@@ -374,9 +375,10 @@ class entrycanvassapproval
         $row = $config['params']['row'];
         $rows = [];
         $status = true;
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['hcdstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($row as $key2 => $value) {
             // $rows[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
@@ -447,6 +449,7 @@ class entrycanvassapproval
         $data = [];
         $stockinfo = [];
         $row = $config['params']['row'];
+        $companyid = $config['params']['companyid'];
         $update = true;
         if ($update) {
             unset($this->fields[1]);

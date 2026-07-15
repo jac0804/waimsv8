@@ -388,6 +388,8 @@ class qt
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = ['params']['companyid'];
+
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -395,7 +397,7 @@ class qt
     }
 
     $dateTables = ['qthead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -924,6 +926,8 @@ class qt
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
+    $companyid = ['params']['companyid'];
+
     $void = 'false';
     $rem = '';
     $expiry = '';
@@ -975,7 +979,7 @@ class qt
     }
 
     $dateTables = ['qtstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);

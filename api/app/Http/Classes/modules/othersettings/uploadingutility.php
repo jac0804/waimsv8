@@ -4055,7 +4055,7 @@ class uploadingutility
           }
         } else {
           $status = false;
-          $msg .= $valtoinsert[$unique] . ', failed to upload. ' . $this->coreFunctions->errmsg . '<br>';
+          $msg .= $valtoinsert[$unique] . ', failed to upload. ' . $this->coreFunctions->getErrMsg() . '<br>';
         }
       } catch (Exception $e) {
         $status = false;

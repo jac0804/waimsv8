@@ -320,15 +320,19 @@ class ha
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+    $dateTables = ['traindev'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }

@@ -421,17 +421,21 @@ class pq
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
 
+    $dateTables = ['pqhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -845,6 +849,7 @@ class pq
     $postdate = $config['params']['data']['postdate'];
     $rem = $config['params']['data']['rem'];
     $project = $config['params']['data']['projectid'];
+    $companyid = $config['params']['companyid'];
 
     $client = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
     $refx = 0;
@@ -890,8 +895,11 @@ class pq
       'linex' => $linex,
       'ref' => $ref
     ];
+    $dateTables = ['pqdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

@@ -203,6 +203,8 @@ class downloadcoll
     $date1 = $this->othersClass->sbcdateformat($config['params']['dataparams']['start']);
     $date2 =  $this->othersClass->sbcdateformat($config['params']['dataparams']['end']);
     $center = $config['params']['center'];
+    $companyid = ['params']['companyid'];
+
 
     //----add checking/updating for dstrno ------------
     //add checking ng unposted trans
@@ -241,7 +243,7 @@ class downloadcoll
     ini_set('max_execution_time', 0);
 
     $dateTables = ['tcoll'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     //downloading mc
     if (!empty($data)) {
       foreach ($data as $k => $v) {

@@ -1103,12 +1103,14 @@ class cv
     if ($isupdate) {
       unset($this->fields['docno']);
     }
-
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1947,9 +1949,14 @@ class cv
         $subamenityid = $this->coreFunctions->getfieldvalue($this->head, "subamenityid", "trno=?", [$trno]);
       }
     }
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    $db = $this->othersClass->sanitizekeyfield('db', $db);
-    $cr = $this->othersClass->sanitizekeyfield('cr', $cr);
+    // $db = $this->othersClass->sanitizekeyfield('db', $db);
+    // $cr = $this->othersClass->sanitizekeyfield('cr', $cr);
+
+    $db = $this->othersClass->sanitizekeyfieldFast('db', $db, $lookups);
+    $cr = $this->othersClass->sanitizekeyfieldFast('cr', $cr, $lookups);
 
     $line = 0;
     if ($action == 'insert') {
@@ -2110,7 +2117,8 @@ class cv
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -2558,6 +2566,7 @@ class cv
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -2717,14 +2726,16 @@ class cv
         }
       }
 
-
+      $dateTables = ['ladetail'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
       if (!empty($this->acctg)) {
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         foreach ($this->acctg as $key => $value) {
           foreach ($value as $key2 => $value2) {
-            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+            // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
           }
 
           $this->acctg[$key]['editdate'] = $current_timestamp;
@@ -2754,6 +2765,7 @@ class cv
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -2904,12 +2916,14 @@ class cv
 
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
-
+      $dateTables = ['ladetail'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
       if (!empty($this->acctg)) {
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         foreach ($this->acctg as $key => $value) {
           foreach ($value as $key2 => $value2) {
-            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+            // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
           }
 
           $this->acctg[$key]['editdate'] = $current_timestamp;

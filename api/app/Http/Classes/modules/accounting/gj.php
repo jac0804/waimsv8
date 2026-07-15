@@ -1126,6 +1126,7 @@ class gj
   {
     $companyid = $config['params']['companyid'];
     $systype = $this->companysetup->getsystemtype($config['params']);
+    $companyid = ['params']['companyid'];
 
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
@@ -1415,7 +1416,7 @@ class gj
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
@@ -2048,6 +2049,7 @@ class gj
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
+    $companyid = ['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -2247,7 +2249,7 @@ class gj
       }
 
       $dateTables = ['ladetail'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       if (!empty($this->acctg)) {
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -2283,6 +2285,7 @@ class gj
   private function closeentry($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = ['params']['companyid'];
     $client = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
     $cutoff = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
     $cutoff = date("Y-m-d", strtotime($cutoff));
@@ -2329,7 +2332,7 @@ class gj
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
     if (!empty($this->acctg)) {

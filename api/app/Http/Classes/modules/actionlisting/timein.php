@@ -125,9 +125,10 @@ class timein
         $empid = $config['params']['adminid'];
         $timeinout = $this->othersClass->getCurrentTimeStamp();
         $dateid = strtotime($timeinout);
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['timerec'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
         if (isset($config['params']['gridheaddata']['mode'])) {

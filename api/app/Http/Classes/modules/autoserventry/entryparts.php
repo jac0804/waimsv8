@@ -207,9 +207,10 @@ class entryparts
         $data = $config['params']['data'];
         $doc = $config['params']['doc'];
         $trno = $config['params']['tableid'];
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['ptstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
@@ -235,9 +236,10 @@ class entryparts
     {
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         $dateTables = ['ptstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key2 => $value) {
             // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);

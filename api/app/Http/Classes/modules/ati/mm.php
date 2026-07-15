@@ -389,15 +389,19 @@ class mm
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields['docno']);
         }
+        $dateTables = ['mmhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -659,6 +663,7 @@ subcat.name as subcategory,
         $trno = $config['params']['trno'];
         $othcode = $config['params']['data']['othcode'];
         $barcode = $config['params']['data']['barcode'];
+        $companyid = $config['params']['companyid'];
 
         $data = [
             'trno' => $trno,
@@ -667,9 +672,13 @@ subcat.name as subcategory,
             'barcode' =>  $barcode,
         ];
 
+        $dateTables = ['mmstock', 'item'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value1) {
 
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         if ($action == 'insert') {

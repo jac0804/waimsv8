@@ -380,6 +380,7 @@ class mc
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
@@ -387,7 +388,7 @@ class mc
         }
 
         $dateTables = ['mchead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
@@ -747,6 +748,9 @@ class mc
             $daysdue = $config['params']['data']['daysdue'];
         }
 
+        $dateTables = ['mcdetail', 'gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
 
         $line = 0;
         if ($action == 'insert') {
@@ -777,7 +781,8 @@ class mc
             'daysdue' => $daysdue
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;

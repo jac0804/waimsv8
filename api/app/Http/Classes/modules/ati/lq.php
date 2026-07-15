@@ -561,15 +561,23 @@ class lq
       unset($this->fields[1]);
       unset($head['docno']);
     }
+    $dateTables = ['lqhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    // $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    $data['due'] = $this->othersClass->computeterms(
+    isset($data['dateid']) ? $data['dateid'] : null,
+    isset($data['due']) ? $data['due'] : null,
+    isset($data['terms']) ? $data['terms'] : null
+);
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -1330,6 +1338,7 @@ class lq
     $reqdate = $config['params']['data']['reqdate'];
     $releasedate = $config['params']['data']['releasedate'];
     $sono = $config['params']['data']['sono'];
+    $companyid = $config['params']['companyid'];
 
     $data = [
       'trno'  => $trno,
@@ -1340,8 +1349,12 @@ class lq
       'ref' => $ref,
     ];
 
+    $dateTables = ['lqstock', 'stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $dataOthers = [
@@ -1355,7 +1368,8 @@ class lq
     ];
 
     foreach ($dataOthers as $key => $value) {
-      $dataOthers[$key] = $this->othersClass->sanitizekeyfield($key, $dataOthers[$key]);
+      // $dataOthers[$key] = $this->othersClass->sanitizekeyfield($key, $dataOthers[$key]);
+      $dataOthers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOthers[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

@@ -632,13 +632,14 @@ class gc
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -924,7 +925,7 @@ class gc
   public function additem($action, $config)
   {
     $systype = $this->companysetup->getsystemtype($config['params']);
-
+    $companyid = $config['params']['companyid'];
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
     $trno = $config['params']['trno'];
@@ -1109,7 +1110,7 @@ class gc
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

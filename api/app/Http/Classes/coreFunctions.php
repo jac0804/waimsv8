@@ -121,6 +121,8 @@ class coreFunctions
 		} catch (PDOException $e) {
 			$this->create_Elog($qry . '---' . substr($e->getMessage(), 0, 1500));
 
+			$this->errmsg = substr_replace(substr($e->getMessage(), 0, 500), "", 127 - 1, 500);
+
 			$this->logFuncCallers();
 
 			return '';
@@ -138,6 +140,8 @@ class coreFunctions
 			$this->create_Elog($table . ' - cols: ' . json_encode($columns) . ' - filters: ' . json_encode($condition) . ' - ' . substr($e->getMessage(), 0, 1500));
 
 			$this->logFuncCallers();
+
+			$this->errmsg = substr_replace(substr($e->getMessage(), 0, 500), "", 127 - 1, 500);
 
 			return 0;
 		}
@@ -548,6 +552,11 @@ class coreFunctions
 		} catch (PDOException $e) {
 			return 0;
 		}
+	}
+
+	public function getErrMsg()
+	{
+		return $this->errmsg;
 	}
 
 	public function LogConsole($msg)

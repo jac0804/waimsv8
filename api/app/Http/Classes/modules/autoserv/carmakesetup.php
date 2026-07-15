@@ -245,6 +245,7 @@ class carmakesetup
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         $clientid = 0;
         $msg = '';
@@ -274,7 +275,7 @@ class carmakesetup
         }
 
         $dateTables = ['cmake'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (isset($head[$key])) {
                 $data[$key] = $head[$key];

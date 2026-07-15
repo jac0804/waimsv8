@@ -736,6 +736,7 @@ class hq
     {
 
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields['docno']);
@@ -744,11 +745,16 @@ class hq
         if ($head['approvedby'] == '') $head['appdisid'] = 0;
         if ($head['recommendapp'] == '') $head['recappid'] = 0;
 
+       
+        $dateTables = ['personreq'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }

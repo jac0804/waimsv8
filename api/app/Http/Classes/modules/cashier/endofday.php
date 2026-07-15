@@ -53,7 +53,7 @@ class endofday
 
   public function getAttrib()
   {
-    $attrib = array('view' => 5109,'deleteitem' => 5109);
+    $attrib = array('view' => 5109, 'deleteitem' => 5109);
     return $attrib;
   }
 
@@ -89,56 +89,56 @@ class endofday
     //   $obj[0][$this->gridname]['columns'][$category]['type'] = 'label';
     //   $obj[0][$this->gridname]['columns'][$amount]['type'] = 'label';
     //return $obj;
-      $allowviewhistory = $this->othersClass->checkAccess($config['params']['user'], 5925);
-      $allowdeletehistory = $this->othersClass->checkAccess($config['params']['user'], 5926);
-     
-      if($allowviewhistory){
-   
+    $allowviewhistory = $this->othersClass->checkAccess($config['params']['user'], 5925);
+    $allowdeletehistory = $this->othersClass->checkAccess($config['params']['user'], 5926);
+
+    if ($allowviewhistory) {
+
       $columns = ['dateid', 'username', 'amt1', 'amt2', 'amt3'];
-      if($allowdeletehistory){
-         $columns = ['action', 'dateid', 'username', 'amt1', 'amt2', 'amt3'];
+      if ($allowdeletehistory) {
+        $columns = ['action', 'dateid', 'username', 'amt1', 'amt2', 'amt3'];
       }
 
       foreach ($columns as $key => $value) {
-              $$value = $key; }
+        $$value = $key;
+      }
 
       $tab = [$this->gridname => ['gridcolumns' => $columns]];
-    
+
       $stockbuttons = [];
-      if($allowdeletehistory){
+      if ($allowdeletehistory) {
         $stockbuttons = ['delete'];
       }
 
       $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        
+
       // action
       $obj[0][$this->gridname]['descriptionrow'] = [];
-      $obj[0][$this->gridname]['columns'][$username]['label'] ='User';
-      $obj[0][$this->gridname]['columns'][$amt1]['label'] ='Collections';
-      $obj[0][$this->gridname]['columns'][$amt2]['label'] ='Deposits';
-      $obj[0][$this->gridname]['columns'][$amt3]['label'] ='Ending Balance';
+      $obj[0][$this->gridname]['columns'][$username]['label'] = 'User';
+      $obj[0][$this->gridname]['columns'][$amt1]['label'] = 'Collections';
+      $obj[0][$this->gridname]['columns'][$amt2]['label'] = 'Deposits';
+      $obj[0][$this->gridname]['columns'][$amt3]['label'] = 'Ending Balance';
       $obj[0][$this->gridname]['label'] = 'HISTORY';
 
-      $obj[0][$this->gridname]['columns'][$dateid]['readonly'] =true;
-      $obj[0][$this->gridname]['columns'][$dateid]['type'] ='input';
-      $obj[0][$this->gridname]['columns'][$username]['readonly'] =true;
-      $obj[0][$this->gridname]['columns'][$amt1]['readonly'] =true;
-      $obj[0][$this->gridname]['columns'][$amt2]['readonly'] =true;
-      $obj[0][$this->gridname]['columns'][$amt3]['readonly'] =true;
+      $obj[0][$this->gridname]['columns'][$dateid]['readonly'] = true;
+      $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'input';
+      $obj[0][$this->gridname]['columns'][$username]['readonly'] = true;
+      $obj[0][$this->gridname]['columns'][$amt1]['readonly'] = true;
+      $obj[0][$this->gridname]['columns'][$amt2]['readonly'] = true;
+      $obj[0][$this->gridname]['columns'][$amt3]['readonly'] = true;
 
-      if($allowdeletehistory){
+      if ($allowdeletehistory) {
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:70px;whiteSpace: normal;min-width:70px;";
       }
-
-      }else{ // no access
-        $obj=[];
-      }
-      return $obj;
+    } else { // no access
+      $obj = [];
+    }
+    return $obj;
   }
 
-   public function createtab2($access, $config)
+  public function createtab2($access, $config)
   {
-    $return=[];
+    $return = [];
     return $return;
   }
 
@@ -155,25 +155,25 @@ class endofday
     $fields = ['dateid', 'begbal', 'totalcoll'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dateid.readonly', false);
-    $fields = ['totaldep', 'endingbal']; 
+    $fields = ['totaldep', 'endingbal'];
 
     $col2 = $this->fieldClass->create($fields);
-    
+
     data_set($col2, 'endingbal.label', 'Ending Balance');
 
     $fields = ['refresh', 'dlsales'];
-    if($allowviewhistory){
-      $fields = ['refresh', 'dlsales','loadhistory'];
+    if ($allowviewhistory) {
+      $fields = ['refresh', 'dlsales', 'loadhistory'];
     }
-    
+
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'refresh.action', 'load');
     data_set($col3, 'refresh.label', 'Load Data');
     data_set($col3, 'dlsales.action', 'close');
     data_set($col3, 'dlsales.label', 'Close');
-    data_set($col3, 'dlsales.style','height:100%');
+    data_set($col3, 'dlsales.style', 'height:100%');
 
-    return array('col1' => $col1, 'col2' => $col2 , 'col3' => $col3);
+    return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
   }
 
   public function paramsdata($config)
@@ -203,6 +203,8 @@ class endofday
   {
     $action = $config['params']["action2"];
     $center = $config['params']['center'];
+    $companyid = ['params']['companyid'];
+
 
 
     switch ($action) {
@@ -257,7 +259,7 @@ class endofday
         $ins['checks'] = $checks;
 
         $dateTables = ['eod'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($ins as $key => $value) {
           // $ins[$key] = $this->othersClass->sanitizekeyfield($key, $ins[$key]);
@@ -278,7 +280,7 @@ class endofday
         //return $this->downloadmcdx($config);
         break;
       case 'load':
-        
+
         return $this->loaddata($config, $config['params']['dataparams']['dateid']);
         break;
       case "history":
@@ -296,6 +298,8 @@ class endofday
     $center = $config['params']['center'];
     $user = $config['params']['user'];
     $dateid = $this->othersClass->sbcdateformat($dateid);
+    $companyid = ['params']['companyid'];
+
 
     $closed = $this->coreFunctions->getfieldvalue("eod", "line", "date(dateid) = ? and center=? and closeby = ?", [$dateid, $center, $user], '', true);
     if ($closed != 0) {
@@ -334,7 +338,7 @@ class endofday
     left join reqcategory as r on r.line = h.mpid and r.ispaymode =1 
     where  r.category  in ('cash','check') and  num.center = ? and date(h.dateid) = ? and h.createby = '" . $user . "'
     ) as h group by category";
-    
+
     $data = $this->coreFunctions->opentable($qry, [$center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid, $center, $dateid]);
 
     $totalcoll = 0;
@@ -343,7 +347,7 @@ class endofday
     $begbal = 0;
 
     $dateTables = ['eod'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($config['params']['dataparams']['begbal'] != 0) {
       // $begbal = $this->othersClass->sanitizekeyfield("amt", $config['params']['dataparams']['begbal']);
@@ -371,17 +375,17 @@ class endofday
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data], 'data' => $ret];
   }
 
-   public function loadhistory($config)
+  public function loadhistory($config)
   {
     $center = $config['params']['center'];
-    $qry="select e.line, date(e.dateid) as dateid, e.closeby as username, 
+    $qry = "select e.line, date(e.dateid) as dateid, e.closeby as username, 
           e.collection as amt1, e.deposit as amt2, e.endingbal as amt3 
-          from eod as e where e.center = ? order by dateid desc";   
+          from eod as e where e.center = ? order by dateid desc";
     $data = $this->coreFunctions->opentable($qry, [$center]);
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
   }
 
-   public function stockstatus($config)
+  public function stockstatus($config)
   {
     switch ($config['params']['action']) {
       case 'deleteitem':
@@ -393,25 +397,24 @@ class endofday
     }
   }
 
-    public function deleteitem($config)
+  public function deleteitem($config)
   {
-    $line=$config['params']['line'];
+    $line = $config['params']['line'];
     $latestdate = $this->coreFunctions->datareader("select date(dateid) as value from eod order by dateid desc limit 1");
 
-    if($latestdate != null){
-      $rowdate=$config['params']['row']['dateid'];
+    if ($latestdate != null) {
+      $rowdate = $config['params']['row']['dateid'];
 
-      if($rowdate == $latestdate){
+      if ($rowdate == $latestdate) {
         $qry = "delete from eod where line=?";
         $this->coreFunctions->execqry($qry, 'delete', [$line]);
         return ['status' => true, 'msg' => 'Item was successfully deleted.'];
-      }else{
+      } else {
         return ['status' => false, 'msg' => 'You can only delete the latest record.'];
       }
-    }else{
+    } else {
       return ['status' => false, 'msg' => 'Sorry, no record found.'];
     }
-
   } // end function
 
 } //end class

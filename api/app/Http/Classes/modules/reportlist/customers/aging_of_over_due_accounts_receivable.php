@@ -159,7 +159,7 @@ class aging_of_over_due_accounts_receivable
               where detail.bal<>0 and client.iscustomer = 1 and datediff(now(), head.dateid) >= 150 and head.dateid<='$asof' $filter
               group by clientname,elapse,agentname,client.area ) as x
               group by clientname,elapse,agentname,area
-              order by area,BINARY  UPPER(clientname)";
+              order by agentname,  area, BINARY  UPPER(clientname)";
 
         // Logger($qry);
         return $qry;

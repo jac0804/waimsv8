@@ -689,6 +689,7 @@ class aj
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -696,7 +697,7 @@ class aj
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -1048,6 +1049,7 @@ class aj
 
   private function getserialout($config)
   {
+    $companyid = $config['params']['companyid'];
     $qty = 0;
     $eline = '';
     $soutline = '';
@@ -1088,7 +1090,7 @@ class aj
       }
 
       $dateTables = ['lastock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       //computecosting
       $this->coreFunctions->LogConsole(($eline));
@@ -1264,6 +1266,7 @@ class aj
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $uom = $config['params']['data']['uom'];
@@ -1357,7 +1360,7 @@ class aj
     }
 
     $dateTables = ['lahead', 'lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
@@ -1926,6 +1929,7 @@ class aj
 
   public function createdistribution($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -1974,7 +1978,7 @@ class aj
       }
     }
     $dateTables = ['sohead', 'lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
@@ -2068,11 +2072,12 @@ class aj
 
   public function recomputecost($head, $config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     $dateTables = ['sohead', 'lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       $this->othersClass->logConsole(json_encode($value));
 

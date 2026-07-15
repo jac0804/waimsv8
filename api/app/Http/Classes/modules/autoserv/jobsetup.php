@@ -217,6 +217,7 @@ class jobsetup
     {
         $head = $config['params']['head'];
         $center = $config['params']['center'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields['docno']);
@@ -227,7 +228,7 @@ class jobsetup
         $clientid = 0;
         $msg = '';
         $dateTables = ['jobthead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (isset($head[$key])) {
                 $data[$key] = $head[$key];

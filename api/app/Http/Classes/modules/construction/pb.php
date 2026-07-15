@@ -272,8 +272,6 @@ class pb
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
-
-
   public function createnewtransaction($docno, $params)
   {
     $data = [];
@@ -379,9 +377,9 @@ class pb
     }
   }
 
-
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
@@ -389,11 +387,15 @@ class pb
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -409,8 +411,6 @@ class pb
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
   } // end function
-
-
 
   public function deletetrans($config)
   {
@@ -428,9 +428,6 @@ class pb
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
 
-
-
-
   public function posttrans($config)
   {
     return $this->othersClass->posttransacctg($config);
@@ -445,15 +442,14 @@ class pb
   private function getdetailselect($config)
   {
     $qry = " head.trno,left(head.dateid,10) as dateid,d.ref,d.line,coa.acno,coa.acnoname,
-  client.client,client.clientname,d.rem,
-  FORMAT(d.db,2) as db,FORMAT(d.cr,2) as cr,d.fdb,d.fcr,d.refx,d.linex,
-  left(d.postdate,10) as postdate,d.checkno,coa.alias,d.pdcline,
-  d.project,ifnull(proj.name,'') as projectname,d.cur,d.forex,d.stageid,ifnull(s.stage,'') as stage,
-  case d.isewt when 0 then 'false' else 'true' end as isewt,case d.isvat when 0 then 'false' else 'true' end as isvat,case d.isvewt when 0 then 'false' else 'true' end as isvewt,d.ewtcode,d.ewtrate,d.damt,'' as bgcolor,'' as 
-  errcolor ";
+    client.client,client.clientname,d.rem,
+    FORMAT(d.db,2) as db,FORMAT(d.cr,2) as cr,d.fdb,d.fcr,d.refx,d.linex,
+    left(d.postdate,10) as postdate,d.checkno,coa.alias,d.pdcline,
+    d.project,ifnull(proj.name,'') as projectname,d.cur,d.forex,d.stageid,ifnull(s.stage,'') as stage,
+    case d.isewt when 0 then 'false' else 'true' end as isewt,case d.isvat when 0 then 'false' else 'true' end as isvat,case d.isvewt when 0 then 'false' else 'true' end as isvewt,d.ewtcode,d.ewtrate,d.damt,'' as bgcolor,'' as 
+    errcolor ";
     return $qry;
   }
-
 
   public function opendetail($trno, $config)
   {
@@ -476,11 +472,10 @@ class pb
     left join stagesmasterfile as s on s.line = d.stageid
     left join coa on coa.acnoid=d.acnoid
     where d.trno=?
-  ";
+   ";
     $detail = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $detail;
   }
-
 
   public function opendetailline($config)
   {
@@ -542,7 +537,6 @@ class pb
     }
   }
 
-
   public function updateitem($config)
   {
     foreach ($config['params']['row'] as $key => $value) {
@@ -589,10 +583,10 @@ class pb
     return ['accounting' => $data, 'status' => true, 'msg' => 'Successfully saved.'];
   } //end function
 
-
   // insert and update detail
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
     $trno = $config['params']['trno'];
@@ -611,6 +605,9 @@ class pb
     $checkno = '';
     $damt = 0;
     $stageid = 0;
+
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (isset($config['params']['data']['refx'])) {
       $refx = $config['params']['data']['refx'];
@@ -699,7 +696,8 @@ class pb
       'subproject' => $subproject
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -746,8 +744,6 @@ class pb
     $this->logger->sbcwritelog($trno, $config, 'ACCTG', 'DELETED ALL ACCTG ENTRIES');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'accounting' => []];
   }
-
-
 
   public function deleteitem($config)
   {

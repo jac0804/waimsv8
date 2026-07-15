@@ -719,7 +719,7 @@ class am
       unset($head['docno']);
     }
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
@@ -1831,7 +1831,7 @@ class am
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
@@ -2056,13 +2056,14 @@ class am
 
   public function recomputestock($head, $config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $this->partstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     $deci = $this->companysetup->getdecimal('price', $config['params']);
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
       // $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
@@ -2091,7 +2092,7 @@ class am
   public function additem($action, $config)
   {
 
-
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     if (isset($config['params']['data']['jobid'])) {
       $jobid = $config['params']['data']['jobid'];
@@ -2105,7 +2106,7 @@ class am
       'rem' => $rem
     ];
     $dateTables = ['amstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);

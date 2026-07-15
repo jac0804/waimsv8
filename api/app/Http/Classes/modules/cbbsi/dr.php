@@ -1776,6 +1776,8 @@ class dr
   {
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
+    $companyid = ['params']['companyid'];
+
 
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -1865,7 +1867,7 @@ class dr
     }
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -2926,6 +2928,8 @@ class dr
   {
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
+    $companyid = ['params']['companyid'];
+
     $status = true;
     $totalar = 0;
     $isvatexsales = $this->companysetup->getvatexsales($config['params']);
@@ -3040,7 +3044,7 @@ class dr
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -3276,13 +3280,15 @@ class dr
 
   public function recomputestock($head, $config)
   {
+    $companyid = ['params']['companyid'];
+
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     $deci = $this->companysetup->getdecimal('price', $config['params']);
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data2 as $key => $value) {
       // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);

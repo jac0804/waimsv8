@@ -475,16 +475,20 @@ class hi
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields['docno']);
         }
-
+        
+        $dateTables = ['incidenthead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -706,8 +710,13 @@ class hi
         $id = $config['params']['trno'];
         $line = 0;
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['incidentdtail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         $data['trno'] = $config['params']['trno'];

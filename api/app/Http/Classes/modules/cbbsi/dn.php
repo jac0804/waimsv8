@@ -662,6 +662,8 @@ class dn
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = ['params']['companyid'];
+
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -669,7 +671,7 @@ class dn
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -1211,6 +1213,8 @@ class dn
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $expiry = $config['params']['data']['expiry'];
+    $companyid = ['params']['companyid'];
+
     $rem = '';
     $cost = 0;
     $fcost = 0;
@@ -1293,7 +1297,7 @@ class dn
     }
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
@@ -1699,6 +1703,8 @@ class dn
   public function createdistribution($config)
   {
     $trno = $config['params']['trno'];
+    $companyid = ['params']['companyid'];
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -1752,7 +1758,7 @@ class dn
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1845,12 +1851,14 @@ class dn
 
   public function recomputestock($head, $config)
   {
+    $companyid = ['params']['companyid'];
+
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data2 as $key => $value) {
       // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);

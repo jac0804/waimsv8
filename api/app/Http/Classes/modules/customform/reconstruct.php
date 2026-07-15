@@ -192,6 +192,7 @@ class reconstruct
 
   private function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno  = $config['params']['dataparams']['trno'];
     $sjtrno  = $config['params']['dataparams']['sjtrno'];
     $head = $config['params']['dataparams'];
@@ -211,9 +212,13 @@ class reconstruct
       return ['status' => false, 'msg' => 'Please check, all payments should be posted to continue.'];
     }
 
+    $dateTables = ['cntnuminfo','lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key2) {
       $info[$key2] = $head[$key2];
-      $info[$key2] = $this->othersClass->sanitizekeyfield($key2, $info[$key2]);
+      // $info[$key2] = $this->othersClass->sanitizekeyfield($key2, $info[$key2]);
+      $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
     }
 
     $d = [];
@@ -521,7 +526,7 @@ class reconstruct
 
   public function compute($config)
   {
-
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $sjtrno = $config['params']['dataparams']['sjtrno'];
     $head = $config['params']['dataparams'];
@@ -545,7 +550,12 @@ class reconstruct
     $prevball = 0;
     $prevprincipalcol = 0;
     $financeamt = 0;
-    $ma = $this->othersClass->sanitizekeyfield("amt", $head['fma1']);
+
+    $dateTables = ['arledger'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    // $ma = $this->othersClass->sanitizekeyfield("amt", $head['fma1']);
+     $ma = $this->othersClass->sanitizekeyfieldFast("amt", $head['fma1'], $lookups);
     $status = true;
     $msg = '';
     $total = 0;
@@ -554,7 +564,8 @@ class reconstruct
     $balmons = $this->coreFunctions->getfieldvalue('terms', 'days', 'terms = ?', [$head['terms']]);
     $dateid = $this->coreFunctions->getfieldvalue('arledger', 'dateid', 'trno = ? and acnoid =?', [$trno, $ar], 'dateid desc');
 
-    $financeamt = $this->othersClass->sanitizekeyfield("amt", $head['bal']);
+    // $financeamt = $this->othersClass->sanitizekeyfield("amt", $head['bal']);
+    $financeamt = $this->othersClass->sanitizekeyfieldFast("amt", $head['bal'], $lookups);
 
     if ($head['fma1'] == 0) {
       $ma = round($financeamt * $head['fma2'], 2);

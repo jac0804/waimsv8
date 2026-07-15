@@ -348,6 +348,7 @@ class ba
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $prevsubproj = $this->coreFunctions->datareader("select subproject as value from bahead where trno = ?", [$trno]);
 
@@ -359,7 +360,7 @@ class ba
     }
 
     $dateTables = ['bahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -632,6 +633,7 @@ class ba
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -640,6 +642,9 @@ class ba
     $void = 'false';
     $rem = '';
     $stageid = 0;
+
+    $dateTables = ['bahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
     if (isset($config['params']['data']['substage'])) {
@@ -712,12 +717,9 @@ class ba
       'stageid' => $stageid
     ];
 
-    $dateTables = ['bahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
-
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

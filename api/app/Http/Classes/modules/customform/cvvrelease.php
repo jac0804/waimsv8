@@ -99,7 +99,7 @@ class cvvrelease
 
     public function loaddata($config)
     {
-
+        $companyid = $config['params']['companyid'];
         $data = [];
         $headdata = [];
         $trno = $config['params']['dataparams']['trno'];
@@ -118,14 +118,27 @@ class cvvrelease
             $tablenum = "hcntnuminfo";
             $head = "glhead";
         }
+
+        $dateTables = [$tablenum, $head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+       
+
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        $data['releasedate'] = $this->othersClass->sanitizekeyfield("releasedate", $releasedate);
-        $data['orno'] = $this->othersClass->sanitizekeyfield("orno", $orno);
-        $data['ordate'] = $this->othersClass->sanitizekeyfield("ordate", $ordate);
+        // $data['releasedate'] = $this->othersClass->sanitizekeyfield("releasedate", $releasedate);
+        // $data['orno'] = $this->othersClass->sanitizekeyfield("orno", $orno);
+        // $data['ordate'] = $this->othersClass->sanitizekeyfield("ordate", $ordate);
 
-        $headdata['yourref'] = $this->othersClass->sanitizekeyfield("yourref", $yourref);
-        $headdata['ourref'] = $this->othersClass->sanitizekeyfield("ourref", $ourref);
+        $data['releasedate'] = $this->othersClass->sanitizekeyfieldFast("releasedate", $releasedate, $lookups);
+        $data['orno'] = $this->othersClass->sanitizekeyfieldFast("orno", $orno, $lookups);
+        $data['ordate'] = $this->othersClass->sanitizekeyfieldFast("ordate", $ordate, $lookups);
+
+
+        // $headdata['yourref'] = $this->othersClass->sanitizekeyfield("yourref", $yourref);
+        // $headdata['ourref'] = $this->othersClass->sanitizekeyfield("ourref", $ourref);
+
+        $headdata['yourref'] = $this->othersClass->sanitizekeyfieldFast("yourref", $yourref, $lookups);
+        $headdata['ourref'] = $this->othersClass->sanitizekeyfieldFast("ourref", $ourref, $lookups);
 
         $exist = $this->coreFunctions->getfieldvalue($tablenum, "trno", "trno=?", [$trno]);
         if (floatval($exist) != 0) {

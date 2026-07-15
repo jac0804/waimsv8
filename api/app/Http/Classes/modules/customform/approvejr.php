@@ -118,9 +118,13 @@ class approvejr
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $rows = $config['params']['rows'];
     $user = $config['params']['user'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+    $dateTables = ['prstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($rows as $key) {
       $config['params']['row']['trno'] = $rows[0]['trno'];
@@ -128,7 +132,8 @@ class approvejr
         $data = $this->data($config);
         return ['status' => false, 'msg' => 'Please enter approve quantity.', 'data' => $data];
       }
-      $key['rrqty'] = $this->othersClass->sanitizekeyfield("rrqty", $key['rrqty']);
+      // $key['rrqty'] = $this->othersClass->sanitizekeyfield("rrqty", $key['rrqty']);
+      $key['rrqty'] = $this->othersClass->sanitizekeyfieldFast('rrqty',  $key['rrqty'], $lookups);
       $this->coreFunctions->execqry('update prstock set rrqty=?,qty =?,ext=qty*rrcost,status =?,editby=?,editdate=? where trno=? and line=?', 'update', [$key['rrqty'], $key['rrqty'], $key['status'], $user, $current_timestamp, $key['trno'], $key['line']]);
       if (floatval($key['refx']) != 0) {
         $this->setserveditems($key['refx'], $key['linex']);

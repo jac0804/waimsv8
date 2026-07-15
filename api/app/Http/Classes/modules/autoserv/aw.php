@@ -465,7 +465,7 @@ class aw
             unset($head['docno']);
         }
         $dateTables = ['awhead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
@@ -610,6 +610,7 @@ class aw
     {
 
         $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
 
         if (isset($config['params']['data']['jobid'])) {
             $jobid = $config['params']['data']['jobid'];
@@ -625,10 +626,11 @@ class aw
             'rem' => $rem,
         ];
         $dateTables = ['sohead', 'headinfotrans'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         if ($action == 'insert') {

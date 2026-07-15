@@ -571,6 +571,7 @@ class applicantledger
   {
     $head = $config['params']['head'];
     $center = $config['params']['center'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     $dataOther = [];
     if ($isupdate) {
@@ -578,11 +579,15 @@ class applicantledger
     }
     $clientid = 0;
     $msg  = '';
+
+    $dateTables = ['app', 'acontacts'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -590,7 +595,8 @@ class applicantledger
       if (isset($head[$key])) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key]);
+          // $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key]);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
         } //end if  
       }
     }

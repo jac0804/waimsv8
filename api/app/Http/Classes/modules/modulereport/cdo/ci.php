@@ -84,7 +84,7 @@ class ci
         $query = "select head.vattype, stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
         right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,
         head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-        item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
+        item.itemname, sum(stock.isqty) as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
         item.sizeid, ag.clientname as agname, item.brand,
         wh.client as whcode, wh.clientname as whname,item.partno,head.tax
         from lahead as head
@@ -93,12 +93,17 @@ class ci
         left join item on item.itemid=stock.itemid
         left join client as ag on ag.client=head.agent
         left join client as wh on wh.client=head.wh
-        where head.doc='ci' and head.trno='$trno'
+        where head.doc='ci' and head.trno='$trno' group by head.vattype, stock.line,stock.rem,head.rem,head.dateid,
+        head.docno, client.client, head.clientname,
+        head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+        item.itemname,  stock.uom, stock.isamt , stock.disc, stock.ext, head.agent,
+        item.sizeid, ag.clientname , item.brand,
+        wh.client , wh.clientname,item.partno,head.tax
         UNION ALL
         select head.vattype, stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
         right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, head.clientname,
         head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-        item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
+        item.itemname, sum(stock.isqty) as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
         item.sizeid, ag.clientname as agname, item.brand,
         wh.client as whcode, wh.clientname as whname,item.partno,head.tax
         from glhead as head
@@ -107,7 +112,13 @@ class ci
         left join item on item.itemid=stock.itemid
         left join client as ag on ag.clientid=head.agentid
         left join client as wh on wh.clientid=head.whid
-        where head.doc='ci' and head.trno='$trno' order by line";
+        where head.doc='ci' and head.trno='$trno'
+        group by head.vattype, stock.line,stock.rem,head.rem,head.dateid,
+        head.docno, client.client, head.clientname,
+        head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+        item.itemname,  stock.uom, stock.isamt, stock.disc, stock.ext, ag.client,
+        item.sizeid, ag.clientname , item.brand,
+        wh.client, wh.clientname,item.partno,head.tax  order by line";
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;
     } //end fn

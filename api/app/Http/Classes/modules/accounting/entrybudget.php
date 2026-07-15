@@ -333,7 +333,7 @@ class entrybudget
     $rows = $config['params']['rows'];
 
     $dateTables = ['budget'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {

@@ -110,7 +110,7 @@ class viewenginehistory
     {
         $itemid = $config['params']['row']['itemid'];
         $modelid = $config['params']['row']['model'];
-
+        // /and  item.model = " . $modelid . "
         $qry = "select item.model,item.itemid,head.trno,head.doc,head.dateid,head.docno,case head.doc when 'ST' then sout.rem else head.rem end as remarks,brand.brand_desc as brand,stock.line,
                 concat(upper(head.createby),' ',date_format(head.createdate,'%Y %b %d - %h : %i %p')) as createby,
                 item.itemname, case stock.qty when 0 then sout.color else sin.color end as color,
@@ -131,7 +131,7 @@ class viewenginehistory
                 left join client on client.clientid = head.clientid
                 left join client as wh on wh.clientid=head.whid
                 left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
-                where item.isserial = 1 and  item.model = " . $modelid . "
+                where item.isserial = 1 and item.itemid = ".$itemid." 
                 union all
                 select item.model,item.itemid,head.trno,head.doc,head.dateid,head.docno,case head.doc when 'ST' then sout.rem else head.rem end  as remarks,brand.brand_desc as brand,stock.line,
                 concat(upper(head.createby),' ',date_format(head.createdate,'%Y %b %d - %h : %i %p')) as createby,  
@@ -153,7 +153,7 @@ class viewenginehistory
                 left join client on client.client = head.client
                 left join client as wh on wh.client=head.wh
                 left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
-                where item.isserial = 1 and  item.model = " . $modelid . "  order by dateid";
+                where item.isserial = 1  and item.itemid = ".$itemid."  order by dateid";
 
 
         $data = $this->coreFunctions->opentable($qry);

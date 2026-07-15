@@ -69,12 +69,12 @@ class ch
       //  ['label' => 'PUREGOLD PRICE CLUB', 'value' => '0', 'color' => 'red'],
       //  ['label' => 'GAISANO GRAND', 'value' => '1', 'color' => 'red'],
       ['label' => 'THE D.I.Y', 'value' => '2', 'color' => 'red'],
-      //  ['label' => 'HANDYMAN', 'value' => '3', 'color' => 'red'],
+      ['label' => 'HANDYMAN', 'value' => '3', 'color' => 'red'],
       ['label' => 'SUPER SM', 'value' => '9', 'color' => 'red'],
       ['label' => 'BQ/WILCON', 'value' => '4', 'color' => 'red'],
       ['label' => 'ACE', 'value' => '5', 'color' => 'red'],
       ['label' => 'METRO GAISANO', 'value' => '6', 'color' => 'red'],
-      ['label' => 'OVER ALL', 'value' => '8', 'color' => 'red'],
+      ['label' => 'OVER ALL', 'value' => '8', 'color' => 'red']
 
     ]);
     data_set($col2, 'radioreporttype.label', 'Report Type');
@@ -241,7 +241,7 @@ class ch
           case '3': //HANDYMAN
           case '8': //OVER ALL
             return $this->overall_layout_PDF($params, $data); //overall_layout_PDF puregold_layout_PDF
-            break;
+            break;  
           case '2': //THE D.I.Y   
             return $this->diy_layout_PDF($params, $data);
             break;
@@ -2045,12 +2045,17 @@ class ch
     // PDF::MultiCell(372, 20, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(80, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    
+      $contact=isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
 
+    if($reporttype==3){
+      $contact=isset($data[0]['contact']) ? $data[0]['contact'] : '';
+    }
 
     PDF::SetXY(40, 169); //172
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(65, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(387, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(387, 20, $contact, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(118, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -2137,6 +2142,7 @@ class ch
     $prepared = $params['params']['dataparams']['prepared'];
     $checked = $params['params']['dataparams']['approved'];
     $received = $params['params']['dataparams']['received'];
+    
 
 
     $border = "1px solid ";

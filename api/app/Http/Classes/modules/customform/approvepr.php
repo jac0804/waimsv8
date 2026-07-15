@@ -120,12 +120,13 @@ class approvepr
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $rows = $config['params']['rows'];
     $user = $config['params']['user'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     
     $dateTables = ['prstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($rows as $key) {
       $config['params']['row']['trno'] = $rows[0]['trno'];
       if ($key['status'] == '1' && $key['rrqty'] == 0) {

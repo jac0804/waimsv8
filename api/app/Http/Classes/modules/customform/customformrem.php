@@ -101,6 +101,7 @@ class customformrem
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $rem = $config['params']['dataparams']['rem'];
         $itemid = $config['params']['dataparams']['itemid'];
@@ -121,8 +122,13 @@ class customformrem
             'returndate' => $this->othersClass->getCurrentTimeStamp(),
             'returnrem' => $rem
         ];
+
+        $dateTables = ['issueitemstock','iteminfo'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $this->coreFunctions->sbcupdate("issueitemstock", $data, ['trno' => $trno, 'line' => [$line]]);
         $this->coreFunctions->sbcupdate("iteminfo", ['empid' => 0, 'locid' => 0], ['itemid' => $itemid, 'empid' => $empid]);

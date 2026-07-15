@@ -299,10 +299,8 @@ class jc
     data_set($col2, 'subprojectname.addedparams', ['projectid']);
     data_set($col2, 'subprojectname.required', true);
 
-
     $fields = [['yourref', 'ourref'], 'workloc', 'workdesc'];
     $col3 = $this->fieldClass->create($fields);
-
 
     $fields = ['retention', 'rem'];
     $col4 = $this->fieldClass->create($fields);
@@ -445,17 +443,22 @@ class jc
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
+    $dateTables = ['jchead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -474,15 +477,21 @@ class jc
     }
   } // end function
 
-
   public function recomputecost($head, $config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
+
+    $dateTables = ['jcstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
+      // $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
       $computedata = $this->othersClass->computestock($damt, $data[$key]->disc, $dqty, $data[$key]->uomfactor, $head['tax']);
 
@@ -491,7 +500,6 @@ class jc
     }
     return $exec;
   }
-
 
   public function deletetrans($config)
   {
@@ -509,7 +517,6 @@ class jc
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
-
 
   public function posttrans($config)
   {
@@ -693,7 +700,11 @@ class jc
 
   public function createdistribution($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
     $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,head.retention
@@ -721,7 +732,7 @@ class jc
           $disc = ($stock[$key]->rrcost * $stock[$key]->rrqty) - ($this->othersClass->discount($stock[$key]->rrcost * $stock[$key]->rrqty, $stock[$key]->disc));
         }
 
-        
+
         if ($vat != 0) {
           $tax = round(($stock[$key]->ext / $tax1), 2);
           $tax = round($stock[$key]->ext - $tax, 2);
@@ -801,7 +812,8 @@ class jc
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -943,10 +955,10 @@ class jc
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
     $qry = $sqlselect . "  
-   FROM $this->stock as stock
-  left join item on item.itemid=stock.itemid 
-  left join model_masterfile as mm on mm.model_id = item.model
-  left join uom on uom.itemid=item.itemid and uom.uom=stock.uom left join client as warehouse on warehouse.clientid=stock.whid left join stagesmasterfile as st on st.line = stock.stageid  where stock.trno = ? and stock.line = ? ";
+    FROM $this->stock as stock
+    left join item on item.itemid=stock.itemid 
+    left join model_masterfile as mm on mm.model_id = item.model
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom left join client as warehouse on warehouse.clientid=stock.whid left join stagesmasterfile as st on st.line = stock.stageid  where stock.trno = ? and stock.line = ? ";
 
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
@@ -1111,6 +1123,7 @@ class jc
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -1118,6 +1131,10 @@ class jc
     $loc = $config['params']['data']['loc'];
     $ref = '';
     $void = 'false';
+
+    $dateTables = ['jcstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
     }
@@ -1208,7 +1225,8 @@ class jc
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

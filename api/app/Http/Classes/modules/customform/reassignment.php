@@ -278,6 +278,7 @@ class reassignment
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $designation = [];
         $designation2 = [];
         $data3 = [];
@@ -362,9 +363,11 @@ class reassignment
 
 
         $tablename = 'rasstock';
-
+        $dateTables = [$tablename];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $v) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
 

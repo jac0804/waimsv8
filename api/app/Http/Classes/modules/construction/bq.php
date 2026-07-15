@@ -275,9 +275,9 @@ class bq
     data_set($col2, 'dprojectname.lookupclass', 'projectcode');
     data_set($col2, 'dprojectname.condition', ['checkstock']);
     data_set($col2, 'dprojectname.addedparams',  ['client']);
-    data_set($col2, 'dprojectname.required', true);
-    data_set($col2, 'subprojectname.required', true);
-    data_set($col2, 'stage.required', true);
+    data_set($col2, 'dprojectname.required', false);
+    data_set($col2, 'subprojectname.required', false);
+    data_set($col2, 'stage.required', false);
     data_set($col2, 'stage.condition', ['checkstock']);
 
     $fields = [['yourref', 'ourref'], 'rem'];
@@ -389,17 +389,22 @@ class bq
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
 
+    $dateTables = ['sohead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -754,6 +759,7 @@ class bq
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
+    $companyid = $config['params']['companyid'];
     $substage = 0;
     $subactivity = 0;
     $void = 'false';
@@ -761,6 +767,9 @@ class bq
     $stageid = 0;
     $loc = '';
     $subactid = '';
+
+    $dateTables = ['sostock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (isset($config['params']['data']['substage'])) {
       $substage = $config['params']['data']['substage'];
@@ -846,7 +855,8 @@ class bq
       'loc' => $loc
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

@@ -6917,7 +6917,7 @@ ENGINE = MyISAM;";
     $this->coreFunctions->sbcaddcolumn("hosstock", "currency", "varchar(5) NOT NULL DEFAULT ''", 0);
 
     $this->coreFunctions->sbcaddcolumn("client", "accountname", "VARCHAR(100) NOT NULL DEFAULT ''", 0);
-    $this->coreFunctions->sbcaddcolumn("client", "accountnum", "VARCHAR(20) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumn("client", "accountnum", "VARCHAR(100) NOT NULL DEFAULT ''", 0);
 
     $this->coreFunctions->sbcaddcolumn("client", "isdriver", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumn("client", "ispassenger", "TINYINT(2) NOT NULL DEFAULT '0'", 0);

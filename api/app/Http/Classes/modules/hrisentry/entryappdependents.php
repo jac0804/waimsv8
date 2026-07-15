@@ -177,9 +177,10 @@ class entryappdependents
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = ['params']['companyid'];
 
     $dateTables = ['adependents', 'dependents'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     // var_dump($row);
     foreach ($this->fields as $key => $value) {
@@ -257,9 +258,10 @@ class entryappdependents
   {
     $empid = $config['params']['tableid'];
     $data = $config['params']['data'];
+    $companyid = ['params']['companyid'];
 
     $dateTables = ['adependents', 'dependents'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];

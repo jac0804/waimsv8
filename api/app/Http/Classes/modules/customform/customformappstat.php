@@ -101,6 +101,8 @@ class customformappstat
 
     public function loaddata($config)
     {
+        
+        $companyid = $config['params']['companyid'];
         $app = $config['params']['dataparams'];
         $clientid = $config['params']['dataparams']['empid'];
         $jstat = $config['params']['dataparams']['jstatus'];
@@ -116,8 +118,12 @@ class customformappstat
 
         $oldstatus = $this->coreFunctions->getfieldvalue("app", "jstatus", "empid=?", [$clientid]);
 
+        $dateTables = ['app'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         if ($this->coreFunctions->sbcupdate("app", $data, ['empid' => $clientid])) {
             $result = $this->updatehqqa($config);

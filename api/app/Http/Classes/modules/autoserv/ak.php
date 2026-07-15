@@ -375,13 +375,14 @@ class ak
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
             unset($head['docno']);
         }
         $dateTables = ['pthead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
@@ -477,6 +478,7 @@ class ak
     {
 
         $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
 
         if (isset($config['params']['data']['jobid'])) {
             $jobid = $config['params']['data']['jobid'];
@@ -493,7 +495,7 @@ class ak
         ];
 
         $dateTables = ['ptjobs'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

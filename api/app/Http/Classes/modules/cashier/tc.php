@@ -579,6 +579,8 @@ class tc
     public function openstock($trno, $config)
     {
         $sqlselect = $this->getdetailselect($config);
+        $companyid = ['params']['companyid'];
+
 
         $qry = "select " . $sqlselect . " 
         from " . $this->detail . " as d
@@ -606,7 +608,7 @@ class tc
         }
 
         $dateTables = ['tcdetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($detail as $key => $value) {
             // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
@@ -628,6 +630,8 @@ class tc
         $sqlselect = $this->getdetailselect($config);
         $trno = $config['params']['trno'];
         $line = $config['params']['line'];
+        $companyid = ['params']['companyid'];
+
         $qry = "select " . $sqlselect . " 
         from " . $this->detail . " as d
         left join " . $this->head . " as head on head.trno=d.trno
@@ -648,7 +652,7 @@ class tc
         }
 
         $dateTables = ['tcdetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($detail as $key => $value) {
             // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
@@ -842,6 +846,8 @@ class tc
         $deduction = $config['params']['data']['deduction'];
         $balance = $config['params']['data']['balance'];
         $empname = $config['params']['data']['empname'];
+        $companyid = ['params']['companyid'];
+
 
         $acno = $config['params']['data']['acno'];
         $acnoid = $config['params']['data']['acnoid'];
@@ -875,7 +881,7 @@ class tc
         ];
 
         $dateTables = ['tcdetail'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
         foreach ($data as $key => $value) {
@@ -917,6 +923,8 @@ class tc
         $trno = $config['params']['trno'];
         $stock = $this->openstock($trno, $config);
         $isposted = $this->othersClass->isposted2($trno, 'transnum');
+        $companyid = ['params']['companyid'];
+
         $htable = $this->head;
         if ($isposted) {
             $htable = $this->hhead;
@@ -929,7 +937,7 @@ class tc
         }
 
         $dateTables = ['tchead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($stock as $key => $value) {
             // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);

@@ -385,7 +385,7 @@ class ds
         break;
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['accounting']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['accounting']['columns'][$rem]['type'] = 'textarea';
     }
@@ -627,6 +627,7 @@ class ds
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -634,7 +635,7 @@ class ds
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
     foreach ($this->fields as $key) {
@@ -885,6 +886,7 @@ class ds
     $rem = $config['params']['data']['rem'];
     $project = '';
     $client = $config['params']['data']['client'];
+    $companyid = $config['params']['companyid'];
     $refx = 0;
     $linex = 0;
     $ref = '';
@@ -1022,7 +1024,7 @@ class ds
     }
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

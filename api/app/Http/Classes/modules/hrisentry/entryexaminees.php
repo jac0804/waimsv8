@@ -133,11 +133,12 @@ class entryexaminees
         $data = [];
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
+        $companyid = ['params']['companyid'];
 
         $data = ['qid' => $trno, 'appid' => $row['empid']];
 
         $dateTables = ['examinees'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);

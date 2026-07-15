@@ -67,7 +67,8 @@ class on
       //  ['label' => 'METRO GAISANO', 'value' => '0', 'color' => 'red'],
       ['label' => 'THE LANDMARK OUTRIGHT', 'value' => '0', 'color' => 'red'],
       ['label' => 'WILCON OUTRIGHT', 'value' => '1', 'color' => 'red'],
-      ['label' => 'GENERAL FORMAT', 'value' => '2', 'color' => 'red']
+      ['label' => 'GENERAL FORMAT', 'value' => '2', 'color' => 'red'],
+      ['label' => 'HANDYMAN', 'value' => '3', 'color' => 'red']
     ]);
     data_set($col2, 'radioreporttype.label', 'Report Type');
     data_set($col2, 'approved.label', 'Checked By');
@@ -195,6 +196,7 @@ class on
             return $this->wilcon_layout_PDF($params, $data);
             break;
           case '2': //GENERAL OUTHRIGHT
+          case '3':  
             return $this->general_layout_PDF($params, $data);
             break;
         }
@@ -1850,11 +1852,15 @@ class on
     // PDF::MultiCell(80, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
+     $contact=isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
+    if($reporttype ==3){
+      $contact=isset($data[0]['contact']) ? $data[0]['contact'] : '';
+    }
 
     PDF::SetXY(40, 172); //210
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(65, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(387, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(387, 20, $contact, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(118, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 

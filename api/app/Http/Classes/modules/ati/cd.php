@@ -818,6 +818,7 @@ class cd
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     $dataothers = [];
     if ($isupdate) {
@@ -825,7 +826,7 @@ class cd
     }
 
     $dateTables = ['cdhead', 'headinfotrans'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -1518,6 +1519,7 @@ class cd
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -1605,7 +1607,7 @@ class cd
       $config['params']['line'] = $line;
     }
     $dateTables = ['cdstock', 'stockinfotrans', 'hqsstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);

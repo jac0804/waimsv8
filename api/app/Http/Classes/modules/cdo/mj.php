@@ -1826,6 +1826,7 @@ class mj
   // insert and update item
   public function additem($action, $config, $setlog = false)
   {
+    $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
 
@@ -1850,7 +1851,7 @@ class mj
     }
 
     $dateTables = ['lastock', 'stockinfo'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $rebate = 0;
     $refx = 0;
@@ -2869,7 +2870,7 @@ class mj
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
     $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
       item.expense,stock.isamt,stock.disc,stock.isqty,stock.cost,stock.iss,stock.fcost,head.projectid,client.rev,stock.rebate,head.taxdef,head.deldate,head.ewt,head.ewtrate,head.fpid,i.downpayment
@@ -3549,12 +3550,13 @@ class mj
 
   public function recomputestock($head, $config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     $deci = $this->companysetup->getdecimal('price', $config['params']);
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
       // $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));

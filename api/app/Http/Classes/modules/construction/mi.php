@@ -628,6 +628,7 @@ class mi
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
     $data = [];
@@ -636,11 +637,15 @@ class mi
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -649,7 +654,8 @@ class mi
     foreach ($this->otherfields as $key) {
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
-        $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+        // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+        $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
       }
     }
 
@@ -1223,6 +1229,9 @@ class mi
     $amt = 0;
     $cost = 0;
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['refx'])) {
       $refx = $config['params']['data']['refx'];
     }
@@ -1321,7 +1330,8 @@ class mi
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1782,6 +1792,9 @@ class mi
     $trno = $config['params']['trno'];
     $companyid =  $config['params']['companyid'];
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -1871,7 +1884,8 @@ class mi
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

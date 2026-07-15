@@ -146,7 +146,8 @@ class entrytasklabor
     {
         $data = $config['params']['data'];
         $dateTables = ['jobtask'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $companyid = $config['params']['companyid'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
@@ -181,9 +182,10 @@ class entrytasklabor
     {
         $data = [];
         $row = $config['params']['row'];
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['jobtask'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
             // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
