@@ -675,6 +675,7 @@ class ts
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -682,7 +683,7 @@ class ts
     }
 
     $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
@@ -1387,6 +1388,7 @@ class ts
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
@@ -1469,7 +1471,7 @@ class ts
     }
 
     $dateTables = ['lastock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1901,6 +1903,7 @@ class ts
 
   private function getserialout($config)
   {
+    $companyid = $config['params']['companyid'];
     $qty = 0;
     $eline = '';
     $return = true;
@@ -1939,7 +1942,7 @@ class ts
       }
 
       $dateTables = ['lastock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       //computecosting
       $this->coreFunctions->LogConsole(($eline));

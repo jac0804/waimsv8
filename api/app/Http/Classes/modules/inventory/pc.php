@@ -860,7 +860,7 @@ class pc
     $info = [];
 
     $dateTables = ['pchead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($isupdate) {
       unset($this->fields[1]);
@@ -1252,7 +1252,7 @@ class pc
 
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
       $dateTables = ['pcstock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
           // $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
@@ -1361,7 +1361,7 @@ class pc
                and stock.void=0 and stock.ispc=0";
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       $dateTables = ['pcstock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
@@ -1671,7 +1671,7 @@ class pc
     $amt = 0;
 
     $dateTables = ['pcstock'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (isset($config['params']['data']['oqty'])) {
       $oqty = $config['params']['data']['oqty'];

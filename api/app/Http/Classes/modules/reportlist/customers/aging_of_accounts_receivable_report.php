@@ -811,24 +811,24 @@ class aging_of_accounts_receivable_report
     }
 
     $qry = "
-          select  clientname,sum(elapse) as elapse,sum(balance) as balance,agentname,area from (
+          select  clientname,sum(elapse) as elapse,sum(balance) as balance,agentname,area, province from (
            select  if(client.clientname='','no clientname',client.clientname) as clientname,
                datediff(now(), head.dateid) as elapse, sum(stock.ext) as balance,
               if(agent.clientname = '' or agent.clientname is null, 'No Salesman', agent.clientname) as agentname,
-              if(client.area='','No area',client.area) as area
+              if(client.area='','No area',client.area) as area, client.province 
               from lahead as head
               left join lastock as stock on stock.trno=head.trno
               left join client on client.client=head.client
               left join cntnum on cntnum.trno=head.trno
               left join client as agent on agent.client=head.agent
               where head.doc in ('SK', 'CM') and head.dateid<='$asof' $filter
-              group by clientname,elapse,agentname,client.area
+              group by clientname,elapse,agentname,client.area, client.province
               union all
               select  if(client.clientname='','no clientname',client.clientname) as clientname,
                datediff(now(), head.dateid) as elapse,
               sum(detail.db-detail.cr) as balance,
                if(agent.clientname = '' or agent.clientname is null, 'No Salesman', agent.clientname) as agentname,
-              if(client.area='','No area',client.area) as area
+              if(client.area='','No area',client.area) as area, client.province 
               from lahead as head
               left join ladetail as detail on detail.trno=head.trno
               left join client on client.client=head.client
@@ -836,24 +836,24 @@ class aging_of_accounts_receivable_report
               left join cntnum on cntnum.trno=head.trno
               left join client as agent on agent.client=head.agent
               where left(coa.alias,2)='AR' and head.dateid<='$asof' $filter
-              group by clientname,elapse,agentname,client.area
+              group by clientname,elapse,agentname,client.area, client.province 
               union all
               select if(client.clientname='','no clientname',client.clientname) as clientname,
               datediff(now(), detail.dateid) as elapse,
               sum(case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,
                if(agent.clientname = '' or agent.clientname is null, 'No Salesman', agent.clientname) as agentname,
-              if(client.area='','No area',client.area) as area
+              if(client.area='','No area',client.area) as area, client.province 
               from arledger as detail
               left join client on client.clientid=detail.clientid
               left join cntnum on cntnum.trno=detail.trno
               left join glhead as head on head.trno=detail.trno
               left join client as agent on agent.clientid=head.agentid
               where detail.bal<>0 and client.iscustomer = 1 and head.dateid<='$asof' $filter
-              group by clientname,agentname,client.area, elapse
+              group by clientname,agentname,client.area, elapse, client.province 
               order by clientname ) as x
-              group by clientname,agentname,area
+              group by clientname,agentname,area, province
               $orderby";
-    // var_dump($qry);
+    // Logger($qry);
     return $qry;
   }
 
@@ -2215,7 +2215,6 @@ class aging_of_accounts_receivable_report
     $layoutsize = '1100';
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:40px');
     $str .= $this->roosevelt_displayHeader($params, $data);
-    $str .= $this->reporter->begintable($layoutsize);
     $border = "1px solid";
     $font_size = '15';
     $font = 'Calibri';
@@ -2266,6 +2265,7 @@ class aging_of_accounts_receivable_report
           $subtotes = $subtote;
           $subgts = $subgt;
           $str .= $this->reporter->addline();
+          $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '35', '', false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col('AREA TOTAL', '230', '', false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
@@ -2276,6 +2276,7 @@ class aging_of_accounts_receivable_report
           $str .= $this->reporter->col($subtotes != 0 ? number_format($subtote, 2) : '-', '140', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subgts != 0 ? number_format($subgt, 2) : '-', '140', null, false, $border, 'LTBR', 'R', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
 
           $subtota = 0;
           $subtotb = 0;
@@ -2284,7 +2285,7 @@ class aging_of_accounts_receivable_report
           $subtote = 0;
           $subgt = 0;
 
-
+          $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('&nbsp;', '35', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '230', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
@@ -2295,6 +2296,7 @@ class aging_of_accounts_receivable_report
           $str .= $this->reporter->col('&nbsp;', '140', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
 
           // $rowCount += 2; // subtotal + spacer
         } //end if
@@ -2302,24 +2304,19 @@ class aging_of_accounts_receivable_report
         $countclient = 0; // reset numbering for new area
 
         $str .= $this->reporter->addline(); //space sa pagitan ng header
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', null, false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
-
-        $str .= $this->reporter->col(strtoupper($data[$i]['area']), '230', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
-
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', null, false, $border, 'TBR', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('&nbsp;', '35', null, false, '1px solid ', 'LTB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col(strtoupper($data[$i]['area']) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . ($data[$i]['province']), '1070', null, false, $border, 'RTB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
         // $rowCount++;
         // var_dump($rowCount);
       } //end if
 
       // var_dump($rowCount);
       $countclient++;
+      $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col($countclient . '.', '35', null, false, '1px solid ', 'L', 'LT', $font, $font_size, 'B', '', '');
       $str .= $this->reporter->col($data[$i]['clientname'], '230', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
@@ -2410,7 +2407,7 @@ class aging_of_accounts_receivable_report
         $subgt = $subgt + $data[$i]['balance'];
       }
       $str .= $this->reporter->endrow();
-
+      $str .= $this->reporter->endtable();
       // $rowCount++;
       $area = $data[$i]['area'];
 
@@ -2450,6 +2447,7 @@ class aging_of_accounts_receivable_report
         // $str .= $this->reporter->endrow();
         // $str .= $this->reporter->endtable();
         // $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '35', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->col('', '230', null, false, $border, 'T', 'L', $font, '7', '', '', '');
@@ -2460,8 +2458,8 @@ class aging_of_accounts_receivable_report
         $str .= $this->reporter->col('', '140', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->endrow();
-
         $str .= $this->reporter->endtable();
+
         $str .= $this->reporter->page_break();
 
         // reset line counter
@@ -2482,6 +2480,7 @@ class aging_of_accounts_receivable_report
         $str .= $this->reporter->col('&nbsp;', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', null, false, $border, 'TBR', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
       }
     }
     $subtotas = $subtota;
@@ -2490,6 +2489,7 @@ class aging_of_accounts_receivable_report
     $subtotds = $subtotd;
     $subtotes = $subtote;
     $subgts = $subgt;
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '35', null, false,  $border, 'TBL', 'L', $font, $font_size, 'B', '', '');;
     $str .= $this->reporter->col('AREA TOTAL', '230', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '',  '');
@@ -2512,8 +2512,6 @@ class aging_of_accounts_receivable_report
     $str .= $this->reporter->col($tote != 0 ? number_format($tote, 2) : '-', '140', null, false,  $border, 'LTB', 'r', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($gt != 0 ? number_format($gt, 2) : '-', '140', null, false,  $border, 'LTBR', 'r', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
-
-
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->printline();
     $str .= $this->reporter->endreport();

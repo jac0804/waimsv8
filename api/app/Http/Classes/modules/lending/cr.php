@@ -650,11 +650,15 @@ class cr
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1106,6 +1110,9 @@ left join cntnum as num on num.trno = head.trno
 
     $type = '';
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['mcrefx'])) {
       $mcrefx = $config['params']['data']['mcrefx'];
     }
@@ -1254,7 +1261,8 @@ left join cntnum as num on num.trno = head.trno
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1598,10 +1606,14 @@ left join cntnum as num on num.trno = head.trno
 
   public function applytoar($config, $isdb = false)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $aptrno = $this->coreFunctions->getfieldvalue($this->head, "aftrno", "trno=?", [$trno]);
     $headamt = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
     $headdoc = $this->coreFunctions->getfieldvalue($this->tablenum, "bref", "trno=?", [$trno]);
+
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (floatval($headamt) == 0) {
       return ['accounting' => [], 'status' => false, 'msg' => 'Please enter amount received...'];
@@ -1884,7 +1896,8 @@ left join cntnum as num on num.trno = head.trno
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($detail as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              // $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $detail[$key]['editdate'] = $current_timestamp;
             $detail[$key]['editby'] = $config['params']['user'];
@@ -1930,6 +1943,7 @@ left join cntnum as num on num.trno = head.trno
 
   public function applyardiminish($config, $isdb = false)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $aptrno = $this->coreFunctions->getfieldvalue($this->head, "aftrno", "trno=?", [$trno]);
     $headamt = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
@@ -1937,6 +1951,8 @@ left join cntnum as num on num.trno = head.trno
 
     $applyto = $this->coreFunctions->getfieldvalue($this->head, "purposeid", "trno=?", [$trno]); //0 - MA 1 - Adv 2- Balloon
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($aptrno != 0) {
       //delete existing entry
@@ -2218,7 +2234,8 @@ left join cntnum as num on num.trno = head.trno
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($detail as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              // $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $detail[$key]['editdate'] = $current_timestamp;
             $detail[$key]['editby'] = $config['params']['user'];

@@ -350,9 +350,17 @@ class viewqtdetails
   public function loaddata($config)
   {
     $data = [];
+    $companyid = $config['params']['companyid'];
     $row = $config['params']['dataparams'];
+
+    $dateTables = ['qtinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+         $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $c = $this->coreFunctions->opentable("select trno from qtinfo where trno=?", [$config['params']['dataparams']['trno']]);
     if (!empty($c)) {

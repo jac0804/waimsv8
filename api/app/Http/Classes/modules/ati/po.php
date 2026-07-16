@@ -939,11 +939,15 @@ class po
       unset($head['docno']);
     }
 
+    $dateTables = ['pohead', 'headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -986,7 +990,8 @@ class po
     $dataothers['trnxtype'] = $head['trnxtype'];
     $arrcols = array_keys($dataothers);
     foreach ($arrcols as $key) {
-      $dataothers[$key] = $this->othersClass->sanitizekeyfield($key, $dataothers[$key]);
+      // $dataothers[$key] = $this->othersClass->sanitizekeyfield($key, $dataothers[$key]);
+      $dataothers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataothers[$key], $lookups);
     }
     $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
     if ($infotransexist == '') {
@@ -1964,6 +1969,7 @@ class po
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $isproject = $this->companysetup->getisproject($config['params']);
     $uom = $config['params']['data']['uom'];
     $barcode = '';
@@ -1981,6 +1987,9 @@ class po
       $ref = $config['params']['data']['ref'];
     }
     $itemid = ($itemid == '') ? 0 : $itemid;
+
+    $dateTables = ['postock', 'stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $amt1 = isset($config['params']['data']['amt1']) ? $config['params']['data']['amt1'] : 0;
     $amt2 = isset($config['params']['data']['amt2']) ? $config['params']['data']['amt2'] : 0;
@@ -2112,8 +2121,10 @@ class po
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -2186,11 +2197,13 @@ class po
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($data2 as $key2 => $value2) {
-      $data2[$key2] = $this->othersClass->sanitizekeyfield($key2, $data2[$key2]);
+      // $data2[$key2] = $this->othersClass->sanitizekeyfield($key2, $data2[$key2]);
+      $data2[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data2[$key2], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

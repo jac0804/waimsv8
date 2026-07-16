@@ -90,7 +90,12 @@ class updatenotes
     public function loaddata($config)
     {
         $clientid = $config['params']['clientid'];
-        $rem = $this->othersClass->sanitize($config['params']['dataparams']['rem'], 'STRING');
+        $companyid = $config['params']['companyid'];
+       
+        $dateTables = ['client'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        // $rem = $this->othersClass->sanitize($config['params']['dataparams']['rem'], 'STRING');
+        $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
         if ($this->coreFunctions->execqry("update client set rem='".$rem."' where clientid=".$clientid, "update")) {
             $status = true;
             $msg = 'Notes updated';

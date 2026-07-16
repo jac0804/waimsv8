@@ -71,6 +71,7 @@ class sqlquery
     }
 
 
+    $addfield = '';
     $filter = '';
     $addedjoin = '';
     $active = '';
@@ -156,8 +157,12 @@ class sqlquery
       }
     }
 
+    if ($companyid == 64){ // excelin
+      $addfield .= ", client.accountnum, client.alias";
+    }
 
-    $qry = "select client.clientid,client.client,client.clientname,client.addr,client.brgy,client.area,client.region,client.province
+
+    $qry = "select client.clientid,client.client,client.clientname,client.addr,client.brgy,client.area,client.region,client.province $addfield
     from client
     " . $addedjoin . "
     " . $filter . $condition;
@@ -1727,6 +1732,13 @@ class sqlquery
     if ($companyid == 16 && $config['params']['doc'] == 'BARCODEASSIGNING') { //ati
       $qry = "select '' as sizeid,'' barcode,0 as itemid,'' as category,'' as groupid,'' as othcode,'' as itemname,'' as uom,0 as factor,'' as amt,'' as brand,'' as class,'' as body,'' as part,'' as model,'' as disc,'' as partno,'' as shortname,'' as netprice, '' as brandname union all ";
     }
+    // if ($companyid == 16 && $config['params']['doc'] == 'BARCODEASSIGNING') { //ati
+    //   $qry = "select '' as client, '' as sizeid, '' barcode, 0 as itemid, '' as category, '' as groupid, 
+    //   '' as othcode, '' as itemname, '' as uom, 0 as factor, '' as amt, '' as brand, '' as class, '' as body, 
+    //   '' as part, '' as model, '' as disc, '' as partno, '' as shortname, '' as netprice, '' as brandname,
+    //   '' as color, '' as namt5, '' as namt7, '' as amt2, '' as disc2, '' as namt4, '' as amt7, '' as disc7 
+    //   union all ";
+    // }
 
     $amtfield = ',round(item.amt,2) as amt';
     if ($companyid == 39 && $config['params']['doc'] == 'ST') $amtfield = ',round(item.amt9,2) as amt'; //cbbsi
@@ -2034,6 +2046,8 @@ class sqlquery
       }
       $qrysave = $qry . "  " . $criteria . "  order by item.itemname asc ";
       $qry = $qry . "  " . $criteria . "  order by item.itemname asc " . $limit;
+      // $qrysave = $qry . "  " . $criteria . "  order by itemname asc ";
+      // $qry = $qry . "  " . $criteria . "  order by itemname asc " . $limit;
     }
     $this->coreFunctions->LogConsole($qry . '--this');
     $data = $this->coreFunctions->opentable($qry);

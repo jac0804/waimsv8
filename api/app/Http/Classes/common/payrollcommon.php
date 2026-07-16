@@ -930,7 +930,7 @@ class payrollcommon
         }
 
         if ($companyid == 62) { //onesky
-            $divid = $config['params']['dataparams']['empdivid'];
+            $divid = isset($config['params']['dataparams']['empdivid']) ? $config['params']['dataparams']['empdivid'] : 0;
             if ($divid != 0)  $filterEmp .= " and emp.divid=" . $divid;
             if ($pgroup == "") $filtergrp = "";
 
@@ -4071,7 +4071,7 @@ class payrollcommon
                                 case 'LEGALOT':
                                 case 'SPECIALOT':
                                 case 'NDIFFS':
-                                    $val->multiplier = $val->qtymulti;
+                                    if ($val->qtymulti != 0) $val->multiplier = $val->qtymulti;
                                     break;
                             }
 
@@ -4978,7 +4978,7 @@ class payrollcommon
                     } else {
                         $data['cr'] = $value->balance;
                     }
-                }else{
+                } else {
                     $data['cr'] = $value->amortization;
                 }
                 $data['docno'] = $value->docno;
@@ -4995,11 +4995,9 @@ class payrollcommon
                             $newbalance = $value->amt - $appliedamt;
                             $this->coreFunctions->execqry("update " . $setuptable . " set balance = " . $newbalance . ", editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where trno=" . $value->trno);
                         }
-                       
                     } else {
                         return 'Missing alias for account id ' . $value->acnoid;
                     }
-
                 }
             }
             //end of Deductions

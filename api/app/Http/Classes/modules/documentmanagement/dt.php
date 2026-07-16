@@ -368,7 +368,12 @@ class dt
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+
+    $dateTables = ['dt_dthead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     // if($isupdate){
     //   unset($this->fields[1]);
@@ -377,7 +382,8 @@ class dt
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if
     }
     $data2['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);

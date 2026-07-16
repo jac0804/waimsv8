@@ -543,6 +543,7 @@ class va
   {
     $head = $config['params']['head'];
     $center = $config['params']['center'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($head['docno']);
@@ -551,7 +552,7 @@ class va
     $msg  = '';
 
     $dateTables = ['rvoyage'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {

@@ -216,7 +216,7 @@ class viewleadtimesetting
     public function loaddata($config)
     {
         $doc = $config['params']['doc'];
-
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $leadfrom = $config['params']['dataparams']['leadfrom'];
         $leadto = $config['params']['dataparams']['leadto'];
@@ -237,13 +237,18 @@ class viewleadtimesetting
 
         $tablename = 'headinfotrans';
 
+        $dateTables = [$tablename];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
         if ($this->othersClass->isposted2($trno, 'transnum')) {
             return ['status' => false, 'msg' => 'Failed to save; already posted.'];
         }
 
         if (!$this->checkdata($trno, $tablename)) {
             foreach ($data as $key => $value) {
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
+                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $this->coreFunctions->sbcinsert($tablename, $data);
             $this->logger->sbcwritelog(
@@ -257,7 +262,8 @@ class viewleadtimesetting
             );
         } else {
             foreach ($data as $key => $value) {
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
+                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
+                   $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno]);
         }

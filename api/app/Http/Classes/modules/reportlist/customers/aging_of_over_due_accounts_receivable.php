@@ -130,7 +130,7 @@ class aging_of_over_due_accounts_receivable
               left join cntnum on cntnum.trno=head.trno
               left join client as agent on agent.client=head.agent
               where head.doc in ('SK', 'CM') and datediff(now(), head.dateid) >= 150 and head.dateid<='$asof' $filter 
-              group by clientname,elapse,agentname,client.area
+              group by agentname, clientname, elapse, client.area
               union all
               select  ifnull(client.clientname,'no clientname') as clientname,
                datediff(now(), head.dateid) as elapse,
@@ -144,7 +144,7 @@ class aging_of_over_due_accounts_receivable
               left join cntnum on cntnum.trno=head.trno
               left join client as agent on agent.client=head.agent
               where left(coa.alias,2)='AR' and datediff(now(), head.dateid) >= 150 and head.dateid<='$asof' $filter
-              group by clientname,elapse,agentname,client.area
+              group by agentname, clientname, elapse, client.area
               union all
               select ifnull(client.clientname,'no clientname') as clientname,
               datediff(now(), detail.dateid) as elapse,
@@ -157,9 +157,9 @@ class aging_of_over_due_accounts_receivable
               left join glhead as head on head.trno=detail.trno
               left join client as agent on agent.clientid=head.agentid
               where detail.bal<>0 and client.iscustomer = 1 and datediff(now(), head.dateid) >= 150 and head.dateid<='$asof' $filter
-              group by clientname,elapse,agentname,client.area ) as x
+              group by agentname, clientname, elapse, client.area ) as x
               group by clientname,elapse,agentname,area
-              order by agentname,  area, BINARY  UPPER(clientname)";
+              order by case when agentname='No Salesman' then 0 else 1 end, agentname,clientname";
 
         // Logger($qry);
         return $qry;

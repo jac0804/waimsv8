@@ -230,7 +230,7 @@ class viewotherinfo
     {
         $doc = $config['params']['doc'];
         $trno = $config['params']['dataparams']['trno'];
-
+        $companyid = $config['params']['companyid'];
         if ($this->othersClass->isposted2($trno, 'transnum')) {
             return ['status' => false, 'msg' => 'Failed to save; already posted.'];
         }
@@ -249,8 +249,13 @@ class viewotherinfo
                         $tablenum = "hcntnuminfo";
                     }
 
+                    $dateTables = [$tablenum];
+                    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
                     $data['rem2'] = $rem2;
-                    $data['driverid'] = $this->othersClass->sanitizekeyfield("driverid", $driverid);
+                    // $data['driverid'] = $this->othersClass->sanitizekeyfield("driverid", $driverid);
+                    $data['driverid'] = $this->othersClass->sanitizekeyfieldFast("driverid", $driverid, $lookups);
 
                     $this->coreFunctions->sbcupdate($tablenum, $data, ['trno' => $trno]);
                 } else {

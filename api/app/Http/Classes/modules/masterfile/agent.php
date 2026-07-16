@@ -89,17 +89,34 @@ class agent
       $this->modulename = 'EMPLOYEE LEDGER';
       $this->prefix = 'EE';
     }
-    if ($company == 34) { //evergreen
-      $getcols = ['action', 'listclient', 'listclientname', 'listposition'];
-    } else {
-      $getcols = ['action', 'listclient', 'listclientname', 'listaddr'];
+    switch ($company){
+      case 34:
+        $getcols = ['action', 'listclient', 'listclientname', 'listposition'];
+        break;
+      case 64:
+        $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'alias'];
+        break;
+      default:
+        $getcols = ['action', 'listclient', 'listclientname', 'listaddr'];
+        break;
     }
+    // if ($company == 34) { //evergreen
+    //   $getcols = ['action', 'listclient', 'listclientname', 'listposition'];
+    // } else {
+    //   $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'alias'];
+    // }
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+
     if ($company == 34) {
       $cols[2]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
     }
+
+    if ($company == 64) { // excelin
+      $cols[4]['style'] = 'width:180px;whiteSpace: normal;min-width:180px;';
+    }
+
     return $cols;
   }
 
@@ -125,8 +142,13 @@ class agent
       }
     }
 
+    $addedfield = '';
+    if ($company == 64){ // excelin
+    $addedfield .= ", client.alias";
+    }
 
-    $qry = "select client.clientid,client.client,client.clientname,client.addr,client.position from client where client.isagent=1 " . $condition . " " . $filtersearch . "
+
+    $qry = "select client.clientid,client.client,client.clientname,client.addr,client.position $addedfield from client where client.isagent=1 " . $condition . " " . $filtersearch . "
      order by client " . $limit;
 
     $data = $this->coreFunctions->opentable($qry);

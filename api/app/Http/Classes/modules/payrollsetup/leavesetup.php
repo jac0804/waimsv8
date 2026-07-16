@@ -291,6 +291,7 @@ class leavesetup
     {
         $head = $config['params']['head'];
         $center = $config['params']['center'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
             unset($this->fields['docno']);
@@ -302,11 +303,16 @@ class leavesetup
         $msg = '';
         $head['acnoid'] = $this->coreFunctions->getfieldvalue("paccount", "line", "code = '" . $head['acno'] . "'");
 
+        
+        $dateTables = ['leavesetup'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }

@@ -340,8 +340,16 @@ class viewincentivesdealer
 
   private function getdata($config)
   {
-    $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-    $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+    $companyid = $config['params']['companyid'];
+    
+    $dateTables = ['arledger'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+   
+    // $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
+    // $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+   
+    $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+    $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
     $status = $config['params']['dataparams']['incentivestatus'];
 
     switch ($status) {

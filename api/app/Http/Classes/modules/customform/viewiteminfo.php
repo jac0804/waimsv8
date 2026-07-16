@@ -615,7 +615,7 @@ class viewiteminfo
     public function loaddata($config)
     {
         $doc = $config['params']['doc'];
-
+        $companyid = $config['params']['companyid'];
         switch ($doc) {
             case 'STOCKCARD':
                 $data = [];
@@ -648,11 +648,13 @@ class viewiteminfo
 
                 break;
             default:
-
+                $dateTables = ['stockinfotrans','stockinfo'];
+                $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
                 $isnew = $config['params']['dataparams']['isnew'];
                 $trno = $config['params']['dataparams']['trno'];
                 $line = $config['params']['dataparams']['line'];
-                $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+                // $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+                $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
                 $leadfrom = $config['params']['dataparams']['leadfrom'];
                 $leadto = $config['params']['dataparams']['leadto'];
                 $leaddur = $config['params']['dataparams']['leaddur'];

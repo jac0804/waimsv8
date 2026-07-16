@@ -148,6 +148,7 @@ class viewsortline
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $doc = $config['params']['doc'];
         $sortline = $config['params']['dataparams']['sortline'];
         $trno = $config['params']['dataparams']['trno'];
@@ -155,7 +156,11 @@ class viewsortline
         $origline = $config['params']['dataparams']['origline'];
         $tblname = isset($config['params']['dataparams']['tblname']) ? $config['params']['dataparams']['tblname'] : '';
 
-        $sortline = $this->othersClass->sanitizekeyfield("qty", $sortline);
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $sortline = $this->othersClass->sanitizekeyfieldFast("qty", $sortline, $lookups);
+
+        // $sortline = $this->othersClass->sanitizekeyfield("qty", $sortline);
         $sortline = $this->othersClass->val($sortline);
         if ($sortline == 0) {
             return ['status' => false, 'msg' => 'Please encode valid number.'];

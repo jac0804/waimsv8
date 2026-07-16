@@ -189,7 +189,7 @@ class tripdetails
 
     public function loaddata($config)
     {
-
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $isapproved = $this->othersClass->isapproved($trno, "hcntnuminfo");
         $isposted = $this->othersClass->isposted2($trno, "cntnum");
@@ -209,6 +209,8 @@ class tripdetails
         $data = [];
         $datainfo = [];
 
+        
+       
         $rem = $config['params']['dataparams']['rem2'];
         $tripdate = $config['params']['dataparams']['tripdate'];
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -218,10 +220,16 @@ class tripdetails
 
         $this->coreFunctions->sbcupdate($maintab, $data, ['trno' => $trno]);
 
+        $dateTables = [$infotab];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $datainfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $datainfo['editby'] = $config['params']['user'];
-        $datainfo['rem2'] = $this->othersClass->sanitizekeyfield("rem", $rem);
-        $datainfo['tripdate'] = $this->othersClass->sanitizekeyfield("dateid", $tripdate);
+        // $datainfo['rem2'] = $this->othersClass->sanitizekeyfield("rem", $rem);
+        // $datainfo['tripdate'] = $this->othersClass->sanitizekeyfield("dateid", $tripdate);
+        $datainfo['rem2'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
+        $datainfo['tripdate'] = $this->othersClass->sanitizekeyfieldFast("dateid", $tripdate, $lookups);
+
         $datainfo['reportedby'] = $config['params']['dataparams']['reportedby'];
         $this->coreFunctions->sbcupdate($infotab, $datainfo, ['trno' => $trno]);
 

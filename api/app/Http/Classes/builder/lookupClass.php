@@ -2934,6 +2934,18 @@ class lookupClass
     } else {
       $col = array('name' => 'addr', 'label' => 'Address', 'align' => 'left', 'field' => 'addr', 'sortable' => true, 'style' => 'font-size:16px;');
       array_push($cols, $col);
+      if ($config['params']['companyid'] == 64){ //excelin
+        switch (strtolower($config['params']['doc'])){
+          case 'supplier':
+            $col = array('name' => 'accountnum', 'label' => 'Bank Account', 'align' => 'left', 'field' => 'accountnum', 'sortable' => true, 'style' => 'font-size:16px;');
+            array_push($cols, $col);
+            break;
+          case 'agent':
+            $col = array('name' => 'alias', 'label' => 'Alias', 'align' => 'left', 'field' => 'alias', 'sortable' => true, 'style' => 'font-size:16px;');
+            array_push($cols, $col);
+            break;
+        }
+      }
     }
 
 

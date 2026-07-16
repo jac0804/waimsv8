@@ -810,6 +810,7 @@ class sj
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
     $data = [];
@@ -819,11 +820,15 @@ class sj
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1489,6 +1494,8 @@ class sj
     $rem = isset($config['params']['data']['rem']) ? $config['params']['data']['rem'] : '';
     $cline = isset($config['params']['data']['cline']) ? $config['params']['data']['cline'] : 0;
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
@@ -1566,7 +1573,8 @@ class sj
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();

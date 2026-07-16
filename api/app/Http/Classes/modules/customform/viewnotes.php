@@ -111,9 +111,14 @@ class viewnotes
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['detailrems'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $trno = $config['params']['dataparams']['trno'];
     $line = $config['params']['dataparams']['line'];
-    $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+    // $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+    $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
     $createby = $config['params']['user'];
     $createdate = $this->othersClass->getCurrentTimeStamp();;
 
@@ -128,7 +133,8 @@ class viewnotes
 
 
     foreach ($data as $key => $v) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $this->coreFunctions->sbcinsert($this->table, $data);
 

@@ -133,22 +133,27 @@ class supplier
 
   public function createdoclisting($config)
   {
-    $action = 0;
-    $listclient = 1;
-    $listclientname = 2;
-    $listaddr = 3;
-    $notes = 4;
-    $cat_name = 5;
-    $businessnature = 6;
-    $tel = 7;
-    $fax = 8;
-    $contact = 9;
-    $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'notes', 'cat_name', 'businessnature', 'tel', 'fax', 'contact'];
+    // $action = 0;
+    // $listclient = 1;
+    // $listclientname = 2;
+    // $listaddr = 3;
+    // $notes = 4;
+    // $cat_name = 5;
+    // $businessnature = 6;
+    // $tel = 7;
+    // $fax = 8;
+    // $contact = 9;
+    $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'accountno','notes', 'cat_name', 'businessnature', 'tel', 'fax', 'contact'];
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
 
     $cols[$tel]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+    $cols[$accountno]['label'] = 'Bank Account';
+    $cols[$accountno]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:210px;text-align:left;';
 
     if ($config['params']['companyid'] != 6) { //not mitsukoshi
       $cols[$cat_name]['type'] = 'coldel';
@@ -157,6 +162,11 @@ class supplier
     if ($config['params']['companyid'] != 16) { //not ati
       $cols[$businessnature]['type'] = 'coldel';
     }
+
+    if ($config['params']['companyid'] != 64) { //not excelin
+      $cols[$accountno]['type'] = 'coldel';
+    }
+
 
     if ($config['params']['companyid'] != 24 && $config['params']['companyid'] != 69) { //not goodfound, not cemphil
       $cols[$tel]['type'] = 'coldel';
@@ -201,6 +211,9 @@ class supplier
       case 69: //cemphil
       case 24: //goodfound
         $addedfields = ",client.tel,client.fax,client.contact";
+        break;
+      case 64: //excelin
+        $addedfields = ",client.accountnum as accountno";
         break;
     }
 

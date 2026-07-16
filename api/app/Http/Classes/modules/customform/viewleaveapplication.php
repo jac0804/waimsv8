@@ -358,10 +358,16 @@ class viewleaveapplication
         if ($catid <> 0) {
           $data['catid'] = $catid;
         }
+
+        $dateTables = ['leavetrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
         $tempdata = [];
         foreach ($this->fields as $key2) {
           if (isset($data[$key2])) {
-            $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+            // $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+            $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2], $lookups);
           }
         }
         $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

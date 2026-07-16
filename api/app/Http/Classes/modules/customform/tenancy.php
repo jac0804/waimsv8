@@ -116,12 +116,16 @@ class tenancy
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $clientid  = $config['params']['clientid'];
 
+    $dateTables = ['tenancystatus'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [];
     foreach ($this->fields as $fieldname) {
-      $data[$fieldname] = $this->othersClass->sanitizekeyfield($fieldname, $config['params']['dataparams'][$fieldname]);
+      // $data[$fieldname] = $this->othersClass->sanitizekeyfield($fieldname, $config['params']['dataparams'][$fieldname]);
+      $data[$fieldname] = $this->othersClass->sanitizekeyfieldFast($fieldname, $config['params']['dataparams'][$fieldname], $lookups);
     }
     $data['clientid'] = $clientid;
 

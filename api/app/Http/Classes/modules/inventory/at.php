@@ -560,7 +560,7 @@ class at
         $info = [];
 
         $dateTables = ['athead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if ($isupdate) {
             unset($this->fields[1]);
@@ -1046,7 +1046,7 @@ class at
         $getqoh = isset($config['params']['getqoh']) ? true : false;
 
         $dateTables = ['atstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['void'])) {
             $void = $config['params']['data']['void'];

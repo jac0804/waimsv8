@@ -829,11 +829,14 @@ class oq
       unset($this->fields[1]);
       unset($head['docno']);
     }
+    $dateTables = ['oqhead', 'headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -842,7 +845,8 @@ class oq
     foreach ($this->otherfields as $key) {
       $dataother[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+        // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+        $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
       } //end if
     }
     $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
@@ -2104,6 +2108,7 @@ class oq
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $isproject = $this->companysetup->getisproject($config['params']);
     $uom = $config['params']['data']['uom'];
     $barcode = '';
@@ -2121,6 +2126,9 @@ class oq
     if (isset($config['params']['data']['ref'])) {
       $ref = $config['params']['data']['ref'];
     }
+
+    $dateTables = ['oqstock', 'stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $refx = 0;
     $linex = 0;
@@ -2218,8 +2226,10 @@ class oq
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -2294,11 +2304,13 @@ class oq
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($datainfo as $key => $value) {
-      $datainfo[$key] = $this->othersClass->sanitizekeyfield($key, $datainfo[$key]);
+      // $datainfo[$key] = $this->othersClass->sanitizekeyfield($key, $datainfo[$key]);
+      $datainfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datainfo[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

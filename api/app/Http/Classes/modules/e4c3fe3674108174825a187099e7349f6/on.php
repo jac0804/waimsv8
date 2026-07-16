@@ -587,6 +587,10 @@ class on
   {
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -597,7 +601,8 @@ class on
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1176,6 +1181,7 @@ class on
   // insert and update item
   public function additem($action, $config, $setlog = false)
   {
+    $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
 
@@ -1189,6 +1195,9 @@ class on
     $palletid = isset($config['params']['data']['palletid']) ? $config['params']['data']['palletid'] : 0;
     $weight = isset($config['params']['data']['weight']) ? $config['params']['data']['weight'] : 0;
     $expiry = '';
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $rebate = 0;
     $refx = 0;
@@ -1240,6 +1249,8 @@ class on
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
@@ -1291,7 +1302,8 @@ class on
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

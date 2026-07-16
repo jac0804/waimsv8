@@ -124,12 +124,19 @@ class capostedsj
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
+
+        $dateTables = ['glhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+
                 }
                 $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                 $user = $config['params']['user'];

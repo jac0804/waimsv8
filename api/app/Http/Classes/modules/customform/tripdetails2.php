@@ -174,6 +174,7 @@ class tripdetails2
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $isapproved = $this->othersClass->isapproved($trno, "hcntnuminfo");
         $isposted = $this->othersClass->isposted2($trno, "cntnum");
@@ -194,11 +195,15 @@ class tripdetails2
         $data = [];
         $datainfo = [];
 
+        $dateTables = [$infotab];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $rem = $config['params']['dataparams']['rem2'];
 
         $datainfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $datainfo['editby'] = $config['params']['user'];
-        $datainfo['rem3'] = $this->othersClass->sanitizekeyfield("rem", $rem);
+        // $datainfo['rem3'] = $this->othersClass->sanitizekeyfield("rem", $rem);
+        $datainfo['rem3'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
         $datainfo['reportedby2'] = $config['params']['dataparams']['reportedby'];
         $datainfo['strdate1'] = $config['params']['dataparams']['strdate1'];
         $datainfo['strdate2'] = $config['params']['dataparams']['strdate2'];

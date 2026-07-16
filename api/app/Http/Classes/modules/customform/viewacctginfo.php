@@ -321,7 +321,12 @@ class viewacctginfo
     $isnew = $config['params']['dataparams']['isnew'];
     $trno = $config['params']['dataparams']['trno'];
     $line = $config['params']['dataparams']['line'];
-    $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+
+    $dateTables = ['detailinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    // $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
+    $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
 
     $acno = isset($config['params']['dataparams']['acno']) ? $config['params']['dataparams']['acno'] : '';
     $refx = isset($config['params']['dataparams']['refx']) ? $config['params']['dataparams']['refx'] : 0;
@@ -384,14 +389,16 @@ class viewacctginfo
 
     $tablename = 'detailinfo';
     $tbl = 'ladetail';
-
+    
+   
     if ($isvewt !== '0' && ($isewt !== '0' || $isvat !== '0')) {
       $msg = 'Already tagged as VEWT, remove tagging for EWT/VAT';
       return ['status' => false, 'msg' => $msg, 'data' => []];
     }
 
     foreach ($data as $key => $v) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($rem !== '' && $trno == 0 && $line == 0) {

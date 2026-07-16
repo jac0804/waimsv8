@@ -166,10 +166,16 @@ class tenant_profile_tab
   public function loaddata($config)
   {
     $clientid  = $config['params']['clientid'];
-
+    $companyid = $config['params']['companyid'];
     $data = [];
+
+
+    $dateTables = ['tenantinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $fieldname) {
-      $data[$fieldname] = $this->othersClass->sanitizekeyfield($fieldname, $config['params']['dataparams'][$fieldname]);
+      // $data[$fieldname] = $this->othersClass->sanitizekeyfield($fieldname, $config['params']['dataparams'][$fieldname]);
+      $data[$fieldname] = $this->othersClass->sanitizekeyfieldFast($fieldname, $config['params']['dataparams'][$fieldname], $lookups);
     }
     $data['clientid'] = $clientid;
 

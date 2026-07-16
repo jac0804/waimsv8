@@ -372,8 +372,14 @@ class sj
 
     $col3 = $this->fieldClass->create($fields);
 
-    $fields = ['rem'];
+    $fields = ['rem', 'refresh'];
     $col4 = $this->fieldClass->create($fields);
+    data_set($col4, 'refresh.type', 'actionbtn');
+    data_set($col4, 'refresh.name', 'backlisting');
+    data_set($col4, 'refresh.label', 'Recompute Commission');
+    data_set($col4, 'refresh.access', 'view');
+    data_set($col4, 'refresh.action', 'recomputecomm');
+    data_set($col4, 'refresh.lookupclass', 'stockstatusposted');
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
@@ -1246,10 +1252,252 @@ class sj
             break;
         }
         break;
+      case 'recomputecomm':
+        return $this->recomputecomm($config);
+        break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
         break;
     }
+  }
+
+  public function recomputecomm($config)
+  {
+
+    $trno = $config['params']['trno'];
+    $msg = '';
+    $status = true;
+
+    $qry = "select s.trno, s.line, s.suppid, s.qty, s.iss, (s.ext-info.lessvat-info.sramt-info.pwdamt) as ext, h.dateid, s.whid, item.`channel`, info.cardcharge from glstock as s 
+          left join hstockinfo as info on info.trno=s.trno and info.line=s.line join item on item.itemid=s.itemid join glhead as h on h.trno=s.trno
+          where s.trno=" . $trno . " and info.comm1=0 and s.suppid=77";
+    $stock = $this->coreFunctions->opentable($qry);
+
+    $dateid = $this->coreFunctions->datareader("select dateid as value from glhead where trno=" . $trno);
+
+    foreach ($stock as $key => $value) {
+
+      $dateid = $value->dateid;
+
+      $comm1 = $this->coreFunctions->datareader("select cl.comm1 as value from commissionlist as cl where cl.clientid=" . $value->suppid . " and '" . $value->dateid . "' between date(startdate) and date(enddate) order by cl.startdate limit 1", [], '', true);
+      $comm2 = $this->coreFunctions->datareader("select cl.comm2 as value from commissionlist as cl where cl.clientid=" . $value->suppid . " and '" . $value->dateid . "' between date(startdate) and date(enddate) order by cl.startdate limit 1", [], '', true);
+
+      $this->coreFunctions->LogConsole('comm1 - ' . $comm1);
+
+      $commrate = 0;
+      $commamt = 0;
+      $comap1 = 0;
+      $comap2 = 0;
+
+      if ($value->channel == 'CONCESSION') {
+        if ($comm1 != 0) {
+          $commrate = $comm1;
+          $commamt = 0;
+
+          if (abs($value->ext) > 0) {
+            $commamt = number_format(abs($value->ext) *  ($commrate / 100), 2, '.', '') * -1;
+            $comap1 = abs($value->ext) + $commamt;
+          }
+        }
+      } else {
+        $defaultcost = app('App\Http\Classes\posClass')->getDefaultCost($value->itemid, $value->whid, $value->dateid);
+        if ($value->iss > 0) {
+          if (abs($value->ext) > 0) {
+            $comap1 = number_format($value->iss *  $defaultcost, 2, '.', '');
+          }
+        }
+        if ($value->qty > 0) {
+          $comap1 = number_format($value->qty *  $defaultcost, 2, '.', '');
+        }
+      }
+
+      if ($comm2 != 0) {
+        if (abs($value->ext) > 0) {
+          $comap2 = number_format(abs($comap1) *  ($comm2 / 100), 2, '.', '');
+        }
+      }
+
+      $data = [
+        'comm1' => $comm1,
+        'comm2' => $comm2,
+        'comap' => $comap1,
+        'comap2' => $comap2,
+        'comrate' => $commrate,
+        'netap' => $comap1 - $comap2 - $value->cardcharge
+      ];
+
+      $this->coreFunctions->sbcupdate("hstockinfo", $data, ['trno' => $value->trno, 'line' => $value->line]);
+    }
+
+
+    if (!empty($stock)) {
+      $line = $this->coreFunctions->datareader("select max(line) as value from gldetail where trno=" . $trno);
+
+      $dataAPOut = $this->coreFunctions->opentable("SELECT 'SJ' as doc, stock.whid, client.clientid, sum(info.comap) as comap, sum(info.cardcharge) as cardcharge, sum(info.comap2) as comap2, sum(info.netap) as netap
+                    from glstock as stock JOIN hstockinfo AS info ON info.trno=stock.trno AND info.line=stock.line JOIN client ON client.clientid=stock.suppid join item on item.itemid=stock.itemid 
+                    where item.channel='OUTRIGHT' and stock.trno=" . $trno . " and stock.suppid=77 group by stock.whid, client.clientid");
+
+      foreach ($dataAPOut as $keyAP => $valAP) {
+        if ($valAP->netap > 0) {
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['CG3']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $valAP->netap, 'cr' => $valAP->doc == 'CM' ? $valAP->netap : 0, 'postdate' => $dateid];
+
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $insert =  $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          if ($insert) {
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['IN3']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? $valAP->netap : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->netap, 'postdate' => $dateid];
+
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $insert =  $this->coreFunctions->sbcinsert("gldetail", $entry);
+            if (!$insert) {
+              $msg = 'failed to insert ' . json_encode($entry);
+              $status = false;
+            }
+          } else {
+            $msg = 'failed to insert ' . json_encode($entry);
+            $status = false;
+          }
+        }
+      }
+
+
+      $dataAPOut = $this->coreFunctions->opentable("SELECT 'SJ' as doc, stock.whid, client.clientid, sum(info.comap) as comap, sum(info.cardcharge) as cardcharge, sum(info.comap2) as comap2, sum(info.netap) as netap
+                    from glstock as stock JOIN hstockinfo AS info ON info.trno=stock.trno AND info.line=stock.line JOIN client ON client.clientid=stock.suppid join item on item.itemid=stock.itemid
+                    where item.channel='CONSIGNMENT' and stock.trno=" . $trno . " and stock.suppid=77 group by stock.whid, client.clientid");
+
+      foreach ($dataAPOut as $keyAP => $valAP) {
+        if ($valAP->netap > 0) {
+          $dcNetComAP = $dcInputTax = 0;
+          if ($valAP->comap != 0) {
+            $dcInputTax = number_format((($valAP->comap / 1.12) * 0.12), 2, '.', '');
+            $dcNetComAP = number_format($valAP->comap - $dcInputTax, 2, '.', '');
+          }
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['CG2']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $dcNetComAP, 'cr' => $valAP->doc == 'CM' ? $dcNetComAP : 0, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['TX1']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $dcInputTax, 'cr' => $valAP->doc == 'CM' ? $dcInputTax : 0, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['AP2']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? $valAP->comap : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->comap, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->execqry("delete from apledger where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          if ($valAP->cardcharge != 0) {
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARBC']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $valAP->cardcharge, 'cr' => $valAP->doc == 'CM' ?  $valAP->cardcharge : 0, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->execqry("delete from arledger where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['OIBC']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ?  $valAP->cardcharge : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->cardcharge, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+          }
+
+          if ($valAP->comap2 != 0) {
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARMS']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $valAP->comap2, 'cr' => $valAP->doc == 'CM' ? $valAP->comap2 : 0, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->execqry("delete from arledger where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['OIMS']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? $valAP->comap2 : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->comap2, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+          }
+        }
+      }
+
+      $dataAPOut = $this->coreFunctions->opentable("SELECT 'SJ' as doc, stock.whid, client.clientid, sum(info.comap) as comap, sum(info.cardcharge) as cardcharge, sum(info.comap2) as comap2, sum(info.netap) as netap
+                    from glstock as stock JOIN hstockinfo AS info ON info.trno=stock.trno AND info.line=stock.line JOIN client ON client.clientid=stock.suppid join item on item.itemid=stock.itemid
+                    where item.channel='CONCESSION' and stock.trno=" . $trno . " and stock.suppid=77 group by stock.whid, client.clientid");
+
+      foreach ($dataAPOut as $keyAP => $valAP) {
+        if ($valAP->netap > 0) {
+          $dcNetComAP = $dcInputTax = 0;
+          if ($valAP->comap != 0) {
+            $dcInputTax = number_format((($valAP->comap / 1.12) * 0.12), 2, '.', '');
+            $dcNetComAP = number_format($valAP->comap - $dcInputTax, 2, '.', '');
+          }
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['CG1']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $dcNetComAP, 'cr' => $valAP->doc == 'CM' ? $dcNetComAP : 0, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['TX1']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $dcInputTax, 'cr' => $valAP->doc == 'CM' ? $dcInputTax : 0, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['AP1']);
+          $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? $valAP->comap : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->comap, 'postdate' => $dateid];
+          $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->execqry("delete from apledger where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+          $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+          if ($valAP->cardcharge != 0) {
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARBC']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $valAP->cardcharge, 'cr' => $valAP->doc == 'CM' ? $valAP->cardcharge : 0, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->execqry("delete from arledger where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['OIBC']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ?  $valAP->cardcharge : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->cardcharge, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+          }
+
+          if ($valAP->comap2 != 0) {
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARMS']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? 0 : $valAP->comap2, 'cr' => $valAP->doc == 'CM' ? $valAP->comap2 : 0, 'postdate' => $dateid];
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+
+            $acnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['OIMS']);
+            $entry = ['trno' => $trno, 'line' => $line += 1, 'acnoid' => $acnoid, 'clientid' => $valAP->clientid, 'db' => $valAP->doc == 'CM' ? $valAP->comap2 : 0, 'cr' => $valAP->doc == 'CM' ? 0 : $valAP->comap2, 'postdate' => $dateid];
+
+            $this->coreFunctions->execqry("delete from gldetail where trno=" . $trno . " and acnoid=" . $acnoid . "  and clientid=" . $valAP->clientid);
+            $this->coreFunctions->sbcinsert("gldetail", $entry);
+          }
+        }
+      }
+
+      $this->coreFunctions->execqry("
+      insert into apledger(dateid,trno,line,acnoid,clientid,db,cr,bal,fdb,fcr,docno,ref,cur,forex)
+      select d.postdate,d.trno,d.line,d.acnoid,d.clientid,round(d.db,2),
+      round(d.cr,2),round(d.db,2)+round(d.cr,2) as bal,d.fdb,d.fcr,head.docno,d.ref,d.cur,d.forex
+      from glhead as head
+      left join gldetail as d on head.trno=d.trno
+      left join coa on coa.acnoid=d.acnoid
+      left join apledger as ap on ap.trno=d.trno and ap.line=d.line
+      where left(coa.alias,2)='AP' and d.trno=" . $trno . " and d.refx=0 and ap.trno is null");
+
+      $this->coreFunctions->execqry("
+      insert into arledger(dateid,trno,line,acnoid,clientid,db,cr,bal,fdb,fcr,docno,ref,cur,forex)
+      select d.postdate,d.trno,d.line,d.acnoid,d.clientid,round(d.db,2),
+      round(d.cr,2),round(d.db,2)+round(d.cr,2) as bal,d.fdb,d.fcr,head.docno,d.ref,d.cur,d.forex
+      from glhead as head
+      left join gldetail as d on head.trno=d.trno
+      left join coa on coa.acnoid=d.acnoid
+      left join arledger as ar on ar.trno=d.trno and ar.line=d.line
+      where left(coa.alias,2)='AR' and d.trno=" . $trno . " and d.refx=0 and ar.trno is null ");
+    }
+
+    return ['status' => $status, 'msg' => $msg];
   }
 
   public function updateperitem($config)

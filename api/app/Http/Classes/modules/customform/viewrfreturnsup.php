@@ -173,10 +173,10 @@ class viewrfreturnsup
 
   public function loaddata($config)
   {
-
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $isposted = $this->othersClass->isposted2($trno, "transnum");
-
+    $table = $isposted == false ? "rfhead" : "hrfhead";
     $msg = '';
 
     $qry = "
@@ -191,11 +191,20 @@ class viewrfreturnsup
       return ['status' => false, 'msg' => 'Already close date', 'data' => [], 'txtdata' => $txtdata];
     }
 
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
     switch ($config['params']['action2']) {
       case 'close':
-        $data = [
+        // $data = [
+        //   'trno' => $trno,
+        //   'dateclose' => $this->othersClass->sanitizekeyfield('dateclose', $config['params']['dataparams']['dateclose']),
+        // ];
+
+         $data = [
           'trno' => $trno,
-          'dateclose' => $this->othersClass->sanitizekeyfield('dateclose', $config['params']['dataparams']['dateclose']),
+          'dateclose' => $this->othersClass->sanitizekeyfieldFast('dateclose', $config['params']['dataparams']['dateclose'], $lookups),
         ];
         $msg = 'The transaction has been closed.';
 
@@ -222,7 +231,7 @@ class viewrfreturnsup
     LIMIT 1";
     $count = $this->coreFunctions->datareader($qry, [$trno, $trno]);
 
-    $table = $isposted == false ? "rfhead" : "hrfhead";
+   
 
     if ($count != '') {
       $this->coreFunctions->sbcupdate($table, $data, ['trno' => $trno]);

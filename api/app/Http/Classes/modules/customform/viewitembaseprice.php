@@ -118,13 +118,19 @@ class viewitembaseprice
     }
 
     public function loaddata($config)
-    {
+    {   
+        $companyid = $config['params']['companyid'];
         $data = [];
         $itemid = $config['params']['itemid'];
 
+        $dateTables = ['item'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
         $row = $config['params']['dataparams'];
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['dlock'] = $this->othersClass->getCurrentTimeStamp();

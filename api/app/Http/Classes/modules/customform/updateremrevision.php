@@ -132,7 +132,7 @@ class updateremrevision
 
     public function loaddata($config)
     {
-
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $rem = $config['params']['dataparams']['rem'];
         if ($rem == '') {
@@ -184,12 +184,17 @@ class updateremrevision
                     'deadline2' => $config['params']['dataparams']['deadline']
                 ];
 
+                $dateTables = ['hprstock','headprrem'];
+                $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
                 foreach ($data as $key => $value) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 }
 
                 foreach ($datastock as $key => $value) {
-                    $datastock[$key] = $this->othersClass->sanitizekeyfield($key, $datastock[$key]);
+                    // $datastock[$key] = $this->othersClass->sanitizekeyfield($key, $datastock[$key]);
+                     $datastock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datastock[$key], $lookups);
                 }
 
                 $update = $this->coreFunctions->sbcupdate('hprstock', $datastock, ['trno' => $trno, 'line' => $line]);

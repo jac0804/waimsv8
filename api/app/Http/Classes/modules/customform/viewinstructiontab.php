@@ -549,7 +549,8 @@ class viewinstructiontab
   public function loaddata($config)
   {
     $trno = $config['params']['dataparams']['trno'];
-
+    $companyid = $config['params']['companyid'];
+   
     $data = [
       'trno' => $trno,
       'inspo' => $config['params']['dataparams']['inspo'],
@@ -567,8 +568,12 @@ class viewinstructiontab
       return ['status' => false, 'msg' => 'Failed to save; already posted.'];
     }
 
+    $dateTables = ['headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $qry = "select trno as value from headinfotrans where trno = ? LIMIT 1";

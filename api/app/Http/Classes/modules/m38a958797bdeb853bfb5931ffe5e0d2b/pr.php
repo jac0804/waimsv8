@@ -774,6 +774,8 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
+        $dateTables = ['prhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
@@ -783,7 +785,8 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -910,7 +913,7 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
                 return ['trno' => $trno, 'status' => false, 'msg' => 'Unposting failed. There are issues with inventory.'];
             }
 
-        $qry = "insert into " . $this->stock . "(
+            $qry = "insert into " . $this->stock . "(
         trno,line,itemid,uom,whid,loc,ref,disc,
         cost,qty,void,rrcost,rrqty,ext,rem,encodeddate,qa,encodedby,editdate,editby,refx,linex,cdqa,sortline,
         projectid,phaseid,modelid,blklotid,amenityid,subamenityid)
@@ -1596,6 +1599,8 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
         $wh = $config['params']['data']['wh'];
         $loc = $config['params']['data']['loc'];
         $void = 'false';
+        $dateTables = ['stockinfotrans', 'prstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $itemdesc = '';
         if (isset($config['params']['data']['void'])) {
             $void = $config['params']['data']['void'];
@@ -1630,8 +1635,11 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
 
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+        // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
 
         if ($systype == 'REALESTATE') {
@@ -1674,7 +1682,8 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
         ];
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -1692,8 +1701,10 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
                 $stockinfo_data = [
                     'trno' => $trno,
                     'line' => $line,
-                    'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
-                    'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
+                    // 'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
+                    // 'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
+                    'rem' => $this->othersClass->sanitizekeyfieldFast('rem', $rem, $lookups),
+                    'requestorname' => $this->othersClass->sanitizekeyfieldFast('requestorname', $requestorname, $lookups)
                 ];
                 $this->coreFunctions->sbcinsert($this->infostock, $stockinfo_data);
 
@@ -1706,8 +1717,10 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
         } elseif ($action == 'update') {
             $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
             $stockinfo_data = [
-                'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
-                'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
+                // 'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
+                // 'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
+                'rem' => $this->othersClass->sanitizekeyfieldFast('rem', $rem, $lookups),
+                'requestorname' => $this->othersClass->sanitizekeyfieldFast('requestorname', $requestorname, $lookups)
             ];
             $this->coreFunctions->sbcupdate($this->infostock, $stockinfo_data, ['trno' => $trno, 'line' => $line]);
             return ['status' => true, 'msg' => 'Item was successfully updated.'];

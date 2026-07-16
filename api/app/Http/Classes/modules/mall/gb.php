@@ -164,6 +164,9 @@ class gb
     $center  = $config['params']['center'];
     $user  = $config['params']['user'];
     $billdate = strtotime($byear . '-' . $bmonth . '-1');
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $filter = "";
     //if vatexsales is true all rates is considered vat ex
     $vatex = $this->companysetup->getvatexsales($config['params']);
@@ -296,7 +299,7 @@ class gb
 
       $escalrate = 0;
       $escal = $this->coreFunctions->opentable("select rate,line from escalation where date(dateid) <='" . $billdate . "'  and clientid = " . $dttenant[$k]->clientid . " and isapplied <> 1 order by dateid limit 1");
-      if(!empty($escal)) $escal = $this->othersClass->val($escal[0]->rate);
+      if (!empty($escal)) $escal = $this->othersClass->val($escal[0]->rate);
       //getting rent vat ex
       switch (strtoupper($dttenant[$k]->rentcat)) {
         case '% OF SALES':
@@ -461,7 +464,7 @@ class gb
 
       $this->coreFunctions->LogConsole('Penalty:' . $penalty);
 
-      $checkacct = $this->othersClass->checkcoaacct(['AR1', 'SA1', 'SA2', 'TX2', 'SA3','SA4','SA5','SA6']);
+      $checkacct = $this->othersClass->checkcoaacct(['AR1', 'SA1', 'SA2', 'TX2', 'SA3', 'SA4', 'SA5', 'SA6']);
 
       if ($checkacct != '') {
         return ['status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
@@ -749,7 +752,8 @@ class gb
                 $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                 foreach ($this->acctg as $key => $value) {
                   foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                   }
                   $this->acctg[$key]['editdate'] = $current_timestamp;
                   $this->acctg[$key]['editby'] = $config['params']['user'];

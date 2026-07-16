@@ -257,11 +257,11 @@ class ca
 
     $fields = [['dateid', 'clienttype'], 'email', 'gender', 'ordertype'];
     $col2 = $this->fieldClass->create($fields);
-    data_set($col2, 'ordertype.required', true);
+    data_set($col2, 'ordertype.required', false);
     data_set($col2, 'email.readonly', true);
     data_set($col2, 'gender.label', 'Caller Gender');
     data_set($col2, 'gender.name', 'gendercaller');
-    data_set($col2, 'gender.required', true);
+    data_set($col2, 'gender.required', false);
     data_set($col2, 'email.class', 'cs sbccsreadonly');
 
     $fields = ['channel', 'empname', 'dbranchname', 'registername'];
@@ -273,7 +273,7 @@ class ca
     data_set($col3, 'dbranchname.lookupclass', 'hbranch');
     data_set($col3, 'company.class', 'cscompany sbccsreadonly');
     data_set($col3, 'registername.label', 'Company Name');
-    data_set($col3, 'channel.required', true);
+    data_set($col3, 'channel.required', false);
     data_set($col3, 'registername.readonly', true);
     data_set($col3, 'registername.class', 'cs sbccsreadonly');
 
@@ -452,11 +452,16 @@ class ca
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+
+    $dateTables = ['headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -465,7 +470,8 @@ class ca
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+          // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+          $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], '', $companyid, $lookups);
         } //end if
       }
     }
@@ -514,7 +520,7 @@ class ca
   public function openstock($trno, $config)
   {
     $qry = 'select line, trno, comment, "" as bgcolor from csscomment where trno=?';
-    return $this->coreFunctions->opentable($qry, [$trno]);
+    return $this->coreFunctions->opentable($qry, [$trno]); 
   } //end function
 
   public function openstockline($config)
@@ -682,8 +688,12 @@ class ca
       'comment' => $comment
     ];
 
+    $dateTables = ['csscomment'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($action == 'insert') {
@@ -827,7 +837,6 @@ class ca
   public function reportdata($config)
   {
     $this->logger->sbcviewreportlog($config);
-
     $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 

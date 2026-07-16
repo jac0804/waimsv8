@@ -1823,7 +1823,7 @@ class posClass
                   }
 
                   if ($value->supplierid == 0) {
-                    $value->supplierid = $this->coreFunctions->datareader("select clientid as value FROM supplierlist WHERE itemid=" . $value->itemid . " AND '" . $data[0]->dateid . "' BETWEEN startdate AND enddate ORDER BY startdate LIMIT 1", [], '', true);
+                    $value->supplierid = $this->coreFunctions->datareader("select clientid as value FROM supplierlist WHERE itemid=" . $value->itemid . " AND '" . $data[0]->dateid . "' BETWEEN date(startdate) and date(enddate) ORDER BY startdate LIMIT 1", [], '', true);
                     if ($value->supplierid == 0) {
                       $value->supplierid = $this->coreFunctions->datareader("select supplier as value FROM item WHERE itemid=" . $value->itemid, [], '', true);
                     }
@@ -1831,8 +1831,8 @@ class posClass
                   }
 
                   if ($value->supplierid != 0) {
-                    $comm1 = $this->coreFunctions->datareader("select cl.comm1 as value from commissionlist as cl where cl.clientid=? and '" . $data[0]->dateid . "' between startdate and enddate order by cl.startdate limit 1", [$value->supplierid], '', true);
-                    $comm2 = $this->coreFunctions->datareader("select cl.comm2 as value from commissionlist as cl where cl.clientid=? and '" . $data[0]->dateid . "' between startdate and enddate order by cl.startdate limit 1", [$value->supplierid], '', true);
+                    $comm1 = $this->coreFunctions->datareader("select cl.comm1 as value from commissionlist as cl where cl.clientid=? and '" . $data[0]->dateid . "' between date(startdate) and date(enddate) order by cl.startdate limit 1", [$value->supplierid], '', true);
+                    $comm2 = $this->coreFunctions->datareader("select cl.comm2 as value from commissionlist as cl where cl.clientid=? and '" . $data[0]->dateid . "' between date(startdate) and date(enddate) order by cl.startdate limit 1", [$value->supplierid], '', true);
                   } else {
                     $status = false;
                     $msg = $msg . ' / ' . ' Missing supplier for item ' . $value->itemname;
@@ -2364,7 +2364,7 @@ class posClass
         ->sortBy('prefix');
 
       $prioFile = $this->getMasterTables();
-      array_push($prioFile, 'trans', 'unposted'); 
+      array_push($prioFile, 'trans', 'unposted');
 
       $prioDoc = ['PR', 'PO', 'RR', 'DM', 'SO', 'SJ', 'MJ', 'CI', 'CM', 'MC', 'IS', 'AJ', 'TS', 'ST', 'AP', 'PV', 'CV', 'AR', 'KR', 'CR', 'DS'];
 
@@ -2821,7 +2821,7 @@ class posClass
       case 'CV':
       case 'CR':
       case 'DS':
-      case 'GJ':  
+      case 'GJ':
         $numtable = 'cntnum';
         $tables = ['cntnum', 'glhead', 'gldetail', 'arledger', 'apledger', 'caledger', 'cbledger', 'crledger', 'hdetailinfo', 'hcntnuminfo'];
         break;
@@ -2830,7 +2830,8 @@ class posClass
     return ['numtable' => $numtable, 'tables' => $tables];
   }
 
-  function getMasterTables(){
+  function getMasterTables()
+  {
     return [
       'item',
       'uom',
@@ -2853,7 +2854,8 @@ class posClass
       'center',
       'centeraccess',
       'ewtlist',
-      'terms'];
+      'terms'
+    ];
   }
 
   function parseStringToArray($path, $mirror)

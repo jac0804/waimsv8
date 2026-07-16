@@ -106,6 +106,7 @@ class soinput
     public function loaddata($config)
     {
         $data = [];
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $proformainvoice = $config['params']['dataparams']['proformainvoice'];
         $isposted = $this->othersClass->isposted2($trno, 'transnum');
@@ -113,14 +114,16 @@ class soinput
         $msg = 'Data has been updated.';
 
         $table = "headinfotrans";
+        $dateTables = [$table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         if ($isposted) {
             $msg = 'Cannot change; already posted.';
             goto exithere;
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        $data['proformainvoice'] = $this->othersClass->sanitizekeyfield("proformainvoice", $proformainvoice);
-
+        // $data['proformainvoice'] = $this->othersClass->sanitizekeyfield("proformainvoice", $proformainvoice);
+          $data['proformainvoice'] = $this->othersClass->sanitizekeyfieldFast("proformainvoice", $proformainvoice, $lookups);
         $this->coreFunctions->sbcupdate($table, $data, ['trno' => $trno]);
         exithere:
         $config['params']['trno'] = $trno;

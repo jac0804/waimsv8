@@ -193,7 +193,7 @@ class electricityrate
     left join electricrate as elec on elec.categoryid = cat.line
     where cat.iselec = 1
     order by elec.line";
-
+    Logger($qry);
     $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid2' => $data]];
@@ -202,7 +202,9 @@ class electricityrate
   public function headtablestatus($config)
   {
     $action = $config['params']["action2"];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['electricrate'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     switch ($action) {
       case "load":
@@ -215,8 +217,11 @@ class electricityrate
         $data = [];
         $head = $config['params']['dataparams'];
 
-        $data['amt'] = $this->othersClass->sanitizekeyfield('amt', $head['amt']);
-        $data['username'] = $this->othersClass->sanitizekeyfield('username', $head['username']);
+        // $data['amt'] = $this->othersClass->sanitizekeyfield('amt', $head['amt']);
+        // $data['username'] = $this->othersClass->sanitizekeyfield('username', $head['username']);
+
+        $data['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['amt'], $lookups);
+        $data['username'] = $this->othersClass->sanitizekeyfieldFast('username', $head['username'], $lookups);
 
         $data['dateid'] = $this->othersClass->getCurrentTimeStamp();
         $data['categoryid'] = $head['categoryid'];
@@ -237,11 +242,15 @@ class electricityrate
   {
 
     $data = $config['params']['rows'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['electricrate'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $this->coreFunctions->sbcinsert('electricrate', $data2);
       } // end if

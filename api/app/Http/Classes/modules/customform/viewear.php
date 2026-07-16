@@ -250,9 +250,10 @@ class viewear
     }
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $line = $config['params']['dataparams']['line'];
         $data = [];
-
+        $tablename='';
         $head = $config['params']['dataparams'];
         $filter = ['line' => $line];
         $condition = 'line=?';
@@ -274,9 +275,15 @@ class viewear
             case 'Tracking Application':
                 $config['params']['doc'] = 'OBAPPLICATION';
                 $tablename = 'obapplication';
+                $dateTables = [$tablename];
+                $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+                // $data = [
+                //     'dateid' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
+                //     'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
+                // ];
                 $data = [
-                    'dateid' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
-                    'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
+                    'dateid' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
+                    'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
                 ];
                 $log = ' DATE IN: ' . $data['dateid'] . ' DATE OUT: ' . $data['dateid2'];
                 break;
@@ -300,9 +307,15 @@ class viewear
             case 'Undertime Application':
                 $config['params']['doc'] = 'UNDERTIME';
                 $tablename = 'undertime';
+                $dateTables = [$tablename];
+                $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+                // $data = [
+                //     'dateid' => $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
+                //     'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
+                // ];
                 $data = [
-                    'dateid' => $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
-                    'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
+                    'dateid' => $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
+                    'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
                 ];
                 $log = ' DATE TIME In: ' . $data['dateid'] . ' DATE TIME Out: ' . $data['dateid2'];
                 break;
@@ -320,10 +333,14 @@ class viewear
                 break;
         }
 
+         $dateTables = [$tablename];
+         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key => $value) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
 
