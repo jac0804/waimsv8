@@ -419,4 +419,41 @@ class poslookup
 
         return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
     }
+
+    public function lookupsjpo($config)
+    {
+        $plotting = array('trno' => 'trno', 'docno' => 'docno', 'yourref' => 'yourref');
+
+        $plotsetup = array(
+            'plottype' => 'plothead',
+            'action' => 'getsearchsjpo',
+            'plotting' => $plotting
+        );
+
+        $lookupsetup = array(
+            'type' => 'singlesearch',
+            'actionsearch' => 'searchsjpo',
+            'title' => 'List of Documents',
+            'style' => 'width:90%;max-width:100%;height:700px'
+        );
+
+        if (isset($config['params']['addedparams'][0]['value'])) {
+            $lookupsetup['actionsearch'] = 'searchsjpo~' . $config['params']['addedparams'][0]['value'];
+        }
+
+        $cols = array(
+            array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'yourref', 'label' => 'PO #', 'align' => 'left', 'field' => 'yourref', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'rem', 'label' => 'Notes', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'postdate', 'label' => 'Postdate', 'align' => 'left', 'field' => 'postdate', 'sortable' => true, 'style' => 'font-size:16px;'),
+            array('name' => 'postedby', 'label' => 'Postedby', 'align' => 'left', 'field' => 'postedby', 'sortable' => true, 'style' => 'font-size:16px;')
+        );
+
+        $data = [];
+
+        return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+    }
 }

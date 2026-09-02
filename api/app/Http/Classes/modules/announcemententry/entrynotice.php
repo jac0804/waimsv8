@@ -138,7 +138,6 @@ class entrynotice
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data2['roleid'] != 0 && $data2['empid'] != 0) {
@@ -181,7 +180,6 @@ class entrynotice
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['roleid'] != 0 && $row['empid'] != 0) {

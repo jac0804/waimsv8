@@ -200,18 +200,21 @@ class entrytaskcomment
 
   public function saveallentry($config)
   {
-
+    $companyid = $config['params']['companyid'];    
     $trno = $config['params']['tableid'];
     $isposted = $this->othersClass->isposted2($trno, "cntnum");
     if ($isposted) {
       return ['status' => false, 'msg' => 'Transaction has already been posted.', 'data' => []];
     }
 
+    $dateTables = ['tripdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $row = $config['params']['data'];
     foreach ($config['params']['data'] as $key => $row) {
       $data = [];
       foreach ($this->fields as $key => $value) {
-        $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+        $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
       }
 
       if ($row['line'] == 0) {
@@ -262,6 +265,10 @@ class entrytaskcomment
 
   public function lookupcallback($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['tripdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     switch ($config['params']['lookupclass2']) {
       case 'addtogrid':
         $trno = $config['params']['tableid'];
@@ -280,7 +287,7 @@ class entrytaskcomment
 
         $insertdata = [];
         foreach ($this->fields as $key => $value) {
-          $insertdata[$value] = $this->othersClass->sanitizekeyfield($value, $data[$value]);
+          $insertdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value], $lookups);
         }
 
         $qry = "select line as value from tripdetail where trno=? order by line desc limit 1";

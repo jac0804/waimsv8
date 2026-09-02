@@ -433,8 +433,7 @@ class approvedcanvass
         $dateTables = ['hcdstock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        // $key['rrcost'] = $this->othersClass->sanitizekeyfield('amt',  $key['rrcost']);
-        // $key['rrqty'] = $this->othersClass->sanitizekeyfield('qty',  $key['rrqty']);
+        
 
         $key['rrcost'] = $this->othersClass->sanitizekeyfieldFast('amt',  $key['rrcost'], $lookups);
         $key['rrqty'] = $this->othersClass->sanitizekeyfieldFast('qty',  $key['rrqty'], $lookups);
@@ -449,7 +448,6 @@ class approvedcanvass
           'editdate' => $this->othersClass->getCurrentTimeStamp()
         ];
         foreach ($stock as $key2 => $value) {
-          // $stock[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
           $stock[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
 
@@ -539,7 +537,6 @@ class approvedcanvass
       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       foreach ($stockinfo as $key2 => $value) {
-        // $stockinfo[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
         $stockinfo[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
       $this->coreFunctions->sbcupdate('hstockinfotrans', $stockinfo, ['trno' => $key['trno'], 'line' => $key['line']]);

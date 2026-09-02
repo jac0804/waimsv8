@@ -48,11 +48,12 @@ class shiftsetup
     'elapse',
     'sig',
     'isonelog',
-    'isdefault'
+    'isdefault',
+    'istimein'
   ];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
-  private $blnfields = ['flexit', 'isonelog', 'isdefault'];
+  private $blnfields = ['flexit', 'isonelog', 'isdefault', 'istimein'];
   public $showfilteroption = false;
   public $showfilter = false;
   public $showcreatebtn = true;
@@ -213,12 +214,18 @@ class shiftsetup
     if ($companyid == 58 || $companyid == 62) { // cdo / onesky
       array_push($fields, 'isonelog');
     }
+    if ($companyid == 68){ // JDA
+      array_push($fields, 'istimein');
+    }
     array_push($fields, 'isdefault');
     $col3 = $this->fieldClass->create($fields);
     if ($companyid == 62) { // onesky
       data_set($col3, 'isonelog.label', 'Fixed 12 Hrs');
       unset($col3['isdefault']);
       unset($col3['flexit']);
+    }
+    if ($companyid == 66){
+      unset($col3['isdefault']);
     }
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
@@ -264,6 +271,7 @@ class shiftsetup
 
     $data[0]['isonelog'] = '0';
     $data[0]['isdefault'] = '0';
+    $data[0]['istimein'] = '0';
     return $data;
   }
 
@@ -288,7 +296,7 @@ class shiftsetup
           time(breakinam) as breakinam,
           time(breakinpm) as breakinpm,
           time(breakoutpm) as breakoutpm,
-          gtin, gbrkin, time(ndifffrom) as ndifffrom, time(ndiffto) as ndiffto, elapse, sig, isonelog,isdefault";
+          gtin, gbrkin, time(ndifffrom) as ndifffrom, time(ndiffto) as ndiffto, elapse, sig, isonelog,isdefault, istimein";
 
     $qry = $qryselect . " from 
         " . $this->head . " as shift
@@ -335,7 +343,6 @@ class shiftsetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if 
       }

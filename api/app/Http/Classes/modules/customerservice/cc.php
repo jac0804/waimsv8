@@ -96,9 +96,6 @@ class cc
 
   public function loaddoclisting($config)
   {
-
-
-
     $date1 = date('Y-m-d', strtotime($config['params']['date1']));
     $date2 = date('Y-m-d', strtotime($config['params']['date2']));
     $itemfilter = $config['params']['itemfilter'];
@@ -197,8 +194,6 @@ class cc
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
   }
 
-
-
   public function createnewtransaction($docno, $params)
   {
     $data = [];
@@ -277,9 +272,6 @@ class cc
     }
   }
 
-
-
-
   public function updatehead($config, $isupdate)
   {
     $companyid = $config['params']['companyid'];
@@ -296,7 +288,6 @@ class cc
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -313,8 +304,6 @@ class cc
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
   } // end function
-
-
 
   public function deletetrans($config) {} //end function
 
@@ -367,160 +356,159 @@ class cc
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
     $qry = "insert into " . $this->head . "(trno,sitrno,doc,docno,client,dept,dateid,rem,yourref,ourref,
- lockuser,lockdate,openby,users,createdate,createby,editby,editdate,viewby,viewdate)
-select head.trno,head.sitrno,head.doc,head.docno,client.client,dept.client,head.dateid,head.rem,head.yourref,head.ourref,
-head.lockuser,head.lockdate,head.openby,head.users,head.createdate,head.createby,head.editby,head.editdate,head.viewby,head.viewdate
-from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno) left join client on client.clientid=head.clientid left join client as dept on dept.clientid=head.deptid 
-where head.trno=? limit 1";
-    //head
-    if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-      $qry = "insert into " . $this->stock . "(
-    line,trno,createdate,createby,comment)
-    SELECT line,trno,createdate,createby,comment
-    from " . $this->hstock . " where trno=?";
-      //stock
-      if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-        $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,postedby='' where trno=?", 'update', [$trno]);
-        $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
-        $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
-        $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
-        return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
-      } else {
-        $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
-        return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
+    lockuser,lockdate,openby,users,createdate,createby,editby,editdate,viewby,viewdate)
+      select head.trno,head.sitrno,head.doc,head.docno,client.client,dept.client,head.dateid,head.rem,head.yourref,head.ourref,
+      head.lockuser,head.lockdate,head.openby,head.users,head.createdate,head.createby,head.editby,head.editdate,head.viewby,head.viewdate
+      from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno) left join client on client.clientid=head.clientid left join client as dept on dept.clientid=head.deptid 
+      where head.trno=? limit 1";
+          //head
+        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+          $qry = "insert into " . $this->stock . "(
+        line,trno,createdate,createby,comment)
+        SELECT line,trno,createdate,createby,comment
+        from " . $this->hstock . " where trno=?";
+          //stock
+          if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+            $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,postedby='' where trno=?", 'update', [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+            $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+          } else {
+            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
+            return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
+          }
+        }
+      } //end function
+
+
+      public function openstock($trno, $config)
+      {
+        $qry = 'select line,trno,createdate,createby,comment from csscomment where trno=? union all ';
+        $qry = 'select line,trno,createdate,createby,comment from hcsscomment where trno=? order by line desc';
+        $csscomment = $this->coreFunctions->opentable($qry, [$trno]);
+        return $csscomment;
+      } //end function
+
+      public function openstockline($config)
+      {
+        return [];
+      } // end function
+
+      public function stockstatus($config)
+      {
+        switch ($config['params']['action']) {
+          case 'additem':
+            return $this->additem('insert', $config);
+            break;
+          case 'updatestatus': //save all item edited
+            return $this->updatestatus($config);
+            break;
+          default:
+            return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
+            break;
+        }
       }
-    }
-  } //end function
 
 
-  public function openstock($trno, $config)
-  {
-    $qry = 'select line,trno,createdate,createby,comment from csscomment where trno=? union all ';
-    $qry = 'select line,trno,createdate,createby,comment from hcsscomment where trno=? order by line desc';
-    $csscomment = $this->coreFunctions->opentable($qry, [$trno]);
-    return $csscomment;
-  } //end function
-
-  public function openstockline($config)
-  {
-    return [];
-  } // end function
-
-  public function stockstatus($config)
-  {
-    switch ($config['params']['action']) {
-      case 'additem':
-        return $this->additem('insert', $config);
-        break;
-      case 'updatestatus': //save all item edited
-        return $this->updatestatus($config);
-        break;
-      default:
-        return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
-        break;
-    }
-  }
+      public function updatestatus($config)
+      {
+        if ($this->othersClass->isposted($config)) {
+          return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
+        }
+        $data = [];
+        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+        $data['editby'] = $config['params']['user'];
+        $data['ourref'] = $config['params']['status'];
+        $ourref = $this->coreFunctions->getfieldvalue($this->head, 'ourref', 'trno=?', [$config['params']['trno']]);
+        $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $config['params']['trno']]);
+        $this->logger->sbcwritelog($config['params']['trno'], $config, 'CHANGE STATUS', $config['params']['user'] . ' - From ' . $ourref . ' to ' . $config['params']['status']);
+        return ['status' => true, 'msg' => 'Update Status successfull...'];
+      } //end function
 
 
-  public function updatestatus($config)
-  {
-    if ($this->othersClass->isposted($config)) {
-      return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
-    }
-    $data = [];
-    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-    $data['editby'] = $config['params']['user'];
-    $data['ourref'] = $config['params']['status'];
-    $ourref = $this->coreFunctions->getfieldvalue($this->head, 'ourref', 'trno=?', [$config['params']['trno']]);
-    $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $config['params']['trno']]);
-    $this->logger->sbcwritelog($config['params']['trno'], $config, 'CHANGE STATUS', $config['params']['user'] . ' - From ' . $ourref . ' to ' . $config['params']['status']);
-    return ['status' => true, 'msg' => 'Update Status successfull...'];
-  } //end function
-
-
-  // insert and update item
-  public function additem($action, $config)
-  {
-    if ($this->othersClass->isposted($config)) {
-      return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
-    }
-    $data = [];
-    $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-    $data['createby'] = $config['params']['user'];
-    $data['trno'] = $config['params']['trno'];
-    $data['comment'] = $config['params']['comment'];
-    $this->coreFunctions->sbcinsert($this->head, $data);
-    $this->logger->sbcwritelog($config['params']['trno'], $config, 'ADD COMMENT', $config['params']['user'] . ' - ' . $config['params']['comment']);
-    $csscomment = $this->openstock($config['params']['trno'], $config);
-    return ['status' => true, 'msg' => 'Successfully added.', 'griddata' => ['inventory' => $csscomment]];
-  } // end function
+      // insert and update item
+      public function additem($action, $config)
+      {
+        if ($this->othersClass->isposted($config)) {
+          return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
+        }
+        $data = [];
+        $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+        $data['createby'] = $config['params']['user'];
+        $data['trno'] = $config['params']['trno'];
+        $data['comment'] = $config['params']['comment'];
+        $this->coreFunctions->sbcinsert($this->head, $data);
+        $this->logger->sbcwritelog($config['params']['trno'], $config, 'ADD COMMENT', $config['params']['user'] . ' - ' . $config['params']['comment']);
+        $csscomment = $this->openstock($config['params']['trno'], $config);
+        return ['status' => true, 'msg' => 'Successfully added.', 'griddata' => ['inventory' => $csscomment]];
+      } // end function
 
 
 
-  public function reportsetup($config)
-  {
-    $txtfield = $this->createreportfilter();
-    $txtdata = $this->reportparamsdata($config);
-    $modulename = $this->modulename;
-    $data = [];
-    $style = 'width:500px;max-width:500px;';
-    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
-  }
+      public function reportsetup($config)
+      {
+        $txtfield = $this->createreportfilter();
+        $txtdata = $this->reportparamsdata($config);
+        $modulename = $this->modulename;
+        $data = [];
+        $style = 'width:500px;max-width:500px;';
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+      }
 
 
-  public function createreportfilter()
-  {
-    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
-    $col1 = $this->fieldClass->create($fields);
-    return array('col1' => $col1);
-  }
+      public function createreportfilter()
+      {
+        $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+        $col1 = $this->fieldClass->create($fields);
+        return array('col1' => $col1);
+      }
 
-  public function reportparamsdata($config)
-  {
-    return $this->coreFunctions->opentable(
-      "select 
-    'default' as print,
-    '' as prepared,
-    '' as approved,
-    '' as received
-    "
-    );
-  }
+      public function reportparamsdata($config)
+      {
+        return $this->coreFunctions->opentable(
+          "select 
+        'default' as print,
+        '' as prepared,
+        '' as approved,
+        '' as received
+        "
+        );
+      }
 
 
-  private function report_default_query($trno)
-  {
+      private function report_default_query($trno)
+      {
 
-    $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
-head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
-item.sizeid, ag.clientname as agname, item.brand,
-wh.client as whcode, wh.clientname as whname from lahead as head
-left join lastock as stock on stock.trno=head.trno
-left join client on client.client=head.client
-left join item on item.itemid=stock.itemid
-left join client as ag on ag.client=head.agent
-left join client as wh on wh.client=head.wh
-where head.doc='sj' and head.trno='$trno'
-UNION ALL
-select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
-head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
-item.sizeid, ag.clientname as agname, item.brand,
-wh.client as whcode, wh.clientname as whname from glhead as head
-left join glstock as stock on stock.trno=head.trno
-left join client on client.clientid=head.clientid
-left join item on item.itemid=stock.itemid
-left join client as ag on ag.clientid=head.agentid
-left join client as wh on wh.clientid=head.whid
-where head.doc='sj' and head.trno='$trno' order by line";
+        $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
+    right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+    head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+    item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
+    item.sizeid, ag.clientname as agname, item.brand,
+    wh.client as whcode, wh.clientname as whname from lahead as head
+    left join lastock as stock on stock.trno=head.trno
+    left join client on client.client=head.client
+    left join item on item.itemid=stock.itemid
+    left join client as ag on ag.client=head.agent
+    left join client as wh on wh.client=head.wh
+    where head.doc='sj' and head.trno='$trno'
+    UNION ALL
+    select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
+    right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+    head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+    item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
+    item.sizeid, ag.clientname as agname, item.brand,
+    wh.client as whcode, wh.clientname as whname from glhead as head
+    left join glstock as stock on stock.trno=head.trno
+    left join client on client.clientid=head.clientid
+    left join item on item.itemid=stock.itemid
+    left join client as ag on ag.clientid=head.agentid
+    left join client as wh on wh.clientid=head.whid
+    where head.doc='sj' and head.trno='$trno' order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
-
-
+  
   public function reportdata($config)
   {
     $sitrno = $this->coreFunctions->getfieldvalue($this->head, 'sitrno', 'trno=?', [$config['params']['dataid']]);

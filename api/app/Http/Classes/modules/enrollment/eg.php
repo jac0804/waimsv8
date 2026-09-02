@@ -309,16 +309,21 @@ class eg
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+
+    $dateTables = ['en_sgshead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -634,6 +639,7 @@ class eg
 
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $trno =  $config['params']['data']['trno'];
     $subjectid =  $config['params']['data']['subjectid'];
     $units = $config['params']['data']['units'];
@@ -674,8 +680,11 @@ class eg
       'equivalent' => $equivalent
     ];
 
+    $dateTables = ['en_sgssubject'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     // $data['editdate'] = $current_timestamp;

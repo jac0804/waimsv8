@@ -136,12 +136,17 @@ class entrypositions
     public function saveallentry($config)
     {
         $data = $config['params']['data'];
+        $companyid = $config['params']['companyid'];
+
+        $dateTables = ['positions'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
             $data2 = [];
             if (!empty($data[$key]['bgcolor'])) {
                 foreach ($this->fields as $key2 => $field) {
                     $value = isset($data[$key]['position']) ? $data[$key]['position'] : '';
-                    $data2[$field] = $this->othersClass->sanitizekeyfield($field, $value);
+                    $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value, $lookups);
                 }
                 if (empty(trim($data2['positions']))) {
                     return ['status' => false, 'msg' => 'Saving failed. Please complete the empty positions.'];
@@ -175,10 +180,15 @@ class entrypositions
     {
         $data = [];
         $row = $config['params']['row'];
+        $companyid = $config['params']['companyid'];
+
+        $dateTables = ['positions'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key => $value) {
             // row[position] - eto yung value na isesave
             // $data['positions'] - this is where the value will be save
-            $data['positions'] = $this->othersClass->sanitizekeyfield($value, $row['position']);
+            $data['positions'] = $this->othersClass->sanitizekeyfieldFast($value, $row['position'], $lookups);
         }
 
         if ($row['id'] == 0) {
@@ -215,7 +225,7 @@ class entrypositions
         $row = $config['params']['row'];
         $qry = "delete from " . $this->table . " where id=?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['id']]);
-        $this->logger->sbcdelmaster_log($row['id'], $config, 'REMOVE - Posistion : ' . $row['position']);
+        $this->logger->sbcdelmaster_log($row['id'], $config, 'REMOVE - Position : ' . $row['position']);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 

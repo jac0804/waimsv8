@@ -91,7 +91,7 @@ class payrollcommon
             $timesheet = $this->coreFunctions->opentable($qry);
 
             //inserting data from timecard
-            foreach ($timesheet as $key =>  $val) {
+            foreach ($timesheet as $key => $val) {
                 $qty = 0;
                 $qty2 = 0;
                 if (!empty($timecard)) {
@@ -162,8 +162,8 @@ class payrollcommon
 
                 if (!empty($timecard)) {
                     $legunwork = 0;
-                    foreach ($timecard as $key =>  $val) {
-                        if ($timecard[0]->isprevwork == 1) {
+                    foreach ($timecard as $key => $val) {
+                        if ($val->isprevwork == 1) {
                             $legunwork = $legunwork + 8;
                         }
                     }
@@ -286,7 +286,7 @@ class payrollcommon
             $halfday = 0;
 
             //inserting data from timecard
-            foreach ($timesheet as $key =>  $val) {
+            foreach ($timesheet as $key => $val) {
                 $qty = 0;
                 $qty2 = 0;
                 if (!empty($timecard)) {
@@ -329,7 +329,8 @@ class payrollcommon
                             break;
                         case 'SP':
                             $classrate = $this->coreFunctions->getfieldvalue("employee", "classrate", "empid=?", [$empid], '', true);
-                            if ($classrate == 'D') $qty = ($timecard[0]->sphrs * 8);
+                            if ($classrate == 'D')
+                                $qty = ($timecard[0]->sphrs * 8);
                             break;
                         // case 'SP100':
                         //     $qty = $timecard[0]->sp;
@@ -356,7 +357,7 @@ class payrollcommon
 
             if (!empty($timecard)) {
                 $legunwork = 0;
-                foreach ($timecard as $key =>  $val) {
+                foreach ($timecard as $key => $val) {
                     if ($timecard[$key]->dateid <= '2026-01-15') { //due to initial computation, no data in previos period
                         $legunwork = $legunwork + 8;
                     } else {
@@ -382,7 +383,7 @@ class payrollcommon
             $qry = "select sum(isnologin) as isnologin, sum(isnombrkout) as isnombrkout, sum(isnombrkin) as isnombrkin, sum(isnolunchout) as isnolunchout, sum(isnolunchin) as isnolunchin, 
                 sum(isnopbrkout) as isnopbrkout, sum(isnopbrkin) as isnopbrkin, sum(isnologout) as isnologout, sum(isnologpin) as isnologpin, sum(isnologunder) as isnologunder
                 from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "'";
-            $penalties =  $this->coreFunctions->opentable($qry);
+            $penalties = $this->coreFunctions->opentable($qry);
 
 
             if (!empty($penalties)) {
@@ -427,12 +428,13 @@ class payrollcommon
     }
 
 
-    public function computeemptimesheet_onesky($batchid, $batchdate, $empid, $start, $end, $user, $batch, $params, $skiptimecard)
+    public function computeemptimesheet_onesky($batchid, $batchdate, $empid, $start, $end, $user, $batch, $params, $skiptimecard, $isEditDays = false)
     {
         try {
             $classrate = $this->coreFunctions->getfieldvalue("employee", "classrate", "empid=?", [$empid]);
 
-            if ($skiptimecard) goto skipTimecardHere;
+            if ($skiptimecard)
+                goto skipTimecardHere;
 
             $qry = "delete from timesheet where empid=" . $empid . " and batchid=" . $batchid;
             $this->coreFunctions->execqry($qry);
@@ -476,6 +478,12 @@ class payrollcommon
             select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, earlyothrs as othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, 0 as rdsat, 0 as rdsatot
             from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and earlyotapproved=1
             union all
+            select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, 0 as othrs, ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, 0 as rdsat, 0 as rdsatot
+            from timecard where empid=" . $empid . " and dateid between '" . $start . "' and '" . $end . "' and ndiffsapprvd=1
+            union all
+            select  empid, 0 as reghrs, 0 as absdays, 0 as latehrs, 0 as underhrs, 0 as othrs, 0 as ndiffhrs, ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, 0 as rdsat, 0 as rdsatot
+            from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and Ndiffapproved=1            
+            union all
             select empid, 0 as reghrs, 0 as absdays, latehrs, underhrs, 0 as othrs, 0 as ndiffhrs, 0 as ndiffot, 0 as restday, 0 as leg, 0 as legot, 0 as restot, 0 as sp, 0 as spot, 0 as legabsent, latehrs2, reghrs as rdsat, 0 as rdsatot
             from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and daytype='RESTDAY' and RDapprvd=1 and dayname(dateid)='Saturday'
             union all
@@ -493,7 +501,7 @@ class payrollcommon
             $absDays = 0;
 
             //inserting data from timecard
-            foreach ($timesheet as $key =>  $val) {
+            foreach ($timesheet as $key => $val) {
                 $qty = 0;
                 $qty2 = 0;
 
@@ -559,35 +567,42 @@ class payrollcommon
 
             skipTimecardHere:
 
+            $blnComputeMealAllow = true;
+
             if ($skiptimecard) {
                 $totalworking = $this->coreFunctions->datareader("select ts.qty as value from timesheet as ts left join paccount as pa on pa.line=ts.acnoid where ts.empid=" . $empid . " and pa.alias='WORKING' and ts.batchid=" . $params['dataparams']['batchid']);
                 $restday = $this->coreFunctions->datareader("select ts.qty as value from timesheet as ts left join paccount as pa on pa.line=ts.acnoid where ts.empid=" . $empid . " and pa.alias='RESTDAY' and ts.batchid=" . $params['dataparams']['batchid']);
                 $totalworking = (($totalworking + $restday) / 8);
                 $absDays = $this->coreFunctions->datareader("select ts.qty as value from timesheet as ts left join paccount as pa on pa.line=ts.acnoid where ts.empid=" . $empid . " and pa.alias='ABSENT' and ts.batchid=" . $params['dataparams']['batchid'], [], '', true);
+                $blnComputeMealAllow = $isEditDays;
             } else {
                 $totalworking = $this->coreFunctions->datareader("select count(reghrs) as value from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and reghrs<>0");
                 $absDays = $this->coreFunctions->datareader("select ifnull(sum(absdays),0) as value from timecard where empid=" . $empid . " and date(dateid) between '" . $start . "' and '" . $end . "' and absdays<>0", [], '', true);
             }
 
-            $mealdeduc = $this->coreFunctions->getfieldvalue("employee", "mealdeduc", "empid=" . $empid, [], '', true);
-            if ($mealdeduc != 0) {
-                $mealdeducdata = $this->coreFunctions->opentable("select * from paccount where code='PT37'");
-                if (!empty($mealdeducdata)) {
-                    if ($totalworking != 0) {
-                        $this->addTimeSheetAccount($empid, $batchid, $mealdeducdata[0]->line, $batchdate, $mealdeducdata[0]->uom, $mealdeducdata[0]->seq, $totalworking, $user, 0);
+            if ($blnComputeMealAllow) {
+                $mealdeduc = $this->coreFunctions->getfieldvalue("employee", "mealdeduc", "empid=" . $empid, [], '', true);
+                if ($mealdeduc != 0) {
+                    $mealdeducdata = $this->coreFunctions->opentable("select * from paccount where code='PT37'");
+                    if (!empty($mealdeducdata)) {
+                        if ($totalworking != 0) {
+                            $this->addTimeSheetAccount($empid, $batchid, $mealdeducdata[0]->line, $batchdate, $mealdeducdata[0]->uom, $mealdeducdata[0]->seq, $totalworking, $user, 0);
+                        }
+                    }
+                }
+
+                $qry = "select allowance from allowsetup where empid=" . $empid . " and date('" . $end . "') between date(dateeffect) and date(dateend) and allowance<>0 order by dateend desc";
+                $allowance = $this->coreFunctions->opentable($qry);
+                if (!empty($allowance)) {
+                    $allowdaysdata = $this->coreFunctions->opentable("select * from paccount where code='PT93'");
+                    if (!empty($allowdaysdata)) {
+                        $netdays = ($totalworking - ($absDays / 8));
+                        $this->addTimeSheetAccount($empid, $batchid, $allowdaysdata[0]->line, $batchdate, $allowdaysdata[0]->uom, $allowdaysdata[0]->seq, $netdays, $user, 0);
                     }
                 }
             }
 
-            $qry = "select allowance from allowsetup where empid=" . $empid . " and date('" . $end . "') between date(dateeffect) and date(dateend) and allowance<>0 order by dateend desc";
-            $allowance = $this->coreFunctions->opentable($qry);
-            if (!empty($allowance)) {
-                $allowdaysdata = $this->coreFunctions->opentable("select * from paccount where code='PT93'");
-                if (!empty($allowdaysdata)) {
-                    $netdays = ($totalworking - ($absDays / 8));
-                    $this->addTimeSheetAccount($empid, $batchid, $allowdaysdata[0]->line, $batchdate, $allowdaysdata[0]->uom, $allowdaysdata[0]->seq, $netdays, $user, 0);
-                }
-            }
+            skipMealAllowHere:
 
             if (!$skiptimecard) {
                 if ($classrate == 'D') {
@@ -669,7 +684,7 @@ class payrollcommon
             $maxsss = 0;
 
             //inserting data from timecard
-            foreach ($timesheet as $key =>  $val) {
+            foreach ($timesheet as $key => $val) {
                 $qty = 0;
                 $qty2 = 0;
 
@@ -731,7 +746,8 @@ class payrollcommon
                                 break;
                         }
 
-                        $this->addTimeSheetAccount($empid, $batchid, $val->acnoid, $val->dateid, $val->uom, $val->seq, $qty, $user, $qty2, $params);
+                        if ($qty != 0) $this->addTimeSheetAccount($empid, $batchid, $val->acnoid, $val->dateid, $val->uom, $val->seq, $qty, $user, $qty2, $params);
+                        unset($params['qtymulti']);
                     }
                 }
             }
@@ -742,8 +758,8 @@ class payrollcommon
 
                 if (!empty($timecard)) {
                     $legunwork = 0;
-                    foreach ($timecard as $key =>  $val) {
-                        if ($timecard[0]->isprevwork == 1) {
+                    foreach ($timecard as $key => $val) {
+                        if ($val->isprevwork == 1) {
                             $legunwork = $legunwork + 8;
                         }
                     }
@@ -832,22 +848,22 @@ class payrollcommon
         }
 
         if ($checkall) {
-            foreach ($employee as $key =>  $val) {
+            foreach ($employee as $key => $val) {
                 switch ($companyid) {
                     case 58: //cdo
-                        $result = $this->insertPayTranCurrent_cdo($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                        $result = $this->insertPayTranCurrent_cdo($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                         break;
                     case 62: //onesky
-                        $result = $this->insertPayTranCurrent_onesky($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                        $result = $this->insertPayTranCurrent_onesky($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                         break;
                     case 66: //metro dragon payroll
-                        $result = $this->insertPayTranCurrent_metrodragon($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                        $result = $this->insertPayTranCurrent_metrodragon($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                         break;
                     case 68: //jda
-                        $result = $this->insertPayTranCurrent_jda($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                        $result = $this->insertPayTranCurrent_jda($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                         break;
                     default:
-                        $result = $this->insertPayTranCurrent($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                        $result = $this->insertPayTranCurrent($config['params'], $val, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                         break;
                 }
                 if (!$result['status']) {
@@ -861,19 +877,19 @@ class payrollcommon
         } else {
             switch ($companyid) {
                 case 58: //cdo
-                    $result = $this->insertPayTranCurrent_cdo($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                    $result = $this->insertPayTranCurrent_cdo($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                     break;
                 case 62: //onesky
-                    $result = $this->insertPayTranCurrent_onesky($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                    $result = $this->insertPayTranCurrent_onesky($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                     break;
                 case 66: //metro dragon payroll
-                    $result = $this->insertPayTranCurrent_metrodragon($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                    $result = $this->insertPayTranCurrent_metrodragon($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                     break;
                 case 68: //jda
-                    $result = $this->insertPayTranCurrent_jda($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                    $result = $this->insertPayTranCurrent_jda($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                     break;
                 default:
-                    $result = $this->insertPayTranCurrent($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th,  $end13th, $blndeduction, $blnWholeDeduction);
+                    $result = $this->insertPayTranCurrent($config['params'], $employee[0], $batchid, $batchdate, $is13th, $adjustm, $batchcode, $start, $end, $start13th, $end13th, $blndeduction, $blnWholeDeduction);
                     break;
             }
             if (!$result['status']) {
@@ -912,7 +928,8 @@ class payrollcommon
         $filtergrp = "";
         if ($pgroup != "") {
             $filtergrp = " and ifnull(payg.line,0)='" . $pgroup . "'";
-            if ($empid != 0) $filtergrp = "";
+            if ($empid != 0)
+                $filtergrp = "";
         }
 
         if ($processtype != '') {
@@ -925,14 +942,18 @@ class payrollcommon
             }
         }
         if ($companyid == 58) { //cdo
-            if ($divid != 0)  $filterEmp .= " and emp.divid=" . $divid;
-            if ($branchid != 0)  $filterEmp .= " and emp.branchid=" . $branchid;
+            if ($divid != 0)
+                $filterEmp .= " and emp.divid=" . $divid;
+            if ($branchid != 0)
+                $filterEmp .= " and emp.branchid=" . $branchid;
         }
 
         if ($companyid == 62) { //onesky
             $divid = isset($config['params']['dataparams']['empdivid']) ? $config['params']['dataparams']['empdivid'] : 0;
-            if ($divid != 0)  $filterEmp .= " and emp.divid=" . $divid;
-            if ($pgroup == "") $filtergrp = "";
+            if ($divid != 0)
+                $filterEmp .= " and emp.divid=" . $divid;
+            if ($pgroup == "")
+                $filtergrp = "";
 
             $addon = ", emp.mealdeduc";
         }
@@ -950,7 +971,7 @@ class payrollcommon
         return $this->coreFunctions->opentable($qry);
     }
 
-    private  function insertPayTranCurrent($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
+    private function insertPayTranCurrent($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
     {
         $msg = "";
 
@@ -1119,7 +1140,7 @@ class payrollcommon
 
 
                     if (!$is13th) {
-                        foreach ($data as $key =>  $val) {
+                        foreach ($data as $key => $val) {
                             $rawdata = [];
                             $rawdata['empid'] = $emp->empid;
                             $rawdata['batchid'] = $batchid;
@@ -1305,7 +1326,7 @@ class payrollcommon
                         }
 
                         $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
-                        if ($nethrs  > 0) {
+                        if ($nethrs > 0) {
                             if ($salary != 0) {
 
                                 $allow1 = 0;
@@ -1351,7 +1372,7 @@ class payrollcommon
                             if ($salary != 0) {
 
                                 if ($rate[0]->type == 'M') {
-                                    $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
+                                    $cola = ($cola / 2) - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
                                 } else {
                                     $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
                                 }
@@ -1408,7 +1429,7 @@ class payrollcommon
                             $this->resetOperatorIncentive($emp->empid, $batchid);
                         }
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -1429,7 +1450,7 @@ class payrollcommon
                             $this->resetOperatorIncentive($emp->empid, $batchid);
                         }
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         if (!$is13th) {
                             $msg = 'err3. Computed salary + piece amount is zero';
@@ -1442,9 +1463,9 @@ class payrollcommon
                     } else {
 
                         $grossPay[0] = $salary + $amtVL + $amtSL + $amtRestday - $amtabsent - $amtlate - $amtundertime;
-                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP +  $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
+                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP + $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
 
-                        if (($amtOT  + $amtLegSP +  $amtSPUnwork + $amtLGUnwork) == 0) {
+                        if (($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork) == 0) {
                             $grossPay[1] = $grossPay[0];
                         } else {
                             $grossPay[1] += ($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork);
@@ -1655,7 +1676,7 @@ class payrollcommon
                     }
 
                     $grossPay[2] = $grossPay[2] + $allow3 + $earning + $earningadv + $leavetransamt;
-                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th +  $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
+                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th + $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
 
                     $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $totalpay, 0, 99);
                 } else {
@@ -1675,7 +1696,7 @@ class payrollcommon
         return ['status' => $msg == '', 'msg' => $msg];
     }
 
-    private  function insertPayTranCurrent_cdo($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
+    private function insertPayTranCurrent_cdo($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
     {
         $msg = "";
 
@@ -1838,7 +1859,7 @@ class payrollcommon
 
 
                     if (!$is13th) {
-                        foreach ($data as $key =>  $val) {
+                        foreach ($data as $key => $val) {
                             $rawdata = [];
                             $rawdata['empid'] = $emp->empid;
                             $rawdata['batchid'] = $batchid;
@@ -2030,7 +2051,7 @@ class payrollcommon
                     if ($result_allowancesetup) {
                         $hrsLegSP1 = 0;
                         $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
-                        if ($nethrs  > 0) {
+                        if ($nethrs > 0) {
                             if ($salary != 0) {
 
                                 $allow1 = 0;
@@ -2083,7 +2104,7 @@ class payrollcommon
                                 if ($rate[0]->type == 'D') {
                                     $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
                                 } else {
-                                    $cola =  ($cola / 2);
+                                    $cola = ($cola / 2);
                                 }
 
                                 $this->addProccessAccount($emp->empid, $batchid, 'COLA', $batchdate, $cola, 0);
@@ -2116,7 +2137,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -2132,7 +2153,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         if (!$is13th) {
                             $msg = 'err3. Computed salary + piece amount is zero';
@@ -2149,7 +2170,7 @@ class payrollcommon
                         //checking of absent amout of total days is equal to total leave days
                         $computed_absent_qty = $this->coreFunctions->datareader("select pay.qty as value from paytrancurrent as pay left join paccount as pa on pa.line=pay.acnoid where pay.empid=" . $emp->empid . " and pay.batchid=" . $batchid . " and pa.alias='ABSENT'", [], '', true);
                         $computed_leave_qty = $this->coreFunctions->datareader("select sum(pay.qty) as value from paytrancurrent as pay left join paccount as pa on pa.line=pay.acnoid where pay.empid=" . $emp->empid . " and pay.batchid=" . $batchid . " and pa.alias in ('SL','ML','BL','FL','EL','VIL','VL')", [], '', true);
-                        if ($computed_absent_qty != 0 &&  ($computed_absent_qty / 8) == $computed_leave_qty) {
+                        if ($computed_absent_qty != 0 && ($computed_absent_qty / 8) == $computed_leave_qty) {
                             $computed_leave_amt = $this->coreFunctions->datareader("select sum(pay.db) as value from paytrancurrent as pay left join paccount as pa on pa.line=pay.acnoid where pay.empid=" . $emp->empid . " and pay.batchid=" . $batchid . " and pa.alias in ('SL','ML','BL','FL','EL','VIL','VL')", [], '', true);
                             $amtabsent = $computed_leave_amt;
                             $this->coreFunctions->execqry("update paytrancurrent as pay left join paccount as pa on pa.line=pay.acnoid set pay.cr=" . $amtabsent . " where pay.empid=" . $emp->empid . " and pay.batchid=" . $batchid . " and pa.alias='ABSENT'");
@@ -2157,9 +2178,9 @@ class payrollcommon
 
 
                         $grossPay[0] = $salary + $amtVL + $amtSL + $amtRestday - $amtabsent - $amtlate - $amtundertime;
-                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP +  $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
+                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP + $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
 
-                        if (($amtOT  + $amtLegSP +  $amtSPUnwork + $amtLGUnwork) == 0) {
+                        if (($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork) == 0) {
                             $grossPay[1] = $grossPay[0];
                         } else {
                             $grossPay[1] += ($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork);
@@ -2232,7 +2253,8 @@ class payrollcommon
                             SkipSSSHere:
 
                             // skip deduction of phic and hdmf due to first cut-off already process in their old system
-                            if ($params['dataparams']['batch'] == 'PS20260104')  goto SkipPagibigHere;
+                            if ($params['dataparams']['batch'] == 'PS20260104')
+                                goto SkipPagibigHere;
 
                             //PHILHEALTH
                             if ($chkphic) {
@@ -2437,7 +2459,7 @@ class payrollcommon
                     }
 
                     $grossPay[2] = $grossPay[2] + $allow3 + $earning + $earningadv + $leavetransamt;
-                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th +  $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
+                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th + $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
 
                     $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $totalpay, 0, 99);
                 } else {
@@ -2624,7 +2646,7 @@ class payrollcommon
 
 
                     if (!$is13th) {
-                        foreach ($data as $key =>  $val) {
+                        foreach ($data as $key => $val) {
                             $rawdata = [];
                             $rawdata['empid'] = $emp->empid;
                             $rawdata['batchid'] = $batchid;
@@ -2780,7 +2802,7 @@ class payrollcommon
 
                                     switch ($val->code) {
                                         case "PT37": // meal deduction days
-                                            $totalmealdeduc = $mealdeduc  * abs($val->qty);
+                                            $totalmealdeduc = $mealdeduc * abs($val->qty);
                                             if ($totalmealdeduc != 0) {
                                                 $rawdata['cr'] = $totalmealdeduc;
                                                 $amtDeduc += $totalmealdeduc;
@@ -2821,7 +2843,7 @@ class payrollcommon
                         $hrsLegSP1 = 0;
 
                         $nethrs = $qtyworking - $qtyabsent - $qtylate;
-                        if ($nethrs  > 0) {
+                        if ($nethrs > 0) {
                             if ($salary != 0) {
 
                                 $allow1 = 0;
@@ -2872,7 +2894,7 @@ class payrollcommon
                             if ($salary != 0) {
 
                                 if ($rate[0]->type == 'M') {
-                                    $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
+                                    $cola = ($cola / 2) - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
                                 } else {
                                     $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
                                 }
@@ -2915,7 +2937,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -2931,7 +2953,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         if (!$is13th) {
                             $msg = 'err3. Computed salary + piece amount is zero';
@@ -2944,9 +2966,9 @@ class payrollcommon
                     } else {
 
                         $grossPay[0] = $salary + $amtVL + $amtSL + $amtRestday - $amtabsent - $amtlate - $amtundertime;
-                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP +  $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
+                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP + $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
 
-                        if (($amtOT  + $amtLegSP +  $amtSPUnwork + $amtLGUnwork) == 0) {
+                        if (($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork) == 0) {
                             $grossPay[1] = $grossPay[0];
                         } else {
                             $grossPay[1] += ($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork);
@@ -2961,14 +2983,14 @@ class payrollcommon
 
                         if ($blndeduction) {
 
-                            $batch1Deduct = $this->vtranSelectQry($emp->empid, $enddate);
+                            $batch1Deduct = $this->vtranSelectQry($emp->empid, $batchdate);
                             $deductionbaseSSSHDMF = $batch1Deduct;
                             $deductiontax = $deductionbaseSSSHDMF;
 
                             if ($emp->paymode == 'M') {
                                 $taxamt = $deductionbaseSSSHDMF;
                             } else {
-                                $taxamt = $this->vtranSelectQry($emp->empid, $enddate, $batchid);
+                                $taxamt = $this->vtranSelectQry($emp->empid, $batchdate, $batchid);
                             }
 
                             //SSS
@@ -3027,8 +3049,8 @@ class payrollcommon
                                         $phicamt = $deductionbaseSSSHDMF;
                                         $bracket = $this->coreFunctions->opentable("select phicee,phicer from phictab where " . $phicamt . " BETWEEN range1 AND range2");
 
-                                        $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
-                                        $phir = $this->vtranSelectQryAlias($emp->empid, $enddate, "YMR", "cr");
+                                        $phie = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YME", "cr");
+                                        $phir = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YMR", "cr");
 
                                         if (!empty($bracket)) {
 
@@ -3074,7 +3096,7 @@ class payrollcommon
                                     } else {
                                         $hdmfamt = 0;
                                         $hdmfamt2 = 0;
-                                        $prevhdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
+                                        $prevhdmf = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YPE", "cr");
 
                                         if ($prevhdmf != 0) {
                                             $hdmfamt = $prevhdmf;
@@ -3127,10 +3149,10 @@ class payrollcommon
 
                                                 //from vtran
                                                 if ($rate[0]->type == 'M') {
-                                                    $phie = $this->vtranSelectQryAlias($emp->empid, $enddate, "YME", "cr");
-                                                    $ssse = $this->vtranSelectQryAlias($emp->empid, $enddate, "YSE", "cr");
-                                                    $hdmf = $this->vtranSelectQryAlias($emp->empid, $enddate, "YPE", "cr");
-                                                    $whte = $this->vtranSelectQryAlias($emp->empid, $enddate, "'YWT'", "cr", 1);
+                                                    $phie = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YME", "cr");
+                                                    $ssse = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YSE", "cr");
+                                                    $hdmf = $this->vtranSelectQryAlias($emp->empid, $batchdate, "YPE", "cr");
+                                                    $whte = $this->vtranSelectQryAlias($emp->empid, $batchdate, "'YWT'", "cr", 1);
                                                 } else {
                                                     $phie = $this->vtranSelectQryAlias($emp->empid, "", "YME", "cr", 0, $batchid);
                                                     $ssse = $this->vtranSelectQryAlias($emp->empid, "", "YSE", "cr", 0, $batchid);
@@ -3166,7 +3188,7 @@ class payrollcommon
                     }
 
                     $grossPay[2] = $grossPay[2] + $allow3 + $earning + $earningadv + $leavetransamt;
-                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th +  $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
+                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th + $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
 
                     $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $totalpay, 0, 99);
                 } else {
@@ -3186,7 +3208,7 @@ class payrollcommon
         return ['status' => $msg == '', 'msg' => $msg];
     }
 
-    private  function insertPayTranCurrent_metrodragon($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
+    private function insertPayTranCurrent_metrodragon($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
     {
         $msg = "";
 
@@ -3349,7 +3371,7 @@ class payrollcommon
 
 
                     if (!$is13th) {
-                        foreach ($data as $key =>  $val) {
+                        foreach ($data as $key => $val) {
                             $rawdata = [];
                             $rawdata['empid'] = $emp->empid;
                             $rawdata['batchid'] = $batchid;
@@ -3526,7 +3548,7 @@ class payrollcommon
                         $hrsLegSP1 = 0;
 
                         $nethrs = $qtyworking - $qtyabsent - $qtylate - $hrsLegSP1;
-                        if ($nethrs  > 0) {
+                        if ($nethrs > 0) {
                             if ($salary != 0) {
 
                                 $allow1 = 0;
@@ -3572,7 +3594,7 @@ class payrollcommon
                             if ($salary != 0) {
 
                                 if ($rate[0]->type == 'M') {
-                                    $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
+                                    $cola = ($cola / 2) - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
                                 } else {
                                     $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
                                 }
@@ -3607,7 +3629,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -3623,7 +3645,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         if (!$is13th) {
                             $msg = 'err3. Computed salary + piece amount is zero';
@@ -3636,9 +3658,9 @@ class payrollcommon
                     } else {
 
                         $grossPay[0] = $salary + $amtVL + $amtSL + $amtRestday - $amtabsent - $amtlate - $amtundertime;
-                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP +  $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
+                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP + $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
 
-                        if (($amtOT  + $amtLegSP +  $amtSPUnwork + $amtLGUnwork) == 0) {
+                        if (($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork) == 0) {
                             $grossPay[1] = $grossPay[0];
                         } else {
                             $grossPay[1] += ($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork);
@@ -3858,7 +3880,7 @@ class payrollcommon
                     }
 
                     $grossPay[2] = $grossPay[2] + $allow3 + $earning + $earningadv + $leavetransamt;
-                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th +  $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
+                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th + $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
 
                     $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $totalpay, 0, 99);
                 } else {
@@ -3878,7 +3900,7 @@ class payrollcommon
         return ['status' => $msg == '', 'msg' => $msg];
     }
 
-    private  function insertPayTranCurrent_jda($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
+    private function insertPayTranCurrent_jda($params, $emp, $batchid, $batchdate, $is13th, $adjustm, $batchcode, $startdate, $enddate, $start13, $end13, $blndeduction, $blnWholeDeduction)
     {
         $msg = "";
 
@@ -3891,7 +3913,8 @@ class payrollcommon
             $blnNoGovEDAdv = false;
 
             //checking if paygroup is not same with employee setup and batch setup - no deduction of gov contri/earning/deduction/advance
-            if ($params['dataparams']['paygroup'] != $params['dataparams']['pgroup']) $blnNoGovEDAdv = true;
+            if ($params['dataparams']['paygroup'] != $params['dataparams']['pgroup'])
+                $blnNoGovEDAdv = true;
 
             if ($dcManualOtherEarn == '' || $dcManualOtherEarn == null) {
                 $dcManualOtherEarn = 0;
@@ -4054,7 +4077,7 @@ class payrollcommon
 
 
                     if (!$is13th) {
-                        foreach ($data as $key =>  $val) {
+                        foreach ($data as $key => $val) {
                             $rawdata = [];
                             $rawdata['empid'] = $emp->empid;
                             $rawdata['batchid'] = $batchid;
@@ -4071,7 +4094,8 @@ class payrollcommon
                                 case 'LEGALOT':
                                 case 'SPECIALOT':
                                 case 'NDIFFS':
-                                    if ($val->qtymulti != 0) $val->multiplier = $val->qtymulti;
+                                    if ($val->qtymulti != 0)
+                                        $val->multiplier = $val->qtymulti;
                                     break;
                             }
 
@@ -4251,7 +4275,7 @@ class payrollcommon
                             $hrsLegSP1 = 0;
 
                             $nethrs = $qtyworkhrsonly - $qtyabsent - $qtylate - $hrsLegSP1;
-                            if ($nethrs  > 0) {
+                            if ($nethrs > 0) {
                                 if ($salary != 0) {
 
                                     $allow1 = 0;
@@ -4261,7 +4285,7 @@ class payrollcommon
                                         $allow1 = $aval->allowance;
                                         Logger('allowance:' . $aval->allowance);
                                         Logger('type:' . $aval->type);
-                                        Logger('nethrs :' .  $nethrs);
+                                        Logger('nethrs :' . $nethrs);
                                         if ($allow1 != 0) {
                                             $qtyAllow = $qtyworking;
                                             switch ($aval->type) {
@@ -4299,7 +4323,7 @@ class payrollcommon
                                 if ($salary != 0) {
 
                                     if ($rate[0]->type == 'M') {
-                                        $cola =  ($cola / 2)  - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
+                                        $cola = ($cola / 2) - ((($cola / $daysInMonth) / 8) * ($qtyabsent + $qtylate + $qtyundertime));
                                     } else {
                                         $cola = ($cola / 8) * ($qtyworking - $qtyabsent - $qtylate - $qtyundertime);
                                     }
@@ -4335,7 +4359,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         $this->coreFunctions->execqry("delete from " . $this->tablename . " where empid=? and batchid=?", "delete", [$emp->empid, $batchid]);
                         if (($qtywork + $qtyVL + $qtySL - $qtyabsent + $pieceAmt + $hrsLegSP) == 0) {
@@ -4351,7 +4375,7 @@ class payrollcommon
                         $this->resetEarningDeduction($emp->empid, $batchid, $params['user']);
                         $this->resetEarningDeductionAdv($emp->empid, $batchid, $params['user']);
 
-                        $this->coreFunctions->execqry("update leavesetup set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
+                        $this->coreFunctions->execqry("update leavetrans set batchid=0 where batchid=" . $batchid . "  and empid=" . $emp->empid);
 
                         if (!$is13th) {
                             $msg = 'err3. Computed salary + piece amount is zero';
@@ -4364,9 +4388,9 @@ class payrollcommon
                     } else {
 
                         $grossPay[0] = $salary + $amtVL + $amtSL + $amtRestday - $amtabsent - $amtlate - $amtundertime;
-                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP +  $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
+                        $basicRate = $salary + $amtVL + $amtSL + $amtLegSP + $amtSPUnwork + $amtLGUnwork - $amtabsent - $amtlate - $amtundertime;
 
-                        if (($amtOT  + $amtLegSP +  $amtSPUnwork + $amtLGUnwork) == 0) {
+                        if (($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork) == 0) {
                             $grossPay[1] = $grossPay[0];
                         } else {
                             $grossPay[1] += ($amtOT + $amtLegSP + $amtSPUnwork + $amtLGUnwork);
@@ -4379,7 +4403,8 @@ class payrollcommon
 
                         $grossPay[2] = $grossPay[1];
 
-                        if ($blnNoGovEDAdv) goto SkipGovContriHere;
+                        if ($blnNoGovEDAdv)
+                            goto SkipGovContriHere;
 
                         if ($blndeduction) {
 
@@ -4586,7 +4611,7 @@ class payrollcommon
                     }
 
                     $grossPay[2] = $grossPay[2] + $allow3 + $earning + $earningadv + $leavetransamt;
-                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th +  $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
+                    $totalpay = $grossPay[2] + $pieceAmt + $cola + $amt13th + $other - $amtDeduc + $dcManualOtherEarn + $tripIncentive + $operatorIncentive;
 
                     $this->addProccessAccount($emp->empid, $batchid, 'PPBLE', $batchdate, $totalpay, 0, 99);
                 } else {
@@ -4671,12 +4696,12 @@ class payrollcommon
         $rawdata['empid'] = $empid;
         $rawdata['batchid'] = $batchid;
         $rawdata['qty'] = ($qty != 0 ? $qty : $this->arrAccount[0]->qty);
-        $rawdata['uom'] =  $this->arrAccount[0]->uom;
+        $rawdata['uom'] = $this->arrAccount[0]->uom;
         $rawdata['dateid'] = $batchdate;
-        $rawdata['acnoid'] =  $this->arrAccount[0]->line;
+        $rawdata['acnoid'] = $this->arrAccount[0]->line;
         $rawdata['db'] = $db;
         $rawdata['cr'] = $cr;
-        $rawdata['torder'] =  ($seq != 0 ? $seq : $this->arrAccount[0]->pseq);
+        $rawdata['torder'] = ($seq != 0 ? $seq : $this->arrAccount[0]->pseq);
 
         if ($sanitize) {
             $insertdata = $this->sanitizelocal($rawdata);
@@ -4708,13 +4733,13 @@ class payrollcommon
         $data['qtymulti'] = 0;
 
         if ($companyid == 68) { //jda
-            if (isset($params['qtymulti'])) $data['qtymulti'] = $params['qtymulti'];
-
-            $existData = $this->coreFunctions->opentable("select qty, qty2, qtymulti from timesheet where empid=" . $empid . " and batchid=" . $batchid . " and acnoid=" . $acnoid . " and qtymulti=" . $data['qtymulti']);
-            if (!empty($existData)) {
-                $data['qty'] =  $data['qty']  + $existData[0]->qty;
-                $data['qty2'] =  $data['qty2'] + $existData[0]->qty2;
-                $data['qtymulti'] =  $existData[0]->qtymulti;
+            if (isset($params['qtymulti'])) {
+                $data['qtymulti'] = $params['qtymulti'];
+                $existData = $this->coreFunctions->opentable("select qty, qty2, qtymulti from timesheet where empid=" . $empid . " and batchid=" . $batchid . " and acnoid=" . $acnoid);
+                if (!empty($existData)) {
+                    $data['qty'] = $data['qty'] + $existData[0]->qty;
+                    $data['qty2'] = $data['qty2'] + $existData[0]->qty2;
+                }
             }
         }
 
@@ -4958,7 +4983,7 @@ class payrollcommon
             foreach ($deduct as $key => $value) {
                 $prevDeduct = $this->coreFunctions->opentable("select trno,acnoid,cr from " . $transtable . " where ismanual=0 and trno=" . $value->trno . " and batchid=" . $batchid);
                 foreach ($prevDeduct as $k => $val) {
-                    $this->coreFunctions->execqry("update " . $setuptable . " set balance=balance + " . $val->cr . ", editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where trno="  . $val->trno);
+                    $this->coreFunctions->execqry("update " . $setuptable . " set balance=balance + " . $val->cr . ", editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where trno=" . $val->trno);
                 }
 
                 $this->coreFunctions->execqry("delete from " . $transtable . " where ismanual=0 and trno=" . $value->trno . " and batchid=" . $batchid);
@@ -5039,9 +5064,9 @@ class payrollcommon
         try {
             $qry = "
             select ifnull(a.cr,0) as cr from (
-                select p.cr from paytrancurrent as p where empcode =" . $empid . " and p.acno in ('PT44','PT48','PT51') and dateid between '" . $curYear . "-01-01' and '"  . $curYear . "-12-31'
+                select p.cr from paytrancurrent as p where empcode =" . $empid . " and p.acno in ('PT44','PT48','PT51') and dateid between '" . $curYear . "-01-01' and '" . $curYear . "-12-31'
                 union all
-                select p.cr from paytranhistory as p where empcode =" . $empid . " and p.acno in ('PT44','PT48','PT51') and dateid between '" . $curYear . "-01-01' and '"  . $curYear . "-12-31'
+                select p.cr from paytranhistory as p where empcode =" . $empid . " and p.acno in ('PT44','PT48','PT51') and dateid between '" . $curYear . "-01-01' and '" . $curYear . "-12-31'
             ) as a
             ";
 
@@ -5285,11 +5310,11 @@ class payrollcommon
             $postdate = $this->coreFunctions->datareader("select postdate as value from batch where line=" . $batchid);
 
             if (!$unpost) {
-                if ($postdate  != null) {
+                if ($postdate != null) {
                     return ['status' => false, 'msg' => 'Selected batch is already closed.', 'action' => 'load'];
                 }
             } else {
-                if ($postdate  == null) {
+                if ($postdate == null) {
                     return ['status' => false, 'msg' => 'Selected batch is not yet closed.', 'action' => 'load'];
                 }
             }
@@ -5395,7 +5420,7 @@ class payrollcommon
 
         $qry = "select t.empid,t.schedin,t.schedout,e.idbarcode,t.dateid,s.gtin,s.sig,s.breakinam,s.breakoutam,s.breakinpm,s.breakoutpm,e.shiftid 
         from timecard as t left join employee as e on e.empid=t.empid left join tmshifts as s on s.line=e.shiftid
-            where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl  . $filteremp;
+            where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl . $filteremp;
         $emp = $this->coreFunctions->opentable($qry);
 
         $updatefields = 't.actualin=null, t.actualout=null, t.actualbrkout=null, t.actualbrkin=null';
@@ -5579,10 +5604,10 @@ class payrollcommon
                             } // end of time out
                         }
 
-                        $strIn != null  ? $strIn = "'" . $strIn  . "'" : $strIn = "null";
-                        $strOut != null  ? $strOut = "'" . $strOut  . "'" : $strOut = "null";
-                        $strBIn != null  ? $strBIn = "'" . $strBIn  . "'" : $strBIn = "null";
-                        $strBOut != null  ? $strBOut = "'" . $strBOut  . "'" : $strBOut = "null";
+                        $strIn != null ? $strIn = "'" . $strIn . "'" : $strIn = "null";
+                        $strOut != null ? $strOut = "'" . $strOut . "'" : $strOut = "null";
+                        $strBIn != null ? $strBIn = "'" . $strBIn . "'" : $strBIn = "null";
+                        $strBOut != null ? $strBOut = "'" . $strBOut . "'" : $strBOut = "null";
 
                         if ($config['params']['companyid'] == 45) { //pdpi payroll
                             if ($strOut == 'null' && $strIn != '') {
@@ -5632,7 +5657,7 @@ class payrollcommon
         }
 
         $qry = "select t.empid,t.schedin,t.schedout,e.idbarcode,t.dateid,s.gtin,s.sig,s.breakinam,s.breakoutam,s.breakinpm,s.breakoutpm,e.shiftid,t.brk1stout,t.brk1stin,t.brk2ndout,t.brk2ndin,t.schedbrkin,t.schedbrkout,t.daytype
-            from timecard as t left join employee as e on e.empid=t.empid left join tmshifts as s on s.line=e.shiftid where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl  . $filteremp;
+            from timecard as t left join employee as e on e.empid=t.empid left join tmshifts as s on s.line=e.shiftid where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl . $filteremp;
         // $this->coreFunctions->LogConsole($qry);
         $emp = $this->coreFunctions->opentable($qry);
 
@@ -5850,15 +5875,15 @@ class payrollcommon
 
                         $val->dateid = $this->othersClass->sanitizekeyfield('dateonly', $val->dateid);
 
-                        $strIn != null  ? $strIn = "'" . $strIn  . "'" : $strIn = "null";
-                        $strOut != null  ? $strOut = "'" . $strOut  . "'" : $strOut = "null";
-                        $strBIn != null  ? $strBIn = "'" . $strBIn  . "'" : $strBIn = "null";
-                        $strBOut != null  ? $strBOut = "'" . $strBOut  . "'" : $strBOut = "null";
+                        $strIn != null ? $strIn = "'" . $strIn . "'" : $strIn = "null";
+                        $strOut != null ? $strOut = "'" . $strOut . "'" : $strOut = "null";
+                        $strBIn != null ? $strBIn = "'" . $strBIn . "'" : $strBIn = "null";
+                        $strBOut != null ? $strBOut = "'" . $strBOut . "'" : $strBOut = "null";
 
-                        $strBInAM != null  ? $strBInAM = "'" . $strBInAM  . "'" : $strBInAM = "null";
-                        $strBOutAM != null  ? $strBOutAM = "'" . $strBOutAM  . "'" : $strBOutAM = "null";
-                        $strBInPM != null  ? $strBInPM = "'" . $strBInPM  . "'" : $strBInPM = "null";
-                        $strBOutPM != null  ? $strBOutPM = "'" . $strBOutPM  . "'" : $strBOutPM = "null";
+                        $strBInAM != null ? $strBInAM = "'" . $strBInAM . "'" : $strBInAM = "null";
+                        $strBOutAM != null ? $strBOutAM = "'" . $strBOutAM . "'" : $strBOutAM = "null";
+                        $strBInPM != null ? $strBInPM = "'" . $strBInPM . "'" : $strBInPM = "null";
+                        $strBOutPM != null ? $strBOutPM = "'" . $strBOutPM . "'" : $strBOutPM = "null";
 
                         $addupdate = '';
                         // move compute timeset tagging of no morning in
@@ -5893,6 +5918,205 @@ class payrollcommon
         return ['status' => true, 'msg' => 'test'];
     }
 
+
+    public function postactualinout_jda($config, $empid, $start, $end, $checkall, $paygroup, $paymode, $blnExtract = false)
+    {
+        $filteremp = '';
+        // if ($empid != 0) {
+        $filteremp = ' and t.empid=' . $empid;
+        // }
+
+        $filteremplvl = '';
+        if ($blnExtract) {
+        } else {
+            $emplvl = $this->othersClass->checksecuritylevel($config);
+            $filteremplvl = " and e.level in " . $emplvl;
+        }
+
+        $qry = "select t.empid,t.shiftid as tcshift,t.schedin,t.schedout,e.idbarcode,t.dateid,s.gtin,s.sig,s.breakinam,s.breakoutam,s.breakinpm,s.breakoutpm,e.shiftid,s.istimein,s.tschedin,s.tschedout 
+        from timecard as t join employee as e on e.empid=t.empid join tmshifts as s on s.line=e.shiftid
+            where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl . $filteremp;
+        $emp = $this->coreFunctions->opentable($qry);
+
+        $updatefields = 't.actualin=null, t.actualout=null, t.actualbrkout=null, t.actualbrkin=null, t.ispostlog=0';
+        $qry = "update timecard as t join employee as e on e.empid=t.empid set " . $updatefields . " where t.dateid between '" . $start . "' and '" . $end . "'" . $filteremplvl . $filteremp;
+
+        $update = $this->coreFunctions->execqry($qry);
+
+        if ($update) {
+
+            foreach ($emp as $key => $val) {
+
+                if ($val->schedin != null && $val->schedout != null) {
+
+                    $s_schedin = Carbon::parse($val->schedin)->subHours(3);
+                    $s_schedin = $s_schedin->format('Y-m-d H:i:s');
+
+                    $s_dateid = Carbon::parse($val->dateid)->addDays(1);
+                    $s_dateid = $s_dateid->format('Y-m-d');
+
+                    $tc_schedout = Carbon::parse($val->schedout);
+                    $tc_schedin = $this->coreFunctions->datareader("select schedin as value from timecard where empid=? and dateid=?", [$val->empid, $s_dateid]);
+
+                    if ($tc_schedin == '' || $tc_schedin == null) {
+                        $tc_schedout = $tc_schedout->addHours(8);
+                    } else {
+                        $tc_schedin = Carbon::parse($tc_schedin);
+                        $dcAddHrs = $tc_schedout->diffInHours($tc_schedin, false);
+
+                        if ($dcAddHrs == 8) {
+                            $dcAddHrs = 6;
+                        } else {
+                            $dcAddHrs = $dcAddHrs - 4;
+                        }
+                        $tc_schedout = $tc_schedout->addHours($dcAddHrs);
+                    }
+
+                    $strIn = '';
+                    $strOut = '';
+                    $strBIn = '';
+                    $strBOut = '';
+
+                    $s_schedout = $tc_schedout->format('Y-m-d H:i:s');
+
+                    $qry = "select distinct timeinout from (
+                    select dateid as timeinout from obapplication where empid=" . $val->empid . " and dateid between '" . $s_schedin . "' and '" . $s_schedout . "' and approvedate is not null and status='A'
+                        union all 
+                        select timeinout from timerec where userid='" . $val->idbarcode . "' and timeinout between '" . $s_schedin . "' and '" . $s_schedout . "') as x order by timeinout";
+                    $timerec = $this->coreFunctions->opentable($qry);
+
+                    foreach ($timerec as $key => $tval) {
+                        if ($strIn == '') {
+                            $strIn = $tval->timeinout;
+                        } elseif ($strBOut == '') {
+                            $strBOut = $tval->timeinout;
+                        } elseif ($strBIn == '') {
+                            $strBIn = $tval->timeinout;
+                        } elseif ($strOut == '') {
+                            $strOut = $tval->timeinout;
+                        }
+                    }
+
+                    if ($strOut == '') {
+                        if ($strBIn == '') {
+                            if ($strBOut != '') {
+                                $strOut = $strBOut;
+                                $strBOut = '';
+                            }
+                        } else {
+                            $strOut = $strBIn;
+                            $strBIn = '';
+                        }
+                    }
+
+                    $addOnTimecard = '';
+
+                    if ($strIn != '') {
+                        $strIn = $this->othersClass->sanitizekeyfield('actualin', $strIn);
+                        $strOut = $this->othersClass->sanitizekeyfield('actualin', $strOut);
+                        $strBIn = $this->othersClass->sanitizekeyfield('actualin', $strBIn);
+                        $strBOut = $this->othersClass->sanitizekeyfield('actualin', $strBOut);
+                        $val->dateid = $this->othersClass->sanitizekeyfield('dateonly', $val->dateid);
+
+                        $strIn != null ? $strIn = "'" . $strIn . "'" : $strIn = "null";
+                        $strOut != null ? $strOut = "'" . $strOut . "'" : $strOut = "null";
+                        $strBIn != null ? $strBIn = "'" . $strBIn . "'" : $strBIn = "null";
+                        $strBOut != null ? $strBOut = "'" . $strBOut . "'" : $strBOut = "null";
+
+                        if ($val->istimein) {
+
+                            $ts_schedtimein = '';
+                            $ts_schedtimeout = '';
+
+                            $blnReverseShift = false;
+
+                            if ($strIn != "") {
+                                $ts_schedtimein = Carbon::parse(str_replace("'", '', $strIn))->format('Y-m-d') . ' ' . Carbon::parse($val->tschedin)->format('H:i');
+                            }
+                            if ($strOut != "") {
+                                $ts_schedtimeout = Carbon::parse(str_replace("'", '', $strOut))->format('Y-m-d') . ' ' . Carbon::parse($val->tschedout)->format('H:i');
+                            }
+
+                            if ($ts_schedtimein != "" && $ts_schedtimeout != "") {
+                                $checkTime = Carbon::parse(str_replace("'", '', $strIn));
+
+                                $logDate = $checkTime->format('Y-m-d');
+
+                                if ($strIn != "") {
+
+                                    $t5pm = Carbon::parse($logDate . ' 17:00');
+                                    $t11pm = Carbon::parse($logDate . ' 23:00');
+
+                                    $blnNShift = false;
+                                    if (Carbon::parse($ts_schedtimein)->between($t5pm, $t11pm)) {
+                                        $blnNShift = true;
+                                    }
+
+                                    if ($blnNShift) {
+                                        if ($checkTime < $t5pm) {
+                                            $blnReverseShift = true;
+                                        }
+                                    } else {
+                                        if ($checkTime >= $t5pm) {
+                                            $blnReverseShift = true;
+                                        }
+                                    }
+                                }
+
+                                if ($blnReverseShift) {
+                                    if (!$checkTime->between(Carbon::parse($ts_schedtimein), Carbon::parse($ts_schedtimeout))) {
+                                        $logDateTime = $checkTime->format('Y-m-d H:i');
+
+                                        $dayNum = $checkTime->dayOfWeekIso;
+                                        $newShift = $this->coreFunctions->opentable(
+                                            "select tm.line, time(d.schedin) as schedin, time(d.schedout) as schedout, time(d.breakin) as breakin, time(d.breakout) as breakout, d.tothrs
+                                            from tmshifts as tm join shiftdetail as d on d.shiftsid=tm.line
+                                            where tm.istimein = 1 and d.dayn=" . $dayNum . " and tm.line<>" . $val->shiftid . "
+                                            and '" . $logDateTime . "' >= concat('$logDate',' ',time(d.schedin)) and '" . $logDateTime . "' <= DATE_ADD(concat('$logDate',' ',time(d.schedin)), INTERVAL d.tothrs HOUR) order by tm.tschedin limit 1"
+                                        );
+
+                                        UpdateTimecardHere:
+                                        if (!empty($newShift)) {
+                                            $addOnTimecard .= ",shiftid=" . $newShift[0]->line;
+                                            $addOnTimecard .= ",schedin='" . $logDate . ' ' . $newShift[0]->schedin . "'";
+                                            $addOnTimecard .= ",schedout='" . $logDate . ' ' . $newShift[0]->schedout . "'";
+                                            $addOnTimecard .= ",schedbrkin='" . $logDate . ' ' . $newShift[0]->breakin . "'";
+                                            $addOnTimecard .= ",schedbrkout='" . $logDate . ' ' . $newShift[0]->breakout . "'";
+                                            $addOnTimecard .= ",reghrs=" . $newShift[0]->tothrs;
+                                        }
+                                    }
+                                } else {
+                                    // reset shift based on employee default shift
+                                    if ($val->tcshift != $val->shiftid) {
+
+                                        $dayNum = $checkTime->dayOfWeekIso;
+                                        $newShift = $this->coreFunctions->opentable(
+                                            "select tm.line, time(d.schedin) as schedin, time(d.schedout) as schedout, time(d.breakin) as breakin, time(d.breakout) as breakout, d.tothrs
+                                            from tmshifts as tm join shiftdetail as d on d.shiftsid=tm.line
+                                            where tm.line=" . $val->shiftid
+                                        );
+
+                                        if (!empty($newShift)) {
+                                            goto UpdateTimecardHere;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+                        $qryy = "update timecard set ispostlog=1, actualin=" . $strIn . ",actualbrkout=" . $strBOut . ",actualbrkin=" . $strBIn . ",actualout=" . $strOut . $addOnTimecard . " where empid=" . $val->empid . " and date(dateid)='" . $val->dateid . "'";
+                        $this->coreFunctions->execqry($qryy);
+                    }
+                }
+            }
+        } else {
+            return ['status' => false, 'msg' => 'Failed to reset timecard'];
+        }
+
+
+        return ['status' => true, 'msg' => 'test'];
+    }
 
     public function getTripIncentive($empid, $start, $end, $batchid)
     {
@@ -6017,7 +6241,8 @@ class payrollcommon
     {
         $curdate = $this->othersClass->getCurrentDate();
         $diff = $this->coreFunctions->datareader("select DATEDIFF('" . $data['start'] . "', '" . $curdate . "') as value");
-        if ($config['params']['companyid'] == 58 && $data['acno'] == 'PT106') { //cdo
+        $this->coreFunctions->LogConsole('Isnocheck: ' . $data['isnocheck']);
+        if ($config['params']['companyid'] == 58 && $data['isnocheck']) { //cdo
             return ['status' => true];
         } else {
             if ($data['dateid'] <= $data['start'] && $data['dateid'] <= $data['effectivity']) {
@@ -6122,7 +6347,7 @@ class payrollcommon
     }
     public function checkapplicationstatus($config, $trno, $url, $submitdate)
     {
-        $array_status  = ['A', 'D'];
+        $array_status = ['A', 'D'];
         $status = true;
         $return_status = '';
         $data = [];
@@ -6142,7 +6367,7 @@ class payrollcommon
             case 'OTAPPLICATIONADV':
                 $filter = " doc = 'OT' and line = $trno";
                 $table = 'otapplication';
-                $array_status  = [2, 3];
+                $array_status = [2, 3];
                 break;
             case 'LOANAPPLICATIONPORTAL':
                 $filter = " doc = 'LOAN' and trno = $trno";
@@ -6153,11 +6378,11 @@ class payrollcommon
                 $filter = " doc = 'CHANGESHIFT' and line = $trno";
                 $table = 'changeshiftapp';
                 $setstatus = true;
-                $array_status  = [1, 2];
+                $array_status = [1, 2];
                 break;
         }
 
-        $appdoc =  $this->coreFunctions->datareader("select doc as value from pendingapp where $filter");
+        $appdoc = $this->coreFunctions->datareader("select doc as value from pendingapp where $filter");
 
         $this->coreFunctions->LogConsole($appdoc);
         if (!empty($appdoc)) {
@@ -6203,7 +6428,8 @@ class payrollcommon
                         $status = false;
                         if ($setstatus) {
                             $return_status = 2; //1 set to 2 approved, change shift
-                            if ($data[0]->status == 2) $return_status = 3; // 1 set to 2 disapproved
+                            if ($data[0]->status == 2)
+                                $return_status = 3; // 1 set to 2 disapproved
                         }
                     }
                 }
@@ -6268,8 +6494,8 @@ class payrollcommon
             }
             if (isset($config['params']['dataparams']['divid'])) {
                 $divid = $config['params']['dataparams']['divid'];
-                $division = $config['params']['dataparams']['division'];
-                if ($division != "") {
+                $divname = $config['params']['dataparams']['divname'];
+                if ($divname != "") {
                     if ($divid != 0) {
                         $self = true;
                         $filterdataparams .= " and " . $alias . ".divid = '$divid' ";
@@ -6428,7 +6654,7 @@ class payrollcommon
                         $showall = true;
                     } else {
                         if ($approversetup[1] == 'isapprover') {
-                            $showall  = $moduleapproval[0]->isapprover == 1 ? true : false;
+                            $showall = $moduleapproval[0]->isapprover == 1 ? true : false;
                         } else {
                             $showall = $moduleapproval[0]->issupervisor == 1 ? true : false;
                         }
@@ -6454,5 +6680,68 @@ class payrollcommon
         }
 
         return ['filter' => $filter, 'leftjoin' => $leftjoin, 'exist' => $exist, 'ishowall' => $showall];
+    }
+
+    public function leaveappchecking($config, $date, $head, $empid)
+    {
+        $companyid = $config['params']['companyid'];
+        $day = date('l', strtotime($head['effectivity']));
+        $dis = ['D'];
+        $status = ['A', 'E'];
+        $s = false;
+
+        $query = "select ifnull(sum(lt.adays),0) + " . $head['hours'] . " as value 
+  from leavetrans as lt 
+  left join leavesetup as ls on ls.trno = lt.trno
+  where lt.empid = $empid and date(effectivity) = '" . $date . "'
+  and (lt.status in ('E','A') and lt.status2 in ('E','A'))";
+        $adays = $this->coreFunctions->datareader($query, [], '', true);
+
+        if ($companyid == 58) {
+            $existing = $this->coreFunctions->opentable(
+                "select status,status2 from leavetrans as lt
+      where lt.empid = $empid and date(lt.effectivity) = '" . $date . "' 
+      and (lt.status in ('E','A') and lt.status2 in ('E','A'));"
+            );
+            if (!empty($existing)) {
+                $s = true;
+                return $s;
+            }
+        }
+
+        switch ($companyid) {
+            case 29: //sbc
+                if ($day == 'Saturday') {
+                    $adays = $adays / 3;
+                } else {
+                    $adays = $adays / 9;
+                }
+                break;
+
+            default:
+                if ($head['uom'] == 'HRS') {
+                    $adays = $adays / 8;
+                } else {
+                    $adays = $adays / 1;
+                }
+                break;
+        }
+
+        if ($adays <= 1) {
+            return $s;
+        }
+
+        $data = $this->coreFunctions->opentable("select status,status2 from leavetrans where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
+        if (!empty($data)) {
+            if (in_array($data[0]->status, $dis) || in_array($data[0]->status2, $dis)) {
+                return $s;
+            } else {
+                if (in_array($data[0]->status, $status) && in_array($data[0]->status2, $status)) {
+                    $s = true;
+                    return $s;
+                }
+            }
+        }
+        return $s;
     }
 }

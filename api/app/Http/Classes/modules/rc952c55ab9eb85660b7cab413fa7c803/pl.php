@@ -359,18 +359,23 @@ class pl
     }
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
             unset($head['docno']);
         }
+
+        $dateTables = ['plhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
 
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '');
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 }
             }
         }
@@ -552,8 +557,13 @@ class pl
     {
         $return = false;
         $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
         $status = '';
         $refx = 0;
+
+        $dateTables = ['glhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (isset($config['params']['data']['trno'])) {
             $refx = $config['params']['data']['trno'];
         }
@@ -571,7 +581,7 @@ class pl
         $config['params']['refx'] = $refx;
         $config['params']['trno'] = $trno;
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         if ($action == 'update') {

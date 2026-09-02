@@ -141,6 +141,10 @@ class entrysuspension
         }
         $date = $this->othersClass->getCurrentDate();
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (!empty($row)) {
 
             foreach ($row as $key => $rows) {
@@ -156,7 +160,7 @@ class entrysuspension
                         $enddate  =  $t->format("Y-m-d");
                     }
 
-                    $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$key][$value]);
+                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value],$lookups);
                 }
                 $empid = $this->coreFunctions->datareader("select empid as value from disciplinary where trno= " . $trno . "");
                 if ($empid == 0) {
@@ -234,6 +238,10 @@ class entrysuspension
         if ($trno == 0) {
             return ['status' => false, 'msg' => 'Please save header before adding details.'];
         }
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->detail];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
 
             if ($value == 'startdate') {
@@ -244,7 +252,7 @@ class entrysuspension
                 $t = new DateTime($row[$value]);
                 $enddate  =  $t->format("Y-m-d");
             }
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
 

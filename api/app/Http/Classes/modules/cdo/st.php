@@ -225,7 +225,9 @@ class st
   public function createTab($access, $config)
   {
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
+    
     $action = 0;
     $isqty = 1;
     $uom = 2;
@@ -259,7 +261,6 @@ class st
     $obj[0]['inventory']['columns'][$isamt]['type'] = 'label';
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     }
 
@@ -276,6 +277,13 @@ class st
     $obj[0]['inventory']['columns'][$ref]['type'] = 'label';
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if(!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
+        
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
     return $obj;
@@ -456,7 +464,6 @@ class st
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -631,7 +638,6 @@ class st
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
@@ -1088,8 +1094,6 @@ class st
 
       $config['params']['line'] = $line;
     }
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
@@ -1138,7 +1142,6 @@ class st
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1480,8 +1483,6 @@ class st
         $cost = $this->othersClass->computecostingserial($item[0]->itemid, $item[0]->whid, $trno, $line, $qty, $doc, '', $eline, $item[0]->loc);
         if ($cost != -1) {
           $cost2 = $cost / $item[0]->uomfactor;
-          // $damt = $this->othersClass->sanitizekeyfield('amt', $cost2);
-          // $dqty = $this->othersClass->sanitizekeyfield('amt', $qty);
           $damt = $this->othersClass->sanitizekeyfieldFast('amt', $cost2, $lookups);
           $dqty = $this->othersClass->sanitizekeyfieldFast('amt', $qty, $lookups);
           $computedata = $this->othersClass->computestock($damt, '', $dqty, $item[0]->uomfactor);
@@ -1559,12 +1560,9 @@ class st
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      // $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
-      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
+      $dqty = round($this->othersClass->Fast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
-      // $uomfactor = $this->othersClass->sanitizekeyfield('amt', $data[$key]->uomfactor);
       $uomfactor = $this->othersClass->sanitizekeyfieldFast('amt', $data[$key]->uomfactor, $lookups);
 
       $computedata = $this->othersClass->computestock(

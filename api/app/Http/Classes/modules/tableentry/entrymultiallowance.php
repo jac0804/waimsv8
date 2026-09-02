@@ -158,16 +158,16 @@ class entrymultiallowance
             return ['status' => false, 'msg' => 'Cannot delete entry, alreay posted.'];
         }
 
-        // $row = $config['params']['row'];
+        $row = $config['params']['row'];
         // $data = $this->loaddataperrecord($tableid, $row['acnoid']);
 
-        // $codename = $this->coreFunctions->getfieldvalue("paccount", "codename", "line=?", [$row['acnoid']]);
+        $codename = $this->coreFunctions->getfieldvalue("paccount", "codename", "line=?", [$row['acnoid']]);
 
-        // $qry = "delete from " . $this->table . " where acnoid=? and refx=?";
-        // $this->coreFunctions->execqry($qry, 'delete', [$row['acnoid'], $tableid]);
+        $qry = "delete from " . $this->table . " where acnoid=? and refx=?";
+        $this->coreFunctions->execqry($qry, 'delete', [$row['acnoid'], $tableid]);
 
-        // $this->logger->sbcwritelog($tableid, $config, 'DELETE', 'REMOVE: ' . $codename);
-        // return ['status' => true, 'msg' => 'Successfully deleted.'];
+        $this->logger->sbcwritelog($tableid, $config, 'DELETE', 'REMOVE: ' . $codename . '. Amount: ' . $row['allowance']);
+        return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 
 
@@ -277,6 +277,9 @@ class entrymultiallowance
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         switch ($config['params']['doc']) {
             case 'HS': //employment status change
                 $empid = $this->coreFunctions->getfieldvalue("eschange", 'empid', 'trno=?', [$trno]);
@@ -321,7 +324,7 @@ class entrymultiallowance
         $codename = $this->coreFunctions->getfieldvalue("paccount", "codename", "line=?", [$data['acnoid']]);
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         switch ($config['params']['doc']) {
@@ -368,13 +371,17 @@ class entrymultiallowance
         $type = $this->coreFunctions->getfieldvalue("employee", 'classrate', 'empid=?', [$empid]);
         $data = $config['params']['data'];
 
+
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data['type'] = $type;
         foreach ($data as $key => $value) {
             $data2 = [];
 
             if (!empty($data[$key]['bgcolor'])) {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 if ($data[$key]['trno'] != 0) {

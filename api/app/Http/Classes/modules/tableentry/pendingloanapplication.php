@@ -294,6 +294,8 @@ class pendingloanapplication
 
         $admin = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
+        $dateTables = ['loanapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $config['params']['doc'] = 'LOANAPPLICATIONPORTAL';
         $approver = $this->coreFunctions->getfieldvalue("employee", "$isapp", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'loanapplicationportal';
@@ -392,7 +394,7 @@ class pendingloanapplication
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

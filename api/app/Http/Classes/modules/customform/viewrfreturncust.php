@@ -173,10 +173,6 @@ class viewrfreturncust
 
     switch ($config['params']['action2']) {
       case 'close':
-        // $data = [
-        //   'trno' => $trno,
-        //   'dateclose' => $this->othersClass->sanitizekeyfield('dateclose', $config['params']['dataparams']['dateclose']),
-        // ];
 
         $data = [
           'trno' => $trno,

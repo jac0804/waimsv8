@@ -213,6 +213,8 @@ class mt
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $companyid = $config['params']['companyid'];
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $isqty = 1;
@@ -246,9 +248,9 @@ class mt
     $obj[0]['inventory']['columns'][$stage]['lookupclass'] = 'stagestock';
 
     $obj[0]['inventory']['columns'][$isamt]['label'] = 'Unit Cost';
-    if ($config['params']['companyid'] == $stage) {
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-    }
+    // if ($config['params']['companyid'] == $stage) {
+    //   $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+    // }
 
     $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
     $obj[0]['inventory']['columns'][$cost]['class'] = 'sbccsreadonly';
@@ -260,6 +262,11 @@ class mt
     } else {
       $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
     }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
 
     return $obj;
   }
@@ -483,7 +490,6 @@ class mt
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -617,7 +623,6 @@ class mt
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
@@ -986,9 +991,8 @@ class mt
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1042,7 +1046,6 @@ class mt
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

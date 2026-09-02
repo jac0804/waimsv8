@@ -316,16 +316,21 @@ class wr
     }
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
 
         if ($isupdate) {
             unset($this->fields['docno']);
         }
+
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '');
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
 
@@ -403,11 +408,15 @@ class wr
     }
     public function createdistribution($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $entry = [];
         $status = true;
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
         $amount = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $query = "select trno,client, docno as ref,amount from lahead where trno = ?";
         $data = $this->coreFunctions->opentable($query, [$trno]);
@@ -428,7 +437,7 @@ class wr
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['encodeddate'] = $current_timestamp;
                 $this->acctg[$key]['encodedby'] = $config['params']['user'];

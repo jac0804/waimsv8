@@ -73,11 +73,16 @@ class viewcomponentgrade
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['en_gecomponentgrade'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data3 = [
           'trno' => $data2['trno'],
@@ -109,8 +114,13 @@ class viewcomponentgrade
   {
     $data = [];
     $row = $config['params']['row'];
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['en_gecomponentgrade'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data2 = [
       'trno' => $data['trno'],

@@ -197,10 +197,7 @@ class viewrfreturnsup
 
     switch ($config['params']['action2']) {
       case 'close':
-        // $data = [
-        //   'trno' => $trno,
-        //   'dateclose' => $this->othersClass->sanitizekeyfield('dateclose', $config['params']['dataparams']['dateclose']),
-        // ];
+        
 
          $data = [
           'trno' => $trno,
@@ -212,7 +209,7 @@ class viewrfreturnsup
       default:
         $data = [
           'trno' => $trno,
-          'returndate_sup' => $this->othersClass->sanitizekeyfield('returndate_sup', $config['params']['dataparams']['returndate_sup']),
+          'returndate_sup' => $this->othersClass->sanitizekeyfieldFast('returndate_sup', $config['params']['dataparams']['returndate_sup'], $lookups),
           'returndate_supby' => $config['params']['dataparams']['returndate_supby'],
           'supplierid' => $config['params']['dataparams']['clientid'],
           'awb' => $config['params']['dataparams']['awb'],

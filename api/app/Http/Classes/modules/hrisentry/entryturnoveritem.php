@@ -109,7 +109,7 @@ class entryturnoveritem
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['turnoveritemdetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -119,7 +119,6 @@ class entryturnoveritem
 
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data2['trno'] = $config['params']['tableid'];
@@ -157,7 +156,7 @@ class entryturnoveritem
     $row = $config['params']['row'];
     $id = $config['params']['tableid'];
     $doc = $config['params']['doc'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $checking = $this->coreFunctions->datareader("select count(postdate) as value 
     from hrisnum where trno = '$id' and postdate is not null and doc = '$doc'");
@@ -169,7 +168,6 @@ class entryturnoveritem
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['trno'] = $config['params']['tableid'];

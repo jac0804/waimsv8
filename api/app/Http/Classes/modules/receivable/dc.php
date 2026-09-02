@@ -326,6 +326,7 @@ class dc
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
@@ -333,11 +334,14 @@ class dc
       unset($head['docno']);
     }
 
+    $dateTables = ['dchead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -486,7 +490,6 @@ class dc
     }
   }
 
-
   public function updateitem($config)
   {
     foreach ($config['params']['row'] as $key => $value) {
@@ -533,13 +536,16 @@ class dc
     return [$this->gridname => $data, 'status' => true, 'msg' => 'Successfully saved.'];
   } //end function
 
-
   // insert and update detail
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $client = $config['params']['data']['client'];
     $amount = $config['params']['data']['amount'];
+
+    $dateTables = ['dcdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $line = 0;
     if ($action == 'insert') {
@@ -560,7 +566,7 @@ class dc
       'amount' => $amount
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -593,8 +599,6 @@ class dc
     return ['status' => true, 'msg' => 'Successfully deleted.', $this->gridname => []];
   }
 
-
-
   public function deleteitem($config)
   {
     $trno = $config['params']['row']['trno'];
@@ -626,6 +630,7 @@ class dc
 
   public function generateewt($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
     $status = true;
@@ -647,6 +652,9 @@ class dc
     $exp = 0;
     $ewtacno = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['WT1']);
     $taxacno = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX1']);
+
+    $dateTables = ['dcdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (empty($ewtacno) || empty($taxacno)) {
       $status = false;
@@ -770,7 +778,7 @@ class dc
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         foreach ($this->acctg as $key => $value) {
           foreach ($value as $key2 => $value2) {
-            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
           }
 
           $this->acctg[$key]['editdate'] = $current_timestamp;

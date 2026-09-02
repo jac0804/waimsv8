@@ -172,9 +172,6 @@ class pcfcurrency
         $data = [];
         $head = $config['params']['dataparams'];
 
-        // $data['oandaphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['oandaphpusd']);
-        // $data['oandausdphp'] = $this->othersClass->sanitizekeyfield('amt', $head['oandausdphp']);
-        // $data['osphpusd'] = $this->othersClass->sanitizekeyfield('amt', $head['osphpusd']);
         $data['oandaphpusd'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['oandaphpusd'], $lookups);
         $data['oandausdphp'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['oandausdphp'], $lookups);
         $data['osphpusd'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['osphpusd'], $lookups);

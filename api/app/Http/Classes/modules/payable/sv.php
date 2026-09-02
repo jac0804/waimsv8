@@ -488,7 +488,7 @@ class sv
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = [];
     if ($isupdate) {
@@ -502,7 +502,6 @@ class sv
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -937,7 +936,7 @@ class sv
     $rem = $config['params']['data']['rem'];
     $client = $config['params']['data']['client'];
     $project = $config['params']['data']['project'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $refx = 0;
     $linex = 0;
@@ -1035,7 +1034,6 @@ class sv
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

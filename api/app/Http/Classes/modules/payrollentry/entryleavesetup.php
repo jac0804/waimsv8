@@ -116,10 +116,13 @@ class entryleavesetup
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['trno'] == 0) {
       $trno = $this->coreFunctions->insertGetId($this->table, $data);

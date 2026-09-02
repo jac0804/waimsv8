@@ -366,16 +366,21 @@ class ef
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+
+    $dateTables = ['en_gshead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -726,6 +731,7 @@ class ef
 
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['data']['trno'];
     $gccode = $config['params']['data']['gccode'];
     $gcname = $config['params']['data']['gcname'];
@@ -754,8 +760,12 @@ class ef
       'compid' => $compid
     ];
 
+    $dateTables = ['en_gscomponent'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($action == 'insert') {
@@ -776,6 +786,10 @@ class ef
 
   public function addsubcomponent($action, $data, $config)
   {
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['en_gssubcomponent'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $line = 0;
@@ -801,7 +815,7 @@ class ef
       ];
 
       foreach ($datarow as $key2 => $value) {
-        $datarow[$key2] = $this->othersClass->sanitizekeyfield($key2, $datarow[$key2]);
+        $datarow[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $datarow[$key2], $lookups);
       }
 
       if ($action == 'insert') {

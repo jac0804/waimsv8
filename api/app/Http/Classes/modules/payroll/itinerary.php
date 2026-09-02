@@ -566,6 +566,8 @@ class itinerary
         $head = $config['params']['head'];
         $center = $config['params']['center'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $empid = $config['params']['adminid'];
         $data = [];
 
@@ -628,7 +630,7 @@ class itinerary
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
@@ -643,7 +645,7 @@ class itinerary
             return ['status' => false, 'msg' => 'Start Date must not be greater than End Date.', 'clientid' => $config['params']['adminid']];
         }
 
-        $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid']);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'], $lookups);
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
         from employee as e
         left join client as cl on cl.clientid = e.empid

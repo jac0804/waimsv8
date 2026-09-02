@@ -199,7 +199,6 @@ class entryprojectsubactivity
           $data[$key]['activity'] = $config['params']['sourcerow']['substageline'];
           $data[$key]['subactivity'] = $data[$key]['subline'];
           foreach ($this->fields as $key2 => $value2) {
-            // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
             $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
 
@@ -251,7 +250,6 @@ class entryprojectsubactivity
         } else {    // pm update       
           $trno = $config['params']['tableid'];
           foreach ($this->fields as $key2 => $value2) {
-            // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
             $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
 

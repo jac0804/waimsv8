@@ -199,7 +199,9 @@ class issueitems
   private function save($config)
   {
     $user = $config['params']['user'];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['issueitem'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $iteminfo = $this->coreFunctions->opentable("select * from iteminfo where itemid=?", [$config['params']['dataparams']['itemid']]);
     if (!empty($iteminfo)) {
       if ($config['params']['dataparams']['empid'] == $iteminfo[0]->empid && $config['params']['dataparams']['deptid'] == $iteminfo[0]->locid) {
@@ -226,7 +228,7 @@ class issueitems
     $data['isrepair'] = $config['params']['dataparams']['isrepair'];
 
     foreach ($this->fields as $key) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($data['clientid'] == 0) {

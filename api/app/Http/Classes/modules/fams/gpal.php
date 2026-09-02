@@ -309,6 +309,8 @@ class gpal
     $data = [];
     $otherdata = [];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['client'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if ($isupdate) {
       unset($this->fields['client']);
       unset($this->fields[0]);
@@ -319,7 +321,7 @@ class gpal
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -327,7 +329,7 @@ class gpal
       if (array_key_exists($key, $head)) {
         $otherdata[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $otherdata[$key] = $this->othersClass->sanitizekeyfield($key, $otherdata[$key], '', $companyid);
+          $otherdata[$key] = $this->othersClass->sanitizekeyfieldFast($key, $otherdata[$key], $lookups);
         } //end if
       }
     }

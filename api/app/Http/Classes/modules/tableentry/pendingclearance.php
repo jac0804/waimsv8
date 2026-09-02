@@ -159,8 +159,11 @@ class pendingclearance
                 break;
         }
 
-        $row['rem'] = $this->othersClass->sanitizekeyfield("rem", $row['rem']);
-
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['clearance'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $row['rem'] = $this->othersClass->sanitizekeyfieldFast("rem", $row['rem'],$lookups);
+        $this->othersClass->logConsole('incoming row: ' . json_encode($row));
         if ($row['approver'] == 'HEAD') {
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['editby'] = $config['params']['user'];

@@ -38,7 +38,17 @@ class vl
 
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'clientid', 'vehicleid', 'deptid', 'driverid', 'schedin', 'schedout', 'rem', 'status'
+    'trno',
+    'docno',
+    'dateid',
+    'clientid',
+    'vehicleid',
+    'deptid',
+    'driverid',
+    'schedin',
+    'schedout',
+    'rem',
+    'status'
   ];
   private $except = ['trno'];
   private $acctg = [];
@@ -165,6 +175,7 @@ class vl
     CONVERT(h.schedin,DATE)>=? and 
     CONVERT(h.schedin,DATE)<=? " . $condition . "  " . $filtersearch . "
     order by docno desc";
+    Logger($qry);
     $data = $this->coreFunctions->opentable($qry, [$center, $date1, $date2, $center, $date1, $date2]);
 
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -418,6 +429,9 @@ class vl
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['vrhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
@@ -427,7 +441,7 @@ class vl
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -945,6 +959,8 @@ class vl
     $clientid = $config['params']['data']['clientid'];
     $clientname = $config['params']['data']['clientname'];
     $client = $config['params']['data']['client'];
+    $dateTables = ['vrstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [
       'trno' => $trno,
@@ -953,7 +969,7 @@ class vl
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($action == 'insert') {

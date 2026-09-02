@@ -297,6 +297,7 @@ class warehousecontroller
 
     public function updatehead($config, $udpate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $trno  = $head['clientid'];
         $data = [];
@@ -316,10 +317,13 @@ class warehousecontroller
                 if ($post) {
                     return ['status' => false, 'msg' => "Unable to change checker and checker location. This document is for DISPATCHING.", 'clientid' => $trno];
                 }
+                
+                 $dateTables = ['cntnuminfo'];
+                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
                 foreach ($this->fields as $key) {
                     if (isset($head[$key])) {
-                        $data[$key] = $this->othersClass->sanitizekeyfield($key, $head[$key]);
+                        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key], $lookups);
                     }
                 }
 

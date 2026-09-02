@@ -371,88 +371,51 @@ class is
     $invonly = $this->companysetup->isinvonly($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-    $action = 0;
-    $itemdesc = 1;
-    $rrqty = 2;
-    $uom = 3;
-    $kgs = 4;
-    $rrcost = 5;
-    $cost = 6;
-    $ext = 7;
-    $wh = 8;
-    $whname = 9;
-    $loc = 10;
-    $expiry = 11;
-    $rem = 12;
-    $pallet = 13;
-    $location = 14;
-    $stock_projectname = 15;
-    $subcode = 16;
-    $partno = 17;
-    $boxcount = 18;
-    $itemname = 19;
-    $barcode = 20;
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
+    // $action = 0;
+    // $itemdesc = 1;
+    // $rrqty = 2;
+    // $uom = 3;
+    // $kgs = 4;
+    // $rrcost = 5;
+    // $cost = 6;
+    // $ext = 7;
+    // $wh = 8;
+    // $whname = 9;
+    // $loc = 10;
+    // $expiry = 11;
+    // $rem = 12;
+    // $pallet = 13;
+    // $location = 14;
+    // $stock_projectname = 15;
+    // $subcode = 16;
+    // $partno = 17;
+    // $boxcount = 18;
+    // $itemname = 19;
+    // $barcode = 20;
 
-    $column = [
-      'action',
-      'itemdescription',
-      'rrqty',
-      'uom',
-      'kgs',
-      'rrcost',
-      'cost',
-      'ext',
-      'wh',
-      'whname',
-      'loc',
-      'expiry',
-      'rem',
-      'pallet',
-      'location',
-      'stock_projectname',
-      'subcode',
-      'partno',
-      'boxcount',
-      'itemname',
-      'barcode'
-    ];
-    $sortcolumn = [
-      'action',
-      'itemdescription',
-      'rrqty',
-      'uom',
-      'kgs',
-      'rrcost',
-      'cost',
-      'ext',
-      'wh',
-      'whname',
-      'loc',
-      'expiry',
-      'rem',
-      'pallet',
-      'location',
-      'stock_projectname',
-      'subcode',
-      'partno',
-      'boxcount',
-      'itemname',
-      'barcode'
-    ];
+    $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'itemname', 'barcode'];
+    $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'itemname', 'barcode'];
 
     switch ($systemtype) {
       case 'REALESTATE':
-        $project = 21;
-        $phasename = 22;
-        $housemodel = 23;
-        $blk = 24;
-        $lot = 25;
-        $amenityname = 26;
-        $subamenityname = 27;
+        // $project = 21;
+        // $phasename = 22;
+        // $housemodel = 23;
+        // $blk = 24;
+        // $lot = 25;
+        // $amenityname = 26;
+        // $subamenityname = 27;
         array_push($column, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         array_push($sortcolumn, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         break;
     }
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
+
 
     if ($invonly) {
       $headgridbtns = [];
@@ -544,20 +507,20 @@ class is
     }
 
     if (!$isexpiry) {
-      if ($companyid == 8) { // maxipro
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-      } else {
-        if ($companyid != 50) { //unitech
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        }
+      if ($companyid == 8) { // maxipro ditoo
+        // $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+        //   $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
+        // } else {
+        // if ($companyid != 50 && $companyid != 68) { //unitech | jda
+        //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        // }
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
       }
     } else {
-      $obj[0]['inventory']['columns'][$loc]['class'] = 'sbccsenablealways';
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+      // $obj[0]['inventory']['columns'][$loc]['class'] = 'sbccsenablealways';
+      // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
     }
 
@@ -578,11 +541,11 @@ class is
 
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $obj[0]['inventory']['descriptionrow'] = [];
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-      $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-      $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+      $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+      $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
     } else {
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
     }
 
@@ -638,7 +601,7 @@ class is
     }
 
     if ($companyid == 23 || $companyid == 41 || $companyid == 52) { //labsol cebu, labsol manila & technolab
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
+      // $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
       $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
     }
     if ($companyid == 47) { //kitchenstar
@@ -647,15 +610,48 @@ class is
       }
     }
 
-    if ($companyid == 50) { //unitech
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-    }
+    // if ($companyid == 50) { //unitech
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    //   $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+    //   $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    // }
+
+    // if ($companyid == 68) { //jda
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    //   $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    // }
+
 
     if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+    }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa IS
+        case 8: //maxipro
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+          break;
+        case 50: //unitech
+        case 68: //jda
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
+    } else {
+      $obj[0]['inventory']['columns'][$loc]['class'] = 'sbccsenablealways';
+    }
+
+    if (!$this->companysetup->getserial($config['params'])) {
+      $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
+    } else {
+      $obj[0]['inventory']['columns'][$serialno]['type'] = 'label';
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -944,7 +940,6 @@ class is
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1068,9 +1063,15 @@ class is
   private function getstockselect($config)
   {
     $companyid = $config['params']['companyid'];
+    $isserial = $this->companysetup->getserial($config['params']);
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $qty_dec = 0;
+    }
+
+    $serialno = ",'' as serialno";
+    if ($isserial) {
+      $serialno = ",ifnull((select ifnull(group_concat(concat('Serial: ',rr.serial) separator '\\n\\r'),'') from serialin as rr where rr.trno=stock.trno and rr.line=stock.line),'') as serialno";
     }
 
     $sqlselect = "select item.brand as brand,
@@ -1117,14 +1118,20 @@ class is
        
     stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,stock.blklotid, bl.blk, bl.lot,
      prj.code as project,
-     amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname
-
-    ";
+     amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname " . $serialno;
     return $sqlselect;
   }
 
   public function openstock($trno, $config)
   {
+
+    $isserial = $this->companysetup->getserial($config['params']);
+
+    $isserialjoin = "";
+    if ($isserial) {
+      $isserialjoin = " left join serialin as rr on rr.trno = stock.trno and rr.line = stock.line ";
+    }
+
     $sqlselect = $this->getstockselect($config);
 
     $qry = $sqlselect . "
@@ -1412,11 +1419,6 @@ class is
       }
     }
 
-
-    // $amt = round($this->othersClass->sanitizekeyfield('amt', $amt), $this->companysetup->getdecimal('price', $config['params']));
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
-
     $amt = round($this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups), $this->companysetup->getdecimal('price', $config['params']));
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
@@ -1505,7 +1507,6 @@ class is
     }
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1774,7 +1775,6 @@ class is
 
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         if ($this->acctg[$key]['cr'] < 0) {
@@ -2077,9 +2077,6 @@ class is
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      // $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
-      // $kgs = $this->othersClass->sanitizekeyfield('qty', $data2[$key]['kgs']);
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));

@@ -425,6 +425,9 @@ class so
     $changedisc = $this->othersClass->checkAccess($config['params']['user'], 4037);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
+
 
     $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode'];
     $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode'];
@@ -487,14 +490,18 @@ class so
     $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
     $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
 
-    if ($iscreateversion) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } else {
+    if (!$iscreateversion) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
     }
 
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
+
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
@@ -788,6 +795,10 @@ class so
   {
     $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+
+    $dateTables = ['sohead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $info = [];
     $datahere = [];
@@ -800,7 +811,7 @@ class so
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1668,6 +1679,9 @@ class so
     $noprint = 'false';
     $agentamt  = 0;
 
+    $dateTables = ['sostock', 'stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($this->companysetup->getiskgs($config['params'])) {
       $kgs = isset($config['params']['data']['kgs']) ? $config['params']['data']['kgs'] : 1;
     } else {
@@ -1726,9 +1740,9 @@ class so
 
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1801,7 +1815,7 @@ class so
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

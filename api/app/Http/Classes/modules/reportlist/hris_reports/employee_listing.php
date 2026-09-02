@@ -158,7 +158,7 @@ class employee_listing
     }
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
-    $query = "select client.client, CONCAT(UPPER(e.emplast), ', ', e.empfirst, ' ', LEFT(e.empmiddle, 1), '.') as clientname, e.address,e.telno,
+    $query = "select client.client, CONCAT(e.emplast, ', ', e.empfirst, ' ', LEFT(e.empmiddle, 1), '.') as clientname, e.address,e.telno,
               date(e.hired) as hired, date(e.bday) as bday, job.jobtitle, e.tin, e.sss, e.hdmf, e.phic 
               from employee as e 
               left join client on client.clientid=e.empid

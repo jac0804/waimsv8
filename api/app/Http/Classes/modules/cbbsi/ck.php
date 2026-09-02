@@ -611,7 +611,7 @@ class ck
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = [];
     if ($isupdate) {
@@ -625,7 +625,6 @@ class ck
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -1359,7 +1358,7 @@ class ck
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $void = 'false';
     $rem = '';
@@ -1421,9 +1420,6 @@ class ck
     $dateTables = ['ckstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1475,7 +1471,6 @@ class ck
       'fstatus' => $fstatus
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

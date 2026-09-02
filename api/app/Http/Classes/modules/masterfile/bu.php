@@ -303,6 +303,9 @@ class bu
         $companyid = $config['params']['companyid'];
         $data = [];
 
+        $dateTables = ['client'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($isupdate) {
             unset($this->fields[0]);
             unset($this->fields[1]);
@@ -313,7 +316,7 @@ class bu
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }

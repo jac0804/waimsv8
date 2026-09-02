@@ -313,6 +313,8 @@ class aj
     $ispallet = $this->companysetup->getispallet($config['params']);
     $iskgs = $this->companysetup->getiskgs($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $headgridbtns = [];
 
     $action = 0;
@@ -405,12 +407,10 @@ class aj
 
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
       $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
     } else {
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
     }
 
@@ -450,6 +450,13 @@ class aj
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
 
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if(!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -703,7 +710,6 @@ class aj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1100,9 +1106,7 @@ class aj
         $cost = $this->othersClass->computecostingserial($item[0]->itemid, $item[0]->whid, $trno, $line, $qty, $doc, '', $eline, $item[0]->loc);
         if ($cost != -1) {
           $cost2 = $cost / $item[0]->uomfactor;
-          // $damt = $this->othersClass->sanitizekeyfield('amt', $cost2);
           $damt = $this->othersClass->sanitizekeyfieldFast('amt', $cost2, $lookups);
-          // $dqty = $this->othersClass->sanitizekeyfield('amt', $qty);
           $dqty = $this->othersClass->sanitizekeyfieldFast('amt', $qty, $lookups);
           $computedata = $this->othersClass->computestock($damt, '', $dqty, $item[0]->uomfactor);
           $cost2 = $cost / $item[0]->uomfactor;
@@ -1362,10 +1366,6 @@ class aj
     $dateTables = ['lahead', 'lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
-    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
     $iss = $this->othersClass->sanitizekeyfieldFast('iss', $iss, $lookups);
@@ -1393,9 +1393,7 @@ class aj
         $isserial = $item[0]->isserial;
       }
     }
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $rrqty = $this->othersClass->sanitizekeyfield('rrqty', $rrqty);
-    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
+    
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $rrqty = $this->othersClass->sanitizekeyfieldFast('rrqty', $rrqty, $lookups);
     $iss = $this->othersClass->sanitizekeyfieldFast('iss', $iss, $lookups);
@@ -1447,7 +1445,6 @@ class aj
 
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
@@ -1983,7 +1980,6 @@ class aj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         if ($this->acctg[$key]['cr'] < 0) {
@@ -2082,7 +2078,7 @@ class aj
       $this->othersClass->logConsole(json_encode($value));
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
-      $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
+      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
       $computedata = $this->othersClass->computestock(
         $damt,

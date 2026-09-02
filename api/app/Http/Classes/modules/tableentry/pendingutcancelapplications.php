@@ -59,7 +59,7 @@ class pendingutcancelapplications
         $doc = $config['params']['row']['doc'];
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$config['params']['adminid']]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$config['params']['adminid']]);
-        $url = 'App\Http\Classes\modules\payroll\\' . 'lcc';
+        $url = 'App\Http\Classes\modules\payroll\\' . 'ucc';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LEAVECANCELLATION'");
         if ($approversetup == '') {
           $approversetup = app($url)->approvers($config['params']);
@@ -151,7 +151,7 @@ class pendingutcancelapplications
         $admin = $config['params']['adminid'];
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
-        $url = 'App\Http\Classes\modules\payroll\\' . 'obapplication';
+        $url = 'App\Http\Classes\modules\payroll\\' . 'ucc';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='".$doc."'");
         if ($approversetup == '') {
           $approversetup = app($url)->approvers($config['params']);
@@ -176,10 +176,14 @@ class pendingutcancelapplications
         $user = $config['params']['user'];
         if (!$status) $data = ['reason' => $row['rem1'], 'status' => $lstatus, 'canceldate' => $date, 'cancelby' => $user];
         $tempdata = [];
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['undertime'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key2) {
             if (isset($data[$key2])) {
                 $tempdata[$key2] = $data[$key2];
-                $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2],$lookups);
             }
         }
         $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

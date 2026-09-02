@@ -202,7 +202,6 @@ class tripdetails2
 
         $datainfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $datainfo['editby'] = $config['params']['user'];
-        // $datainfo['rem3'] = $this->othersClass->sanitizekeyfield("rem", $rem);
         $datainfo['rem3'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
         $datainfo['reportedby2'] = $config['params']['dataparams']['reportedby'];
         $datainfo['strdate1'] = $config['params']['dataparams']['strdate1'];

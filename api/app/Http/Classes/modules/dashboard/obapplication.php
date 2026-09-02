@@ -213,6 +213,9 @@ class obapplication
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'obapplication';
         $approversetup = app($url)->approvers($config['params']);
+
+        $dateTables = ['obapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         if (isset($config['params']['dataparams']['line'])) {
             $line = $config['params']['dataparams']['line'];
 
@@ -301,7 +304,7 @@ class obapplication
                 foreach ($this->fields as $key2) {
                     if (isset($data[$key2])) {
                         $tempdata[$key2] = $data[$key2];
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

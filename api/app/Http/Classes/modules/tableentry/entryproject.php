@@ -406,12 +406,14 @@ class entryproject
   {
     $data = $config['params']['data'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $msg = '';
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0 && $data[$key]['name'] != '') {
           $qry = "select name,code from projectmasterfile where name = '" . $data[$key]['name'] . "' limit 1";
@@ -444,7 +446,7 @@ class entryproject
           $msg = 'Name is empty';
           return ['status' => false, 'msg' => $msg];
         }
-        $data2['isho'] = $this->othersClass->sanitizekeyfield('isho', $data[$key]['isho']);
+        $data2['isho'] = $this->othersClass->sanitizekeyfieldFast('isho', $data[$key]['isho'], $lookups);
 
 
 
@@ -454,7 +456,7 @@ class entryproject
           $this->logger->sbcmasterlog($project_id, $config, ' CREATE - ' . $data[$key]['code'] . ' - ' . $data[$key]['name']);
         } else {
           if ($data[$key]['line'] != 0 && $data[$key]['name'] != '') {
-            $qry = "select name,line,code from projectmasterfile where name = '" . $data[$key]['name'] . "'  limit 1";
+            $qry = "select name,line,code from projectmasterfile where line<>" . $data[$key]['line'] . " and name = '" . $data[$key]['name'] . "'  limit 1";
             $opendata = $this->coreFunctions->opentable($qry);
             $resultdata =  json_decode(json_encode($opendata), true);
             if (!empty($resultdata[0]['name']) || !empty($resultdata[0]['code'])) {
@@ -492,9 +494,11 @@ class entryproject
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $msg = '';
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0 && $row['name'] != '') {

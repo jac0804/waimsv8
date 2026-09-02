@@ -515,11 +515,14 @@ class re
             unset($head['docno']);
         }
 
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -620,13 +623,19 @@ class re
 
     private function getstockselect($config)
     {
+
+    // CONCAT(GROUP_CONCAT(rc.checkno separator '\\n\\r'),'\\n\\r',stock.rcchecks) as checkno
         $sqlselect = "select stock.trno,stock.line,stock.acnoid,format(stock.amount,2) as amount,stock.refx,stock.linex,
                     stock.rctrno,stock.rcline,coa.acnoname,beh.docno as ref,
                     stock.rem,be.trno as betrno,be.line as beline,stock.clientid,c.clientname as client,'' as bgcolor,'' as errcolor,
-                    (select CONCAT(GROUP_CONCAT(rc.checkno separator '\\n\\r'),'\\n\\r',stock.rcchecks) as checkno from chequedetail as detail
+                    (select 
+                    concat_ws('\n\r',
+                    GROUP_CONCAT(rc.checkno SEPARATOR '\n\r'),
+                    GROUP_CONCAT(rh.bank SEPARATOR '\n\r'),'\\n\\r',stock.rcchecks)
+                    from chequedetail as detail
                     left join  hrcdetail as rc on rc.trno = detail.rctrno and rc.line = detail.rcline and detail.trno = rc.retrno
-                    where detail.trno = stock.trno
-                    and detail.line = stock.line) as rcchecks";
+                    left join  hrhdetail as rh on rh.trno = detail.rhtrno and rh.line = detail.rhline and detail.trno = rh.retrno
+                    where detail.trno = stock.trno and detail.line = stock.line ) as rcchecks";
         return $sqlselect;
     }
 
@@ -709,17 +718,25 @@ class re
     {
         $rows = $config['params']['rows'];
         $trno = $config['params']['trno'];
-        $data = [];
+        
         $line = 0;
+        $rline = 0;
         $status = true;
         $msg = 'Successfully added.';
         foreach ($rows  as $key2 => $value) {
+            $data = [];
             $data['trno'] = $rows[$key2]['trno'];
             $data['line'] = $rows[$key2]['line'];
             $data['refx'] = $rows[$key2]['refx'];
             $data['linex'] = $rows[$key2]['linex'];
-            $data['rctrno'] = $rows[$key2]['rctrno'];
-            $data['rcline'] = $rows[$key2]['rcline'];
+            //last move
+            if($rows[$key2]['bank'] == 'CASH'){
+                $data['rhtrno'] = $rows[$key2]['rhtrno'];
+                $data['rhline'] = $rows[$key2]['rhline'];
+            }else {
+                $data['rctrno'] = $rows[$key2]['rctrno'];
+                $data['rcline'] = $rows[$key2]['rcline'];
+            }
 
             $cheque = $this->coreFunctions->sbcinsert('chequedetail', $data);
 
@@ -727,19 +744,38 @@ class re
                 if ($data['refx'] != 0) {
                     $this->coreFunctions->execqry("update hparticulars set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['refx'], $data['linex']]);
                 }
-                $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
-
-                $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
-                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $data['rcline'] . ' Check #: ' . $checkno);
+                if($rows[$key2]['bank'] == 'CASH'){
+                    $this->coreFunctions->execqry("update hrhdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rhtrno'], $data['rhline']]);
+                    $checkno = $this->coreFunctions->datareader("select bank as value from hrhdetail where trno = " . $data['rhtrno'] . " and line  = " . $data['rhline'] . "");
+                    $detail = "CASH";
+                    $rline = $data['rhline'];
+                }else {
+                    $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
+                    $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
+                    $detail = "Check: " . $checkno;
+                    $rline = $data['rcline'];
+                }     
+                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $rline . ' ' . $detail);
                 $line = $data['line'];
             } else {
                 $msg = 'Insert data failed';
                 $status = false;
             }
         }
-        $qry = "select head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
-                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,client.client,client.clientname,'' as bgcolor from chequedetail as detail
-				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
+        $qry = "select head.docno,'' as checkno,format(d.amount,2) as amount,d.bank,d.branch,'' as checkdate,
+                detail.trno,detail.line,detail.refx,detail.linex,0 as rctrno,0 as rcline,
+		        detail.rhtrno,detail.rhline,client.client,client.clientname,'' as bgcolor
+                from chequedetail as detail
+				join hrhdetail as d on  d.trno = detail.rhtrno and d.line = detail.rhline
+				left join hrhhead as head on head.trno = d.trno
+                left join client on client.clientid = d.clientid
+				where detail.trno = " . $trno . " and detail.line = " . $line . "
+                union all
+                select head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
+                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,
+		        0 as rhtrno,0 as rhline,client.client,client.clientname,'' as bgcolor
+                from chequedetail as detail
+				join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
                 left join client on client.client = d.client
 				where detail.trno = " . $trno . " and detail.line = " . $line . "";
@@ -789,8 +825,15 @@ class re
             $config['params']['data']['linex'] = $data[$key]['beline'];
             $config['params']['data']['trno'] = $trno;
             $config['params']['data']['line'] = $data[$key]['reline'];
-            $config['params']['data']['rctrno'] = $data[$key]['trno'];
-            $config['params']['data']['rcline'] = $data[$key]['line'];
+
+            if($data[$key]['bank'] == 'CASH'){
+                $config['params']['data']['rhtrno'] = $data[$key]['trno'];
+                $config['params']['data']['rhline'] = $data[$key]['line'];
+            }else {
+                $config['params']['data']['rctrno'] = $data[$key]['trno'];
+                $config['params']['data']['rcline'] = $data[$key]['line'];
+            }
+
 
             $return = $this->addreplamentcheque('insert', $config);
             if ($return['status']) {
@@ -803,12 +846,18 @@ class re
     public function addreplamentcheque($action, $config)
     {
         $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
 
         $refx = 0;
         $linex = 0;
         $rctrno = 0;
         $rcline = 0;
+        $rhtrno = 0;
+        $rhline = 0;
         $line = 0;
+
+        $dateTables = ['chequedetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['refx'])) {
             $refx = $config['params']['data']['refx'];
@@ -823,6 +872,12 @@ class re
         if (isset($config['params']['data']['rcline'])) {
             $rcline = $config['params']['data']['rcline'];
         }
+        if (isset($config['params']['data']['rhtrno'])) {
+            $rhtrno = $config['params']['data']['rhtrno'];
+        }
+        if (isset($config['params']['data']['rhline'])) {
+            $rhline = $config['params']['data']['rhline'];
+        }
 
         if (isset($config['params']['data']['line'])) {
             $line = $config['params']['data']['line'];
@@ -833,10 +888,12 @@ class re
             'refx' => $refx,
             'linex' => $linex,
             'rctrno' => $rctrno,
-            'rcline' => $rcline
+            'rcline' => $rcline,
+            'rhtrno' => $rhtrno,
+            'rhline' => $rhline
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -850,11 +907,19 @@ class re
                 if ($refx != 0) {
                     $this->coreFunctions->execqry("update hparticulars set retrno = " . $trno . " where trno =? and line =? ", "update", [$refx, $linex]);
                 }
-                $this->coreFunctions->execqry("update hrcdetail set retrno = $trno where trno =? and line =? ", "update", [$rctrno, $rcline]);
-                $checkno = $this->coreFunctions->getfieldvalue($this->stock, 'checkno', 'trno=? and line =?', [$rctrno, $rcline]);
-
+                if ($rctrno != 0) {
+                    $this->coreFunctions->execqry("update hrcdetail set retrno = $trno where trno =? and line =? ", "update", [$rctrno, $rcline]);
+                    $checkno = $this->coreFunctions->getfieldvalue($this->stock, 'checkno', 'trno=? and line =?', [$rctrno, $rcline]);
+                    $detail = ' Check #: ' . $checkno;
+                }else {
+                    $this->coreFunctions->execqry("update hrhdetail set retrno = $trno where trno =? and line =? ", "update", [$rhtrno, $rhline]); //received cash
+                    $checkno = $this->coreFunctions->getfieldvalue('hrhdetail', 'bank', 'trno=? and line =?', [$rhtrno, $rhline]);
+                    $detail = ' '. $checkno;
+                }
+               
+            
                 $data2 =  $this->openstockline($config);
-                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $line . ' Check #: ' . $checkno);
+                $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $line . $detail);
                 return ['status' => true, 'msg' => 'Successfully saved.', 'data' => $data2];
             } else {
                 return ['status' => false, 'msg' => 'Saving failed.', 'data' => []];
@@ -1040,6 +1105,7 @@ class re
 
     public function additem($action, $config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $checkno = $config['params']['data']['checkno'];
         $amount = $config['params']['data']['amount'];
@@ -1051,6 +1117,9 @@ class re
         $rem = '';
         $rcchecks = '';
         $clientid = 0;
+
+        $dateTables = ['particulars'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['refx'])) {
             $refx = $config['params']['data']['refx'];
@@ -1107,7 +1176,7 @@ class re
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1232,12 +1301,16 @@ class re
 
     public function createdistribution($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $status = true;
         $totalar = 0;
         $ewt = 0;
         $ewtamt = 0;
         $isvatexsales = $this->companysetup->getvatexsales($config['params']);
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -1272,7 +1345,7 @@ class re
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];

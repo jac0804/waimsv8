@@ -324,6 +324,10 @@ class extraction
       if (!empty($whouse)) {
         if ($this->companysetup->autoaj($config['params'])) {
           $counter = $counter - 1;
+
+          $dateTables = ['lahead', 'lastock'];
+          $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
           //create AJ for each wh                          
           foreach ($whouse as $key => $v) {
             $trno = $this->othersClass->generatecntnum($config, 'cntnum', 'AJ', 'AJ', $this->companysetup->getdocumentlength($config['params']));
@@ -341,7 +345,8 @@ class extraction
 
               foreach ($fields as $k) {
                 $data[$k] = $head[$k];
-                $data[$k] = $this->othersClass->sanitizekeyfield($k, $data[$k]);
+                $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k],$lookups);
+                
               }
               $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
               $data['createby'] = $config['params']['user'];
@@ -371,7 +376,7 @@ class extraction
                 ];
 
                 foreach ($stock as $s => $vv) {
-                  $stock[$s] = $this->othersClass->sanitizekeyfield($s, $stock[$s]);
+                  $stock[$s] = $this->othersClass->sanitizekeyfieldFast($s, $stock[$s],$lookups);
                 }
 
                 $stock['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
@@ -1160,13 +1165,15 @@ class extraction
           $entry = ['acnoid' => $acnoid, 'client' => $data[$k]->client, 'db' => $key['doc'] == 'CM' ? $cost : 0, 'cr' => $key['doc'] == 'CM' ? 0 : $cost, 'postdate' => $data[$k]->dateid];
           $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
         }
-
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         $config['params']['trno'] = $key['trno'];
+        $this->coreFunctions->LogConsole(' trno: ' . $key['trno']);
         if (!empty($this->acctg)) {
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($this->acctg as $key3 => $value) {
             foreach ($value as $key2 => $value2) {
-              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
             }
             $this->acctg[$key3]['editdate'] = $current_timestamp;
             $this->acctg[$key3]['editby'] = $config['params']['user'];
@@ -2024,13 +2031,14 @@ class extraction
             }
           }
         }
-
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         $config['params']['trno'] = $key['trno'];
         if (!empty($this->acctg)) {
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($this->acctg as $key3 => $value) {
             foreach ($value as $key2 => $value2) {
-              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
             }
             $this->acctg[$key3]['editdate'] = $current_timestamp;
             $this->acctg[$key3]['editby'] = $config['params']['user'];

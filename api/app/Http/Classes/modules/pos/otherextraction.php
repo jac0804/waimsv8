@@ -300,9 +300,11 @@ class otherextraction
         $head['layref'] = $value['docno'];
         $head['ourref'] = $value['dtype'];
 
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         foreach ($fields as $k) {
           $data[$k] = $head[$k];
-          $data[$k] = $this->othersClass->sanitizekeyfield($k, $data[$k]);
+          $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k],$lookups);
         }
 
         $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -448,12 +450,13 @@ class otherextraction
           }
           $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
-
+          $dateTables = ['ladetail'];
+          $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
           if (!empty($this->acctg)) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key3 => $value3) {
               foreach ($value3 as $key2 => $value2) {
-                $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
               }
               $this->acctg[$key3]['editdate'] = $current_timestamp;
               $this->acctg[$key3]['editby'] = $config['params']['user'];

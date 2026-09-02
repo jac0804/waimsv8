@@ -1587,6 +1587,7 @@ class le
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         $info = [];
 
@@ -1595,11 +1596,14 @@ class le
             unset($head['docno']);
         }
 
+        $dateTables = ['eahead', 'eainfo'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -1623,10 +1627,10 @@ class le
         $info['pcountry'] = $head['pcountry'];
         $info['pprovince'] = $head['pprovince'];
 
-        $info['amount'] = $this->othersClass->sanitizekeyfield('amount',  $head['amount']);
+        $info['amount'] = $this->othersClass->sanitizekeyfieldFast('amount',  $head['amount'], $lookups);
 
         $info['idno'] = $head['idno'];
-        $info['value'] = $this->othersClass->sanitizekeyfield('value',  $head['value']);
+        $info['value'] = $this->othersClass->sanitizekeyfieldFast('value',  $head['value'], $lookups);
         $info['expiration'] = $head['expiration'];
         $info['isdp'] = $head['isdp'];
         $info['isotherid'] = $head['isotherid'];
@@ -1658,13 +1662,13 @@ class le
         $info['ename'] = $head['emplast'];
         $info['city'] = $head['rcity'];
         $info['paddressno'] = $head['paddressno'];
-        $info['dp'] = $this->othersClass->sanitizekeyfield('dp',  $head['dp']);
+        $info['dp'] = $this->othersClass->sanitizekeyfieldFast('dp',  $head['dp'], $lookups);
         $info['psubdistown'] = $head['psubdistown'];
         $info['othersource'] = $head['othersource'];
 
         $info['bank1'] = $head['pemail'];
         $info['ext'] = $head['ext2'];
-        $info['value2'] = $this->othersClass->sanitizekeyfield('amt',  $head['rem']);
+        $info['value2'] = $this->othersClass->sanitizekeyfieldFast('amt',  $head['rem'], $lookups);
         // $info['value2'] = $head['rem'];
         $info['isprc'] = $head['isprc'];
         $info['isdriverlisc'] = $head['isdriverlisc'];
@@ -1677,15 +1681,18 @@ class le
 
         $info['others1'] = $head['ftruckname'];
         $info['others2'] = $head['frprojectname'];
-        $info['mincome'] = $this->othersClass->sanitizekeyfield('mincome',  $head['poref']);
+        $info['mincome'] = $this->othersClass->sanitizekeyfieldFast('mincome',  $head['poref'], $lookups);
+
         // $info['mincome'] = $head['poref'];
         // $info['mexp'] = $head['soref'];
-        $info['mexp'] = $this->othersClass->sanitizekeyfield('mexp',  $head['soref']);
+        $info['mexp'] = $this->othersClass->sanitizekeyfieldFast('mexp',  $head['soref'], $lookups);
+
 
         $info['pbrgy'] = $head['pbrgy'];
         $info['appref'] = $head['appref'];
         $info['num'] = $head['numdays'];
-        $info['bday'] = $this->othersClass->sanitizekeyfield('bday',  $head['bday']);
+        $info['bday'] = $this->othersClass->sanitizekeyfieldFast('bday',  $head['bday'], $lookups);
+
         $info['pliss'] = $head['entryot'];
 
         $info['tin'] = $head['othrs'];
@@ -1713,10 +1720,10 @@ class le
         $info['amortization'] = $head['amortization'];
         $info['penalty'] = $head['penalty'];
         $info['clientname'] = $head['lname2'] . ', ' . $head['fname2'] . ' ' . $head['mname2'];
-        $info['pf'] = $this->othersClass->sanitizekeyfield('pf',  $head['pf']);
-        $info['nf'] = $this->othersClass->sanitizekeyfield('nf',  $head['nf']);
-        $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid',  $head['dateid']);
-        $data['releasedate'] = $this->othersClass->sanitizekeyfield('dateid',  $head['releasedate']);
+        $info['pf'] = $this->othersClass->sanitizekeyfieldFast('pf',  $head['pf'], $lookups);
+        $info['nf'] = $this->othersClass->sanitizekeyfieldFast('nf',  $head['nf'], $lookups);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid',  $head['dateid'], $lookups);
+        $data['releasedate'] = $this->othersClass->sanitizekeyfieldFast('dateid',  $head['releasedate'], $lookups);
 
         $info['attorneyinfact'] = $head['attorneyinfact'];
         $info['attorneyaddress'] = $head['attorneyaddress'];
@@ -1727,36 +1734,63 @@ class le
         $info['blklot'] = $head['blklot'];
         $info['area'] = $head['area'];
         $info['tct'] = $head['tct'];
-        $info['pricesqm'] = $this->othersClass->sanitizekeyfield('price',  $head['pricesqm']);
-        $info['tcp'] =  $this->othersClass->sanitizekeyfield('price',  $head['tcp']);
+        $info['pricesqm'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['pricesqm'], $lookups);
+        $info['tcp'] =  $this->othersClass->sanitizekeyfieldFast('price',  $head['tcp'], $lookups);
+
         $info['disc'] = $head['disc'];
-        $info['outstanding'] = $this->othersClass->sanitizekeyfield('price',  $head['outstanding']);
-        $info['penaltyamt'] =  $this->othersClass->sanitizekeyfield('price',  $head['penaltyamt']);
+        $info['outstanding'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['outstanding'], $lookups);
+
+        $info['penaltyamt'] =  $this->othersClass->sanitizekeyfieldFast('price',  $head['penaltyamt'], $lookups);
+
         //takeout fee
-        $info['entryfee'] = $this->othersClass->sanitizekeyfield('price',  $head['entryfee']);
-        $info['lrf'] = $this->othersClass->sanitizekeyfield('price',  $head['lrf']);
-        $info['itfee'] = $this->othersClass->sanitizekeyfield('price',  $head['itfee']);
-        $info['regfee'] = $this->othersClass->sanitizekeyfield('price',  $head['regfee']);
-        $info['docstamp'] = $this->othersClass->sanitizekeyfield('price',  $head['docstamp']);
-        $info['nf2'] = $this->othersClass->sanitizekeyfield('price',  $head['nf2']);
-        $info['nf3'] = $this->othersClass->sanitizekeyfield('price',  $head['nf3']);
-        $info['ofee'] = $this->othersClass->sanitizekeyfield('price',  $head['ofee']);        
-        $info['annotationfee'] = $this->othersClass->sanitizekeyfield('price',  $head['annotationfee']);
-        $info['docstamp1'] = $this->othersClass->sanitizekeyfield('price',  $head['docstamp1']);
-        $info['articles'] = $this->othersClass->sanitizekeyfield('price',  $head['articles']);
-        $info['annotationexp'] = $this->othersClass->sanitizekeyfield('price',  $head['annotationexp']);
-        $info['otransfer'] = $this->othersClass->sanitizekeyfield('price',  $head['otransfer']);
-        $info['rpt'] = $this->othersClass->sanitizekeyfield('price',  $head['rpt']);
-        $info['handling'] = $this->othersClass->sanitizekeyfield('price',  $head['handling']);
-        $info['appraisal'] = $this->othersClass->sanitizekeyfield('price',  $head['appraisal']);
-        $info['filing'] = $this->othersClass->sanitizekeyfield('price',  $head['filing']);
-        $info['referral'] = $this->othersClass->sanitizekeyfield('price',  $head['referral']);
-        $info['cancellation4'] = $this->othersClass->sanitizekeyfield('price',  $head['cancellation4']);
-        $info['cancellation7'] = $this->othersClass->sanitizekeyfield('price',  $head['cancellation7']);
-        $info['annotationoc1'] = $this->othersClass->sanitizekeyfield('price',  $head['annotationoc1']);
-        $info['annotationoc2'] = $this->othersClass->sanitizekeyfield('price',  $head['annotationoc2']);
-        $info['cancellationu'] = $this->othersClass->sanitizekeyfield('price',  $head['cancellationu']);
-        $info['mri'] =  $this->othersClass->sanitizekeyfield('price',  $head['fmri']);
+        $info['entryfee'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['entryfee'], $lookups);
+
+        $info['lrf'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['lrf'], $lookups);
+
+        $info['itfee'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['itfee'], $lookups);
+
+        $info['regfee'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['regfee'], $lookups);
+
+        $info['docstamp'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['docstamp'], $lookups);
+
+        $info['nf2'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['nf2'], $lookups);
+
+        $info['nf3'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['nf3'], $lookups);
+
+        $info['ofee'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['ofee'], $lookups);
+
+        $info['annotationfee'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['annotationfee'], $lookups);
+
+        $info['docstamp1'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['docstamp1'], $lookups);
+
+        $info['articles'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['articles'], $lookups);
+
+        $info['annotationexp'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['annotationexp'], $lookups);
+
+        $info['otransfer'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['otransfer'], $lookups);
+
+        $info['rpt'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['rpt'], $lookups);
+
+        $info['handling'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['handling'], $lookups);
+
+        $info['appraisal'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['appraisal'], $lookups);
+
+        $info['filing'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['filing'], $lookups);
+
+        $info['referral'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['referral'], $lookups);
+
+        $info['cancellation4'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['cancellation4'], $lookups);
+
+        $info['cancellation7'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['cancellation7'], $lookups);
+
+        $info['annotationoc1'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['annotationoc1'], $lookups);
+
+        $info['annotationoc2'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['annotationoc2'], $lookups);
+
+        $info['cancellationu'] = $this->othersClass->sanitizekeyfieldFast('price',  $head['cancellationu'], $lookups);
+
+        $info['mri'] =  $this->othersClass->sanitizekeyfieldFast('price',  $head['fmri'], $lookups);
+
 
         $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line=?",[$head['planid']],'',true);
 
@@ -1765,37 +1799,44 @@ class le
             if($info['regfee'] == 0){
                 $info['regfee'] =   $info['amount'] * (.5325/100);
             }
-            
+
             // if($info['pf'] == 0){
             //     $info['pf'] = 100*$days;
             // }
-            
+
             // if($info['nf'] ==0){
             //     $info['nf'] = 100*$days;
             // }
-            
+
             // if($info['ofee'] ==0){
             //     $info['ofee'] = $info['amount']*.01;
             // }
-            
+
             // if($info['cancellation4'] == 0){
             //     $info['cancellation4'] = $info['amount']*.01;
             // }
-            
+
             // if($info['filing'] == 0){
             //     $info['filing'] = $info['amount']*.002;
             // }
-            
-            $info['regfee'] = $this->othersClass->sanitizekeyfield('price',  $info['regfee']);
-            $info['docstamp'] = $this->othersClass->sanitizekeyfield('price',  $info['docstamp']);
-            $info['pf'] = $this->othersClass->sanitizekeyfield('price',  $info['pf']);
-            $info['nf'] = $this->othersClass->sanitizekeyfield('price',  $info['nf']);
-            $info['nf2'] = $this->othersClass->sanitizekeyfield('price',  $info['nf2']);
-            $info['nf3'] = $this->othersClass->sanitizekeyfield('price',  $info['nf3']);
-            $info['ofee'] = $this->othersClass->sanitizekeyfield('price',  $info['ofee']);
-            $info['filing'] = $this->othersClass->sanitizekeyfield('price',  $info['filing']);
-            // $info['cancellation4'] = $this->othersClass->sanitizekeyfield('price',  $info['cancellation4']);
-    
+
+            $info['regfee'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['regfee'], $lookups);
+
+            $info['docstamp'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['docstamp'], $lookups);
+
+            $info['pf'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['pf'], $lookups);
+
+            $info['nf'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['nf'], $lookups);
+
+            $info['nf2'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['nf2'], $lookups);
+
+            $info['nf3'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['nf3'], $lookups);
+
+            $info['ofee'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['ofee'], $lookups);
+
+            $info['filing'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['filing'], $lookups);
+
+
         }      
 
         if ($head['planid'] != $head['plangrpid']) {
@@ -2324,6 +2365,7 @@ class le
 
     private function generatejv($config)
     {
+      $companyid = $config['params']['companyid'];
       $trno = $config['params']['trno'];
 
       $isposted = $this->othersClass->isposted2($trno,$this->tablenum);
@@ -2331,6 +2373,9 @@ class le
       if(!$isposted){
         return ['status' => false, 'msg' => 'Not yet Approve.'];
       }
+
+        $dateTables = ['lahead', 'ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       $exist = $this->coreFunctions->getfieldvalue($this->tablenum,"pstrno","trno=?",[$trno],'',true);
       if($exist !=0){
@@ -2365,7 +2410,7 @@ class le
                             ];
         
                         foreach($head as $k => $value){
-                            $data2[$k] = $this->othersClass->sanitizekeyfield($k,$head[$k]);
+                            $data2[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
                         }
         
                     $inserthead = $this->coreFunctions->sbcinsert(app($path)->head, $data2);
@@ -2437,7 +2482,7 @@ class le
                             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                             foreach ($detail as $key => $value) {
                               foreach ($value as $key2 => $value2) {
-                                $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                                $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                               }
                               $detail[$key]['editdate'] = $current_timestamp;
                               $detail[$key]['editby'] = $config['params']['user'];

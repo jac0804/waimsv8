@@ -430,6 +430,10 @@ class current_customer_receivables
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
         break;
+      case 68: //jda
+        $addfield .= ",head.rem as notes";
+        $addfield2 .= ",notes";
+        break;
     }
 
     switch ($reporttype) {
@@ -528,7 +532,7 @@ class current_customer_receivables
     $addleftjoin = "";
     $elapseU = "case when terms.days = 0 then 0 else datediff(now(), head.dateid) end as elapse";
     $addleftjoin = "left join terms on terms.terms=head.terms";
-
+    $grp = '';
     switch ($companyid) {
       case 32: //3m
       case 36: //rozlab
@@ -541,19 +545,19 @@ class current_customer_receivables
         break;
       case 21: //kinggoerge
         if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
-        break;
-    }
-
-    switch ($companyid) {
-      case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
         break;
+      case 68: //jda
+        $addfield .= ",head.rem as notes";
+        $addfield2 .=",notes";
+        $grp .= ',head.rem';
+        break;
     }
+
 
     switch ($reporttype) {
       case '1': // DETAILED
-        $grp = '';
         switch ($companyid) {
           case 11: //summit
             $ref1 = "detail.ref as reference";
@@ -692,6 +696,11 @@ class current_customer_receivables
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
         break;
+      case 68: //jda
+        $addfield .= ",head.rem as notes";
+        $addgrp3m .= ",head.rem";
+        $addfield2 .= ',notes';
+        break;
     }
 
     switch ($reporttype) {
@@ -750,7 +759,7 @@ class current_customer_receivables
                   left join cntnum on cntnum.trno=head.trno
                   " . $addleftjoin . "
                   where head.doc in ('sj','mj') $filter $filter1 $filter3
-                  group by center, tr,doc, clientname, name, head.dateid, docno, elapse, yourref,head.terms $addgrp3m
+                  group by center, tr,doc, clientname, name, head.dateid, docno, elapse, yourref,head.terms,head.rem $addgrp3m
                   order by clientname, dateid, docno,yourref";
         break;
 
@@ -2471,6 +2480,14 @@ class current_customer_receivables
         $str .= $this->reporter->col('No. of days', '50', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('BALANCE', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         break;
+      case 68: //jda
+        $str .= $this->reporter->col('CUSTOMER NAME', '300', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DATE', '90', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT #', '130', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('No. of days', '90', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('BALANCE', '120', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('NOTES', '270', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+        break;
       default:
         $str .= $this->reporter->col('CUSTOMER NAME', '270', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('DATE', '50', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
@@ -2573,6 +2590,15 @@ class current_customer_receivables
             $str .= $this->reporter->col('', '50', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
             break;
+          case 68:
+            $str .= $this->reporter->col($data->clientname, '300', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
+            $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '130', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
+            $str .= $this->reporter->col('', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
+            $str .= $this->reporter->col('', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+          break;
+
           default:
             $str .= $this->reporter->col($data->clientname, '270', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
             $str .= $this->reporter->col('', '50', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
@@ -2632,6 +2658,15 @@ class current_customer_receivables
               $str .= $this->reporter->col('SUB TOTAL :', '50', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
               $str .= $this->reporter->col(number_format($gsubtotalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
               break;
+            case 68: //jda
+
+              $str .= $this->reporter->col('', '300', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->col('', '90', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->col('SUB TOTAL :', '90', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->col(number_format($gsubtotalext, 2), '120', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->col('', '270', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+              break;
 
             default:
               $str .= $this->reporter->col('', '270', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -2683,6 +2718,14 @@ class current_customer_receivables
               $str .= $this->reporter->col('', '100', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '50', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+              break;
+            case 68://jda
+              $str .= $this->reporter->col($data->clientname, '300', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
+              $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col('', '130', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
+              $str .= $this->reporter->col('', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
+              $str .= $this->reporter->col('', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               break;
             default:
               $str .= $this->reporter->col($data->clientname, '270', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
@@ -2747,6 +2790,15 @@ class current_customer_receivables
           $str .= $this->reporter->col($data->agentname, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
           $str .= $this->reporter->col(number_format($order, 0), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
           $str .= $this->reporter->col(number_format($served, 2), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '5px');
+          break;
+        case 68: //jda
+
+          $str .= $this->reporter->col('', '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col($date, '90', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col($data->docno, '130', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col(number_format($order, 0), '90', null, false, $border, '', 'C', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col(number_format($served, 2), '120', null, false, $border, '', 'R', $font, $fontsize, '', '', '5px');
+          $str .= $this->reporter->col($data->notes, '270', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
           break;
         default:
           $str .= $this->reporter->col('', '270', null, false, $border, '', 'L', $font, $fontsize, '', '', '5px');
@@ -2824,6 +2876,14 @@ class current_customer_receivables
         $str .= $this->reporter->col('SUB TOTAL :', '50', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col(number_format($gsubtotalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
         break;
+      case 68: //jda
+        $str .= $this->reporter->col('', '300', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '90', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('SUB TOTAL :', '90', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($gsubtotalext, 2), '120', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '270', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+        break;
       default:
         $str .= $this->reporter->col('', '270', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '50', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
@@ -2837,7 +2897,7 @@ class current_customer_receivables
     $str .= $this->reporter->endtable();
 
     $str .= '<br/>';
-
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
     switch ($companyid) {
@@ -2867,6 +2927,10 @@ class current_customer_receivables
         $str .= $this->reporter->col('TOTAL :', '50', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col(number_format($totalext, 2), '110', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '');
         break;
+      case 68:
+        $str .= $this->reporter->col('TOTAL: ', '60', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($totalext, 2), null, null, false, '1px dotted ', '', 'L', $font, $fontsize, 'B', '', '');
+        break;
       default:
         $str .= $this->reporter->col('', '270', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '50', null, false, '1px dotted ', '', 'R', $font, $fontsize, 'B', '', '');
@@ -2877,6 +2941,7 @@ class current_customer_receivables
     }
 
     $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->printline();

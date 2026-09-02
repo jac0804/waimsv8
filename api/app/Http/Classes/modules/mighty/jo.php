@@ -237,7 +237,8 @@ class jo
 
     public function createTab($access, $config)
     {
-
+        $islocation = $this->companysetup->getislocation($config['params']);
+        $locname = $this->companysetup->getlocname($config['params']);
         $gridcolumns = ['isqty', 'uom', 'cost', 'isamt', 'ext', 'wh', 'loc', 'expiry', 'ref', 'stage', 'itemname', 'barcode'];
 
         foreach ($gridcolumns as $key => $value) {
@@ -277,6 +278,11 @@ class jo
         $obj[3][$this->gridname]['columns'][$stage]['readonly'] = true;
         $obj[3][$this->gridname]['columns'][$uom]['type'] = 'label';
 
+        $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+         if (!$islocation) {
+        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        }
         return $obj;
     }
 
@@ -450,6 +456,10 @@ class jo
     }
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        
         $head = $config['params']['head'];
         $data = [];
         $dataothers = [];
@@ -461,7 +471,7 @@ class jo
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if    
             }
         }
@@ -487,7 +497,7 @@ class jo
         $dataothers['mileage'] = $head['mileage'];
         $arrcols = array_keys($dataothers);
         foreach ($arrcols as $key) {
-            $dataothers[$key] = $this->othersClass->sanitizekeyfield($key, $dataothers[$key]);
+            $dataothers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataothers[$key],$lookups);
         }
         $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
         if ($infotransexist == '') {

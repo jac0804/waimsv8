@@ -154,6 +154,9 @@ class pendingleavecancelapplications
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $admin = $config['params']['adminid'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['leavetrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'obapplication';
@@ -185,7 +188,7 @@ class pendingleavecancelapplications
         foreach ($this->fields as $key2) {
             if (isset($data[$key2])) {
                 $tempdata[$key2] = $data[$key2];
-                $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
             }
         }
         $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

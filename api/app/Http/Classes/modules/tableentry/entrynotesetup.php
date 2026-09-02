@@ -110,13 +110,15 @@ class entrynotesetup
         $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
         $data2 = [];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
-                $data2['isprrem'] = $this->othersClass->sanitizekeyfield('isprrem', $data[$key]['isprrem']);
+                $data2['isprrem'] = $this->othersClass->sanitizekeyfieldFast('isprrem', $data[$key]['isprrem'],$lookups);
                 if ($data[$key]['line'] == 0 && $data[$key]['description'] != '') {
                     $qry = "select description from reqcategory where description = '" . $data[$key]['description'] . "' limit 1";
                     $opendata = $this->coreFunctions->opentable($qry);
@@ -169,8 +171,10 @@ class entrynotesetup
         $data = [];
         $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
         $data['isprrem'] = 1;

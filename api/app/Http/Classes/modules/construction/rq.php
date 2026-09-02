@@ -205,6 +205,8 @@ class rq
   public function createTab($access, $config)
   {
     $rq_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 3602);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $rqty = 1;
     $rrqty = 2;
@@ -265,6 +267,13 @@ class rq
     $obj[0]['inventory']['columns'][$itemname]['label'] = '';
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
+
     return $obj;
   }
 
@@ -475,7 +484,6 @@ class rq
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -909,8 +917,8 @@ class rq
       $config['params']['line'] = $line;
     }
 
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
 
@@ -945,7 +953,6 @@ class rq
       'loc' => $loc
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

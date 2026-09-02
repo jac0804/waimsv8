@@ -281,8 +281,11 @@ class empprojectlogb
             'subamenityroxascode' => $subamenitycode,
             'amenityroxascode' => $amenitycode
         ];
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         }
         if ($action == 'insert') {
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();

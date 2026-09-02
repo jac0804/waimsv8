@@ -410,11 +410,15 @@ class ct
             unset($this->fields[1]);
             unset($head['docno']);
         }
+
+        $dateTables = ['cihead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
 
@@ -695,7 +699,7 @@ class ct
     // insert and update item
     public function additem($action, $config)
     {
-
+        $companyid = $config['params']['companyid'];
         $uom = $config['params']['data']['uom'];
         $barcode = $config['params']['data']['barcode'];
         $trno = $config['params']['trno'];
@@ -703,6 +707,9 @@ class ct
         $refx = 0;
         $linex = 0;
         $rem = '';
+
+        $dateTables = ['cistock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['rem'])) {
             $rem = $config['params']['data']['rem'];
@@ -735,7 +742,7 @@ class ct
 
             $config['params']['line'] = $line;
         }
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=? ";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -761,7 +768,7 @@ class ct
         ];
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         if ($uom == '') {

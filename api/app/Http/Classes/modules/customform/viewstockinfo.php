@@ -253,14 +253,18 @@ class viewstockinfo
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $line = $config['params']['dataparams']['line'];
 
+    $dateTables = ['pwstock','stockinfotrans','stockinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($config['params']['doc'] == 'PW') {
-      $isqty = $config['params']['dataparams']['isqty3'] - $this->othersClass->sanitizekeyfield("qty", $config['params']['dataparams']['isqty']);
+       $isqty = $config['params']['dataparams']['isqty3'] - $this->othersClass->sanitizekeyfieldFast("qty", $config['params']['dataparams']['isqty'], $lookups);
 
       $data = [
-        'isqty2' => $this->othersClass->sanitizekeyfield("qty", $config['params']['dataparams']['isqty']),
+        'isqty2' => $this->othersClass->sanitizekeyfieldFast("qty", $config['params']['dataparams']['isqty'], $lookups),
         'isqty' =>  $isqty,
         'iss' =>  $isqty,
         'editdate' =>  $this->othersClass->getCurrentTimeStamp(),
@@ -270,8 +274,8 @@ class viewstockinfo
       $this->logger->writelog($config['params']['doc'], $trno, "STOCK", "Reload previous reading", $config['params']['user']);
     } else {
       $isnew = $config['params']['dataparams']['isnew'];
-      $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
-      $itemdesc = $this->othersClass->sanitizekeyfield('itemdesc', $config['params']['dataparams']['itemdesc']);
+      $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
+      $itemdesc = $this->othersClass->sanitizekeyfieldFast('itemdesc', $config['params']['dataparams']['itemdesc'], $lookups);
 
       $data = [
         'trno' => $trno,

@@ -77,6 +77,7 @@ class setleftmenu
   public function masterfile($params)
   {
     $systemtype = $this->companysetup->getsystemtype($params);
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($params);
     switch ($systemtype) {
       case 'AMS':
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'employeemaster', 'departmentmaster'];
@@ -186,6 +187,9 @@ class setleftmenu
       case 'LENDING':
         $masterfile = ['parentmasterfile', 'customer', 'supplier', 'agent', 'terms', 'loantype', 'sbu'];
         break;
+      case 'PRODUCTPORTAL':
+        $masterfile = ['parentmasterfile', 'stockcard'];
+        break;
     }
 
     if ($this->companysetup->getsystemtype($params) == 'AIMSPAYROLL' || $this->companysetup->getsystemtype($params) == 'AIMSHRIS') {
@@ -201,11 +205,17 @@ class setleftmenu
       array_push($masterfile, 'ml');
     }
 
+    //detachment
+    if ($ispayrolldetachment) {
+      array_push($masterfile, 'firearmsmaster', 'detachmentmaster');
+    }
+
     return ['masterfile' => ['parent' => 1, 'modules' => $masterfile]];
   } // end function
 
   public function itemmaster($params)
   {
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($params);
     switch ($params['companyid']) {
       case 6: //mitsukoshi
         $itemmaster = ['parentitemmaster', 'model', 'stockgroup', 'brand', 'clientcategories', 'project', 'compatible', 'partrequesttype', 'checkerlocation', 'deliverytype', 'itemcategory', 'whrem'];
@@ -247,6 +257,10 @@ class setleftmenu
         if ($params['companyid'] == 65) { // metrodragon aims
           array_push($itemmaster, 'notesetup');
         }
+
+        if ($params['companyid'] == 29) { // sbc
+          array_push($itemmaster, 'entrybilling');
+        }
         break;
     }
 
@@ -264,6 +278,11 @@ class setleftmenu
       case 'REALESTATE':
         $itemmaster = ['parentitemmaster', 'clientcategories', 'project', 'amenities'];
         break;
+    }
+
+    if ($ispayrolldetachment) {
+
+      array_push($itemmaster, 'newviolation');
     }
 
     return ['itemmaster' => ['parent' => 2, 'modules' => $itemmaster]];
@@ -484,6 +503,9 @@ class setleftmenu
       case 56: //homeworks
         $payable = ['parentpayable', 'ap', 'pv', 'cv', 'checkrelease', 'kp'];
         break;
+      case 55: //afli
+        $payable = ['parentpayable', 'ap', 'pv', 'cv', 'checkrelease'];
+        break;
       default:
         $payable = ['parentpayable', 'pq', 'sv', 'ap', 'pv', 'cv', 'checkrelease'];
         break;
@@ -586,6 +608,9 @@ class setleftmenu
         break;
       case 68: //jda
         $accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds', 'bankrecon', 'budget'];
+        break;
+      case 55: //afli
+        $accounting = ['parentaccounting', 'coa', 'gj', 'gd', 'gc', 'ds'];
         break;
       default:
         array_push($accounting, 'budget', 'checksetup', 'exchangerate');
@@ -859,7 +884,7 @@ class setleftmenu
       }
     }
 
-    if ($params['companyid'] == 43) { //mighty
+    if ($params['companyid'] == 43 || $params['companyid'] == 66) { //mighty | metro dragon
       array_push($payrollsetup, 'status_change', 'employment_status');
     }
 
@@ -891,7 +916,7 @@ class setleftmenu
         $payrolltransaction = ['parentpayrolltransaction', 'employeepayroll', 'emptimecard'];
         break;
       case 53: //camera
-        $payrolltransaction = ['parentpayrolltransaction', 'employeepayroll', 'emptimecard', 'createportaltempschedule', 'temptimecard', 'timesetup'];
+        $payrolltransaction = ['parentpayrolltransaction', 'employeepayroll', 'emptimecard', 'createportaltempschedule', 'temptimecard', 'timesetup', 'batchsetup'];
         break;
       case 45: //pdpi payroll
         $payrolltransaction = ['parentpayrolltransaction', 'employeepayroll', 'emptimecard', 'emptimecardperday', 'batchsetup', 'timecardsetup', 'otapproval', 'payrollsetup', 'empprojectlog', 'empprojectlogb'];
@@ -918,12 +943,18 @@ class setleftmenu
   } //end function
 
 
+  public function detachmentoperation($params)
+  {
+    $detachmentoperation = ['parentdetachmentoperation', 'dd'];
+    return ['detachmentoperation' => ['parent' => 30, 'modules' => $detachmentoperation]];
+  } //end function
+
+
   public function projectsetup($params)
   {
     $projectsetup = ['parentprojectsetup', 'project', 'pm', 'stages'];
     return ['projectsetup' => ['parent' => 25, 'modules' => $projectsetup]];
   } //end function
-
 
   public function construction($params)
   {
@@ -1090,7 +1121,7 @@ class setleftmenu
         $transactionutilities = ['parenttransactionutilities', 'prefix', 'executionlog'];
         break;
       case 'PRODUCTPORTAL':
-        $transactionutilities = ['parenttransactionutilities', 'prefix', 'executionlog'];
+        $transactionutilities = ['parenttransactionutilities', 'prefix', 'uploadingutility', 'executionlog'];
         break;
 
       default:
@@ -1141,7 +1172,7 @@ class setleftmenu
         array_push($transactionutilities, 'coagrouping');
         break;
       case 29: //
-        array_push($transactionutilities, 'moduleapproval', 'adashboard');
+        array_push($transactionutilities, 'moduleapproval', 'adashboard', 'posregistration');
         break;
       case 59: //roosevelt
         array_push($transactionutilities, 'updatepricelist');
@@ -1353,7 +1384,7 @@ class setleftmenu
 
   public function productportal($config)
   {
-    $productportal = ['parentproductportal', 'stockcard', 'brand', 'itemcategory', 'entrycrbrand', 'model', 'positions'];
+    $productportal = ['parentproductportal',  'brand', 'itemcategory', 'entrycrbrand', 'model', 'positions'];
     return ['productportal' => ['parent' => 50, 'modules' => $productportal]];
   }
 } // end class

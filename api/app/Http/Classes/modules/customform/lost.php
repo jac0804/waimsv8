@@ -137,7 +137,6 @@ class lost
         foreach ($this->fields as $key) {
             if (isset($data[$key])) {
                 $data[$key] = $data[$key];
-                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                 $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
             }
         }

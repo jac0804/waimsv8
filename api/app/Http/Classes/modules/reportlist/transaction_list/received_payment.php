@@ -89,6 +89,15 @@ class received_payment
         data_set($col1, 'dclientname.lookupclass', 'lookupclient');
         data_set($col1, 'dclientname.label', 'Customer');
         break;
+      case 34://elsi
+        $fields = ['radioprint', 'start', 'end', 'dcentername', 'reportusers', 'dclientname', 'dagentname', 'approved'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'approved.label', 'Prefix');
+        data_set($col1, 'start.required', true);
+        data_set($col1, 'end.required', true);
+        data_set($col1, 'dclientname.lookupclass', 'lookupclient');
+        data_set($col1, 'dclientname.label', 'Payor');
+        break;
 
       default:
         $fields = ['radioprint', 'start', 'end', 'dcentername', 'reportusers', 'dclientname', 'dagentname', 'approved'];

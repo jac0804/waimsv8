@@ -583,7 +583,7 @@ class hq
                         $deptid = $this->coreFunctions->getfieldvalue("employee", "deptid", "empid=?", [$id], '', true);
                         if ($deptid != 0) {
                             $condition = " and d.clientid=" . $deptid;
-                            if($blnFixUser) $condition = " and (head.empid=$id or d.clientid=" . $deptid . ')';
+                            if ($blnFixUser) $condition = " and (head.empid=$id or d.clientid=" . $deptid . ')';
                         }
                     }
                 }
@@ -745,7 +745,7 @@ class hq
         if ($head['approvedby'] == '') $head['appdisid'] = 0;
         if ($head['recommendapp'] == '') $head['recappid'] = 0;
 
-       
+
         $dateTables = ['personreq'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
@@ -753,7 +753,6 @@ class hq
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
@@ -827,6 +826,7 @@ class hq
 
     public function unposttrans($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $user = $config['params']['user'];
         $doc = $config['params']['doc'];
@@ -854,6 +854,12 @@ class hq
             $docno = $this->coreFunctions->getfieldvalue($config['docmodule']->tablenum, 'docno', 'trno=?', [$trno]);
             $this->coreFunctions->execqry("update " . $config['docmodule']->tablenum . " set postdate=null, postedby='' where trno=?", 'update', [$trno]);
             $this->coreFunctions->execqry("delete from " . $config['docmodule']->hhead . " where trno=?", "delete", [$trno]);
+
+            if ($companyid == 58) { //cdohris
+                $generalmanager = $this->coreFunctions->getfieldvalue("personreq", "appdisid", "trno=?", [$trno], '', true);
+                if ($generalmanager != 0) $this->coreFunctions->execqry("delete from pendingapp where trno=? and clientid=? and doc='HQ'", "delete", [$trno, $generalmanager]);
+            }
+
             $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
             return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
         } else {

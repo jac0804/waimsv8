@@ -926,11 +926,14 @@ class af
       unset($head['docno']);
     }
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head, $this->info];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if    
       }
     }
@@ -977,7 +980,7 @@ class af
     $info['pcountry'] = $head['pcountry'];
     $info['pzipcode'] = $head['pzipcode'];
     $info['paddress'] = $head['paddressno'] . ' ' . $head['pstreet'] . ' ' . $head['psubdistown'] . ' ' . $head['pbrgy'] . ' ' . $head['pcity'] . ' ' . $head['pprovince'] . ' ' . $head['pcountry'] . ' ' . $head['pzipcode'];
-    $info['bday'] = $this->othersClass->sanitizekeyfield('bday',  $head['bday']);
+    $info['bday'] = $this->othersClass->sanitizekeyfieldFast('bday',  $head['bday'], $lookups);
     $info['nationality'] = $head['nationality'];
     $info['pob'] = $head['pob'];
     $info['ispassport'] = $head['ispassport'];
@@ -1025,13 +1028,12 @@ class af
     $info['appref'] = $head['appref'];
 
     $info['isdp'] = $head['isdp'];
-    $info['dp'] = $this->othersClass->sanitizekeyfield('dp',  $head['dp']);
+    $info['dp'] = $this->othersClass->sanitizekeyfieldFast('dp',  $head['dp'], $lookups);
 
 
     $info['ispf'] = $head['ispf'];
-    $info['pf'] = $this->othersClass->sanitizekeyfield('pf',  $head['pf']);
-
-    $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid',  $head['dateid']);
+    $info['pf'] = $this->othersClass->sanitizekeyfieldFast('pf',  $head['pf'], $lookups);
+    $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid',  $head['dateid'], $lookups);
 
     if ($head['issameadd'] == 1) {
 

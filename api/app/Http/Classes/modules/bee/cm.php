@@ -424,7 +424,6 @@ class cm
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
         $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if    
     }
@@ -771,7 +770,6 @@ class cm
     $dateTables = ['ladetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

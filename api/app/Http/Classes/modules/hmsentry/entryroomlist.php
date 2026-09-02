@@ -92,7 +92,6 @@ class entryroomlist
         $data = [];
         $row = $config['params']['row'];
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['roomtypeid'] = $config['params']['tableid'];

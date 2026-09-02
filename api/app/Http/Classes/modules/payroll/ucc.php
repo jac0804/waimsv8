@@ -334,4 +334,19 @@ class ucc
 
         return ['row' => [], 'status' => $status, 'msg' => $msg, 'backlisting' => true];
     }
+    public function approvers($params)
+    {
+        $companyid = $params['companyid'];
+
+        switch ($companyid) {
+            case 44: // stonepro
+            case 58: // cdohris
+                $approvers = ['issupervisor', 'isapprover'];
+                break;
+            default:
+                $approvers = ['isapprover'];
+                break;
+        }
+        return $approvers;
+    }
 } //end class

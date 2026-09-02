@@ -36,6 +36,8 @@ class timeadj
     public $issearchshow = false;
     public $showclosebtn = false;
     public $table = 'timeadj';
+    // public $tablenum = 'timeadj';
+    public $head = 'timeadj';
     public $fields = ['acnoid', 'rem', 'qty', 'batchid'];
     public function __construct()
     {
@@ -257,13 +259,16 @@ class timeadj
         $acnoid = $config['params']['dataparams']['acnoid'];
         $empid = $config['params']['dataparams']['empid'];
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $tempdata = [];
         if ($empid != 0 && $acnoid != 0) {
 
             foreach ($data as $key => $val) {
                 foreach ($this->fields as $key => $value) {
                     foreach ($this->fields as $key2 => $value) {
-                        $tempdata[$value] = $this->othersClass->sanitizekeyfield($value, $data[$value]);
+                        $tempdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value],$lookups);
                     }
                     if ($key == 'qty') {
                         $tempdata['amt'] = $data['qty'] / 60;
@@ -284,10 +289,13 @@ class timeadj
         $row = $config['params']['row'];
         $config['params']['data'] = $config['params']['row'];
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         foreach ($row as $key => $val) { //first array
             foreach ($this->fields as $key2 => $value) {
-                $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+                $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
             }
         }
 
@@ -300,7 +308,7 @@ class timeadj
         $row = $config['params']['row'];
         $qry = "delete from " . $this->table . " where trno=?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['trno']]);
-        $this->logger->sbcdelmaster_log($row['trno'], $config, 'DELETE - ' . $row['acnoname'] . ' Minutes: ' . $row['minute']);
+        $this->logger->sbcdelmaster_log($row['trno'], $config, 'DELETE - ' . $row['acnoname'] . ' Minutes: ' . $row['qty']);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
     public function stockstatus($config)

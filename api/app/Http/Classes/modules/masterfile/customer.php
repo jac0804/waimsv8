@@ -112,12 +112,13 @@ class customer
     'sex',
     'charge1',
     'center',
-    'ar'
+    'ar',
+    'building'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment', 'isnocrlimit', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'issenior'];
 
-  private $clinfo = ['bplace', 'citizenship', 'civilstatus', 'father', 'mother', 'height', 'weight', 'fname', 'mname', 'lname'];
+  private $clinfo = ['bplace', 'citizenship', 'civilstatus', 'father', 'mother', 'height', 'weight', 'fname', 'mname', 'lname', 'contactno'];
   private $acctg = [];
   public $showfilteroption = false;
   public $showfilter = false;
@@ -174,7 +175,11 @@ class customer
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $this->prefix = "C";
     }
-    $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
+    if ($companyid == 64) {
+      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'listarea', 'listprovince', 'agentname',   'listcategory', 'notes', 'shipto', 'tel', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
+    } else {
+      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
+    };
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -251,6 +256,16 @@ class customer
         $cols[$tel]['type'] = 'coldel';
         $cols[$fax]['type'] = 'coldel';
         $cols[$contact]['type'] = 'coldel';
+        $cols[$listareacode]['type'] = 'coldel';
+        $cols[$listbrgy]['type'] = 'coldel';
+        $cols[$agentname]['style'] =  'width: 200px;whiteSpace: normal;max-width:200px;text-align:left;';
+        break;
+      case 64: // EXCELIN 
+        $cols[$listgroup]['type'] = 'coldel';
+        $cols[$tel]['type'] = 'coldel';
+        $cols[$fax]['type'] = 'coldel';
+        $cols[$contact]['type'] = 'coldel';
+        $cols[$listregion]['type'] = 'coldel';
         $cols[$listareacode]['type'] = 'coldel';
         $cols[$listbrgy]['type'] = 'coldel';
         $cols[$agentname]['style'] =  'width: 200px;whiteSpace: normal;max-width:200px;text-align:left;';
@@ -363,6 +378,14 @@ class customer
         break;
       case 63: //ericco
         $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname,client.groupid";
+        $leftjoin = "left join client as ag on ag.client = client.agent";
+        $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
+        if ($search != "") {
+          $limit = "";
+        }
+        break;
+      case 64:
+        $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname";
         $leftjoin = "left join client as ag on ag.client = client.agent";
         $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
         if ($search != "") {
@@ -588,6 +611,7 @@ class customer
     $contactperson_access = $this->othersClass->checkAccess($config['params']['user'], 3744);
     $loan_access = $this->othersClass->checkAccess($config['params']['user'], 4997);
     $loan_sched = $this->othersClass->checkAccess($config['params']['user'], 5019);
+    $billing_access = $this->othersClass->checkAccess($config['params']['user'], 5969);
     // $rchistory_access = $this->othersClass->checkAccess($config['params']['user'], 5000);
 
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku', 'label' => 'SKU']];
@@ -613,7 +637,7 @@ class customer
     $behistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewbehistory']];
     $rechistory = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewrechistory']];
     $customerlist = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewsistercompanies']];
-    
+
 
 
     //3/2/2023 FPY Testing
@@ -645,10 +669,10 @@ class customer
       }
     }
 
-     if ($companyid == 59) { // Roosevelt
+    if ($companyid == 59) { // Roosevelt
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewsistercompanies', 'label' => 'CUSTOMER LIST']]; //viewsistercompanies
       $customerlist = $this->tabClass->createtab($tab, []);
-        $return['CUSTOMER LIST'] = ['icon' => 'fa fa-users', 'tab' => $customerlist];
+      $return['CUSTOMER LIST'] = ['icon' => 'fa fa-users', 'tab' => $customerlist];
     }
 
 
@@ -735,7 +759,6 @@ class customer
           $return['RECEIVED CASH HISTORY'] = ['icon' => 'fas fa-money-bill-wave-alt', 'customform' => $rhhistory];
           $return['BOUNCED CHEQUE HISTORY'] = ['icon' => 'fas fa-money-check-alt', 'customform' => $behistory];
           $return['REPLACEMENT CHEQUE'] = ['icon' => 'fas fa-money-check', 'customform' => $rechistory];
-         
         }
         break;
     }
@@ -807,7 +830,13 @@ class customer
     }
     if ($companyid == 29) { //sbc main
       $tab = ['customform' => ['action' => 'customform', 'lookupclass' => 'generatemr']];
-      $return['GENERATE MR'] = ['icon' => 'fas fa-th-list', 'customform' => $tab];
+      $return['GENERATE BILLING'] = ['icon' => 'fas fa-th-list', 'customform' => $tab];
+
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'billingsetup', 'label' => 'BILLING SETUP']];
+      $billing = $this->tabClass->createtab($tab, []);
+      if ($billing_access != 0) {
+        $return['BILLING SETUP'] = ['icon' => 'fa fa-file-invoice-dollar', 'tab' => $billing];
+      }
     }
     return $return;
   }
@@ -981,6 +1010,9 @@ class customer
           case 22: //eipi
             $fields = ['terms', 'dagentname', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup', 'contact', 'tin', 'groupid', 'dvattype', 'dewt'];
             break;
+          case 64: // excelin
+            $fields = ['terms', 'dagentname', 'groupid', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup', 'contact', 'owner', 'contactno', 'building'];
+            break;
           default:
             $fields = ['terms', 'dagentname', 'groupid', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup'];
             switch ($companyid) {
@@ -1080,6 +1112,13 @@ class customer
         data_set($col2, 'fax.type', 'cinput');
         data_set($col2, 'contact.label', 'Contact Person');
         $col2 = $this->fieldClass->create($fields);
+        break;
+      case 64: // excelin
+        $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'contact.label', 'Contact Person');
+        data_set($col2, 'contactno.label', 'Owner Contact');
+        data_set($col2, 'building.label', 'Business Type');
+        data_set($col2, 'building.required', false);
         break;
       default:
         $col2 = $this->fieldClass->create($fields);
@@ -1431,6 +1470,7 @@ class customer
     $data[0]['crlimit'] = '0';
     $data[0]['center'] = '';
     $data[0]['ar'] = '0.00';
+    $data[0]['contactno'] = '';
 
     switch ($config['params']['companyid']) {
       case 60: //transpower
@@ -1626,6 +1666,9 @@ class customer
       case 12:
         $addfields = ", rc.description";
         break;
+      case 64: // excelin 
+        $addfields = ", ifnull(client.owner, '') as owner, ifnull(info.contactno, '') as contactno";
+        break;
     }
 
     $qryselect = "select " . $fields . ", ifnull(a.clientname, '') as agentname, ifnull(coa.acnoname, '') as acnoname, ifnull(ar.acnoname, '') as assetname,
@@ -1646,6 +1689,7 @@ class customer
         left join reqcategory as rc on client.industryid = rc.line " . $leftjoin . "
         left join clientinfo as info on info.clientid = client.clientid
         where client.clientid = ? and client.iscustomer = 1 " . $condition;
+    // var_dump($qry);
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
     if (!empty($head)) {
       foreach ($this->blnfields as $key => $value) {
@@ -1699,6 +1743,10 @@ class customer
     $data = [];
     $clientinfo = [];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['client', 'clientinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields[0]);
     }
@@ -1727,7 +1775,8 @@ class customer
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], 'CUSTOMER', $companyid);
+          // $data[$key] = $this->othersClass->($key, $data[$key], 'CUSTOMER', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1735,7 +1784,7 @@ class customer
     foreach ($this->clinfo as $key) {
       if (!in_array($key, $this->except)) {
         $clientinfo[$key] = $head[$key];
-        $clientinfo[$key] = $this->othersClass->sanitizekeyfield($key, $clientinfo[$key]);
+        $clientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $clientinfo[$key], $lookups);
       } //end if    
     }
 

@@ -183,7 +183,9 @@ class entrypcfexpenses
     if($isposted){
       $table = $this->htable;
     }   
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       if($data[$key]['expenseid'] == 94){
         goto nextfor;
@@ -192,7 +194,7 @@ class entrypcfexpenses
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
         
         if ($data[$key]['line'] == 0) {
@@ -231,12 +233,15 @@ class entrypcfexpenses
     $tableid = $config['params']['tableid'];
     $table = "sjexp";
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       $d=[];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
 
           $d['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -282,10 +287,7 @@ class entrypcfexpenses
     $row = $config['params']['row'];
     $tableid = $config['params']['tableid'];
     $doc = $config['params']['doc'];
-    foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
-    }
-    
+     
     if($config['params']['doc'] == 'SJ'){
       $tableid = $row['trno'];
     }
@@ -297,6 +299,13 @@ class entrypcfexpenses
       $table = $this->htable;
     }
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    foreach ($this->fields as $key => $value) {
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+    }
+   
     if ($row['line'] == 0) {
         $qry = "select line as value from $table where trno=? order by line desc limit 1";
         $line = $this->coreFunctions->datareader($qry, [$tableid]);
@@ -341,8 +350,11 @@ class entrypcfexpenses
     $row = $config['params']['row'];
     $tableid = $config['params']['tableid'];
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['sjexp'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
   
     $table ="sjexp";

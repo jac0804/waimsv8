@@ -272,8 +272,12 @@ class entrywhcontroller
                             $origqty = $this->coreFunctions->getfieldvalue("lastock", "isqty", "trno=? and line=?", [$trno, $line]);
 
                             $itemid = $value['itemid'];
-                            $amt = $this->othersClass->sanitizekeyfield('amt', $value['isamt']);
-                            $qty = $this->othersClass->sanitizekeyfield('qty', $value['isqty']);
+
+                            $dateTables = ['replaceqty'];
+                            $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
+                            $amt = $this->othersClass->sanitizekeyfieldFast('amt', $value['isamt'],$lookups);
+                            $qty = $this->othersClass->sanitizekeyfieldFast('qty', $value['isqty'],$lookups);
                             $uom = $value['uom'];
                             $disc = $value['disc'];
 
@@ -298,6 +302,7 @@ class entrywhcontroller
                                 $data['ext'] = $computedata['ext'];
 
                                 $result = $this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $trno, 'line' => $line]);
+                                $this->coreFunctions->LogConsole('update2: ' . floatval($result));
                                 if ($result) {
                                     $cost = $this->othersClass->computecostingpallet($value['itemid'], $value['whid'], $value['locid'], $value['palletid'], $trno, $line, $data['isqty'], $value['doc'], $config['params']);
 

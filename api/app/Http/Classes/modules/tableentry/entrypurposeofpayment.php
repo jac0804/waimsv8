@@ -105,15 +105,18 @@ class entrypurposeofpayment
     {
         $data = $config['params']['data'];
         $data2 = [];
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
                 
-                $data2['ispaytype'] = $this->othersClass->sanitizekeyfield('ispaytype', $data[$key]['ispaytype']);
-                $data2['inactive'] = $this->othersClass->sanitizekeyfield('inactive', $data[$key]['inactive']);
+                $data2['ispaytype'] = $this->othersClass->sanitizekeyfieldFast('ispaytype', $data[$key]['ispaytype'],$lookups);
+                $data2['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $data[$key]['inactive'],$lookups);
 
                 if ($data[$key]['line'] == 0 && $data[$key]['category'] != '') {
                     $qry = "select category from reqcategory where category = '" . $data[$key]['category'] . "' and ispaytype = 1 limit 1";
@@ -159,11 +162,14 @@ class entrypurposeofpayment
     {
         $data = [];
         $row = $config['params']['row'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
-        $data['inactive'] = $this->othersClass->sanitizekeyfield('inactive', $row['inactive']);
+        $data['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $row['inactive'],$lookups);
 
         if ($row['line'] == 0 && $row['category'] != '') {
             $qry = "select category from reqcategory where category = '" . $row['category'] . "' and ispaytype = 1 limit 1";

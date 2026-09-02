@@ -183,6 +183,10 @@ class undertime
         $catid = $config['params']['dataparams']['catid'];
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
+
+        $dateTables = ['undertime'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (isset($config['params']['dataparams']['line'])) {
             $line = $config['params']['dataparams']['line'];
 
@@ -268,7 +272,7 @@ class undertime
                 $tempdata = [];
                 foreach ($this->fields as $key2) {
                     if (isset($data[$key2])) {
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2], $lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

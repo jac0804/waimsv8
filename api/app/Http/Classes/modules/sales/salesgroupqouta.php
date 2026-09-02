@@ -197,11 +197,14 @@ class salesgroupqouta
   private function save($config)
   {
     $rows = $config['params']['rows'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['salesgroupqouta'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         foreach ($this->fields as $k) {
-          $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+             $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
         }
 
         $this->coreFunctions->sbcupdate("salesgroupqouta", ['amt' => $val['amt'], 'editdate' => $this->othersClass->getCurrentTimeStamp(), 'editby' => $config['params']['user']], ['line' => $val["line"]]);

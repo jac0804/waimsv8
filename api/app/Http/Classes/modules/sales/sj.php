@@ -821,7 +821,8 @@ class sj
     $viewfieldsforgate2users = $this->othersClass->checkAccess($config['params']['user'], 2509);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $itemdesc = 1;
@@ -1107,7 +1108,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
 
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
+        // $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
         $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
@@ -1125,7 +1126,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
         break;
@@ -1141,7 +1142,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
@@ -1162,7 +1163,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
@@ -1208,7 +1209,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
 
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
+        // $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
         $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
         $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
 
@@ -1291,17 +1292,17 @@ class sj
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
 
         if (!$isexpiry) {
-          switch ($companyid) {
-            case 28: //xcomp
-              break;
-            case 50: //unitech
-              $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-              // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-              break;
-            default:
-              $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-              break;
-          }
+          // switch ($companyid) {
+          //   case 28: //xcomp
+          //     break;
+          //   case 50: //unitech
+          //     $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+          //     // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+          //     break;
+          //   default:
+          //        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          //     break;
+          // }
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         }
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
@@ -1319,6 +1320,25 @@ class sj
       $obj[0][$this->gridname]['columns'][$blk]['readonly'] = true;
       $obj[0][$this->gridname]['columns'][$lot]['readonly'] = true;
     }
+
+      $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+      if(!$islocation){
+        switch($companyid){ 
+           ////mga naka false ang islocation pero may naka show ang loc sa SJ
+          case 24: //goodfound
+          case 28: //xcomp
+            $obj[0]['inventory']['columns'][$loc]['readonly'] = true;
+            break;
+          case 50: //unitech
+            $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+          case 69: //cemphil
+              break;
+          default:
+             $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+              break;
+        }
+      }
 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1371,6 +1391,11 @@ class sj
         $obj[0]['label'] = 'SO Serial';
         $obj[0]['lookupclass'] = 'soserial';
         $obj[0]['action'] = 'soserial';
+      }
+
+      if($issuemultiloc){
+        $obj[1]['lookupclass'] = 'additemmultiloc';
+        $obj[1]['action'] = 'additemmultiloc';
       }
     } elseif ($ispallet) {
       $obj[0]['label'] = 'SO';
@@ -2265,11 +2290,14 @@ class sj
       array_push($this->fields, 'isreported');
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+               $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -3962,9 +3990,12 @@ class sj
         $this->logger->sbcwritelog($trno, $config, 'DEBUG', 'UPDATE - Line:' . $line . ' itemid:' . $itemid, $setlog ? $this->tablelogs : '');
       }
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
+      $dateTables = ['lastock','stockinfo'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+      $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
     if ($systemtype == 'REALESTATE') {
       $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
@@ -4041,7 +4072,7 @@ class sj
         $hamt = number_format($computedata['amt'] * $curtopeso, 2, '.', '');
       }
     }
-    $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+    $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
     $data = [
       'trno' => $trno,
@@ -4106,9 +4137,10 @@ class sj
           $agentamt = isset($config['params']['data']['agentamt']) ? $config['params']['data']['agentamt'] : 0;
           $startwire = isset($config['params']['data']['startwire']) ? $config['params']['data']['startwire'] : 0;
           $endwire = isset($config['params']['data']['endwire']) ? $config['params']['data']['endwire'] : 0;
-          $data['agentamt'] = $this->othersClass->sanitizekeyfield('agentamt', $agentamt);
-          $data['startwire'] = $this->othersClass->sanitizekeyfield('startwire', $startwire);
-          $data['endwire'] = $this->othersClass->sanitizekeyfield('endwire', $endwire);
+
+          $data['agentamt'] = $this->othersClass->sanitizekeyfieldFast('agentamt', $agentamt, $lookups);
+          $data['startwire'] = $this->othersClass->sanitizekeyfieldFast('startwire', $startwire, $lookups);
+          $data['endwire'] = $this->othersClass->sanitizekeyfieldFast('endwire', $endwire,$lookups);
         }
         break;
       case 64: //excelin
@@ -4141,7 +4173,7 @@ class sj
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -4366,7 +4398,7 @@ class sj
                 $stockinfo_data['editdate'] = $this->othersClass->getCurrentTimeStamp();
                 $stockinfo_data['editby'] = $config['params']['user'];
                 foreach ($stockinfo_data as $key => $valueinfo) {
-                  $stockinfo_data[$key] = $this->othersClass->sanitizekeyfield($key, $stockinfo_data[$key]);
+                  $stockinfo_data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stockinfo_data[$key], $lookups);
                 }
                 $this->coreFunctions->sbcupdate("stockinfo", $stockinfo_data, ['trno' => $trno, 'line' => $line]);
               }
@@ -5941,11 +5973,14 @@ class sj
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -6631,10 +6666,13 @@ class sj
     $exec = true;
     $companyid = $config['params']['companyid'];
     $deci = $this->companysetup->getdecimal('price', $config['params']);
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
-      if ($companyid == 10) { //afti
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])),$lookups);
+        if ($companyid == 10) { //afti
         if ($data[$key]->disc != "") {
           $computedata = $this->othersClass->computestock(
             $damt * $head['forex'],
@@ -6658,7 +6696,7 @@ class sj
           $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
         }
 
-        $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+        $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
         $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
       } else {
@@ -6670,8 +6708,8 @@ class sj
           0
         );
 
-        $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-        $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+          $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
+          $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
         $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
       }

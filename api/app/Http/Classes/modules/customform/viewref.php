@@ -301,7 +301,7 @@ class viewref
         break;
       case 'SJ':
       case 'MJ':
-      case 'AM': 
+      case 'AM':
         switch ($companyid) {
           case 40: //cdo
             $qry = '
@@ -749,9 +749,9 @@ class viewref
           union all
           select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as rem,head.trno,head.doc,'' as url,'module' as moduletype from hcdhead as head left join hcdstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where stock.refx=" . $trno . "
           union all
-          select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as rem,head.trno,head.doc,'' as url,'module' as moduletype from lahead as head left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc='SS' and stock.refx=" . $trno . "
+          select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty+stock.isqty," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as rem,head.trno,head.doc,'' as url,'module' as moduletype from lahead as head left join lastock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc='SS' and stock.refx=" . $trno . "
           union all
-          select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as rem,head.trno,head.doc,'' as url,'module' as moduletype from glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc='SS' and stock.refx=" . $trno . "";
+          select head.docno,head.dateid,concat('Item Served: ',item.barcode,' - ',item.itemname,' - ',round(stock.rrqty+stock.isqty," . $this->companysetup->getdecimal('currency', $config['params']) . ")) as rem,head.trno,head.doc,'' as url,'module' as moduletype from glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid=stock.itemid where head.doc='SS' and stock.refx=" . $trno . "";
         }
 
         break;

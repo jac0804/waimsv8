@@ -511,7 +511,6 @@ class statement_of_account
     return $this->coreFunctions->opentable($query);
   }
 
-
   public function megacrystal($config)
   {
     $asof      = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
@@ -554,7 +553,6 @@ class statement_of_account
     order by clientname, docdate, refno";
     return $this->coreFunctions->opentable($query);
   }
-
 
   public function reportDefault_DETAILED_QUERY($config)
   {
@@ -3575,8 +3573,6 @@ class statement_of_account
 
   private function SOA_SUMMARIZED_LAYOUT($config)
   {
-
-
     $result = $this->reportDefault_SUMMARIZED_QUERY($config);
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
@@ -4740,6 +4736,7 @@ class statement_of_account
     return $str;
   }
   // okhead
+
   private function displayHeader_megacrystal($config)
   {
     $center     = $config['params']['center'];
@@ -4802,6 +4799,7 @@ class statement_of_account
 
     return $str;
   }
+
   public function mcpcfooter($config, $balance)
   {
     $str = '';
@@ -4877,6 +4875,7 @@ class statement_of_account
     return $str;
   }
   //ok
+
   public function report_megacrystal($config)
   {
     $result     = $this->megacrystal($config);
@@ -5058,7 +5057,6 @@ class statement_of_account
 
     return $str;
   }
-
 
   public function report_soa_afti($params)
   {
@@ -5568,7 +5566,6 @@ class statement_of_account
     PDF::MultiCell(150, 0, '', $border, 'L', false, 1, '', '', false, 1);
   }
 
-
   public function rooseveltqry($config)
   {
     $asof      = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
@@ -5600,13 +5597,13 @@ class statement_of_account
       $filter .= " and client.area='" . $area . "'";
     }
 
-    $query = "select head.trno,'p' as tr, 1 as trsort, 
+    $query = "select head.trno,'p' as tr, 1 as trsort, head.ourref,
      client.client as client,
      client.clientname as clientname,
      client.addr as addr,head.terms,
      client.area as area,
-    date(ar.dateid) as docdate, case when head.doc IN ('AR', 'BE') then concat(left(ar.docno, 2),right(ar.docno, 4), '-', ar.ref)
-    else ar.docno end as refno, ar.ref as applied, ar.db as debit, client.tel,
+    date(ar.dateid) as docdate, case when head.doc IN ('AR', 'BE') then concat(left(ar.docno, 2),right(ar.docno, 3), '-', ar.ref)
+    else concat(left(ar.docno, 2), '-', cast(substring(ar.docno, 3) as unsigned)) end as refno, ar.ref as applied, ar.db as debit, client.tel,
     ar.cr as credit, (ar.bal) as balance, ag.client as agent, ag.clientname as agentname, head.due, head.yourref, head.rem,
     (case when head.doc='sj' then 'sales' else (case when head.doc='cm' then 'return' else 'adjustment' end) end) as trcode,
     client.area, datediff('" . $asof . "', head.dateid) as elapse,count(distinct ar.docno) as cntdocno, ar.ref, head.doc
@@ -5621,7 +5618,7 @@ class statement_of_account
     and num.center = '$center' 
     and date(ar.dateid)<='$asof' and ar.bal<>0 and (client.client IS NOT NULL)
     $code $filter 
-    group by  head.trno,client.client, client.clientname, client.addr,head.terms,
+    group by  head.trno, head.ourref, client.client, client.clientname, client.addr,head.terms,
     ar.dateid, ar.docno, ar.ref, ar.db, client.tel,
     ar.cr, ar.bal, ag.client, ag.clientname, head.due,
     head.yourref, head.rem,head.doc,head.dateid,client.area, ar.ref, head.doc
@@ -5630,13 +5627,12 @@ class statement_of_account
     return $this->coreFunctions->opentable($query);
   }
 
-
   private function displayHeader_roosevelt($config, $cust)
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
     $asof       = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
-    $width = '1000';
+    $width = '1200';
 
     $str = '';
     $font = "Century Gothic";
@@ -6281,7 +6277,7 @@ class statement_of_account
     $font = "Courier New";
     $fontsize = "16";
     $border = "1px solid ";
-    $layoutsize = '1000';
+    $layoutsize = '1200';
 
     $PAGE_HEIGHT = 1255; // adjust to match your actual page height (px)
 
@@ -6439,6 +6435,7 @@ class statement_of_account
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('DATE', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('DOCUMENT#', '210', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('SI#', '150', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('TERMS', '113', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('DEBIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('CREDIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
@@ -6504,6 +6501,7 @@ class statement_of_account
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('DATE', '140', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('DOCUMENT#', '210', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('SI#', '150', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('TERMS', '113', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('DEBIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->col('CREDIT', '179', null, false, $border, 'LB', 'C', $font, $fontsize, 'B');
@@ -6520,6 +6518,7 @@ class statement_of_account
       } else {
         $str .= $this->reporter->col($data->refno, '210', null, false, $border, 'LR', 'C', $font, $fontsize);
       }
+      $str .= $this->reporter->col($data->ourref, '150', null, false, $border, 'LR', 'C', $font, $fontsize);
       $str .= $this->reporter->col($data->terms, '113', null, false, $border, 'LR', 'C', $font, $fontsize);
       $str .= $this->reporter->col($data->debit == 0 ? '-' : number_format($data->debit, 2), '179', null, false, $border, 'LR', 'R', $font, $fontsize);
       $str .= $this->reporter->col($data->credit == 0 ? '-' : number_format($data->credit, 2), '179', null, false, $border, 'LR', 'R', $font, $fontsize);
@@ -6683,7 +6682,6 @@ class statement_of_account
 
     return $str;
   }
-
 
   private function sbc_header($config)
   {

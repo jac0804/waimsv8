@@ -2146,7 +2146,7 @@ class tabClass
         'addedparams' => ['empid', 'batchid', 'empname']
       ),
       'createschedule' => array(
-        'label' => 'creates chedule',
+        'label' => 'create schedule',
         'icon' => 'batch_prediction',
         'class' => 'btncreateschedule',
         'lookupclass' => 'stockstatus',

@@ -558,11 +558,15 @@ class rc
       unset($this->fields[1]);
       unset($head['docno']);
     }
+
+    $dateTables = ['rchead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1069,6 +1073,9 @@ class rc
     $bank = $config['params']['data']['bank'];
     $branch = $config['params']['data']['branch'];
 
+    $dateTables = ['rcdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $line = 0;
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->detail . " where trno=? order by line desc limit 1";
@@ -1097,7 +1104,7 @@ class rc
       'bank' => $bank
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

@@ -141,7 +141,7 @@ class coa
     $query = "select head.acno,head.cat,parentinfo.acnoname as pname,
         head.parent as pcode,head.levelid from coa as head
         left join coa as parentinfo on parentinfo.acno = head.parent
-        where head.parent = '\\\\" . $acno . "' order by head.acnoid desc limit 1";
+        where head.parent = '\\\\" . $acno . "' order by head.acno desc limit 1";
 
     $data = $this->coreFunctions->opentable($query);
 
@@ -187,7 +187,7 @@ class coa
       $parent = 0;
       $isdetail = 0;
     } //end if
-    if (!$this->getAccountChildren($acno)) { //IF PARENT DOES NOT HAVE CHILDREN
+    if (!$this->getAccountChildren($acno, $config)) { //IF PARENT DOES NOT HAVE CHILDREN
       if ($config['params']['data']['transcount'] != 0) { //with transaction
         $msg = 'Removing failed, Account has transaction';
         $status = false;
@@ -197,7 +197,7 @@ class coa
 
         if ($numrows != 0) {
           if ($parent_ != '') {
-            if (!$this->getAccountChildren($parent_)) {
+            if (!$this->getAccountChildren($parent_, $config)) {
               $updateqry = "update coa set detail = 1 where acnoid = " . $parent;
               $statusupdate = $this->coreFunctions->execqry($updateqry, 'update');
             }
@@ -217,7 +217,7 @@ class coa
     return ['status' => $status, 'msg' => $msg, 'data' => $data];
   }
 
-  private function getAccountChildren($acno)
+  private function getAccountChildren($acno, $config)
   {
     $query = "select acnoid,acno,acnoname,alias,parent,cat,detail from coa 
                where parent = '\\" . $acno . "' order by acnoid";
@@ -232,6 +232,10 @@ class coa
 
   public function savedata($config)
   {
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['coa'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $head = $config['params']['data'];
     $data = [];
 
@@ -239,7 +243,7 @@ class coa
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc']);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if          
       }
     }
@@ -255,13 +259,13 @@ class coa
       $acnoid = $head['acnoid'];
     }
 
-    if ($this->getAccountChildren($head['parent'])) {
+    if ($this->getAccountChildren($head['parent'], $config)) {
       $updateqry = "update coa set detail = 0, ismirror=0 where acno = '\\" . $head['parent'] . "'";
     } else {
       $updateqry = "update coa set detail = 1, ismirror=0 where acno = '\\" . $head['parent'] . "'";
     }
     $statusupdate = $this->coreFunctions->execqry($updateqry, 'update');
-    if ($this->getAccountChildren($head['acno'])) {
+    if ($this->getAccountChildren($head['acno'], $config)) {
       $updateqry = "update coa set detail = 0, ismirror=0 where acno = '\\" . $head['acno'] . "'";
     } else {
       $updateqry = "update coa set detail = 1, ismirror=0 where acno = '\\" . $head['acno'] . "'";

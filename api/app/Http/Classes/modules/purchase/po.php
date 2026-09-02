@@ -664,7 +664,8 @@ class po
     $po_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 3592);
     $systype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $column = [
       'action',
       'itemdescription',
@@ -911,9 +912,8 @@ class po
       $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
     }
 
-    $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+    // $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
     if ($companyid != 8) { // not maxipro
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$served]['type'] = 'coldel';
     }
 
@@ -946,9 +946,9 @@ class po
 
     if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $obj[0]['inventory']['columns'][$cost]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px';
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      // $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+      // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
       $this->modulename = 'SUPPLIES PURCHASE ORDER';
     } else {
       $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
@@ -971,11 +971,19 @@ class po
       $obj[0]['inventory']['columns'][$amt1]['type'] = 'coldel';
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
 
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['style'] = 'width: 300px;whiteSpace: normal;min-width:300px;max-width:300px';
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -989,6 +997,9 @@ class po
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $canvass_access = $this->othersClass->checkAccess($config['params']['user'], 4192);
     $prmod = $this->othersClass->checkAccess($config['params']['user'], 618);
+    $addsj = $this->othersClass->checkAccess($config['params']['user'], 5945);
+    $additem = $this->othersClass->checkAccess($config['params']['user'], 5946);
+
 
     $ispr =  $this->companysetup->getispr($config['params']);
 
@@ -1030,7 +1041,12 @@ class po
         }
         break;
       case 60: //transpower
-        $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsj'];
+        $tbuttons = ['saveitem', 'deleteallitem'];
+        if ($additem) array_unshift($tbuttons, 'additem', 'quickadd');
+        if ($addsj) array_push($tbuttons, 'pendingsj');
+
+
+
         break;
       case 63: //ericco
         $tbuttons = ['multiitem', 'quickadd', 'saveitem', 'deleteallitem'];
@@ -1805,6 +1821,8 @@ class po
   {
     $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+    $dateTables = ['headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -1815,7 +1833,7 @@ class po
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1871,6 +1889,9 @@ class po
   {
     $center = $config['params']['center'];
     $trno = $config['params']['trno'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['postock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $qty_deci = $this->companysetup->getdecimal('qty', $config['params']);
     $currency_deci = $this->companysetup->getdecimal('currency', $config['params']);
 
@@ -1917,16 +1938,17 @@ class po
         if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       }
       if ($forex != 1) {
-        $amt = $this->othersClass->sanitizekeyfield('amt', $val->amt);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
       } else {
-        $amt = $this->othersClass->sanitizekeyfield('amt', $val->damt);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->damt, $lookups);
       }
 
       $isqty = round($val->isqty, $this->companysetup->getdecimal('qty', $config['params']));
-      $isqty = $this->othersClass->sanitizekeyfield('isqty', $isqty);
+      $isqty = $this->othersClass->sanitizekeyfieldFast('isqty', $isqty, $lookups);
       $computedata = $this->othersClass->computestock($amt, $val->disc, $isqty, $factor);
       $cost = $computedata['amt'] * $forex;
-      $cost = $this->othersClass->sanitizekeyfield('cost', number_format($cost, $currency_deci));
+      $cost = $this->othersClass->sanitizekeyfieldFast('cost', number_format($cost, $currency_deci), $lookups);
+
       $qry = "
           insert into postock(
           trno, line, itemid, rrcost,
@@ -3080,6 +3102,8 @@ class po
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
+    $dateTables = ['stockinfotrans', 'postock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $loc = '';
     $itemdesc = '';
     $ref = '';
@@ -3275,8 +3299,8 @@ class po
         }
       }
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor, item.amt from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
 
@@ -3398,7 +3422,7 @@ class po
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -3493,7 +3517,7 @@ class po
               $stockinfo_data['editdate'] = $this->othersClass->getCurrentTimeStamp();
               $stockinfo_data['editby'] = $config['params']['user'];
               foreach ($stockinfo_data as $key => $valueinfo) {
-                $stockinfo_data[$key] = $this->othersClass->sanitizekeyfield($key, $stockinfo_data[$key]);
+                $stockinfo_data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stockinfo_data[$key], $lookups);
               }
               $this->coreFunctions->sbcupdate("stockinfotrans", $stockinfo_data, ['trno' => $trno, 'line' => $line]);
             }
@@ -3764,6 +3788,9 @@ class po
             if ($companyid == 8) { //maxipro
               $this->coreFunctions->sbcupdate($this->head, ['yourref' => $data[0]->docno], ['trno' => $trno]);
             }
+            if ($companyid == 68) { //jda
+              $this->coreFunctions->sbcupdate($this->head, ['ourref' => $data[0]->docno], ['trno' => $trno]);
+            }
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
               $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
               $line = $return['row'][0]->line;
@@ -3895,6 +3922,9 @@ class po
           $config['params']['data']['stageid'] =  $data[$key2]->stageid;
           $return = $this->additem('insert', $config);
           if ($return['status']) {
+            if ($companyid == 68) { //jda
+              $this->coreFunctions->sbcupdate($this->head, ['ourref' => $data[0]->docno], ['trno' => $trno]);
+            }
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
               $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
               $line = $return['row'][0]->line;
@@ -4709,10 +4739,13 @@ class po
   {
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['postock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $exec = true;
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
       if ($this->companysetup->getvatexpurch($config['params'])) {
         $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, 0, 'P');

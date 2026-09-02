@@ -723,7 +723,6 @@ class pr
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -733,7 +732,6 @@ class pr
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
           $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
         } //end if
       }
@@ -1971,8 +1969,6 @@ class pr
       $config['params']['line'] = $line;
     }
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
@@ -2040,12 +2036,10 @@ class pr
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($datainfo as $key => $value) {
-      // $datainfo[$key] = $this->othersClass->sanitizekeyfield($key, $datainfo[$key]);
       $datainfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datainfo[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

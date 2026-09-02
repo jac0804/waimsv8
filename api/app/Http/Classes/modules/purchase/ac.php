@@ -383,7 +383,8 @@ class ac
     $ispallet = $this->companysetup->getispallet($config['params']);
     $isfa = $this->companysetup->getisfixasset($config['params']);
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $itemdesc = 1;
     $serial = 2;
@@ -489,11 +490,11 @@ class ac
     }
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     } else {
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+      // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
     }
 
@@ -510,6 +511,14 @@ class ac
       $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
     }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -801,8 +810,10 @@ class ac
 
   public function updatehead($config, $isupdate)
   {
-    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -813,7 +824,7 @@ class ac
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -886,10 +897,13 @@ class ac
   {
     $trno = $config['params']['trno'];
     $stock = $this->openstock($trno, $config);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['hsrstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     foreach ($stock as $k => $v) {
-      $qty = $this->othersClass->sanitizekeyfield('qty', $stock[$k]->rrqty);
-      $rrcost = $this->othersClass->sanitizekeyfield('amt', $stock[$k]->rrcost);
+      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $stock[$k]->rrqty, $lookups);
+      $rrcost = $this->othersClass->sanitizekeyfieldFast('amt', $stock[$k]->rrcost, $lookups);
       $data['isamt'] = $rrcost;
       $data['amt'] = $stock[$k]->cost;
       $data['ext'] = $rrcost * $qty;
@@ -1382,6 +1396,8 @@ class ac
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
+    $dateTables = ['stockinfo', 'lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $expiry = '';
     if (isset($config['params']['data']['expiry'])) {
       $expiry = $config['params']['data']['expiry'];
@@ -1481,9 +1497,8 @@ class ac
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
-
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $factor = 1;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
@@ -1537,7 +1552,7 @@ class ac
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1801,6 +1816,8 @@ class ac
   {
     $trno = $config['params']['trno'];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $status = true;
     $isvatexpurch = $this->companysetup->getvatexpurch($config['params']);
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
@@ -1914,7 +1931,7 @@ class ac
 
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -2198,12 +2215,15 @@ class ac
 
   public function recomputecost($head, $config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = $this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]);
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups);
 
       if ($this->companysetup->getvatexpurch($config['params'])) {
         $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, 0);

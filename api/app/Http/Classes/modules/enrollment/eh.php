@@ -377,16 +377,22 @@ class eh
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+
+    $dateTables = ['en_gehead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -873,6 +879,7 @@ class eh
 
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['data']['trno'];
     $gccode = $config['params']['data']['gccode'];
     $gcsubcode = $config['params']['data']['gcsubcode'];
@@ -906,8 +913,12 @@ class eh
       'getrno' => $getrno
     ];
 
+    $dateTables = ['en_gesubcomponent'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($action == 'insert') {

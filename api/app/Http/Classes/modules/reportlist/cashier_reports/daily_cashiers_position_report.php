@@ -2067,6 +2067,12 @@ class daily_cashiers_position_report
                         from tcoll as ce
                         left join useraccess as userr on userr.username=ce.createby
                         where ce.doc='MC' and date(ce.dateid)  = '$start' $filter2
+                        group by userr.name,userr.username
+                        union all
+                        select 0 as amount,userr.name,userr.username
+                        from hdxhead as ce left join transnum as num on num.trno = ce.trno
+                        left join useraccess as userr on userr.username=ce.createby
+                        where ce.doc='DX' and date(ce.dateid)  = '$start' $filter
                         group by userr.name,userr.username) as xm 
                         group by name,username
                         order by name,username";

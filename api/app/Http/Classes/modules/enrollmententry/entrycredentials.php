@@ -179,9 +179,14 @@ class entrycredentials
   {
     $data = [];
     $row = $config['params']['row'];
+    
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
 
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     $line = $this->coreFunctions->insertGetId($table, $data);
@@ -212,8 +217,12 @@ class entrycredentials
         break;
     }
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $line = $this->coreFunctions->insertGetId($table, $data);

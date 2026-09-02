@@ -108,15 +108,21 @@ class entrybankcharges
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
+
+    $dateTables = ['bankcharges'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
       switch ($value) {
         case 'rate':
           $data[$value] = $row[$value];
           break;
         default:
-          $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+          $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+
           break;
       }
     }
@@ -210,8 +216,13 @@ class entrybankcharges
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $params = $config;
     $data = $config['params']['data'];
+
+    $dateTables = ['bankcharges'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
@@ -221,7 +232,8 @@ class entrybankcharges
               $data2[$value2] = $data[$key][$value2];
               break;
             default:
-              $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+              $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+
               break;
           }
         }

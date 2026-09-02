@@ -170,12 +170,16 @@ class timerec
 
     private function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['timerec'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $rows = $config['params']['rows'];
         foreach ($rows as $key => $val) {
             if ($val["bgcolor"] != "") {
                 unset($val["bgcolor"]);
                 foreach ($val as $k => $v) {
-                    $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+                    $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
                 }
 
                 $timerec = [

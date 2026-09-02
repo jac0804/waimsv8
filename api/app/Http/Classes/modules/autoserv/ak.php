@@ -190,7 +190,7 @@ class ak
             $$value = $key;
         }
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-        $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
+        $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; text-align: left;';
         $cols[$liststatus]['name'] = 'statuscolor';
         // $cols[$action]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
         $cols = $this->tabClass->delcollisting($cols);
@@ -387,7 +387,6 @@ class ak
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
@@ -498,7 +497,7 @@ class ak
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();

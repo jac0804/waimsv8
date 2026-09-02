@@ -34,6 +34,7 @@ class employee
   public $head = 'client';
   public $headOther = 'employee';
   public $contact = 'contacts';
+  public $licenses = 'cllicence';
   public $prefix = 'EM';
   public $tablelogs = 'client_log';
   public $tablelogs_del = 'del_client_log';
@@ -139,6 +140,43 @@ class employee
   ];
 
   private $contactfields = ['contact1', 'relation1', 'addr1', 'homeno1', 'mobileno1', 'officeno1', 'ext1', 'notes1', 'contact2', 'relation2', 'addr2', 'homeno2', 'mobileno2', 'officeno2', 'ext2', 'notes2'];
+
+  private $licensesfields = [
+    'sagsd',
+    'sagsdexp',
+    'solicense',
+    'soexp',
+    'palicense',
+    'paexp',
+    'ntclicense',
+    'ntcexp',
+    'brgystart',
+    'brgyend',
+    'pnpstart',
+    'pnpend',
+    'nbistart',
+    'nbiend',
+    'nuerostart',
+    'nueroend',
+    'drugstart',
+    'drugend',
+    'medicalstart',
+    'medicalend',
+    'dilgstart',
+    'dilgend',
+    'occustart',
+    'occuend',
+    'courtstart',
+    'courtend',
+    'ctcno',
+    'ctcdate',
+    'ctcissue',
+    'insurance',
+    'policy',
+    'premium',
+    'amt',
+    'policyend'
+  ];
   private $except = ['empid', 'age', 'clientid', 'mapp', 'aplcode', 'jgrade', 'emprank', 'emploc', 'emptype', 'paymode', 'division', 'dept', 'orgsection', 'floor'];
   private $blnfields = ['isemployee', 'isactive', 'atm', 'chksss', 'chktin', 'chkphealth', 'chkpibig', 'isapprover', 'issupervisor', 'iscustomer', 'isagent', 'isemployee', 'isdepartment', 'issupplier', 'iswarehouse', 'isinactive', 'is13th'];
   private $acctg = [];
@@ -303,6 +341,7 @@ class employee
     $leftjoin
     where cl.isemployee=1 $active $condition and emp.level in " . $emplvl . " " . $filtersearch . " " . $addparams . "
     order by cl.clientname";
+
     $data = $this->coreFunctions->opentable($qry);
 
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -401,6 +440,7 @@ class employee
   public function createTab($access, $config)
   {
     $companyid = $config['params']['companyid'];
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
 
     $fields = [
       ['jobcode', 'jobtitle'],
@@ -546,10 +586,47 @@ class employee
     $fields = [['agency', 'trainee'], ['prob', 'regular'], ['lastbatch', 'resigned']];
     $col7 = $this->fieldClass->create($fields);
 
+    //ditooo
+    $fields = [['lblgrossprofit', 'lbltotalkg'], ['sagsd', 'sagsdexp'], ['solicense', 'soexp'], ['palicense', 'paexp'], ['ntclicense', 'ntcexp']];
+    $col8 = $this->fieldClass->create($fields);
+    data_set($col8, 'lblgrossprofit.label', 'License');
+    data_set($col8, 'lbltotalkg.label', 'Expiration');
+    data_set($col8, 'lblgrossprofit.style', 'font-weight:bold;font-size:11px;text-align:center; display:flex;justify-content:center;');
+    data_set($col8, 'lbltotalkg.style', 'font-weight:bold;font-size:11px;text-align:center; display:flex;justify-content:center;');
+
+    $fields = [
+      ['lblcostuom', 'lblshipping'],
+      ['brgystart', 'brgyend'],
+      ['pnpstart', 'pnpend'],
+      ['nbistart', 'nbiend'],
+      ['nuerostart', 'nueroend'],
+      ['drugstart', 'drugend'],
+      ['medicalstart', 'medicalend'],
+      ['dilgstart', 'dilgend'],
+      ['occustart', 'occuend'],
+      ['courtstart', 'courtend']
+    ];
+    $col9 = $this->fieldClass->create($fields);
+    data_set($col9, 'lblcostuom.label', 'Cert Date');
+    data_set($col9, 'lblshipping.label', 'Validity');
+    data_set($col9, 'lblcostuom.style', 'font-weight:bold;font-size:11px;text-align:center; display:flex;justify-content:center;');
+    data_set($col9, 'lblshipping.style', 'font-weight:bold;font-size:11px;text-align:center; display:flex;justify-content:center;');
+
+    $fields = [['lblbilling'], 'ctcno', 'ctcdate', 'ctcissue', 'insurance', ['policy', 'amt'], ['premium', 'policyend']];
+    $col10 = $this->fieldClass->create($fields);
+
+    data_set($col10, 'lblbilling.label', '.');
+    data_set($col10, 'lblbilling.style', 'font-weight:bold;font-size:11px;text-align:center; display:flex;justify-content:center;color:white;');
+    data_set($col10, 'amt.label', 'Amount');
+
     $tab = [
       'multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col5, 'col3' => $col6, 'col4' => $col7], 'label' => 'ADDITIONAL INFO'],
       'multiinput2' => ['inputcolumn' => ['col1' => $col2, 'col2' => $col3], 'label' => 'CONTACT PERSON INFO']
     ];
+
+    if ($ispayrolldetachment) {
+      $tab['multiinput3'] = ['inputcolumn' => ['col1' => $col8, 'col2' => $col9, 'col3' => $col10], 'label' => 'LICENSES'];
+    }
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -560,6 +637,12 @@ class employee
   {
     $rate_access = $this->othersClass->checkAccess($config['params']['user'], 5300);
     $appsetup_access = $this->othersClass->checkAccess($config['params']['user'], 5435);
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
+    $uniform = $this->othersClass->checkAccess($config['params']['user'], 5949);
+    $violations = $this->othersClass->checkAccess($config['params']['user'], 5968);
+
+
+    $citation_access = $this->othersClass->checkAccess($config['params']['user'], 5950);
 
 
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entryclientpicture', 'label' => 'Attachment', 'access' => 'view']];
@@ -598,6 +681,15 @@ class employee
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrytabrole', 'label' => 'ROLE SETUP']];
     $rolesetup = $this->tabClass->createtab($tab, []);
 
+
+    $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryviolation', 'label' => 'NEW VIOLATION']];
+    $violation = $this->tabClass->createtab($tab, []);
+
+
+
+    $tab = ['tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'entryempcitation', 'label' => 'CITATION']];
+    $citation = $this->tabClass->createtab($tab, []);
+
     $user = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewuseraccount']];
 
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrymultiapprover', 'label' => 'APPROVER SETUP']];
@@ -609,6 +701,19 @@ class employee
 
     $tab = ['tableentry' => ['action' => 'hrisentry', 'lookupclass' => 'entryappreq', 'label' => 'REQUIREMENTS']];
     $requirements = $this->tabClass->createtab($tab, []);
+
+    $tab = ['tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'entrytraining', 'label' => 'TRAINING']];
+    $training2 = $this->tabClass->createtab($tab, []);
+
+
+    $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryuniform', 'label' => 'UNIFORM']];
+    $cluniform = $this->tabClass->createtab($tab, []);
+
+    $tab = ['tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'entryempviolation', 'label' => 'NEW VIOLATION']];
+    $violation = $this->tabClass->createtab($tab, []);
+
+
+
 
     $return = [];
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $attach];
@@ -625,6 +730,11 @@ class employee
     }
 
     $return['CONTRACT'] = ['icon' => 'fa fa-file-signature', 'tab' => $contract];
+
+    if ($citation_access != 0) {
+      $return['CITATION'] = ['icon' => 'fa fa-file-signature', 'tab' => $citation];
+    }
+
     $return['ALLOWANCE'] = ['icon' => 'fa fa-coins', 'tab' => $allowance];
     $return['TRAINING'] = ['icon' => 'fa fa-list-ul', 'tab' => $training];
     $return['TURN-OVER/RETURN ITEMS'] = ['icon' => 'fa fa-exchange-alt', 'tab' => $turnover];
@@ -647,7 +757,16 @@ class employee
         break;
     }
 
+    if ($ispayrolldetachment) {
+      $return['TRAINING'] = ['icon' => 'fa fa-chalkboard-teacher', 'tab' => $training2];
 
+      if ($uniform) {
+        $return['UNIFORM'] = ['icon' => 'fa fa-tshirt', 'tab' => $cluniform];
+      }
+      if ($violations) {
+        $return['VIOLATION'] = ['icon' => 'fa fa-exclamation', 'tab' => $violation];
+      }
+    }
 
     return $return;
   }
@@ -991,6 +1110,59 @@ class employee
     // $data[0]['appprovername2'] = '';
 
     $data[0]['bank'] = '';
+
+
+
+    ///licenses
+    $data[0]['sagsd'] = '';
+    $data[0]['sagsdexp'] = null;
+
+    $data[0]['solicense'] = '';
+    $data[0]['soexp'] = null;
+
+    $data[0]['palicense'] = '';
+    $data[0]['paexp'] = null;
+
+    $data[0]['ntclicense'] = '';
+    $data[0]['ntcexp'] = null;
+
+    $data[0]['brgystart'] = null;
+    $data[0]['brgyend'] = null;
+
+    $data[0]['pnpstart'] = null;
+    $data[0]['pnpend'] = null;
+
+    $data[0]['nbistart'] = null;
+    $data[0]['nbiend'] = null;
+
+    $data[0]['nuerostart'] = null;
+    $data[0]['nueroend'] = null;
+
+    $data[0]['drugstart'] = null;
+    $data[0]['drugend'] = null;
+
+    $data[0]['medicalstart'] = null;
+    $data[0]['medicalend'] = null;
+
+    $data[0]['dilgstart'] = null;
+    $data[0]['dilgend'] = null;
+
+    $data[0]['occustart'] = null;
+    $data[0]['occuend'] = null;
+
+    $data[0]['courtstart'] = null;
+    $data[0]['courtend'] = null;
+
+    $data[0]['ctcno'] = '';
+    $data[0]['ctcdate'] = null;
+
+    $data[0]['ctcissue'] = '';
+    $data[0]['insurance'] = '';
+    $data[0]['policy'] = '';
+    $data[0]['premium'] = '0';
+    $data[0]['amt'] = '0';
+    $data[0]['policyend'] = null;
+
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -1003,6 +1175,8 @@ class employee
     $clientid = $config['params']['clientid'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
+
 
     $condition = "";
     $paygroup = 'paygroup.paygroup';
@@ -1072,11 +1246,42 @@ class employee
       $fields = $fields . ',' . $this->contact . '.' . $value;
     }
 
+    $detachmentjoin = '';
+    $licensesdates = [];
+
+    if ($ispayrolldetachment) {
+      $detachmentjoin = 'left join ' . $this->licenses . ' on ' . $this->licenses . '.clientid=' . $this->head . '.clientid';
+      $licensesdates = ['sagsdexp', 'soexp', 'paexp', 'ntcexp', 'brgystart', 'brgyend', 'pnpstart', 'pnpend', 'nbistart', 'nbiend', 'nuerostart', 'nueroend', 'drugstart', 'drugend', 'medicalstart', 'medicalend', 'dilgstart', 'dilgend', 'occustart', 'occuend', 'courtstart', 'courtend', 'ctcdate', 'policyend'];
+     
+       foreach ($this->licensesfields as $key => $value) {
+
+        if (in_array($value, $licensesdates)) {
+
+          // $fields .= ',date(' . $this->licenses . '.' . $value . ') as ' . $value;
+          $fields .= ',ifnull(date(' . $this->licenses . '.' . $value . '), \'\') as ' . $value;
+
+        } elseif ($value == 'premium') {
+
+            $fields .= ',ifnull(' . $this->licenses . '.premium, 0) as premium';
+
+        } elseif ($value == 'amt') {
+
+            $fields .= ',ifnull(' . $this->licenses . '.amt, 0) as amt';
+
+        } else {
+
+            $fields .= ',' . $this->licenses . '.' . $value;
+        }
+      }
+    }
+
+
     $qryselect = "select " . $fields;
 
     $qry = $qryselect . " from " . $this->head . " 
      join " . $this->headOther . " on " . $this->headOther . ".empid = " . $this->head . ".clientid 
     left join " . $this->contact . " on " . $this->contact . ".empid=" . $this->head . ".clientid 
+    $detachmentjoin
     left join client as dept on dept.clientid = " . $this->headOther . ".deptid 
     left join division as `div` on `div`.divid = " . $this->headOther . ".divid 
     left join section as sect on sect.sectid = " . $this->headOther . ".sectid 
@@ -1130,9 +1335,13 @@ class employee
     $head = $config['params']['head'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head, $this->headOther, $this->licenses];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
     $data = [];
     $dataOther = [];
     $dataContact = [];
+    $dataLicenses = [];
     if ($isupdate) {
       unset($this->fields['client']);
     }
@@ -1143,7 +1352,7 @@ class employee
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -1151,16 +1360,29 @@ class employee
       if (array_key_exists($key, $head)) {
         $dataContact[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataContact[$key] = $this->othersClass->sanitizekeyfield($key, $dataContact[$key]);
+          $dataContact[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataContact[$key], $lookups);
         } //end if  
       }
     }
+
+    //licenses
+    if ($ispayrolldetachment) {
+      foreach ($this->licensesfields as $key) {
+        if (array_key_exists($key, $head)) {
+          $dataLicenses[$key] = $head[$key];
+          if (!in_array($key, $this->except)) {
+            $dataLicenses[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataLicenses[$key], $lookups);
+          } //end if  
+        }
+      }
+    }
+
 
     foreach ($this->fieldsOther as $key) {
       if (array_key_exists($key, $head)) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key], 'EMPLOYEE', $companyid);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
         } //end if  
       }
     }
@@ -1207,6 +1429,22 @@ class employee
         $this->coreFunctions->sbcinsert($this->contact, $dataContact);
       }
 
+
+      //licenses
+
+      if ($ispayrolldetachment) {
+        $exist = $this->coreFunctions->getfieldvalue($this->licenses, "clientid", "clientid=?", [$head['empid']]);
+        // var_dump($dataLicenses);
+        if (floatval($exist) != 0) {
+          $dataLicenses['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $dataLicenses['editby'] = $config['params']['user'];
+          $this->coreFunctions->sbcupdate($this->licenses, $dataLicenses, ['clientid' => $head['empid']]);
+        } else {
+          $dataLicenses['clientid'] = $head['empid'];
+          $this->coreFunctions->sbcinsert($this->licenses, $dataLicenses);
+        }
+      }
+
       $exist = $this->coreFunctions->getfieldvalue($this->headOther, "empid", "empid=?", [$head['empid']]);
       if (floatval($exist) != 0) {
         $this->coreFunctions->sbcupdate($this->headOther, $dataOther, ['empid' => $head['empid']]);
@@ -1243,6 +1481,14 @@ class employee
         $this->coreFunctions->sbcinsert($this->contact, $dataContact);
         $this->coreFunctions->sbcinsert($this->headOther, $dataOther);
 
+
+        if ($ispayrolldetachment) {
+          $dataLicenses['clientid'] = $clientid;
+          $dataLicenses['encodedby'] = $config['params']['user'];
+          $dataLicenses['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
+          $this->coreFunctions->sbcinsert($this->licenses, $dataLicenses);
+        }
+
         // $this->logger->sbcmasterlog(
         //   $clientid,
         //   $config,
@@ -1252,6 +1498,7 @@ class employee
         //   JOBTITLE: ".$head['jobtitle'].",
         //   SHIFTCODE: ".$head['shiftcode'].""); 
       }
+      // $this->logger->sbcwritelog($clientid, $config, 'CREATE',  $head['client'] ." - ".$head['empfirst']." ".$head['empmiddle'].", ".$head['emplast']);
       // $this->logger->sbcwritelog($clientid, $config, 'CREATE', $clientid 
       // . ' - ' . $data['clientname']
       // ." SUPERVISOR: ".$head['supervisor'].", 

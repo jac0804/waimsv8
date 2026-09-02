@@ -467,6 +467,11 @@ class headClass
             $this->coreFunctions->execqry("delete from pendingapp where doc='PV' and trno=" . $trno, 'delete');
           }
           break;
+        case 'pr':
+          if ($companyid == 67) { //yulick
+              $this->coreFunctions->sbcupdate('headinfotrans', ['checkdate' => null], ['trno' => $trno]);
+          }
+          break;
       }
 
       $this->locking($table, $user, $trno, null, $doc, $config);
@@ -481,6 +486,13 @@ class headClass
     switch (strtolower($doc)) {
       case 'vr':
         return ['msg' => $msg, 'status' => $status, 'islocked' => $islocked, 'isposted' => $isposted, 'backlisting' => true];
+        break;
+      case 'pr':
+        if ($companyid == 67){ //yulick
+          return ['msg' => $msg, 'status' => $status, 'islocked' => $islocked, 'isposted' => $isposted, 'backlisting' => true];
+        }else {
+          return ['msg' => $msg, 'status' => $status, 'islocked' => $islocked, 'isposted' => $isposted];
+        }
         break;
       default:
         return ['msg' => $msg, 'status' => $status, 'islocked' => $islocked, 'isposted' => $isposted];

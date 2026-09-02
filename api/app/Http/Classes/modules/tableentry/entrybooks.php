@@ -139,10 +139,15 @@ class entrybooks
 
   public function insertbooks($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
+
+    $dateTables = ['en_ccbooks'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($data['line'] != 0) {
       if ($this->coreFunctions->sbcinsert($this->table, $data) == 1) {
@@ -180,12 +185,17 @@ class entrybooks
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
+
+    $dateTables = ['en_ccbooks'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data2['line'] != 0) {
           $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $data2['trno'], 'line' => $data2['line'], 'cline' => $data2['cline']]);
@@ -198,10 +208,13 @@ class entrybooks
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['en_ccbooks'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($data['line'] != 0) {
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $data['trno'], 'line' => $data['line'], 'cline' => $data['cline']]) == 1) {

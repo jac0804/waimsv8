@@ -71,6 +71,7 @@ class pr // class declaration
     public $showfilterlabel = [
         ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
         ['val' => 'locked', 'label' => 'Locked', 'color' => 'red'],
+        ['val' => 'forapproval', 'label' => 'For Approval', 'color' => 'primary'],
         ['val' => 'posted', 'label' => 'Posted', 'color' => 'orange']
     ];
 
@@ -112,7 +113,8 @@ class pr // class declaration
             'additem' => 814,
             'edititem' => 815,
             'deleteitem' => 816,
-            'voiditem' => 3601
+            'voiditem' => 3601,
+            'forapproval' => 5944
         );
         return $attrib;
     }
@@ -168,7 +170,7 @@ class pr // class declaration
         ];
 
         if ($this->companysetup->getisshowmanual($config['params'])) {
-            $buttons['others']['items']['manual'] = ['label' => 'View Manual', 'todo' => ['lookupclass' => $config['params']['doc'], 'title' => strtoupper($this->modulename) . '_MANUAL', 'action' => 'viewpdf',  'access' => 'view', 'type' => 'viewmanual']];
+            $buttons['others']['items']['manual'] = ['label' => 'View Manual', 'todo' => ['lookupclass' => $config['params']['doc'], 'title' => strtoupper($this->modulename) . '_MANUAL', 'action' => 'viewpdf', 'access' => 'view', 'type' => 'viewmanual']];
         }
         return $buttons;
     } // createHeadbutton
@@ -203,9 +205,10 @@ class pr // class declaration
         }
 
         $col3 = $this->fieldClass->create($fields);
-        $fields = [];
 
+        $fields = ['forapproval'];
         $col4 = $this->fieldClass->create($fields);
+        data_set($col4, 'forapproval.access', 'forapproval');
         return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
     }
 
@@ -401,10 +404,6 @@ class pr // class declaration
         $hjoin = '';
         $addparams = '';
 
-        // Define status color logic
-        $lscolor = "'red'";
-        $lstatus = "if(head.lockdate is not null,'LOCKED','DRAFT')";
-
         if (isset($config['params']['doclistingparam'])) {
             $test = $config['params']['doclistingparam'];
             if (isset($test['selectprefix'])) {
@@ -465,40 +464,53 @@ class pr // class declaration
 
         $dateid = "left(head.dateid,10) as dateid,head.dateid as date2 ";
 
+        // Define status color logic
+        $lscolor = "'red'";
+        $lstatus = "DRAFT";
+
         switch ($itemfilter) {
             case 'draft':
                 $condition = ' and num.postdate is null and head.lockdate is null ';
+                $lstatus = "'DRAFT'";
                 break;
-
             case 'locked':
-                $condition = ' and num.postdate is null and head.lockdate is not null ';
+                $condition = ' and num.postdate is null and head.lockdate is not null and hi.checkdate is null';
+                $lstatus = "'LOCKED'";
                 break;
-
+            case 'forapproval':
+                $condition = 'and head.lockdate is not null and hi.checkdate is not null and num.statid = 10 and num.postdate is null';
+                $lstatus = "'FOR APPROVAL'";
+                break;
             case 'posted':
                 $condition = ' and num.postdate is not null ';
+                $lstatus = "'POSTED'";
                 break;
         }
 
         $qry = "select head.trno,head.docno,head.clientname,$dateid,
-    " . $lstatus . " as status, date(num.postdate) as postdate,
-    head.createby,head.editby,head.viewby,num.postedby, 
-    head.yourref, head.ourref,
-    case ifnull(head.lockdate,'') when '' then $lscolor else 'green' end as statuscolor  
-    from " . $this->head . " as head left join " . $this->tablenum . " as num
-    on num.trno=head.trno 
-    " . $join . "
-    where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
-    union all
-    select head.trno,head.docno,head.clientname,$dateid, 
-    'POSTED' as status, date(num.postdate) as postdate,
-    head.createby,head.editby,head.viewby, num.postedby, 
-    head.yourref, head.ourref,
-    'grey' as statuscolor  
-    from " . $this->hhead . " as head left join " . $this->tablenum . " as num
-    on num.trno=head.trno 
-    " . $hjoin . "
-    where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
-    order by date2 desc,docno desc $limit";
+        " . $lstatus . " as status, date(num.postdate) as postdate,
+        head.createby,head.editby,head.viewby,num.postedby, 
+        head.yourref, head.ourref,
+        case ifnull(head.lockdate,'') when '' then $lscolor else 'green' end as statuscolor  
+        from " . $this->head . " as head 
+        left join " . $this->tablenum . " as num on num.trno=head.trno 
+        left join headinfotrans as hi on hi.trno = head.trno
+        left join trxstatus as status on status.line = num.statid
+        " . $join . "
+        where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
+        union all
+        select head.trno,head.docno,head.clientname,$dateid, 
+        'POSTED' as status, date(num.postdate) as postdate,
+        head.createby,head.editby,head.viewby, num.postedby, 
+        head.yourref, head.ourref,
+        'grey' as statuscolor  
+        from " . $this->hhead . " as head 
+        left join " . $this->tablenum . " as num on num.trno=head.trno
+        left join headinfotrans as hi on hi.trno = head.trno 
+        left join trxstatus as status on status.line = num.statid
+        " . $hjoin . "
+        where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
+        order by date2 desc,docno desc $limit";
 
         $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -561,6 +573,9 @@ class pr // class declaration
         warehouse.clientname as whname,
         '' as dwhname,
         left(head.due,10) as due,
+        head.lockdate,
+        hi.checkdate,
+        num.postdate,
         client.groupid";
 
         $qry = $qryselect . " from $table as head
@@ -569,6 +584,7 @@ class pr // class declaration
         left join client as warehouse on warehouse.client = head.wh
         left join client as agent on agent.client = head.agent
         left join client as req on req.clientid = head.requestor
+        left join headinfotrans as hi on hi.trno = head.trno
         where head.trno = ? and num.center = ?
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
@@ -576,6 +592,7 @@ class pr // class declaration
         left join client as warehouse on warehouse.client = head.wh
         left join client as agent on agent.client = head.agent
         left join client as req on req.clientid = head.requestor
+        left join headinfotrans as hi on hi.trno = head.trno
           where head.trno = ? and num.center=? ";
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
@@ -589,12 +606,30 @@ class pr // class declaration
             }
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
             $hideobj = [];
-            if ($this->companysetup->getistodo($config['params'])) {
-                $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
-                $hideobj = ['donetodo' => !$btndonetodo];
+
+            // Hide forapproval unless lockdate is set AND checkdate is not yet set
+            $lockdate = isset($head[0]->lockdate) ? $head[0]->lockdate : null;
+            $checkdate = isset($head[0]->checkdate) ? $head[0]->checkdate : null;
+            $postdate = isset($head[0]->postdate) ? $head[0]->postdate : null;
+
+            $hideforapproval = true;
+
+            if (!empty($lockdate)) {
+                $hideforapproval = false;
+                if (!empty($checkdate) || !empty($postdate)) {
+                    $hideforapproval = true;
+                }
             }
 
-            return  [
+            $hideobj['forapproval'] = $hideforapproval;
+
+            if ($this->companysetup->getistodo($config['params'])) {
+                $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
+                // $hideobj = ['donetodo' => !$btndonetodo];
+                $hideobj['donetodo'] = !$btndonetodo;
+            }
+
+            return [
                 'head' => $head, // header data
                 'griddata' => ['inventory' => $stock], // line items
                 'islocked' => $islocked,
@@ -740,11 +775,14 @@ class pr // class declaration
             unset($this->fields[1]);
             unset($head['docno']);
         }
+        $dateTables = ['prhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -760,6 +798,11 @@ class pr // class declaration
             $data['createby'] = $config['params']['user'];
             $this->coreFunctions->sbcinsert($this->head, $data);
             $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
+        }
+
+        $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
+        if ($infotransexist == '') {
+            $this->coreFunctions->sbcinsert("headinfotrans", ['trno' => $head['trno']]);
         }
     } // end function updatehead
 
@@ -824,6 +867,7 @@ class pr // class declaration
         $wh = $config['params']['data']['wh'];
         $loc = $config['params']['data']['loc'];
         $void = 'false';
+        $companyid = $config['params']['companyid'];
         $itemdesc = '';
         if (isset($config['params']['data']['void'])) {
             $void = $config['params']['data']['void'];
@@ -854,15 +898,20 @@ class pr // class declaration
 
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $dateTables = ['prstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
         $factor = 1;
         if (!empty($item)) {
             $item[0]->factor = $this->othersClass->val($item[0]->factor);
-            if ($item[0]->factor !== 0) $factor = $item[0]->factor;
+            if ($item[0]->factor !== 0)
+                $factor = $item[0]->factor;
         }
         $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
         $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
@@ -884,7 +933,7 @@ class pr // class declaration
             'rem' => $rem
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -895,7 +944,7 @@ class pr // class declaration
         }
 
         if ($action == 'insert') {
-            $data['sortline'] =  $data['line'];
+            $data['sortline'] = $data['line'];
             $data['encodeddate'] = $current_timestamp;
             $data['encodedby'] = $config['params']['user'];
             // insert new item line in the stock table
@@ -1197,6 +1246,13 @@ class pr // class declaration
     {
         $trno = $config['params']['trno'];
         $user = $config['params']['user'];
+
+        // block posting if checkdate has not been set yet
+        $checkdate = $this->coreFunctions->datareader("select checkdate as value from headinfotrans where trno=? limit 1", [$trno]);
+        if (empty($checkdate)) {
+            return ['status' => false, 'msg' => 'Posting failed. Transaction has not been tagged for approval yet.'];
+        }
+
         // chech for zero qty items before posting
         $qry = "select trno from " . $this->stock . " where trno=? and qty=0 limit 1";
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
@@ -1212,15 +1268,15 @@ class pr // class declaration
         // copy header from current to history table
         //for glhead
         $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
-      terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,purtype,requestor, 
-      budgetreqno)
-      SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
-      head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
-      head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
-      head.due,head.cur,head.purtype,head.requestor,
-      head.budgetreqno
-      FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
-      where head.trno=? limit 1";
+        terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,purtype,requestor, 
+        budgetreqno)
+        SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
+        head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
+        head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
+        head.due,head.cur,head.purtype,head.requestor,
+        head.budgetreqno
+        FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
+        where head.trno=? limit 1";
         $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
         if ($posthead) {
             // post stock info transactions
@@ -1233,10 +1289,10 @@ class pr // class declaration
 
             // copy items current from current to history table
             $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
-        whid,loc,ref,disc,cost,qty,void,rrcost,rrqty,ext,
-        encodeddate,qa,encodedby,editdate,editby,refx,linex,cdqa,rem,sortline)
-        SELECT trno, line, itemid, uom,whid,loc,ref,disc,cost, qty,void,rrcost, rrqty, ext,
-        encodeddate,qa, encodedby,editdate,editby,refx,linex,cdqa,rem,sortline FROM " . $this->stock . " where trno =?";
+                whid,loc,ref,disc,cost,qty,void,rrcost,rrqty,ext,
+                encodeddate,qa,encodedby,editdate,editby,refx,linex,cdqa,rem,sortline)
+                SELECT trno, line, itemid, uom,whid,loc,ref,disc,cost, qty,void,rrcost, rrqty, ext,
+                encodeddate,qa, encodedby,editdate,editby,refx,linex,cdqa,rem,sortline FROM " . $this->stock . " where trno =?";
             if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
                 //update transnum
                 $date = $this->othersClass->getCurrentTimeStamp();
@@ -1384,9 +1440,34 @@ class pr // class declaration
             case 'navigation':
                 return $this->othersClass->navigatedocno($config);
                 break;
+            case 'forapproval':
+                return $this->forapproval($config);
+                break;
             default:
                 return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
                 break;
+        }
+    }
+
+    public function forapproval($config)
+    {
+        $currentdate = $this->othersClass->getCurrentTimeStamp();
+        $posted = $this->othersClass->isposted($config);
+        if ($posted) {
+            return ['status' => false, 'msg' => 'Already posted'];
+        }
+
+        $lockdate = $this->coreFunctions->datareader("select lockdate as value from prhead where trno=? limit 1", [$config['params']['trno']]);
+        if (is_null($lockdate)) {
+            return ['status' => false, 'msg' => 'Cannot tag for approval: lock date is not set'];
+        }
+
+        if ($this->coreFunctions->sbcupdate($this->tablenum, ['statid' => 10], ['trno' => $config['params']['trno']])) {
+            $this->coreFunctions->sbcupdate('headinfotrans', ['checkdate' => $currentdate], ['trno' => $config['params']['trno']]);
+            $this->logger->sbcwritelog($config['params']['trno'], $config, 'HEAD', 'Tag FOR APPROVAL');
+            return ['status' => true, 'msg' => 'Successfully updated.', 'backlisting' => true];
+        } else {
+            return ['status' => false, 'msg' => 'Failed to tag for approval'];
         }
     }
 
@@ -1411,9 +1492,12 @@ class pr // class declaration
         $this->logger->sbcviewreportlog($config);
 
         $dataparams = $config['params']['dataparams'];
-        if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
-        if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
-        if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
+        if (isset($dataparams['received']))
+            $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
+        if (isset($dataparams['approved']))
+            $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
+        if (isset($dataparams['prepared']))
+            $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
 
         $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);
         $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);

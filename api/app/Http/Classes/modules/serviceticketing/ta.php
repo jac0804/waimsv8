@@ -371,6 +371,10 @@ class ta
   {
     $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+
+    $dateTables = ['lahead', 'cntnuminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $dataother = [];
 
@@ -383,7 +387,7 @@ class ta
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -392,7 +396,7 @@ class ta
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
+          $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
         } //end if
       }
     }

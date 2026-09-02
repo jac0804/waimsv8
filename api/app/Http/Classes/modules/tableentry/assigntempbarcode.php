@@ -189,10 +189,12 @@ class assigntempbarcode
   {
     $data = [];
     $row = $config['params']['row'];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['uom'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
 
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value], '', $config['params']['companyid']);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     $data2 = [];

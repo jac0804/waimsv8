@@ -560,6 +560,7 @@ class gj
 
     switch ($companyid) {
       case 8: //maxipro
+      case 67: //yulick
         data_set($col1, 'client.required', false);
         break;
       case 32: //3m
@@ -816,7 +817,6 @@ class gj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -1126,7 +1126,7 @@ class gj
   {
     $companyid = $config['params']['companyid'];
     $systype = $this->companysetup->getsystemtype($config['params']);
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $acno = $config['params']['data']['acno'];
     $acnoname = $config['params']['data']['acnoname'];
@@ -1419,7 +1419,6 @@ class gj
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -2049,7 +2048,7 @@ class gj
   {
     $trno = $config['params']['trno'];
     $data = $config['params']['row'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $entry = [];
@@ -2255,7 +2254,6 @@ class gj
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         foreach ($this->acctg as $key => $value) {
           foreach ($value as $key2 => $value2) {
-            // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
             $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
           }
 
@@ -2285,7 +2283,7 @@ class gj
   private function closeentry($config)
   {
     $trno = $config['params']['trno'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $client = $this->coreFunctions->getfieldvalue($this->head, "client", "trno=?", [$trno]);
     $cutoff = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
     $cutoff = date("Y-m-d", strtotime($cutoff));
@@ -2339,7 +2337,6 @@ class gj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $k => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$k][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$k][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
 

@@ -36,7 +36,7 @@ class earningdeductionsetup
   public $tablelogs_del = '';
   private $stockselect;
 
-  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate', 'isdeductible'];
+  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate', 'isdeductible','appno','amtinterest','grantdate'];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
   private $blnfields = ['w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'w13', 'isdeductible'];
@@ -173,6 +173,8 @@ class earningdeductionsetup
 
   public function createHeadField($config)
   {
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
+    
     $fields = ['client', 'dateid', 'remarks'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
@@ -183,6 +185,9 @@ class earningdeductionsetup
     data_set($col1, 'remarks.type', 'ctextarea');
 
     $fields = ['empid', 'empcode', 'empname', 'acno', 'acnoname', 'priority'];
+    if($ispayrolldetachment){
+      array_push($fields,'appno');
+    }
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'empname.action', 'lookupclient');
     data_set($col2, 'empname.lookupclass', 'employee');
@@ -203,7 +208,9 @@ class earningdeductionsetup
       array_push($fields, 'startdate');
     }
     array_push($fields, 'amt', 'amortization', 'bal', 'effdate');
-
+    if($ispayrolldetachment){
+      array_push($fields,'grantdate','amtinterest');
+    }
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'amt.label', 'Amount');
     data_set($col3, 'bal.name', 'balance');
@@ -259,7 +266,9 @@ class earningdeductionsetup
     $data[0]['halt'] = '0';
     $data[0]['w13'] = '0';
     $data[0]['isdeductible'] = '0';
-
+    $data[0]['appno'] = '';
+    $data[0]['grantdate'] = $this->othersClass->getCurrentDate();
+    $data[0]['amtinterest'] = '0';
     return $data;
   }
 
@@ -274,7 +283,7 @@ class earningdeductionsetup
     $qryselect = "select s.trno as clientid, s.docno as client, s.docno, s.dateid, s.empid, s.remarks, pac.code as acno, s.amt, s.paymode,
                     w1,w2,w3,w4,w5,w13,halt,s.priority, s.earnded, s.amortization, s.effdate,s.payment,
                     concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname, pac.codename as acnoname, client.client as empcode,
-                    balance, s.acnoid, pac.qty, s.startdate,isdeductible
+                    balance, s.acnoid, pac.qty, s.startdate,isdeductible,s.appno,s.grantdate,s.amtinterest
                     ";
 
     $qry = $qryselect . " from standardsetup as s
@@ -325,7 +334,6 @@ class earningdeductionsetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if
       }

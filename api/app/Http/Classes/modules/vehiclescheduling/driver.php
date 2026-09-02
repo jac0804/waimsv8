@@ -41,10 +41,31 @@ class driver
   private $stockselect;
 
   private $fields = [
-    'client', 'clientname', 'addr', 'start', 'tel2',
-    'contact', 'rem', 'type',
-    'iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isemployee', 'isdepartment', 'picture', 'isdriver',
-    'isadmin', 'uv_ischecker', 'uv_ispicker', 'deptid', 'position', 'empid', 'salesgroupid', 'branchid'
+    'client',
+    'clientname',
+    'addr',
+    'start',
+    'tel2',
+    'contact',
+    'rem',
+    'type',
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswarehouse',
+    'isinactive',
+    'isemployee',
+    'isdepartment',
+    'picture',
+    'isdriver',
+    'isadmin',
+    'uv_ischecker',
+    'uv_ispicker',
+    'deptid',
+    'position',
+    'empid',
+    'salesgroupid',
+    'branchid'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isdriver', 'isemployee', 'isdepartment', 'isadmin', 'uv_ischecker', 'uv_ispicker'];
@@ -308,6 +329,8 @@ class driver
     $center = $config['params']['center'];
     $data = [];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['client'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if ($isupdate) {
       unset($this->fields['client']);
     }
@@ -317,7 +340,7 @@ class driver
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }

@@ -51,7 +51,7 @@ class UpdateUtilities extends Command
 
         $params = ['companyid' => 0, 'pos' => true];
 
-        $this->coreFunction->sbclogger("Start api extraction", 'DLOCK');
+        $this->coreFunction->sbclogger("Start api extraction", 'DLOCK2');
 
         date_default_timezone_set('Asia/Singapore');
         $currentdate = date('Y-m-d');
@@ -102,7 +102,9 @@ class UpdateUtilities extends Command
 
                 $this->coreFunction->execqry("delete from pos_log where e_detail='DLOCK' and date(date_executed)<'" . $currentdate . "'");
             } else {
-                $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log where querystring<>'Start api extraction' and e_detail='DLOCK' order by e_id desc limit 1");
+                $this->coreFunction->sbclogger("Extraction already running...", 'DLOCK2');
+
+                $lastlog = $this->coreFunction->datareader("select date_executed as value from pos_log where e_detail='DLOCK' order by e_id desc limit 1");
                 if ($lastlog != '') {
                     $lastlog = Carbon::parse($lastlog);
                     $current_logtime = date('Y-m-d H:i:s');
@@ -115,7 +117,7 @@ class UpdateUtilities extends Command
                         $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'SYNCING']);
                     }
                 } else {
-                    $this->coreFunction->sbclogger("Reset extraction no last log", 'DLOCK');
+                    $this->coreFunction->sbclogger("Reset extraction no last log", 'DLOCK2');
 
                     $this->coreFunction->execqry("delete from profile where doc=? and psection=?", 'delete', ['IOU', 'SYNCING']);
                 }

@@ -357,9 +357,9 @@ class rr
 
     PDF::SetFont($font, 'B', 12);
     PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
-    PDF::MultiCell(50, 0, "QTY", '', 'C', false, 0);
+    PDF::MultiCell(60, 0, "QTY", '', 'C', false, 0);
     PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-    PDF::MultiCell(270, 0, "DESCRIPTION", '', 'L', false, 0);
+    PDF::MultiCell(260, 0, "DESCRIPTION", '', 'L', false, 0);
     PDF::MultiCell(80, 0, "UNIT PRICE", '', 'R', false, 0);
     PDF::MultiCell(70, 0, "(+/-) %", '', 'R', false, 0);
     PDF::MultiCell(80, 0, "TOTAL", '', 'R', false);
@@ -408,7 +408,7 @@ class rr
 
       $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
       $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
-      $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '10', 0);
       $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
       $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
       $arr_disc = $this->reporter->fixcolumn([$disc], '7', 0);
@@ -419,12 +419,12 @@ class rr
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(100, 15, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(60, 15, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(270, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(260, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::MultiCell(70, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(80, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(80, 15, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
       }
 
       $totalext += $data[$i]['ext'];

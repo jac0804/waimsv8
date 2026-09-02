@@ -418,11 +418,16 @@ class en_student
     }
     $clientid = 0;
     $msg = '';
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['client','en_studentinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -430,7 +435,7 @@ class en_student
       if (isset($head[$key])) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key]);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
         } //end if  
       }
     }

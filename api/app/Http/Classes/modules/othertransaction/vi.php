@@ -25,7 +25,7 @@ class vi
     private $logger;
     public $expirystatus = ['readonly' => false, 'show' => true, 'showdate' => true];
     public $tablenum = 'hrisnum';
-    public $head = 'violation';
+    public $head = 'violation'; 
     public $hhead = 'hviolation';
     public $detail = '';
     public $hdetail = '';
@@ -301,7 +301,6 @@ class vi
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }

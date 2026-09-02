@@ -388,7 +388,7 @@ class qt
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = [];
     if ($isupdate) {
@@ -403,7 +403,6 @@ class qt
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -926,7 +925,7 @@ class qt
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $void = 'false';
     $rem = '';
@@ -981,8 +980,6 @@ class qt
     $dateTables = ['qtstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -1021,7 +1018,6 @@ class qt
       'projectid' => $projectid
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

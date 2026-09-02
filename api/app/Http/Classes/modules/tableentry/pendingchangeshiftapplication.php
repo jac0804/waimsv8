@@ -108,6 +108,7 @@ class pendingchangeshiftapplication
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$dateid]['style'] = 'width:150px;min-width:150px;';
         $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$dateid]['label'] = 'Create Date';
         $obj[0][$this->gridname]['columns'][$daytype]['label'] = 'Day Type';
         $obj[0][$this->gridname]['columns'][$daytype]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$rem]['label'] = $label;
@@ -262,6 +263,10 @@ class pendingchangeshiftapplication
         $url = 'App\Http\Classes\modules\payroll\\' . 'changeshiftapplication';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='" . $doc . "'");
         $both = false;
+
+        $dateTables = ['changeshiftapp'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($approversetup == '') {
             $approversetup = app($url)->approvers($config['params']);
         } else {
@@ -353,7 +358,7 @@ class pendingchangeshiftapplication
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

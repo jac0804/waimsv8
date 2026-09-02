@@ -129,7 +129,6 @@ class viewitembaseprice
 
         $row = $config['params']['dataparams'];
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();

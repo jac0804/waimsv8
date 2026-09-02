@@ -391,6 +391,25 @@ class stockcard
         $cols = $this->tabClass->delcollisting($cols);
         return $cols;
         break;
+      case 67: //yulick
+        $getcols = ['action', 'barcode', 'itemname', 'subclass', 'supplier', 'uom', 'cat_name', 'subcat_name', 'activestat', 'amt'];
+        $stockbuttons = ['view'];
+
+        foreach ($getcols as $key => $value) {
+          $$value = $key;
+        }
+
+        $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+        $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+        $cols[$itemname]['label'] = 'Itemname';
+        $cols[$supplier]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
+        $cols[$cat_name]['label'] = 'Category';
+        $cols[$cat_name]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
+        $cols[$amt]['label'] = 'SRP';
+        $cols[$amt]['align'] = 'text-left';
+
+        return $cols;
+        break;
       default:
         $action = 0;
         $barcode = 1;
@@ -537,6 +556,11 @@ class stockcard
       case 59:
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
         $condition .= "where 1=1 and item.isfa=0 and item.israwmat=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
+        break;
+      case 67: //yulick
+        $addedfields .= ", item.subclass";
+        $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
+        $condition .= "where 1=1 and item.isfa=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
         break;
       default:
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
@@ -1466,6 +1490,7 @@ class stockcard
     $data[0]['defcost'] = 0;
     $data[0]['commrate'] = 0;
 
+
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -1579,6 +1604,9 @@ class stockcard
     $companyid = $config['params']['companyid'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
 
+    $dateTables = ['item', 'uom', 'iteminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $iteminfo = [];
 
@@ -1592,7 +1620,7 @@ class stockcard
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1602,7 +1630,7 @@ class stockcard
       if (!in_array($key, $this->except)) {
         if (array_key_exists($key, $head)) {
           $iteminfo[$key] = $head[$key];
-          $iteminfo[$key] = $this->othersClass->sanitizekeyfield($key, $iteminfo[$key]);
+          $iteminfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $iteminfo[$key], $lookups);
         }
       } //end if    
     }

@@ -58,7 +58,7 @@ class viewpendingso
 
     public function createTab($config)
     {
-        $columns = ['docno', 'barcode', 'itemname', 'remarks', 'ispicked'];
+        $columns = ['docno', 'barcode', 'itemname', 'rem', 'remarks',  'yourref', 'ispicked'];
         $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         foreach ($columns as $key => $value) {
@@ -75,7 +75,16 @@ class viewpendingso
         $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$ispicked]['label'] = 'Select';
         $obj[0][$this->gridname]['columns'][$remarks]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$remarks]['label'] = 'Head Remarks';
         $obj[0][$this->gridname]['columns'][$remarks]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
+
+        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$rem]['label'] = 'Item Remarks';
+        $obj[0][$this->gridname]['columns'][$rem]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
+
+        $obj[0][$this->gridname]['columns'][$yourref]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$yourref]['label'] = 'PO Reference';
+        $obj[0][$this->gridname]['columns'][$yourref]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
@@ -117,10 +126,10 @@ class viewpendingso
 
         if ($stat != 1) {
             $username = $this->coreFunctions->getfieldvalue('client', 'email', 'clientid=?', [$userid]);
-            $qry = "select head.docno,head.trno, i.barcode,i.itemname,stock.line,i.itemid,head.rem as remarks, 'false' as ispicked,'' as bgcolor from hsohead as head
+            $qry = "select head.docno,head.trno, i.barcode,i.itemname,stock.line,i.itemid,head.rem as remarks, 'false' as ispicked,'' as bgcolor,stock.rem,head.yourref from hsohead as head
                 left join hsostock as stock on stock.trno=head.trno
                 left join item as i on i.itemid=stock.itemid
-                where stock.dytrno=0 and stock.tmtrno=0 and head.createby='$username' and head.client='" . $getclient . "'";
+                where stock.iss>stock.qa and stock.dytrno=0 and stock.tmtrno=0 and head.createby='$username' and head.client='" . $getclient . "'";
             return $this->coreFunctions->opentable($qry);
         } else {
             return [];

@@ -112,7 +112,9 @@ class pendingleaveapplications
         if ($companyid == 53) { // camera
             // if ($isapp != 'issupervisor') {
             // array_push($stockbuttons, 'process');
+            array_push($stockbuttons, 'viewleaveattachment');
             // }
+            
         }
 
         if ($companyid == 58) { // cdo
@@ -321,6 +323,8 @@ class pendingleaveapplications
     public function updateapp($config, $status)
     {
         $companyid = $config['params']['companyid'];
+        $dateTables = ['leavetrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $empname = $row['clientname'];
@@ -474,7 +478,7 @@ class pendingleaveapplications
                 $tempdata = [];
                 foreach ($this->leavefields as $key2) {
                     if (isset($data[$key2])) {
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2],$lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

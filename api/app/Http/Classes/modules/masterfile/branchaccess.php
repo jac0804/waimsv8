@@ -90,7 +90,7 @@ class branchaccess
     $idno = $config['params']['idno'];
     $users = $this->coreFunctions->opentable("select username as label,md5(userid) as value from useraccess where md5(accessid)=?
     union all
-    select email as label,md5(clientid) as value from client where userid<>0 and md5(userid)=?", [$idno,$idno]);
+    select email as label,md5(clientid) as value from client where userid<>0 and md5(userid)=?", [$idno, $idno]);
     return ['status' => true, 'msg' => 'Loading data...', 'data' => $users];
   } // end function
 
@@ -110,7 +110,7 @@ class branchaccess
     if ($companyid == 39) { //cbbsi
       $qry = "select center.code,concat(center.name,'-',center.shortname) as description,ifnull((select count(centeraccess.line) from centeraccess where centeraccess.center=center.code and md5(centeraccess.userid)=?),0) as ctr from center";
     } else {
-      $qry = "select center.code,center.name as description,ifnull((select count(centeraccess.line) from centeraccess where centeraccess.center=center.code and md5(centeraccess.userid)=?),0) as ctr from center";
+      $qry = "select center.code,if(center.shortname<>'',center.shortname,center.name) as description,ifnull((select count(centeraccess.line) from centeraccess where centeraccess.center=center.code and md5(centeraccess.userid)=?),0) as ctr from center";
     }
 
     $data = $this->coreFunctions->opentable($qry, [$user]);
@@ -120,9 +120,9 @@ class branchaccess
 
   private function updatecenteraccess($config)
   {
-    $userid = $this->coreFunctions->getfieldvalue('useraccess', 'userid', 'md5(userid)=?', [$config['params']['selecteduser']],'',true);
-    if ($userid == 0){
-      $userid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'md5(clientid)=?', [$config['params']['selecteduser']],'',true);
+    $userid = $this->coreFunctions->getfieldvalue('useraccess', 'userid', 'md5(userid)=?', [$config['params']['selecteduser']], '', true);
+    if ($userid == 0) {
+      $userid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'md5(clientid)=?', [$config['params']['selecteduser']], '', true);
     }
     $center = $config['params']['code'];
     if ($config['params']['ctr'] == 0) {

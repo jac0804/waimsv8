@@ -30,7 +30,7 @@ class payrollentry
   private $payrollcommon;
   public $style = 'width:100%;max-width:100%;';
   private $fields = ['qty'];
-  public $issearchshow = false;
+  public $issearchshow = true;
   public $showclosebtn = false;
 
   public function __construct()
@@ -66,12 +66,7 @@ class payrollentry
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => [
-          'acno',
-          'codename',
-          'qty',
-          'uom'
-        ]
+        'gridcolumns' => ['acno', 'codename', 'qty', 'uom']
       ],
     ];
 
@@ -202,21 +197,37 @@ class payrollentry
 
   private function saveentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timesheet'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = $config['params']['rows'];
     foreach ($this->fields as $key => $value) {
       foreach ($data as $k => $v) {
-        $data[$k][$value] = $this->othersClass->sanitizekeyfield($value, $data[$k][$value]);
+        $data[$k][$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$k][$value],$lookups);
       }
     }
 
 
     $arrEdit = [];
     $success = true;
+    $blnEditDays = false;
     foreach ($data as $key => $value) {
 
       if ($value['bgcolor'] != '') {
         unset($value['bgcolor']);
         unset($value['psort']);
+
+        if ($config['params']['companyid'] == 62) { //onesky
+          switch ($value['alias']) {
+            case 'WORKING':
+            case 'RESTDAY':
+            case 'ABSENT':
+              $blnEditDays = true;
+              break;
+          }
+        }
+
         array_push($arrEdit, $value);
       }
 
@@ -251,7 +262,7 @@ class payrollentry
 
       switch ($config['params']['companyid']) {
         case 62: //onesky
-          $paytran_success = $this->payrollcommon->computeemptimesheet_onesky($batch, $config['params']['dataparams']['enddate'], $empid, $start, $end, $user, $batchcode, $config['params'], true);
+          $paytran_success = $this->payrollcommon->computeemptimesheet_onesky($batch, $config['params']['dataparams']['enddate'], $empid, $start, $end, $user, $batchcode, $config['params'], true, $blnEditDays);
           if ($paytran_success['status']) {
 
             foreach ($arrEdit as $key2 => $value) {
@@ -306,11 +317,11 @@ class payrollentry
     }
 
     $qry = "
-      select '1' as psort, pac.seq, date(ts.dateid) as dateid, pac.code as acno, pac.codename, ts.qty, ts.uom, ts.line, '' as 'bgcolor', ts.empid, ts.batchid, ts.acnoid
+      select '1' as psort, pac.seq, date(ts.dateid) as dateid, pac.code as acno, pac.codename, ts.qty, ts.uom, ts.line, '' as 'bgcolor', ts.empid, ts.batchid, ts.acnoid, pac.alias
       from timesheet as ts left join paccount as pac on pac.line=ts.acnoid
       where ts.batchid=" . $batch . " and ts.empid=" . $empid . " and ts.qty<>0 
       union all
-      select '2' as psort, pac.seq, date(ts.dateid) as dateid, pac.code as acno, pac.codename, ts.qty, ts.uom, ts.line, '' as 'bgcolor', ts.empid, ts.batchid, ts.acnoid
+      select '2' as psort, pac.seq, date(ts.dateid) as dateid, pac.code as acno, pac.codename, ts.qty, ts.uom, ts.line, '' as 'bgcolor', ts.empid, ts.batchid, ts.acnoid, pac.alias
       from timesheet as ts left join paccount as pac on pac.line=ts.acnoid
       where ts.batchid=" . $batch . " and ts.empid=" . $empid . " and ts.qty=0 and ts.acnoid<>0
       order by psort, seq";

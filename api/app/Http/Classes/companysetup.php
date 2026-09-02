@@ -129,12 +129,16 @@ class companysetup
   public $socketnotify = false;
   public $lookupclientpermodule = true;
   public $ispayrollportal = false;
+  public $ispayrolldetachment = false;
   public $isnavigation = false;
   public $isenterqty = false;
   public $ismultiloc = false;
   public $isautoservice = false;
   public $ismirrortrans = false;
   public $issuemultipleexpiry = false;
+  public $islocation = false;
+  public $locname = 'Location';
+
 
 
   public function __construct()
@@ -236,14 +240,63 @@ class companysetup
     $this->isshortcutpr = false;
     $this->isautoservice = false;
     $this->ismirrortrans = false;
+    $this->islocation = false;
+    $this->ispayrolldetachment = false;
+
+
 
     switch ($params['companyid']) {
+      case 71://buenatech
+        $this->ismysql8 = true;
+        $this->clientlength = 15;
+        $this->locationlength = 0;
+        $this->documentlength = 15;
+        $this->barcodelength = 20;
+        $this->tax = 12;
+        $this->serial = true;
+        $this->companyname = 'Buenatech';
+        $this->systemtype = 'AIMS';
+        $this->isexpiry = true;
+        $this->islocation = true;
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->ispricescheme = false;
+        $this->isconsign = false;
+        $this->isshortcutpo = true;
+        $this->iscrm = false;
+        $this->ispos = false;
+        $this->isshortcutjo = false;
+        $this->autoaj = false;
+        $this->istodo = false;
+        $this->restrictip = false;
+        $this->periodic = false;
+        $this->ispurchasedisc = true;
+        $this->isshowmanual = true;
+        $this->isglc = true;
+        $this->invonly = false;
+        $this->clientitem = false;
+        $this->daysdue = 7;
+        $this->isvatexsales = false;
+        $this->timekeeping = false;
+        $this->isconstruction = false;
+        $this->ispurchases = false;
+        $this->linearapproval = false;
+        $this->isticketing = false;
+        $this->isserviceticketing = false;
+        $this->showdept = false;
+        $this->isshowtsso = false;
+        $this->showloading = true;
+        $this->isautoservice = false;
+        $this->issuemultipleexpiry = true;
+        break;
       case 70: //sportrunner
         $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 15;
         $this->tax = 12;
-        $this->companyname = 'SPORTRUNNER';
+        $this->companyname = 'BX TRADING';
         $this->systemtype = 'PRODUCTPORTAL';
         $this->isexpiry = false;
         $this->isproject = false;
@@ -280,13 +333,14 @@ class companysetup
         $this->reportpath = "\Http\Classes\modules\modulereport\cemphil\\";
         $this->isfirstpageheader = true;
         $this->ismysql8 = true;
+        $this->locname = 'Brand';
         break;
       case 68: //JDA
         $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 15;
         $this->tax = 12;
-        $this->serial = false;
+        $this->serial = true;
         $this->multibranch = false;
         $this->branchaccess = 0;
         $this->companyname = 'JDA';
@@ -301,8 +355,9 @@ class companysetup
         $this->isshortcutpr = true;
         $this->iscrm = false;
         $this->ispos = false;
+        $this->ispr = true;
         $this->isshortcutjo = false;
-        $this->istodo = true;
+        $this->istodo = false;
         $this->restrictip = false;
         $this->periodic = true;
         $this->ispurchasedisc = true;
@@ -310,6 +365,7 @@ class companysetup
         $this->reportpath = "\Http\Classes\modules\modulereport\jda\\";
         $this->logopath = "public/images/jda/";
         $this->ismysql8 = true;
+        $this->islocation = true;
         break;
       case 67:  //yulick - aims
         $this->clientlength = 15;
@@ -321,6 +377,7 @@ class companysetup
         $this->systemtype = 'AIMS';
         $this->checkbelowcost = true;
         $this->isproject = false;
+        $this->ispr = true;
         $this->payroll_bonusmax = 0;
         $this->payroll_daysInMonth = 0;
         $this->iscreateversion = false;
@@ -334,7 +391,7 @@ class companysetup
         $this->ismysql8 = true;
         break;
       case 66:  //metro dragon - payroll
-        $this->clientlength = 0;
+        $this->clientlength = 15;
         $this->documentlength = 15;
         $this->barcodelength = 0;
         $this->tax = 12;
@@ -357,7 +414,7 @@ class companysetup
       case 65:  //metro dragon - aims
         $this->clientlength = 10;
         $this->documentlength = 15;
-        $this->barcodelength = 15;
+        $this->barcodelength = 0;
         $this->tax = 12;
         $this->serial = false;
         $this->companyname = 'METRO DRAGON';
@@ -690,6 +747,8 @@ class companysetup
         $this->iseditsortline = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\technolab\\";
         $this->isfirstpageheader = true;
+        $this->islocation = true;
+        $this->locname = 'Lot/Serial#';
         break;
       case 51: //ULITC PORTAL -single approver "loginlogostyle":"width:240px;","mainlogostyle":"width:230px;margin:auto;","mainlogodivmargin":"margin-top:150px;","mainlogodivheight":"height:120px"
         $this->clientlength = 0;
@@ -730,6 +789,7 @@ class companysetup
         $this->pricetype = 'CustomerGroupLatest';
         $this->reportpath = "\Http\Classes\modules\modulereport\\unitech\\";
         $this->logopath = "public/images/unitech/";
+        $this->locname = 'Brand';
         break;
       case 49: //hotmix - ms joy cebu
         $this->clientlength = 15;
@@ -747,6 +807,7 @@ class companysetup
         $this->multibranch = true;
         $this->branchaccess = 1;
         $this->isshareinv = true;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\hotmix\\";
         break;
       case 48: //seastar - ms joy cebu
@@ -908,6 +969,7 @@ class companysetup
         $this->isshowmanual = true;
         $this->isglc = true;
         $this->invonly = true;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\pdpi\\";
         $this->logopath = "/images/pdpi/";
         break;
@@ -932,6 +994,8 @@ class companysetup
         $this->iseditsortline = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\labsol\\";
         $this->isfirstpageheader = true;
+        $this->islocation = true;
+        $this->locname = 'Lot/Serial#';
         break;
       case 40: //cdocycles aims
         $this->clientlength = 15;
@@ -972,6 +1036,7 @@ class companysetup
         $this->isshareinv = true;
         $this->ismirrortrans = true;
         $this->ispr = true;
+        $this->islocation = true;
         break;
       case 39: //CBBSI
         $this->clientlength = 0;
@@ -1071,6 +1136,7 @@ class companysetup
         $this->pricetype = 'CustomerGroup';
         $this->reportpath = "\Http\Classes\modules\modulereport\\rozlab\\";
         $this->isglc = true;
+        $this->islocation = true;
         break;
       case 35: //AQUAMAX
         $this->clientlength = 15;
@@ -1196,7 +1262,7 @@ class companysetup
         $this->itembatch = 0;
         $this->reportpath = "\Http\Classes\modules\modulereport\sbc\\";
         $this->logopath = "public/images/sbc/";
-        $this->socketserver = ''; //http://localhost:3000 ; http://nodejs.sbc.ph:25384
+        // $this->socketserver = 'https://op.sbc.ph:25384'; //http://localhost:3000 ; http://nodejs.sbc.ph:25384
         // $this->socketnotify = true;
         $this->ispayrollportal = true;
         break;
@@ -1244,6 +1310,7 @@ class companysetup
         $this->isconsign = false;
         $this->fifoexpiration = true;
         $this->masterlimit = 5000;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\nte\\";
         $this->isglc = true;
         $this->mobilemodules = ['so', 'sj'];
@@ -1330,6 +1397,7 @@ class companysetup
         $this->ispr = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\goodfound\\";
         $this->isfirstpageheader = true;
+        $this->locname = 'Batch No';
         break;
       case 23:  //lab sol //cebu
         $this->clientlength = 10;
@@ -1351,6 +1419,8 @@ class companysetup
         $this->isglc = true;
         $this->issuemultipleexpiry = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\labsolcebu\\";
+        $this->islocation = true;
+        $this->locname = 'Lot/Serial#';
         break;
       case 22: // petfoods eipi
         $this->clientlength = 10;
@@ -1378,6 +1448,7 @@ class companysetup
         $this->isdefaultuominout = true;
         $this->isrecalcamt_changeuom = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\eipi\\";
+        $this->islocation = true;
         break;
       case 21: //kinggeorge
         $this->clientlength = 7;
@@ -1437,6 +1508,7 @@ class companysetup
         $this->iseditsortline = true;
         $this->isrecalc = false;
         $this->pricetype = 'CustomerGroupLatest';
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\housegem\\"; // SJ printing setup - Custom 75    
         $this->rptfont = 'Arial';
         break;
@@ -1521,6 +1593,7 @@ class companysetup
         $this->isshortcutso = true;
         $this->fifoexpiration = true;
         $this->isrecalc = true;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\nathina\\";
         break;
       case 14: //MAJESTY
@@ -1542,6 +1615,7 @@ class companysetup
         $this->isacctgentry = false;
         $this->autoaj = true;
         $this->invonly = true;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\majesty\\";
         break;
       case 12: //afti usd
@@ -1661,12 +1735,14 @@ class companysetup
         $this->iscreateversion = false;
         $this->ispos = false;
         $this->iscrm = false;
+        $this->islocation = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\maxipro\\";
         $this->logopath = "/images/maxipro/";
         $this->isglc = true;
         $this->manualpath = "public/images/manual/maxipro/pdf/";
         $this->isshowmanual = true;
         $this->ispr = true;
+        $this->locname = 'Brand';
         break;
       case 7: //Enrollment
         $this->clientlength = 15;
@@ -1787,6 +1863,7 @@ class companysetup
         $this->iscreateversion = false;
         $this->isfa = false;
         $this->reportpath = "\Http\Classes\modules\modulereport\\vitaline\\";
+        $this->islocation = true;
         break;
       default:
         $this->clientlength = 15;
@@ -1796,7 +1873,7 @@ class companysetup
         $this->tax = 12;
         $this->serial = true;
         $this->companyname = 'ABC Corp.';
-        $this->systemtype = 'MMS';
+        $this->systemtype = 'AIMS';
         $this->isexpiry = true;
         $this->checkbelowcost = true;
         $this->isproject = false;
@@ -2041,7 +2118,7 @@ class companysetup
             $modulelist = ['masterfile', 'itemmaster', 'autoinquiry', 'autoservsetup', 'autoservoperation', 'transactionutilities', 'accountutilities', 'announcement', 'dashboard'];
             break;
           case 'PRODUCTPORTAL':
-            $modulelist = ['productportal', 'transactionutilities', 'accountutilities', 'dashboard'];
+            $modulelist = ['masterfile', 'productportal', 'transactionutilities', 'accountutilities', 'dashboard',];
             break;
           case 'EAPPLICATION':
             $modulelist = ['operation', 'receivable', 'reportlist', 'masterfile', 'announcement', 'dashboard'];
@@ -2234,6 +2311,10 @@ class companysetup
           }
         }
         break;
+    }
+
+    if ($this->getispayrolldetachment($params)) {
+      array_push($modulelist, 'detachmentoperation');
     }
 
     if ($params['companyid'] != 34) { //not evergreen
@@ -3064,5 +3145,23 @@ class companysetup
   {
     $this->companylist($params);
     return $this->issuemultipleexpiry;
+  }
+
+  public function getispayrolldetachment($params)
+  {
+    $this->companylist($params);
+    return $this->ispayrolldetachment;
+  }
+
+  public function getislocation($params)
+  {
+    $this->companylist($params);
+    return $this->islocation;
+  }
+
+  public function getlocname($params)
+  {
+    $this->companylist($params);
+    return $this->locname;
   }
 }

@@ -382,8 +382,11 @@ class viewincentivesagentannual
 
   private function getdata($config)
   {
-    $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-    $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['incentivesyr'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+    $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
     $agentid = $config['params']['dataparams']['agentid'];
     $agent = $config['params']['dataparams']['agent'];
     $doc = $config['params']['dataparams']['incentivetype'];
@@ -396,7 +399,7 @@ class viewincentivesagentannual
 
     if ($status == "1") {
       $agrelease = $config['params']['dataparams']['agrelease'];
-      $agrelease = $this->othersClass->sanitizekeyfield('dateid', $agrelease);
+      $agrelease = $this->othersClass->sanitizekeyfieldFast('dateid', $agrelease, $lookups);
       $agrelease = $this->othersClass->sbcdateformat($agrelease);
 
       $status = " and i.agrelease is not null and date(i.agrelease)='" . $agrelease . "'";

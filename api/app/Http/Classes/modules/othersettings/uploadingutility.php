@@ -333,6 +333,7 @@ class uploadingutility
         if ($config['params']['companyid'] == 68) { //jda
           array_push(
             $options,
+            ['label' => 'NEW Employee Requirements', 'value' => 'newreq', 'color' => 'green'],
             ['label' => 'Update Employee Requirements', 'value' => 'updatereq', 'color' => 'green']
           );
         }
@@ -394,6 +395,13 @@ class uploadingutility
           ['label' => 'Upload Rates', 'value' => 'updateemployeerate', 'color' => 'green'],
         ));
         break;
+
+      case 70: //sportrunner
+        data_set($col1, 'optionuploading.options', array(
+          ['label' => 'New Items', 'value' => 'newitem', 'color' => 'primary'],
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary']
+        ));
+        break;
     }
 
     if ($this->companysetup->getisupdatabasetable($config['params'])) {
@@ -438,6 +446,7 @@ class uploadingutility
 
       case 58: //cdo-hris
       case 62: //onesky
+      case 70: //sportrunner
         $fields = [];
         break;
 
@@ -482,6 +491,7 @@ class uploadingutility
       case 23:
       case 41:
       case 52: //technolab
+      case 70: //sportrunner
         array_push($fields, 'downloaditemexcelmaster');
         break;
       case 40: //cdo
@@ -934,7 +944,7 @@ class uploadingutility
               ]
             ];
             break;
-          case 56; //homeworks
+          case 56: //homeworks
             return [
               'status' => true,
               'msg' => 'Item template ready to Download',
@@ -1088,6 +1098,31 @@ class uploadingutility
                   'PRICE2' => '',
                   'PRICE_A' => '',
                   'PRICE_B' => ''
+                ]
+              ]
+            ];
+            break;
+
+          case 70: //sportrunner
+            return [
+              'status' => true,
+              'msg' => 'Item template ready to Download',
+              'name' => 'item',
+              'data' => [
+                [
+                  'ItemCode' => '',
+                  'Part No.' => '',
+                  'Equivalent No.' => '',
+                  'Item Category' => '',
+                  'Car Brand' => '',
+                  'ItemDescription' => '',
+                  'Year Model' => '',
+                  'Position' => '',
+                  'Size' => '',
+                  'Item Brand' => '',
+                  'Price' => '',
+                  'Discount' => '',
+                  'UOM' => ''
                 ]
               ]
             ];
@@ -1499,6 +1534,7 @@ class uploadingutility
               'FirstName' => '',
               'MiddleName' => '',
               'Address' => '',
+              'ContactNumber' => '',
               'DivisionCode' => '',
               'Role' => '',
               'ModeOfPayment' => '',
@@ -1853,25 +1889,26 @@ class uploadingutility
 
     if ($template['status']) {
       $fieldnames = '';
+      $fieldinfonames = '';
 
       $tablename = 'item';
+      $iteminfo = 'iteminfo';
 
       foreach ($template['data'][0] as $key => $value) {
         $fieldname = $this->getequivalentfieldname(trim($key), $tablename, '', $config);
-        if ($fieldname != "") {
-          if ($fieldnames == '') {
-            if ($fieldname == 'min' || $fieldname == 'max') {
-              $fieldnames =  'il.' . $fieldname;
+        switch ($fieldnames) {
+          case 'min':
+          case 'max':
+            $fieldnames = $fieldnames . (($fieldnames == '') ? '' :  ',') . 'il.' . $fieldname;
+            break;
+          default:
+            $iteminfo_field = $this->getiteminfofields($fieldname, "");
+            if ($iteminfo_field != '') {
+              $fieldinfonames = ',' . $iteminfo . '.' . $fieldname;
             } else {
-              $fieldnames = 'item.' . $fieldname;
+              $fieldnames = $fieldnames . (($fieldnames == '') ? '' :  ',') . 'item.' . $fieldname;
             }
-          } else {
-            if ($fieldname == 'min' || $fieldname == 'max') {
-              $fieldnames = $fieldnames . ',' . 'il.' . $fieldname;
-            } else {
-              $fieldnames = $fieldnames . ',' . 'item.' . $fieldname;
-            }
-          }
+            break;
         }
       }
 
@@ -1882,9 +1919,12 @@ class uploadingutility
         if ($companyid ==  47) { //kstar
           $qry = "select " . $fieldnames . " from item left join itemlevel as il on il.itemid = item.itemid order by item.barcode ";
         } else {
-          $qry = "select " . $fieldnames . " from item  order by barcode ";
+          $leftjoin = '';
+          if ($fieldinfonames  != '') $leftjoin = ' left join ' . $iteminfo . ' on ' . $iteminfo . '.itemid=item.itemid';
+
+          $qry = "select " . $fieldnames . $fieldinfonames . " from item " . $leftjoin . " order by barcode ";
         }
-        // var_dump($qry);
+        var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         $data = json_decode(json_encode($data), true);
 
@@ -1904,6 +1944,8 @@ class uploadingutility
                   case 'subcat':
                   case 'projectid':
                   case 'supplier':
+                  case 'carid':
+                  case 'positionid':
                     $check = $this->isexist($ar, $val[$ar], 'id', $tablename, "name");
                     if ($check) {
                       $data[$k][$ar]  = $check;
@@ -2802,6 +2844,7 @@ class uploadingutility
         $arrUniques = ['empid', 'dateid'];
         break;
       case 'updatereq':
+      case 'newreq':
         $tabletype = 'erequire';
         $arrUniques = ['empid', 'pin'];
         break;
@@ -2975,6 +3018,13 @@ class uploadingutility
         break;
     }
 
+    $reqitemInfo = false; //insert in iteminfo, needed in exporting item master cause other fields are in iteminfo table
+    switch ($companyid) {
+      case 70:
+        $reqitemInfo = true;
+        break;
+    }
+
     foreach ($rawdata as $key => $value) {
       if ($skip1strow) {
         if ($key == 0) {
@@ -3059,6 +3109,8 @@ class uploadingutility
               case 'jobid2':
               case 'workcatid':
               case 'empid':
+              case 'carid':
+              case 'positionid':
 
                 if (strtoupper(trim($val)) == 'APPROVER') $valtoinsert['isapprover'] = 1;
                 if (strtoupper(trim($val)) == 'SUPERVISOR') $valtoinsert['issupervisor'] = 1;
@@ -3072,7 +3124,7 @@ class uploadingutility
                   } else {
                     $status = false;
                     // $msg .= $check['msg'] . '<br>';
-                    $msg = $this->addMsg($msg, $check['msg']);
+                    $msg = $this->othersClass->addMsg($msg, $check['msg']);
                     // goto exithere;
                     goto NextLoopHere;
                   }
@@ -3215,7 +3267,7 @@ class uploadingutility
             }
 
             // $this->othersClass->logConsole('valtoinsert -- ' . json_encode($valtoinsert));
-
+            // Logger('valtoinsert per col -- ' . json_encode($valtoinsert));
 
             if ($type == 'updateitem' && $blnIsert == false) {
               $valtoinsert['itemid'] = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode=?", [$valtoinsert['barcode']], '', true);
@@ -3488,7 +3540,7 @@ class uploadingutility
         }
 
 
-        if ($iteminfo) {
+        if ($iteminfo || $reqitemInfo) {
           $iteminfo[$unique] = $uniqueval;
         }
 
@@ -3760,6 +3812,7 @@ class uploadingutility
                   }
                 }
 
+                if (!isset($valtoinsert[$unique])) goto NextLoopHere;
                 $insert = $this->coreFunctions->sbcinsert($table, $datatoinsert);
                 break;
             }
@@ -3823,6 +3876,7 @@ class uploadingutility
               break;
 
             default:
+              if (!isset($valtoinsert[$unique])) goto NextLoopHere;
               $insert = $this->coreFunctions->sbcupdate($table, $datatoupdate, [$unique => $valtoinsert[$unique]]);
               break;
           }
@@ -3874,15 +3928,15 @@ class uploadingutility
                 }
               }
 
-              if ($companyid == 16) {
-                if ($iteminfo) {
-                  $result = $this->insertiteminfo($iteminfo, $unique, $type, $config);
-                  if (!$result['status']) {
-                    $status = false;
-                    $msg .= $result['msg'];
-                  }
+              // if ($companyid == 16) {
+              if ($iteminfo) {
+                $result = $this->insertiteminfo($iteminfo, $unique, $type, $config);
+                if (!$result['status']) {
+                  $status = false;
+                  $msg .= $result['msg'];
                 }
               }
+              // }
 
               if ($companyid == 47) { //kstar
                 if ($itemlevel) {
@@ -3937,15 +3991,18 @@ class uploadingutility
             }
           }
 
+
           if ($insert) {
             if (!empty($employeeinfo)) {
               $employeeinfo['empid'] = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$valtoinsert['client']], '', true);
               if ($employeeinfo['empid'] != 0) {
 
-                if (isset($employeeinfo['tin'])) if ($employeeinfo['tin'] != '') $employeeinfo['chktin'] = $employeeinfo['tin'];
-                if (isset($employeeinfo['sss'])) if ($employeeinfo['sss'] != '') $employeeinfo['chksss'] = $employeeinfo['sss'];
-                if (isset($employeeinfo['phic'])) if ($employeeinfo['phic'] != '') $employeeinfo['chkphealth'] = $employeeinfo['phic'];
-                if (isset($employeeinfo['hdmf'])) if ($employeeinfo['hdmf'] != '') $employeeinfo['chkpibig'] = $employeeinfo['hdmf'];
+                if (isset($employeeinfo['tin'])) if ($employeeinfo['tin'] != '') (isset($employeeinfo['chktin'])) ? $employeeinfo['chktin'] = $employeeinfo['chktin'] : $employeeinfo['chktin'] = 1;
+                if (isset($employeeinfo['sss'])) if ($employeeinfo['sss'] != '') (isset($employeeinfo['chksss'])) ? $employeeinfo['chksss'] = $employeeinfo['chksss'] : $employeeinfo['chksss'] = 1;
+                if (isset($employeeinfo['phic'])) if ($employeeinfo['phic'] != '') (isset($employeeinfo['chkphealth'])) ? $employeeinfo['chkphealth'] = $employeeinfo['chkphealth'] : $employeeinfo['chkphealth'] = 1;
+                if (isset($employeeinfo['hdmf'])) if ($employeeinfo['hdmf'] != '') (isset($employeeinfo['chkpibig'])) ? $employeeinfo['chkpibig'] = $employeeinfo['chkpibig'] : $employeeinfo['chkpibig'] = 1;
+
+                if (isset($employeeinfo['bankacct'])) if ($employeeinfo['bankacct'] != '') (isset($employeeinfo['atm'])) ? $employeeinfo['atm'] = $employeeinfo['atm'] : $employeeinfo['atm'] = 1;
 
                 foreach ($employeeinfo as $kemp => $valemp) {
                   $employeeinfo[$kemp] = $this->othersClass->sanitizekeyfield($kemp, $valemp, '', $companyid);;
@@ -3957,9 +4014,9 @@ class uploadingutility
                 } else {
                   $employeeinfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
                   $employeeinfo['editby'] =  $config['params']['user'];
-                  $this->coreFunctions->LogConsole(json_encode($employeeinfo));
+                  // $this->coreFunctions->LogConsole(json_encode($employeeinfo));
                   $insert = $this->coreFunctions->sbcupdate("employee", $employeeinfo, ['empid' => $employeeinfo['empid']]);
-                  $this->coreFunctions->LogConsole("udpate result: " . $insert);
+                  // $this->coreFunctions->LogConsole("udpate result: " . $insert);
                 }
 
                 if (!$insert) {
@@ -4059,7 +4116,8 @@ class uploadingutility
         }
       } catch (Exception $e) {
         $status = false;
-        $msg .= "(" . $valtoinsert[$unique] . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
+        // $msg .= "(" . isset($valtoinsert[$unique]) ? $valtoinsert[$unique] : "" . ") Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
+        $msg .= "Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
         goto exithere;
       }
 
@@ -4113,6 +4171,9 @@ class uploadingutility
         break;
       case 'forexid':
         return 'forex_masterfile';
+        break;
+      case 'carid':
+        return 'carbrand';
         break;
       case 'customer':
       case 'supplier':
@@ -4220,7 +4281,7 @@ class uploadingutility
       case 'agentcode':
       case 'warehousecode':
       case 'truckcode':
-        if ($companyid == 60 && strtolower($field) == 'agentcode') {
+        if ($table == 'client' && strtolower($field) == 'agentcode') {
           return 'agent';
         }
         return 'client';
@@ -4244,7 +4305,7 @@ class uploadingutility
 
       case 'employeecode':
       case 'empcode':
-        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance' || $type == 'timecard' || $type == 'updatereq') {
+        if ($type == 'newfams' || $type == 'updatefams' || $type == 'issueitem' || $type == 'updateemployeerate' || $type == 'newallowance' || $type == 'timecard' || $type == 'newreq' || $type == 'updatereq') {
           return 'empid';
         } else {
           return 'client';
@@ -4375,6 +4436,10 @@ class uploadingutility
       case 'datehired':
       case 'date hired':
         return 'hired';
+        break;
+
+      case 'regularization effectively':
+        return 'regular';
         break;
 
       case 'bankaccount':
@@ -4542,6 +4607,7 @@ class uploadingutility
       case 'retail':
       case 'standard':
       case 'base_price':
+      case 'price':
         return 'amt';
         break;
 
@@ -4821,11 +4887,16 @@ class uploadingutility
 
       case 'sku':
       case 'sku/part no.':
+      case 'part no.':
         return 'partno';
         break;
 
       case 'serialno':
         return 'serialno';
+        break;
+
+      case 'equivalent no.':
+        return 'othcode';
         break;
 
       case 'bio_id':
@@ -4879,6 +4950,14 @@ class uploadingutility
         return 'type';
         break;
 
+      case 'year model':
+        return 'fyear';
+        break;
+
+      case 'car brand':
+        return 'carid';
+        break;
+
       case 'call sign':
         return 'callsign';
         break;
@@ -4913,6 +4992,7 @@ class uploadingutility
         break;
 
       case 'contact number':
+      case 'contactnumber':
         return 'mobileno';
         break;
 
@@ -4973,6 +5053,7 @@ class uploadingutility
         return 'contact1';
         break;
       case 'main_category':
+      case 'item category':
         return 'category';
         break;
       case 'cost':
@@ -4982,6 +5063,13 @@ class uploadingutility
           return 'cost';
         }
         break;
+
+      case 'item brand':
+        return 'brand';
+        break;
+
+      case 'position':
+        return 'positionid';
 
       case 'barcode':
       case 'itemname':
@@ -5031,7 +5119,6 @@ class uploadingutility
       case 'status':
       case 'gender':
       case 'paymode':
-      case 'jobtitle';
       case 'branch':
       case 'religion':
       case 'course':
@@ -5095,7 +5182,7 @@ class uploadingutility
         return 'isreversewireitem';
         break;
       case 'code':
-        if ($type == 'updatereq') {
+        if ($type == 'updatereq' || $type == 'newreq') {
           return 'pin';
         }
         return 'client';
@@ -5149,15 +5236,6 @@ class uploadingutility
         }
 
         break;
-    }
-  }
-
-  private function addMsg($old, $new)
-  {
-    if (strpos($old, $new) !== false) {
-      return $old;
-    } else {
-      return ($old == '' ? $new : $old . '<br>' . $new);
     }
   }
 
@@ -5217,7 +5295,7 @@ class uploadingutility
           $qry = "select line as value from reqcategory where isreassigned=1 and category='" . $value . "'";
           break;
         case 'empid':
-          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance' || $uploadtype == 'timecard' || $uploadtype == 'updatereq') {
+          if ($uploadtype == 'updateemployeerate' || $uploadtype == 'newallowance' || $uploadtype == 'timecard' || $uploadtype == 'newreq' || $uploadtype == 'updatereq') {
             $qry = "select clientid as value from client where isemployee=1 and client='" . $value . "'";
           }
           break;
@@ -5256,6 +5334,12 @@ class uploadingutility
           break;
         case 'empstatus':
           $qry = "select line as value from empstatentry where `empstatus`='" . $value . "'";
+          break;
+        case 'carid':
+          $qry = "select id as value from carbrand where `brand`='" . $value . "'";
+          break;
+        case 'posistionid':
+          $qry = "select id as value from positions where `positions`='" . $value . "'";
           break;
       }
       if ($qry != '') {
@@ -5500,6 +5584,9 @@ class uploadingutility
       case 'empstatus':
         return 'empstatentry';
         break;
+      case 'carid':
+        return 'carbrand';
+        break;
     }
   }
 
@@ -5619,6 +5706,14 @@ class uploadingutility
             $returnfieldval = ($returnfield == 'id') ? 'line' : 'name';
             $qry = "select " . $returnfieldval . " as value from deliverytype where line=" . $id;
             break;
+          case 'carid':
+            $returnfieldval = ($returnfield == 'id') ? 'id' : 'brand';
+            $qry = "select " . $returnfieldval . " as value from carbrand where id=" . $id;
+            break;
+          case 'positionid':
+            $returnfieldval = ($returnfield == 'id') ? 'id' : 'positions';
+            $qry = "select " . $returnfieldval . " as value from positions where id=" . $id;
+            break;
         }
         break;
 
@@ -5666,6 +5761,9 @@ class uploadingutility
             break;
           case 'deliverytype':
             $qry = "select line as value from deliverytype where `name`='" . $id . "'";
+            break;
+          case 'positions':
+            $qry = "select line as value from positions where `positions`='" . $id . "'";
             break;
         }
 
@@ -5937,7 +6035,7 @@ class uploadingutility
 
   public function getiteminfofields($key, $type)
   {
-    $arr = ['itemdescription', 'accessories', 'serialno'];
+    $arr = ['itemdescription', 'accessories', 'serialno', 'fyear', 'positionid'];
     switch ($type) {
       case 'newfams':
       case 'updatefams':
@@ -6211,7 +6309,8 @@ class uploadingutility
         if (floatval($params['basicrate']) != 0) {
 
           if (!isset($params['dateeffect'])) {
-            return ['status' => false, 'msg' => "Please input valid rate effectivity for " . $uniqueval . ". "];
+            // return ['status' => false, 'msg' => "Please input valid rate effectivity for " . $uniqueval . ". "];
+            $params['dateeffect'] = $this->othersClass->getCurrentDate();
           }
 
           $sql = "update ratesetup  set dateend='" . $params['dateeffect'] . "' where empid='" . $empid . "' and date(dateend)='9999-12-31'";
@@ -6349,6 +6448,7 @@ class uploadingutility
         switch ($companyid) {
           case 58: //cdohris
           case 62: // onesky-payroll
+          case 66: //metrodragon
             if (Is_Numeric($val)) {
               $clientlength = $this->companysetup->getclientlength($params);
               $poseq = 'EM' . $val;

@@ -146,6 +146,10 @@ class pospricelist
         $editblocked = false;
         $editSaved = false;
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
 
             if ($data[$key]['bgcolor'] != '') {
@@ -193,7 +197,7 @@ class pospricelist
 
 
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldfast($value2, $data[$key][$value2],$lookups);
                 }
 
                 if ($data[$key]['line'] == 0) {

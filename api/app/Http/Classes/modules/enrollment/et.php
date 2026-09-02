@@ -327,16 +327,21 @@ class et
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+
+    $dateTables = ['en_athead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -582,6 +587,7 @@ class et
 
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $line = $config['params']['data']['line'];
     if ($line == 0) {
@@ -596,7 +602,10 @@ class et
     $config['params']['trno'] = $trno;
     $config['params']['line'] = $line;
 
-    $rate = $this->othersClass->sanitizekeyfield('rate', $config['params']['data']['rate']);
+    $dateTables = ['en_atfees'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    $rate = $this->othersClass->sanitizekeyfieldFast('rate', $config['params']['data']['rate'], $lookups);
     if ($config['params']['data']['isnew'] == 'true') {
       $config['params']['data']['isold'] = 'false';
     } else {
@@ -627,7 +636,7 @@ class et
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($action == 'insert') {

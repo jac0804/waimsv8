@@ -42,7 +42,7 @@ class viewstockcardpo
   public function createTab($config)
   {
      //po pohistory button in po module -transpower
-    if($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO' || $config['params']['companyid'] == 60 && $config['params']['moduletype'] == 'INQUIRY'){
+    if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
       $row=$config['params']['row'];
       $itemid=$row['itemid'];
     }else{
@@ -131,7 +131,7 @@ class viewstockcardpo
     data_set($col1, 'dateid.readonly', false);
     data_set($col1, 'luom.lookupclass', 'uomledger');
 
-    if($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO' || $config['params']['companyid'] == 60 && $config['params']['moduletype'] == 'INQUIRY'){
+   if($config['params']['companyid'] == 60 && ( $config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
         data_set($col1, 'luom.addedparams', ['itemid']);
         }
 
@@ -148,7 +148,7 @@ class viewstockcardpo
 
   public function paramsdata($config)
   {
-    if($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO' || $config['params']['companyid'] == 60 && $config['params']['moduletype'] == 'INQUIRY'){
+   if($config['params']['companyid'] == 60 && ( $config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
        $itemid = $config['params']['row']['itemid'];
     }else{
        $itemid = $config['params']['clientid'];
@@ -163,7 +163,7 @@ class viewstockcardpo
     }
 
      $addf="";
-    if($config['params']['companyid'] == 60 && $config['params']['doc'] == 'PO' ||  $config['params']['companyid'] == 60 && $config['params']['moduletype'] == 'INQUIRY'){
+    if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
        $row = $config['params']['row']['itemid'];
       $addf= ", " . $row . "   as itemid" ;
     }
@@ -189,7 +189,7 @@ class viewstockcardpo
   {
     $companyid = $config['params']['companyid'];
     $sort = " order by dateid";
-    if($companyid  == 60 && $config['params']['doc'] == 'PO' || $companyid  == 60 && $config['params']['moduletype'] == 'INQUIRY'){
+    if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
        $itemid = $config['params']['dataparams']['itemid'];       
     }else{
        $itemid = $config['params']['itemid'];

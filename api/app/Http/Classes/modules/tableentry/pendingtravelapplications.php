@@ -254,6 +254,10 @@ class pendingtravelapplications
         $user = $config['params']['user'];
         $companyid = $config['params']['companyid'];
         $isapp = $row['approver'];
+
+        $dateTables = ['itinerary'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($isapp == 'LATE FILLING') { //cdo
             $approver = 1;
             $isapp = "isapprover";
@@ -359,7 +363,7 @@ class pendingtravelapplications
                 foreach ($this->fields as $key2) {
                     if (isset($data[$key2])) {
                         $tempdata[$key2] = $data[$key2];
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -464,6 +468,9 @@ class pendingtravelapplications
                 if (empty($defsched)) return ['status' => false, 'msg' => 'Failed to approved, please setup default shift for this employee'];
             }
 
+            $dateTables = ['obapplication'];
+            $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
             foreach ($period as $date) {
                 if ($notimecard) {
                     $dayname = strtolower($date->format('D'));
@@ -527,7 +534,7 @@ class pendingtravelapplications
                     $tempdata['dateid2'] = $tmdates[1];
 
                     if (in_array($key2, $sanitized_fields)) {
-                        $this->othersClass->sanitizekeyfield('dateid', $tempdata[$key2]);
+                        $this->othersClass->sanitizekeyfieldFast('dateid', $tempdata[$key2], $lookups);
                     }
                 }
 

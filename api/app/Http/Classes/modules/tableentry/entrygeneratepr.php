@@ -191,6 +191,10 @@ class entrygeneratepr
         $msg = '';
 
         $trno = 0;
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['prstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         try {
             $doc = 'PR';
@@ -258,7 +262,7 @@ class entrygeneratepr
 
                             if ($value['prqty'] == 0) continue;
 
-                            $qa = $this->othersClass->sanitizekeyfield('qa', $value['qa']);
+                            $qa = $this->othersClass->sanitizekeyfieldFast('qa', $value['qa'],$lookups);
                             if ($qa > 0) {
 
                                 $itemid = $value['itemid'];

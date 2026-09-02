@@ -127,6 +127,7 @@ class tk
     $cols[$title]['type'] = 'label';
     $cols[$enddate]['type'] = 'label';
 
+    $cols[$action]['btns']['addattachments']['checkfield'] = "isatt";
     $cols[$action]['btns']['postomitem']['label'] = 'Mine';
     $cols[$action]['btns']['postomitem']['checkfield'] = "ismine";
     $cols[$action]['btns']['postomitem']['icon'] = 'check';
@@ -141,6 +142,7 @@ class tk
 
     $cols[$action]['btns']['viewtaskinfo']['action'] = "customformdialog";
     $cols[$action]['btns']['viewtaskinfo']['access'] = "view";
+    $cols[$action]['btns']['viewtaskinfo']['checkfield'] = "isdetail";
 
     $cols[$action]['btns']['addattachments']['access'] = "view";
     $cols[$action]['btns']['addattachments']['label'] = "View Attachment";
@@ -199,7 +201,7 @@ class tk
     $filterdate = " and date(h.dateid) between '" . $date1 . "' and '" . $date2 . "' ";
     $filter = '';
     // 0 -draft, 1-open , 2 -pending , 3 - ongoing , 4- for checking 5-complete
-  $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'On-going' when '4' then 'For Checking' else 'Completed' end) else 'Close' end) as statname";
+    $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'On-going' when '4' then 'For Checking' else 'Completed' end) else 'Close' end) as statname";
 
     $user = " and d.userid=" . $userid . " ";
 
@@ -243,15 +245,18 @@ class tk
        if(d.enddate is null and d.status = 4,'false','true') as iscompleted,h.requestby as reqid,d.status,h.amount,
        '../taskmonitoring/' as url,'ledgergrid' as moduletype, if(d.userid = 0 and d.startdate is null and d.status not in (2,4),'false','true') as ismine,
 
-       'TM' as doc,d.line,d.userid as assignedid,h.rem,case when d.isprio = 1 then 'bg-red-3' else '' end as bgcolor $stat
+       'TM' as doc,d.line,d.userid as assignedid,h.rem,case when d.isprio = 1 then 'bg-red-3' else '' end as bgcolor,
+       case when exists (select 1 from waims_attachments where trno = d.trno and tmline = d.line and doc = 'TM') then 'false' else 'true' end as isatt,
+       case when exists (select 1 from tmdetail where trno = d.trno and line = d.line) then 'false' else 'true' end as isdetail $stat
     from tmhead as h
     left join client as c on c.clientid = h.clientid
     left join client as e on e.clientid = h.requestby
     left join tmdetail as d on d.trno=h.trno
     left join trxstatus as stat on stat.line=d.status
-    left join client as cla on cla.clientid = d.userid where isassigntype=0 $filter $filterdate $filtersearch order by d.isprio desc,d.encodeddate desc " . $l;
+    left join client as cla on cla.clientid = d.userid
+    
+    where isassigntype=0 $filter $filterdate $filtersearch order by d.isprio desc,d.encodeddate desc " . $l;
     //h.status=1
-
     // var_dump($qry);  if(d.status = 0 ,'true','false') as iscomment,
     $data = $this->coreFunctions->opentable($qry);
 
@@ -355,6 +360,8 @@ class tk
 
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['tmdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $clientid = 0;
     $msg = '';
@@ -371,7 +378,7 @@ class tk
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }

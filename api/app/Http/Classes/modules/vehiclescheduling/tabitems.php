@@ -268,6 +268,9 @@ class  tabitems
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['vritems'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $trno = $config['params']['tableid'];
     $statid = $this->coreFunctions->getfieldvalue("transnum", "statid", "trno=?", [$trno]);
     switch ($statid) {
@@ -282,7 +285,7 @@ class  tabitems
     $row = $config['params']['row'];
     $data['trno'] = $config['params']['tableid'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
@@ -320,6 +323,9 @@ class  tabitems
   {
     $msg = '';
     $trno = $config['params']['tableid'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['vritems'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $statid = $this->coreFunctions->getfieldvalue("transnum", "statid", "trno=?", [$trno]);
     switch ($statid) {
       case '10':
@@ -337,7 +343,7 @@ class  tabitems
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();

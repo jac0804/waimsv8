@@ -189,7 +189,7 @@ class reassignment
                     ifnull(cat.category,'') as categoryname,ifnull(cat.line,'') as category,
                     stock.divid,ifnull(division.divname, '') as divname, stock.deptid,ifnull(d.clientname,'') as deptname,
                     superv.clientname as supervisor,ifnull(j.line,0) as ndesid,j.jobtitle as jobcode,
-                    stock.sectid,ifnull(sect.sectname, '') as sectionname,stock.rem,ifnull(loc.locname,'') as locname,stock.supid,stock.froleid,loc.line as locid
+                    stock.sectid,ifnull(sect.sectname, '') as sectionname,ifnull(stock.rem,'') as rem,ifnull(loc.locname,'') as locname,stock.supid,stock.froleid,loc.line as locid
                 from rasstock as stock
                 left join employee as emp on emp.empid=stock.empid
                 left join rashead as head on head.trno=stock.trno
@@ -366,7 +366,6 @@ class reassignment
         $dateTables = [$tablename];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $v) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 

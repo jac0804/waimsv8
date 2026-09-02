@@ -96,6 +96,7 @@ class wbreceived
     public function loaddata($config)
     {
         $data = [];
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $receivedate = $config['params']['dataparams']['receivedate'];
         $rem = $config['params']['dataparams']['rem2'];
@@ -106,10 +107,14 @@ class wbreceived
         if ($isposted) {
             $tablenum = "hcntnuminfo";
         }
+
+        $dateTables = [$tablenum];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        $data['rem2'] = $this->othersClass->sanitizekeyfield("rem", $rem);
-        $data['receivedate'] = $this->othersClass->sanitizekeyfield("receivedate", $receivedate);;
+        $data['rem2'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
+        $data['receivedate'] = $this->othersClass->sanitizekeyfieldFast("receivedate", $receivedate, $lookups);
         $this->coreFunctions->sbcupdate($tablenum, $data, ['trno' => $trno]);
 
         $config['params']['trno'] = $trno;

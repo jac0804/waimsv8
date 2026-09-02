@@ -108,14 +108,17 @@ class entrywhavailablestocks
 
   public function save($config)
   {
-
+    $companyid = $config['params']['companyid'];
     $adminid = $config['params']['adminid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $row = $config['params']['row'];
-    $row['qty'] = $this->othersClass->sanitizekeyfield('qty', $row['qty']);
-    $row['isqty'] = $this->othersClass->sanitizekeyfield('qty', $row['isqty']);
-    $row['whrem'] = $this->othersClass->sanitizekeyfield('rem', $row['whrem']);
+    $row['qty'] = $this->othersClass->sanitizekeyfieldFast('qty', $row['qty'], $lookups);
+    $row['isqty'] = $this->othersClass->sanitizekeyfieldFast('qty', $row['isqty'], $lookups);
+    $row['whrem'] = $this->othersClass->sanitizekeyfieldFast('rem', $row['whrem'], $lookups);
     $replaceqty = 0;
 
     $splittype = $row['type'];
@@ -123,7 +126,7 @@ class entrywhavailablestocks
     $isreplacement = false;
     if ($row['sjtype'] == 'REPLACEMENT') {
       $isreplacement = true;
-      $replaceqty = $this->othersClass->sanitizekeyfield('qty', $row['replaceqty']);
+      $replaceqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['replaceqty'], $lookups);
     }
 
     if ($row['whrem'] == '') {
@@ -223,7 +226,7 @@ class entrywhavailablestocks
             ];
 
             foreach ($data as $key => $value) {
-              $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+              $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             $data['editdate'] = $current_timestamp;
@@ -370,8 +373,12 @@ class entrywhavailablestocks
 
   public function updateorignalstock($config, $ispallet, $trno, $line, $itemid, $whid, $uom, $qty, $amt, $disc, $factor, $cur, $curtopeso, $stock)
   {
+    $companyid = $config['params']['companyid'];
     $return = true;
     $msg = '';
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, $cur);
     $data = [
@@ -396,7 +403,7 @@ class entrywhavailablestocks
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

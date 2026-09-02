@@ -120,11 +120,15 @@ class commissionlist
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
         $tableid = $config['params']['tableid'];
         $msg = '';
         $editblocked = false;
         $editSaved = false;
+
+        $dateTables = ['commissionlist'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
 
@@ -174,7 +178,7 @@ class commissionlist
 
 
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 $data2['createdate'] = $this->othersClass->getCurrentTimeStamp();;
                 $data2['createby'] = $config['params']['user'];

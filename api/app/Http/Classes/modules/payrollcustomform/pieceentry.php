@@ -202,6 +202,10 @@ class pieceentry
   public function headtablestatus($config)
   {
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $action = $config['params']["action2"];
 
     switch ($action) {
@@ -222,10 +226,10 @@ class pieceentry
         $fields = ['empid', 'empname', 'dcode', 'dname', 'drate', 'dqty', 'daddon', 'damt', 'dateid', 'rem', 'diqty'];
         foreach ($fields as $key) {
           $data[$key] = $head[$key];
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         }
         $data['damt'] = ($data['dqty'] * $data['drate']) + $data['daddon'];
-        $data['damt'] = $this->othersClass->sanitizekeyfield('damt', $data['damt']);
+        $data['damt'] = $this->othersClass->sanitizekeyfieldFast('damt', $data['damt'],$lookups);
         $this->coreFunctions->sbcinsert($this->head, $data);
         return $this->loaddata($config);
         break;

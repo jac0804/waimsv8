@@ -139,11 +139,13 @@ class entrystockgroup
   {
     $data = $config['params']['data'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
 
         if ($data[$key]['stockgrp_id'] == 0 && $data[$key]['stockgrp_name'] != '') {
@@ -201,8 +203,10 @@ class entrystockgroup
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['stockgrp_id'] == 0 && $row['stockgrp_name'] != '') {
       $modelname = "select stockgrp_name from stockgrp_masterfile where stockgrp_name = '" . $row['stockgrp_name'] . "' limit 1";

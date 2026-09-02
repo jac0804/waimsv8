@@ -101,7 +101,7 @@ class tm
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'requestby', 'category', 'rem'];
+    $getcols = ['action', 'statname', 'listdate',  'listclientname', 'requestby', 'shortname', 'category', 'rem', 'completed'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -109,11 +109,16 @@ class tm
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
     $cols[$statname]['label'] = 'Status';
+    $cols[$shortname]['label'] = 'System Type';
+    $cols[$shortname]['type'] = 'input';
+    $cols[$completed]['label'] = 'Completed';
+    $cols[$completed]['style'] = 'text-align:center;';
     $cols[$statname]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listdate]['style'] = 'width:80px;whiteSpace: normal;min-width:80px;';
     $cols[$listclientname]['style'] = 'width:300px;whiteSpace: normal;min-width:300px;';
     $cols[$requestby]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
     $cols[$category]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+    $cols[$shortname]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
 
     return $cols;
   }
@@ -164,15 +169,30 @@ class tm
         break;
     }
 
-    $qry = "select h.trno,h.trno as clientid,c.clientid as custid,
-            c.client,if(h.reseller<>'',concat(c.clientname,' / ',h.reseller),c.clientname) as clientname,left(h.dateid,10) as dateid,r.category,
-            u.clientname as requestby,case h.status when 0 then 'Draft' when 1 then 'Open' else 'Completed' end as statname, h.rem
-            from tmhead as h 
-             
-          left join client as c on c.clientid = h.clientid 
-          left join client as u on u.clientid = h.requestby
-          left join reqcategory as r on r.line = h.tasktype  
-          where 1=1  $filter $filterdate $filtersearch order by h.dateid desc " . $l;
+    $qry = "select trno, clientid, custid, client, clientname, dateid, category, requestby, statname, rem, completed, shortname
+            from (
+            select h.trno, h.trno as clientid, c.clientid as custid,
+            c.client,
+            if(h.reseller<>'', concat(c.clientname,' / ',h.reseller), c.clientname) as clientname,
+            left(h.dateid,10) as dateid,
+            r.category,
+            u.clientname as requestby,
+            case h.status when 0 then 'Draft' when 1 then 'Open' else 'Completed' end as statname,
+            h.rem,
+            concat(
+               (select count(tm.enddate) from tmdetail as tm where tm.trno = h.trno and tm.isassigntype = 0),
+              ' / ',
+               (select count(tm.line) from tmdetail as tm where tm.trno = h.trno and tm.isassigntype = 0)
+            ) as completed, i.itemname as shortname
+            from tmhead as h
+            left join client as c on c.clientid = h.clientid
+            left join client as u on u.clientid = h.requestby
+            left join reqcategory as r on r.line = h.tasktype
+            left join item as i on i.itemid = h.systype
+            where 1=1 $filter $filtersearch
+            ) t
+            order by dateid desc " . $l;
+    // var_dump($qry);
     $data = $this->coreFunctions->opentable($qry);
 
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -249,16 +269,19 @@ class tm
     data_set($col2, 'empname.required', true);
 
 
-    $fields = ['amount', 'checker', 'forwtinput', 'forreceiving', 'lblpaid', 'lblsubmit'];
+    $fields = ['amount', 'checker', 'forwtinput'];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'forwtinput.label', 'TAG AS OPEN');
-    data_set($col3, 'lblpaid.label', 'OPEN');
-    data_set($col3, 'forreceiving.label', 'CLOSE');
-    data_set($col3, 'lblsubmit.label', 'CLOSED');
-    data_set($col3, 'lblsubmit.style', 'font-weight:bold; font-size:30px;');
 
-    $fields = ['phperc', 'impperc', 'devperc', 'sjdate'];
+
+    $fields = ['phperc', 'impperc', 'devperc', 'sjdate', 'forreceiving', 'lblrem', 'lblpaid', 'lblsubmit'];
     $col4 = $this->fieldClass->create($fields);
+    data_set($col4, 'lblrem.label', 'Completed: 0 / 0');
+    data_set($col4, 'lblrem.style', 'font-weight:bold; font-size:20px; color:red;');
+    data_set($col4, 'lblpaid.label', 'OPEN');
+    data_set($col4, 'forreceiving.label', 'CLOSE');
+    data_set($col4, 'lblsubmit.label', 'CLOSED');
+    data_set($col4, 'lblsubmit.style', 'font-weight:bold; font-size:25px;');
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
@@ -317,6 +340,9 @@ class tm
     $data[0]['impperc'] = 40;
     $data[0]['devperc'] = 10;
     $data[0]['sjdate'] = null;
+    $data[0]['completed'] = 0;
+    $data[0]['overall'] = 0;
+
 
 
     return $data;
@@ -329,7 +355,7 @@ class tm
     $trno = $config['params']['clientid'];
     $qry = "select h.trno as clientid,h.trno,c.client,c.clientname,h.dateid,ifnull(e.clientname,'') as empname,
     h.rem,i.itemid as sysid,i.itemname as systype,r.line as taskid,
-    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker,ifnull(h.reseller,'') as reseller,format(h.phperc, 2) as phperc,format(h.impperc, 2) as impperc,format(h.devperc, 2) as devperc,date(h.sjdate) as sjdate
+    r.category as tasktype,e.clientid as empid,h.rem,h.clientid as custid,h.rate,h.status as status,h.amount,h.checkerid,ifnull(f.clientname,'') as checker,ifnull(h.reseller,'') as reseller,format(h.phperc, 2) as phperc,format(h.impperc, 2) as impperc,format(h.devperc, 2) as devperc,date(h.sjdate) as sjdate, (select count(enddate) as enddate from tmdetail as tm where tm.trno = h.trno and isassigntype = 0) as completed, (select count(line) as line from tmdetail as tm where tm.trno = h.trno  and isassigntype = 0) as overall
     from tmhead as h 
     left join client as c on c.clientid = h.clientid 
     left join client as e on e.clientid = h.requestby
@@ -387,9 +413,11 @@ class tm
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['tmhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $center = $config['params']['center'];
-    $companyid = $config['params']['companyid'];
     $data = [];
     $clientid = 0;
     $msg = '';
@@ -406,9 +434,9 @@ class tm
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           if ($key == 'rate') {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', 0, [], true);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
           } else {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
           }
         }
       }

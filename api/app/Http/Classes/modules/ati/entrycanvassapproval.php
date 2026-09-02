@@ -220,7 +220,6 @@ class entrycanvassapproval
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($row as $key2 => $value) {
-            // $rows[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
             $rows[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
         $canvastats = $this->coreFunctions->getfieldvalue("hcdstock", "status", 'trno = ? and line = ?', [$rows['trno'], $rows['line']]);
@@ -281,8 +280,6 @@ class entrycanvassapproval
                 if ($item[0]->factor !== 0) $factor = $item[0]->factor;
             }
 
-            // $rows['rrcost'] = $this->othersClass->sanitizekeyfield('amt',  $rows['rrcost']);
-            // $rows['rrqty'] = $this->othersClass->sanitizekeyfield('qty',  $rows['rrqty']);
             $rows['rrcost'] = $this->othersClass->sanitizekeyfieldFast('amt',  $rows['rrcost'], $lookups);
             $rows['rrqty'] = $this->othersClass->sanitizekeyfieldFast('qty',  $rows['rrqty'], $lookups);
 
@@ -296,7 +293,6 @@ class entrycanvassapproval
                 'editdate' => $this->othersClass->getCurrentTimeStamp()
             ];
             foreach ($stock as $key2 => $value) {
-                // $stock[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
                 $stock[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
             }
 
@@ -351,7 +347,6 @@ class entrycanvassapproval
                 ];
 
                 foreach ($stockinfo as $key2 => $value) {
-                    // $stockinfo[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
                     $stockinfo[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
                 }
                 $this->coreFunctions->sbcupdate('hstockinfotrans', $stockinfo, ['trno' => $rows['trno'], 'line' => $rows['line']]);
@@ -381,7 +376,6 @@ class entrycanvassapproval
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($row as $key2 => $value) {
-            // $rows[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
             $rows[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
         $stats = $this->coreFunctions->getfieldvalue("hcdstock", "status", 'trno = ? and line = ?', [$rows['trno'], $rows['line']]);
@@ -403,8 +397,6 @@ class entrycanvassapproval
                 if ($item[0]->factor !== 0) $factor = $item[0]->factor;
             }
 
-            // $rows['rrcost'] = $this->othersClass->sanitizekeyfield('amt',  $rows['rrcost']);
-            // $rows['rrqty'] = $this->othersClass->sanitizekeyfield('qty',  $rows['rrqty']);
             $rows['rrcost'] = $this->othersClass->sanitizekeyfieldFast('amt',  $rows['rrcost'], $lookups);
             $rows['rrqty'] = $this->othersClass->sanitizekeyfieldFast('qty',  $rows['rrqty'], $lookups);
 
@@ -418,7 +410,6 @@ class entrycanvassapproval
                 'editdate' => $this->othersClass->getCurrentTimeStamp()
             ];
             foreach ($stock as $key2 => $value) {
-                // $stock[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
                 $stock[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
             }
 
@@ -459,14 +450,12 @@ class entrycanvassapproval
         $dateTables = ['hstockinfotrans', 'hcdstock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         if (isset($row['carem'])) {
             $stockinfo['carem'] = $row['carem'];
         }
         foreach ($stockinfo as $key2 => $value) {
-            // $stockinfo[$key2] = $this->othersClass->sanitizekeyfield($key2, $value);
             $stockinfo[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
         }
 

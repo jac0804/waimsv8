@@ -82,15 +82,33 @@ class purchase_requisition_report
         break;
     }
 
-    data_set(
-      $col2,
-      'radioposttype.options',
-      [
-        ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
-        ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
-        ['label' => 'All', 'value' => '2', 'color' => 'teal']
-      ]
-    );
+    switch ($companyid) {
+      case 67:
+        data_set(
+          $col2,
+          'radioposttype.options',
+          [
+            ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
+            ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
+            ['label' => 'Locked', 'value' => '3', 'color' => 'teal'],
+            ['label' => 'For Approval', 'value' => '4', 'color' => 'teal'],
+            ['label' => 'All', 'value' => '2', 'color' => 'teal']
+          ]
+        );
+        break;
+      default:
+        data_set(
+          $col2,
+          'radioposttype.options',
+          [
+            ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
+            ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
+            ['label' => 'All', 'value' => '2', 'color' => 'teal']
+          ]
+        );
+        break;
+    }
+
     $fields = ['print'];
     $col3 = $this->fieldClass->create($fields);
 
@@ -105,7 +123,7 @@ class purchase_requisition_report
     $companyid = $config['params']['companyid'];
 
     // NAME NG INPUT YUNG NAKA ALIAS
-    $paramstr =  "select 'default' as print,adddate(left(now(),10),-360) as start,left(now(),10) as `end`,'' as client,'' as clientname,'' as userid,'' as username,
+    $paramstr = "select 'default' as print,adddate(left(now(),10),-360) as start,left(now(),10) as `end`,'' as client,'' as clientname,'' as userid,'' as username,
                         '' as approved,'2' as posttype,'0' as reporttype,'0' as transdate,'ASC' as sorting,'' as dclientname,'' as reportusers,
                         '" . $defaultcenter[0]['center'] . "' as center,
                         '" . $defaultcenter[0]['centername'] . "' as centername,
@@ -133,7 +151,7 @@ class purchase_requisition_report
     $center = $config['params']['center'];
     $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
-    $posttype   = $config['params']['dataparams']['posttype'];
+    $posttype = $config['params']['dataparams']['posttype'];
     $reporttype = $config['params']['dataparams']['reporttype'];
     $reportdate = $config['params']['dataparams']['transdate'];
 
@@ -162,44 +180,222 @@ class purchase_requisition_report
   public function reportDefault($config)
   {
     // QUERY
-    $reporttype   = $config['params']['dataparams']['reporttype'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
+    $companyid = $config['params']['companyid'];
 
-    if ($config['params']['companyid'] == 16) { //ati
-      switch ($reporttype) {
-        case 0:
-          $query = $this->default_QUERY_SUMMARIZED_ATI($config);
-          break;
-        case 1:
-          $query = $this->default_QUERY_DETAILED_ATI($config);
-          break;
-      }
-    } else {
-      switch ($reporttype) {
-        case 0:
-          $query = $this->default_QUERY_SUMMARIZED($config);
-          break;
-        case 1:
-          $query = $this->default_QUERY_DETAILED($config);
-          break;
-      }
+    switch ($companyid) {
+      case 16: // ati
+        switch ($reporttype) {
+          case 0:
+            $query = $this->default_QUERY_SUMMARIZED_ATI($config);
+            break;
+          case 1:
+            $query = $this->default_QUERY_DETAILED_ATI($config);
+            break;
+        }
+        break;
+      case 67:
+        switch ($reporttype) {
+          case 0:
+            $query = $this->yulick_QUERY_SUMMARIZED($config);
+            break;
+          case 1:
+            $query = $this->yulick_QUERY_DETAILED($config);
+            break;
+        }
+        break;
+      default:
+        switch ($reporttype) {
+          case 0:
+            $query = $this->default_QUERY_SUMMARIZED($config);
+            break;
+          case 1:
+            $query = $this->default_QUERY_DETAILED($config);
+            break;
+        }
+        break;
     }
+
+
+    // if ($config['params']['companyid'] == 16) { //ati
+    //   switch ($reporttype) {
+    //     case 0:
+    //       $query = $this->default_QUERY_SUMMARIZED_ATI($config);
+    //       break;
+    //     case 1:
+    //       $query = $this->default_QUERY_DETAILED_ATI($config);
+    //       break;
+    //   }
+    // } else {
+    //   switch ($reporttype) {
+    //     case 0:
+    //       $query = $this->default_QUERY_SUMMARIZED($config);
+    //       break;
+    //     case 1:
+    //       $query = $this->default_QUERY_DETAILED($config);
+    //       break;
+    //   }
+    // }
 
 
     return $this->coreFunctions->opentable($query);
   }
 
-  public function default_QUERY_DETAILED($config)
+  public function yulick_QUERY_SUMMARIZED($config)
+  {
+
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
+
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = isset($config['params']['dataparams']['transdate']) ? $config['params']['dataparams']['transdate'] : '';
+
+    $addfield = '';
+    $addfieldmain = '';
+    $addgrp = '';
+    $addgrpmain = '';
+
+    $filter = "";
+    $filter1 = "";
+    if ($filterusername != "") {
+      $filter .= " and head.createby = '$filterusername' ";
+    }
+    if ($prefix != "") {
+      $filter .= " and transnum.bref = '$prefix' ";
+    }
+    if ($client != "") {
+      $filter .= " and supp.clientid = '$clientid' ";
+    }
+
+    $fcenter = $config['params']['dataparams']['center'];
+    if ($fcenter != "") {
+      $filter .= " and transnum.center = '$fcenter'";
+    }
+
+    $filter1 .= "";
+    $leftjoin = "";
+    $statuslabel = "'UNPOSTED'";
+    switch ($posttype) {
+      case 3:
+        $filter1 .= " and head.lockdate is not null and hi.checkdate is null";
+        $leftjoin = "left join headinfotrans as hi on hi.trno = head.trno";
+        $statuslabel = "'LOCKED'";
+        break;
+      case 4:
+        $statuslabel = "'FOR APPROVAL'";
+        $filter1 .= " and head.lockdate is not null and hi.checkdate is not null";
+        $leftjoin = "left join headinfotrans as hi on hi.trno = head.trno";
+        break;
+    }
+
+    $filterdate = " date(head.dateid)";
+
+    $query = '';
+    switch ($posttype) {
+      case 0: // posted
+        $query = "select head.docno,head.clientname as supplier,
+        client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 'POSTED' as status, 
+        dept.clientname as deptname, date(transnum.postdate) as postdate, sum(stock.rrqty) as rrqty " . $addfield . "
+        from hprstock as stock
+        left join hprhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        left join client as supp on supp.client = head.client    
+        left join client as dept on dept.clientid = head.deptid  
+        left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+        left join duration as d on d.line=info.durationid   
+        where head.doc='PR' and " . $filterdate . " between '$start' and '$end' $filter $filter1
+        group by 
+        head.docno, head.clientname, transnum.postdate,
+        client.clientname,head.createby,
+        head.dateid,head.rem,client.clientname,dept.clientname " . $addgrp . "
+        order by head.docno $sorting";
+        $this->othersClass->logConsole($query);
+        break;
+      case 1: // unposted
+      case 3: // locked
+      case 4: // for approval
+        $query = "select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
+        client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, " . $statuslabel . " as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
+        from prstock as stock
+        left join prhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        left join client as supp on supp.client = head.client
+        left join client as dept on dept.clientid = head.deptid
+        left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+        left join duration as d on d.line=info.durationid
+        $leftjoin  
+        where head.doc='PR' and " . $filterdate . " between '$start' and '$end' $filter $filter1
+        group by 
+        head.docno, head.clientname, transnum.postdate,
+        client.clientname,head.createby,
+        head.dateid,head.rem,client.clientname,dept.clientname " . $addgrp . "
+        order by head.docno $sorting";
+        $this->othersClass->logConsole($query);
+        break;
+      default:
+        $query = "select docno,supplier,clientname,createby,hrem,dateid,status,deptname, 
+        rrqty " . $addfieldmain . "
+                from(select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
+                      client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 
+                      'UNPOSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
+                      from prstock as stock
+                      left join prhead as head on head.trno=stock.trno
+                      left join item on item.itemid=stock.itemid
+                      left join transnum on transnum.trno=head.trno
+                      left join client on client.clientid=stock.whid
+                      left join client as supp on supp.client = head.client
+                      left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+                      left join duration as d on d.line=info.durationid
+                      left join client as dept on dept.clientid = head.deptid
+                      where head.doc='PR' and " . $filterdate . " between '$start' and '$end' $filter $filter1
+                      group by head.docno,head.clientname,client.clientname,head.createby,head.dateid,head.rem,dept.clientname,transnum.postdate " . $addgrp . "
+                    union all
+                    select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
+                    client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 
+                    'POSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
+                    from hprstock as stock
+                    left join hprhead as head on head.trno=stock.trno
+                    left join item on item.itemid=stock.itemid
+                    left join transnum on transnum.trno=head.trno
+                    left join client on client.clientid=stock.whid
+                    left join client as supp on supp.client = head.client
+                    left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+                    left join duration as d on d.line=info.durationid
+                    left join client as dept on dept.clientid = head.deptid
+                    where head.doc='PR' and " . $filterdate . " between '$start' and '$end' $filter $filter1
+                    group by head.docno,head.clientname,
+                    client.clientname,head.createby,head.dateid,head.rem,dept.clientname,transnum.postdate " . $addgrp . ") as tb
+                order by docno $sorting";
+        break;
+    }
+    return $query;
+  }
+
+  public function yulick_QUERY_DETAILED($config)
   {
     $companyid = $config['params']['companyid'];
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
-    $clientid     = $config['params']['dataparams']['clientid'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
-    $sorting    = $config['params']['dataparams']['sorting'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $transdate   = $config['params']['dataparams']['transdate'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = $config['params']['dataparams']['transdate'];
 
     $filter = "";
     $filter1 = "";
@@ -215,176 +411,112 @@ class purchase_requisition_report
       $filter .= " and supp.clientid = '$clientid' ";
     }
 
-    $fcenter    = $config['params']['dataparams']['center'];
+    $fcenter = $config['params']['dataparams']['center'];
     if ($fcenter != "") {
       $filter .= " and transnum.center = '$fcenter'";
     }
 
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $deptcode = $config['params']['dataparams']['dept'];
-      $deptid = $config['params']['dataparams']['deptid'];
-      $deptname = $config['params']['dataparams']['deptname'];
-      // if ($deptid == "") {
-      //   $dept = "";
-      // } else {
-      //   $dept = $config['params']['dataparams']['dept'];
-      // }
-      if ($deptcode != "" && $deptname != '') {
-        $filter1 .= " and head.deptid = '$deptid'";
-      }
-      $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
-      $addjoin = "left join model_masterfile as model on model.model_id=item.model left join frontend_ebrands as brand on brand.brandid = item.brand left join iteminfo as i on i.itemid  = item.itemid";
-    } else {
-      $filter1 .= "";
-      $barcodeitemnamefield = ",item.barcode,item.itemname";
-      $addjoin = "";
-    }
-
-    switch ($companyid) {
-      case 8: //maxipro
-        $doc = 'RQ';
-        break;
-
-      default:
-        $doc = 'PR';
-        break;
-    }
+    $filter1 .= "";
+    $barcodeitemnamefield = ",item.barcode,item.itemname";
+    $addjoin = "";
+    $doc = 'PR';
     $addfield = "";
-    if ($companyid == 16) { //ati
-      $addfield = ",ifnull(dept.clientname,'') as dept,ifnull(d.duration,'') as duration,left(transnum.postdate,10) as postdate,ifnull(left(info.deadline,10),'') as deadline,info.ctrlno";
-    } else {
-      $addfield = "";
-    }
     $filterdate = "date(head.dateid)";
-    if ($companyid == 16) { //ati
-      if ($transdate == 1) {
-        $filterdate = "date(transnum.postdate)";
-      }
+
+    switch ($posttype) {
+      case 3:
+        $filter1 .= " and head.lockdate is not null and hi.checkdate is null";
+        $addjoin = "left join headinfotrans as hi on hi.trno = head.trno";
+        break;
+      case 4:
+        $filter1 .= " and head.lockdate is not null and hi.checkdate is not null";
+        $addjoin = "left join headinfotrans as hi on hi.trno = head.trno";
+        break;
     }
 
     switch ($posttype) {
       case 1: // unposted
-        $query =
-          "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
-      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
-      from prstock as stock
-      left join prhead as head on head.trno=stock.trno
-      left join item on item.itemid=stock.itemid
-      left join transnum on transnum.trno=head.trno
-      left join client on client.clientid=stock.whid
-      $leftjoin
-      left join client as dept on dept.clientid = head.deptid
-      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
-      left join duration as d on d.line=info.durationid
-      " . $addjoin . "
-      where head.doc = '$doc'  and $filterdate between '$start' and '$end' $filter $filter1  
-      order by head.docno $sorting";
-
-
-        break;
-
-      case 0: // posted
-
-        $query =
-          "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
-      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
-      from hprstock as stock
-      left join hprhead as head on head.trno=stock.trno
-      left join item on item.itemid=stock.itemid
-      left join transnum on transnum.trno=head.trno
-      left join client on client.clientid=stock.whid
-      $leftjoin
-      left join client as dept on dept.clientid = head.deptid
-      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
-      left join duration as d on d.line=info.durationid
-      " . $addjoin . "
-      where head.doc = '$doc' and $filterdate between '$start' and '$end' $filter $filter1   
-      order by head.docno $sorting";
-
+      case 3:
+      case 4:
+        $query ="select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",
+        stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
+        client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,
+        dept.clientname as deptname
+        from prstock as stock
+        left join prhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        $leftjoin
+        left join client as dept on dept.clientid = head.deptid
+        left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+        left join duration as d on d.line=info.durationid
+        " . $addjoin . "
+        where head.doc = '$doc'  and $filterdate between '$start' and '$end' $filter $filter1  
+        order by head.docno $sorting";
+          break;
+        case 0: // posted
+          $query =
+            "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
+        client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
+        from hprstock as stock
+        left join hprhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        $leftjoin
+        left join client as dept on dept.clientid = head.deptid
+        left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+        left join duration as d on d.line=info.durationid
+        " . $addjoin . "
+        where head.doc = '$doc' and $filterdate between '$start' and '$end' $filter $filter1   
+        order by head.docno $sorting";
         break;
       default: // all
-        switch ($companyid) {
-          case 16: //ati
-            $query = "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
-      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,'UNPOSTED' as status
-      from prstock as stock
-      left join prhead as head on head.trno=stock.trno
-      left join item on item.itemid=stock.itemid
-      left join transnum on transnum.trno=head.trno
-      left join client on client.clientid=stock.whid
-      $leftjoin
-      left join client as dept on dept.clientid = head.deptid
-      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
-      left join duration as d on d.line=info.durationid
-            " . $addjoin . "
-            where head.doc = '$doc' and $filterdate between '$start' and '$end' $filter $filter1  
-            union all
-          select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
-            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,'POSTED' as status
-            from hprstock as stock
-            left join hprhead as head on head.trno=stock.trno
-            left join item on item.itemid=stock.itemid
-            left join transnum on transnum.trno=head.trno
-            left join client on client.clientid=stock.whid
-            $leftjoin
-            left join client as dept on dept.clientid = head.deptid
-      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
-      left join duration as d on d.line=info.durationid
-            " . $addjoin . "
-            where head.doc = '$doc' and $filterdate between '$start' and '$end'  $filter $filter1  
-            order by docno $sorting";
-            break;
-
-          default:
-            $query = "select docno,supplier,barcode,itemname,uom,rrqty,rrcost,disc,ext,clientname,createby,loc,rem,dateid,ref,hrem,status,deptname
-            from(select head.docno,head.clientname as supplier" . $barcodeitemnamefield . "
-            ,stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
-            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'UNPOSTED' as status,dept.clientname as deptname
-            from prstock as stock
-            left join prhead as head on head.trno=stock.trno
-            left join item on item.itemid=stock.itemid
-            left join transnum on transnum.trno=head.trno
-            left join client on client.clientid=stock.whid
-            $leftjoin
-            left join client as dept on dept.clientid = head.deptid
-            " . $addjoin . "
-            where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1   
-            union all
-            select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
-            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'POSTED' as status,dept.clientname as deptname
-            from hprstock as stock
-            left join hprhead as head on head.trno=stock.trno
-            left join item on item.itemid=stock.itemid
-            left join transnum on transnum.trno=head.trno
-            left join client on client.clientid=stock.whid
-            $leftjoin
-            left join client as dept on dept.clientid = head.deptid
-            " . $addjoin . "
-            where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1  ) as tb
-            order by docno $sorting";
-            break;
-        }
+        $query = "select docno,supplier,barcode,itemname,uom,rrqty,rrcost,disc,ext,clientname,createby,loc,rem,dateid,ref,hrem,status,deptname
+        from(select head.docno,head.clientname as supplier" . $barcodeitemnamefield . "
+        ,stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
+        client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'UNPOSTED' as status,dept.clientname as deptname
+        from prstock as stock
+        left join prhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        $leftjoin
+        left join client as dept on dept.clientid = head.deptid
+        " . $addjoin . "
+        where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1   
+        union all
+        select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
+        client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'POSTED' as status,dept.clientname as deptname
+        from hprstock as stock
+        left join hprhead as head on head.trno=stock.trno
+        left join item on item.itemid=stock.itemid
+        left join transnum on transnum.trno=head.trno
+        left join client on client.clientid=stock.whid
+        $leftjoin
+        left join client as dept on dept.clientid = head.deptid
+        " . $addjoin . "
+        where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1  ) as tb
+        order by docno $sorting";
     }
-
-
     return $query;
   }
-
 
   public function default_QUERY_DETAILED_ATI($config)
   {
     $companyid = $config['params']['companyid'];
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
-    $clientid     = $config['params']['dataparams']['clientid'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
 
-    $sorting    = $config['params']['dataparams']['sorting'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $transdate   = $config['params']['dataparams']['transdate'];
-    $isexpedite   = $config['params']['dataparams']['expediteradio'];
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = $config['params']['dataparams']['transdate'];
+    $isexpedite = $config['params']['dataparams']['expediteradio'];
     $adminid = $config['params']['adminid'];
 
     $filter = "";
@@ -403,7 +535,7 @@ class purchase_requisition_report
       $filter .= " and supp.clientid = '$clientid' ";
     }
 
-    $fcenter    = $config['params']['dataparams']['center'];
+    $fcenter = $config['params']['dataparams']['center'];
     if ($fcenter != "") {
       $filter .= " and transnum.center = '$fcenter'";
     }
@@ -534,22 +666,22 @@ class purchase_requisition_report
   public function default_QUERY_SUMMARIZED_ATI($config)
   {
 
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
-    $clientid     = $config['params']['dataparams']['clientid'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
 
     $reporttype = $config['params']['dataparams']['reporttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $transdate   = isset($config['params']['dataparams']['transdate']) ? $config['params']['dataparams']['transdate'] : '';
-    $isexpedite   = $config['params']['dataparams']['expediteradio'];
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = isset($config['params']['dataparams']['transdate']) ? $config['params']['dataparams']['transdate'] : '';
+    $isexpedite = $config['params']['dataparams']['expediteradio'];
     $adminid = $config['params']['adminid'];
     $filter = "";
     $filter1 = "";
@@ -568,7 +700,7 @@ class purchase_requisition_report
       $filter .= " and supp.clientid = '$clientid' ";
     }
 
-    $fcenter    = $config['params']['dataparams']['center'];
+    $fcenter = $config['params']['dataparams']['center'];
     if ($fcenter != "") {
       $filter .= " and transnum.center = '$fcenter'";
     }
@@ -754,20 +886,20 @@ class purchase_requisition_report
   public function default_QUERY_SUMMARIZED($config)
   {
 
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
-    $clientid     = $config['params']['dataparams']['clientid'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
 
-    $sorting    = $config['params']['dataparams']['sorting'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $transdate   = isset($config['params']['dataparams']['transdate']) ? $config['params']['dataparams']['transdate'] : '';
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = isset($config['params']['dataparams']['transdate']) ? $config['params']['dataparams']['transdate'] : '';
 
     $addfield = '';
     $addfieldmain = '';
@@ -786,7 +918,7 @@ class purchase_requisition_report
       $filter .= " and supp.clientid = '$clientid' ";
     }
 
-    $fcenter    = $config['params']['dataparams']['center'];
+    $fcenter = $config['params']['dataparams']['center'];
     if ($fcenter != "") {
       $filter .= " and transnum.center = '$fcenter'";
     }
@@ -823,7 +955,7 @@ class purchase_requisition_report
     $query = '';
     switch ($posttype) {
       case 0: // posted
-        $query = "select head.docno,head.clientname as supplier,
+        $query = "select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
         client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 'POSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
         from hprstock as stock
         left join hprhead as head on head.trno=stock.trno
@@ -843,7 +975,7 @@ class purchase_requisition_report
         $this->othersClass->logConsole($query);
         break;
       case 1: // unposted
-        $query = "select head.docno,head.clientname as supplier,
+        $query = "select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
         client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 'UNPOSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
         from prstock as stock
         left join prhead as head on head.trno=stock.trno
@@ -863,8 +995,9 @@ class purchase_requisition_report
         $this->othersClass->logConsole($query);
         break;
       default:
-        $query = "select docno,supplier,clientname,createby,hrem,dateid,status,deptname " . $addfieldmain . "
-                from(select head.docno,head.clientname as supplier,
+        $query = "select docno,supplier,clientname,createby,hrem,dateid,status,deptname, rrqty 
+        " . $addfieldmain . "
+                from(select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
                       client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 'UNPOSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
                       from prstock as stock
                       left join prhead as head on head.trno=stock.trno
@@ -878,7 +1011,7 @@ class purchase_requisition_report
                       where head.doc='PR' and " . $filterdate . " between '$start' and '$end' $filter $filter1
                       group by head.docno,head.clientname,client.clientname,head.createby,head.dateid,head.rem,dept.clientname,transnum.postdate " . $addgrp . "
                     union all
-                    select head.docno,head.clientname as supplier,
+                    select head.docno,head.clientname as supplier, sum(stock.rrqty) as rrqty,
                       client.clientname,head.createby,date(head.dateid) as dateid,head.rem as hrem, 'POSTED' as status, dept.clientname as deptname, date(transnum.postdate) as postdate " . $addfield . "
                     from hprstock as stock
                     left join hprhead as head on head.trno=stock.trno
@@ -898,22 +1031,204 @@ class purchase_requisition_report
     return $query;
   }
 
+  public function default_QUERY_DETAILED($config)
+  {
+    $companyid = $config['params']['companyid'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientid = $config['params']['dataparams']['clientid'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $transdate = $config['params']['dataparams']['transdate'];
+
+    $filter = "";
+    $filter1 = "";
+    $leftjoin = "";
+    if ($filterusername != "") {
+      $filter .= " and head.createby = '$filterusername' ";
+    }
+    if ($prefix != "") {
+      $filter .= " and transnum.bref = '$prefix' ";
+    }
+    if ($client != "") {
+      $leftjoin .= " left join client as supp on supp.client = head.client ";
+      $filter .= " and supp.clientid = '$clientid' ";
+    }
+
+    $fcenter = $config['params']['dataparams']['center'];
+    if ($fcenter != "") {
+      $filter .= " and transnum.center = '$fcenter'";
+    }
+
+    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
+      $deptcode = $config['params']['dataparams']['dept'];
+      $deptid = $config['params']['dataparams']['deptid'];
+      $deptname = $config['params']['dataparams']['deptname'];
+      // if ($deptid == "") {
+      //   $dept = "";
+      // } else {
+      //   $dept = $config['params']['dataparams']['dept'];
+      // }
+      if ($deptcode != "" && $deptname != '') {
+        $filter1 .= " and head.deptid = '$deptid'";
+      }
+      $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";
+      $addjoin = "left join model_masterfile as model on model.model_id=item.model left join frontend_ebrands as brand on brand.brandid = item.brand left join iteminfo as i on i.itemid  = item.itemid";
+    } else {
+      $filter1 .= "";
+      $barcodeitemnamefield = ",item.barcode,item.itemname";
+      $addjoin = "";
+    }
+
+    switch ($companyid) {
+      case 8: //maxipro
+        $doc = 'RQ';
+        break;
+
+      default:
+        $doc = 'PR';
+        break;
+    }
+    $addfield = "";
+    if ($companyid == 16) { //ati
+      $addfield = ",ifnull(dept.clientname,'') as dept,ifnull(d.duration,'') as duration,left(transnum.postdate,10) as postdate,ifnull(left(info.deadline,10),'') as deadline,info.ctrlno";
+    } else {
+      $addfield = "";
+    }
+    $filterdate = "date(head.dateid)";
+    if ($companyid == 16) { //ati
+      if ($transdate == 1) {
+        $filterdate = "date(transnum.postdate)";
+      }
+    }
+
+    switch ($posttype) {
+      case 1: // unposted
+        $query =
+          "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
+      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
+      from prstock as stock
+      left join prhead as head on head.trno=stock.trno
+      left join item on item.itemid=stock.itemid
+      left join transnum on transnum.trno=head.trno
+      left join client on client.clientid=stock.whid
+      $leftjoin
+      left join client as dept on dept.clientid = head.deptid
+      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+      left join duration as d on d.line=info.durationid
+      " . $addjoin . "
+      where head.doc = '$doc'  and $filterdate between '$start' and '$end' $filter $filter1  
+      order by head.docno $sorting";
+
+
+        break;
+
+      case 0: // posted
+
+        $query =
+          "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
+      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
+      from hprstock as stock
+      left join hprhead as head on head.trno=stock.trno
+      left join item on item.itemid=stock.itemid
+      left join transnum on transnum.trno=head.trno
+      left join client on client.clientid=stock.whid
+      $leftjoin
+      left join client as dept on dept.clientid = head.deptid
+      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+      left join duration as d on d.line=info.durationid
+      " . $addjoin . "
+      where head.doc = '$doc' and $filterdate between '$start' and '$end' $filter $filter1   
+      order by head.docno $sorting";
+
+        break;
+      default: // all
+        switch ($companyid) {
+          case 16: //ati
+            $query = "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
+      client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,'UNPOSTED' as status
+      from prstock as stock
+      left join prhead as head on head.trno=stock.trno
+      left join item on item.itemid=stock.itemid
+      left join transnum on transnum.trno=head.trno
+      left join client on client.clientid=stock.whid
+      $leftjoin
+      left join client as dept on dept.clientid = head.deptid
+      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+      left join duration as d on d.line=info.durationid
+            " . $addjoin . "
+            where head.doc = '$doc' and $filterdate between '$start' and '$end' $filter $filter1  
+            union all
+          select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
+            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,'POSTED' as status
+            from hprstock as stock
+            left join hprhead as head on head.trno=stock.trno
+            left join item on item.itemid=stock.itemid
+            left join transnum on transnum.trno=head.trno
+            left join client on client.clientid=stock.whid
+            $leftjoin
+            left join client as dept on dept.clientid = head.deptid
+      left join hstockinfotrans as info on info.trno=stock.trno and info.line=stock.line
+      left join duration as d on d.line=info.durationid
+            " . $addjoin . "
+            where head.doc = '$doc' and $filterdate between '$start' and '$end'  $filter $filter1  
+            order by docno $sorting";
+            break;
+
+          default:
+            $query = "select docno,supplier,barcode,itemname,uom,rrqty,rrcost,disc,ext,clientname,createby,loc,rem,dateid,ref,hrem,status,deptname
+            from(select head.docno,head.clientname as supplier" . $barcodeitemnamefield . "
+            ,stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
+            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'UNPOSTED' as status,dept.clientname as deptname
+            from prstock as stock
+            left join prhead as head on head.trno=stock.trno
+            left join item on item.itemid=stock.itemid
+            left join transnum on transnum.trno=head.trno
+            left join client on client.clientid=stock.whid
+            $leftjoin
+            left join client as dept on dept.clientid = head.deptid
+            " . $addjoin . "
+            where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1   
+            union all
+            select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext,
+            client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem, 'POSTED' as status,dept.clientname as deptname
+            from hprstock as stock
+            left join hprhead as head on head.trno=stock.trno
+            left join item on item.itemid=stock.itemid
+            left join transnum on transnum.trno=head.trno
+            left join client on client.clientid=stock.whid
+            $leftjoin
+            left join client as dept on dept.clientid = head.deptid
+            " . $addjoin . "
+            where head.doc='$doc' and $filterdate between '$start' and '$end' $filter $filter1  ) as tb
+            order by docno $sorting";
+            break;
+        }
+    }
+
+
+    return $query;
+  }
+
   public function default_QUERY_ALL($config)
   {
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
-    $clientname     = $config['params']['dataparams']['clientname'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
 
     $reporttype = $config['params']['dataparams']['reporttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
-    $posttype   = $config['params']['dataparams']['posttype'];
+    $sorting = $config['params']['dataparams']['sorting'];
+    $posttype = $config['params']['dataparams']['posttype'];
 
     $filter = "";
     if ($filterusername != "") {
@@ -1003,16 +1318,16 @@ class purchase_requisition_report
 
   public function default_header_detailed($config)
   {
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $sorting = $config['params']['dataparams']['sorting'];
     $reporttype = $config['params']['dataparams']['reporttype'];
 
     if ($sorting == 'ASC') {
@@ -1031,18 +1346,22 @@ class purchase_requisition_report
       case 0:
         $posttype = 'Posted';
         break;
-
       case 1:
         $posttype = 'Unposted';
         break;
-
+      case 3:
+        $posttype = 'Locked';
+        break;
+      case 4:
+        $posttype = 'For Approval';
+        break;
       default:
         $posttype = 'All';
         break;
     }
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $dept   = $config['params']['dataparams']['ddeptname'];
+      $dept = $config['params']['dataparams']['ddeptname'];
       if ($dept != "") {
         $deptname = $config['params']['dataparams']['deptname'];
       } else {
@@ -1089,7 +1408,7 @@ class purchase_requisition_report
       $str .= $this->reporter->col('Sort by : ' . $sorting, '140', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->endrow();
     } else {
-      $str .= $this->reporter->startrow(NULL, null, false, $border, '',  $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->startrow(NULL, null, false, $border, '', $font, $fontsize, '', '', '', '');
       $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('User: ' . $user, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Prefix: ' . $prefix, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
@@ -1104,14 +1423,14 @@ class purchase_requisition_report
   public function reportDefaultLayout_DETAILED($config)
   {
     $result = $this->reportDefault($config);
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
-    $companyid   = $config['params']['companyid'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
 
     $count = 41;
     $page = 40;
@@ -1203,7 +1522,7 @@ class purchase_requisition_report
         }
         $str .= $this->reporter->endtable();
 
-        if ($i == (count((array)$result) - 1)) {
+        if ($i == (count((array) $result) - 1)) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
 
@@ -1228,18 +1547,18 @@ class purchase_requisition_report
   public function reportDefaultLayout_SUMMARIZED($config)
   {
     $result = $this->reportDefault($config);
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
-    $company   = $config['params']['companyid'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+    $company = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
     $reporttype = $config['params']['dataparams']['reporttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
+    $sorting = $config['params']['dataparams']['sorting'];
 
     $count = 41;
     $page = 40;
@@ -1295,18 +1614,18 @@ class purchase_requisition_report
   public function reportDefaultLayout_ATI_SUMMARIZED($config)
   {
     $result = $this->reportDefault($config);
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
-    $company   = $config['params']['companyid'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+    $company = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $client     = $config['params']['dataparams']['client'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
     $reporttype = $config['params']['dataparams']['reporttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
+    $sorting = $config['params']['dataparams']['sorting'];
 
     $count = 41;
     $page = 40;
@@ -1357,16 +1676,16 @@ class purchase_requisition_report
 
   public function header_DEFAULT($config)
   {
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    $filterusername  = $config['params']['dataparams']['username'];
-    $prefix     = $config['params']['dataparams']['approved'];
-    $posttype   = $config['params']['dataparams']['posttype'];
-    $sorting    = $config['params']['dataparams']['sorting'];
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix = $config['params']['dataparams']['approved'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $sorting = $config['params']['dataparams']['sorting'];
     $reporttype = $config['params']['dataparams']['reporttype'];
 
     if ($sorting == 'ASC') {
@@ -1385,18 +1704,22 @@ class purchase_requisition_report
       case 0:
         $posttype = 'Posted';
         break;
-
       case 1:
         $posttype = 'Unposted';
         break;
-
+      case 3:
+        $posttype = 'Locked';
+        break;
+      case 4:
+        $posttype = 'For Approval';
+        break;
       default:
         $posttype = 'All';
         break;
     }
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $dept   = $config['params']['dataparams']['ddeptname'];
+      $dept = $config['params']['dataparams']['ddeptname'];
       if ($dept != "") {
         $deptname = $config['params']['dataparams']['deptname'];
       } else {
@@ -1479,7 +1802,7 @@ class purchase_requisition_report
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid ";
-    $company   = $config['params']['companyid'];
+    $company = $config['params']['companyid'];
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -1512,7 +1835,7 @@ class purchase_requisition_report
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid ";
-    $company   = $config['params']['companyid'];
+    $company = $config['params']['companyid'];
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -1636,7 +1959,7 @@ class purchase_requisition_report
         }
         $str .= $this->reporter->endtable();
 
-        if ($i == (count((array)$result) - 1)) {
+        if ($i == (count((array) $result) - 1)) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
 

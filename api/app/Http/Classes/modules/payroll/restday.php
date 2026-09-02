@@ -400,6 +400,8 @@ class restday
         $head = $config['params']['head'];
         $center = $config['params']['center'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $empid = $config['params']['adminid'];
         $data = [];
         $clientid = 0;
@@ -431,7 +433,7 @@ class restday
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
@@ -441,8 +443,7 @@ class restday
         //     return ['status' => false, 'msg' => $msg];
         // }
 
-        // $data['schedin'] = $this->othersClass->sanitizekeyfield('schedin', $head['schediin']);
-        // $data['schedout'] = $this->othersClass->sanitizekeyfield('schedout', $head['schedoutt']);
+
 
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
         from employee as e

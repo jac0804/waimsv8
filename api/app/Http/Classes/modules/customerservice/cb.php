@@ -275,9 +275,6 @@ class cb
     }
   }
 
-
-
-
   public function updatehead($config, $isupdate)
   {
     $companyid = $config['params']['companyid'];
@@ -294,7 +291,6 @@ class cb
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -312,10 +308,7 @@ class cb
     }
   } // end function
 
-
-
   public function deletetrans($config) {} //end function
-
 
   public function posttrans($config)
   {
@@ -372,10 +365,10 @@ class cb
 
     $qry = "insert into " . $this->head . "(trno,sitrno,doc,docno,client,dept,dateid,rem,yourref,ourref,
    lockuser,lockdate,openby,users,createdate,createby,editby,editdate,viewby,viewdate)
-  select head.trno,head.sitrno,head.doc,head.docno,client.client,dept.client,head.dateid,head.rem,head.yourref,head.ourref,
-  head.lockuser,head.lockdate,head.openby,head.users,head.createdate,head.createby,head.editby,head.editdate,head.viewby,head.viewdate
-  from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno) left join client on client.clientid=head.clientid left join client as dept on dept.clientid=head.deptid 
-  where head.trno=? limit 1";
+    select head.trno,head.sitrno,head.doc,head.docno,client.client,dept.client,head.dateid,head.rem,head.yourref,head.ourref,
+    head.lockuser,head.lockdate,head.openby,head.users,head.createdate,head.createby,head.editby,head.editdate,head.viewby,head.viewdate
+    from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno) left join client on client.clientid=head.clientid left join client as dept on dept.clientid=head.deptid 
+    where head.trno=? limit 1";
     //head
     if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
       $qry = "insert into " . $this->stock . "(
@@ -395,7 +388,6 @@ class cb
       }
     }
   } //end function
-
 
   public function openstock($trno, $config)
   {
@@ -423,7 +415,6 @@ class cb
         break;
     }
   }
-
 
   public function updatestatus($config)
   {
@@ -458,8 +449,6 @@ class cb
     return ['status' => true, 'msg' => 'Successfully added.', 'griddata' => ['inventory' => $csscomment]];
   } // end function
 
-
-
   public function reportsetup($config)
   {
     $txtfield = $this->createreportfilter();
@@ -469,7 +458,6 @@ class cb
     $style = 'width:500px;max-width:500px;';
     return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
   }
-
 
   public function createreportfilter()
   {
@@ -490,39 +478,37 @@ class cb
     );
   }
 
-
   private function report_default_query($trno)
   {
 
     $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-  right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
-  head.address, head.terms, stock.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-  item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
-  item.sizeid, ag.clientname as agname, item.brand,
-  wh.client as whcode, wh.clientname as whname from lahead as head
-  left join lastock as stock on stock.trno=head.trno
-  left join client on client.client=head.client
-  left join item on item.barcode=stock.barcode
-  left join client as ag on ag.client=head.agent
-  left join client as wh on wh.client=head.wh
-  where head.doc='sj' and head.trno='$trno'
-  UNION ALL
-  select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
-  right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
-  head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
-  item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
-  item.sizeid, ag.clientname as agname, item.brand,
-  wh.client as whcode, wh.clientname as whname from glhead as head
-  left join glstock as stock on stock.trno=head.trno
-  left join client on client.clientid=head.clientid
-  left join item on item.itemid=stock.itemid
-  left join client as ag on ag.clientid=head.agentid
-  left join client as wh on wh.clientid=head.whid
-  where head.doc='sj' and head.trno='$trno' order by line";
+    right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+    head.address, head.terms, stock.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+    item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
+    item.sizeid, ag.clientname as agname, item.brand,
+    wh.client as whcode, wh.clientname as whname from lahead as head
+    left join lastock as stock on stock.trno=head.trno
+    left join client on client.client=head.client
+    left join item on item.barcode=stock.barcode
+    left join client as ag on ag.client=head.agent
+    left join client as wh on wh.client=head.wh
+    where head.doc='sj' and head.trno='$trno'
+    UNION ALL
+    select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
+    right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+    head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
+    item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
+    item.sizeid, ag.clientname as agname, item.brand,
+    wh.client as whcode, wh.clientname as whname from glhead as head
+    left join glstock as stock on stock.trno=head.trno
+    left join client on client.clientid=head.clientid
+    left join item on item.itemid=stock.itemid
+    left join client as ag on ag.clientid=head.agentid
+    left join client as wh on wh.clientid=head.whid
+    where head.doc='sj' and head.trno='$trno' order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
-
 
   public function reportdata($config)
   {

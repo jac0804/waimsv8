@@ -2051,6 +2051,15 @@ class gridcolumnClass
                             'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
                             'readonly' => false
                      ),
+                     'isnocheck' => array(
+                            'name' => 'isnocheck',
+                            'type' => 'toggle',
+                            'label' => 'No Check',
+                            'field' => 'isnocheck',
+                            'align' => 'text-left',
+                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
+                            'readonly' => false
+                     ),
                      'noprint' => array(
                             'name' => 'noprint',
                             'type' => 'toggle',
@@ -8687,6 +8696,16 @@ class gridcolumnClass
                             'style' => 'width: 100px;whiteSpace: normal;min-width:20px;max-width:100px;',
                             'readonly' => false
                      ),
+                     'billtype' => array(
+                            'name' => 'billtype',
+                            'type' => 'input',
+                            'label' => 'Bill Type',
+                            'field' => 'billtype',
+                            'align' => 'text-left',
+                            'style' => 'width:20px;whiteSpace: normal;min-width:30px;',
+                            'readonly' => false
+                     ),
+
                      'isbilling' => array(
                             'name' => 'isbilling',
                             'type' => 'toggle',
@@ -9874,6 +9893,15 @@ class gridcolumnClass
                             'label' => 'Recommend',
                             'align' => 'text-left',
                             'style' => 'width: 100px;whiteSpace: normal;min-width:20px;max-width:100px;',
+                            'readonly' => false
+                     ),
+                     'carbrand' => array(
+                            'name' => 'carbrand',
+                            'type' => 'input',
+                            'label' => 'Car Brand',
+                            'field' => 'carbrand',
+                            'align' => 'text-left',
+                            'style' => 'min-width:200px;',
                             'readonly' => false
                      ),
                      'cardtype' => array(
@@ -12008,7 +12036,7 @@ class gridcolumnClass
                             'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
                             'readonly' => false
                      ),
-                     
+
                      'mileage' => array(
                             'name' => 'mileage',
                             'type' => 'input',
@@ -12088,6 +12116,46 @@ class gridcolumnClass
                             'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
                             'readonly' => false
                      ),
+
+                     'ispostlog' => array(
+                            'name' => 'ispostlog',
+                            'type' => 'label',
+                            'label' => 'Logs Posted',
+                            'field' => 'ispostlog',
+                            'align' => 'text-center',
+                            'style' => 'width:50px;whiteSpace: normal;min-width:50px;',
+                            'readonly' => false
+                     ),
+                     'subclass' => array(
+                            'name' => 'subclass',
+                            'field' => 'subclass',
+                            'type' => 'input',
+                            'label' => 'Sub Class',
+                            'align' => 'text-left',
+                            'style' => 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;',
+                            'readonly' => false
+                     ),
+
+                     'offense' => array(
+                            'name' => 'offense',
+                            'field' => 'offense',
+                            'type' => 'input',
+                            'label' => 'Offense',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+
+                     'vaction' => array(
+                            'name' => 'vaction',
+                            'field' => 'vaction',
+                            'type' => 'input',
+                            'label' => 'Violation Action',
+                            'align' => 'text-left',
+                            'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+
 
               );
 

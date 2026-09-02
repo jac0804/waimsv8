@@ -448,6 +448,8 @@ class pn
     public function updatehead($config, $isupdate)
     {
         $companyid = $config['params']['companyid'];
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $head = $config['params']['head'];
         $data = [];
         if ($isupdate) {
@@ -458,7 +460,7 @@ class pn
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -606,6 +608,8 @@ class pn
     {
         $trno = $config['params']['trno'];
         $companyid = $config['params']['companyid'];
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $systype = $this->companysetup->getsystemtype($config['params']);
         $status = true;
         $isvatexpurch = $this->companysetup->getvatexpurch($config['params']);
@@ -721,7 +725,7 @@ class pn
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -1051,6 +1055,9 @@ class pn
         $refx = 0;
 
         $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['stageid'])) {
             $stageid = $config['params']['data']['stageid'];
@@ -1093,7 +1100,8 @@ class pn
             $amt = $config['params']['data'][$this->damt];
             $config['params']['line'] = $line;
         }
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1108,9 +1116,8 @@ class pn
         }
         $forex = $this->othersClass->val($forex);
         if ($forex == 0) $forex = 1;
-
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);
         $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
         $hamt = number_format((($computedata['amt'] * $forex)), 6, '.', '');
@@ -1133,7 +1140,7 @@ class pn
         ];
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -1148,11 +1155,11 @@ class pn
                 //getcostfrom MI
                 $cotrno = $this->coreFunctions->getfieldvalue($this->head, "petrno", "trno=?", [$trno]);
                 $cost = $this->coreFunctions->getfieldvalue("glstock", "sum(ext)", "refx=?", [$cotrno]);
-                $cost = $this->othersClass->sanitizekeyfield('amt', $cost);
+                $cost = $this->othersClass->sanitizekeyfieldFast('amt', $cost, $lookups);
                 $this->coreFunctions->LogConsole('MI Cost:' . $cost);
                 $cost2 = $cost / $factor;
-                $cost2 = $cost2/$qty;
-                $cost2 = $this->othersClass->sanitizekeyfield('amt', $cost2);
+                $cost2 = $cost2 / $qty;
+                $cost2 = $this->othersClass->sanitizekeyfieldFast('amt', $cost2, $lookups);
                 $computedata = $this->othersClass->computestock($cost2, '', $qty, $factor);
                 $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'rrcost' => $cost2, 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
 

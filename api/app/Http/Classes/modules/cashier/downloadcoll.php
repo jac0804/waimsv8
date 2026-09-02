@@ -74,7 +74,8 @@ class downloadcoll
       'amount',
       'docno',
       'clientname',
-      'rem'
+      'rem',
+      'status'
     ];
 
     foreach ($columns as $key => $value) {
@@ -100,6 +101,7 @@ class downloadcoll
     $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$status]['type'] = 'label';
     return $obj;
   }
 
@@ -182,16 +184,16 @@ class downloadcoll
     $end = $this->othersClass->sbcdateformat($end);
 
     $qry = "select h.doc,h.trno,num.dstrno,left(h.dateid,10) as dateid,left(h.checkdate,10) as checkdate,h.checkinfo,h.docno,h.clientid,h.clientname,h.rem,
-    format(h.amount,2) as amount,h.yourref as crno,'' as orno, h.sicsino,h.drno,h.trnxtype,h.modeofpayment,num.center,c.client,h.createby,'' as bank, 0 as mpid
+    format(h.amount,2) as amount,h.yourref as crno,'' as orno, h.sicsino,h.drno,h.trnxtype,h.modeofpayment,num.center,c.client,h.createby,'' as bank, 0 as mpid, case num.isdownloaded when 1 then 'Downloaded' else '' end as status
     from hmchead as h  left join transnum as num on num.trno = h.trno left join client as c on c.clientid = h.clientid 
-    where num.isdownloaded =0 and num.center = ? and date(h.dateid) between ? and ?
+    where  num.center = ? and date(h.dateid) between ? and ?
     union all
     select h.doc,h.trno,0 as dstrno,left(h.dateid,10) as dateid,null as checkdate,h.checkinfo,h.docno,0 as clientid,'' as clientname,h.rem,
     format(h.amount,2) as amount,'' as crno,'' as orno,'' as sicsino,'' as drno,'' as trnxtype,'' as modeofpayment,num.center,'' as client,h.createby,
-    coa.acnoname as bank, h.mpid
+    coa.acnoname as bank, h.mpid, case num.isdownloaded when 1 then 'Downloaded' else '' end as status
     from hdxhead as h  left join transnum as num on num.trno = h.trno
     left join coa on coa.acnoid = h.bank
-    where num.isdownloaded =0 and num.center = ? and date(h.dateid) between ? and ?";
+    where  num.center = ? and date(h.dateid) between ? and ?";
 
     $data = $this->coreFunctions->opentable($qry, [$center, $start, $end, $center, $start, $end], 'mysql2');
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
@@ -203,7 +205,7 @@ class downloadcoll
     $date1 = $this->othersClass->sbcdateformat($config['params']['dataparams']['start']);
     $date2 =  $this->othersClass->sbcdateformat($config['params']['dataparams']['end']);
     $center = $config['params']['center'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
 
     //----add checking/updating for dstrno ------------
@@ -259,7 +261,6 @@ class downloadcoll
         $d['client'] = $data[$k]['client'];
         $d['clientname'] = $data[$k]['clientname'];
         $d['createby'] = $data[$k]['createby'];
-        // $d['amount'] = $this->othersClass->sanitizekeyfield("amt", $data[$k]['amount']);
         $d['amount'] = $this->othersClass->sanitizekeyfieldFast("amt", $data[$k]['amount'], $lookups);
 
         $d['yourref'] = $data[$k]['crno'];
@@ -267,7 +268,7 @@ class downloadcoll
         $d['drno'] = $data[$k]['drno'];
         $d['dstrno'] = $data[$k]['dstrno'];
         $d['bank'] = $data[$k]['bank'];
-        $d['dlby'] = $config['params']['users'];
+        $d['dlby'] = $config['params']['user'];
         $d['dldate'] =  $this->othersClass->getCurrentTimeStamp();
         $d['mpid'] =  ($data[$k]['mpid'] == 0) ? $this->coreFunctions->getfieldvalue("reqcategory", "line", "category = '" . $data[$k]['modeofpayment'] . "' and ispaymode =1") : $data[$k]['mpid'];
 
@@ -327,9 +328,14 @@ class downloadcoll
           $this->coreFunctions->execqry($qry, 'update', [], 'mysql2');
         }
       }
+
+      return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
+    }else{
+      return ['status' => 'true', 'msg' => 'No data downloaded', 'action' => 'load'];
     }
+
     $this->loaddata($config, $date1, $date2);
-    return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
+    
   }
 
   private function downloadclient()

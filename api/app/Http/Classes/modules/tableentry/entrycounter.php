@@ -151,7 +151,11 @@ class entrycounter
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
+
+        $dateTables = ['reqcategory'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             if ($data[$key]['isinactive'] == 'true') {
@@ -163,7 +167,7 @@ class entrycounter
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 if (empty(trim($data2['code']))) {
@@ -187,8 +191,12 @@ class entrycounter
 
     public function save($config)
     {
+        $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
         $data = [];
+
+        $dateTables = ['reqcategory'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         
         if ($row['isinactive'] == 'true') {
             $row['isinactive'] = 1;
@@ -197,7 +205,7 @@ class entrycounter
         }
         
         foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         if (empty(trim($data['code']))) {

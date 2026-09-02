@@ -459,11 +459,15 @@ class dr
             unset($this->fields[1]);
             unset($head['docno']);
         }
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -1210,8 +1214,13 @@ class dr
 
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->stock];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1247,7 +1256,7 @@ class dr
             'ref' => $ref
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;

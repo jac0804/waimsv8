@@ -110,11 +110,18 @@ class viewtaskinfo2
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $line = $config['params']['dataparams']['line'];
     $data2 = [];
     $isnew = $config['params']['dataparams']['isnew'];
-      $task = $this->othersClass->sanitizekeyfield('task', $config['params']['dataparams']['task']);
+
+
+    $dateTables = ['tmdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+  
+    $task = $this->othersClass->sanitizekeyfieldFast('task', $config['params']['dataparams']['task'], $lookups);
 
       $data = [
         'trno' => $trno,

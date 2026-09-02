@@ -32,7 +32,7 @@ class chart_of_accounts
   // orientations: portrait=p, landscape=l
   // formats: letter, a4, legal
   // layoutsize: reportWidth
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
+  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
   public function __construct()
   {
@@ -128,33 +128,33 @@ class chart_of_accounts
     $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
     $str .= $this->GENERATE_DEFAULT_HEADER($params);
     $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11);
-
+   
     foreach ($data as $key => $value) {
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
       $indent = '5' * ($value->levelid * 3);
 
-      $str .= $this->reporter->col($value->acno, '200px', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($value->acnoname, '400', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '0px 0px 0px ' . $indent . 'px');
-      $str .= $this->reporter->col($value->alias, '100px', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($value->type, '100px', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($value->acno, '150', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($value->acnoname, '710', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '0px 0px 0px ' . $indent . 'px');
+      $str .= $this->reporter->col($value->alias, '70', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($value->type, '70', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
+      
 
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
-        if (!$allowfirstpage) {
-          $str .= $this->GENERATE_DEFAULT_HEADER($params);
-        }
-        $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11);
-        $page = $page + $count;
-      } //end if
+      // if ($this->reporter->linecounter == $page) {
+      //   $str .= $this->reporter->endtable();
+      //   $str .= $this->reporter->page_break();
+      //   $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+      //   if (!$allowfirstpage) {
+      //     $str .= $this->GENERATE_DEFAULT_HEADER($params);
+      //   }
+      //   $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11);
+      //   $page = $page + $count;
+      // } //end if
     } //end for each and everyday
-
-
     $str .= $this->reporter->endtable();
+
+    // $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
 
     return $str;
@@ -185,7 +185,7 @@ class chart_of_accounts
    
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CHART OF ACCOUNTS', '100px', null, false, '10px solid ', '', '', $font, '24', '', '', '');
+    $str .= $this->reporter->col('CHART OF ACCOUNTS', 1000, null, false, '10px solid ', '', '', $font, '24', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -199,7 +199,7 @@ class chart_of_accounts
       $accname = "ALL";
     }
 
-    $str .= $this->reporter->col($accname, '700', null, false, $border, $border_line, $alignment, $font, '12', '', '', '');
+    $str .= $this->reporter->col($accname, '930', null, false, $border, $border_line, $alignment, $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -214,10 +214,10 @@ class chart_of_accounts
     $str = '';
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CODE', '200px', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('ACCOUNT NAME', '400px', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('ALIAS', '100px', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('TYPE', '100px', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('CODE', '150', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('ACCOUNT NAME', '710', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('ALIAS', '70', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('TYPE', '70', null, false, $border, 'TB', '', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
     return $str;
   }

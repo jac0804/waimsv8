@@ -8,6 +8,7 @@ use Session;
 
 use App\Http\Classes\coreFunctions;
 use App\Http\Classes\othersClass;
+use App\Http\Classes\companysetup;
 
 class trigger_masterfile
 {
@@ -15,11 +16,13 @@ class trigger_masterfile
 	private $coreFunctions;
 	private $othersClass;
 	private $trigger;
+	private $companysetup;
 
 	public function __construct()
 	{
 		$this->coreFunctions = new coreFunctions;
 		$this->othersClass = new othersClass;
+		$this->companysetup = new companysetup;
 	} //end fn
 
 	public function createtriggers_masterfile($config)
@@ -197,6 +200,7 @@ class trigger_masterfile
 		// employee - tab itemgroup
 		$this->entryitemgroup_triggers($config);
 		$this->entryduration_triggers($config);
+		$this->entryuniform_triggers($config);
 		// $this->entrycalllog($config);
 
 		// $this->entryvrpassenger($config);
@@ -254,6 +258,18 @@ class trigger_masterfile
 		// SPORTRUNNER TRADING / BX TRADING
 		$this->entrypositions_triggers($config);
 		$this->entrycrbrand_triggers($config);
+
+		// TASK MONITORING / BILLING MASTER TRIGGER
+		$this->entrybilling_triggers($config);
+		$this->billingsetup_triggers($config);
+
+		//detachment trigger
+		$this->emp_training_triggers($config);
+		$this->firearms_triggers($config);
+		$this->sgviolation_triggers($config);
+		$this->clviolation_triggers($config);
+		$this->detachment_triggers($config);
+
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -598,12 +614,32 @@ class trigger_masterfile
 
 	private function division_triggers($config)
 	{
-		$fields = [
-			'Code' => ['divcode' => []],
-			'Name' => ['divname' => []],
-		];
+		$ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
 
-		$this->settriggermasterfilelogs($config, 'division', 'division', 'masterfile_log', $fields, 'divid');
+		$doc = 'division';
+
+		if ($ispayrolldetachment) {
+			$doc = 'detachment';
+
+			$fields = [
+				'Code' => ['divcode' => []],
+				'Description' => ['divname' => []],
+				'Address' => ['address' => []],
+				'Group' => ['group' => []],
+				'Remarks' => ['remarks' => []],
+				'Contact' => ['attention' => []],
+				'Tel No' => ['tel' => []],
+				'Fax No' => ['faxno' => []],
+			];
+		} else {
+
+			$fields = [
+				'Code' => ['divcode' => []],
+				'Name' => ['divname' => []],
+			];
+		}
+
+		$this->settriggermasterfilelogs($config, $doc, 'division', 'masterfile_log', $fields, 'divid');
 	}
 
 	private function rank_triggers($config)
@@ -1008,7 +1044,10 @@ class trigger_masterfile
 			'void' => ['halt' => []],
 			'Deduct always w/out checking balance' => ['isdeductible' => []],
 			'priority' => ['priority' => []],
-			'Temp Amount' => ['camt' => []]
+			'Temp Amount' => ['camt' => []],
+			'Application/Agreement NO.' => ['appno' => []],
+			'Date Granted' => ['grantdate' => []],
+			'Amount with Interest' => ['amtinterest' => []]
 		];
 
 		$this->settriggermasterfilelogs($config, 'earningdeductionsetup', 'standardsetup', 'payroll_log', $fields, 'trno');
@@ -1123,7 +1162,9 @@ class trigger_masterfile
 			'NDIFF FROM' => ['ndifffrom' => []],
 			'NDIFF TO' => ['ndiffto' => []],
 			'ONE LOG ONLY' => ['isonelog' => []],
-			'FLEXIBLE TIME' => ['flexit' => []]
+			'FLEXIBLE TIME' => ['flexit' => []],
+			'TIME-IN SHIFT' => ['istimein' => []]
+
 		];
 
 		$this->settriggermasterfilelogs($config, 'shiftsetup', 'tmshifts', 'payroll_log', $fields, 'line');
@@ -2837,7 +2878,7 @@ class trigger_masterfile
 	private function entrypositions_triggers($config)
 	{
 		$fields = [
-			'Positions'        => ['positions'        => []],
+			'Positions' => ['positions' => []],
 		];
 		$this->settriggermasterfilelogs($config, 'entrypositions', 'positions', 'masterfile_log', $fields, 'id', 'id');
 	}
@@ -2850,4 +2891,132 @@ class trigger_masterfile
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'carbrand', 'masterfile_log', $fields, 'id');
 	}
+
+	private function entrybilling_triggers($config)
+	{
+		$doc = 'ENTRYBILLING';
+		$fields = [
+			'Asset Account' => ['assetid' => [true, "concat(acno, '-', acnoname)", "coa", "acnoid"]],
+			'Revenue Account' => ['revenueid' => [true, "concat(acno, '-', acnoname)", "coa", "acnoid"]],
+			'Bill Type' => ['billtype' => []],
+			// 'Sched' => ['sched' => []],
+			'Sched' => ['sched' => [true, "scheddate", "(select 0 as sched, 'MONTHLY' as scheddate union all select 1, 'ANNUAL') as schedlk", "sched"]],
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'billingmaster', 'masterfile_log', $fields, 'line');
+	}
+
+	private function billingsetup_triggers($config)
+	{
+		$doc = 'BILLINGSETUP';
+		$fields = [
+			'Amount'      => ['amt' => []],
+			'Start Date'  => ['startdate' => []],
+			'End Date'    => ['enddate' => []],
+			'Isvat'         => ['isvat' => []],
+			'Isinactive'    => ['isinactive' => []],
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'clbilling', 'masterfile_log', $fields, 'bline', 'clientid');
+	}
+
+	private function entryuniform_triggers($config)
+	{
+		$doc = 'ENTRYUNIFORM';
+		$fields = [
+			'Issued Date'      => ['issued' => []],
+			'Description'  => ['description' => []],
+			'Cyyear'    => ['cyyear' => []],
+			'Remarks'         => ['rem' => []],
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'cluniform', 'masterfile_log', $fields, 'line');
+	}
+
+	private function emp_training_triggers($config)
+	{
+		$fields = [
+			'trno' => ['trno' => []],
+			'venue' => ['venue' => []],
+			'title' => ['title' => []],
+			'dateid' => ['dateid' => []]
+		];
+
+		$this->settriggermasterfilelogs($config, 'emp_training2', 'traininghead', 'masterfile_log', $fields, 'trno', 'empid');
+	}
+
+	private function firearms_triggers($config)
+	{
+		$fields = [
+			'code' => ['code' => []],
+			'make' => ['make' => []],
+			'type' => ['type' => []],
+			'expiry' => ['expiry' => []],
+			'serialno' => ['serialno' => []],
+			'licenseno' => ['licenseno' => []],
+			'cal' => ['cal' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'firearms', 'firearms', 'masterfile_log', $fields, 'line');
+	}
+
+	private function sgviolation_triggers($config)
+	{
+		$doc = 'ENTRYVIOLATION';
+		$fields = [
+			'Violation' => ['violation' => []],
+			'Offense' => ['offense' => []],
+			'Action' => ['vaction' => []],
+			'Type' => ['type' => []]
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'sgviolation', 'masterfile_log', $fields, 'line');
+	}
+
+	private function clviolation_triggers($config)
+	{
+		$doc = 'ENTRYEMPVIOLATION';
+		$fields = [
+			'Detachment' => ['divid' => [true, "concat(divcode, ' - ', divname)", "division", "divid"]],
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'clviolation', 'masterfile_log', $fields, 'line');
+	}
+
+	private function detachment_triggers($config)
+	{
+		$fields = [
+			'Collection Type' => ['colltype' => []],
+			'isexcessbasic' => ['isexcessbasic' => []],
+			'isnodeductbank' => ['isnodeductbank' => []],
+			'isnodeductemp' => ['isnodeductemp' => []],
+			'isbasic8' => ['isbasic8' => []],
+			'isbasic4' => ['isbasic4' => []],
+			'isexcessduty' => ['isexcessduty' => []],
+			'isregot' => ['isregot' => []],
+			'isndiff' => ['isndiff' => []],
+			'isworkingrd' => ['isworkingrd' => []],
+			'isholiday' => ['isholiday' => []],
+			'noguards' => ['noguards' => []],
+			'yrdays' => ['yrdays' => []],
+			'wkdays' => ['wkdays' => []],
+			'dutyhrs' => ['dutyhrs' => []],
+			'mons' => ['mons' => []],
+			'days' => ['days' => []],
+			'hrs' => ['hrs' => []],
+			'excesshrs' => ['excesshrs' => []],
+			'dailywage' => ['dailywage' => []],
+			'salary' => ['salary' => []],
+			'excessduty' => ['excessduty' => []],
+			'cola' => ['cola' => []],
+			'otamt' => ['otamt' => []],
+			'amt13th' => ['amt13th' => []],
+			'incentive' => ['incentive' => []],
+			'uniformamt' => ['uniformamt' => []],
+			'retireamt' => ['retireamt' => []],
+			'sssamt' => ['sssamt' => []],
+			'phicamt' => ['phicamt' => []],
+			'hdmfamt' => ['hdmfamt' => []],
+			'eccamt' => ['eccamt' => []],
+			'agencyfee' => ['agencyfee' => []],
+			'agencyvat' => ['agencyvat' => []]
+		];
+		
+		$this->settriggermasterfilelogs($config, 'detachment', 'divinfo', 'masterfile_log', $fields, 'divid');
+	}
+
 }// end class

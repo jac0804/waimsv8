@@ -384,11 +384,14 @@ class forwarder
     }
     $clientid = 0;
     $msg = '';
+
+    $dateTables = ['client', 'daysched', 'clientinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -397,7 +400,7 @@ class forwarder
       if (array_key_exists($key, $head)) {
         $datasched[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $datasched[$key] = $this->othersClass->sanitizekeyfield($key, $datasched[$key]);
+          $datasched[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datasched[$key],$lookups);
         } //end if    
       }
     }
@@ -405,7 +408,7 @@ class forwarder
       if (array_key_exists($key, $head)) {
         $dataclientinfo[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataclientinfo[$key] = $this->othersClass->sanitizekeyfield($key, $dataclientinfo[$key]);
+          $dataclientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataclientinfo[$key],$lookups);
         } //end if    
       }
     }

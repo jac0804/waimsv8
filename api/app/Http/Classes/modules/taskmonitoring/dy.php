@@ -53,6 +53,7 @@ class dy
     ['val' => 'open', 'label' => 'Undone', 'color' => 'primary'],
     ['val' => 'neglect', 'label' => 'Neglect', 'color' => 'primary'],
     ['val' => 'cancelled', 'label' => 'Cancelled', 'color' => 'primary'],
+    ['val' => 'penreim', 'label' => 'Pending Reimbursement', 'color' => 'primary'],
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
@@ -181,6 +182,10 @@ class dy
         $filter = " and dt.statid = 4";
         break;
 
+      case 'penreim': //pending reimbursement
+        $filter = " and dt.statid = 1 and dt.amt>0 and apvtrno = 0 and dt.userid = $userid";
+        break;
+
       default:
         $filter = "";
         break;
@@ -210,7 +215,6 @@ class dy
             left join client as ck on ck.clientid=dt.empid
             where  CONVERT(dt.dateid,DATE)>=? and CONVERT(dt.dateid,DATE)<=?  $filter $filtersearch $user
             order by dateid desc, trno desc " . $l;
-    // var_dump($qry, [ $date1, $date2,$date1, $date2]);
     $data = $this->coreFunctions->opentable($qry, [$date1, $date2, $date1, $date2]);
 
     foreach ($data as $key => $value) {
@@ -440,6 +444,8 @@ class dy
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
     $userid = $config['params']['adminid'];
+    $dateTables = ['dailytask'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $clientid = 0;
     $msg = '';
@@ -455,7 +461,7 @@ class dy
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
       }
     }

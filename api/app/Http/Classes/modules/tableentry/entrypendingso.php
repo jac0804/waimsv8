@@ -321,7 +321,9 @@ class entrypendingso
         $msg = '';
         $status = true;
         $path = 'App\Http\Classes\modules\sales\sj';
-
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $sjdate = $this->coreFunctions->datareader("select sjdate as value from tmhead where trno = $trno", [], '');
         if ($sjdate == null) {
             return ['status' => false, 'msg' => 'please encode SJ Date field.'];
@@ -400,7 +402,7 @@ class entrypendingso
 
 
                     foreach ($head as $key2 => $val) {
-                        $head[$key2] = $this->othersClass->sanitizekeyfield($key2, $head[$key2]);
+                        $head[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $head[$key2],$lookups);
                     }
                     $head['createdate'] = $date;
                     $head['createby'] = $config['params']['user'];

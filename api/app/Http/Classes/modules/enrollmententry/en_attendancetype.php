@@ -105,13 +105,17 @@ class en_attendancetype
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
     $msg = '';
+
+    $dateTables = ['en_attendancetype'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data3 = [];
         $data3['type'] = $data2['attendancetype'];
@@ -144,9 +148,14 @@ class en_attendancetype
   {
     $data = [];
     $row = $config['params']['row'];
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['en_attendancetype'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data2 = [];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data2['type'] = $data['attendancetype'];
     $data2['color'] = $data['attendancecolor'];

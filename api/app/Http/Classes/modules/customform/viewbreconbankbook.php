@@ -120,9 +120,14 @@ class viewbreconbankbook
         $gatherby = $config['params']['dataparams']['gatherby'];
         $status = $config['params']['dataparams']['status'];
 
-        $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-        $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
-        $cleardate = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['cleardate']);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+        $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
+        $cleardate = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['cleardate'], $lookups);
+
 
         $txtqry = "select '" . $acno . "' as contra, '" . $acnoname . "' as acnoname,
         '" . $start . "' as `start`, '" . $end . "' as `end`, '" . $cleardate . "' as cleardate, " . $gatherby . " as gatherby, " . $status . " as `status` ";
@@ -157,8 +162,13 @@ class viewbreconbankbook
         $acno = $config['params']['dataparams']['contra'];
         $gatherby = $config['params']['dataparams']['gatherby'];
 
-        $date1 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-        $date2 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $date1 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+        $date2 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
+
 
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);
@@ -310,8 +320,13 @@ class viewbreconbankbook
         $acno = $config['params']['dataparams']['contra'];
         $gatherby = $config['params']['dataparams']['gatherby'];
 
-        $date1 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-        $date2 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $date1 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+        $date2 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
+
 
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);

@@ -154,6 +154,11 @@ class entrytripob
         $row = $config['params']['data'];
         $fromdate = null;
         $todate = null;
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->detail];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($trno == 0) {
             return ['status' => false, 'msg' => 'Please save header before adding details.', 'data' => [], 'reloadledgerdata' => true];
         }
@@ -173,7 +178,7 @@ class entrytripob
                             $todate  =  $t->format("Y-m-d H:i:s");
                         }
                     }
-                    $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$key][$value]);
+                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value],$lookups);
                 }
 
                 $data['leadfrom'] = $fromdate;
@@ -220,6 +225,11 @@ class entrytripob
         $data = [];
         $row = $config['params']['row'];
         $date = $this->othersClass->getCurrentDate();
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->detail];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key => $value) {
             if (in_array($value, $this->lead)) {
                 if ($value == 'leadfrom') {
@@ -231,7 +241,7 @@ class entrytripob
                     $todate  =  $t->format("Y-m-d H:i:s");
                 }
             }
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
         $data['leadfrom'] = $fromdate;
         $data['leadto'] = $todate;

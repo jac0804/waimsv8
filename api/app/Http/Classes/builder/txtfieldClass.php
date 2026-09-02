@@ -420,6 +420,7 @@ class txtfieldClass
                 'name' => 'lblcostuom',
                 'type' => 'label',
                 'label' => 'COST/UOM',
+                
                 'class' => '',
                 'style' => 'font-weight:bold;font-size:30px;'
             ),
@@ -2441,6 +2442,21 @@ class txtfieldClass
                 'access' => 'post',
                 'confirm' => true,
                 'confirmlabel' => 'Proceed to generate MR?'
+            ),
+            'generateyb' => array(
+                'name' => 'generateyb',
+                'type' => 'button',
+                'label' => 'GENERATE YB',
+                'class' => 'csgenerateyb',
+                'lookupclass' => 'generateyb',
+                'action' => 'generateyb',
+                'action2' => 'stockstatusposted',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'access' => 'post',
+                'confirm' => true,
+                'confirmlabel' => 'Proceed to generate YB?'
             ),
             'update' => array(
                 'name' => 'update',
@@ -6948,6 +6964,17 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false,
                 'maxlength' => 100
+            ),
+            'empreq' => array(
+                'name' => 'empreq',
+                'type' => 'lookup',
+                'label' => 'Employee Requirements',
+                'class' => 'csempreq sbccsreadonly',
+                'action' => 'empreqlookup',
+                'lookupclass' => 'empreqlookup',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
             ),
             'atype' => array(
                 'name' => 'type',
@@ -20796,6 +20823,413 @@ class txtfieldClass
                 'readonly' => false,
                 'style' => $this->style,
             ),
+            // 07-16-2026
+            'istimein' => array(
+                'name' => 'istimein',
+                'type' => 'checkbox',
+                'label' => 'Time-in Shift',
+                'class' => 'csistimein',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+            //// licenses 
+
+            'sagsd' => array(
+                'name' => 'sagsd',
+                'type' => 'input',
+                'label' => 'SAGSD LICENSE',
+                'class' => 'cssagsd',
+                'align' => 'text-left',
+                'style' => $this->style,
+                'readonly' => false,
+                'required' => false
+            ),
+
+             'sagsdexp' => array(
+                'name' => 'sagsdexp',
+                'type' => 'date',
+                'label' => 'SAGSD EXPIRY DATE',
+                'class' => 'cssagsdexp',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+
+             'solicense' => array(
+                'name' => 'solicense',
+                'type' => 'input',
+                'label' => 'SO LICENSE',
+                'class' => 'cssolicense',
+                'align' => 'text-left',
+                'style' => $this->style,
+                'readonly' => false,
+                'required' => false
+            ),
+
+             'soexp' => array(
+                'name' => 'soexp',
+                'type' => 'date',
+                'label' => 'SO EXPIRY DATE',
+                'class' => 'cssoexp',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+
+             'palicense' => array(
+                'name' => 'palicense',
+                'type' => 'input',
+                'label' => 'PA LICENSE',
+                'class' => 'cspalicense',
+                'align' => 'text-left',
+                'style' => $this->style,
+                'readonly' => false,
+                'required' => false
+            ),
+
+             'paexp' => array(
+                'name' => 'paexp',
+                'type' => 'date',
+                'label' => 'PA EXPIRY DATE',
+                'class' => 'cspaexp',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+
+            'ntclicense' => array(
+                'name' => 'ntclicense',
+                'type' => 'input',
+                'label' => 'NTC LICENSE',
+                'class' => 'csntclicense',
+                'align' => 'text-left',
+                'style' => $this->style,
+                'readonly' => false,
+                'required' => false
+            ),
+
+             'ntcexp' => array(
+                'name' => 'ntcexp',
+                'type' => 'date',
+                'label' => 'NTC EXPIRY DATE',
+                'class' => 'csntcexp',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+             'brgystart' => array(
+                'name' => 'brgystart',
+                'type' => 'date',
+                'label' => 'Brgy Clearance Date',
+                'class' => 'csbrgystart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+               'brgyend' => array(
+                'name' => 'brgyend',
+                'type' => 'date',
+                'label' => 'Brgy Validity Date',
+                'class' => 'csbrgyend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'pnpstart' => array(
+                'name' => 'pnpstart',
+                'type' => 'date',
+                'label' => 'PNP Clearance Date',
+                'class' => 'cspnpstart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+               'pnpend' => array(
+                'name' => 'pnpend',
+                'type' => 'date',
+                'label' => 'PNP Validity Date',
+                'class' => 'cspnpend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'nbistart' => array(
+                'name' => 'nbistart',
+                'type' => 'date',
+                'label' => 'NBI Clearance Date',
+                'class' => 'csnbistart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+               'nbiend' => array(
+                'name' => 'nbiend',
+                'type' => 'date',
+                'label' => 'NBI Validity Date',
+                'class' => 'csnbiend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'nuerostart' => array(
+                'name' => 'nuerostart',
+                'type' => 'date',
+                'label' => 'Neuro Evaluation Date',
+                'class' => 'csnuerostart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+               'nueroend' => array(
+                'name' => 'nueroend',
+                'type' => 'date',
+                'label' => 'Neuro Evaluation Validity Date',
+                'class' => 'csnueroend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+
+              'drugstart' => array(
+                'name' => 'drugstart',
+                'type' => 'date',
+                'label' => 'Drug Test Date',
+                'class' => 'csdrugstart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'drugend' => array(
+                'name' => 'drugend',
+                'type' => 'date',
+                'label' => 'Drug Test Validity Date',
+                'class' => 'csdrugend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'medicalstart' => array(
+                'name' => 'medicalstart',
+                'type' => 'date',
+                'label' => 'Medical Exam Date',
+                'class' => 'csmedicalstart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'medicalend' => array(
+                'name' => 'medicalend',
+                'type' => 'date',
+                'label' => 'Medical Exam Validity Date',
+                'class' => 'csmedicalend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'dilgstart' => array(
+                'name' => 'dilgstart',
+                'type' => 'date',
+                'label' => 'DILG Clearance Date',
+                'class' => 'csdilgstart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'dilgend' => array(
+                'name' => 'dilgend',
+                'type' => 'date',
+                'label' => 'DILG Clearance Validity Date',
+                'class' => 'csdilgend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'occustart' => array(
+                'name' => 'occustart',
+                'type' => 'date',
+                'label' => 'Occupational Date',
+                'class' => 'csoccustart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'occuend' => array(
+                'name' => 'occuend',
+                'type' => 'date',
+                'label' => 'Occupational Validity Date',
+                'class' => 'csoccuend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'courtstart' => array(
+                'name' => 'courtstart',
+                'type' => 'date',
+                'label' => 'Court Clearance Date',
+                'class' => 'cscourtstart',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'courtend' => array(
+                'name' => 'courtend',
+                'type' => 'date',
+                'label' => 'Court Clearance Validity Date',
+                'class' => 'cscourtend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+
+            'ctcno' => array(
+                'name' => 'ctcno',
+                'type' => 'input',
+                'label' => 'CTC NO.',
+                'class' => 'csctcno',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'ctcdate' => array(
+                'name' => 'ctcdate',
+                'type' => 'date',
+                'label' => 'Date',
+                'class' => 'csctcdate',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'ctcissue' => array(
+                'name' => 'ctcissue',
+                'type' => 'input',
+                'label' => 'Issue',
+                'class' => 'csctcissue',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+              'insurance' => array(
+                'name' => 'insurance',
+                'type' => 'input',
+                'label' => 'Insurance',
+                'class' => 'csinsurance',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+             'policy' => array(
+                'name' => 'policy',
+                'type' => 'input',
+                'label' => 'Policy',
+                'class' => 'cspolicy',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'premium' => array(
+                'name' => 'premium',
+                'type' => 'input',
+                'label' => 'Premium',
+                'class' => 'cspremium',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'policyend' => array(
+                'name' => 'policyend',
+                'type' => 'date',
+                'label' => 'Date Expired',
+                'class' => 'cspolicyend',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'cal' => array(
+                'name' => 'cal',
+                'type' => 'input',
+                'label' => 'CAL',
+                'class' => 'cscal',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'amtinterest' => array(
+                'name' => 'amtinterest',
+                'type' => 'input',
+                'label' => 'Amt with Interest',
+                'class' => 'csamtinterest',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 20
+            ),
+            'appno' => array(
+                'name' => 'appno',
+                'type' => 'input',
+                'label' => 'Application/Agreement No.',
+                'class' => 'csappno',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 50
+            ),
+            'grantdate' => array(
+                'name' => 'grantdate',
+                'type' => 'date',
+                'label' => 'Date Granted',
+                'class' => 'csgrantdate',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+             'colltype' => array(
+                'name' => 'colltype',
+                'type' => 'lookup',
+                'lookupclass' => 'lookupcollection',
+                'action' => 'lookuprandom2',
+                'label' => 'Collection Type',
+                'class' => 'cscolltype',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => true
+            ),
+
+       
+
+
+
 
 
         );

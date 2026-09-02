@@ -1653,6 +1653,9 @@ class moduleClass
 						break;
 					case 'PR':
 						$hideobj['updatepostedinfo'] = true;
+						if ($companyid == 67) { //yulick
+							$hideobj['forapproval'] = true;
+						}
 						$clickclient = ['button.csclient'];
 						break;
 					case 'CD':
@@ -2060,6 +2063,12 @@ class moduleClass
 			case 'LOANAPPLICATIONPORTAL':
 				return array('loanapplication', 'trno', 'docno');
 				break;
+		    case 'FIREARMS':
+				return array('firearms', 'line', 'code');
+			    break;
+		    case 'DETACHMENT':
+				return array('division', 'divid', 'divcode');
+			    break;		
 			default:
 				return array('client', 'clientid', 'client');
 				break;

@@ -385,6 +385,10 @@ class department
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
     $data = [];
+
+    $dateTables = ['client'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields['client']);
     }
@@ -394,7 +398,7 @@ class department
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }

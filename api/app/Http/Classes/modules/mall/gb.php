@@ -752,7 +752,6 @@ class gb
                 $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                 foreach ($this->acctg as $key => $value) {
                   foreach ($value as $key2 => $value2) {
-                    // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
                     $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                   }
                   $this->acctg[$key]['editdate'] = $current_timestamp;

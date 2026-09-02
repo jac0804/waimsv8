@@ -527,7 +527,23 @@ class pos
     $this->coreFunctions->sbcaddcolumngrp(["stock"], ["isconverted"], "tinyint(2) NOT NULL DEFAULT 0", 0);
     $this->coreFunctions->sbcaddcolumngrp(["stock"], ["amt1", "amt2", "isqty2", "freight2", "srp"], "decimal(18,4) NOT NULL DEFAULT '0.0000'", 0);
 
-
-    
+    $sql = "CREATE TABLE `posreg` (
+      `line` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+      `trno` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+      `center` VARCHAR(10) NOT NULL DEFAULT '',
+      `station` VARCHAR(20) NOT NULL DEFAULT '',
+      `branch` VARCHAR(20) NOT NULL DEFAULT '',
+      `serialno` VARCHAR(20) NOT NULL DEFAULT '',
+      `regcode` VARCHAR(30) NOT NULL DEFAULT '',
+      `isdemo` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
+      `accesskey` VARCHAR(20) NOT NULL DEFAULT '',
+      `rem` VARCHAR(250) NOT NULL DEFAULT '',
+      `createby` VARCHAR(45) NOT NULL DEFAULT '',
+      `createdate` DATETIME DEFAULT NULL,
+      `ishd` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
+      `productid` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+      PRIMARY KEY (`line`),
+      INDEX `Index_SerialNo`(`serialno`))";
+    $this->coreFunctions->sbccreatetable("posreg", $qry);
   } //end function
 } // end class

@@ -1794,7 +1794,8 @@ class qs
          
         // PDF::MultiCell(0, 20, "\n");
          if ($sjlogo == 'wlogo' && $ogordp == 'og') {
-            PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 65);
+            // PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 65);
+            PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 80);
             // PDF::SetFont($font, 'B', $fontsize14, $border);
             // PDF::MultiCell(340, 15, '', '', 'L', 0, 0, '', '', false, 0, false, false, 0);
             // PDF::MultiCell(290, 15, 'PROFORMA INVOICE - ORIGINAL', '', 'C', 0, 0, '293', '26', false, 0, false, false);
@@ -1842,6 +1843,12 @@ class qs
         PDF::MultiCell(125, 15, 'Date: ', '', 'L', false, 0);
         PDF::MultiCell(100, 15, date("F d,Y", strtotime($data[0]['prodate'])),  '', 'L', false);
 
+        // Kapag empty ang yourref, mag-iwan pa rin ng isang row
+        // para hindi umangat ang kasunod na text.  
+        if ($yourref == '') {
+                $cyourref = 1;
+            }
+
         for ($r = 0; $r < $cyourref; $r++) {
             $lbl = '';
             if ($r == 0) {
@@ -1852,6 +1859,11 @@ class qs
             PDF::SetFont($font, '', $fontsize14);
             PDF::MultiCell(125, 15, $lbl, '', 'L', false, 0);
             PDF::MultiCell(100, 15, (isset($arryourref[$r]) ? $arryourref[$r] : ''),  '', 'L', false);
+        }
+
+
+        if ($terms == '') {
+            $cterms = 2;
         }
 
         for ($r = 0; $r < $cterms; $r++) {

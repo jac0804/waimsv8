@@ -296,8 +296,12 @@ class bi
 
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
+
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $isfee = false;
 
@@ -307,7 +311,7 @@ class bi
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '');
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
         // $data2 = [
@@ -449,6 +453,7 @@ class bi
     }
     public function createdistribution($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $entry = [];
         $status = true;
@@ -458,6 +463,10 @@ class bi
         $data = $this->coreFunctions->opentable($query, [$trno]);
         $postdate = $this->othersClass->getCurrentDate();
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($amount != 0) {
             $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', [$this->defaultContra]);
             $entry = ['acnoid' => $acnoid, 'client' => $data[0]->client,  'ref' => $data[0]->ref, 'db' => $data[0]->amount, 'cr' => 0, 'postdate' => $postdate, 'line' => 1];
@@ -471,7 +480,7 @@ class bi
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['encodeddate'] = $current_timestamp;
                 $this->acctg[$key]['encodedby'] = $config['params']['user'];

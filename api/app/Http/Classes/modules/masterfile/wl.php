@@ -344,6 +344,10 @@ class wl
         $data = [];
         $clientinfo = [];
         $companyid = $config['params']['companyid'];
+
+        $dateTables = ['client', 'clientinfo'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        
         if ($isupdate) {
             unset($this->fields[0]);
         }
@@ -353,7 +357,7 @@ class wl
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -361,7 +365,7 @@ class wl
         foreach ($this->clinfo as $key) {
             if (!in_array($key, $this->except)) {
                 $clientinfo[$key] = $head[$key];
-                $clientinfo[$key] = $this->othersClass->sanitizekeyfield($key, $clientinfo[$key]);
+                $clientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $clientinfo[$key], $lookups);
             } //end if    
         }
 

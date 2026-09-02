@@ -117,13 +117,12 @@ class entryappemployment
   {
     $data = [];
     $row = $config['params']['row'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['aemployment'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
@@ -164,7 +163,7 @@ class entryappemployment
   {
     $empid = $config['params']['tableid'];
     $data = $config['params']['data'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['aemployment'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -173,7 +172,6 @@ class entryappemployment
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {

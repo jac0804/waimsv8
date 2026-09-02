@@ -107,12 +107,15 @@ class entrypurpose
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['purpose_masterfile'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -134,8 +137,11 @@ class entrypurpose
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['purpose_masterfile'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];

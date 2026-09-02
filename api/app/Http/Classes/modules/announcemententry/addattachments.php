@@ -226,7 +226,6 @@ class addattachments
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {

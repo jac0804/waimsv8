@@ -231,6 +231,7 @@ class employee
     $companyid = $config['params']['companyid'];
     $ar = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewar']];
     $ap = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewap']];
+
     if ($systemtype == "FAMS" || $systemtype == "ATI") {
       $inv = ['customform' => ['action' => 'customform', 'lookupclass' => 'inventoryhistory_employee_tab']];
     } else {
@@ -240,6 +241,8 @@ class employee
 
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryitemgroup', 'label' => 'itemgroup']];
     $itemgroup = $this->tabClass->createtab($tab, []);
+
+
 
 
     $return = [];
@@ -259,13 +262,18 @@ class employee
       $return['ISSUED ITEMS'] = ['icon' => 'fa fa-history', 'tab' => $tab_issueitem];
     }
 
-    if($companyid==68){//JDA
+    if ($companyid == 68) { //JDA
       $tab = ['tableentry' => ['action' => 'hrisentry', 'lookupclass' => 'entryappreq', 'label' => 'REQUIREMENTS']];
       $requirements = $this->tabClass->createtab($tab, []);
       $return['REQUIREMENTS'] = ['icon' => 'fa fa-history', 'tab' => $requirements];
     }
 
     $return['USER ACCOUNT'] = ['icon' => 'fa fa-user', 'customform' => $user];
+
+
+
+
+ 
 
     return $return;
   }
@@ -548,6 +556,9 @@ class employee
     $otherdata = [];
     $companyid = $config['params']['companyid'];
 
+    $dateTables = ['client', 'employee'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields['client']);
       unset($this->fields[0]);
@@ -559,7 +570,7 @@ class employee
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -567,7 +578,7 @@ class employee
       if (array_key_exists($key, $head)) {
         $otherdata[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $otherdata[$key] = $this->othersClass->sanitizekeyfield($key, $otherdata[$key], '', $companyid);
+          $otherdata[$key] = $this->othersClass->sanitizekeyfieldFast($key, $otherdata[$key], $lookups);
         } //end if
       }
     }

@@ -1170,6 +1170,9 @@ where empid = ? and batchid = ?";
 
     switch ($companyid) {
       case 53: //camera
+        $filter = "";
+        $filteraccIn = " and acc.alias not in ('YMR','YER','YSR','YPR','YIP','YIM','YIS')";
+        break;
       case 62: //onesky
         $filter = "";
         $filteraccIn = " and acc.alias in ('ABSENT','LATE','UNDERTIME','YWT','LOAN','DEDUCTION','HDMFLOAN','YPE','YME','YSE') ";
@@ -10829,9 +10832,9 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $font = $this->companysetup->getrptfont($config['params']);
     $font_size = 14;
     $font_size_title = 20;
-    $font_size_header = 17;
-    $font_size_tablecol = 17;
-    $font_size_collabel = 16;
+    $font_size_header = 15;
+    $font_size_tablecol = 15;
+    $font_size_collabel = 15;
     $font_size_colvalue = 15;
     $padding = '';
     $margin = '';
@@ -11222,25 +11225,32 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= $this->reporter->col(($qtyspecialot == 0 ? '-' : number_format($qtyspecialot, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col(($specialot == 0 ? '-' : number_format($specialot, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
-
         $str .= $this->reporter->col('Cash Advance : ', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
         $str .= $this->reporter->col(($advancebal == 0 ? '-' : number_format($advancebal, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col(($cashadv == 0 ? '-' : number_format($cashadv, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->endrow();
 
 
-        // legal holiday, other deductions
+        // legal holiday unwork, other deductions
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Legal Holiday :', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-        $str .= $this->reporter->col(($qtylegal + $qtylegalun == 0 ? '-' : number_format($qtylegal + $qtylegalun, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
-        $str .= $this->reporter->col((($legal + $legalun) == 0 ? '-' : number_format(($legal + $legalun), 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col('Legal Holiday (Unwork) :', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col(($qtylegalun == 0 ? '-' : number_format($qtylegalun, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col(($legalun == 0 ? '-' : number_format($legalun, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->col('Other Deductions : ', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
         $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_collabel, '', '', '');
         $str .= $this->reporter->col(($otherdeduction == 0 ? '-' : number_format($otherdeduction, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->endrow();
 
+        // legal holiday, other deductions
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Legal Holiday :', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col(($qtylegal == 0 ? '-' : number_format($qtylegal, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col(($legal == 0 ? '-' : number_format($legal, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->endrow();
 
         $totalbalances += $sssloanbal[0]['value'] + $hdmfloanbal[0]['value'] + $otherloanbal[0]['value'] + $advancebal;
@@ -11251,7 +11261,6 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= $this->reporter->col(($qtylegalot == 0 ? '-' : number_format($qtylegalot, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col(($legalot == 0 ? '-' : number_format($legalot, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
@@ -11259,7 +11268,6 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= $this->reporter->col(($qtyallowance == 0 ? '-' : number_format($qtyallowance, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col(($allowance == 0 ? '-' : number_format($allowance, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->endrow();
 
 
@@ -11869,17 +11877,24 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= $this->reporter->col(($cashadv == 0 ? '-' : number_format($cashadv, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->endrow();
 
-        // legal holiday,  other deductions
+        // legal holiday unwork,  other deductions
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Legal Holiday :', '295', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
-        $str .= $this->reporter->col((($legal + $legalun) == 0 ? '-' : number_format(($legal + $legalun), 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col('Legal Holiday (Unwork) :', '295', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col(($legalun == 0 ? '-' : number_format($legalun, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->col('Other Deductions : ', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
         $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_collabel, '', '', '');
         $str .= $this->reporter->col(($otherdeduction == 0 ? '-' : number_format($otherdeduction, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->endrow();
 
+        // legal holiday,  other deductions
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Legal Holiday :', '295', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col(($legal == 0 ? '-' : number_format($legal, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
+        $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_collabel, '', '', '');
+        $str .= $this->reporter->col('', '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->endrow();
 
         $totalbalances += $sssloanbal[0]['value'] + $hdmfloanbal[0]['value'] + $otherloanbal[0]['value'] + $advancebal;
@@ -11887,18 +11902,14 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         // legal ot, allowance
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Legal OT :', '295', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->col(($legalot == 0 ? '-' : number_format($legalot, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Allowance :', '295', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->col(($allowance == 0 ? '-' : number_format($allowance, 2)), '95', null, false, $border, '', 'R', $font, $font_size_colvalue, '', '', '');
         $str .= $this->reporter->col('', '20', null, false, $border, '', 'L', $font, $font_size_collabel, '', '', '');
-
         $str .= $this->reporter->endrow();
 
 

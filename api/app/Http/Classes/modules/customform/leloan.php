@@ -210,10 +210,7 @@ class leloan
     switch ($button){
       case 'update': 
          
-        // $info['pf'] = $this->othersClass->sanitizekeyfield('amt', $config['params']['dataparams']['pf']);
-        // $info['amortization'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['amortization']);
-        // $info['penalty'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['penalty']);
-        // $info['nf'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['nf']);
+    
 
         $info['pf'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['pf'],$lookups);
         $info['amortization'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['amortization'],$lookups);
@@ -224,10 +221,7 @@ class leloan
           $head['interest'] = $info['intannum']/12;
         }
 
-        // $head['interest'] = $this->othersClass->sanitizekeyfield('amt',$head['interest']);
-        // $info['intannum'] = $this->othersClass->sanitizekeyfield('amt',$config['params']['dataparams']['intannum']);
-
-        // $info['voidint'] = $this->othersClass->sanitizekeyfield('qty',$config['params']['dataparams']['voidint']);
+        
 
 
         $head['interest'] = $this->othersClass->sanitizekeyfieldFast('amt',$head['interest'],$lookups);

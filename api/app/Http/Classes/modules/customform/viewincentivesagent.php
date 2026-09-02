@@ -354,8 +354,7 @@ class viewincentivesagent
     $dateTables = ['glhead'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-    // $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+
    
     $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
     $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
@@ -377,7 +376,6 @@ class viewincentivesagent
     $status2 = '';
     if ($status == "1") {
       $agrelease = $config['params']['dataparams']['agrelease'];
-      // $agrelease = $this->othersClass->sanitizekeyfield('dateid', $agrelease);
       $agrelease = $this->othersClass->sanitizekeyfieldFast('dateid', $agrelease, $lookups);
       $agrelease = $this->othersClass->sbcdateformat($agrelease);
 

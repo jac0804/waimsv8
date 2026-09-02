@@ -241,7 +241,9 @@ class viewcvitems
         $data = [];
         $data2 = [];
         $row = $config['params']['data'];
-
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['hpostock', 'cvitems'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $surcharge = $this->coreFunctions->getfieldvalue("profile", "pvalue",  "doc=? and psection=?", ['SYS', 'SURCHARGE']);
         if ($surcharge == '') {
@@ -261,11 +263,11 @@ class viewcvitems
                 }
 
                 foreach ($this->fields as $key => $value) {
-                    $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
                 }
 
                 foreach ($this->cvfields as $key => $value) {
-                    $data2[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+                    $data2[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
                 }
 
                 if ($row['surcharge'] == 0) $data2['scamt'] = 0;
@@ -297,7 +299,9 @@ class viewcvitems
         $msg = '';
         $trno = $config['params']['tableid'];
         $acctg = [];
-
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['ladetail', 'detailinfo'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $qry = "select sum(round((cv.amt * (cv.surcharge/100)),6)) as amt, cv.acnoid, h.client, h.dateid, h.forex, h.cur
                     from cvitems as cv left join lahead as h on h.trno=cv.trno 
                     where cv.trno=" . $trno . " and cv.surcharge<>0 group by cv.acnoid, h.client, h.dateid, h.forex, h.cur ";
@@ -354,7 +358,7 @@ class viewcvitems
                         foreach ($acctg as $key => $value) {
 
                             foreach ($value as $key2 => $value2) {
-                                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                             }
 
                             $acctg[$key]['editdate'] = $current_timestamp;

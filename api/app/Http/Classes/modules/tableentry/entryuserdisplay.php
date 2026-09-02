@@ -146,6 +146,9 @@ class entryuserdisplay
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $config['params']['data'];
     $qry = "Select max(line) as maxLine from  {$this->table}";
     $res = $this->coreFunctions->opentable($qry);
@@ -155,7 +158,7 @@ class entryuserdisplay
       if (!empty($data[$key]['bgcolor'])) {
         foreach ($this->fields as $key2 => $field) {
           $value = isset($data[$key][$field]) ? $data[$key][$field] : null;
-          $data2[$field] = $this->othersClass->sanitizekeyfield($field, $value);
+          $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value,$lookups);
         }
         if (empty(trim($data2['userid']))) {
           return ['status' => false, 'msg' => 'Saving failed. Please complete the empty userid.'];
@@ -315,8 +318,11 @@ class entryuserdisplay
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+    
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     $row['usergrp'] = isset($row['groupname']) ? $row['groupname'] : ''; // FIX: map groupname to usergrp
     $data['usergrp'] = $row['usergrp']; // FIX: update data array with correct usergrp value

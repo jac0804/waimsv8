@@ -31,7 +31,7 @@ class payrollaccounts
   public $tablelogs = 'masterfile_log';
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['code', 'codename', 'alias', 'type', 'uom', 'seq', 'qty', 'acnoid', 'istax', 'alias2', 'aaid', 'penalty', 'is13th', 'ispayroll'];
+  private $fields = ['code', 'codename', 'alias', 'type', 'uom', 'seq', 'qty', 'acnoid', 'istax', 'alias2', 'aaid', 'penalty', 'is13th', 'ispayroll', 'isnocheck'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
@@ -60,7 +60,7 @@ class payrollaccounts
   public function createTab($config)
   {
     $companyid = $config['params']['companyid'];
-    $columns = ['action', 'code',  'codename', 'alias', 'type', 'uom', 'seq', 'qty', 'penalty', 'istax', 'ispayroll', 'acno', 'acnoname', 'alias2', 'accountno'];
+    $columns = ['action', 'code',  'codename', 'alias', 'type', 'uom', 'seq', 'qty', 'penalty', 'istax', 'ispayroll', 'acno', 'acnoname', 'alias2', 'accountno', 'isnocheck'];
 
     foreach ($columns as $key => $value) {
       $$value = $key;
@@ -87,7 +87,7 @@ class payrollaccounts
     $obj[0][$this->gridname]['columns'][$acnoname]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
     $obj[0][$this->gridname]['columns'][$alias2]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
     $obj[0][$this->gridname]['columns'][$accountno]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-
+    $obj[0][$this->gridname]['columns'][$isnocheck]['style'] = "width:80px;whiteSpace: normal;min-width:80px;";
     $obj[0][$this->gridname]['columns'][$uom]['lookupclass'] = "lookupuompay";
     $obj[0][$this->gridname]['columns'][$uom]['action'] = "lookupsetup";
     $obj[0][$this->gridname]['columns'][$acno]['type'] = "lookup";
@@ -111,6 +111,7 @@ class payrollaccounts
 
     if ($companyid != 58) { //cdo
       $obj[0][$this->gridname]['columns'][$ispayroll]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$isnocheck]['type'] = 'coldel';
     }
 
     $obj[0][$this->gridname]['columns'][$penalty]['readonly'] = false;
@@ -151,6 +152,7 @@ class payrollaccounts
     $data['penalty'] = 0;
     $data['is13th'] = 0;
     $data['bgcolor'] = 'bg-blue-2';
+    $data['isnocheck'] = 'false';
     return $data;
   }
 
@@ -265,6 +267,7 @@ class payrollaccounts
       switch ($value) {
         case 'istax':
         case 'ispayroll':
+        case 'isnocheck':
           $qry = $qry . ",(case when p." . $value . "=1 then 'true' else 'false' end) as " . $value;
           break;
         default:
@@ -283,7 +286,6 @@ class payrollaccounts
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['line'] == 0) {
@@ -331,7 +333,6 @@ class payrollaccounts
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
         if ($data[$key]['line'] == 0) {

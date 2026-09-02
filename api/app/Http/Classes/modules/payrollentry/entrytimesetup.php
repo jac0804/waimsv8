@@ -156,6 +156,10 @@ class entrytimesetup
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = $config['params']['data'];
 
         foreach ($data as $key => $value) {
@@ -179,9 +183,9 @@ class entrytimesetup
                                 $timeValue = $currentDate . ' ' . $timeValue . ':00';
                             }
 
-                            $data2[$field] = $this->othersClass->sanitizekeyfield($field, $timeValue);
+                            $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $timeValue, $lookups);
                         } else {
-                            $data2[$field] = $this->othersClass->sanitizekeyfield($field, $data[$key][$field]);
+                            $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $data[$key][$field],$lookups);
                         }
                     }
                 }
@@ -211,6 +215,10 @@ class entrytimesetup
 
     public function save($config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        
         $row = $config['params']['row'];
         $data = [];
 
@@ -227,9 +235,9 @@ class entrytimesetup
                         $timeValue = $currentDate . ' ' . $timeValue . ':00';
                     }
 
-                    $data[$field] = $this->othersClass->sanitizekeyfield($field, $timeValue);
+                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $timeValue,$lookups);
                 } else {
-                    $data[$field] = $this->othersClass->sanitizekeyfield($field, $row[$field]);
+                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $row[$field],$lookups);
                 }
             }
         }

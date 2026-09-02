@@ -61,7 +61,8 @@ class pe
         'itemid',
         'qty',
         'uom',
-        'color', 'weight'
+        'color',
+        'weight'
     ];
     private $except = ['trno', 'dateid', 'due'];
     public $showfilteroption = true;
@@ -117,8 +118,19 @@ class pe
     public function createdoclisting()
     {
         $getcols = [
-            'action', 'liststatus', 'listdocument', 'listdate', 'barcode', 'itemdesc', 'yourref',
-            'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+            'action',
+            'liststatus',
+            'listdocument',
+            'listdate',
+            'barcode',
+            'itemdesc',
+            'yourref',
+            'ourref',
+            'postdate',
+            'listpostedby',
+            'listcreateby',
+            'listeditby',
+            'listviewby'
         ];
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -349,7 +361,13 @@ class pe
     {
         $pr_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 4821);
         $columns = [
-            'action', 'rrqty', 'uom', 'rem', 'sku', 'maxqty', 'itemname'
+            'action',
+            'rrqty',
+            'uom',
+            'rem',
+            'sku',
+            'maxqty',
+            'itemname'
         ];
 
         foreach ($columns as $key => $value) {
@@ -556,6 +574,8 @@ class pe
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
+        $dateTables = ['prhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
@@ -565,7 +585,7 @@ class pe
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -1206,6 +1226,8 @@ class pe
         $disc = $config['params']['data']['disc'];
         $wh = $config['params']['data']['wh'];
         $loc = $config['params']['data']['loc'];
+        $dateTables = ['prstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $void = 'false';
         $itemdesc = '';
         $maxqty = 0;
@@ -1240,9 +1262,9 @@ class pe
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $maxqty = $this->othersClass->sanitizekeyfield('maxqty', $maxqty);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        $maxqty = $this->othersClass->sanitizekeyfieldFast('maxqty', $maxqty, $lookups);
 
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -1276,7 +1298,7 @@ class pe
         ];
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;

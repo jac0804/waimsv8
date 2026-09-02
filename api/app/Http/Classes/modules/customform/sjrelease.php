@@ -128,15 +128,12 @@ class sjrelease
             case 37: //mega crystal
                 $rem = $config['params']['dataparams']['rem'];
                 $tablenum = $isposted ? 'glhead' : '';
-                // $data['rem'] = $this->othersClass->sanitizekeyfield("rem", $rem);
                 $data['rem'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
                 break;
             default:
                 $releasedate = $config['params']['dataparams']['releasedate'];
                 $rem = $config['params']['dataparams']['rem2'];
                 $tablenum = $isposted ? 'hcntnuminfo' : 'cntnuminfo';
-                // $data['rem2'] = $this->othersClass->sanitizekeyfield('rem', $rem);
-                // $data['releasedate'] = $this->othersClass->sanitizekeyfield('releasedate', $releasedate);
                 $data['rem2'] = $this->othersClass->sanitizekeyfieldFast('rem', $rem, $lookups);
                 $data['releasedate'] = $this->othersClass->sanitizekeyfieldFast('releasedate', $releasedate, $lookups);
                 break;

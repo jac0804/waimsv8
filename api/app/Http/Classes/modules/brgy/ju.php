@@ -282,8 +282,12 @@ class ju
     }
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
+
+        $dateTables = ['juhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if ($isupdate) {
             unset($this->fields['docno']);
@@ -292,7 +296,7 @@ class ju
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '');
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
         if ($isupdate) {

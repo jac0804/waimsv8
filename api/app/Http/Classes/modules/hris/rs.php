@@ -345,7 +345,6 @@ class rs
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
@@ -545,7 +544,6 @@ class rs
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 

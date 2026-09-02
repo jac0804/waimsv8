@@ -158,10 +158,15 @@ class pendingrestdayapplications
 
     public function updateapp($config, $status)
     {
+        $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $admin = $config['params']['adminid'];
         $isapp = $row['approver'];
+
+        $dateTables = ['changeshiftapp'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($isapp == '' || $isapp == null) $isapp = $this->coreFunctions->datareader("select approver as value from pendingapp where doc='RESTDAY' and line=" . $row['line']);
         $approver = $this->coreFunctions->getfieldvalue("employee", $isapp, "empid=?", [$admin]);
         // $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
@@ -242,7 +247,7 @@ class pendingrestdayapplications
         foreach ($this->fields as $key2) {
             if (isset($data[$key2])) {
                 $tempdata[$key2] = $data[$key2];
-                $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
             }
         }
         $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

@@ -40,7 +40,7 @@ class viewgridincentivesdealer
 
   public function getAttrib()
   {
-    $attrib = array('load' => 2030, 'view' => 2030);
+    $attrib = array('load' => 2518, 'view' => 2518);
     return $attrib;
   }
 
@@ -93,10 +93,14 @@ class viewgridincentivesdealer
 
     $releasedate = $this->othersClass->getCurrentTimeStamp();
 
+    $dateTables = ['incentives'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       if ($value['added'] == 'true') {
-        $agentquota = $this->othersClass->sanitizekeyfield('amt', $value['agentquota']);
-        $sales = $this->othersClass->sanitizekeyfield('amt', $value['amt']);
+
+        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'],$lookups);
+        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'],$lookups);
       } else {
         array_push($return, $value);
       }

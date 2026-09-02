@@ -145,9 +145,16 @@ class assignuser
         $msg = '';
 
         $blnHeadChecker = false;
+        $blnBothHeads = false;
 
-        $projecthead = $this->coreFunctions->getfieldvalue("client",  "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$checkerid], '', true);
+        $projecthead = $this->coreFunctions->getfieldvalue("client", "clientid", "client.clientid in (3863,3866,3867,3865,3868,3870) and clientid=?", [$checkerid], '', true);
         if ($projecthead != 0) {
+
+            // check kung parehong project head yung checker at nagcreate ng task
+            if ($this->othersClass->isSBCProjectHead($createdby)) {
+                $blnBothHeads = true;
+            }
+
             AssignedHere:
             if ($assignedid != 0) {
                 // DETERMINE KUNG MAG-IINSERT OR CREATE
@@ -165,9 +172,9 @@ class assignuser
                     elseif ($dyclient == $tmclient) {
                         $searchsame = $this->coreFunctions->datareader(
                             "select h.trno as value  from tmhead as h 
-                            left join client as cl on cl.clientid=h.clientid 
-                            where h.reseller=? and cl.client=? and h.status=1 
-                            order by h.dateid asc limit 1",
+                    left join client as cl on cl.clientid=h.clientid 
+                    where h.reseller=? and cl.client=? and h.status=1 
+                    order by h.dateid asc limit 1",
                             [$reseller, $dyclient]
                         );
 
@@ -178,20 +185,38 @@ class assignuser
                     }
                 }
 
-                $updateassignedid = $this->coreFunctions->sbcupdate('dailytask', ['assignedid' => $assignedid],  ['trno' => $clientid]);
+                $updateassignedid = $this->coreFunctions->sbcupdate('dailytask', ['assignedid' => $assignedid], ['trno' => $clientid]);
 
                 if ($updateassignedid != 1) {
-                    return ['status' => false, 'msg' => 'User assigning error. Please refresh the page.',  'closecustomform' => true,  'reloadhead' => true];
+                    return ['status' => false, 'msg' => 'User assigning error. Please refresh the page.', 'closecustomform' => true, 'reloadhead' => true];
                 }
 
                 if ($title == '' || $taskdetails == '') {
-                    return ['status' => false, 'msg' => 'Task title or task details  cannot be blank.',  'closecustomform' => false,  'reloadhead' => false];
+                    return ['status' => false, 'msg' => 'Task title or task details  cannot be blank.', 'closecustomform' => false, 'reloadhead' => false];
+                }
+
+                // NEW: resolve what requestby/checkerid WOULD be, then block if assigned user collides with either
+                $resolvedRequestby = $checkerid;
+                $resolvedCheckerid = $userid;
+                if ($blnHeadChecker) {
+                    $resolvedRequestby = $createdby;
+                    $resolvedCheckerid = 0;
+                } elseif ($blnBothHeads) {
+                    $resolvedRequestby = $checkerid;
+                    $resolvedCheckerid = $createdby;
+                }
+
+                if ($assignedid == $resolvedRequestby) {
+                    return ['status' => false, 'msg' => 'The assigned user cannot be the same as the Request by.', 'closecustomform' => false, 'reloadhead' => false];
+                }
+                if ($assignedid == $resolvedCheckerid && $resolvedCheckerid != 0) {
+                    return ['status' => false, 'msg' => 'The assigned user cannot be the same as the Checker.', 'closecustomform' => false, 'reloadhead' => false];
                 }
 
 
                 // IF EXISTING  INSERT DETAIL
                 if ($useExisting) {
-                    $getline = $this->coreFunctions->getfieldvalue("tmdetail", "line",  "trno=? order by line desc", [$tmtrno], '',  true);
+                    $getline = $this->coreFunctions->getfieldvalue("tmdetail", "line", "trno=? order by line desc", [$tmtrno], '', true);
                     $lines = $getline + 1;
                     $detaildata = [
                         'trno' => $tmtrno,
@@ -205,11 +230,11 @@ class assignuser
                         'task' => $taskdetails
                     ];
                     $this->coreFunctions->insertGetId('tmdetail', $detaildata);
-                    $tmline = $this->coreFunctions->getfieldvalue("tmdetail",  "line", "trno=?", [$tmtrno], '', true);
+                    $tmline = $this->coreFunctions->getfieldvalue("tmdetail", "line", "trno=?", [$tmtrno], '', true);
                     if ($tmline != 0) {
                         $url = 'App\Http\Classes\modules\taskmonitoring\\tm';
                         $this->othersClass->insertUpdatePendingapp($tmtrno, $lines, 'TM', [], $url, $config, $assignedid, false, true);
-                        $assigned = $this->coreFunctions->getfieldvalue("client",   "clientname",  "clientid=?", [$assignedid]);
+                        $assigned = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$assignedid]);
                         $config['params']['doc'] = 'ENTRYTASK';
                         $this->logger->sbcmasterlog($tmtrno, $config, ' Line: ' . $tmline . ' , This task has been assigned to ' . $assigned);
                     }
@@ -236,6 +261,9 @@ class assignuser
                     if ($blnHeadChecker) {
                         $data['checkerid'] = 0;
                         $data['requestby'] = $createdby;
+                    } elseif ($blnBothHeads) {
+                        $data['requestby'] = $checkerid;  // stays the project head assigned as checker
+                        $data['checkerid'] = $createdby;  // creator becomes the checker
                     }
 
                     $generatetm = $this->coreFunctions->insertGetId('tmhead', $data);
@@ -256,30 +284,30 @@ class assignuser
                         ];
 
                         $this->coreFunctions->insertGetId('tmdetail', $data2);
-                        $checktmdetail = $this->coreFunctions->getfieldvalue("tmdetail",  "trno",   "trno=? and line=1", [$generatetm]);
+                        $checktmdetail = $this->coreFunctions->getfieldvalue("tmdetail", "trno", "trno=? and line=1", [$generatetm]);
 
                         if ($checktmdetail != 0) {
                             $url = 'App\Http\Classes\modules\taskmonitoring\\tm';
                             $this->othersClass->insertUpdatePendingapp($generatetm, 1, 'TM', [], $url, $config, $assignedid, false, true);
 
-                            $assigned = $this->coreFunctions->getfieldvalue("client", "clientname",   "clientid=?",  [$assignedid]);
+                            $assigned = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$assignedid]);
 
                             $config['params']['doc'] = 'ENTRYTASK';
-                            $this->logger->sbcmasterlog($generatetm, $config,  ' Line: 1 , This task has been assigned to ' . $assigned);
+                            $this->logger->sbcmasterlog($generatetm, $config, ' Line: 1 , This task has been assigned to ' . $assigned);
                         }
 
                         $msg = 'User assigned; task monitoring document generated successfully.';
                     }
                 }
 
-                return ['status' => true,  'msg' => $msg, 'closecustomform' => true, 'reloadhead' => true];
+                return ['status' => true, 'msg' => $msg, 'closecustomform' => true, 'reloadhead' => true];
             }
         } else {
             if ($this->othersClass->isSBCProjectHead($createdby)) {
                 $blnHeadChecker = true;
                 goto AssignedHere;
             }
-            return ['status' => false,  'msg' => 'Please select the designated project head as checker.', 'closecustomform' => false, 'reloadhead' => false];
+            return ['status' => false, 'msg' => 'Please select the designated project head as checker.', 'closecustomform' => false, 'reloadhead' => false];
         }
     }
 }

@@ -1166,6 +1166,9 @@ class cv
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
     }
 
+    if($companyid == 28){ //xcomp
+      $font = "helvetica";
+    }
 
 
     $qry = "select DATE_FORMAT(left(detail.postdate,10),'%M %d, %Y') as postdate,detail.checkno,coa.acno,detail.cr 

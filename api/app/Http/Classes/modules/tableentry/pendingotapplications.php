@@ -293,6 +293,8 @@ class pendingotapplications
         $empid = $row['empid'];
         $admin = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
+        $dateTables = ['otapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $approver = $this->coreFunctions->getfieldvalue("employee", "$isapp", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'otapplicationadv';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='" . $doc . "'");
@@ -421,7 +423,7 @@ class pendingotapplications
             foreach ($this->otfields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

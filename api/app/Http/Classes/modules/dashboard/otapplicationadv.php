@@ -208,11 +208,15 @@ class otapplicationadv
 
     public function loaddata($config)
     {
-
+        $companyid = $config['params']['companyid']
         $action = $config['params']['action2'];
         $adminid = $config['params']['adminid'];
         $url = 'App\Http\Classes\modules\payroll\\' . 'otapplicationadv';
         $approversetup = app($url)->approvers($config['params']);
+
+        $dateTables = ['otapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (isset($config['params']['dataparams'])) {
             $companylist = [44, 51]; // stonepro, ulitc
 
@@ -356,7 +360,7 @@ class otapplicationadv
                     foreach ($this->fields as $key2) {
                         if (isset($data[$key2])) {
                             $tempdata[$key2] = $data[$key2];
-                            $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                            $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                         }
                     }
                     $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

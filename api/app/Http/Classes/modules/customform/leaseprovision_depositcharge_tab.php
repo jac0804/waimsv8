@@ -180,7 +180,6 @@ class leaseprovision_depositcharge_tab
 
     $data = [];
     foreach ($this->fields as $fieldname) {
-      // $data[$fieldname] = $this->othersClass->sanitizekeyfield($fieldname, $config['params']['dataparams'][$fieldname]);
        $data[$fieldname] = $this->othersClass->sanitizekeyfieldFast($fieldname, $config['params']['dataparams'][$fieldname],$lookups);
     }
     $data['clientid'] = $clientid;

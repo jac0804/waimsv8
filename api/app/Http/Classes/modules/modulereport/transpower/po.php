@@ -545,20 +545,22 @@ class po
 
     PDF::SetFont($font, '', 9);
 
-    $shortname=(isset($data[0]['shortname']) ? $data[0]['shortname'] : '');
-    
-    if($shortname=='CYA ELECTRICAL SUPPLY'){
-            PDF::MultiCell(0, 0, '', '', 'L');
-            PDF::SetFont($fontbold, '', 14);
-						PDF::MultiCell(0, 0, 'CYA ELECTRICAL SUPPLY', '', 'C');
-						// PDF::SetFont($font, '', 13);
-						// PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
-    }else{
-      // $this->reportheader->getheader($params);
-         PDF::MultiCell(0, 0, '', '', 'L');
-         PDF::SetFont($fontbold, '', 14);
-         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-    }
+    // $shortname=(isset($data[0]['shortname']) ? $data[0]['shortname'] : '');
+
+    // if($shortname=='CYA ELECTRICAL SUPPLY'){
+    //         PDF::MultiCell(0, 0, '', '', 'L');
+    //         PDF::SetFont($fontbold, '', 14);
+    // 				PDF::MultiCell(0, 0, 'CYA ELECTRICAL SUPPLY', '', 'C');
+    // 				// PDF::SetFont($font, '', 13);
+    // 				// PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
+    // }else{
+    //   // $this->reportheader->getheader($params);
+    //      PDF::MultiCell(0, 0, '', '', 'L');
+    //      PDF::SetFont($fontbold, '', 14);
+    //      PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    // }
+
+    $this->reportheader->getheader($params);
   
    
     // PDF::MultiCell(0, 0, '', '', 'L');

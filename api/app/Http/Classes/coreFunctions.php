@@ -179,6 +179,7 @@ class coreFunctions
 			$current_timestamp = $othersClass->getCurrentTimeStamp();
 			switch ($type) {
 				case "DLOCK":
+				case "DLOCK2":
 				case "MIRROR":
 				case "MIRROR2":
 				case "MIRROR3": //uploading logs

@@ -352,6 +352,8 @@ class ph
   {
     $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+    $dateTables = ['phhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -362,7 +364,7 @@ class ph
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -425,7 +427,7 @@ class ph
             if ($d->discd != '') $dd['disc21'] = $d->discd;
             if ($d->disce != '') $dd['disc22'] = $d->disce;
             if ($d->cashamt > 0) $dd['amt'] = $d->cashamt;
-            if ($d->cashdisc != '') $dd['disc'] = $cashdisc;
+            if ($d->cashdisc != '') $dd['disc'] = $d->cashdisc;
             if ($d->wsamt > 0) $dd['amt2'] = $d->wsamt;
             if ($d->wsdisc != '') $dd['disc2'] = $d->wsdisc;
             if ($d->amt1 > 0) $dd['famt'] = $d->amt1;
@@ -832,6 +834,9 @@ class ph
     $trno = $config['params']['trno'];
     $barcode = $config['params']['data']['barcode'];
     $itemname = $config['params']['data']['itemname'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['phstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $line = 0;
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
@@ -901,7 +906,7 @@ class ph
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

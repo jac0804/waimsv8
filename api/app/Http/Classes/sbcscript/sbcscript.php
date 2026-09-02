@@ -639,6 +639,13 @@ class sbcscript
   public function taskmonitoring($config)
   {
     return [
+      'head' => '
+      console.log(state.headerdata);
+      const completed = state.headerdata.completed
+      const overall = state.headerdata.overall
+      state.headercols.col4.lblrem.label = "Completed: "+ completed +" /  "+ overall +" ";
+      console.log(state.headercols.col4);
+      ',
       'headbtnclick' => '  
           if (payload.payload.name === "new") {
             if (state.tableentryobject.tabbuttons !== undefined) {
@@ -655,7 +662,6 @@ class sbcscript
                 }
             }
         }
-
       '
     ];
   }
@@ -791,6 +797,103 @@ class sbcscript
         }
 
       '
+    ];
+  }
+
+  public function posregistration($config)
+  {
+    return [
+      'headtable' => '
+      console.log(payload.field);
+      console.log(state.headtableobject);
+
+      function matchspecsfromregcode() {
+        state.headtableobject.data.specs = "";
+
+        if (state.headtableobject.data.type.value == "Harddisk") {
+          state.headtableobject.txtfield.col2.specs.options = state.headtableobject.data.itemharddisk;
+        } else {
+          state.headtableobject.txtfield.col2.specs.options = state.headtableobject.data.itemvolume;
+        }
+
+        if (!state.headtableobject.data.regcode) {
+          console.log("regcode is empty, skipping match");
+          return;
+        }
+
+        var regcodeParts = state.headtableobject.data.regcode.split("~");
+        var regcodePrefix = regcodeParts[0];              // "prefix company+product id"
+        var regcodeSuffix = regcodeParts[1];              // "reg key"
+
+        // strip a leading 0 or 4 if present, so "4B1" becomes "B1"
+        regcodePrefix = regcodePrefix.replace(/^[04]/, "");
+
+        var prefixFirstChar = regcodePrefix.charAt(0);    // "company id"
+        var prefixRest = regcodePrefix.slice(1);          // "product id"
+
+        var options = state.headtableobject.txtfield.col2.specs.options;
+        var matchedOption = options.find(function(opt) {
+          return opt.value === prefixRest;
+        });
+
+        if (matchedOption) {
+          state.headtableobject.data.specs = matchedOption;   // full {label, value} object
+        } else {
+          console.log("No matching option found for prefixRest:", prefixRest);
+          state.headtableobject.data.specs = "";
+        }
+      }
+
+      if(payload.field !== undefined){
+        switch(payload.field){
+          case "regcode":
+          case "type":
+            matchspecsfromregcode();
+            break;
+          case "divname":
+            state.headtableobject.data.trno = 0;
+            state.headtableobject.data.docno = "";
+            state.headtableobject.data.yourref = "";              
+            if (state.headtableobject.data.divname.value == "") {
+              state.headtableobject.txtfield.col1.docno.type = "input";
+            }else{
+              state.headtableobject.txtfield.col1.docno.type = "lookup";
+            }  
+            break;            
+          }
+       
+        }
+      '
+    ];
+  }
+
+  // 'headtable' => '
+  // console.log(state.headtableobject.data.type.value);
+  // if(state.headtableobject.data.type.value == "Volume"){
+  //    state.headtableobject.txtfield.col1.type.options = 
+  // }    // state.headtableobject.radioteu.label;    console.log(state.headercols);
+  public function payrollprocess($config)
+  {
+    return [
+      'headtable' => '
+        console.log(payload.field);
+       if(payload.field == "checkall"){
+        switch(state.headtableobject.data.checkall) {
+         case"1": 
+          state.headtableobject.data.empid = 0;
+          state.headtableobject.data.empcode = "";
+          state.headtableobject.data.empname = "";
+          break;
+        }
+       }else {
+        if(payload.field == "empcode"){
+           if(state.headtableobject.data.empcode != ""){
+            state.headtableobject.data.checkall = "0";
+            console.log("remove checkall: " + state.headtableobject.data.checkall);
+           }
+        }
+       }
+        '
     ];
   }
 } // end class

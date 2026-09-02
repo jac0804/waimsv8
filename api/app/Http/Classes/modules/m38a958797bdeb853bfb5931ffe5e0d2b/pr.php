@@ -785,7 +785,6 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
@@ -1635,8 +1634,6 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
 
             $config['params']['line'] = $line;
         }
-        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
         $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1682,7 +1679,6 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
         ];
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1701,8 +1697,6 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
                 $stockinfo_data = [
                     'trno' => $trno,
                     'line' => $line,
-                    // 'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
-                    // 'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
                     'rem' => $this->othersClass->sanitizekeyfieldFast('rem', $rem, $lookups),
                     'requestorname' => $this->othersClass->sanitizekeyfieldFast('requestorname', $requestorname, $lookups)
                 ];
@@ -1717,8 +1711,6 @@ when num.postdate is null and num.statid=36 then 'APPROVED' when num.postdate is
         } elseif ($action == 'update') {
             $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
             $stockinfo_data = [
-                // 'rem' => $this->othersClass->sanitizekeyfield('rem', $rem),
-                // 'requestorname' => $this->othersClass->sanitizekeyfield('requestorname', $requestorname)
                 'rem' => $this->othersClass->sanitizekeyfieldFast('rem', $rem, $lookups),
                 'requestorname' => $this->othersClass->sanitizekeyfieldFast('requestorname', $requestorname, $lookups)
             ];

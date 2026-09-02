@@ -62,12 +62,14 @@ class leave_filling_reports
 
         $col1 = $this->fieldClass->create($fields);
 
-        if ($companyid == 51 || $companyid == 53) { //camera,ulitc
+        if($companyid == 51 || $companyid == 53){
             data_set($col1, 'radioposttype.options', [
                 ['label' => 'ENTRY', 'value' => 'entry', 'color' => 'red'],
-                ['label' => 'APPROVED', 'value' => 'approved', 'color' => 'red']
+                ['label' => 'APPROVED', 'value' => 'approved', 'color' => 'red'],
+                ['label' => 'DISAPPROVED', 'value' => 'disapproved', 'color' => 'red']
             ]);
         }
+     
         if ($companyid == 44) { // stonepro
             data_set($col1, 'radiopaymenttype.label', 'Paymode');
 
@@ -161,6 +163,7 @@ class leave_filling_reports
 
         $filter   = "";
         $status = "";
+        $pay = "";
 
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LEAVE'");
         if ($approversetup == '') {
@@ -178,7 +181,14 @@ class leave_filling_reports
                 $status = " lt.status = 'E' and ";
                 break;
             case 'approved':
-                $status = " lt.status = 'A' and ";
+                if ($companyid == 53) { // camera
+                    $status = " lt.status in ('A','P') and ";
+                }else{
+                    $status = " lt.status = 'A' and ";
+                }
+                break;
+            case 'disapproved':
+                $status = " (lt.status = 'D' or lt.status2 = 'D') and ";
                 break;
         }
 
@@ -209,18 +219,36 @@ class leave_filling_reports
         }
 
         switch ($companyid) {
+            case 51: //ulitc
+                $pay = "
+                (case when lt.status2 = 'E' then 'ENTRY'
+                when (lt.status2 = 'A' or lt.status2 = 'P') then 'APPROVED'
+                else 'DISAPPROVED' end) as status2,
+                (case when lt.status = 'E' then 'ENTRY'
+                when (lt.status = 'A' or lt.status = 'P') then 'APPROVED'
+                else 'DISAPPROVED' end) as status,";
+                break;
+            case 53: //camera
+                $pay = "
+                (case when lt.status2 = 'E' then 'ENTRY'
+                when lt.status2 = 'A' then 'APPROVED'
+                when lt.status2 = 'P' then 'APPROVED W/OUT PAY'
+                else 'DISAPPROVED' end) as status2,
+                (case when lt.status = 'E' then 'ENTRY'
+                when lt.status = 'A'  then 'APPROVED'
+                when lt.status = 'P' then 'APPROVED W/OUT PAY'
+                else 'DISAPPROVED' end) as status,";
+                break;
+        }
+
+        switch ($companyid) {
             case 53: // camera
             case 51: // ulitc
                 $query = "
                 select date(lt.dateid) as dateid,ls.docno,cl.clientname as empname,ls.days,lt.adays,ls.empid,ls.acnoid,ls.trno,date(lt.effectivity) as effectivity,
                 app.clientname as appname,app2.clientname as appname2,lt.remarks,
                 lt.date_approved_disapproved as fdate,lt.date_approved_disapproved2 as sdate,
-                (case when lt.status2 = 'E' then 'ENTRY'
-                when (lt.status2 = 'A' or lt.status2 = 'P') then 'APPROVED'
-                else 'DISAPPROVED' end) as status2,
-                (case when lt.status = 'E' then 'ENTRY'
-                when (lt.status = 'A' or lt.status = 'P') then 'APPROVED'
-                else 'DISAPPROVED' end) as status,
+                $pay
                 lt.disapproved_remarks2 as reason2,lt.disapproved_remarks as reason,b.batch,lt.fillingtype,p.codename
 
                 from leavetrans as lt
@@ -542,17 +570,18 @@ class leave_filling_reports
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Date Applied', '90', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Employee Name', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Effectivity', '85', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Type of Leave', '65', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');// New Column
+        $str .= $this->reporter->col('Effectivity', '75', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Days', '40', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Reason', '135', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Reason', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('First Status', '85', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
 
-        $str .= $this->reporter->col('Approved/ Disapproved By', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Date Approved/ Disapproved', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Approved/ Disapproved By', '105', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Date Approved/ Disapproved', '105', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Approver Reason', '85', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
 
         $str .= $this->reporter->col('Last Status', '85', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Approved/ Disapproved By', '130', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Approved/ Disapproved By', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Date Approved/ Disapproved', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Supervisor Reason', '135', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Batch', '85', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
@@ -568,8 +597,8 @@ class leave_filling_reports
         $border = '1px solid';
         $font = $this->companysetup->getrptfont($config['params']);
         $font_size = '7';
-        $count = 23;
-        $page = 24;
+        $count = 20;
+        $page = 21;
         $str = '';
 
         $this->reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1400'];
@@ -612,21 +641,25 @@ class leave_filling_reports
         $daysbal = 0;
         $i = 0;
         $totalday = 0;
+
         foreach ($result as $key => $data) {
             $str .= $this->reporter->addline();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col($data->dateid, '90', null, false, $border, '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->empname, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->effectivity, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->codename, '65', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->effectivity, '75', null, false, $border, '', 'C', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->days, '40', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->remarks, '135', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->status2, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->appname2, '115', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->sdate, '115', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->remarks, '115', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->status2, '75', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            
+            $str .= $this->reporter->col($data->appname2, '105', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->sdate, '105', null, false, $border, '', 'C', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->reason2, '85', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            
             $str .= $this->reporter->col($data->status, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->appname, '130', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->appname, '115', null, false, $border, '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->fdate, '115', null, false, $border, '', 'C', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->reason, '135', null, false, $border, '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->batch, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');

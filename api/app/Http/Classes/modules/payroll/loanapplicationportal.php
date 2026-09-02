@@ -512,7 +512,7 @@ class loanapplicationportal
     if ($companyid == 51) { //ulitc
       $fields = [];
     }
-    if ($companyid == 53 || $companyid == 51) { // camera|ulitc
+    if ($companyid == 53 || $companyid == 51 || $companyid == 44) { // camera|ulitc|stonepro 
       array_push($fields, 'lblsubmit', 'submit');
     }
     $col4 = $this->fieldClass->create($fields);
@@ -681,6 +681,8 @@ class loanapplicationportal
     $head = $config['params']['head'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $empid = $config['params']['adminid'];
     $data = [];
 
@@ -722,7 +724,7 @@ class loanapplicationportal
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }

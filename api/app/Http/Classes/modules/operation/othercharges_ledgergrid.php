@@ -17,7 +17,8 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
 
-class othercharges_ledgdergrid
+class othercharges_ledgergrid
+
 {
   private $btnClass;
   private $fieldClass;
@@ -230,6 +231,9 @@ class othercharges_ledgdergrid
     $head = $config['params']['head'];
     $center = $config['params']['center'];
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
 
     $clientid = 0;
@@ -243,7 +247,7 @@ class othercharges_ledgdergrid
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if
       }
     }

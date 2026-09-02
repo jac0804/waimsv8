@@ -100,6 +100,7 @@ class change_shift_schedules_reports
       'approved' as posttype,
       0 as divid,
       '' as division,
+    '' as divname,
     '' as client,
     '' as clientname,
     '' as dclientname,

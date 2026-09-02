@@ -149,7 +149,7 @@ class entryappreq
     $empid = $config['params']['tableid'];
     $data = $config['params']['data'];
     $doc = $config['params']['doc'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['arequire'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -201,13 +201,12 @@ class entryappreq
     $doc = $config['params']['doc'];
     $data = [];
     $row = $config['params']['row'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['arequire'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $logexp = '';

@@ -3372,7 +3372,7 @@ class payroll_register
         $str .= $this->reporter->col(number_format($permins, 2), 60, '', false, $border, 'BRL', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', 10, '', false, $border, '', '', $font, $font_size, 'B', '', '');
         // $qtylegalot
-        $str .= $this->reporter->col($qtyrot == 0 ? '-' : number_format(($qtyrot / 8), 2), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($qtybasicpay == 0 ? '-' : number_format($qtybasicpay, 2), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col(number_format($basicpay, 2), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($qtylegal == 0 ? '-' : number_format($qtylegal, 2), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($legal == 0 ? '-' : number_format($legal, 2), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');

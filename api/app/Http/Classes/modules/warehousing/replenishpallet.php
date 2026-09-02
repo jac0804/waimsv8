@@ -315,6 +315,7 @@ class replenishpallet
 
     public function updatehead($config)
     {
+        $companyid = $config['params']['companyid'];
         $user = $config['params']['user'];
         $adminid = $config['params']['adminid'];
         $head = $config['params']['head'];
@@ -421,8 +422,12 @@ class replenishpallet
                             'encodeddate' => $this->othersClass->getCurrentTimeStamp()
                         ];
 
+
+                        $dateTables = ['lastock'];
+                        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+                        
                         foreach ($stock as $key => $v) {
-                            $stock[$key] = $this->othersClass->sanitizekeyfield($key, $stock[$key]);
+                            $stock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stock[$key], $lookups);
                         }
 
                         if ($this->coreFunctions->sbcinsert("lastock", $stock)) {

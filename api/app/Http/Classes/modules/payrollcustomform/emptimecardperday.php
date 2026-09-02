@@ -206,6 +206,10 @@ class emptimecardperday
 
   private function savechanges($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ["timecard"];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    
     $rows = $config['params']['rows'];
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
@@ -214,7 +218,7 @@ class emptimecardperday
         unset($val["empname"]);
         unset($val["empcode"]);
         foreach ($val as $k => $v) {
-          $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
           if ($k == 'dateid') {
             $val[$k] = date_format(date_create($val[$k]), "Y-m-d");
           }

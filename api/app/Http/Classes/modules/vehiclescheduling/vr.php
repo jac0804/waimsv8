@@ -36,7 +36,16 @@ class vr
 
 
   private $fields = [
-    'trno', 'docno', 'dateid', 'clientid', 'vehicleid', 'deptid', 'driverid', 'schedin', 'schedout', 'rem'
+    'trno',
+    'docno',
+    'dateid',
+    'clientid',
+    'vehicleid',
+    'deptid',
+    'driverid',
+    'schedin',
+    'schedout',
+    'rem'
   ];
   private $except = ['trno'];
   private $acctg = [];
@@ -477,6 +486,9 @@ class vr
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['vrhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $statusid = $this->coreFunctions->getfieldvalue("transnum", "statid", "trno=?", [$head['trno']]);
     switch ($statusid) {
@@ -500,7 +512,7 @@ class vr
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -789,6 +801,9 @@ class vr
     $schedin = $config['params']['data']['schedin'];
     $schedout = $config['params']['data']['schedout'];
     $purposeid = $config['params']['data']['purposeid'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['vrstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [
       'trno' => $trno,
@@ -805,7 +820,7 @@ class vr
     $data['editby'] = $config['params']['user'];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $this->coreFunctions->sbcupdate("transnum", ['statid' => 0], ['trno' => $trno]);

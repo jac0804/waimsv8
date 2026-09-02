@@ -487,7 +487,7 @@ class fast_moving_items
     }
 
     $filter1 .= "";
-    $query = "select size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,qty,uom,part,body,category,subcatname 
+    $query = "select size,model,groupid,brand,class,itemname,barcode,sum(qty) as qty,uom,part,body,category,subcatname 
     from (
     select item.sizeid as size,'P' as tr, ifnull(item.groupid,'') as groupid, ifnull(frontend_ebrands.brand_desc,'') as brand,
     ifnull(parts.part_name,'') as part,ifnull(mm.model_name,'') as model,item.body,
@@ -513,7 +513,7 @@ class fast_moving_items
     group by item.sizeid,item.groupid, frontend_ebrands.brand_desc,parts.part_name,cc.cl_name,wh.client,
     item.model,item.body,wh.clientname,item.barcode,item.itemname,mm.model_name,
     item.barcode,item.uom,cat.name , subcat.name) as FM 
-    group by size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,uom,part,body,qty,category,subcatname
+    group by size,model,groupid,brand,class,itemname,barcode,uom,part,body,category,subcatname
     order by qty desc $top";;
     return $query;
   }
@@ -570,8 +570,8 @@ class fast_moving_items
       $top = " limit 1 ";
     }
 
-    $query = "select size,model,tr,groupid,brand,class,whcode,
-    whname,itemname,barcode,qty,uom,part,body,category,subcatname
+    $query = "select size,model,groupid,brand,class,
+    itemname,barcode,sum(qty) as qty,uom,part,body,category,subcatname
     from (
     select item.sizeid as size, 'U' as tr, ifnull(item.groupid,'') as groupid, ifnull(item.brand,'') as brand,
     ifnull(item.part,'') as part,ifnull(mm.model_name,'') as model,item.body,
@@ -595,7 +595,7 @@ class fast_moving_items
     item.part,item.model,item.body,wh.clientname,item.barcode,item.itemname,mm.model_name,
     item.barcode,item.uom,cat.name , subcat.name) as FM 
     
-    group by size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,qty,uom,part,body,category,subcatname
+    group by size,model,groupid,brand,class,itemname,barcode,uom,part,body,category,subcatname
     order by qty desc $top";
 
     return $query;
@@ -639,6 +639,7 @@ class fast_moving_items
       $whid = $config['params']['dataparams']['whid'];
       $filter .= " and stock.whid=" . $whid;
     }
+
     if ($categoryname != "") {
       $category = $config['params']['dataparams']['category'];
       $filter .= " and item.category='$category'";
@@ -670,8 +671,8 @@ class fast_moving_items
       $filter1 .= "";
     }
 
-    $query = "select size,model,tr,groupid,brand,class,whcode,
-    whname,itemname,barcode,qty,uom,part,body,category,subcatname
+    $query = "select size,model,tr,groupid,brand,class,
+    itemname,barcode,sum(qty) as qty,uom,part,body,category,subcatname
     from (
     select item.sizeid as size,'P' as tr, ifnull(item.groupid,'') as groupid, ifnull(frontend_ebrands.brand_desc,'') as brand,
     ifnull(parts.part_name,'') as part,ifnull(mm.model_name,'') as model,item.body,
@@ -701,7 +702,7 @@ class fast_moving_items
     select item.sizeid as size,'P' as tr, ifnull(item.groupid,'') as groupid, ifnull(frontend_ebrands.brand_desc,'') as brand,
     ifnull(parts.part_name,'') as part,ifnull(mm.model_name,'') as model,item.body,
     ifnull(cc.cl_name,'') as class,wh.client as whcode,ifnull(wh.clientname,'') as whname,
-    ifnull(item.itemname,'') as itemname,item.barcode,sum(" . $isqty . ") as qty,item.uom,
+    ifnull(item.itemname,'') as itemname,item.barcode," . $isqty . " as qty,item.uom,
     cat.name as category, subcat.name as subcatname
     from glhead as head 
     left join glstock as stock on stock.trno=head.trno
@@ -721,7 +722,7 @@ class fast_moving_items
     item.model,item.body,wh.clientname,item.barcode,item.itemname,mm.model_name,
     item.barcode,item.uom,cat.name , subcat.name
     ) as FM
-    group by size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,qty,uom,part,body,category,subcatname
+    group by size,model,tr,groupid,brand,class,itemname,barcode,uom,part,body,category,subcatname
     order by qty desc $top ";
 
     return $query;

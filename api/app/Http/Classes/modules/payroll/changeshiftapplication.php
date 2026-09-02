@@ -572,6 +572,8 @@ class changeshiftapplication
 
         $center = $config['params']['center'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $empid = $config['params']['adminid'];
         $data = [];
         $clientid = 0;
@@ -605,7 +607,7 @@ class changeshiftapplication
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
@@ -628,8 +630,8 @@ class changeshiftapplication
             return ['status' => false, 'msg' => $msg];
         }
 
-        $data['schedin'] = $this->othersClass->sanitizekeyfield('schedin', $head['dateid'] . " " . $head['schedin']);
-        $data['schedout'] = $this->othersClass->sanitizekeyfield('schedout', $head['dateid'] . " " . $head['schedout']);
+        $data['schedin'] = $this->othersClass->sanitizekeyfieldFast('schedin', $head['dateid'] . " " . $head['schedin'], $lookups);
+        $data['schedout'] = $this->othersClass->sanitizekeyfieldFast('schedout', $head['dateid'] . " " . $head['schedout'], $lookups);
 
         switch ($companyid) {
             case 53:
@@ -656,7 +658,7 @@ class changeshiftapplication
             }
         }
 
-        $data['shftcode'] =  $this->othersClass->sanitizekeyfield('shiftcode', $head['shiftcode']);
+        $data['shftcode'] =  $this->othersClass->sanitizekeyfieldFast('shiftcode', $head['shiftcode'], $lookups);
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
         from employee as e
         left join client as cl on cl.clientid = e.empid
@@ -812,6 +814,8 @@ class changeshiftapplication
         $trno = $config['params']['trno'];
         $empid = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $submitdate = $this->coreFunctions->datareader("select submitdate as value from changeshiftapp where line=? and submitdate is not null", [$trno]);
         if (!empty($submitdate)) {
             return ['row' => [], 'status' => false, 'msg' => 'Already Submitted', 'backlisting' => false];
@@ -846,7 +850,7 @@ class changeshiftapplication
                     if (array_key_exists($key, $row)) {
                         $data2[$key] = $row[$key];
                         if (!in_array($key, $this->except)) {
-                            $data2[$key] = $this->othersClass->sanitizekeyfield($key, $data2[$key]);
+                            $data2[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data2[$key], $lookups);
                         } //end if 
                     }
                 }

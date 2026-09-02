@@ -643,8 +643,6 @@ class ds
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-          //old sanitize
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
         } //end if    
       }
     }
@@ -1027,7 +1025,6 @@ class ds
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 

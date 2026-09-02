@@ -97,13 +97,18 @@ class entryapprovetrqty
 
   public function getdata($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['tableid'];
     $msg = '';
     $status = true;
 
+    $dateTables = ['htrstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
-      $qty = $this->othersClass->sanitizekeyfield('rrqty', $value['rrqty']);
+      $qty = $this->othersClass->sanitizekeyfieldFast('rrqty', $value['rrqty'], $lookups);
+
       $uom = $value['uom'];
       $itemid = $value['itemid'];
       $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -130,10 +135,14 @@ class entryapprovetrqty
 
   public function approveall($config)
   {
+    $companyid = $config['params']['companyid'];
     $status = true;
     $msg = '';
     $trno = $config['params']['tableid'];
     $action = $config['params']['action2'];
+
+    $dateTables = ['htrstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     switch ($action) {
       case 'approveall':
@@ -157,7 +166,7 @@ class entryapprovetrqty
         } else {
           $data = $config['params']['data'];
           foreach ($data as $key => $value) {
-            $qty = $this->othersClass->sanitizekeyfield('rrqty', $value['reqqty']);
+            $qty = $this->othersClass->sanitizekeyfieldFast('rrqty', $value['reqqty'], $lookups);
             $uom = $value['uom'];
             $itemid = $value['itemid'];
             $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";

@@ -368,12 +368,7 @@ class bankrecon
         $deductions = $this->othersClass->sanitizekeyfieldFast('amt', $deductions, $lookups);
         $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);
 
-        //old way sanitize
-        // $interest = $this->othersClass->sanitizekeyfield('amt', $interest);
-        // $deductions = $this->othersClass->sanitizekeyfield('amt', $deductions);
-        // $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
-
-
+    
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);
         $clearday = $this->othersClass->sbcdateformat($clearday);
@@ -492,17 +487,12 @@ class bankrecon
         $companyid = $config['params']['companyid'];
 
 
-        //new sanitize
         $dateTables = ['gldetail'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $diff = $this->othersClass->sanitizekeyfieldFast('amt', $diff, $lookups);
         $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);
 
-
-        //old way sanitize
-        // $diff = $this->othersClass->sanitizekeyfield('amt', $diff);
-        // $endbal = $this->othersClass->sanitizekeyfield('amt', $endbal);
 
         $clearday = $this->othersClass->sbcdateformat($clearday);
         $date1 = $this->othersClass->sbcdateformat($date1);

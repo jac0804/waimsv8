@@ -133,7 +133,6 @@ class approvepr
         $data = $this->data($config);
         return ['status' => false, 'msg' => 'Please enter approve quantity.', 'data' => $data];
       }
-      // $key['rrqty'] = $this->othersClass->sanitizekeyfield("rrqty", $key['rrqty']);
       $key['rrqty'] = $this->othersClass->sanitizekeyfieldFast("rrqty", $key['rrqty'], $lookups);
       $this->coreFunctions->execqry('update prstock set rrqty=?,qty =?,status =?,editby=?,editdate=? where trno=? and line=?', 'update', [$key['rrqty'], $key['rrqty'], $key['status'], $user, $current_timestamp, $key['trno'], $key['line']]);
       $this->coreFunctions->execqry('update prstock set ext=qty*rrcost where trno=? and line=?', 'update', [$key['trno'], $key['line']]);

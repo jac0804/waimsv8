@@ -183,7 +183,7 @@ class entrygeneratesj
          left join client as cl on cl.clientid = head.clientid
          where stock.tmtrno = ? " . $filtersearch . "
          group by lstock.ref,stock.tmtrno,head.docno,cl.client,head.clientname,head.dateid";
-        return $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        return $this->coreFunctions->opentable($qry, [$trno]);
     }
 
     public function lookupsetup($config)

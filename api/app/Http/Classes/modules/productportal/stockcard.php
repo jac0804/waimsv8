@@ -39,7 +39,7 @@ class stockcard
     private $stockselect;
     private $productportallookup;
 
-    private $fields = ['barcode', 'picture', 'itemname', 'model', 'brand', 'category', 'sizeid', 'partno', 'othcode', 'disc', 'itemrem', 'amt', 'carid', 'uom'];
+    private $fields = ['barcode', 'picture', 'itemname', 'model', 'brand', 'category', 'sizeid', 'partno', 'othcode', 'disc', 'itemrem', 'amt', 'carid', 'uom', 'model2'];
     private $iteminfo = ['fyear', 'kind', 'positionid'];
 
     private $except = ['itemid', 'itemrem'];
@@ -82,7 +82,7 @@ class stockcard
     public function createdoclisting($config)
     {
 
-        $getcols = ['action', 'barcode', 'itemname', 'activestat', 'amt'];
+        $getcols = ['action', 'barcode', 'itemname', 'carbrand', 'activestat', 'amt'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -123,11 +123,12 @@ class stockcard
         $qry = "select item.itemid, ifnull(model.model_name,'') as model_name, item.itemname, item.barcode, item.partno,
         format(item.amt, " . $this->companysetup->getdecimal('currency', $config['params']) . ") as amt,item.model,
         cat.name as cat_name,
-        item.othcode,if(item.isinactive=1,'Inactive','Active') as activestat,item.sizeid
+        item.othcode,if(item.isinactive=1,'Inactive','Active') as activestat,item.sizeid, car.brand as carbrand
         from item
         left join model_masterfile as model on model.model_id = item.model
         left join frontend_ebrands as brand on brand.brandid = item.brand
         left join itemcategory as cat on cat.line = item.category
+        left join carbrand as car on car.id = item.carid
         where 1=1 and item.isfa=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##') " . $filtersearch . "
         order by barcode " . $limit;
 
@@ -200,11 +201,17 @@ class stockcard
         data_set($col1, 'categoryname.lookupclass', 'lookupcategoryitemstockcard');
         data_set($col1, 'categoryname.class', 'cscscategocsryname sbccsreadonly');
 
-        $fields = ['carbrand', 'modelname', 'fyear', 'othcode', 'position', 'sizeid'];
+        $fields = ['carbrand', 'modelname', 'submodel', 'fyear', 'othcode', 'position', 'sizeid'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'othcode.label', 'Equivalent No.');
-        data_set($col2, 'modelname.label', 'Car Model');
+        data_set($col2, 'modelname.label', 'Primary Car Model');
         data_set($col2, 'modelname.class', 'csmodelname');
+        data_set($col2, 'submodel.label', 'Secondary Car Model');
+        data_set($col2, 'submodel.type', 'lookup');
+        data_set($col2, 'submodel.lookupclass', 'secondary_model');
+        data_set($col2, 'submodel.action', 'lookupmodel');
+        data_set($col2, 'submodel.class', 'csmodelname');
+        data_set($col2, 'submodel.required', false);
         data_set($col2, 'position.type', 'lookup');
         data_set($col2, 'position.lookupclass', 'lookupposition');
         data_set($col2, 'position.action', 'lookupposition');
@@ -247,6 +254,7 @@ class stockcard
         $data[0]['carbrand'] = '';
         $data[0]['carid'] = 0;
         $data[0]['modelname'] = '';
+        $data[0]['submodel'] = '';
         $data[0]['model'] = 0;
         $data[0]['fyear'] = '';
         $data[0]['othcode'] = '';
@@ -289,9 +297,9 @@ class stockcard
         $fields = 'item.itemid, item.barcode as docno';
 
         foreach ($this->fields as $key => $value) {
-            if($value == 'amt'){
+            if ($value == 'amt') {
                 $fields = $fields . ",format(item.$value,2) as amt";
-            }else {
+            } else {
                 $fields = $fields . ',item.' . $value;
             }
         }
@@ -304,10 +312,11 @@ class stockcard
         ifnull(mmaster.model_name,'') as modelname, item.model as model,
         ifnull(brand.brand_desc,'') as brandname, ifnull(item.brand,'') as brand,
         cat.line as category,item.uom,
-        cat.name as categoryname,item.partno,car.brand as carbrand,car.id as carid,pos.positions as position,pos.id as positionid";
+        cat.name as categoryname,item.partno,car.brand as carbrand,item.carid,pos.positions as position,info.positionid, ifnull(submodel.model_name,'') as submodel, item.model2";
 
         $qry = $qryselect . " from item
         left join model_masterfile as mmaster on mmaster.model_id = item.model
+        left join model_masterfile as submodel on submodel.model_id = item.model2
         left join frontend_ebrands as brand on brand.brandid = item.brand
         left join itemcategory as cat on cat.line = item.category
         left join iteminfo as info on info.itemid=item.itemid
@@ -337,6 +346,10 @@ class stockcard
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
+
+        $dateTables = ['item', 'iteminfo', 'uom'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = [];
         $iteminfo = [];
 
@@ -350,7 +363,7 @@ class stockcard
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -359,7 +372,7 @@ class stockcard
             if (!in_array($key, $this->except)) {
                 if (array_key_exists($key, $head)) {
                     $iteminfo[$key] = $head[$key];
-                    $iteminfo[$key] = $this->othersClass->sanitizekeyfield($key, $iteminfo[$key]);
+                    $iteminfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $iteminfo[$key], $lookups);
                 }
             } //end if    
         }

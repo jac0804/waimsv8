@@ -361,6 +361,7 @@ class comm
 
   private function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $start = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
     $agentid = $config['params']['dataparams']['agentid'];
@@ -439,12 +440,13 @@ class comm
 
         $this->coreFunctions->execqry("update incentives set netamt =" . round($forcomm[$k]->amt, 2) . " ,agentcomamt = " . round($comm, 2) . ",delcharge = " . round($tdel, 2) . ",insurance =" . round($tins, 2) . ",agent2comamt =" . round($commoverride, 2) . " where trno = " . $forcomm[$k]->trno . " and line =" . $forcomm[$k]->line);
       } else {
-        $qry = "select s.trno,s.line,s.projectid,sum(s.cost*s.iss) as tp,sum(s.ext) as ext,h.dateid,p.comrate,
+        $qry = "select s.trno,s.line,s.projectid,sum(s.cost*s.iss) as tp,sum(s.ext) as ext,h.dateid,p.comrate,h.due,
         (select ic.depodate from incentives as ic where ic.trno = s.trno order by ic.depodate desc limit 1) as pdate,d.delcharge,s.insurance,ifnull(p.agentid,0) as agentid,h.yourref as poref,h.doc
         from glstock as s left join glhead as h on h.trno = s.trno
         left join projectmasterfile as p on p.line = s.projectid
         left join item on item.itemid = s.itemid
-        left join delstatus as d on d.trno = h.trno where item.noncomm <> 1 and p.comrate <>0 and s.trno =" . $forcomm[$k]->trno . " group by s.trno,s.line,s.projectid,h.dateid,p.comrate,d.delcharge,s.insurance,ifnull(p.agentid,0),h.yourref,h.doc";
+        left join delstatus as d on d.trno = h.trno where item.noncomm <> 1 and p.comrate <>0 and s.trno =" . $forcomm[$k]->trno . " 
+        group by s.trno,s.line,s.projectid,h.dateid,h.due,p.comrate,d.delcharge,s.insurance,ifnull(p.agentid,0),h.yourref,h.doc";
 
         $tamt = $this->coreFunctions->datareader("select sum(ext) as value from (" . $qry . ") as a");
         $data = $this->coreFunctions->opentable($qry);
@@ -458,7 +460,8 @@ class comm
         $pxdel =0;
 
         foreach ($data as $key => $value) {
-          $ardate = date_create($data[$key]->dateid);
+          //$ardate = date_create($data[$key]->dateid); change to due date 8.11.2026
+          $ardate = date_create($data[$key]->due);
           $crdate = date_create($data[$key]->pdate);
           $interval = date_diff($ardate, $crdate);
           $pmonth = $interval->format('%m');
@@ -629,11 +632,13 @@ class comm
       //}
     }//end usd
 
+    $dateTables = ['commdetails'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $delqry = "";
     foreach ($this->commission as $key => $value) {
       foreach ($value as $key2 => $value2) {
-        $this->commission[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+        $this->commission[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
       }
 
       if ($this->commission[$key]['ptrno'] != 0) {
@@ -726,6 +731,7 @@ class comm
 
   private function uploadcomm($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
     $inc = [];
     $commdet = [];
@@ -789,11 +795,14 @@ class comm
       array_push($commdet, $inc);
     }
 
+    $dateTables = ['incentives'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $usdline = 0;
     try {
       foreach ($commdet as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $commdet[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+           $commdet[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
 
         $qry = "select usdline as value from incentives where usdline <>0 order by usdline desc limit 1";
@@ -1096,6 +1105,7 @@ class comm
 
   public function report_per_agent_layout($config)
   {
+    $companyid = $config['params']['companyid'];
     $center = $config['params']['center'];
     $username = $config['params']['user'];
     $start = date('F d, Y', strtotime($config['params']['dataparams']['start']));
@@ -1211,7 +1221,10 @@ class comm
       $comrate = '';
       $vattype = '';
       $gp = '';
-      $val->amt = $this->othersClass->sanitizekeyfield('amt', $val->amt);
+
+      $dateTables = ['incentives','glstock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+       $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
       if ($val->ardoc == 'AR') {
         $comrate = number_format($val->comrate, 2);
         $vattype = $this->coreFunctions->getfieldvalue("client", "vattype", "client=?", [$val->client]);
@@ -1718,7 +1731,10 @@ class comm
       $comrate = '';
       $vattype = '';
       $gp = '';
-      $val->amt = $this->othersClass->sanitizekeyfield('amt', $val->amt);
+      $companyid = $config['params']['companyid'];
+      $dateTables = ['incentives', 'glstock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
       if ($val->ardoc == 'AR') {
         $comrate = number_format($val->comrate, 2);
         $vattype = $this->coreFunctions->getfieldvalue("client", "vattype", "client=?", [$val->client]);

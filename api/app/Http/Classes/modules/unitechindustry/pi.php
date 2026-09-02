@@ -43,7 +43,17 @@ class pi
     public $maxqty = 'maxqty';
 
     private $fields = [
-        'trno', 'docno', 'dateid', 'rem', 'yourref', 'ourref', 'ourref', 'itemid', 'uom', 'qty', 'weight'
+        'trno',
+        'docno',
+        'dateid',
+        'rem',
+        'yourref',
+        'ourref',
+        'ourref',
+        'itemid',
+        'uom',
+        'qty',
+        'weight'
     ];
 
     private $except = ['trno', 'dateid'];
@@ -96,8 +106,19 @@ class pi
     public function createdoclisting($config)
     {
         $getcols = [
-            'action', 'lblstatus', 'listdocument', 'barcode', 'itemdesc', 'listdate',  'yourref',
-            'ourref', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'
+            'action',
+            'lblstatus',
+            'listdocument',
+            'barcode',
+            'itemdesc',
+            'listdate',
+            'yourref',
+            'ourref',
+            'postdate',
+            'listpostedby',
+            'listcreateby',
+            'listeditby',
+            'listviewby'
         ];
 
         foreach ($getcols as $key => $value) {
@@ -238,11 +259,23 @@ class pi
     public function createTab($access, $config)
     {
         $columns = [
-            'action',  'rrqty', 'uom', 'rem', 'sku', 'maxqty', 'itemname'
+            'action',
+            'rrqty',
+            'uom',
+            'rem',
+            'sku',
+            'maxqty',
+            'itemname'
         ];
 
         $sortcolumn = [
-            'action', 'rrqty', 'uom',  'rem', 'sku', 'maxqty', 'itemname'
+            'action',
+            'rrqty',
+            'uom',
+            'rem',
+            'sku',
+            'maxqty',
+            'itemname'
         ];
 
 
@@ -254,7 +287,8 @@ class pi
 
         $tab = [
             $this->gridname => [
-                'gridcolumns' => $columns, 'sortcolumns' => $sortcolumn
+                'gridcolumns' => $columns,
+                'sortcolumns' => $sortcolumn
             ]
         ];
 
@@ -380,8 +414,16 @@ class pi
                 $hideobj = ['donetodo' => !$btndonetodo];
             }
             return  [
-                'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-                'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn, 'hideobj' => $hideobj
+                'head' => $head,
+                'griddata' => ['inventory' => $stock],
+                'islocked' => $islocked,
+                'isposted' => $isposted,
+                'isnew' => false,
+                'status' => true,
+                'msg' => $msg,
+                'clickobj' => $clickobj,
+                'hidetabbtn' => $hidetabbtn,
+                'hideobj' => $hideobj
             ];
         } else {
             $head[0]['trno'] = 0;
@@ -393,6 +435,8 @@ class pi
     public function updatehead($config, $isupdate)
     {
         $companyid = $config['params']['companyid'];
+        $dateTables = ['pihead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $head = $config['params']['head'];
         $data = [];
         if ($isupdate) {
@@ -403,7 +447,7 @@ class pi
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -760,6 +804,9 @@ class pi
         $barcode = $config['params']['data']['barcode'];
         $trno = $config['params']['trno'];
         $itemid = $config['params']['data']['itemid'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['pistock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $refx = 0;
         $linex = 0;
         $rem = '';
@@ -807,9 +854,8 @@ class pi
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $maxqty = $this->othersClass->sanitizekeyfield('maxqty', $maxqty);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        $maxqty = $this->othersClass->sanitizekeyfieldFast('maxqty', $maxqty, $lookups);
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=? ";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
         $factor = 1;
@@ -838,7 +884,7 @@ class pi
         ];
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();

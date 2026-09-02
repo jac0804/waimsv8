@@ -200,10 +200,13 @@ class viewsjfinancing
   {
     $trno  = $config['params']['dataparams']['trno'];
     $head = $config['params']['dataparams'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['cntnuminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key2) {
       $info[$key2] = $head[$key2];
-      $info[$key2] = $this->othersClass->sanitizekeyfield($key2, $info[$key2]);
+      $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
     }
 
     $allow_edit = $this->othersClass->checkAccess($config['params']['user'], 4607);
@@ -219,9 +222,9 @@ class viewsjfinancing
 
         if (!empty($data)) {
           if(floatval($data[0]->amt) <> 0){
-            $data[0]->amt = $this->othersClass->sanitizekeyfield('amt', $data[0]->amt);
-            $data[0]->fmiscfee = $this->othersClass->sanitizekeyfield('amt', $data[0]->fmiscfee);
-            $data[0]->downpayment = $this->othersClass->sanitizekeyfield('amt', $data[0]->downpayment);
+            $data[0]->amt = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->amt, $lookups);
+            $data[0]->fmiscfee = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->fmiscfee, $lookups);
+            $data[0]->downpayment = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->downpayment, $lookups);
             $this->coreFunctions->LogConsole('Amt:' . $data[0]->amt);
             $this->coreFunctions->LogConsole('Misc:' . $data[0]->fmiscfee);
             $this->coreFunctions->LogConsole('DP:' . $data[0]->downpayment);
@@ -306,11 +309,16 @@ class viewsjfinancing
     (select sum(stock.ext) as ext from lastock as stock where stock.trno = head.trno) as amt from lahead as head 
     left join cntnuminfo as hinfo on hinfo.trno = head.trno left join terms on terms.terms = head.terms  where head.trno = ?", [$trno]);
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['detailinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
     if (!empty($data)) {
-      $data[0]->amt = $this->othersClass->sanitizekeyfield('amt', $data[0]->amt);
-      $data[0]->fmiscfee = $this->othersClass->sanitizekeyfield('amt', $data[0]->fmiscfee);
-      $data[0]->downpayment = $this->othersClass->sanitizekeyfield('amt', $data[0]->downpayment);
-      $data[0]->fma1 = $this->othersClass->sanitizekeyfield('amt', $data[0]->fma1);
+      $data[0]->amt = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->amt, $lookups);
+      $data[0]->fmiscfee = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->fmiscfee, $lookups);
+      $data[0]->downpayment = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->downpayment, $lookups);
+      $data[0]->fma1 = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->fma1, $lookups);
 
       $financeamt = ($data[0]->amt + $data[0]->fmiscfee) - $data[0]->downpayment;
       $ma = $data[0]->fma1;

@@ -114,6 +114,7 @@ class wbcharges
     public function loaddata($config)
     {
         $data = [];
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
         $weight = $config['params']['dataparams']['weight'];
         $valamt = $config['params']['dataparams']['amount'];
@@ -125,12 +126,18 @@ class wbcharges
         if ($isposted) {
             $tablenum = "hcntnuminfo";
         }
+        
+        $dateTables = [$tablenum];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+
+
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        $data['weight'] = $this->othersClass->sanitizekeyfield("weight", $weight);
-        $data['valamt'] = $this->othersClass->sanitizekeyfield("valamt", $valamt);
-        $data['cumsmt'] = $this->othersClass->sanitizekeyfield("cumsmt", $cumsmt);
-        $data['delivery'] = $this->othersClass->sanitizekeyfield("delivery", $del);
+        $data['weight'] = $this->othersClass->sanitizekeyfieldFast("weight", $weight, $lookups);
+        $data['valamt'] = $this->othersClass->sanitizekeyfieldFast("valamt", $valamt, $lookups);
+        $data['cumsmt'] = $this->othersClass->sanitizekeyfieldFast("cumsmt", $cumsmt, $lookups);
+        $data['delivery'] = $this->othersClass->sanitizekeyfieldFast("delivery", $del, $lookups);
 
         $this->coreFunctions->sbcupdate($tablenum, $data, ['trno' => $trno]);
 

@@ -236,7 +236,7 @@ class codeconduct
   {
     $head = $config['params']['head'];
     $center = $config['params']['center'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = [];
     if ($isupdate) {
@@ -255,7 +255,6 @@ class codeconduct
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
@@ -408,7 +407,6 @@ class codeconduct
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 

@@ -41,12 +41,71 @@ class myinfo
   private $fields = ['client', 'clientname', 'bday', 'isemployee', 'addr', 'picture'];
 
   private $fieldsOther = [
-        'emplast', 'empfirst', 'empfirst', 'empmiddle', 'hired', 'resigned', 'city', 'country', 'telno', 'mobileno', 'citizenship',
-        'maidname', 'gender', 'remarks', 'bday', 'status', 'zipcode', 'email', 'religion', 'alias', 'jobid', 'level', 'isactive', 'lastbatch',
-        'mapp', 'agency', 'aplcode', 'jgrade', 'emprank', 'emploc', 'emptype', 'regular', 'prob', 'idbarcode', 'tin', 'sss', 'phic',
-        'hdmf', 'bankacct', 'atm', 'emprate', 'teu', 'nodeps', 'chksss', 'chktin', 'chkphealth', 'chkpibig', 'dyear', 'sssdef', 'philhdef',
-        'pibigdef', 'wtaxdef', 'supervisorid', 'shiftid', 'blood', 'paygroup', 'cola', 'divid', 'deptid', 'sectid', 'isapprover',
-        'roleid', 'nochild', 'trainee', 'permanentaddr'
+    'emplast',
+    'empfirst',
+    'empfirst',
+    'empmiddle',
+    'hired',
+    'resigned',
+    'city',
+    'country',
+    'telno',
+    'mobileno',
+    'citizenship',
+    'maidname',
+    'gender',
+    'remarks',
+    'bday',
+    'status',
+    'zipcode',
+    'email',
+    'religion',
+    'alias',
+    'jobid',
+    'level',
+    'isactive',
+    'lastbatch',
+    'mapp',
+    'agency',
+    'aplcode',
+    'jgrade',
+    'emprank',
+    'emploc',
+    'emptype',
+    'regular',
+    'prob',
+    'idbarcode',
+    'tin',
+    'sss',
+    'phic',
+    'hdmf',
+    'bankacct',
+    'atm',
+    'emprate',
+    'teu',
+    'nodeps',
+    'chksss',
+    'chktin',
+    'chkphealth',
+    'chkpibig',
+    'dyear',
+    'sssdef',
+    'philhdef',
+    'pibigdef',
+    'wtaxdef',
+    'supervisorid',
+    'shiftid',
+    'blood',
+    'paygroup',
+    'cola',
+    'divid',
+    'deptid',
+    'sectid',
+    'isapprover',
+    'roleid',
+    'nochild',
+    'trainee',
+    'permanentaddr'
   ];
 
 
@@ -358,6 +417,7 @@ class myinfo
     data_set($col1, 'picture.folder', 'employee');
     data_set($col1, 'picture.table', 'client');
     data_set($col1, 'picture.fieldid', 'clientid');
+    data_set($col1, 'picture.viewable', false);
 
     data_set($col1, 'client.type', 'input');
     data_set($col1, 'client.label', 'Employee Code');
@@ -689,6 +749,8 @@ class myinfo
     $head = $config['params']['head'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head, $this->headOther];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [];
     $dataOther = [];
@@ -702,7 +764,7 @@ class myinfo
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -710,7 +772,7 @@ class myinfo
       if (array_key_exists($key, $head)) {
         $dataContact[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataContact[$key] = $this->othersClass->sanitizekeyfield($key, $dataContact[$key]);
+          $dataContact[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataContact[$key],$lookups);
         } //end if  
       }
     }
@@ -719,7 +781,7 @@ class myinfo
       if (array_key_exists($key, $head)) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key]);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key],$lookups);
         } //end if  
       }
     }

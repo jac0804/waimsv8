@@ -169,6 +169,10 @@ class loanapplication
             $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$config['params']['adminid']]);
             $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$config['params']['adminid']]);
             $action = $config['params']['action2'];
+
+            $dateTables = ['loanapplication', 'standardsetup'];
+            $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+            
             switch ($action) {
                 case 'approve':
                     $loanstatus = 'A';
@@ -234,7 +238,7 @@ class loanapplication
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

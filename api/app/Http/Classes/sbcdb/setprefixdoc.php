@@ -58,6 +58,8 @@ class setprefixdoc
       'BH' => ['prefix' => 'BR', 'title' => 'Branch'],
       'EP' => ['prefix' => 'EM', 'title' => 'Employee Record'],
       'ML' => ['prefix' => 'ML', 'title' => 'Mechanic Ledger'],
+      'FR' => ['prefix' => 'FR', 'title' => 'Fire Arms'],
+      'DH' => ['prefix' => 'DH', 'title' => 'Detachment'],
 
     ];
     //'EM' => ['prefix' => 'EM', 'title' => 'Employee'],
@@ -445,6 +447,10 @@ class setprefixdoc
       'AM' => ['prefix' => 'ASI', 'title' => 'Service Invoice'],
       'AQ' => ['prefix' => 'AQ', 'title' => 'Quotation'],
       'AW' => ['prefix' => 'WO', 'title' => 'Work Order']
+    ];
+
+    $menu['detachmentoperation'] = [
+      'DD' => ['prefix' => 'DDO', 'title' => 'DDO ISSUANCE']
     ];
 
 

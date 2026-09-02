@@ -141,13 +141,17 @@ class entrycrbrand
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['carbrand'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];
       if (!empty($data[$key]['bgcolor'])) {
         foreach ($this->fields as $key2 => $field) {
           $value = isset($data[$key][$field]) ? $data[$key][$field] : null;
-          $data2[$field] = $this->othersClass->sanitizekeyfield($field, $value);
+          $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value, $lookups);
         }
 
         // Validation
@@ -228,8 +232,12 @@ class entrycrbrand
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['carbrand'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['id'] == 0 && $row['brand'] != '') {

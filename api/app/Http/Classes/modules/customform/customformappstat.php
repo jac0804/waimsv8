@@ -122,7 +122,6 @@ class customformappstat
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         if ($this->coreFunctions->sbcupdate("app", $data, ['empid' => $clientid])) {

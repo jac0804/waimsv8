@@ -204,8 +204,12 @@ class kwhratesetup
       'createdate' => $this->othersClass->getCurrentTimeStamp()
     ];
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['ratesetup'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($head as $key => $value) {
-      $head[$key] = $this->othersClass->sanitizekeyfield($key, $value);
+      $head[$key] = $this->othersClass->sanitizekeyfieldFast($key, $value, $lookups);
     }
 
     $msg = 'Successfully loaded.';

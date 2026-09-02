@@ -144,7 +144,6 @@ class timein
                 ];
                 $msg = '';
                 foreach ($datas as $key => $value2) {
-                    // $datas[$key] = $this->othersClass->sanitizekeyfield($key, $datas[$key]);
                     $datas[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datas[$key], $lookups);
                 }
                 $dateid = strtotime($timeinout);

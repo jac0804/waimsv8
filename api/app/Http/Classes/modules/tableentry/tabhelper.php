@@ -162,6 +162,10 @@ class  tabhelper
 
     public function save($action, $config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = [];
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
@@ -173,7 +177,7 @@ class  tabhelper
             'rem' => $row['rem']
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         }
 
         $this->coreFunctions->sbcupdate("cntnum", ['statid' => 0], ['trno' => $trno]);
@@ -213,6 +217,10 @@ class  tabhelper
     {
         $trno = $config['params']['tableid'];
         $this->coreFunctions->sbcupdate("cntnum", ['statid' => 0], ['trno' => $trno]);
+        
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $data = $config['params']['data'];
 
@@ -221,7 +229,7 @@ class  tabhelper
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
                 $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
                 $data2['editby'] = $config['params']['user'];

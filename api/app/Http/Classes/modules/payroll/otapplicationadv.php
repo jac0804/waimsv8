@@ -612,8 +612,10 @@ class otapplicationadv
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
-        $empid = $config['params']['adminid'];
+        $empid = $config['params']['adminid']; 
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         if ($companyid == 58) { //cdo
             $chkrestriction = $this->payrollcommon->checkportalrestrict($head, $config);
@@ -656,10 +658,12 @@ class otapplicationadv
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
+        $data['ottimein'] = $head['ottimein'];
+        $data['ottimeout'] = $head['ottimeout'];
         $data['dateid'] = date('Y-m-d', strtotime($data['dateid']));
         $data['dateid2'] = date('Y-m-d', strtotime($data['dateid2']));
         $scheddate =  date('Y-m-d', strtotime($data['scheddate']));

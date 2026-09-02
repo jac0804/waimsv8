@@ -198,6 +198,8 @@ class bq
   {
     $bq_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 3595);
     $companyid = $config['params']['companyid'];
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $isqty = 1;
     $uom = 2;
@@ -236,7 +238,7 @@ class bq
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
     if ($companyid == 8) { // maxipro
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+      // $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
       $obj[0][$this->gridname]['columns'][$loc]['style'] = 'text-align:right;width:90px;whiteSpace: normal;min-width:90px;';
       $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
 
@@ -248,6 +250,13 @@ class bq
 
       $obj[0][$this->gridname]['columns'][$subactivity]['style'] = 'text-align:right;width:180px;whiteSpace: normal;min-width:90px;';
     }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if(!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
+
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -403,7 +412,6 @@ class bq
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -820,8 +828,9 @@ class bq
       $amt = $config['params']['data'][$this->damt];
       $config['params']['line'] = $line;
     }
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -855,7 +864,6 @@ class bq
       'loc' => $loc
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

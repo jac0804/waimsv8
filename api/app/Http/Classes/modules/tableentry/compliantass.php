@@ -120,13 +120,18 @@ class compliantass
     }
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
         $config['params']['trno'] = $config['params']['tableid'];
         $data2 = [];
+
+        $dateTables = ['jostock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['itemdesc'] == '') {
                     return ['status' => false, 'msg' => 'Description is empty', 'data' => []];
@@ -166,11 +171,16 @@ class compliantass
     } // end function  
     public function save($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = [];
         $row = $config['params']['row'];
         $config['params']['trno'] = $config['params']['tableid'];
+
+        $dateTables = ['jostock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         if ($row['line'] == 0) {
             $data['trno'] = $config['params']['trno'];

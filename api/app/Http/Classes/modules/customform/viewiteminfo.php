@@ -653,7 +653,6 @@ class viewiteminfo
                 $isnew = $config['params']['dataparams']['isnew'];
                 $trno = $config['params']['dataparams']['trno'];
                 $line = $config['params']['dataparams']['line'];
-                // $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
                 $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
                 $leadfrom = $config['params']['dataparams']['leadfrom'];
                 $leadto = $config['params']['dataparams']['leadto'];

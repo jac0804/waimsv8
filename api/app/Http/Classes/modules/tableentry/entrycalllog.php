@@ -167,12 +167,17 @@ class entrycalllog
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $this->othersClass->setDefaultTimeZone();
     $data = $config['params']['data'];
+
+    $dateTables = ['calllogs'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       foreach ($this->fields as $key2 => $value2) {
-        $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2], '', $config['params']['companyid']);
+        $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
       }
       if ($data2['endtime'] == '') {
         $data2['endtime'] = date("H:i:s");
@@ -197,8 +202,12 @@ class entrycalllog
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
+
+    $dateTables = ['calllogs'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($this->checkcalllogsperrow($row['trno'], $row['line']) == true) {
       $data = $this->loaddataperrecord($row['trno'], $row['line']);
@@ -206,7 +215,7 @@ class entrycalllog
     }
 
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value], '', $config['params']['companyid']);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];

@@ -544,7 +544,6 @@ class agent
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -556,7 +555,6 @@ class agent
     foreach ($this->clinfo as $key2) {
       $cldata[$key2] = $head[$key2];
       if (!in_array($key2, $this->except)) {
-        // $cldata[$key2] = $this->othersClass->sanitizekeyfield($key2, $cldata[$key2], $config['params']['doc'], $companyid);
         $cldata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $cldata[$key2], $lookups);
       } //end if    
     }

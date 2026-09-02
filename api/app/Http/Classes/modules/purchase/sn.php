@@ -48,8 +48,28 @@ class sn
     public $defaultContra = 'AP1';
 
     private $fields = [
-        'trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',
-        'wh', 'address', 'contra', 'tax', 'vattype', 'projectid', 'subproject', 'waybill', 'ewt', 'ewtrate'
+        'trno',
+        'docno',
+        'dateid',
+        'due',
+        'client',
+        'clientname',
+        'yourref',
+        'ourref',
+        'rem',
+        'terms',
+        'forex',
+        'cur',
+        'wh',
+        'address',
+        'contra',
+        'tax',
+        'vattype',
+        'projectid',
+        'subproject',
+        'waybill',
+        'ewt',
+        'ewtrate'
     ];
     private $except = ['trno', 'dateid', 'due'];
     private $acctg = [];
@@ -501,6 +521,9 @@ class sn
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['cntnuminfo'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         if ($isupdate) {
             unset($this->fields[1]);
@@ -511,7 +534,7 @@ class sn
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -526,12 +549,14 @@ class sn
             if ($config['params']['companyid'] == 39) { //cbbsi
                 $exist = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$head['trno']]);
                 if (floatval($exist) != 0) {
-                    $cdata = ['freight' => $this->othersClass->sanitizekeyfield('freight', $head['freight'])];
+                    $cdata = ['freight' => $this->othersClass->sanitizekeyfieldFast('freight', $head['freight'], $lookups)];
+
                     $this->coreFunctions->sbcupdate('cntnuminfo', $cdata, ['trno' => $head['trno']]);
                 } else {
                     $cdata = [
                         'trno' => $head['trno'],
-                        'freight' => $this->othersClass->sanitizekeyfield('freight', $head['freight'])
+                        'freight' => $this->othersClass->sanitizekeyfieldFast('freight', $head['freight'], $lookups)
+
                     ];
                     $this->coreFunctions->sbcinsert('cntnuminfo', $cdata);
                 }
@@ -544,12 +569,14 @@ class sn
             if ($config['params']['companyid'] == 39) { //cbbsi
                 $exist = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$head['trno']]);
                 if (floatval($exist) != 0) {
-                    $cdata = ['freight' => $this->othersClass->sanitizekeyfield('freight', $head['freight'])];
+                    $cdata = ['freight' => $this->othersClass->sanitizekeyfieldFast('freight', $head['freight'], $lookups)];
+
                     $this->coreFunctions->sbcupdate('cntnuminfo', $cdata, ['trno' => $head['trno']]);
                 } else {
                     $cdata = [
                         'trno' => $head['trno'],
-                        'freight' => $this->othersClass->sanitizekeyfield('freight', $head['freight'])
+                        'freight' => $this->othersClass->sanitizekeyfieldFast('freight', $head['freight'], $lookups)
+
                     ];
                     $this->coreFunctions->sbcinsert('cntnuminfo', $cdata);
                 }
@@ -690,6 +717,9 @@ class sn
         $companyid = $config['params']['companyid'];
         $status = true;
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $headexp = $this->coreFunctions->datareader("select ifnull(coa.acno,'') as value from lahead as h left join coa on coa.acno=h.waybill where trno=?", [$trno]);
         if ($headexp == '') {
@@ -805,7 +835,7 @@ class sn
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -851,6 +881,9 @@ class sn
         $ewtacno = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['APWT1']);
         $taxacno = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX1']);
         $project = $this->coreFunctions->getfieldvalue($this->head, 'projectid', 'trno=?', [$trno]);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (empty($ewtacno) || empty($taxacno)) {
             $status = false;
@@ -938,7 +971,18 @@ class sn
 
             if ($vatvalue != 0) {
                 $entry = [
-                    'line' => $line, 'acnoid' => $taxacno, 'client' => $data[0]['client'], 'cr' => ($vatvalue < 0 ? abs(round($vatvalue, 2)) : 0), 'db' => ($vatvalue < 0 ? 0 : abs(round($vatvalue, 2))), 'postdate' => $data[0]['dateid'], 'fdb' => ($vatvalue < 0 ? 0 : abs($vatvalue)) * $forex, 'fcr' => ($vatvalue < 0 ? abs($vatvalue) : 0) * $forex, 'rem' => "Auto entry", 'cur' => $cur, 'forex' => $forex, 'projectid' => $project
+                    'line' => $line,
+                    'acnoid' => $taxacno,
+                    'client' => $data[0]['client'],
+                    'cr' => ($vatvalue < 0 ? abs(round($vatvalue, 2)) : 0),
+                    'db' => ($vatvalue < 0 ? 0 : abs(round($vatvalue, 2))),
+                    'postdate' => $data[0]['dateid'],
+                    'fdb' => ($vatvalue < 0 ? 0 : abs($vatvalue)) * $forex,
+                    'fcr' => ($vatvalue < 0 ? abs($vatvalue) : 0) * $forex,
+                    'rem' => "Auto entry",
+                    'cur' => $cur,
+                    'forex' => $forex,
+                    'projectid' => $project
                 ];
 
                 $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
@@ -957,7 +1001,7 @@ class sn
                 $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                 foreach ($this->acctg as $key => $value) {
                     foreach ($value as $key2 => $value2) {
-                        $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                        $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                     }
 
                     $this->acctg[$key]['editdate'] = $current_timestamp;

@@ -99,11 +99,14 @@ class pospaymentsetup
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $dateTables = ['profile'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
         $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
       } // end if
@@ -116,9 +119,10 @@ class pospaymentsetup
   {
     $data = [];
     $row = $config['params']['row'];
-
+    $dateTables = ['profile'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
       $returnrow = $this->loaddataperrecord($row['line']);

@@ -2808,6 +2808,10 @@ class trigger
     // $this->hpw_triggers();
     // ADD HERE-->
 
+    //detachment license
+    $this->emp_license_triggers();
+
+
 
   }
 
@@ -4845,6 +4849,53 @@ class trigger
   }
 
 
+  
+	private function emp_license_triggers()
+	{
+		$fields = [
+			'clientid' => ['clientid' => []],
+			'sagsd' => ['sagsd' => []],
+			'sagsdexp' => ['sagsdexp' => []],
+			'solicense' => ['solicense' => []],
+			'soexp' => ['soexp' => []],
+			'palicense' => ['palicense' => []],
+			'paexp' => ['paexp' => []],
+			'ntclicense' => ['ntclicense' => []],
+			'ntcexp' => ['ntcexp' => []],
+			'brgystart' => ['brgystart' => []],
+			'brgyend' => ['brgyend' => []],
+			'pnpstart' => ['pnpstart' => []],
+			'pnpend' => ['pnpend' => []],
+			'nbistart' => ['nbistart' => []],
+			'nbiend' => ['nbiend' => []],
+			'nuerostart' => ['nuerostart' => []],
+			'nueroend' => ['nueroend' => []],
+			'drugstart' => ['drugstart' => []],
+			'drugend' => ['drugend' => []],
+			'medicalstart' => ['medicalstart' => []],
+			'medicalend' => ['medicalend' => []],
+			'dilgstart' => ['dilgstart' => []],
+			'dilgend' => ['dilgend' => []],
+			'occustart' => ['occustart' => []],
+			'occuend' => ['occuend' => []],
+			'courtstart' => ['courtstart' => []],
+			'courtend' => ['courtend' => []],
+			'ctcno' => ['ctcno' => []],
+			'ctcdate' => ['ctcdate' => []],
+			'ctcissue' => ['ctcissue' => []],
+			'insurance' => ['insurance' => []],
+			'policy' => ['policy' => []],
+			'premium' => ['premium' => []],
+			'amt' => ['amt' => []],
+			'policyend' => ['policyend' => []]
+		];
+    $this->settriggerlogs('license_update', 'AFTER UPDATE', 'cllicence', 'client_log', $fields, 'clientid', 'UPDATE');
+	}
+
+
+
+
+
   public function cleardb_proc()
   {
 
@@ -5417,7 +5468,7 @@ class trigger
         delete from tcoll;
         delete from htehead;
         delete from testock;
-        delete from terms;
+        -- delete from terms;
         delete from terms_log;
         delete from htestock;
         truncate tblroomtype;
@@ -5628,6 +5679,14 @@ class trigger
         delete from carbrand;
 
         delete from positions;
+        delete from billingmaster;
+        delete from clbilling;
+        delete from cluniform;
+
+        delete from cllicence;
+        delete from firearms;
+        delete from sgviolation;
+        delete from clviolation;
 
       END";
 

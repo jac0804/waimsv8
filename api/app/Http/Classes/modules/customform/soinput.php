@@ -122,7 +122,6 @@ class soinput
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        // $data['proformainvoice'] = $this->othersClass->sanitizekeyfield("proformainvoice", $proformainvoice);
           $data['proformainvoice'] = $this->othersClass->sanitizekeyfieldFast("proformainvoice", $proformainvoice, $lookups);
         $this->coreFunctions->sbcupdate($table, $data, ['trno' => $trno]);
         exithere:

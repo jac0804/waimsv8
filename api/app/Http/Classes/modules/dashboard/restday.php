@@ -162,6 +162,7 @@ class restday
         $empname = $config['params']['dataparams']['clientname'];
         $remark = $config['params']['dataparams']['remark'];
         $remarks = $config['params']['dataparams']['remarks'];
+        $companyid = $config['params']['companyid'];
 
         $url = 'App\Http\Classes\modules\payroll\\' . 'changeshiftapplication';
         $approversetup = app($url)->approvers($config['params']);
@@ -170,6 +171,9 @@ class restday
 
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$config['params']['adminid']]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$config['params']['adminid']]);
+
+        $dateTables = ['changeshiftapp'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $action = $config['params']['action2'];
         if (isset($config['params']['dataparams']['line'])) {
@@ -258,7 +262,7 @@ class restday
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
 

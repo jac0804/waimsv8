@@ -204,11 +204,14 @@ class entrysooq
       $this->htable = 'homstock';
     }
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $trno =  $config['params']['tableid'];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     $data['trno'] = $config['params']['tableid'];
 
@@ -247,14 +250,16 @@ class entrysooq
       $this->table = 'omstock';
       $this->htable = 'homstock';
     }
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $config['params']['data'];
     $trno =  $config['params']['tableid'];
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $qry = "select line as value from " . $this->table . " where trno=? order by line desc limit 1";

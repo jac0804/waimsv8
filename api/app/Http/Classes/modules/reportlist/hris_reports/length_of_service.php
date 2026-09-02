@@ -140,7 +140,7 @@ class length_of_service
                     $filter .= " and di.divname =  '$divname'";
                 }
                 if ($year != '') {
-                    $filter .= " and timestampdiff(year,date(hired), curdate()) =  $year ";
+                    $filter .= " and year(hired) = year(curdate()) - $year and timestampdiff(year,hired,curdate()) >= $year ";
                 }
             
                 $query = "
@@ -155,7 +155,8 @@ class length_of_service
             
             default:
                 if ($year != '') {
-                    $filter .= "  and year(now())-year(e.hired) = '$year'";
+                    // $filter .= "  and year(now())-year(e.hired) = '$year'";
+                    $filter .= " and year(e.hired) = year(curdate()) - $year and timestampdiff(year,e.hired,curdate()) >= $year ";
                 }
                 $query = "
                     select TIMESTAMPDIFF(year,e.bday, now()) as age,c.client as empcode,year(now())-year(e.hired) as year,

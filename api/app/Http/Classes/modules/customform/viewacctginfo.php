@@ -325,7 +325,6 @@ class viewacctginfo
     $dateTables = ['detailinfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $rem = $this->othersClass->sanitizekeyfield('rem', $config['params']['dataparams']['rem']);
     $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
 
     $acno = isset($config['params']['dataparams']['acno']) ? $config['params']['dataparams']['acno'] : '';
@@ -397,7 +396,6 @@ class viewacctginfo
     }
 
     foreach ($data as $key => $v) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 

@@ -978,7 +978,7 @@ class payrollappClass
                         $table = 'leavetrans';
                         $code = 'trno';
                         $id = 'trno';
-                        $row = ['trno' => $value['refno'],  'line' => $value['line'],  'status' => 'C', 'cancelrem' => $value['cancelrem'], 'canceldate' => $value['canceldate']];
+                        $row = ['trno' => $value['refno'], 'refno' => $value['trno'], 'line' => $value['line'],  'status' => 'C', 'cancelrem' => $value['cancelrem'], 'canceldate' => $value['canceldate']];
                         break;
 
                     case 'emppics':
@@ -1093,7 +1093,11 @@ class payrollappClass
                             $exist = $this->coreFunctions->getfieldvalue($table, $id, "refno=? and trno=?", [$row['refno'], $row['trno']]);
                             break;
                         case 'cancel_leavetrans':
-                            $exist = $this->coreFunctions->getfieldvalue($table, $id, "line=? and trno=?", [$row['line'], $row['trno']]);
+                            if ($row['line'] != 0) {
+                                $exist = $this->coreFunctions->getfieldvalue($table, $id, "line=? and trno=?", [$row['line'], $row['trno']]);
+                            } else {
+                                $exist = $this->coreFunctions->getfieldvalue($table, $id, "refno=? and trno=?", [$row['refno'], $row['trno']]);
+                            }
                             break;
                         case 'timecard':
                             $row['dateid'] = $this->othersClass->sanitizekeyfield('dateonly', $row['dateid']);
@@ -1137,7 +1141,11 @@ class payrollappClass
                             case 'cancel_leavetrans':
                                 $row['editdate'] = $this->othersClass->getCurrentTimeStamp();
                                 $row['editby'] = 'SYNCING';
-                                $result = $this->coreFunctions->sbcupdate($table, $row, ['trno' => $row['trno'], 'line' => $row['line']]);
+                                if ($row['line'] != 0) {
+                                    $result = $this->coreFunctions->sbcupdate($table, $row, ['trno' => $row['trno'], 'line' => $row['line']]);
+                                } else {
+                                    $result = $this->coreFunctions->sbcupdate($table, $row, ['trno' => $row['trno'], 'refno' => $row['refno']]);
+                                }
                                 break;
                             default:
                                 $result = $this->coreFunctions->sbcupdate($table, $row, [$code => $row[$code]]);

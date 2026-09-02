@@ -298,7 +298,7 @@ class branch
     $data[0]['tel2'] = '';
     $data[0]['type'] = '';
     $data[0]['rem'] = '';
-    $data[0]['start'] = '';
+    $data[0]['start'] = $this->othersClass->getCurrentDate();
     $data[0]['parent'] = '';
     $data[0]['dparentcodewh'] = '';
     $data[0]['parentnamewh'] = '';
@@ -401,8 +401,8 @@ class branch
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-          // $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -530,10 +530,14 @@ class branch
   {
     $whid = $config['params']['data']['whid'];
     $line = $config['params']['data']['line'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['floor'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [];
     $data['whid'] =  $whid;
-    $data['floor'] =  $this->othersClass->sanitizekeyfield("floor", $config['params']['data']['floor']);
+    $data['floor'] =  $this->othersClass->sanitizekeyfieldFast("floor", $config['params']['data']['floor'], $lookups);
     $data['line'] = $line;
 
     $exist = $this->coreFunctions->datareader("select floor as value from floor where whid=? and floor=?", [$whid, $data['floor']]);

@@ -97,19 +97,32 @@ class tm
   }
   public function report_default_query($trno)
   {
-    $query="select h.trno as clientid,c.client,c.clientname,date(h.dateid) as dateid,ifnull(u.username,e.clientname) as requestby,h.rem,i.itemid as sysid,i.itemname as systype,r.line as taskid,
-            r.category as tasktype,u.username as requestby,h.rem,h.clientid as xx,h.rate,
-            d.task,d.title,d.userid as assignedid,date(d.startdate) as startdate,date(d.enddate) as enddate,d.percentage,
-            (select rem from headprrem as pr where pr.tmtrno=d.trno order by createdate desc limit 1) as comment1 ,assigned.username as assignedname
-            from tmhead as h
-            left join client as c on c.clientid = h.clientid
-            left join useraccess as u on u.userid = h.requestby
-            left join client as e on e.clientid = h.requestby
-            left join reqcategory as r on r.line = h.tasktype
-            left join item as i on i.itemid = h.systype
-            left join tmdetail as d on d.trno=h.trno
-            left join useraccess as assigned on assigned.userid = d.userid
-            where h.trno='$trno'";
+    $query = "select h.trno as clientid, c.client, c.clientname, date(h.dateid) as dateid,
+    ifnull(u.username, e.clientname) as requestby, h.rem, i.itemid as sysid,
+    i.itemname as systype, r.line as taskid, r.category as tasktype,
+    u.username as requestby, h.rem, h.clientid as xx, h.rate,
+    d.task, d.title, d.userid as assignedid, date(d.startdate) as startdate,
+    date(d.enddate) as enddate, d.percentage,
+    lr.rem as comment1,
+    assigned.clientname as assignedname
+    from tmhead as h
+    left join client as c on c.clientid = h.clientid
+    left join useraccess as u on u.userid = h.requestby
+    left join client as e on e.clientid = h.requestby
+    left join reqcategory as r on r.line = h.tasktype
+    left join item as i on i.itemid = h.systype
+    left join tmdetail as d on d.trno = h.trno
+    left join client as assigned on assigned.clientid = d.userid
+    left join (
+    select p.tmtrno, p.tmline, p.rem
+    from headprrem as p
+    inner join (
+            select tmtrno, tmline, max(createdate) as maxdate
+            from headprrem
+            group by tmtrno, tmline
+        ) as m on m.tmtrno = p.tmtrno and m.tmline = p.tmline and m.maxdate = p.createdate
+    ) as lr on lr.tmtrno = d.trno and lr.tmline = d.line
+    where h.trno = '$trno'";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -117,6 +130,7 @@ class tm
 
   public function reportplotting($params, $data)
   {
+    ini_set('max_execution_time', -1);
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_po_layout($params, $data);
     } else if ($params['params']['dataparams']['print'] == "PDFM") {
@@ -132,7 +146,7 @@ class tm
     $username = $params['params']['user'];
 
     $str = "";
-    $font =  "Century Gothic";
+    $font = "Century Gothic";
     $fontsize = "11";
     $border = "1px solid ";
 
@@ -190,7 +204,7 @@ class tm
   {
     $companyid = $params['params']['companyid'];
     $border = "1px solid ";
-    $font =  "Century Gothic";
+    $font = "Century Gothic";
     $str = "";
 
     $str .= $this->reporter->startrow();
@@ -207,8 +221,6 @@ class tm
     return $str;
   }
 
-
-
   public function default_po_layout($params, $data)
   {
     $companyid = $params['params']['companyid'];
@@ -221,7 +233,7 @@ class tm
     $str = '';
     $count = 35;
     $page = 35;
-    $font =  "Century Gothic";
+    $font = "Century Gothic";
     $fontsize = "11";
     $border = "1px solid ";
 
@@ -315,10 +327,10 @@ class tm
 
     $font = "";
     $fontbold = "";
-    $fontsize = 11;
+    $fontsize = 10;
     if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahoma.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahomabd.TTF');
     }
 
 
@@ -348,30 +360,29 @@ class tm
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(80, 0, "", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(80, 0, "", '', 'L', false, 0, '', '');
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 0, "", '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(80, 20, "Client : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(80, 20, "Client : ", '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(470, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(50, 20, "Date : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(50, 20, "Date : ", '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
 
     PDF::MultiCell(0, 0, "\n\n");
-    PDF::SetFont($font, 'B', $fontsize);
-        PDF::MultiCell(150, 25, "TASK", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(100, 25, "ASSIGNED TO", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(100, 25, "PERCENTAGE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(100, 25, "START DATE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(100, 25, "END DATE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(150, 25, "COMMENT", 'TB', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
+    PDF::SetFont($fontbold, 'B', $fontsize);
+    PDF::MultiCell(200, 25, "TASK", 'TB', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', true);
+    PDF::MultiCell(100, 25, "PERCENTAGE", 'TB', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', true);
+    PDF::MultiCell(100, 25, "START DATE", 'TB', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', true);
+    PDF::MultiCell(100, 25, "END DATE", 'TB', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', true);
+    PDF::MultiCell(200, 25, "COMMENT", 'TB', 'C', false, 1, '', '', true, 0, false, true, 0, 'M', true);
   }
 
   public function default_tm_PDF($params, $data)
@@ -388,53 +399,71 @@ class tm
     $font = "";
     $fontbold = "";
     $border = "1px solid ";
-    $fontsize = "11";
+    $fontsize = "10";
     if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahoma.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/tahomabd.TTF');
     }
     $this->default_tm_header_PDF($params, $data);
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
 
+    $assigneduser = '';
+
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
 
-       $title = $data[$i]['title'];
-       $comment = $data[$i]['comment1'];
-       $percentage = $data[$i]['percentage'];
-       $assignedname = $data[$i]['assignedname'];
-       $startdate = $data[$i]['startdate'];
-       $enddate = $data[$i]['enddate'];
+      $title = $data[$i]['title'];
+      $comment = $data[$i]['comment1'];
+      $percentage = $data[$i]['percentage'];
+      $assignedname = $data[$i]['assignedname'];
+      $startdate = $data[$i]['startdate'];
+      $enddate = $data[$i]['enddate'];
 
-      $arr_title = $this->reporter->fixcolumn([$title], '30', 0);
-      $arr_comment = $this->reporter->fixcolumn([$comment], '20', 0);
+      $arr_title = $this->reporter->fixcolumn([$title], '35', 0);
+      $arr_comment = $this->reporter->fixcolumn([$comment], '35', 0);
       $arr_percentage = $this->reporter->fixcolumn([$percentage], '13', 0);
-      $arr_assignedname = $this->reporter->fixcolumn([$assignedname], '15', 0);
       $arr_startdate = $this->reporter->fixcolumn([$startdate], '20', 0);
       $arr_enddate = $this->reporter->fixcolumn([$enddate], '20', 0);
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_title, $arr_percentage, $arr_startdate, $arr_enddate, $arr_comment]);
 
-      $maxrow = $this->othersClass->getmaxcolumn([$arr_title, $arr_comment, $arr_percentage, $arr_assignedname, $arr_startdate, $arr_enddate]);
+      if ($assigneduser != $assignedname) {
+
+        if ($assigneduser != '') {
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(700, 10, '', '', 'L', false, 1);
+        }
+
+        $assigneduser = $assignedname;
+
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(700, 0, ' ' . strtoupper($assigneduser), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      }
 
       for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(150, 15, ' ' . (isset($arr_title[$r]) ? $arr_title[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(100, 15, ' ' . (isset($arr_assignedname[$r]) ? $arr_assignedname[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(100, 15, ' ' . (isset($arr_percentage[$r]) ? $arr_percentage[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(100, 15, ' ' . (isset($arr_startdate[$r]) ? $arr_startdate[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(100, 15, ' ' . (isset($arr_enddate[$r]) ? $arr_enddate[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(150, 15, ' ' . (isset($arr_comment[$r]) ? $arr_comment[$r] : ''), '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-          
+        PDF::MultiCell(200, 15, ' ' . (isset($arr_title[$r]) ? $arr_title[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(100, 15, ' ' . (isset($arr_percentage[$r]) ? $arr_percentage[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(100, 15, ' ' . (isset($arr_startdate[$r]) ? $arr_startdate[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(100, 15, ' ' . (isset($arr_enddate[$r]) ? $arr_enddate[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(200, 15, ' ' . (isset($arr_comment[$r]) ? $arr_comment[$r] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+
       }
+
       if (PDF::getY() > 900) {
         $this->default_tm_header_PDF($params, $data);
       }
     }
 
+    if ($assigneduser != '') {
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(700, 10, '', '', 'L', false, 1);
+    }
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(700, 0, '', 'T', 'R', false, 1);
-  
+
     PDF::MultiCell(0, 0, "\n\n\n");
 
 

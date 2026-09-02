@@ -521,11 +521,14 @@ class ll
       unset($head['docno']);
     }
 
+    $dateTables = ['cntnuminfo','lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -535,7 +538,7 @@ class ll
       if (array_key_exists($key, $head)) {
         $dataother[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], $config['params']['doc'], $companyid);
+          $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
         } //end if
       }
     }
@@ -1100,6 +1103,7 @@ class ll
     $config['docmodule'] = new $classname;
     $trno = $config['params']['trno'];
     $qty = $config['params']['data']['isqty'];
+    $companyid = $config['params']['companyid'];
 
     $refx = 0;
     $linex = 0;
@@ -1162,8 +1166,11 @@ class ll
       'consignid' => $consignid
     ];
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

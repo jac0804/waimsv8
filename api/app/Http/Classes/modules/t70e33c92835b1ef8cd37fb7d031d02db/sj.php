@@ -1058,6 +1058,10 @@ class sj
   {
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $info = [];
     if ($isupdate) {
@@ -1069,7 +1073,7 @@ class sj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -2169,6 +2173,9 @@ class sj
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $uom = $config['params']['data']['uom'];
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = isset($config['params']['data']['disc']) ? $config['params']['data']['disc'] : "";
@@ -2206,7 +2213,7 @@ class sj
     $itemstatus = '';
     $agentamt = 0;
     $startwire = 0;
-    $endwire =0;
+    $endwire = 0;
     if (isset($config['params']['data']['agentamt'])) {
       $agentamt = $config['params']['data']['agentamt'];
     }
@@ -2222,7 +2229,7 @@ class sj
       $isnoninv = $item[0]->isnoninv;
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
-      $cost = $item[0]->namt4; 
+      $cost = $item[0]->namt4;
     }
 
     if ($action == 'insert') {
@@ -2236,31 +2243,27 @@ class sj
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
-      $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-      $agentamt = $this->othersClass->sanitizekeyfield('qty', $agentamt);
+      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+      $agentamt = $this->othersClass->sanitizekeyfieldFast('qty', $agentamt, $lookups);
 
-      if ($item[0]->iswireitem == 1){
-        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? and whid=? union all select trno, startwire, endwire from glstock where itemid=? and whid = ?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid,$whid, $itemid,$whid]);
-        if (!empty($lastitem)) {        
-          $startwire = $lastitem[0]->endwire ;
-          if ($item[0]->isreversewireitem == 1){
+      if ($item[0]->iswireitem == 1) {
+        $lastitem = $this->coreFunctions->opentable("select trno, startwire, endwire from (select trno, startwire, endwire from lastock where itemid=? and whid=? union all select trno, startwire, endwire from glstock where itemid=? and whid = ?) as t where startwire>0 and endwire>0 order by trno desc limit 1", [$itemid, $whid, $itemid, $whid]);
+        if (!empty($lastitem)) {
+          $startwire = $lastitem[0]->endwire;
+          if ($item[0]->isreversewireitem == 1) {
             $endwire = $startwire - $qty;
-          }else{
+          } else {
             $endwire = $startwire + $qty;
           }
-          
         } else {
           $startwire = $item[0]->startwire;
-          if ($item[0]->isreversewireitem == 1){
+          if ($item[0]->isreversewireitem == 1) {
             $endwire = $startwire - $qty;
-          }else{
+          } else {
             $endwire = $startwire + $qty;
           }
         }
-
-
-      } 
-
+      }
     } elseif ($action == 'update') {
       $config['params']['line'] = $config['params']['data']['line'];
       $line = $config['params']['data']['line'];
@@ -2268,18 +2271,18 @@ class sj
       $qty = $config['params']['data'][$this->dqty];
       $startwire = $config['params']['data']['startwire'];
       $endwire = $config['params']['data']['endwire'];
-      $agentamt = $this->othersClass->sanitizekeyfield('qty', $agentamt);
+      $agentamt = $this->othersClass->sanitizekeyfieldFast('qty', $agentamt, $lookups);
       $config['params']['line'] = $line;
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
-    
+
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
     $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
-    $curtopeso = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);    
+    $curtopeso = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
 
     if ($disc != "") {
@@ -2308,7 +2311,7 @@ class sj
     }
 
     $hamt = $computedata['amt'] * $curtopeso;
-    $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+    $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
     $data = [
       'trno' => $trno,
@@ -2335,15 +2338,15 @@ class sj
       'noprint' => $noprint,
       'porefx' => $porefx,
       'polinex' => $polinex,
-      'cost' =>$cost,
-      'agentamt'=>$agentamt,
+      'cost' => $cost,
+      'agentamt' => $agentamt,
       'startwire' => $startwire,
-      'endwire'=>$endwire
+      'endwire' => $endwire
     ];
-   
+
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -3277,6 +3280,9 @@ class sj
     $systype = $this->companysetup->getsystemtype($config['params']);
     $delcharge = $this->coreFunctions->getfieldvalue($this->head, "ms_freight", "trno=?", [$trno]);
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $commexp = $this->coreFunctions->datareader("select commamt-commvat as value from cntnuminfo where trno=?", [$trno], '', true);
 
     if ($delcharge == '') {
@@ -3383,7 +3389,7 @@ class sj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -3596,9 +3602,13 @@ class sj
     $exec = true;
     $companyid = $config['params']['companyid'];
     $deci = $this->companysetup->getdecimal('price', $config['params']);
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
       $computedata = $this->othersClass->computestock(
         $damt * $head['forex'],
         $data[$key]->disc,
@@ -3608,7 +3618,7 @@ class sj
       );
 
       $computedata['amt']  = $computedata['amt'];
-      $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+      $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
       $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }

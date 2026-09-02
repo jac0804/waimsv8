@@ -117,7 +117,7 @@ class viewreimbursement
             $trno =  $row['rtrno'] != "" ? $row['rtrno'] : 0;
         }
 
-        $qry = "select task.amt as amount,client.client,client.clientname,task.userid,task.jono,'' as bgcolor,'' as errcolor,'false' as ispicked,task.trno,date(task.createdate) as createdate,task.rem from hdailytask as task
+        $qry = "select task.amt as amount,client.client,client.clientname,task.userid,task.jono,'' as bgcolor,'' as errcolor,'false' as ispicked,task.trno,date(task.createdate) as createdate,task.rem,task.clientid as customerid from hdailytask as task
                     left join client on client.clientid = task.userid
                     where task.userid = " . $row['clientid'] . " and task.trno in ( $trno ) and task.apvtrno = 0";
         return $this->coreFunctions->opentable($qry);
@@ -133,19 +133,25 @@ class viewreimbursement
         $userid = 0;
 
         $acc_data = ['client' => '', 'amount' => 0, 'line' => 0];
+        $dateTables = ['lahead','ladetail', 'glhead', 'gldetail', 'hdailytask'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
 
         foreach ($data as $key => $value) {
             $data2 = [];
             $msg = "";
             if ($data[$key]['bgcolor'] != '' && $data[$key]['ispicked'] == 'true') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
                 // check existing head
                 array_push($hdtrno_list, $data[$key]['trno']);
                 $userid = $data[$key]['userid'];
 
                 $headdata = $this->coreFunctions->opentable("select trno,docno from lahead where doc = 'PV' and client ='" . $data[$key]['client'] . "'");
+
+                $alias = $this->coreFunctions->datareader("select case when alias <> '' then alias else clientname end as value
+                from client where clientid = ". $data[$key]['customerid']."");
+
                 $date = $this->othersClass->getCurrentDate();
                 $cur = $this->companysetup->getdefaultcurrency($config['params']);
                 $forex = 1;
@@ -190,7 +196,7 @@ class viewreimbursement
                         'rem' => 'REIMBURSEMENT',
                     ];
                     foreach ($head as $key2 => $val) {
-                        $head[$key2] = $this->othersClass->sanitizekeyfield($key2, $head[$key2]);
+                        $head[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $head[$key2], $lookups);
                     }
                     $head['createdate'] = $date;
                     $head['createby'] = $config['params']['user'];
@@ -215,12 +221,19 @@ class viewreimbursement
                     $line = 0;
                 }
                 $line = $line + 1;
+                $qry = "select reimbursement,rem from hdailytask where refx = ?";
 
+                $type = $this->coreFunctions->opentable($qry, [$data[$key]['trno']]);
+                $acnoid = $this->coreFunctions->datareader("select acnoid as value from coa where acnoname like '%". $type[0]->reimbursement."%' limit 1");
+                $jono ='';
+                if($data[$key]['jono'] != ""){
+                   $jono =  ' - '.$data[$key]['jono'];
+                }
                 $details = [
                     'trno' => $trno,
                     'line' => $line,
                     'client' => $data[$key]['client'],
-                    'rem' => $data[$key]['jono'],
+                    'rem' => $alias . ' - '. $type[0]->rem . $jono,
                     'cr' => 0,
                     'db' => $data[$key]['amount'],
                     'damt' => $data[$key]['amount'],
@@ -228,12 +241,12 @@ class viewreimbursement
                     'cur' => $cur,
                     'sortline' => $line,
                     'postdate' => $data[$key]['createdate'],
-                    'acnoid' => 443
+                    'acnoid' => $acnoid
 
 
                 ];
                 foreach ($details as $key3 => $val2) {
-                    $details[$key3] = $this->othersClass->sanitizekeyfield($key3, $details[$key3]);
+                    $details[$key3] = $this->othersClass->sanitizekeyfieldFast($key3, $details[$key3], $lookups);
                 }
                 $date2 = $this->othersClass->getCurrentTimeStamp();
                 $details['encodeddate'] = $date2;
@@ -345,12 +358,15 @@ class viewreimbursement
         $entry = ['acnoid' => $acnoid, 'client' => $data['client'],  'ref' => '', 'db' => 0, 'cr' => $data['amount'], 'postdate' => $postdate, 'line' => $data['line'], 'sortline' => $data['line']];
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
         foreach ($this->acctg as $key => $value) {
             foreach ($value as $key2 => $value2) {
-                $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
             }
             $this->acctg[$key]['encodeddate'] = $current_timestamp;
-            $this->acctg[$key]['encodedby'] = $config['params']['user'];
+            $this->acctg[$key]['encodedby'] = $config['params']['user'];     
             $this->acctg[$key]['trno'] = $trno;
             $this->acctg[$key]['db'] = round($this->acctg[$key]['db'], 2);
             $this->acctg[$key]['cr'] = round($this->acctg[$key]['cr'], 2);

@@ -832,7 +832,6 @@ class cd
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -857,7 +856,6 @@ class cd
     $dataothers['trnxtype'] = $head['trnxtype'];
     $arrcols = array_keys($dataothers);
     foreach ($arrcols as $key) {
-      // $dataothers[$key] = $this->othersClass->sanitizekeyfield($key, $dataothers[$key]);
       $dataothers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataothers[$key], $lookups);
     }
     $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
@@ -1608,8 +1606,6 @@ class cd
     }
     $dateTables = ['cdstock', 'stockinfotrans', 'hqsstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
@@ -1697,12 +1693,10 @@ class cd
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($data2 as $key2 => $value2) {
-      // $data2[$key2] = $this->othersClass->sanitizekeyfield($key2, $data2[$key2]);
       $data2[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data2[$key2], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

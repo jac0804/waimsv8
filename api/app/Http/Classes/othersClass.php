@@ -95,6 +95,7 @@ class othersClass
       case 'TIMEREC':
       case 'POSTINGPDC':
       case 'POSTINGSD':
+      case 'ENDOFDAY':
         return false;
         break;
     }
@@ -125,6 +126,8 @@ class othersClass
     switch ($doc) {
       case 'KWHRATESETUP': //headtabletemplate - stock delete
       case 'TIMEREC':
+      case 'ENDOFDAY':
+      case 'TIMEADJ':
         return false;
         break;
       case 'TACRF': //headtabletemplate - stock delete
@@ -145,44 +148,40 @@ class othersClass
     }
     $table = $config['docmodule']->tablenum;
     //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno]);
-    if($trno<>0){
+    if ($trno <> 0) {
       $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno]);
 
-      if(!empty($document)){
+      if (!empty($document)) {
         if ($document[0]->postdate === '' || $document[0]->postdate === null) {
           return false;
         } else {
           return true;
         }
-      }else{
+      } else {
         return true;
       }
-    }else{
+    } else {
       return false;
     }
-    
-    
   } //end fn
 
   public function isposted2($trno, $table, $connection = '')
   {
     //$document = $this->coreFunctions->datareader("select postdate as value from $table where trno = ? limit 1", [$trno], $connection);
-    if($trno<>0){
+    if ($trno <> 0) {
       $document = $this->coreFunctions->opentable("select postdate from $table where trno = ? limit 1", [$trno], $connection);
-      if(!empty($document)){
+      if (!empty($document)) {
         if ($document[0]->postdate === '' || $document[0]->postdate === null) {
           return false;
         } else {
           return true;
         }
-      }else{
+      } else {
         return true;
       }
-    }else{
+    } else {
       return false;
     }
-    
-    
   } //end fn
   public function isapproved($trno, $table)
   {
@@ -861,7 +860,7 @@ class othersClass
     array_push($boolean, 'isplanholder', 'isnotallow', 'ispartialpaid', 'isactivity', 'issp', 'ismc', 'isinvoice', 'atm', 'isss', 'isprojexp');
     array_push($boolean, 'isorder', 'ischannel', 'default_in', 'default_out', 'uom_inactive', 'isreasoncode', 'ishelper', 'isreassigned', 'ispexp');
     array_push($boolean, 'isonelog', 'isbank', 'isnonserial', 'isbrgyoff', 'isbusiness', 'isallowliquor', 'issupervisor', 'isapprover', 'isdiminishing');
-    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible');
+    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible', 'istaskcat', 'isnocheck');
 
     // $date = $this->othersClass->getDateFields(); // fetched ONCE here
 
@@ -2287,6 +2286,17 @@ class othersClass
     }
   }
 
+  public function hasbeenrr($config)
+  {
+    $trno = $config['params']['trno'];
+    $a = $this->coreFunctions->getfieldvalue('glstock', 'trno', 'trno=? and rrqa<>0', [$trno]);
+    if ($a !== '') {
+      return 'This Transaction cannot be UNPOSTED, Already picked on RR.';
+    } else {
+      return '';
+    }
+  }
+
   public function hasbeenmcpaid($config)
   {
     $trno = $config['params']['trno'];
@@ -3509,10 +3519,12 @@ class othersClass
     if ($doc != 'AJ') {
       // $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
       // $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
-      $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";
-      $items  = $this->coreFunctions->datareader($qry, [$trno]);
-      if ($items != "") {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative. Please check items : ' . $items];
+      if ($doc != 'CH') {
+        $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";
+        $items  = $this->coreFunctions->datareader($qry, [$trno]);
+        if ($items != "") {
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative. Please check items : ' . $items];
+        }
       }
     }
 
@@ -3920,6 +3932,13 @@ class othersClass
     $isgenerateapv = $this->companysetup->isgenerateapv($config['params']);
     if ($isgenerateapv) {
       $msg = $this->hasbeenapv($config);
+      if ($msg !== '') {
+        return ['trno' => $trno, 'status' => false, 'msg' => $msg];
+      }
+    }
+
+    if ($config['params']['companyid'] == 60 && $config['params']['doc'] == 'SJ') { //transpower
+      $msg = $this->hasbeenrr($config);
       if ($msg !== '') {
         return ['trno' => $trno, 'status' => false, 'msg' => $msg];
       }
@@ -4675,8 +4694,8 @@ class othersClass
       $qry = "select sohead.trno,sohead.docno,sohead.client,sohead.clientname,client.status,client.crlimit,client.isnocrlimit,sohead.terms,client.clearing,
       ifnull((select sum(case a.db when 0 then a.bal*-1 else a.bal end) from arledger as a left join cntnum on cntnum.trno = a.trno where cntnum.center = ? and  a.clientid=client.clientid),0) as bal,
       ifnull((select sum(a.db-cr) from crledger as a left join cntnum on cntnum.trno = a.trno where cntnum.center=? and a.clientid=client.clientid and a.depodate is null),0) as pdc,
-      ifnull((select sum(ext) from (select sum(hqsstock.ext) as ext from hsqhead left join hqshead on hqshead.sotrno = hsqhead.trno left join hqsstock on hqsstock.trno = hqshead.trno where hqshead.client = '" . $client . "' and hqshead.sotrno<>0 and hqsstock.iss<>hqsstock.sjqa and hqsstock.void =0 " . $sofilter . "
-      union all select sum(hsrstock.ext) as ext from hsrstock left join hsrhead on hsrhead.trno = hsrstock.trno where hsrhead.client = '" . $client . "' and hsrstock.qa<>hsrstock.sjqa and hsrstock.void =0 " . $srfilter . ") as a),0) as soamt,
+      ifnull((select sum(ext) from (select sum(hqsstock.ext) as ext from hsqhead left join hqshead on hqshead.sotrno = hsqhead.trno left join hqsstock on hqsstock.trno = hqshead.trno where hqshead.client = '" . $client . "' and hqshead.sotrno<>0 and hqsstock.iss<>hqsstock.sjqa and hqsstock.void =0  and hqsstock.voidqty =0" . $sofilter . "
+      union all select sum(hsrstock.ext) as ext from hsrstock left join hsrhead on hsrhead.trno = hsrstock.trno where hsrhead.client = '" . $client . "' and hsrstock.qa<>hsrstock.sjqa and hsrstock.void =0 and hsrstock.voidqty =0 " . $srfilter . ") as a),0) as soamt,
       ifnull((select sum(ext) from (select sum(s.ext) as ext from hqshead as h left join hqsstock as s on s.trno = h.trno left join item on item.itemid = s.itemid where h.client ='" . $client . "' and  h.sotrno =0 and item.islabor =0 " . $s . "
       union all
       select sum(s.ext) as ext from hqshead as h left join hqtstock as s on s.trno = h.trno left join item on item.itemid = s.itemid
@@ -5829,7 +5848,7 @@ class othersClass
 
               $date = date("Y-m-d", strtotime($this->getCurrentDate()));
               $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
-              $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', '', true);
+              $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', true);
 
               if (empty($datacur)) {
                 $head['oandaphpusd'] = 0;
@@ -6036,7 +6055,11 @@ class othersClass
                     } else {
                       $head['yourref'] = $data[0]->yourref;
                     }
-                    $head['ourref'] = $data[0]->ourref;
+                    if ($companyid == 68) { //jda
+                      $head['ourref'] = $data[0]->docno;
+                    } else {
+                      $head['ourref'] = $data[0]->ourref;
+                    }
                     $head['wh'] = $data[0]->swh;
                   }
                   break;
@@ -9477,7 +9500,7 @@ class othersClass
       case 'BRANCH':
       case 'BG':
       case 'BY':
-      case 'WL':
+      case 'WL': 
         $table = 'client_picture';
         $trno = $config['params']['clientid'];
         break;
@@ -10715,6 +10738,15 @@ class othersClass
   public function mirrorunpost($trno, $doc, $docno)
   {
     $this->coreFunctions->sbcinsert("unpostedtrans", ['trno' => $trno, 'doc' => $doc, 'docno' => $docno, 'postdate' => $this->getCurrentTimeStamp()]);
+  }
+
+  public function addMsg($old, $new)
+  {
+    if (strpos($old, $new) !== false) {
+      return $old;
+    } else {
+      return ($old == '' ? $new : $old . '<br>' . $new);
+    }
   }
 
   public function socketqueuing($params, $msg, $api = '', $user = '')

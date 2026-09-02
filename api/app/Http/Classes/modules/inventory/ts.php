@@ -401,6 +401,8 @@ class ts
     $trip_disapprove = $this->othersClass->checkAccess($config['params']['user'], 4739);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $itemdesc = 1;
@@ -540,19 +542,21 @@ class ts
 
     if (!$isexpiry) {
       if ($companyid == 8) { // maxipro
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+        // $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
         $obj[0][$this->gridname]['columns'][$loc2]['label'] = 'Brand to';
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
       } else {
-        $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
+        // if ($companyid != 68) { //jda
+        //   $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
+        // }
         $obj[0][$this->gridname]['columns'][$expiry]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$loc2]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
       }
     } else {
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
+      // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
       $obj[0]['inventory']['columns'][$expiry]['style'] = 'text-align: left; width: 180px;whiteSpace: normal;min-width:180px;max-width:180px;';
     }
@@ -624,7 +628,7 @@ class ts
       case 23: //labsol cebu
       case 41: //labsol manila
       case 52: //technolab
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
+        // $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
         $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
@@ -700,12 +704,13 @@ class ts
           $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
         }
         $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
-
         break;
     }
 
     if (!$isserial) {
       $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+    } else {
+      $obj[0]['inventory']['columns'][$serial]['type'] = 'label';
     }
 
     if ($viewcost == '0') {
@@ -730,6 +735,23 @@ class ts
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
 
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
+
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa ts
+        case 8: //MAXIPRO
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+          break;
+        case 68: //JDA
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
+    }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -1082,7 +1104,6 @@ class ts
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1091,7 +1112,6 @@ class ts
     $dataother = [];
     foreach ($this->otherfields as $key) {
       $dataother[$key] = $head[$key];
-      // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
       $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
     }
 
@@ -1186,6 +1206,18 @@ class ts
       $qty_dec = 0;
     }
 
+    $serialno = ",''";
+    if ($this->companysetup->getserial($config['params'])) {
+      switch ($companyid) {
+        case 40: //cdo
+          $serialno = ",group_concat(concat('Engine/Chassis#: ',rr.serial,'/',rr.chassis,'\\n','Color: ',rr.color) separator '\\n\\r') as serialno";
+          break;
+        default:
+          $serialno = ",group_concat(concat('Serial#: ',rr.serial) separator '\\n\\r') as serialno";
+          break;
+      }
+    }
+
     $sqlselect = "select item.brand as brand, ifnull(mm.model_name,'') as model,item.itemid,stock.trno,
                       stock.line,stock.sortline,stock.refx,stock.linex,stock.reqtrno,stock.reqline,
                       item.barcode,item.itemname,stock.uom,stock.kgs, stock." . $this->hamt . ",
@@ -1209,13 +1241,12 @@ class ts
                       round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,
                       concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',
                       ifnull(i.itemdescription,'')) as itemdescription,
-                      ifnull(group_concat(concat('Engine/Chassis#: ',rr.serial,'/',rr.chassis,'\\n','Color: ',rr.color) separator '\\n\\r'),'') as serialno,
                       ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp,
                       stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,
                       stock.blklotid, bl.blk, bl.lot,prj.code as project,amen.line as amenity, 
                       amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
                       stock.sorefx,stock.solinex
-                      ";
+                      " . $serialno;
     return $sqlselect;
   }
 
@@ -2134,10 +2165,6 @@ class ts
       }
     }
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
-
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
@@ -2217,7 +2244,6 @@ class ts
     }
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 

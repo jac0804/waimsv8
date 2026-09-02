@@ -509,7 +509,8 @@ class dm
 
     $systype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $isqty = 1;
     $uom = 2;
@@ -683,9 +684,7 @@ class dm
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-
       $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
     }
 
@@ -696,10 +695,10 @@ class dm
       $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
     }
 
-    if ($companyid == 8) { // maxipro
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
-    }
+    // if ($companyid == 8) { // maxipro
+    //   $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+    // }
 
     $obj[0]['inventory']['columns'][$pallet]['type'] = 'coldel';
     if (!$ispallet) {
@@ -752,7 +751,6 @@ class dm
     }
 
     if ($companyid == 23) { //labsol cebu
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
       $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
     }
 
@@ -762,10 +760,24 @@ class dm
         $obj[0]['inventory']['columns'][$lot]['readonly'] = true;
         break;
     }
-    
-    if($companyid == 60) { //transpower
+
+    if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+    }
+
+     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa dm
+        case 8: //maxipro
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -774,6 +786,7 @@ class dm
 
   public function createtabbutton($config)
   {
+    $issuemultiloc = $this->companysetup->getissuemultipleexpiry($config['params']);
     $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingrr'];
     if ($config['params']['companyid'] == 63) { //ericco
       $tbuttons = ['multiitem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingrr'];
@@ -787,6 +800,11 @@ class dm
     if ($config['params']['companyid'] == 8) { //maxipro
       $obj[2]['label'] = "SAVE ALL";
       $obj[3]['label'] = "DELETE ALL";
+    }
+
+    if ($issuemultiloc) {
+      $obj[0]['lookupclass'] = 'additemmultiloc';
+      $obj[0]['action'] = 'additemmultiloc';
     }
     return $obj;
   }
@@ -1199,6 +1217,8 @@ class dm
   {
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['lahead', 'cntnuminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -1209,7 +1229,7 @@ class dm
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1217,7 +1237,7 @@ class dm
     $dataother = [];
     foreach ($this->otherfields as $key) {
       $dataother[$key] = $head[$key];
-      $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+      $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -1949,6 +1969,8 @@ class dm
     $wh = isset($config['params']['data']['wh']) ? $config['params']['data']['wh'] : "";
     $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : "";
     $expiry = isset($config['params']['data']['expiry']) ? $config['params']['data']['expiry'] : "";
+    $dateTables = ['lastock', 'stockinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if ($expiry == null) {
       $expiry = '';
     }
@@ -2084,9 +2106,9 @@ class dm
         $projectid = $config['params']['data']['projectid'];
       }
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -2175,7 +2197,7 @@ class dm
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2629,6 +2651,8 @@ class dm
     $periodic = $this->companysetup->getisperiodic($config['params']);
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if ($companyid == 10) { //afti
       $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(a.acno,"") as asset,ifnull(r.acno,"") as revenue,stock.isamt,stock.disc,stock.isqty,stock.cost,stock.iss,stock.fcost,stock.projectid,head.branch,head.deptid
           from ' . $this->head . ' as head left join ' . $this->stock . ' as stock on stock.trno=head.trno
@@ -2696,7 +2720,7 @@ class dm
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

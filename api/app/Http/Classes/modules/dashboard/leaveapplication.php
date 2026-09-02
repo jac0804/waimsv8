@@ -251,6 +251,10 @@ class leaveapplication
 
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
+
+        $dateTables = ['leavetrans', 'leavesetup'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (isset($config['params']['dataparams']['trno']) && isset($config['params']['dataparams']['line'])) {
             $trno = $config['params']['dataparams']['trno'];
             $line = $config['params']['dataparams']['line'];
@@ -361,7 +365,7 @@ class leaveapplication
                 $tempdata = [];
                 foreach ($this->fields as $key2) {
                     if (isset($data[$key2])) {
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2], $lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

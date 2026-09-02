@@ -288,13 +288,16 @@ class entryotapproval
 
 
   private function save($config)
-  {
+  {    
     $companyid = $config['params']['companyid'];
     $ottype  = $config['params']['dataparams']['ottype'];
     $rows = $config['params']['rows'];
 
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $maxOTHrs = isset($config['params']['dataparams']['apothrs']) ? $config['params']['dataparams']['apothrs'] : 0;
-    $maxOTHrs = $this->othersClass->sanitizekeyfield("qty", $maxOTHrs);
+    $maxOTHrs = $this->othersClass->sanitizekeyfieldFast("qty", $maxOTHrs,$lookups);
 
     switch ($ottype) {
       case 'EARLY OT':

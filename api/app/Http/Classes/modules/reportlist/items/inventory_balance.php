@@ -1133,11 +1133,11 @@ class inventory_balance
 
 
     $order = " order by category,itemname";
-    $filter = " and item.isimport in $itemtype";
-    $filteritem = "";
+    $filteritem = " and item.isimport in $itemtype";
+    $filter = "";
     $join = "";
 
-    $isallitems = true;
+  
     if ($brand != "") {
       $filteritem = $filteritem . " and item.brand='$brand'";
     }
@@ -1163,11 +1163,7 @@ class inventory_balance
     }
 
     if ($groupid != "") {
-      if ($isallitems) {
         $filteritem = $filteritem . " and item.groupid='$groupid'";
-      } else {
-        $filter = $filter . " and item.groupid='$groupid'";
-      }
     }
 
     if ($uom != '') {
@@ -1184,36 +1180,37 @@ class inventory_balance
 
     $query = "select ib.itemid, item.barcode, item.disc $fields, cat.name as category, subcat.name as subcatname, item.itemname as itemname, item.partno,
     item.groupid, item.brand as brandname, item.brand, ifnull(partgrp.part_name, '') as partname,
-    ifnull(modelgrp.model_name, '') as modelname, item.model, partgrp.part_name as part, item.brand, item.sizeid, item.body, item.class, ib.uom,
+    ifnull(modelgrp.model_name, '') as modelname, item.model, partgrp.part_name as part, item.brand, item.sizeid, item.body, item.class, item.uom,
     sum(ib.qty - ib.iss) as balance,
-    item.amt,loc, expiry,ifnull(stockgrp.stockgrp_name, '') as groupname
+    item.amt,loc, ifnull(stockgrp.stockgrp_name, '') as groupname
     from (
-      select stock.itemid,  item.uom, stock.whid, 
+      select stock.itemid, stock.whid, 
       sum(stock.qty) as qty, 
       sum(stock.iss) as iss, 
-      stock.loc, stock.expiry 
+      stock.loc
       from lahead as head left join lastock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
-      where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
-      group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
+      where date(head.dateid) between '$start' and '$end' $filter
+      group by stock.itemid,  stock.whid, stock.loc
 
       union all
 
-      select stock.itemid, item.uom, stock.whid, 
+      select stock.itemid,stock.whid, 
       sum(stock.qty) as qty, 
       sum(stock.iss) as iss, 
-      stock.loc, stock.expiry
-      from glhead as head left join glstock as stock on stock.trno = head.trno left join item on item.itemid = stock.itemid
-      where date(head.dateid) between '$start' and '$end' $filter $filteritem and item.isofficesupplies = 0
-      group by stock.itemid,  item.uom, stock.whid, stock.loc, stock.expiry
-    ) as ib left join item on item.itemid = ib.itemid
+      stock.loc
+      from glhead as head left join glstock as stock on stock.trno = head.trno
+      where date(head.dateid) between '$start' and '$end' $filter
+      group by stock.itemid, stock.whid, stock.loc
+    ) as ib join item on item.itemid = ib.itemid
     left join itemcategory as cat on cat.line = item.category
     $join
     left join itemsubcategory as subcat on subcat.line = item.subcat
     left join part_masterfile as partgrp on partgrp.part_id = item.part
     left join model_masterfile as modelgrp on modelgrp.model_id = item.model
     left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid
+    where item.isofficesupplies = 0 $filteritem 
     group by disc $groupby, cat.name, subcat.name, ib.itemid, barcode, itemname, groupid, brandname, partname,partno,
-    ifnull(modelgrp.model_name, ''), model, partgrp.part_name, brand, sizeid, body, class, item.amt, ib.uom,loc,expiry,stockgrp.stockgrp_name
+    ifnull(modelgrp.model_name, ''), model, partgrp.part_name, brand, sizeid, body, class, item.amt, item.uom,loc,stockgrp.stockgrp_name,modelgrp.model_name
     having (case when sum(ib.qty - ib.iss) > 0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
     return $query;
   }

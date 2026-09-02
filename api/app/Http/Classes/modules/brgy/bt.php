@@ -355,8 +355,12 @@ class bt
     }
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
+
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $isfee = false;
 
@@ -366,7 +370,7 @@ class bt
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '');
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
         $data2 = [
@@ -460,6 +464,7 @@ class bt
     }
     public function createdistribution($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $entry = [];
         $status = true;
@@ -469,6 +474,10 @@ class bt
         $data = $this->coreFunctions->opentable($query, [$trno]);
         $postdate = $this->othersClass->getCurrentDate();
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($amount != 0) {
             $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', [$this->defaultContra]);
             $entry = ['acnoid' => $acnoid, 'client' => $data[0]->client,  'ref' => $data[0]->ref, 'db' => $data[0]->amount, 'cr' => 0, 'postdate' => $postdate, 'line' => 1];
@@ -482,7 +491,7 @@ class bt
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['encodeddate'] = $current_timestamp;
                 $this->acctg[$key]['encodedby'] = $config['params']['user'];
@@ -559,5 +568,18 @@ class bt
                 return ['status' => false, 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
                 break;
         }
+    }
+    public function deletetrans($config)
+    {
+        $trno = $config['params']['trno'];
+        $doc = $config['params']['doc'];
+        $table = $config['docmodule']->tablenum;
+        $docno = $this->coreFunctions->datareader("select docno as value from " . $table . ' where trno=?', [$trno]);
+        $qry = "select trno as value from " . $this->tablenum . " where doc=? and trno<? order by trno desc limit 1 ";
+        $trno2 = $this->coreFunctions->datareader($qry, [$doc, $trno]);
+        $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
+        $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
+        $this->logger->sbcdel_log($trno, $config, $docno);
+        return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
     }
 }

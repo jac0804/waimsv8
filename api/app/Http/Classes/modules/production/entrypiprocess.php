@@ -251,6 +251,11 @@ class entrypiprocess
   public function saveallentry($config)
   {
     $config['params']['trno'] = $config['params']['tableid'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['piprocess'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $isposted = $this->othersClass->isposted($config);
     $islocked = $this->othersClass->islocked($config);
     $returndata = $this->loaddata($config);
@@ -265,7 +270,7 @@ class entrypiprocess
           $data2 = [];
           if ($data[$key]['bgcolor'] != '') {
             foreach ($this->fields as $key2 => $value2) {
-              $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+              $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
             }
             $data2['trno'] = $data[$key]['trno'];
             if ($data[$key]['line'] == 0) {
@@ -296,8 +301,13 @@ class entrypiprocess
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['piprocess'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['trno'] = $row['trno'];
     $data['line'] = $row['line'];

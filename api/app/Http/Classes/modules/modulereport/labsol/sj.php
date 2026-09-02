@@ -453,6 +453,11 @@ class sj
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
           $totalamt = $data[$i]['amt'] * $data[$i]['qty'];
+          
+          $tl='';
+          if($r==0){
+            $tl=number_format($totalamt, 2);
+          }
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, $itemno, '', 'C', false, 0, '15', '', false, 1);
@@ -460,7 +465,7 @@ class sj
           PDF::MultiCell(100, 0, $unit, '', 'L', false, 0, '190', '', false, 1);
           PDF::MultiCell(300, 0, $item, '', 'L', false, 0, '260', '', false, 1);
           PDF::MultiCell(100, 0, $amt, '', 'R', false, 0, '520', '', false, 1);
-          PDF::MultiCell(100, 0, number_format($totalamt, 2), '', 'R', false, 1, '624', '', false, 1);
+          PDF::MultiCell(100, 0, $tl, '', 'R', false, 1, '624', '', false, 1);
         }
         if ($disc != '') {
           $discamt = 0;

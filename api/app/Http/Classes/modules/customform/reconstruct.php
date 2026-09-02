@@ -217,7 +217,6 @@ class reconstruct
 
     foreach ($this->fields as $key2) {
       $info[$key2] = $head[$key2];
-      // $info[$key2] = $this->othersClass->sanitizekeyfield($key2, $info[$key2]);
       $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
     }
 
@@ -554,7 +553,7 @@ class reconstruct
     $dateTables = ['arledger'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $ma = $this->othersClass->sanitizekeyfield("amt", $head['fma1']);
+   
      $ma = $this->othersClass->sanitizekeyfieldFast("amt", $head['fma1'], $lookups);
     $status = true;
     $msg = '';
@@ -564,7 +563,7 @@ class reconstruct
     $balmons = $this->coreFunctions->getfieldvalue('terms', 'days', 'terms = ?', [$head['terms']]);
     $dateid = $this->coreFunctions->getfieldvalue('arledger', 'dateid', 'trno = ? and acnoid =?', [$trno, $ar], 'dateid desc');
 
-    // $financeamt = $this->othersClass->sanitizekeyfield("amt", $head['bal']);
+    
     $financeamt = $this->othersClass->sanitizekeyfieldFast("amt", $head['bal'], $lookups);
 
     if ($head['fma1'] == 0) {

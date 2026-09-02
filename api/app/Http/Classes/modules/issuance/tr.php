@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
+use App\Http\Classes\sbcscript\sbcscript;
 
 class tr
 {
@@ -58,6 +59,8 @@ class tr
   private $reporter;
   private $helpClass;
 
+  private $sbcscript;
+
 
   public function __construct()
   {
@@ -70,6 +73,7 @@ class tr
     $this->logger = new Logger;
     $this->reporter = new SBCPDF;
     $this->helpClass = new helpClass;
+    $this->sbcscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -458,11 +462,15 @@ class tr
     if ($isupdate) {
       unset($this->fields['docno']);
     }
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['trhead','headinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -470,7 +478,7 @@ class tr
     $dataother = [];
     foreach ($this->headinfofield as $key) {
       $dataother[$key] = $head[$key];
-      $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
+      $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -890,6 +898,7 @@ class tr
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -920,8 +929,13 @@ class tr
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+    $dateTables = ['trstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+  
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
 
@@ -955,7 +969,7 @@ class tr
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1070,13 +1084,50 @@ class tr
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
-
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt],$lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
       $computedata = $this->othersClass->computestock($damt, $data[$key]->disc, $dqty, $data[$key]->uomfactor);
       $exec = $this->coreFunctions->execqry("update lastock set cost = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }
     return $exec;
   }
+
+  
+  public function sbcscript($config)
+  {
+     if ($config['params']['companyid'] == 68) { //JDA
+      return [
+              'report' => '
+               let trreport = state.reportdata.params.reporttype;
+               switch (trreport) {
+                  case "1":
+                      state.reportobject.txtfield.col1.prepared.style="display:block"
+                      state.reportobject.txtfield.col1.approved.style="display:block"
+                      state.reportobject.txtfield.col1.received.style="display:block"
+                      state.reportobject.txtfield.col1.requested.style="display:none"
+                      state.reportobject.txtfield.col1.noted.style="display:none"
+                      break;
+                  case "2":
+                  case "3":
+                      state.reportobject.txtfield.col1.prepared.style="display:none"
+                      state.reportobject.txtfield.col1.requested.style="display:block"
+                      state.reportobject.txtfield.col1.noted.style="display:block"
+                      state.reportobject.txtfield.col1.approved.style="display:block"
+                      state.reportobject.txtfield.col1.received.style="display:block"
+                      break;
+              }
+              '
+            ];
+     
+    } else {
+      return true;
+    }
+
+    
+  }
+
 } //end class

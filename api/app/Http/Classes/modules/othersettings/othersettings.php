@@ -130,7 +130,9 @@ class othersettings
   public function headtablestatus($config)
   {
     $action = $config['params']["action2"];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['profile'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     switch ($action) {
       case 'save':
@@ -150,7 +152,7 @@ class othersettings
         }
 
         if ($this->othersClass->checkAccess($config['params']['user'], 4195)) {
-          $surcharge = round($this->othersClass->sanitizekeyfield('amt', $config['params']['dataparams']['surcharge']), 2);
+          $surcharge = round($this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['surcharge'], $lookups), 2);
           $exist = $this->coreFunctions->opentable("select pvalue from profile where doc='SYS' and psection='SURCHARGE'");
           if (empty($exist)) {
             $status = $this->coreFunctions->sbcinsert("profile", ['doc' => 'SYS', 'psection' => 'SURCHARGE', "pvalue" => $surcharge]);

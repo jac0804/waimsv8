@@ -115,7 +115,7 @@ class entryappeducation
   {
     $data = [];
     $row = $config['params']['row'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['aeducation'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -161,7 +161,7 @@ class entryappeducation
   {
     $empid = $config['params']['tableid'];
     $data = $config['params']['data'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $dateTables = ['aeducation'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

@@ -146,8 +146,11 @@ class useraccess
 
   private function savenewlevel($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['users'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $level = $config['params']['level'];
-    $level = $this->othersClass->sanitizekeyfield('username', $level);
+    $level = $this->othersClass->sanitizekeyfieldFast('username', $level, $lookups);
     $data['username'] = $level;
     $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['createby'] = $config['params']['user'];

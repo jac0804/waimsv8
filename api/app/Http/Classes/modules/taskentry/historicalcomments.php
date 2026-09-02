@@ -55,7 +55,7 @@ class historicalcomments
 
   public function createTab($config)
   {
-    $getcols = ['createdate', 'createby', 'rem', 'seendate'];
+    $getcols = ['createdate', 'createby', 'seendate', 'rem'];
 
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -64,8 +64,9 @@ class historicalcomments
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
-    // $obj[0][$this->gridname]['columns'][$rem]['style'] =  'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
-    $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$rem]['style'] =  'text-align: left; width: 900px;whiteSpace: normal;min-width:900px;max-width:900px;';
+    $obj[0][$this->gridname]['columns'][$createby]['style'] =  'text-align: left; width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
+    $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
     $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$createby]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$createdate]['type'] = 'label';

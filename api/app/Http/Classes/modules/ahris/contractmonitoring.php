@@ -376,14 +376,14 @@ class contractmonitoring
                     $reg = $this->coreFunctions->opentable("select reg.sortline as sort,reg.line
                         from regularization as reg
                         left join regprocess as rp on rp.regid=reg.line
-                        where reg.sortline = $sort and empid='" . $row['empid'] . "'", [], '', true);
+                        where reg.sortline = $sort and empid='" . $row['empid'] . "'", [], '');
 
                     if (empty($reg)) {
                         $datehire = $this->coreFunctions->getfieldvalue('employee', 'hired', 'empid=?', [$row['empid']]);
                         $regid = $this->coreFunctions->getfieldvalue('regularization', 'line', 'sortline=?', [$sort]);
                         $regprocess = $this->coreFunctions->opentable("select line, adddate('" . $datehire . "', interval num day) 
                                 as expiration from regularization 
-                                where isdays=1 and isinactive=0 and line= $regid", [], '', true);
+                                where isdays=1 and isinactive=0 and line= $regid", [], '');
 
                         if (!empty($regprocess)) {
                             foreach ($regprocess as $key => $value) {

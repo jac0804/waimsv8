@@ -31,7 +31,7 @@ class emptimecard
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = false;
   public $showclosebtn = false;
-  public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout',   'logactualin',   'logactualout',   'loglunchin',   'loglunchout', 'shiftid', 'pgline'];
+  public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout', 'logactualin', 'logactualout', 'loglunchin', 'loglunchout', 'shiftid', 'pgline'];
 
   public function __construct()
   {
@@ -64,8 +64,8 @@ class emptimecard
     $btns = array('others');
     $buttons = $this->btnClass->create($btns);
     // $addedparams = ['empcode', 'empname', 'empdivname', 'deptname', 'section', 'shiftcode', 'start', 'end'];
-    $buttons['others']['items']['first'] =  ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigationht']];
-    $buttons['others']['items']['prev'] =  ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigationht']];
+    $buttons['others']['items']['first'] = ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigationht']];
+    $buttons['others']['items']['prev'] = ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigationht']];
     $buttons['others']['items']['next'] = ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigationht']];
     $buttons['others']['items']['last'] = ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigationht']];
     return $buttons;
@@ -76,8 +76,8 @@ class emptimecard
     $companyid = $config['params']['companyid'];
     //allow edit daytype,shift,paygroup access
     $allowedittm = $this->othersClass->checkAccess($config['params']['user'], 5818);
-    $columns = ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
-    $sortcolumn =  ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin',  'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
+    $columns = ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'ispostlog', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin', 'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
+    $sortcolumn = ['action', 'details', 'dateid', 'daytype', 'shiftcode', 'ispostlog', 'paygroup', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'abrk1stout', 'abrk1stin', 'abrk2ndout', 'abrk2ndin', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot'];
 
 
     foreach ($columns as $key => $value) {
@@ -164,7 +164,7 @@ class emptimecard
           $obj[0][$this->gridname]['columns'][$daytype]['action'] = 'lookupdaytype';
           $obj[0][$this->gridname]['columns'][$daytype]['type'] = "lookup";
           $obj[0][$this->gridname]['columns'][$daytype]['style'] = 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px';
-          $obj[0][$this->gridname]['columns'][$shiftcode]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
+          $obj[0][$this->gridname]['columns'][$shiftcode]['style'] = "width:100px;whiteSpace: normal;min-width:100px;";
           $obj[0][$this->gridname]['columns'][$shiftcode]['readonly'] = false;
           $obj[0][$this->gridname]['columns'][$shiftcode]['type'] = 'lookup';
           $obj[0][$this->gridname]['columns'][$shiftcode]['action'] = 'lookupshift';
@@ -182,6 +182,10 @@ class emptimecard
           $obj[0][$this->gridname]['columns'][$daytype]['readonly'] = true;
         }
         break;
+    }
+
+    if ($companyid != 68) { //jda
+      $obj[0][$this->gridname]['columns'][$ispostlog]['type'] = 'coldel';
     }
 
 
@@ -417,9 +421,15 @@ class emptimecard
                       '' as schedin_bgcolor,'' as schedout_bgcolor,
                       '' as actualbrkin_bgcolor,'' as actualbrkout_bgcolor";
         break;
+      case 66: //metrodragon
+        $addfields = ",
+                '' as schedin_bgcolor,'' as schedout_bgcolor,
+                '' as schedbrkin_bgcolor,'' as schedbrkout_bgcolor";
+        break;
+
       case 68: //jda
         $addfields = ",sh.shftcode as shiftcode,t.shiftid,dayofweek(t.dateid) as dayn,t.pgline,pg.paygroup,t.otapproved,t.ndiffsapprvd,t.ndiffapproved,t.spotapprvd,t.legotapprvd,
-                  '' as othrs_bgcolor, '' as ndiffot_bgcolor, '' as ndiffhrs_bgcolor";
+                  if(t.ispostlog=1,'Y','') as ispostlog, '' as othrs_bgcolor, '' as ndiffot_bgcolor, '' as ndiffhrs_bgcolor";
         $join = " left join paygroup as pg on pg.line=t.pgline
                   left join tmshifts as sh on sh.line=t.shiftid";
         break;
@@ -734,14 +744,26 @@ class emptimecard
             }
           }
         }
-        return  $data;
+        return $data;
         break;
       case 62: //one sky
         foreach ($data as $key => $value) {
           $value->schedin_bgcolor = 'bg-light-green-3';
           $value->schedout_bgcolor = 'bg-light-green-3';
         }
-        return  $data;
+        return $data;
+        break;
+
+      case 66: //metrodragon
+        foreach ($data as $key => $value) {
+          if ($value->daytype != 'RESTDAY') {
+            $value->schedin_bgcolor = 'bg-light-green-3';
+            $value->schedout_bgcolor = 'bg-light-green-3';
+            $value->schedbrkin_bgcolor = 'bg-light-green-3';
+            $value->schedbrkout_bgcolor = 'bg-light-green-3';
+          }
+        }
+        return $data;
         break;
 
       case 68:
@@ -756,10 +778,10 @@ class emptimecard
             $value->ndiffot_bgcolor = 'bg-blue-2';
           }
         }
-        return  $data;
+        return $data;
         break;
       default:
-        return  $data;
+        return $data;
         break;
     }
   }
@@ -767,13 +789,17 @@ class emptimecard
 
   private function savechanges($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $rows = $config['params']['rows'];
     $data = [];
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         foreach ($this->fields as $k) {
           if (isset($val[$k])) {
-            $data[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+            $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
             if ($k == 'dateid') {
               $data[$k] = date_format(date_create($val[$k]), "Y-m-d");
             }
@@ -816,7 +842,7 @@ class emptimecard
         break;
     }
 
-    $query  = "select client.clientname,divi.divname as empdivname from employee as emp 
+    $query = "select client.clientname,divi.divname as empdivname from employee as emp 
               left join client as client on client.clientid = emp.empid
               left join division as divi on divi.divid = emp.divid
               where 1=1 and emp.level in $emplvl $condition ";

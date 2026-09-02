@@ -269,7 +269,7 @@ class viewstockcardtransactionledger
       }
     }
 
-    if ($companyid == 47) { // kitchenstar
+    if ($companyid == 47 || $companyid == 68) { // kitchenstar & jda
       $obj[0][$this->gridname]['columns'][$whname]['align'] = 'text-left';
       $obj[0][$this->gridname]['columns'][$whname]['style'] = 'width:120px;whiteSpace: normal;min-width:120px;text-align:left;';
     } else {
@@ -380,6 +380,8 @@ class viewstockcardtransactionledger
       $obj[0][$this->gridname]['columns'][$isqty2]['label'] = 'OOS Qty';
     }
 
+
+
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -397,7 +399,7 @@ class viewstockcardtransactionledger
     $companyid = $config['params']['companyid'];
 
     //transaction history button in po module -transpower
-    if ($companyid == 60 && $config['params']['doc'] == 'PO') {
+    if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' )) {
       $row = $config['params']['row'];
       $itemid = $row['itemid'];
       $item = $this->othersClass->getitemname($itemid);
@@ -467,7 +469,7 @@ class viewstockcardtransactionledger
     $companyid = $config['params']['companyid'];
 
     //transaction history button in po module -transpower
-    if ($companyid == 60 && $config['params']['doc'] == 'PO') {
+    if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR')) {
       $row = $config['params']['row'];
       $itemid = $row['itemid'];
     } else {
@@ -490,6 +492,9 @@ class viewstockcardtransactionledger
     $data = $this->getbal($config, $itemid, $wh, $uom);
     $item = $this->othersClass->getitemname($itemid);
 
+    $dateTables = ['profile'];
+
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $dateexist = 0;
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $uom = $this->coreFunctions->getfieldvalue('uom', 'uom', 'itemid=? and isdefault =1', [$itemid]);
@@ -499,7 +504,7 @@ class viewstockcardtransactionledger
       if ($date == '') {
         $date = "left(now(),10)";
       } else {
-        $date = $this->othersClass->sanitizekeyfield("dateid", $date);
+        $date = $this->othersClass->sanitizekeyfieldFast("dateid", $date, $lookups);
         $date = "'" . $date . "'";
         $dateexist = 1;
       }
@@ -508,7 +513,7 @@ class viewstockcardtransactionledger
       if ($date == '') {
         $date = "DATE_SUB(CURDATE(), INTERVAL 3 YEAR)";
       } else {
-        $date = $this->othersClass->sanitizekeyfield("dateid", $date);
+        $date = $this->othersClass->sanitizekeyfieldFast("dateid", $date, $lookups);
         $date = "'" . $date . "'";
         $dateexist = 1;
       }
@@ -844,19 +849,18 @@ class viewstockcardtransactionledger
 
         $amt = " ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
         $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
-        $ext =" FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, ";
+        $ext = " FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, ";
         $isamt = " FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalcurr . ") as isamt,";
-        if($companyid == 47){//kstar
+        if ($companyid == 47) { //kstar
           $amt = " , case head.doc when 'TS' then 0.00 else FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") end as amt ";
-          $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";  
+          $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
           $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
-          if($viewcost == 0){
-            $ext =" case head.doc when 'TS' then 0.00 else FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") end as ext, ";
+          if ($viewcost == 0) {
+            $ext = " case head.doc when 'TS' then 0.00 else FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") end as ext, ";
             $isamt = " 0.00 as isamt,";
           }
-          
         }
-        
+
         switch ($companyid) {
           case 43: //mighty
             $addfield = ",wh.clientname as whref";
@@ -917,7 +921,7 @@ class viewstockcardtransactionledger
                 " . $addqry . "
                 
                 order by status,dateid desc,trno desc";
-
+        // var_dump($qry);
 
 
         break;

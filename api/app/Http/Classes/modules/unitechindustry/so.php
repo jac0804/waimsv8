@@ -415,6 +415,8 @@ class so
         $iskgs = $this->companysetup->getiskgs($config['params']);
         $changedisc = $this->othersClass->checkAccess($config['params']['user'], 4037);
         $systemtype = $this->companysetup->getsystemtype($config['params']);
+        $islocation = $this->companysetup->getislocation($config['params']);
+        $locname = $this->companysetup->getlocname($config['params']);
 
         $action = 0;
         $isqty = 1;
@@ -483,12 +485,17 @@ class so
             $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
         }
 
-        if ($iscreateversion) {
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        } else {
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        if (!$iscreateversion) {
             $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
         }
+
+        $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+        if (!$islocation) {
+            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        }
+
+
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
@@ -785,6 +792,8 @@ class so
     public function updatehead($config, $isupdate)
     {
         $companyid = $config['params']['companyid'];
+        $dateTables = ['sohead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $head = $config['params']['head'];
         $data = [];
         $info = [];
@@ -800,7 +809,7 @@ class so
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -1634,7 +1643,7 @@ class so
     // insert and update item
     public function additem($action, $config, $setlog = false)
     {
-        $companyid = $config['params']['companyid'];
+
         $systemtype = $this->companysetup->getsystemtype($config['params']);
         $uom = $config['params']['data']['uom'];
         $itemid = $config['params']['data']['itemid'];
@@ -1643,6 +1652,9 @@ class so
         $wh = isset($config['params']['data']['wh']) ? $config['params']['data']['wh'] : "";
         $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : "";
         $void = 'false';
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['sostock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $rem = '';
         $ref = '';
         $expiry = '';
@@ -1704,9 +1716,9 @@ class so
 
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1760,7 +1772,7 @@ class so
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -1890,7 +1902,7 @@ class so
                             where head.doc = 'SJ' and cntnum.center = ?
                             and item.barcode = ? and client.client = ?
                             and stock.isamt <> 0
-                            order by dateid desc limit 5) as a order by g,dateid desc ", [$barcode,$center, $barcode, $client, $center, $barcode, $client]);
+                            order by dateid desc limit 5) as a order by g,dateid desc ", [$barcode, $center, $barcode, $client, $center, $barcode, $client]);
                     if ($companyid == 21) { //kinggeorge - compute based on default SO uom
                         $datauom = $this->coreFunctions->opentable("select uom, factor from uom where itemid=" . $data[0]->itemid . " and issalesdef=1 limit 1");
                         if (!empty($datauom)) {
@@ -1959,21 +1971,21 @@ class so
             $cur = $this->coreFunctions->getfieldvalue($this->head, 'cur', 'trno=?', [$trno]);
             $dollarrate = $this->coreFunctions->getfieldvalue('forex_masterfile', 'dollartocur', 'cur=?', [$cur]);
             $defuom = '';
-            $deffactor =1;
+            $deffactor = 1;
 
             if ($this->companysetup->getisdefaultuominout($config['params'])) {
                 if (empty($data)) {
                     $data[0]->docno = 'UOM';
                 }
-                
+
                 $defuom = $this->coreFunctions->datareader("select ifnull(uom.uom,'') as value from item left join uom on uom.itemid=item.itemid and uom.isdefault2 = 1 where item.barcode=?", [$barcode]);
                 if ($defuom != "") {
-                    $deffactor =$this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = '" . $defuom . "' where item.barcode=?", [$barcode]);
+                    $deffactor = $this->coreFunctions->datareader("select uom.factor as value from item left join uom on uom.itemid=item.itemid and uom.uom = '" . $defuom . "' where item.barcode=?", [$barcode]);
                     $data[0]->uom = $defuom;
                     $data[0]->factor = $deffactor;
                     if ($this->companysetup->getisrecalcamtchangeuom($config['params'])) {
                         if ($data[0]->amt != 0) {
-                            $data[0]->amt = number_format($data[0]->amt * $deffactor,2);
+                            $data[0]->amt = number_format($data[0]->amt * $deffactor, 2);
                         } else {
                             $data[0]->amt = $this->coreFunctions->datareader("select (item.amt*ifnull(uom.factor,1)) as value from item left join uom on uom.itemid=item.itemid and uom.uom = '" . $defuom . "' where item.barcode=?", [$barcode]);
                         }

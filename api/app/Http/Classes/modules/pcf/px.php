@@ -651,7 +651,7 @@ class px
 
     $date = date("Y-m-d", strtotime($this->othersClass->getCurrentDate()));
     $datacur = $this->coreFunctions->opentable("select oandaphpusd,oandausdphp from pcfcur where left(dateid,10)='" . $date . "' order by dateid desc limit 1");
-    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', '', true);
+    $osphpusd = $this->coreFunctions->datareader("select ifnull(osphpusd,0) as value from pcfcur where osphpusd <> 0 order by dateid desc limit 1", [], '', true);
 
     if (empty($datacur)) {
       $data[0]['oandaphpusd'] = 0;
@@ -813,7 +813,8 @@ class px
     $head = $config['params']['head'];
     $data = [];
     $info = [];
-
+    $dateTables = ['pxhead', 'pxchecking'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -824,7 +825,7 @@ class px
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if
       }
     }
@@ -905,6 +906,9 @@ class px
   public function recomputehiokitp($config, $osphpusd = 0)
   {
     $trno = $config['params']['trno'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['pxstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $this->openstock($trno, $config);
     
     $data2 = json_decode(json_encode($data), true);
@@ -914,8 +918,10 @@ class px
 
     $exec = true;
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
+
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt],$lookups);
+      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty],$lookups), $this->companysetup->getdecimal('qty', $config['params']));
+
       if ($data2[$key]['itemgrp'] == 'HIOKI') {
         $tp = ($damt * $osphpusd) * 0.83;
 
@@ -949,6 +955,7 @@ class px
     }
 
     $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
+    
     $this->logger->sbcwritelog($poref, $config, 'QTNREF', 'REMOVE LINK TO QTN-delete transaction');
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
@@ -1111,18 +1118,26 @@ class px
               }
             }
 
+            $cols = ["dtctrno" => $trno];
+
             if ($ins != '') {
-              $tbl = 'headinfotrans';
-              $isposted = $this->othersClass->isposted2($poref, 'transnum');
-              if ($isposted) {
-                $tbl = 'hheadinfotrans';
-              }
-              $exist = $this->coreFunctions->getfieldvalue($tbl, "rem2", "trno=?", [$poref]);
-              // if($exist !=""){
-              //   $ins .="\n\n".$exist;
-              // }
-              $this->coreFunctions->sbcupdate($tbl, ["rem2" => $ins, "dtctrno" => $trno], ["trno" => $poref]);
+              $cols = ["rem2" => $ins, "dtctrno" => $trno];           
             }
+
+            $tbl = 'headinfotrans';
+            $isposted = $this->othersClass->isposted2($poref, 'transnum');
+            if ($isposted) {
+              $tbl = 'hheadinfotrans';
+            }
+            
+            $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$poref],'',true);
+            if($exist !=0){              
+              $this->coreFunctions->sbcupdate($tbl,$cols, ["trno" => $poref]);
+            }else{
+              $cols["trno"] = $poref;
+              $this->coreFunctions->sbcinsert($tbl, $cols);
+            }
+            
           }
 
           $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
@@ -1439,7 +1454,15 @@ class px
           if ($isposted) {
             $tbl = 'hheadinfotrans';
           }
-          $this->coreFunctions->sbcupdate($tbl, ['dtctrno' => $trno], ['trno' => $data[$key2]->trno]);
+
+          $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$data[$key2]->trno],'',true);
+          if($exist !=0){
+            $this->coreFunctions->sbcupdate($tbl, ["dtctrno" => $trno], ["trno" =>  $data[$key2]->trno]);
+          }else{
+            $this->coreFunctions->sbcinsert($tbl, ["trno"=>$data[$key2]->trno,"dtctrno" => $trno]);
+          }
+
+          //$this->coreFunctions->sbcupdate($tbl, ['dtctrno' => $trno], ['trno' => $data[$key2]->trno]);
           $this->logger->sbcwritelog($data[$key2]->trno, $config, 'QTNREF', 'ADD LINK TO QTN-loadinv');
         } else {
           return ['status' => false, 'msg' => 'Failed.'];
@@ -1571,6 +1594,9 @@ class px
     $trno = $config['params']['trno'];
     $osphpusd = $this->coreFunctions->getfieldvalue($this->head, "osphpusd", "trno=?", [$trno]);
 
+    $dateTables = ['pxstock', 'pxchecking'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $rrqty = 0;
     $amt = 0;
     $ext = 0;
@@ -1636,12 +1662,15 @@ class px
       }
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt,$lookups);
+    $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty,$lookups);
+
     $rrqty = round($rrqty, $this->companysetup->getdecimal('qty', $config['params']));
     $computedata = $this->othersClass->computestock($amt, '', $rrqty, 1);
-    $srp = $this->othersClass->sanitizekeyfield('amt', $srp);
-    $tp = $this->othersClass->sanitizekeyfield('amt', $tp);
+
+    $srp = $this->othersClass->sanitizekeyfieldFast('amt', $srp,$lookups);
+    $tp = $this->othersClass->sanitizekeyfieldFast('amt', $tp,$lookups);
 
     $computedata2 = $this->othersClass->computestock($srp, '', $rrqty, 1);
     $computedata3 = $this->othersClass->computestock($tp, '', $rrqty, 1);
@@ -1662,7 +1691,7 @@ class px
     // $totaltp = $computedata3['ext'];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

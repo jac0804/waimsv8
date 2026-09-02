@@ -1020,6 +1020,8 @@ class ep
         $head = $config['params']['head'];
         $center = $config['params']['center'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head, $this->headOther];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         $dataOther = [];
         $dataContact = [];
@@ -1033,7 +1035,7 @@ class ep
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
@@ -1041,7 +1043,7 @@ class ep
         //     if (array_key_exists($key, $head)) {
         //         $dataContact[$key] = $head[$key];
         //         if (!in_array($key, $this->except)) {
-        //             $dataContact[$key] = $this->othersClass->sanitizekeyfield($key, $dataContact[$key]);
+        //             $dataContact[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataContact[$key],$lookups);
         //         } //end if  
         //     }
         // }
@@ -1050,7 +1052,7 @@ class ep
             if (array_key_exists($key, $head)) {
                 $dataOther[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key], 'EMPLOYEE', $companyid);
+                    $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
                 } //end if  
             }
         }

@@ -150,11 +150,15 @@ class addtask
     } // end function 
     public function save($config)
     {
-        // var_dump($config['params']);
+        $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
+
+        $dateTables = ['pttask'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = [];
         foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         if ($row['line'] == 0) { // insert

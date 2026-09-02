@@ -247,7 +247,6 @@ class viewleadtimesetting
 
         if (!$this->checkdata($trno, $tablename)) {
             foreach ($data as $key => $value) {
-                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
                 $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $this->coreFunctions->sbcinsert($tablename, $data);
@@ -262,7 +261,6 @@ class viewleadtimesetting
             );
         } else {
             foreach ($data as $key => $value) {
-                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key],'',$config['params']['companyid']);
                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno]);

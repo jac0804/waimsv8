@@ -590,9 +590,11 @@ class kr
     PDF::SetMargins(40, 40);
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, '', '', 'L');
-    PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    // PDF::MultiCell(0, 0, '', '', 'L');
+    // PDF::SetFont($fontbold, '', 14);
+    // PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+
+    $this->reportheader->getheader($params);
 
     PDF::SetFont($fontbold, '', 18);
     PDF::SetTextColor(110, 150, 112);

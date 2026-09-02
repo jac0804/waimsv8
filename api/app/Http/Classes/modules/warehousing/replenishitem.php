@@ -27,7 +27,7 @@ class replenishitem
     public $tablelogs = 'table_log';
     public $htablelogs = 'htable_log';
     public $prefix = '';
-
+    public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
     private $fields = [];
 
     private $btnClass;
@@ -367,13 +367,18 @@ class replenishitem
 
     public function updatehead($config)
     {
+        $companyid = $config['params']['companyid'];
         $user = $config['params']['user'];
         $adminid = $config['params']['adminid'];
         $head = $config['params']['head'];
         $clientid  = $head['clientid'];
         $data = [];
         $msg = '';
-        $isqty = $this->othersClass->sanitizekeyfield('qty',  $head['isqty']);
+
+        $dateTables = ['lahead','lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $isqty = $this->othersClass->sanitizekeyfieldFast('qty',  $head['isqty'], $lookups);
+
         if (abs($isqty) == 0) {
             return ['status' => false, 'msg' => 'Please input valid quantity.', 'clientid' => $clientid];
         }
@@ -494,7 +499,7 @@ class replenishitem
                         ];
 
                         foreach ($stock as $key => $v) {
-                            $stock[$key] = $this->othersClass->sanitizekeyfield($key, $stock[$key]);
+                              $stock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stock[$key], $lookups);
                         }
 
                         if ($this->coreFunctions->sbcinsert("lastock", $stock)) {

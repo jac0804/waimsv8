@@ -52,5 +52,6 @@ class productportal
         $this->coreFunctions->sbcaddcolumn("iteminfo", "kind", "varchar(200) NOT NULL DEFAULT ''", 0);
         $this->coreFunctions->sbcaddcolumn("item", "carid", "int(11) NOT NULL DEFAULT '0'", 0);
         $this->coreFunctions->sbcaddcolumn("iteminfo", "positionid", "int(11) NOT NULL DEFAULT '0'", 0);
+        $this->coreFunctions->sbcaddcolumngrp(["item"], ["model2"],  "INT(11) NOT NULL DEFAULT '0'", 0);
     }
 }

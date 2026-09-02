@@ -57,7 +57,10 @@ class storage_electricityrate
 
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'amt', 'username', 'dateid', 'category'
+        'amt',
+        'username',
+        'dateid',
+        'category'
       ]
     ]];
 
@@ -166,6 +169,9 @@ class storage_electricityrate
   public function headtablestatus($config)
   {
     $action = $config['params']["action2"];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['selectricrate'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     switch ($action) {
       case "load":
@@ -174,9 +180,8 @@ class storage_electricityrate
       case 'create':
         $data = [];
         $head = $config['params']['dataparams'];
-
-        $data['amt'] = $this->othersClass->sanitizekeyfield('amt', $head['amt']);
-        $data['username'] = $this->othersClass->sanitizekeyfield('username', $head['username']);
+        $data['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['amt'], $lookups);
+        $data['username'] = $this->othersClass->sanitizekeyfieldFast('username', $head['username'], $lookups);
 
         $data['dateid'] = $this->othersClass->getCurrentTimeStamp();
         $data['categoryid'] = $head['categoryid'];

@@ -152,6 +152,9 @@ class pendingobcancelapplications
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $admin = $config['params']['adminid'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['leavetrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'obapplication';
@@ -173,7 +176,7 @@ class pendingobcancelapplications
         if ($status == 'A') {
             $label = 'Approved';
             $lstatus = 'C';
-        $status = $this->coreFunctions->datareader("select line as value from obapplication where line=? and status='C' and canceldate is not null and forapproval is not null", [$line]);
+            $status = $this->coreFunctions->datareader("select line as value from obapplication where line=? and status='C' and canceldate is not null and forapproval is not null", [$line]);
         }
 
         $date = $this->othersClass->getCurrentTimeStamp();
@@ -184,7 +187,7 @@ class pendingobcancelapplications
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

@@ -154,8 +154,7 @@ class replenish
       $config['params']['row']['trno'] = $rows[0]['trno'];
       $this->coreFunctions->execqry('update tcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
       $this->coreFunctions->execqry('update htcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
-      // $amount = $this->othersClass->sanitizekeyfield('amt',  $key['amount']);
-      // $deduction = $this->othersClass->sanitizekeyfield('amt',  $key['deduction']);
+    
       $amount = $this->othersClass->sanitizekeyfieldFast('amt',  $key['amount'], $lookups);
       $deduction = $this->othersClass->sanitizekeyfieldFast('amt',  $key['deduction'], $lookups);
       $runningbal = $runningbal +($deduction  - $amount);
@@ -167,7 +166,6 @@ class replenish
 
     $r['trno']=$trno;
     $r['line']=$line;
-    // $r['amount']=$this->othersClass->sanitizekeyfield('amt', $runningbal);
     $r['amount']=$this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
     $r['deduction'] = 0;
     $r['isreplenish'] = 1;

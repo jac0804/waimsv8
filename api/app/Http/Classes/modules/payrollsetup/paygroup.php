@@ -79,10 +79,10 @@ class paygroup
 
 
     if ($config['params']['companyid'] != 68) { //JDA
-      $obj[0][$this->gridname]['columns'][$othrs] = 'coldel';
-      $obj[0][$this->gridname]['columns'][$spot] = 'coldel';
-      $obj[0][$this->gridname]['columns'][$ndiffhrs] = 'coldel';
-      $obj[0][$this->gridname]['columns'][$s3maxbracket] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$othrs]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$spot]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$ndiffhrs]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$s3maxbracket]['type'] = 'coldel';
       $obj[0][$this->gridname]['columns'][$paygroup]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
       $obj[0][$this->gridname]['columns'][$action]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
     } else {
@@ -141,8 +141,7 @@ class paygroup
     $dateTables = ['paygroup'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $qry = "select code as value from " . $this->table . " where code = '" . $data['code'] . "'";
@@ -177,12 +176,6 @@ class paygroup
       $qry = "select code as value from " . $this->table . " where code = '" . $data['code'] . "' and line = '" . $row['line'] . "'";
       $checking = $this->coreFunctions->datareader($qry);
 
-      $qry = "select paygroup as value from employee where paygroup = '" . $data['paygroup'] . "'";
-      $checkingEmployee = $this->coreFunctions->datareader($qry);
-
-      $qry = "select pgline as value from timecard where pgline = '" . $row['line'] . "'";
-      $checkingTimecard = $this->coreFunctions->datareader($qry);
-
       if (!empty($checking)) {
         unset($data["code"]);
       } else {
@@ -194,14 +187,6 @@ class paygroup
             return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data['code'], 'data' => $data];
           }
         }
-      }
-
-      if (!empty($checkingTimecard)) {
-        return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data['paygroup'], 'data' => $data];
-      }
-
-      if (!empty($checkingEmployee)) {
-        return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data['paygroup'], 'data' => $data];
       }
 
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -226,8 +211,7 @@ class paygroup
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if ($data[$key]['line'] == 0) {
@@ -238,26 +222,27 @@ class paygroup
             // $returndata = $this->loaddata($config);
             return ['status' => false, 'msg' => 'Code Already Exist. - ' . $data[$key]['code'], 'data' => $data];
           }
+
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
-          if ($config['params']['companyid'] == 68) { //JDA
-            $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup']
-              . 'Legal OT Multipler - ' . $data[$key]['othrs'] . ';'
-              . 'Special OT Multipler - ' . $data[$key]['spot'] . ';'
-              . 'NDIFF Multipler - ' . $data[$key]['ndiffhrs'] . ';'
-              . 'SSS Max Bracket - ' . $data[$key]['s3maxbracket']
-              . ' - LINE' . $line);
+
+          if ($line != 0) {
+            if ($config['params']['companyid'] == 68) { //JDA
+              $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup']
+                . 'Legal OT Multipler - ' . $data[$key]['othrs'] . ';'
+                . 'Special OT Multipler - ' . $data[$key]['spot'] . ';'
+                . 'NDIFF Multipler - ' . $data[$key]['ndiffhrs'] . ';'
+                . 'SSS Max Bracket - ' . $data[$key]['s3maxbracket']
+                . ' - LINE' . $line);
+            } else {
+              $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup'] . ' - LINE' . $line);
+            }
           } else {
-            $this->logger->sbcmasterlog($line, $config, 'CREATE' . ' - ' . $data[$key]['code'] . ' - ' . $data[$key]['paygroup'] . ' - LINE' . $line);
+            return ['status' => false, 'msg' => 'Saving failed. - ' . $data[$key]['code'], 'data' => $data];
           }
+          
         } else {
           $qry = "select code as value from " . $this->table . " where code = '" . $data[$key]['code'] . "' and line = '" . $data[$key]['line'] . "'";
           $checking = $this->coreFunctions->datareader($qry);
-
-          $qry = "select paygroup as value from employee where paygroup = '" . $data[$key]['paygroup'] . "'";
-          $checkingEmployee = $this->coreFunctions->datareader($qry);
-
-          $qry = "select pgline as value from timecard where pgline = '" . $data[$key]['line'] . "'";
-          $checkingTimecard = $this->coreFunctions->datareader($qry);
 
           if (!empty($checking)) {
             unset($data[$key]["code"]);
@@ -271,15 +256,6 @@ class paygroup
               }
             }
           }
-
-          if (!empty($checkingTimecard)) {
-            return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Timecard. - ' . $data[$key]['paygroup'], 'data' => $data];
-          }
-
-          if (!empty($checkingEmployee)) {
-            return ['status' => false, 'msg' => 'Cannot Be Edit Because Code Already Has a Transaction in Employee Ledger. - ' . $data[$key]['paygroup'], 'data' => $data];
-          }
-
 
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];

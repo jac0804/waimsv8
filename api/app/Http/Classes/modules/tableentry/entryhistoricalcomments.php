@@ -159,22 +159,22 @@ class entryhistoricalcomments
         case 'TK':
           $qry = "select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
                   from headprrem as pr 
-                  left join client on client.email=pr.createby where pr.tmtrno=$trno and pr.tmline=$line
+                  left join client on client.email=pr.createby where pr.tmtrno=$trno and pr.tmline=$line and ifnull(pr.rem,'')<>''
                   union all
                   select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
                   from headprrem as pr
-                  left join dailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
-                  where dy1.tasktrno=$trno and dy1.taskline=$line
+                  join dailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
+                  where dy1.tasktrno=$trno and dy1.taskline=$line and ifnull(pr.rem,'')<>''
                   union all
                   select ifnull(pr.rem,'') as rem,client.clientname as createby,pr.createdate,pr.seendate 
                   from headprrem as pr  
-                  left join hdailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
-                  where dy1.tasktrno=$trno and dy1.taskline=$line
+                  join hdailytask as dy1 on dy1.trno=pr.dytrno left join client on client.email=pr.createby
+                  where dy1.tasktrno=$trno and dy1.taskline=$line and ifnull(pr.rem,'')<>''
                   union all
                   select concat('Solution Remarks: ','\r\n',pr.rem1) as rem,cl.clientname as createby,pr.donedate as createdate,'' as seendate
                   from hdailytask as pr
                   left join client as cl on cl.clientid = pr.userid
-                  where pr.tasktrno=$trno and pr.taskline=$line
+                  where pr.tasktrno=$trno and pr.taskline=$line and pr.rem1<>''
                   order by createdate desc";  //para makita yung ni comment sa dailytask listing at solution remarks ng mga done
           break;
         case 'DY':
@@ -221,11 +221,14 @@ class entryhistoricalcomments
       return ['status' => false, 'msg' => 'Transaction has already been posted.', 'data' => []];
     }
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['tripdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $row = $config['params']['data'];
     foreach ($config['params']['data'] as $key => $row) {
       $data = [];
       foreach ($this->fields as $key => $value) {
-        $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+        $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
       }
 
       if ($row['line'] == 0) {
@@ -276,6 +279,9 @@ class entryhistoricalcomments
 
   public function lookupcallback($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['tripdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     switch ($config['params']['lookupclass2']) {
       case 'addtogrid':
         $trno = $config['params']['tableid'];
@@ -294,7 +300,7 @@ class entryhistoricalcomments
 
         $insertdata = [];
         foreach ($this->fields as $key => $value) {
-          $insertdata[$value] = $this->othersClass->sanitizekeyfield($value, $data[$value]);
+          $insertdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value], $lookups);
         }
 
         $qry = "select line as value from tripdetail where trno=? order by line desc limit 1";

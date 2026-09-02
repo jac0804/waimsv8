@@ -264,6 +264,7 @@ class postingsd
   }
 
   private function createSIAR($config,$refx,$siref = "",$prref= ""){
+    $companyid = $config['params']['companyid'];
     $row = $config['params']['row'];
     $user = $config['params']['user'];
     $pref = "SI";
@@ -272,6 +273,9 @@ class postingsd
     $checkno = $config['params']['headdata']['checkno'];
     $checkdate = $config['params']['headdata']['checkdate'];
     $acno = $config['params']['headdata']['contra'];
+
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $path = 'App\Http\Classes\modules\lending\cr';
     // if($prref !=""){
@@ -303,7 +307,7 @@ class postingsd
                   ];
 
           foreach($head as $k => $value){
-            $data[$k] = $this->othersClass->sanitizekeyfield($k,$head[$k]);
+          $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
           }
 
           $inserthead = $this->coreFunctions->sbcinsert($this->head, $data);

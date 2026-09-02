@@ -101,6 +101,7 @@ class sbcremarks
         $data['remarks'] = '';
         $data['others'] = '';
         $data['bgcolor'] = 'bg-blue-2';
+        $data['posreg'] = 0;
         return $data;
     }
     public function delete($config)
@@ -112,6 +113,7 @@ class sbcremarks
             $usetable = $this->htable;
         }
         $row = $config['params']['row'];
+        if ($row['posreg'])  return ['status' => false, 'msg' => 'Unable to modify pos registration'];
         $qry = "delete from " . $usetable . " where line=?";
         $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
@@ -126,11 +128,17 @@ class sbcremarks
         if ($isposted) {
             $usetable = $this->htable;
         }
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$usetable];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
+
+                if ($data[$key]['posreg'])  return ['status' => false, 'msg' => 'Unable to modify pos registration'];
+
                 if ($data[$key]['line'] == 0) {
                     $data2['trno'] = $config['params']['trno'];
                     $line = $this->coreFunctions->datareader("select ifnull(count(line),0)+1 as value from $usetable where trno=?", [$config['params']['trno']]);
@@ -160,9 +168,14 @@ class sbcremarks
         if ($isposted) {
             $usetable = $this->htable;
         }
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$usetable];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
+        if ($row['posreg'])  return ['status' => false, 'msg' => 'Unable to modify pos registration'];
+
         if ($row['line'] == 0) {
             $data['trno'] = $config['params']['trno'];
             $line = $this->coreFunctions->datareader("select ifnull(count(line),0)+1 as value from $usetable where trno=?", [$config['params']['trno']]);
@@ -195,22 +208,25 @@ class sbcremarks
         $trno =  $config['params']['tableid'];
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        $qry = "select " . $select . " from " . $this->table . "  where line = ? and trno = ?
+        $qry = "select " . $select . ", 0 as posreg from " . $this->table . "  where line = ? and trno = ?
         union all 
-        select " . $select . " from " . $this->htable . "  where line = ? and trno = ?";
+        select " . $select . ", 0 as posreg from " . $this->htable . "  where line = ? and trno = ?";
         $data = $this->coreFunctions->opentable($qry, [$line, $trno, $line, $trno]);
         return $data;
     }
     public function loaddata($config)
     {
         $select = $this->selectqry();
-        $select = $select . ",'' as bgcolor ";
+        $select = $select . ",'' as bgcolor,createby,createdate ";
 
         $trno = $config['params']['tableid'];
-        $qry = "select " . $select . " from " . $this->table . "  where trno = ?
+        $qry = "select " . $select . ", 0 as posreg from " . $this->table . "  where trno = ?
         union all 
-        select " . $select . " from " . $this->htable . "  where trno = ?";
-        $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        select " . $select . ", 0 as posreg from " . $this->htable . "  where trno = ?
+        union all
+        select line,trno, station, serialno as serial, concat('RegKey: ', regcode,' | AccessKey: ',accesskey) as remarks, rem as others, '' as bgcolor,createby,createdate, 1 as posreg from posreg where trno=?
+        ";
+        $data = $this->coreFunctions->opentable($qry, [$trno, $trno, $trno]);
         return $data;
     }
 }

@@ -534,7 +534,6 @@ class ad
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
@@ -1107,10 +1106,6 @@ class ad
             }
             $config['params']['line'] = $line;
         }
-        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        // $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
-        // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
-        // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
         $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
@@ -1126,9 +1121,6 @@ class ad
             if ($item[0]->factor !== 0) $factor = $item[0]->factor;
             $isnoninv =  $item[0]->isnoninv;
         }
-        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        // $rrqty = $this->othersClass->sanitizekeyfield('rrqty', $rrqty);
-        // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
 
         $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
@@ -1169,7 +1161,6 @@ class ad
 
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
@@ -1711,7 +1702,6 @@ class ad
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
                     $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 if ($this->acctg[$key]['cr'] < 0) {
@@ -1808,9 +1798,6 @@ class ad
         $exec = true;
         foreach ($data2 as $key => $value) {
             $this->othersClass->logConsole(json_encode($value));
-
-            // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-            // $dqty =  round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
 
             $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
             $dqty =  round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));

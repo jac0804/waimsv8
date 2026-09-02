@@ -133,6 +133,33 @@ class reportheader
 				PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
 
 				break;
+			case 60: //transpower
+
+			    if($params['params']['doc'] == 'CV' || $params['params']['doc'] == 'PV'){
+				  if($params['params']['dataparams']['reporttype'] == 2){
+						  goto defaultCompanyHeader;
+				  }	   
+			    }
+					
+				$qry = "select shortname as name,address,tel from center where code = '" . $center . "'";
+				$headerdata = $this->coreFunctions->opentable($qry);
+				$current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+				$font = "";
+				$fontbold = "";
+				$fontsize = 11;
+
+	
+				if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+				    $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+					$fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+				}
+				PDF::MultiCell(0, 0, '', '', 'L');
+				PDF::SetFont($fontbold, '', 14);
+				PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+				PDF::SetFont($font, '', 13);
+				PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
+				break;
 
 			case 61: //bytesized
 				if (isset($params['params']['logoonly'])) {
@@ -169,7 +196,7 @@ class reportheader
 
 					default:
 						defaultHeader:
-						$qry = "select name,address,tel from center where code = '" . $center . "'";
+						$qry = "select name,shortname,address,tel from center where code = '" . $center . "'";
 						$headerdata = $this->coreFunctions->opentable($qry);
 						$current_timestamp = $this->othersClass->getCurrentTimeStamp();
 

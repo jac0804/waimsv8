@@ -601,7 +601,6 @@ class fu
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
@@ -611,7 +610,6 @@ class fu
         foreach ($this->otherfields as $key) {
             $dataother[$key] = $head[$key];
             if (!in_array($key, $this->except)) {
-                // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key], '', $companyid);
                 $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
             } //end if
         }
@@ -1202,7 +1200,6 @@ class fu
         ];
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 

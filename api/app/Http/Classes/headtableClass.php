@@ -95,6 +95,7 @@ class headtableClass
 			$hideobj = [];
 			$loadtable = false;
 			$griddata = [];
+			$sbcscript = [];
 			if (method_exists($this->config['classname'], 'hideobj')) {
 				$hideobj = $this->config['docmodule']->hideobj($this->config);
 			}
@@ -105,6 +106,9 @@ class headtableClass
 			if (isset($this->config['docmodule']->loadtable)) $loadtable = $this->config['docmodule']->loadtable;
 			if (method_exists($this->config['docmodule'], 'griddata')) {
 				$griddata = $this->config['docmodule']->griddata($this->config);
+			}
+			if (method_exists($this->config['classname'], 'sbcscript')) {
+				$sbcscript = $this->config['docmodule']->sbcscript($this->config);
 			}
 			$this->config['return'] = [
 				'txtfield' => $txtfield,
@@ -125,7 +129,8 @@ class headtableClass
 				'rowperpage' => $rowperpage,
 				'hideobj' => $hideobj,
 				'loadtable' => $loadtable,
-				'griddata' => $griddata
+				'griddata' => $griddata,
+				'sbcscript' => $sbcscript
 			];
 		}
 		return $this;

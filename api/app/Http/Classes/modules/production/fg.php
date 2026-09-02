@@ -312,6 +312,9 @@ class fg
 
   public function createTab($access, $config)
   {
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
+    $companyid= $config['params']['companyid'];
     $action = 0;
     $itemdesc = 1;
     $rrqty = 2;
@@ -354,13 +357,27 @@ class fg
       $obj[0][$this->gridname]['columns'][$disc]['readonly'] = true;
     }
 
-    if ($config['params']['companyid'] == 24 || $config['params']['companyid'] == 69) { //goodfound, cemphil
+    if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $obj[0][$this->gridname]['columns'][$itemdesc]['type'] = 'coldel';
-      $obj[0][$this->gridname]['columns'][$loc]['type'] = 'input';
-      $obj[0][$this->gridname]['columns'][$loc]['label'] = 'Batch No';
-      $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
+    
     }
 
+    $obj[0][$this->gridname]['columns'][$loc]['label'] = $locname;
+
+
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa fg
+        case 24: //goodfound
+        case 69: //cemphil
+          $obj[0][$this->gridname]['columns'][$loc]['type'] = 'input';
+          $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
+          break;
+        default:
+          $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
+    } 
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -521,6 +538,10 @@ class fg
   {
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['lahead', 'lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -530,7 +551,7 @@ class fg
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -667,6 +688,9 @@ class fg
     $trno = $config['params']['trno'];
     $companyid =  $config['params']['companyid'];
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($companyid == 24 || $companyid == 69)  return true; //goodfound, cemphil
 
     $status = true;
@@ -718,7 +742,7 @@ class fg
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -987,6 +1011,10 @@ class fg
     $rem = '';
     $loc = '';
     $disc = '';
+
+    $dateTables = ['stockinfo', 'lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['rem'])) {
       $rem = $config['params']['data']['rem'];
     }
@@ -1047,8 +1075,8 @@ class fg
         $projectid = $config['params']['data']['projectid'];
       }
     }
-    $amt = round($this->othersClass->sanitizekeyfield('amt', $amt), $this->companysetup->getdecimal('price', $config['params']));
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = round($this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups), $this->companysetup->getdecimal('price', $config['params']));
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -1091,7 +1119,7 @@ class fg
         break;
     }
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

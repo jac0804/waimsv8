@@ -133,6 +133,17 @@ class purchase_per_supplier
         }
         break;
 
+        case 56: //homeworks
+        switch ($reporttype) {
+          case '0':
+            $result = $this->homeworks_SUMMARIZED($config);
+            break;
+          case '1':
+            $result = $this->homeworks_layout_DETAILED($config); //homeworks_layout_DETAILED
+            break;
+        }
+        break;
+
       default:
         switch ($reporttype) {
           case '0':
@@ -215,6 +226,15 @@ class purchase_per_supplier
       $filter1 .= "";
     }
 
+     $addfields='';
+     $grpf='';
+
+    if($companyid==56){// homeworks
+      $addfields=', dateid,docno';
+      $grpf=', dateid,docno';
+
+    }
+
     switch ($companyid) {
       case 6: // MITSUKOSHI
         $addqry = "union all
@@ -256,7 +276,8 @@ class purchase_per_supplier
     }
 
     $query = "
-    select barcode, itemname, uom, sum(tons) as tons, client, clientname, address, sum(isqty) as isqty, sum(ext) as ext from (
+    select  barcode, itemname, uom, sum(tons) as tons, client, clientname, address, sum(isqty) as isqty, sum(ext) as ext $addfields
+      from (
       select sum(stock.ext) as ext, sum(((stock.qty * uom.kilos) / 1000)) as tons,
       head.address,head.docno,client.client,client.clientname, agent.client as agent, agent.clientname as agentname,head.dateid,
       case ifnull(item.class,'') when '' then 'No Class' else item.class end as class,item.barcode,item.itemname,
@@ -288,7 +309,7 @@ class purchase_per_supplier
       class,item.barcode,item.itemname,
       stock.uom,uom.kilos,client.area,stock.isamt) as a
       where itemname <> ''
-    group by client, clientname, address, barcode, itemname, uom
+    group by client, clientname, address, barcode, itemname, uom $grpf
     $addqry
     order by clientname,$itemsort";
     return $query;
@@ -339,6 +360,7 @@ class purchase_per_supplier
       $filter1 .= "";
     }
 
+  
     switch ($companyid) {
       case 6: // MITSUKOSHI
         $addqry = "union all
@@ -1479,4 +1501,444 @@ class purchase_per_supplier
     $str .= $this->reporter->endrow();
     return $str;
   }
+
+
+   private function homeworks_displayHeader($config)
+  {
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $client     = $config['params']['dataparams']['client'];
+    $class      = $config['params']['dataparams']['classic'];
+    $vatfilter  = $config['params']['dataparams']['vatfilter'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
+
+   
+
+    $str = '';
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= '<br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    if ($reporttype == 1) {
+      $rtype = "DETAILED";
+    } else {
+      $rtype = "SUMMARIZED";
+    }
+
+    $str .= $this->reporter->col('PURCHASE PER SUPPLIER ' . $rtype, 800, null, false, $border, '', 'C', $font, '16', '', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), 800, null, false, $border, '', 'C', $font, $fontsize, '', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->printline();
+
+    $str .= $this->reporter->begintable($layoutsize);
+
+    if (strtoupper($vatfilter) != 'ALL') {
+      if (strtoupper($vatfilter) == 'VAT') {
+        $vattype = 'VATABLE';
+      } else {
+        $vattype = 'NON-VATABLE';
+      }
+    } else {
+      $vattype = 'ALL';
+    }
+
+    if ($client != '') {
+      $client = $client;
+    } else {
+      $client = 'ALL';
+    }
+
+    if ($class != '') {
+      $cla = $class;
+    } else {
+      $cla = 'ALL';
+    }
+
+    $str .= $this->reporter->startrow(NULL, null, false, $border, '', 'R', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Supplier : ' . $client, 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Vat : ' . $vattype, 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('', 300, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow(NULL, null, false, $border, '', 'R', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Class : ' . $cla, 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    
+    $str .= $this->reporter->col('', 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('', 300, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow(NULL, null, false, $border, '', 'R', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('', 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('', 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->endrow();
+
+    return $str;
+  }
+
+
+   private function homeworks_displayDetailtable($config)
+  {
+    $str = "";
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = '10';
+    $border = '1px solid';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DATE', '70', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('DOCNO', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('CODE', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('DESCRIPTION', '350', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('UNIT', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('QTY', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    // $str .= $this->reporter->col('TOT TONS', '100', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('AMOUNT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->endrow();
+    return $str;
+  }
+
+
+
+
+   public function homeworks_layout_DETAILED($config)
+  {
+    $result  = $this->reportDefault($config);
+    $count = 0;
+    $page = 49;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '1000';
+    $this->reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => $layoutsize];
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    // $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:100px');
+    $str .= $this->homeworks_displayHeader($config);
+    $str .= $this->homeworks_displayDetailtable($config);
+
+    $itemname = "";
+    $docno = "";
+    $totalext = 0;
+    $totalqty = 0;
+    $totaltons = 0;
+    $totalunitprice = 0;
+    $subtotalqty = 0;
+    $subtotalext = 0;
+    $subtotaltons = 0;
+    $subtotalunitprice = 0;
+    $gsubtotalqty = 0;
+    $gsubtotalext = 0;
+    $gsubtotaltons = 0;
+    $gsubtotalunitprice = 0;
+
+    $iitem = "";
+    foreach ($result as $key => $data) {
+      $tons = $data->tons;
+      $unitprice = ($data->isqty != 0) ? $data->ext / $data->isqty : 0;
+
+      if ($itemname == "") {
+        $count = $count + 1;
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data->client . '  ' . $data->clientname, '800', null, false, $border, '', 'L', $font, $fontsize, 'B', '', ''); //. '  ' . $data->address
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+      }
+      if (strtoupper($itemname) == strtoupper($data->clientname)) {
+        $itemname = "";
+        if (strtoupper($docno) == strtoupper($data->itemname)) {
+          $docno = "";
+        } else {
+          if ($docno != '') {
+            $subtotalqty = 0;
+            $subtotalext = 0;
+          }
+          $itemname = strtoupper($data->clientname);
+        }
+      } else {
+
+        $str .= $this->reporter->begintable($layoutsize);
+        if ($itemname != '') {
+          $count =$count + 2;
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '350', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($gsubtotalqty, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+          // $str .= $this->reporter->col(number_format($gsubtotaltons, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->col(number_format($gsubtotalext, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
+          $str .= $this->reporter->begintable($layoutsize);
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col($data->client . '  ' . $data->clientname, '800', null, false, $border, '', 'L', $font, $fontsize, 'B', '', ''); //. '  ' . $data->address
+          $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+        }
+
+        $subtotalqty = 0;
+        $subtotalext = 0;
+        $subtotalunitprice = 0;
+        $subtotaltons = 0;
+
+        $gsubtotalqty = 0;
+        $gsubtotalext = 0;
+        $gsubtotalunitprice = 0;
+        $gsubtotaltons = 0;
+        $docno = $data->clientname;
+
+        if (strtoupper($docno) == strtoupper($data->itemname)) {
+          $docno = "";
+        } else {
+
+          $docno = strtoupper($data->clientname);
+        }
+      }
+
+      if ($iitem == $data->itemname) {
+        $iitem = "";
+      } else {
+        $iitem = $data->itemname;
+      }
+
+      $itemname = $data->itemname;
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
+      $maxrow=1;
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname]);
+
+      $docnos= $data->docno;
+      $prefix = substr($docnos, 0, 6);
+      $number = ltrim(substr($docnos, 6), '0');
+      $docno1 = $prefix . $number;
+
+      $count = $count + $maxrow;
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->dateid, '70', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($docno1, '130', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->barcode, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->itemname, '350', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->uom, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->isqty, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      // $str .= $this->reporter->col(number_format($tons, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->ext, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $subtotalext = $subtotalext + $data->ext;
+      $subtotalqty = $subtotalqty + $data->isqty;
+      $subtotaltons = $subtotaltons + $tons;
+      $subtotalunitprice = $subtotalunitprice + $unitprice;
+
+      $gsubtotalext = $gsubtotalext + $data->ext;
+      $gsubtotalqty = $gsubtotalqty + $data->isqty;
+      $gsubtotaltons = $gsubtotaltons + $tons;
+      $gsubtotalunitprice = $gsubtotalunitprice + $unitprice;
+
+      $totaltons = $totaltons + $tons;
+      $totalext = $totalext + $data->ext;
+      $totalqty = $totalqty + $data->isqty;
+      $totalunitprice = $totalunitprice + $unitprice;
+
+      $itemname = strtoupper($data->clientname);
+      $docno = $data->itemname;
+
+      $iitem = $data->itemname;
+
+
+    if ($count >= $page) {
+          // logger("PAGE BREAK: " . $count . " >= " . $page);
+          $str .= $this->reporter->page_break();
+          $str .= $this->homeworks_displayHeader($config);
+          $str .= $this->homeworks_displayDetailtable($config);
+          $count = 0;
+      }
+    }
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+     $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '350', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($gsubtotalqty, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    // $str .= $this->reporter->col(number_format($gsubtotaltons, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($gsubtotalext, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('', '70', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '130', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL :', '350', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalqty, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    // $str .= $this->reporter->col(number_format($gsubtotaltons, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalext, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+    return $str;
+  }
+
+
+   private function homeworks_displayHeadertable($config)
+  {
+    $str = "";
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = '10';
+    $border = '1px solid';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('CODE', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('SUPPLIER', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+
+ 
+    $str .= $this->reporter->col('ADDRESS', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('QTY', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
+    // $str .= $this->reporter->col('TONS', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
+    
+    $str .= $this->reporter->col('AMOUNT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->endrow();
+    return $str;
+  }
+
+
+  
+  public function homeworks_SUMMARIZED($config)
+  {
+    $result  = $this->reportDefault($config);
+    $count = 0;
+    $page = 45;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '1000';
+    $this->reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => $layoutsize];
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    // $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:100px');
+    $str .= $this->default_displayHeader($config);
+    $str .= $this->homeworks_displayHeadertable($config);
+
+    $totalqty = 0;
+    $totaltons = 0;
+    $totalamt = 0;
+
+    foreach ($result as $key => $data) {
+
+      $address = $data->addr;
+      $arr_addr = $this->reporter->fixcolumn([$address], '52', 0);
+      $maxrow=1;
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_addr]);
+
+      $count = $count + $maxrow;
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $tons = $data->tons;
+      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '250', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->addr, '250', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->isqty, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->ext, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      $totalqty = $totalqty + $data->isqty;
+      $totaltons = $totaltons + $tons;
+      $totalamt = $totalamt + $data->ext;
+
+      // if ($this->reporter->linecounter == $page) {
+      //   $str .= $this->reporter->page_break();
+      //   $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+      //   if (!$isfirstpageheader) $str .= $this->default_displayHeader($config);
+      //   $str .= $this->homeworks_displayHeadertable($config);
+      //   $page += $count;
+      // }
+
+      if ($count >= $page) {
+          $str .= $this->reporter->page_break();
+          $str .= $this->default_displayHeader($config);
+          $str .= $this->homeworks_displayHeadertable($config);
+          $count = 0;
+      }
+    }
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col(number_format($totalqty, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col(number_format($totaltons, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->col(number_format($totalamt, 2), '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '3px');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+
 }

@@ -359,7 +359,6 @@ class viewqtdetails
 
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
          $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $c = $this->coreFunctions->opentable("select trno from qtinfo where trno=?", [$config['params']['dataparams']['trno']]);

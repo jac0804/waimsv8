@@ -101,6 +101,7 @@ class bom
             $limit = "";
         }
         $qry = "select itemid, itemid as clientid, barcode as client, barcode, itemname, uom from item where fg_isfinishedgood=1 $filtersearch";
+
         $data = $this->coreFunctions->opentable($qry);
 
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -235,6 +236,10 @@ class bom
     {
         $head = $config['params']['head'];
         $center = $config['params']['center'];
+        $companyid = $config['params']['companyid'];
+
+        $dateTables = ['bom'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $data = [];
 
@@ -248,7 +253,7 @@ class bom
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
 

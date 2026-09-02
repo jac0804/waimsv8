@@ -9888,9 +9888,11 @@ class sj
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
 
-    PDF::MultiCell(0, 0, '', '', 'L');
-    PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    // PDF::MultiCell(0, 0, '', '', 'L');
+    // PDF::SetFont($fontbold, '', 14);
+    // PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+
+    $this->reportheader->getheader($params);
 
     PDF::SetFont($fontbold, '', 18);
     PDF::SetTextColor(110, 150, 112);

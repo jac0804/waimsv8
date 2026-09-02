@@ -550,11 +550,14 @@ class be
             unset($head['docno']);
         }
 
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -729,12 +732,12 @@ class be
         $a = 0;
 
         $qry = "select so.trno,so.docno,left(so.dateid,10) as dateid,
-     CAST(concat('Total SO Amt: ',round(sum(s.ext),2)) as CHAR) as rem
-     from hsohead as so
-     left join hsostock as s on s.trno = so.trno
-     left join glstock as sstock on sstock.refx = s.trno and sstock.linex = s.line
-     where sstock.trno = ?
-     group by so.trno,so.docno,so.dateid";
+        CAST(concat('Total SO Amt: ',round(sum(s.ext),2)) as CHAR) as rem
+        from hsohead as so
+        left join hsostock as s on s.trno = so.trno
+        left join glstock as sstock on sstock.refx = s.trno and sstock.linex = s.line
+        where sstock.trno = ?
+        group by so.trno,so.docno,so.dateid";
         $t = $this->coreFunctions->opentable($qry, [$config['params']['trno']]);
         if (!empty($t)) {
             $startx = 550;
@@ -762,15 +765,15 @@ class be
 
         //SJ
         $qry = "
-    select head.docno,
-    date(head.dateid) as dateid,
-    CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), if(head.ms_freight<>0,concat('\rOther Charges: ',round(head.ms_freight,2)),''),'\r\r', 'Balance: ', round(ar.bal, 2)) as CHAR) as rem,
-    head.trno
-    from glhead as head
-    left join glstock as stock on head.trno = stock.trno
-    left join arledger as ar on ar.trno = head.trno
-    where head.trno=?
-    group by head.docno, head.dateid, head.trno, ar.bal, head.ms_freight";
+        select head.docno,
+        date(head.dateid) as dateid,
+        CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), if(head.ms_freight<>0,concat('\rOther Charges: ',round(head.ms_freight,2)),''),'\r\r', 'Balance: ', round(ar.bal, 2)) as CHAR) as rem,
+        head.trno
+        from glhead as head
+        left join glstock as stock on head.trno = stock.trno
+        left join arledger as ar on ar.trno = head.trno
+        where head.trno=?
+        group by head.docno, head.dateid, head.trno, ar.bal, head.ms_freight";
         $t = $this->coreFunctions->opentable($qry, [$config['params']['trno']]);
         if (!empty($t)) {
             data_set(
@@ -1007,6 +1010,7 @@ class be
 
     public function additem($action, $config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $line = $config['params']['data']['line'];
         $checkno = $config['params']['data']['checkno'];
@@ -1026,8 +1030,11 @@ class be
             'clientid' => $clientid
         ];
 
+        $dateTables = ['particulars'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1100,12 +1107,16 @@ class be
 
     public function createdistribution($config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $status = true;
         $totalar = 0;
         $ewt = 0;
         $ewtamt = 0;
         $isvatexsales = $this->companysetup->getvatexsales($config['params']);
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -1138,7 +1149,7 @@ class be
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];

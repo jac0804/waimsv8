@@ -205,12 +205,15 @@ class pricelist
             return ['status' => false, 'msg' => 'Please select valid customer category.', 'action' => 'load', 'griddata' => ['entrygrid' => []]];
         }
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = $config['params']['rows'];
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data2['groupid'] == 0) {
                     $data2['groupid'] = $customergrp;

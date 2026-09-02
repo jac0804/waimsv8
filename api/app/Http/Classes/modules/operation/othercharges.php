@@ -251,11 +251,13 @@ class othercharges
     $user = $config['params']['user'];
     $d = [];
 
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['chargesbilling'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         foreach ($this->fields as $k) {
-          $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
         }
 
         if ($val['bgcolor'] != "" && $val["isposted"] != 1) {

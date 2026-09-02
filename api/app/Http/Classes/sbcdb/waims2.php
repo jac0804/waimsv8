@@ -526,10 +526,9 @@ class waims2
         $this->coreFunctions->sbcaddcolumn("rfhead", "email", "varchar(150) NOT NULL DEFAULT ''", 1);
         $this->coreFunctions->sbcaddcolumn("hrfhead", "email", "varchar(150) NOT NULL DEFAULT ''", 1);
         break;
-      case 19: //housegem
-        $this->coreFunctions->sbcaddcolumn("client", "owner", "varchar(100) NOT NULL DEFAULT ''");
-        break;
     }
+
+    $this->coreFunctions->sbcaddcolumn("client", "owner", "varchar(100) NOT NULL DEFAULT ''");
 
     $this->coreFunctions->execqrynolog("ALTER TABLE client CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci");
     $this->coreFunctions->execqrynolog("ALTER TABLE client DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci");
@@ -4453,5 +4452,40 @@ class waims2
 
     // Added 07/10/2026
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["supplierid"], "int(11) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["ladetail", "gldetail"], ["rem"], "varchar(1000) NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["chequedetail", "hchequedetail"], ["rhtrno", "rhline"], "int(11) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["ladetail", "gldetail"], ["rem"], "varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["chequedetail", "hchequedetail"], ["rhtrno", "rhline"], "int(11) NOT NULL DEFAULT '0'", 0);
+
+    $qry = "CREATE TABLE `billingmaster` (
+        `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+        `billtype` varchar(45) NOT NULL DEFAULT '',
+        `sched` int(11) unsigned NOT NULL DEFAULT '0',
+        `assetid` int(11) unsigned NOT NULL DEFAULT '0',
+        `revenueid` int(11) unsigned NOT NULL DEFAULT '0',
+        `editby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL,
+        PRIMARY KEY (`line`, `billtype`))
+        ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("billingmaster", $qry);
+          
+    $qry = "CREATE TABLE `clbilling` (
+        `clientid` int(11) unsigned NOT NULL DEFAULT '0',
+        `bline` int(11) unsigned NOT NULL DEFAULT '0',
+        `amt` decimal(18,2) unsigned NOT NULL DEFAULT '0.00',
+        `isvat` tinyint(1) NOT NULL DEFAULT '0',
+        `isinactive` tinyint(1) NOT NULL DEFAULT '0',
+        `startdate` datetime DEFAULT NULL,
+        `enddate` datetime DEFAULT NULL,
+        `editby` varchar(100) NOT NULL DEFAULT '',
+        `editdate` datetime DEFAULT NULL,
+        `encodedby` varchar(100) NOT NULL DEFAULT '',
+        `encodeddate` datetime DEFAULT NULL)
+        ENGINE = MyISAM DEFAULT CHARSET=latin1;";
+    $this->coreFunctions->sbccreatetable("clbilling", $qry);
   }
 }

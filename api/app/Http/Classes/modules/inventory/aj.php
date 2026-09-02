@@ -364,6 +364,8 @@ class aj
     $ispallet = $this->companysetup->getispallet($config['params']);
     $iskgs = $this->companysetup->getiskgs($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $headgridbtns = [];
 
     $columns =  [
@@ -528,12 +530,9 @@ class aj
         $obj[0]['inventory']['columns'][$whname]['lookupclass'] = 'whstock';
         $obj[0]['inventory']['columns'][$whname]['action'] = 'lookupclient';
         if (!$isexpiry) {
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
           $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
         } else {
-          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
         }
         break;
@@ -554,12 +553,9 @@ class aj
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         if (!$isexpiry) {
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
           $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
         } else {
-          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
         }
         break;
@@ -573,8 +569,6 @@ class aj
         $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         break;
       default:
@@ -609,24 +603,16 @@ class aj
           $obj[0][$this->gridname]['columns'][$expiry]['type'] = 'coldel';
           switch ($companyid) {
             case 8: //maxipro
-              $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-              $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
               $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
               break;
-            case 28: //xcomp - with loc
-              $obj[0][$this->gridname]['columns'][$loc]['class'] = 'sbccsenablealways';
-              $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
-              $obj[0][$this->gridname]['columns'][$loc]['type'] = 'editlookup';
+            case 28: //xcomp 
               $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'coldel';
               break;
             default:
-              $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
               $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
               break;
           }
         } else {
-          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
         }
         break;
@@ -670,8 +656,40 @@ class aj
     }
 
     if ($companyid == 23 || $companyid == 41 || $companyid == 52) { //labsol cebu, labsol manila & technolab
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
       $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
+    }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      switch ($companyid) {
+        case 41:
+        case 52:
+        case 6:
+          break;
+        case 28: //xcomp
+          $obj[0][$this->gridname]['columns'][$loc]['class'] = 'sbccsenablealways';
+          $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
+          $obj[0][$this->gridname]['columns'][$loc]['type'] = 'editlookup';
+          break;
+        case 50: //unitech
+          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
+    } else {
+      switch ($companyid) {
+        case 8:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'lookup';
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
+          break;
+      }
     }
 
     // if ($companyid == 42) { //pdpi
@@ -1007,7 +1025,6 @@ class aj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1659,10 +1676,7 @@ class aj
         $projectid = $config['params']['data']['projectid'];
       }
     }
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $rrqty = $this->othersClass->sanitizekeyfield('qty', $rrqty);
-    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
@@ -1687,9 +1701,7 @@ class aj
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
       $isnoninv =  $item[0]->isnoninv;
     }
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $rrqty = $this->othersClass->sanitizekeyfield('rrqty', $rrqty);
-    // $iss = $this->othersClass->sanitizekeyfield('iss', $iss);
+
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $rrqty = $this->othersClass->sanitizekeyfieldFast('rrqty', $rrqty, $lookups);
@@ -1769,7 +1781,6 @@ class aj
     }
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
@@ -2393,7 +2404,6 @@ class aj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         if ($this->acctg[$key]['cr'] < 0) {
@@ -2508,9 +2518,6 @@ class aj
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       $this->othersClass->logConsole(json_encode($value));
-
-      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      // $dqty =  round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty =  round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));

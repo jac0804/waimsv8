@@ -154,12 +154,25 @@ class pending_purchase_orders
 
   public function reportplotting($config)
   {
-    if($config['params']['companyid']==60){
-      $result = $this->ericco_Layout($config);
-    }else{
-      $result = $this->reportDefaultLayout($config);
+    $companyid=$config['params']['companyid'];
+
+    switch ($companyid) {
+      case 56://homework
+        $result = $this->report_homework($config);
+        break;
+      case 60: //transpower
+        $result = $this->transpower_layout($config);
+        break;
+      default:
+        $result = $this->reportDefaultLayout($config);
+        break;
     }
-    
+    // if($config['params']['companyid']==60){
+    //   $result = $this->ericco_Layout($config);
+    // }else{
+    //   $result = $this->reportDefaultLayout($config);
+    // }
+
 
     return $result;
   }
@@ -280,7 +293,7 @@ class pending_purchase_orders
         $query = "select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
                           head.docno, date(head.dateid) as dateid, datediff(curdate(), head.dateid) as age, 
                           client.clientname, item.itemname, item.groupid, item.brand, item.class,
-                  stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa $hfield
+                  stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa, item.barcode $hfield
                   from hpohead as head 
                   left join hpostock as stock on stock.trno=head.trno
                   $hjoin
@@ -294,7 +307,7 @@ class pending_purchase_orders
         $query = "select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
                           head.docno, date(head.dateid) as dateid, datediff(curdate(), head.dateid) as age, 
                           client.clientname, item.itemname, item.groupid, item.brand, item.class,
-                          stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa $field
+                          stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa, item.barcode $field
                   from ((pohead as head left join postock as stock on stock.trno=head.trno)
                   left join item on item.itemid=stock.itemid)left join client on client.client=head.client
                   left join transnum on transnum.trno=head.trno
@@ -306,7 +319,7 @@ class pending_purchase_orders
         $query = "select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
                           head.docno, date(head.dateid) as dateid, datediff(curdate(), head.dateid) as age, 
                           client.clientname, item.itemname, item.groupid, item.brand, item.class,
-                          stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa $field
+                          stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa, item.barcode $field
                   from ((pohead as head left join postock as stock on stock.trno=head.trno)
                   left join item on item.itemid=stock.itemid)left join client on client.client=head.client
                   left join transnum on transnum.trno=head.trno
@@ -316,7 +329,7 @@ class pending_purchase_orders
                   select client.clientname as cgrp, concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp,
                           head.docno, date(head.dateid) as dateid, datediff(curdate(), head.dateid) as age, 
                           client.clientname, item.itemname, item.groupid, item.brand, item.class,
-                  stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa $hfield
+                  stock.qty as qty, (stock.qty-stock.qa) as unserved, item.uom,stock.qa, item.barcode $hfield
                   from hpohead as head 
                   left join hpostock as stock on stock.trno=head.trno
                   $hjoin
@@ -329,7 +342,6 @@ class pending_purchase_orders
     return $this->coreFunctions->opentable($query);
   }
 
-  
   public function report_ericco($config)
   {
     $companyid = $config['params']['companyid'];
@@ -705,7 +717,6 @@ class pending_purchase_orders
     return $str;
   }
 
-  
   private function ericco_displayHeadertable($config)
   {
     $str = "";
@@ -873,7 +884,7 @@ class pending_purchase_orders
     return $str;
   }
 
-  public function ericco_Layout($config)
+  public function transpower_layout($config)
   {
     $result = $this->report_ericco($config);
 
@@ -962,6 +973,242 @@ class pending_purchase_orders
         $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
         if (!$isfirstpageheader) $str .= $this->ericco_displayHeader($config);
         $str .= $this->ericco_displayHeadertable($config);
+        $page += $count;
+      }
+    }
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+
+  private function homeworks_displayHeader($config)
+  {
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+
+    $client     = $config['params']['dataparams']['client'];
+    $classid    = $config['params']['dataparams']['classid'];
+    $brandid    = $config['params']['dataparams']['brandid'];
+    $groupid    = $config['params']['dataparams']['groupid'];
+    $barcode    = $config['params']['dataparams']['barcode'];
+    $posttype   = $config['params']['dataparams']['posttype'];
+
+
+    $str = '';
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    // $qry = "select name,address,tel from center where code = '" . $center . "'";
+    // $headerdata = $this->coreFunctions->opentable($qry);
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    // $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
+    // $str .= $this->reporter->begintable($layoutsize);
+    // $str .= $this->reporter->startrow();
+    // $str .= $this->reporter->col($reporttimestamp, '1000', null, false, '', '', 'L', $font, '9');
+    // $str .= $this->reporter->endrow();
+    // $str .= $this->reporter->endtable();
+
+    // $str .= $this->reporter->begintable($layoutsize);
+    // $str .= $this->reporter->startrow();
+    // $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    // $str .= $this->reporter->endrow();
+
+    // $str .= $this->reporter->startrow();
+    // $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    // $str .= $this->reporter->endrow();
+    // $str .= $this->reporter->startrow();
+    // $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    // $str .= $this->reporter->endrow();
+    // $str .= $this->reporter->endtable();
+
+    $str .= '<br>';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+    $str .= $this->reporter->col('PENDING PURCHASE ORDERS', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br>';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    if ($client == '') {
+      $cus = 'ALL';
+    } else {
+      $cus = $client;
+    }
+    if ($barcode == '') {
+      $item = 'ALL';
+    } else {
+      $item = $barcode;
+    }
+    if ($groupid == '') {
+      $group = 'ALL';
+    } else {
+      $group = $groupid;
+    }
+    if ($brandid == '') {
+      $brand = 'ALL';
+    } else {
+      $brand = $brandid;
+    }
+    if ($classid == '') {
+      $class = 'ALL';
+    } else {
+      $class = $classid;
+    }
+
+    switch ($posttype) {
+      case 0:
+        $posttype = 'Posted';
+        break;
+
+      case 1:
+        $posttype = 'Unposted';
+        break;
+
+      default:
+        $posttype = 'All';
+        break;
+    }
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Supplier : ' . strtoupper($cus), NULL, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Item : ' . strtoupper($item), null, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Group :' . strtoupper($group), null, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Brand : ' . strtoupper($brand), null, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->col('Class : ' . strtoupper($class), null, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+
+
+    $filtercenter = $config['params']['dataparams']['center'];
+    $str .= $this->reporter->col('Center : ' . $filtercenter, null, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
+
+
+    $str .= $this->reporter->pagenumber('Page', NULL, null, false, $border, '', 'R', $font, $fontsize, '', 'b', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->printline();
+    return $str;
+  }
+
+  private function homeworks_displayHeadertable($config)
+  {
+    $str = "";
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = '10';
+    $border = '1px solid';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    //  $str .= $this->reporter->col('ITEM CODE', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('SUPPLIER NAME', '300', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('DOCUMENT #', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('DATE', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('AGE', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('ORDERED', '80', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('SERVED', '80', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BALANCE', '90', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('UOM', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('PARTIAL DELIVERY DATE', '130', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    return $str;
+  }
+
+  public function report_homework($config)
+  {
+    $result = $this->reportDefault($config);
+    $count = 20;
+    $page = 20;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '1000';
+    $this->reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => $layoutsize];
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->homeworks_displayHeader($config);
+    $str .= $this->homeworks_displayHeadertable($config);
+
+    $item = null;
+    $partial = '';
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->addline();
+
+
+      $display = $data->itemname;
+      $docno = $data->docno;
+      $date = $data->dateid;
+      $age = $data->age;
+      $served = $data->qa;
+      $itemcode = $data->barcode;
+      $bal = $data->unserved;
+      $uom = $data->uom;
+      $order = $data->qty;
+
+      if (isset($data->partialdate)) {
+        $partial = $data->partialdate;
+      }
+      if ($partial != '') {
+        $partial = date("d-M-y", strtotime($partial));
+      }
+
+      $str .= $this->reporter->startrow();
+      if ($item == $data->clientname) {
+      } else {
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($data->clientname, '1000', null, false, '1px dotted ', 'T', 'L', $font, $fontsize, 'B', 'b', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+      }
+
+      $prefix = substr($docno, 0, 6);
+      $number = ltrim(substr($docno, 6), '0');
+      $docno1 = $prefix . $number;
+
+      $arr_itemname = $this->reporter->fixcolumn([$display], '22', 0);
+      $maxrow = 1;
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname]);
+
+      $count = $count + $maxrow;
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($itemcode, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($display, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($docno1, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($date, '80', null, false, $border, '', 'CT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($age, '70', null, false, $border, '', 'CT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col(number_format($order, 2), '80', null, false, $border, '', 'RT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col(number_format($served, 2), '80', null, false, $border, '', 'RT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col(number_format($bal, 2), '90', null, false, $border, '', 'RT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($uom, '70', null, false, $border, '', 'CT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->col($partial, '130', null, false, $border, '', 'CT', $font, $fontsize, '', '', '5px');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      $item = $data->clientname;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->page_break();
+        $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+        if (!$isfirstpageheader) $str .= $this->homeworks_displayHeader($config);
+        $str .= $this->homeworks_displayHeadertable($config);
         $page += $count;
       }
     }

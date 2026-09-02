@@ -95,10 +95,11 @@ class op
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'listsource', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'listsource','qtref', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+    $cols[6]['type'] = 'label';
     return $cols;
   }
 
@@ -215,7 +216,7 @@ class op
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['head.docno', 'head.clientname', 'head.source', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
+      $searchfield = ['a.docno', 'a.clientname', 'a.source', 'a.postedby', 'a.createby', 'a.editby', 'a.viewby','a.qtref'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -224,14 +225,20 @@ class op
     }
 
 
-    $qry = "select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, 'DRAFT' as status,head.createby,head.editby,head.viewby,num.postedby  ,head.source
+    $qry = "select * from (select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid, 'DRAFT' as status,head.createby,head.editby,head.viewby,num.postedby  ,head.source,
+    (select ifnull(group_concat(docno),'') from (select docno,optrno from qshead where optrno<>0
+                               union all
+                               select docno,optrno from hqshead where optrno<>0) as a where a.optrno = head.trno) as qtref
      from " . $this->head . " as head left join " . $this->tablenum . " as num 
-     on num.trno=head.trno " . $join . " where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
+     on num.trno=head.trno " . $join . " where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " 
      union all
-     select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid,'POSTED' as status,head.createby,head.editby,head.viewby, num.postedby  ,head.source
+     select head.dateid as date2,head.trno,head.docno,head.clientname,$dateid,'POSTED' as status,head.createby,head.editby,head.viewby, num.postedby  ,head.source,
+     (select ifnull(group_concat(docno),'') from (select docno,optrno from qshead where optrno<>0
+                               union all
+                               select docno,optrno from hqshead where optrno<>0) as a where a.optrno = head.trno) as qtref
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num 
-     on num.trno=head.trno " . $hjoin . " where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
-     order by date2 desc,docno desc $limit";
+     on num.trno=head.trno " . $hjoin . " where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . "
+     order by date2 desc,docno desc $limit ) as a where '' = '' ". $filtersearch;
 
     $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -669,6 +676,7 @@ class op
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
 
@@ -677,11 +685,14 @@ class op
       unset($head['docno']);
     }
 
+    $dateTables = ['ophead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $config['params']['companyid']);
+          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1492,6 +1503,9 @@ class op
     $mmoq = 0;
     $sgdrate = 0;
 
+    $dateTables = ['opstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
     }
@@ -1542,8 +1556,8 @@ class op
       $config['params']['line'] = $line;
       $projectid   = $config['params']['data']['projectid'];
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.moq,item.mmoq from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -1584,7 +1598,8 @@ class op
       'sgdrate' => $sgdrate
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

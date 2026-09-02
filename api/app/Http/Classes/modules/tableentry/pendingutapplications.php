@@ -175,11 +175,16 @@ class pendingutapplications
 
     public function updateapp($config, $status)
     {
+        $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
         $doc = $row['doc'];
         $admin = $config['params']['adminid'];
         $isapp = $row['approver'];
         $catid = $row['catid'];
+
+        $dateTables = ['undertime'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($isapp == '' || $isapp == null) $isapp = $this->coreFunctions->datareader("select approver as value from pendingapp where doc='UNDERTIME' and line=" . $row['line']);
         $approver = $this->coreFunctions->getfieldvalue("employee", $isapp, "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'undertime';
@@ -252,7 +257,7 @@ class pendingutapplications
             $tempdata = [];
             foreach ($this->undertimefields as $key2) {
                 if (isset($data[$key2])) {
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $data[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

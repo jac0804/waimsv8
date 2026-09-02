@@ -133,7 +133,7 @@ class entryexaminees
         $data = [];
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
         $data = ['qid' => $trno, 'appid' => $row['empid']];
 
@@ -141,7 +141,6 @@ class entryexaminees
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
@@ -155,7 +154,7 @@ class entryexaminees
 
                 if ($this->coreFunctions->sbcinsert($this->table, $data)) {
                     $config['params']['row']['trno'] = $trno;
-                    $data =  $this->loaddataperrecord($config, $data['appid']);
+                    $data =  $this->loaddataperrecord($trno, $data['appid']);
                     $this->logger->sbcmasterlog($trno, $config, 'ADD APPLICANT ' . $row['empname']);
                     return ['status' => true, 'msg' => 'Successfully saved.', 'data' => $data];
                 } else {
@@ -187,5 +186,20 @@ class entryexaminees
         $qry = $select . " where ex.qid=?";
         $data = $this->coreFunctions->opentable($qry, [$tableid]);
         return $data;
+    }
+
+    public function delete($config)
+    {
+        $row = $config['params']['row'];
+        $qry = "delete from examinees where appid=? and qid=?";
+        $this->coreFunctions->execqry($qry, 'delete', [$row['appid'], $row['qid']]);
+
+        $this->logger->sbcmasterlog(
+            $row['appid'],
+            $config,
+            'DELETE' . ' - EXAMINEES: ' . $row['clientname']
+        );
+
+        return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 }

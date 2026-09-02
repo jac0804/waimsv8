@@ -138,7 +138,6 @@ class pn
         return ['status' => true, 'data' => [], 'txtfield' => ['col1' => []]];
     }
 
-
     public function loaddoclisting($config)
     {
 
@@ -208,7 +207,6 @@ class pn
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
 
-
     public function createHeadbutton($config)
     {
         $btns = array(
@@ -251,7 +249,6 @@ class pn
 
         return $buttons;
     } // createHeadbutton
-
 
     public function createTab($access, $config)
     {
@@ -486,11 +483,15 @@ class pn
             unset($this->fields[1]);
             unset($head['docno']);
         }
+
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
 
@@ -587,6 +588,9 @@ class pn
         $isglc = $this->companysetup->isglc($config['params']);
         $periodic = $this->companysetup->getisperiodic($config['params']);
         $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
+
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
         stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt,
@@ -723,7 +727,7 @@ class pn
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -1146,6 +1150,7 @@ class pn
         $uom = $config['params']['data']['uom'];
         $wh = $config['params']['data']['wh'];
         $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
+        $companyid = $config['params']['companyid'];
 
         $refx = 0;
         $linex = 0;
@@ -1158,6 +1163,9 @@ class pn
         $void = 'false';
         $rrcost = 0;
         $cost = 0;
+
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         if (isset($config['params']['data']['refx'])) {
             $refx = $config['params']['data']['refx'];
@@ -1221,7 +1229,8 @@ class pn
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1258,7 +1267,7 @@ class pn
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
 
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();

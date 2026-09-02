@@ -166,7 +166,7 @@ class entrycodeconductsection
 
   public function saveallentry($config)
   {
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     if ($config['params']['tableid'] == 0)  return ['status' => false, 'msg' => 'Saving failed. Invalid tableid'];
 
     $data = $config['params']['data'];
@@ -205,7 +205,7 @@ class entrycodeconductsection
 
   public function save($config)
   {
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     if ($config['params']['tableid'] == 0)  return ['status' => false, 'msg' => 'Saving failed. Invalid tableid'];
 
     $data = [];
@@ -215,7 +215,6 @@ class entrycodeconductsection
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['artid'] = $config['params']['tableid'];

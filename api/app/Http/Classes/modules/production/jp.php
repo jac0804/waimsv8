@@ -265,6 +265,8 @@ class jp
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $isqty = 1;
@@ -315,6 +317,13 @@ class jp
     $obj[0]['inventory']['columns'][$isamt]['style'] = 'text-align:right;width:170px;whiteSpace: normal;min-width:170px;';
     $obj[0]['inventory']['columns'][$isqty]['style'] = 'text-align:right;width:170px;whiteSpace: normal;min-width:170px;';
 
+   
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+   
+    if (!$islocation) {
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        } 
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -580,6 +589,11 @@ class jp
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['lahead', 'cntnuminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $dataOther = [];
     if ($isupdate) {
@@ -591,7 +605,7 @@ class jp
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -600,7 +614,7 @@ class jp
       if (array_key_exists($key, $head)) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfield($key, $dataOther[$key]);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
         } //end if    
       }
     }
@@ -1133,6 +1147,9 @@ class jp
     $disc = isset($config['params']['data']['disc']) ? $config['params']['data']['disc'] : '';
     $isqty2 = isset($config['params']['data']['qty2']) ? $config['params']['data']['qty2'] : '';
 
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $refx = 0;
     $linex = 0;
     $ref = '';
@@ -1184,8 +1201,8 @@ class jp
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1227,7 +1244,7 @@ class jp
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1658,6 +1675,9 @@ class jp
     $trno = $config['params']['trno'];
     $companyid =  $config['params']['companyid'];
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
@@ -1739,7 +1759,7 @@ class jp
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

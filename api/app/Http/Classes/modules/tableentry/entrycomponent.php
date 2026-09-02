@@ -312,13 +312,18 @@ class entrycomponent
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['data'];
     $tableid = $config['params']['tableid'];
     $save = 0;
+
+    $dateTables = ['component'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($config['params']['data'] as $key => $row) {
       foreach ($this->fields as $key => $value) {
-        $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+        $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
       }
       $data['qty'] = $data['isqty'] * $data['uomfactor'];
       if ($row['line'] == 0) {
@@ -357,12 +362,16 @@ class entrycomponent
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
     $tableid = $config['params']['tableid'];
 
+    $dateTables = ['component'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['qty'] = $data['isqty'] * $data['uomfactor'];
     if ($row['line'] == 0) {

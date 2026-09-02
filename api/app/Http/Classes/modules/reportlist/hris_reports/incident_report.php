@@ -111,7 +111,7 @@ class incident_report
     $filter   = "";
 
     if ($client != "") {
-      $filter .= " and demp.client = '$client'";
+      $filter .= " and (demp.client = '$client' or hemp.client = '$client')";
     }
     if ($center != '') {
       $filter .= " and h.center='$center'";
@@ -124,6 +124,7 @@ class incident_report
     left join incidentdtail as detail on detail.trno = head.trno        
     left join jobthead as djt on djt.line = detail.jobid
     left join client as demp on demp.clientid = detail.empid
+    left join client as hemp on hemp.clientid = head.tempid
     left join hrisnum as h on h.trno = head.trno
     where head.dateid between '" . $start . "' and '" . $end . "' $filter  
     union all
@@ -134,6 +135,7 @@ class incident_report
     left join hincidentdtail as detail on detail.trno = head.trno       
     left join jobthead as djt on djt.line = detail.jobid
     left join client as demp on demp.clientid = detail.empid
+    left join client as hemp on hemp.clientid = head.tempid
     left join hrisnum as h on h.trno = head.trno
     where head.dateid between '" . $start . "' and '" . $end . "' $filter
     order by docno";

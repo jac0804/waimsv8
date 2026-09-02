@@ -32,7 +32,7 @@ class entryreplacementcheque
     public $htablelogs = 'htable_log';
     private $othersClass;
     public $style = 'width:100%;max-width:1400px;';
-    private $fields = ['trno', 'line', 'refx', 'linex', 'rctrno', 'rcline'];
+    private $fields = ['trno', 'line', 'refx', 'linex', 'rctrno', 'rcline','rhtrno','rhline'];
     public $showclosebtn = true;
     private $reporter;
     private $logger;
@@ -134,33 +134,60 @@ class entryreplacementcheque
         $row = $config['params']['row'];
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        $qry = "select " . $select . " from chequedetail as detail
-				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
+        $qry = "
+                select head.docno,d.checkno,format(d.amount,2) as amount,d.bank,d.branch,date(d.checkdate) as checkdate,
+                detail.trno,detail.line,detail.refx,detail.linex,detail.rctrno,detail.rcline,
+		        0 as rhtrno,0 as rhline,client.client,client.clientname,'' as bgcolor
+                from chequedetail as detail
+				join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
                 left join client on client.client = d.client
-				where detail.trno = " . $row['trno'] . " and detail.line = " . $row['line'] . "";
+				where detail.trno = " . $row['trno'] . " and detail.line = " . $row['line'] . "
+                union all 
+                select head.docno,'' as checkno,format(d.amount,2) as amount,d.bank,d.branch,'' as checkdate,
+                detail.trno,detail.line,detail.refx,detail.linex,0 as rctrno,0 as rcline,
+		        detail.rhtrno,detail.rhline,client.client,client.clientname,'' as bgcolor
+                from chequedetail as detail
+			    join hrhdetail as d on  d.trno = detail.rhtrno and d.line = detail.rhline
+				left join hrhhead as head on head.trno = d.trno
+                left join client on client.clientid = d.clientid
+				where detail.trno = " . $row['trno'] . " and detail.line = " . $row['line'] . "
+                ";
         return $this->coreFunctions->opentable($qry);
     }
 
 
-    public function loaddataperrecord($trno, $line, $rctrno, $rcline)
+    public function loaddataperrecord($trno, $line, $rtrno, $rline,$cash)
     {
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        $qry = "select " . $select . " from chequedetail as detail
-				left join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
+        if($cash == 'CASH'){
+            $qry = "select " . $select . " from chequedetail as detail
+				join hrhdetail as d on  d.trno = detail.rhtrno and d.line = detail.rhline
+				left join hrhhead as head on head.trno = d.trno
+                left join client on client.clientid = d.clientid
+				where detail.trno = " . $trno . " and detail.line = " . $line . " and  detail.rhtrno = " . $rtrno . " and detail.rhline = " . $rline . "";
+        }else {
+            $qry = "select " . $select . " from chequedetail as detail
+				join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
                 left join client on client.client = d.client
-				where detail.trno = " . $trno . " and detail.line = " . $line . " and  detail.rctrno = " . $rctrno . " and detail.rcline = " . $rcline . "";
+				where detail.trno = " . $trno . " and detail.line = " . $line . " and  detail.rctrno = " . $rtrno . " and detail.rcline = " . $rline . "";
+        }
         return $this->coreFunctions->opentable($qry);
     }
 
     public function save($config)
     {
         $row = $config['params']['row'];
+        $line = 0;
+        $trno = 0;
         $data = [];
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
 
@@ -171,11 +198,21 @@ class entryreplacementcheque
             if ($data['refx'] != 0) {
                 $this->coreFunctions->execqry("update hparticulars set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['refx'], $data['linex']]);
             }
-            $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
+            $cash = $this->coreFunctions->datareader('select bank as value from hrhdetail where trno =? and line =?',[$data['rhtrno'], $data['rhline']]);
 
+            if($cash == 'CASH'){
+                $this->coreFunctions->execqry("update hrhdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rhtrno'], $data['rhline']]);
+                $trno = $data['rhtrno'];
+                $line = $data['rhline'];
+            }else {
+                $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
+                $trno = $data['rctrno'];
+                $line = $data['rcline'];
+            }
+          
             $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
             $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL', 'ADD - Line: ' . $data['rcline'] . ' Check #: ' . $checkno);
-            $returnrow = $this->loaddataperrecord($data['trno'], $data['line'], $data['rctrno'], $data['rcline']);
+            $returnrow = $this->loaddataperrecord($data['trno'], $data['line'], $trno, $line, $cash);
             return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
         } else {
             return ['status' => false, 'msg' => 'Failed to save bounce cheque. Please advice the admin', 'row' => []];
@@ -184,11 +221,19 @@ class entryreplacementcheque
     public function delete($config)
     {
         $row = $config['params']['row'];
-        $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rctrno = " . $row['rctrno'] . " and rcline = " . $row['rcline'] . "";
+        $cash = $this->coreFunctions->datareader('select bank as value from hrhdetail where trno =? and line =?', [$row['rhtrno'], $row['rhline']]);
+
+        if($cash == 'CASH'){
+            $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rhtrno = " . $row['rhtrno'] . " and rhline = " . $row['rhline'] . "";
+        }else {
+            $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rctrno = " . $row['rctrno'] . " and rcline = " . $row['rcline'] . "";
+        }
         $this->coreFunctions->execqry($qry, 'delete', []);
 
         if ($row['rctrno'] != 0) {
             $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $row['rctrno'], 'line' => $row['rcline']]);
+        }else {
+            $this->coreFunctions->sbcupdate('hrhdetail', ['retrno' => 0], ['trno' => $row['rhtrno'], 'line' => $row['rhline']]); //receive cash
         }
         $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL',  'REMOVE - Checkno: ' . $row['checkno']);
         return ['status' => true, 'msg' => 'Successfully deleted.', 'reloadhead' => true, 'trno' => $row['trno']];
@@ -233,8 +278,16 @@ class entryreplacementcheque
             ['name' => 'amount', 'label' => 'Amount', 'align' => 'left', 'field' => 'amount', 'sortable' => true, 'style' => 'font-size:16px;']
 
         ];
-        $qry = "select d.trno as rctrno,d.line as rcline,concat(d.trno,'~',d.line) as rc ,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate,
-         " . $row['trno'] . " as trno," . $row['line'] . " as line," . $row['refx'] . " as refx," . $row['linex'] . " as linex,client.client,client.clientname
+        $qry = "
+            select 0 as rctrno,0 as rcline, d.trno as rhtrno,d.line as rhline ,concat(d.trno,'~',d.line) as rc ,h.docno,'' as checkno,d.amount,d.bank,d.branch,'' as checkdate,
+            " . $row['trno'] . " as trno," . $row['line'] . " as line," . $row['refx'] . " as refx," . $row['linex'] . " as linex,client.client,client.clientname
+            from hrhdetail as d
+            left join hrhhead as h on h.trno=d.trno
+            left join client on client.clientid = d.clientid
+            where ortrno = 0 and retrno=0 and rdtrno = 0
+            union all
+            select d.trno as rctrno,d.line as rcline, 0 as rhtrno,0 as rhline ,concat(d.trno,'~',d.line) as rc ,h.docno,d.checkno,d.amount,d.bank,d.branch,date(d.checkdate) as checkdate,
+            " . $row['trno'] . " as trno," . $row['line'] . " as line," . $row['refx'] . " as refx," . $row['linex'] . " as linex,client.client,client.clientname
             from hrcdetail as d
             left join hrchead as h on h.trno=d.trno
             left join client on client.client = d.client

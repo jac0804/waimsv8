@@ -347,6 +347,9 @@ class pc
     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $itemdesc = 1;
@@ -479,8 +482,8 @@ class pc
     if ($viewcost == '0') {
       if ($isexpiry) {
         //loc
-        $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+        // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
         //expiry
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
       }
@@ -489,15 +492,14 @@ class pc
     } else {
       if ($isexpiry) {
         //loc
-        $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-        //expiry
+        // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+        // //expiry
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
       }
     }
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     }
 
@@ -580,7 +582,7 @@ class pc
     }
 
     if ($companyid == 23 || $companyid == 41 || $companyid == 52) { //labsol cebu, labsol manila & technolab
-      $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
+      // $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
       $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
     }
 
@@ -593,6 +595,15 @@ class pc
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
+
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -870,7 +881,6 @@ class pc
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1255,7 +1265,6 @@ class pc
       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
-          // $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
           $data[$key2]->rrqty = $this->othersClass->sanitizekeyfieldFast("qty", $data[$key2]->rrqty, $lookups);
 
 
@@ -1365,7 +1374,6 @@ class pc
 
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
-          // $data[$key2]->rrqty = $this->othersClass->sanitizekeyfield("qty", $data[$key2]->rrqty);
           $data[$key2]->rrqty = $this->othersClass->sanitizekeyfieldFast("qty", $data[$key2]->rrqty, $lookups);
 
 
@@ -1742,8 +1750,6 @@ class pc
       }
     }
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1820,7 +1826,6 @@ class pc
     }
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();

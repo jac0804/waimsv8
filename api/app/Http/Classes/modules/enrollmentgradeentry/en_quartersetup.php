@@ -106,11 +106,14 @@ class en_quartersetup
   {
     $data = $config['params']['data'];
     $msg = '';
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
         if ($data[$key]['line'] == 0) {
           $check = $this->checkQuarter($data2, 'new');
@@ -121,7 +124,9 @@ class en_quartersetup
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['code']);
           }
         } else {
+          $data2['line'] = $data[$key]['line'];
           $check = $this->checkQuarter($data2);
+          unset($data2['line']);
           if ($check) {
             $msg .= "\n Duplicate entry for ".$data2['code'];
           } else {
@@ -140,8 +145,11 @@ class en_quartersetup
   {
     $data = [];
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['line'] == 0) {
       $check = $this->checkQuarter($data, 'new');
@@ -158,7 +166,9 @@ class en_quartersetup
         }
       }
     } else {
+      $data['line'] = $row['line'];
       $check = $this->checkQuarter($data);
+      unset($data['line']);
       if ($check) {
         return ['status' => false, 'msg' => 'Duplicate entry for '.$data['code'], 'row' => []];
       } else {

@@ -445,6 +445,8 @@ class undertime
         $center = $config['params']['center'];
         $empid = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->head];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
 
         if ($companyid == 58) { //cdo
@@ -478,12 +480,12 @@ class undertime
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if 
             }
         }
 
-        $data['dateid'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
 
         $date = date('Y-m-d', strtotime($data['dateid']));
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
@@ -492,7 +494,7 @@ class undertime
       where e.empid = ?", [$config['params']['adminid']]);
         $underhrs = 0;
         if ($companyid == 58) { // cdohris
-            $data['dateid2'] = $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['ttime']);
+            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['ttime'], $lookups);
             //dateid: in  //dateid2: out 
             $actualout = Carbon::parse($data['dateid2']);
             $actualin = Carbon::parse($data['dateid']);

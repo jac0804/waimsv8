@@ -124,6 +124,12 @@ class timecard
             data_set($col2, 'actualin.type', 'input');
             data_set($col2, 'actualout.style', 'padding:0px;');
             data_set($col2, 'actualout.type', 'input');
+
+            data_set($col2, 'dateid.type', 'input');
+            data_set($col2, 'schedin.type', 'input');
+            data_set($col2, 'schedin.label', 'Schedule In');
+            data_set($col2, 'schedout.label', 'Schedule Out');
+            data_set($col2, 'schedout.type', 'input');
             if ($label == 'sched') {
                 data_set($col2, 'lblrem.label', 'Day');
                 data_set($col2, 'lblrem.style', 'font-weight:bold;text-align:center;');

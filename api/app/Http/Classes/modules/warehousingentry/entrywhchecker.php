@@ -183,14 +183,17 @@ class entrywhchecker
     public function save($config)
     {
         $row = $config['params']['row'];
-
+        
+        $dateTables = ['replaceqty'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         $ispick = $this->coreFunctions->datareader("select  ifnull(checkerrcvdate,'') as value from cntnuminfo where trno=?", [$row['trno']]);
         if ($ispick === '') {
             return ['status' => false, 'msg' => 'Please click the PICK FROM LOCATION button first to proceed.'];
         }
 
-        $replaceqty = $this->othersClass->sanitizekeyfield('qty', $row['replaceqty']);
-        $isqty = $this->othersClass->sanitizekeyfield('qty', $row['isqty']);
+
+        $replaceqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['replaceqty'],$lookups);
+        $isqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['isqty'],$lookups);
 
         if ($replaceqty > $isqty) {
             return ['status' => false, 'msg' => 'Replacement qty mmust greater than DR qty.'];

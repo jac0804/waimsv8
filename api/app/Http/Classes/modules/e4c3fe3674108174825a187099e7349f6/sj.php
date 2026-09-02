@@ -827,8 +827,7 @@ class sj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1515,8 +1514,8 @@ class sj
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $iscomponent = 0;
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,isfg from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -1548,7 +1547,8 @@ class sj
     }
 
     $hamt = $computedata['amt'] * $curtopeso;
-    $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+    $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
+
 
 
     $data = [
@@ -1573,7 +1573,6 @@ class sj
 
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
@@ -2311,6 +2310,9 @@ class sj
     $isvatexsales = $this->companysetup->getvatexsales($config['params']);
     $systype = $this->companysetup->getsystemtype($config['params']);
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
     $fields = '';
 
@@ -2396,7 +2398,7 @@ class sj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -2500,6 +2502,10 @@ class sj
     $exec = true;
     $companyid = $config['params']['companyid'];
     $deci = $this->companysetup->getdecimal('price', $config['params']);
+
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
       $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
@@ -2512,7 +2518,8 @@ class sj
       );
 
       $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-      $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+      $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
+
 
       $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }

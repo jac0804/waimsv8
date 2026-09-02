@@ -1797,6 +1797,15 @@ class gridbuttonClass
         'access' => 'view',
         'color' => 'primary'
       ],
+      'viewleaveattachment' => [
+        'name' => 'viewleaveattachment',
+        'icon' => 'visibility',
+        'action' => 'customform',
+        'class' => 'btnviewleaveattachment',
+        'lookupclass' => 'viewleaveattachment',
+        'access' => 'view',
+        'color' => 'primary'
+      ],
       'viewloandetail' => [
         'name' => 'viewloandetail',
         'icon' => 'view_module',

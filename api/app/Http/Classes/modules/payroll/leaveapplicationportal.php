@@ -197,7 +197,7 @@ class leaveapplicationportal
             left join employee as e on e.empid=s.empid
             left join client as cl on cl.clientid = e.empid
             left join paccount as p on p.line=s.acnoid
-            where cl.clientid = '$id' and date('" . $curdate . "') between date($prstart) and date(prdend) "  . $filteroption . " " . $filtersearch . "
+            where cl.clientid = '$id' and date('" . $curdate . "') between date($prstart) and date(prdend) " . $filteroption . " " . $filtersearch . "
             order by CONCAT(e.emplast,', ',e.empfirst,' ',e.empmiddle), p.codename";
         break;
     }
@@ -370,7 +370,7 @@ class leaveapplicationportal
         data_set($col3, 'statrem.label', 'Half day Filling');
         data_set($col3, 'statrem.readonly', true);
         data_set($col3, 'statrem.class', 'csstatrem sbccsreadonly');
-        data_set($col3, 'statrem.options',  array(
+        data_set($col3, 'statrem.options', array(
           ['label' => 'Morning Leave', 'value' => 'Morning Leave'],
           ['label' => 'Afternoon Leave', 'value' => 'Afternoon Leave']
         ));
@@ -408,7 +408,7 @@ class leaveapplicationportal
       $hideobj['submit'] = true;
       $hideobj['lblsubmit'] = true;
     }
-    return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger', 'hideobj' => $hideobj];
+    return ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger', 'hideobj' => $hideobj];
   }
 
   private function resetdata($client = '')
@@ -451,7 +451,7 @@ class leaveapplicationportal
         CONCAT(e.emplast,', ',e.empfirst,' ',e.empmiddle) AS empname,
         p.codename as acnoname, s.acnoid, p.`code` as acno,
         if(p.code = 'PT122','',s.days) as days, if(p.code = 'PT122','',s.bal) as bal, s.docno, s.prdstart, s.prdend,
-        '' as remarks, null as effectivity,null as start, 'ENTRY' as status, '' as hours,e.divid,'' as batchid,p.uom,'' as ispickupdate,'' as statrem
+        '' as remarks, null as effectivity,null as start, 'ENTRY' as status, '' as hours,e.divid,'' as batchid,p.uom,'' as ispickupdate,'' as statrem,p.isnocheck
         from leavesetup as s
         left join employee as e on e.empid=s.empid
         left join paccount as p on p.line=s.acnoid
@@ -469,7 +469,7 @@ class leaveapplicationportal
       if (isset($config['msg'])) {
         $msg = $config['msg'];
       }
-      return  ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid'], 'reloadtableentry' => true];
+      return ['head' => $head, 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid'], 'reloadtableentry' => true];
     } else {
       $head = $this->resetdata();
       return ['status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
@@ -479,6 +479,8 @@ class leaveapplicationportal
   public function updatehead($config, $udpate)
   {
     $companyid = $config['params']['companyid'];
+    $dateTables = ['leavetrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $head = $config['params']['head'];
     $empid = $config['params']['adminid'];
     $msg = '';
@@ -494,7 +496,7 @@ class leaveapplicationportal
     $effectivity = $this->othersClass->sbcdateformat($head['effectivity']);
     $prdstart = $this->othersClass->sbcdateformat($head['prdstart']);
     $prdend = $this->othersClass->sbcdateformat($head['prdend']);
-    if ($effectivity >= $prdstart &&  $effectivity <= $prdend) {
+    if ($effectivity >= $prdstart && $effectivity <= $prdend) {
     } else {
       return ['status' => false, 'msg' => 'Applied leave is not applicable for this date range of ' . $prdstart . ' to ' . $prdend];
     }
@@ -503,7 +505,7 @@ class leaveapplicationportal
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $head[$key] = $this->othersClass->sanitizekeyfield($key, $head[$key]);
+          $head[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key], $lookups);
         } //end if
       }
     }
@@ -597,8 +599,8 @@ class leaveapplicationportal
     $line = $this->coreFunctions->datareader("select ifnull(max(line),0)+1 as value from leavetrans where trno=" . $head['trno']);
     $status = true;
     $data = [];
-    $data['trno'] =  $head['clientid'];
-    $data['line'] =  $line;
+    $data['trno'] = $head['clientid'];
+    $data['line'] = $line;
     $data['dateid'] = $head['dateid'];
     $data['effectivity'] = $head['effectivity'];
     $data['status'] = "E";
@@ -782,7 +784,7 @@ class leaveapplicationportal
         $params['email'] = $data[$key]->email;
         $params['isapp'] = $data[$key]->approver;
         // $res =  $this->linkemail->createLeaveEmail($params);
-        $res =  $this->linkemail->weblink($params, $config);
+        $res = $this->linkemail->weblink($params, $config);
         if (!$res['status']) {
           $msg = $res['msg'];
           $status = false;
@@ -797,55 +799,72 @@ class leaveapplicationportal
     $this->logger->sbcmasterlog($trno, $config, "SUBMIT DATE : " . $submitdate);
     return ['row' => [], 'status' => $status, 'msg' => $msg, 'backlisting' => true];
   }
+
   public function checking($config, $date, $head)
   {
     $empid = $config['params']['adminid'];
-    $companyid = $config['params']['companyid'];
-    $day = date('l', strtotime($head['effectivity']));
-    $dis = ['D'];
-    $status = ['A', 'E'];
-
-    $query = "select ifnull(sum(lt.adays),0) + " . $head['hours'] . " as value 
-    from $this->stock as lt 
-    left join leavesetup as ls on ls.trno = lt.trno
-    where lt.empid = $empid and date(effectivity) = '" . $date . "'
-    and (lt.status in ('E','A') and lt.status2 in ('E','A'))";
-    $adays =  $this->coreFunctions->datareader($query, [], '', true);
-
-    switch ($companyid) {
-      case 29: //sbc
-        if ($day == 'Saturday') {
-          $adays = $adays / 3;
-        } else {
-          $adays = $adays / 9;
-        }
-        break;
-
-      default:
-        if ($head['uom'] == 'HRS') {
-          $adays = $adays / 8;
-        } else {
-          $adays = $adays / 1;
-        }
-        break;
-    }
-
-    if ($adays <= 1) {
-      goto end;
-    }
-    $data =  $this->coreFunctions->opentable("select status,status2 from $this->stock where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
-    if (!empty($data)) {
-      if (in_array($data[0]->status, $dis) || in_array($data[0]->status2, $dis)) {
-        goto end;
-      } else {
-        if (in_array($data[0]->status, $status) && in_array($data[0]->status2, $status)) {
-          return $data;
-        }
-      }
-    }
-    end:
-    return [];
+    return $this->payrollcommon->leaveappchecking($config, $date, $head, $empid);
   }
+  // public function checking($config, $date, $head)
+  // {
+  //   $empid = $config['params']['adminid'];
+  //   $companyid = $config['params']['companyid'];
+  //   $day = date('l', strtotime($head['effectivity']));
+  //   $dis = ['D'];
+  //   $status = ['A', 'E'];
+
+  //   $query = "select ifnull(sum(lt.adays),0) + " . $head['hours'] . " as value 
+  //   from $this->stock as lt 
+  //   left join leavesetup as ls on ls.trno = lt.trno
+  //   where lt.empid = $empid and date(effectivity) = '" . $date . "'
+  //   and (lt.status in ('E','A') and lt.status2 in ('E','A'))";
+  //   $adays = $this->coreFunctions->datareader($query, [], '', true);
+
+  //   if ($companyid == 58) {
+  //     $existing = $this->coreFunctions->opentable(
+  //       "select status,status2 from $this->stock as lt
+  //       where lt.empid = $empid and date(lt.effectivity) = '" . $date . "' 
+  //       and (lt.status in ('E','A') and lt.status2 in ('E','A'));"
+  //     );
+  //     if (!empty($existing)) {
+  //       return $existing;
+  //     }
+  //   }
+
+  //   switch ($companyid) {
+  //     case 29: //sbc
+  //       if ($day == 'Saturday') {
+  //         $adays = $adays / 3;
+  //       } else {
+  //         $adays = $adays / 9;
+  //       }
+  //       break;
+
+  //     default:
+  //       if ($head['uom'] == 'HRS') {
+  //         $adays = $adays / 8;
+  //       } else {
+  //         $adays = $adays / 1;
+  //       }
+  //       break;
+  //   }
+
+  //   if ($adays <= 1) {
+  //     goto end;
+  //   }
+  //   $data = $this->coreFunctions->opentable("select status,status2 from $this->stock where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
+  //   if (!empty($data)) {
+  //     if (in_array($data[0]->status, $dis) || in_array($data[0]->status2, $dis)) {
+  //       goto end;
+  //     } else {
+  //       if (in_array($data[0]->status, $status) && in_array($data[0]->status2, $status)) {
+  //         return $data;
+  //       }
+  //     }
+  //   }
+  //   end:
+  //   return [];
+  // }
   public function generateleave($config, $head, $end, $data, $bal)
   {
     $start = $head['start'];
@@ -877,7 +896,7 @@ class leaveapplicationportal
 
     $i = 0;
     $trno = 0;
-    $msg = "Successfully applied ";
+    $msg = ""; //"Successfully applied ";
     $lines = '';
 
     foreach ($dates as $date) {
@@ -923,6 +942,11 @@ class leaveapplicationportal
     }
 
     end:
+
+    if ($status) {
+      $msg = "Successfully applied";
+    }
+
     return ['status' => $status, 'msg' => $msg];
   }
 } //end class

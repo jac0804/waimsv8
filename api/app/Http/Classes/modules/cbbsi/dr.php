@@ -783,7 +783,6 @@ class dr
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -1776,7 +1775,7 @@ class dr
   {
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
 
     $itemid = $config['params']['data']['itemid'];
@@ -1869,9 +1868,6 @@ class dr
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1902,7 +1898,6 @@ class dr
     }
 
     $hamt = $computedata['amt'] * $curtopeso;
-    // $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
     $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
 
@@ -1932,7 +1927,6 @@ class dr
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -2928,7 +2922,7 @@ class dr
   {
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $status = true;
     $totalar = 0;
@@ -3050,7 +3044,6 @@ class dr
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
@@ -3280,7 +3273,7 @@ class dr
 
   public function recomputestock($head, $config)
   {
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
@@ -3291,9 +3284,6 @@ class dr
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data2 as $key => $value) {
-      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      // $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
-
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
@@ -3306,7 +3296,6 @@ class dr
       );
 
       $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-      // $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
       $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
 

@@ -141,11 +141,15 @@ class qnn
         }
         $clientid = 0;
         $msg = '';
+
+        $dateTables = ['qnhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
                 } //end if 
             }
         }
@@ -361,6 +365,7 @@ class qnn
             $filter = " and ex.appid=" . $appid;
             $addleft = " left join qahead as qa on qa.qid=ex.qid and qa.appid=ex.appid";
         }
+        $filter = '';
         $qry = "select ex.qid, q.qtype, 0 as objtype, q.rem, q.instructions, qa.startdate, qa.enddate, qa.rem
             from examinees as ex
             left join qnhead as q on q.qid=ex.qid " . $addleft . "

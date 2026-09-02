@@ -483,6 +483,7 @@ class rr
         $iskgs = $this->companysetup->getiskgs($config['params']);
         $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
         $allowchange_amount = $this->othersClass->checkAccess($config['params']['user'], 91);
+        $locname = $this->companysetup->getlocname($config['params']);
 
 
         $column = ['action', 'barcode', 'rrqty', 'uom', 'itemname', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'wh', 'ref', 'loc'];
@@ -520,7 +521,6 @@ class rr
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
-        $column = ['action', 'barcode', 'rrqty', 'uom', 'itemname', 'rrcost', 'disc', 'cost', 'ext', 'wh', 'ref', 'poref', 'rem', 'loc'];
         $obj[0]['inventory']['columns'][$action]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
         $obj[0]['inventory']['columns'][$rrcost]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
 
@@ -532,6 +532,9 @@ class rr
 
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+        $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+
 
 
         if ($allowchange_amount == '0') {
@@ -860,6 +863,10 @@ class rr
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
+
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = [];
         $dataother = [];
         if ($isupdate) {
@@ -870,7 +877,7 @@ class rr
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -1903,7 +1910,8 @@ class rr
             $kgs = 0;
         }
 
-
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $refx = 0;
         $linex = 0;
@@ -2072,7 +2080,7 @@ class rr
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -2392,6 +2400,9 @@ class rr
         $trno = $config['params']['trno'];
         $companyid = $config['params']['companyid'];
 
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (!$createapv) {
             $generaveapv = $this->companysetup->isgenerateapv($config['params']);
             if ($generaveapv) {
@@ -2549,7 +2560,7 @@ class rr
 
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];

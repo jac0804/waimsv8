@@ -126,12 +126,16 @@ class leavecancellation
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $empid = $config['params']['dataparams']['empid'];
         $dateid = $config['params']['dataparams']['dateid'];
         $reason = $config['params']['dataparams']['reason'];
 
         $url = 'App\Http\Classes\modules\payrollentry\\' . 'leaveapplicationportalapproval';
         $approversetup = app($url)->approvers($config['params']);
+
+        $dateTables = ['pendingapp', 'leavetrans'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $action = $config['params']['action2'];
         if (isset($config['params']['dataparams']['line'])) {
@@ -158,7 +162,7 @@ class leavecancellation
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
 

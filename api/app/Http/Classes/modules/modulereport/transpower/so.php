@@ -89,11 +89,13 @@ class so
 
   public function report_default_query($trno)
   {
+    $itemname = ",  if(stock.rem != '',    concat(item.itemname, ' - ', stock.rem), item.itemname) as itemname";
+
     $query = "select head.rtype,head.rdate,cust.tel,cust.email,head.docno,head.trno, head.clientname, head.address, 
       date(head.dateid) as dateid,head.terms, head.rem,head.agent,head.wh,
-      item.barcode, item.itemname, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
+      item.barcode, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-      item.sizeid,m.model_name as model, left (agent.clientname,7) as agentname,stock.agentamt as agtamt,head.ourref
+      item.sizeid,m.model_name as model, left (agent.clientname,7) as agentname,stock.agentamt as agtamt,head.ourref  $itemname
       from sohead as head left join sostock as stock on stock.trno=head.trno 
       left join item on item.itemid=stock.itemid
       left join client as agent on agent.client=head.agent
@@ -104,9 +106,9 @@ class so
       union all
       select head.rtype,head.rdate,cust.tel,cust.email,head.docno,head.trno, head.clientname, head.address, 
       date(head.dateid) as dateid, head.terms, head.rem,head.agent,head.wh,
-      item.barcode, item.itemname, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
+      item.barcode, stock.isamt as gross, stock.amt as netamt, stock.isqty as qty,
       stock.uom, stock.disc, stock.ext, stock.line,item.brand,client.clientname as whname,
-      item.sizeid,m.model_name as model, left (agent.clientname,7) as agentname,stock.agentamt as agtamt,head.ourref
+      item.sizeid,m.model_name as model, left (agent.clientname,7) as agentname,stock.agentamt as agtamt,head.ourref  $itemname
       from hsohead as head 
       left join hsostock as stock on stock.trno=head.trno
       left join item on item.itemid=stock.itemid 
@@ -131,8 +133,6 @@ class so
     } else if ($params['params']['dataparams']['print'] == "PDFM") {
     //   return $this->default_so_PDF($params, $data);
     // }
-
-
 
 
     switch ($priceoption) {
@@ -163,19 +163,6 @@ class so
     }
 
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   }
@@ -1322,7 +1309,7 @@ class so
    
     PDF::MultiCell(0, 0, '', '', 'L');
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    PDF::MultiCell(0, 0, '', '', 'C');
 
     PDF::SetFont($fontbold, '', 18);
     PDF::SetTextColor(110, 150, 112);

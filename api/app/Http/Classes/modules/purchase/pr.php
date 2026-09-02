@@ -418,6 +418,8 @@ class pr
     $pr_btnvoid_access = $this->othersClass->checkAccess($config['params']['user'], 3601);
     $companyid = $config['params']['companyid'];
     $systype = $this->companysetup->getsystemtype($config['params']);
+    $islocation =  $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $columns = [
       'action',
@@ -440,37 +442,46 @@ class pr
       'barcode'
     ];
 
-    $action = 0;
-    $itemdesc = 1;
-    $rrqty = 2;
-    $rrcost = 3;
-    $uom = 4;
-    $disc = 5;
-    $netamt = 6;
-    $ext = 7;
-    $qa = 8;
-    $rem = 9;
-    $wh = 10;
-    $whname = 11;
-    $void = 12;
-    $itemname = 13;
-    $partno = 14;
-    $subcode = 15;
-    $boxcount = 16;
-    $barcode = 17;
+    // $action = 0;
+    // $itemdesc = 1;
+    // $rrqty = 2;
+    // $rrcost = 3;
+    // $uom = 4;
+    // $disc = 5;
+    // $netamt = 6;
+    // $ext = 7;
+    // $qa = 8;
+    // $rem = 9;
+    // $wh = 10;
+    // $whname = 11;
+    // $void = 12;
+    // $itemname = 13;
+    // $partno = 14;
+    // $subcode = 15;
+    // $boxcount = 16;
+    // $barcode = 17;
 
     switch ($systype) {
       case 'REALESTATE':
-        $project = 18;
-        $phasename = 19;
-        $housemodel = 20;
-        $blk = 21;
-        $lot = 22;
-        $amenityname = 23;
-        $subamenityname = 24;
+        // $project = 18;
+        // $phasename = 19;
+        // $housemodel = 20;
+        // $blk = 21;
+        // $lot = 22;
+        // $amenityname = 23;
+        // $subamenityname = 24;
         array_push($columns, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         break;
     }
+
+    if ($islocation) {
+      array_push($columns, 'loc');
+    }
+
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
+
 
     $headgridbtns = ['itemvoiding', 'viewref', 'viewdiagram'];
     switch ($companyid) {
@@ -507,9 +518,10 @@ class pr
             array_push($stockbuttons, 'iteminfo');
             break;
         }
-
         break;
     }
+
+
 
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
@@ -555,6 +567,8 @@ class pr
       $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
     }
 
+
+
     switch ($systype) {
       case 'AIMS':
         if ($companyid == 0 || $companyid == 10) { //main,afti
@@ -569,23 +583,34 @@ class pr
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $obj[0]['inventory']['descriptionrow'] = [];
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-      $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-      $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+      $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+      $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
       $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$netamt]['type'] = 'coldel';
     } elseif ($companyid == 39) { //cbbsi
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
     } else {
       $obj[0]['inventory']['columns'][$netamt]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
     }
-    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+    $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$itemname]['type'] = 'coldel';
+    // $obj[0]['inventory']['columns'][$barcode]['label'] = 'Sample';
+
+     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if ($islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      $obj[0]['inventory']['columns'][$loc]['style'] = 'width: 300px;whiteSpace: normal;min-width:300px;max-width:300px';
+    }
+
+
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -910,6 +935,8 @@ class pr
   {
     $head = $config['params']['head'];
     $companyid = $config['params']['companyid'];
+    $dateTables = ['pohead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -919,7 +946,7 @@ class pr
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1734,6 +1761,8 @@ class pr
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $void = 'false';
+    $dateTables = ['stockinfotrans', 'prstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $itemdesc = '';
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
@@ -1764,8 +1793,8 @@ class pr
 
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
 
     if ($systype == 'REALESTATE') {
@@ -1819,7 +1848,7 @@ class pr
       $data['subamenityid'] = $subamenityid;
     }
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

@@ -338,8 +338,6 @@ class entrybudget
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         if ($companyid == 10) { //afti
-          if ($val['total'] != 0) {
-            // $val['total'] = $this->othersClass->sanitizekeyfield("amt", $val['total']);
             $val['total'] = $this->othersClass->sanitizekeyfieldFast("amt", $val['total'], $lookups);
             $budget = round($val['total'] / 12, 2);
             $val['amt1'] = $budget;
@@ -358,7 +356,6 @@ class entrybudget
         }
 
         foreach ($this->fields as $k) {
-          // $val[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
           $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
         }
 

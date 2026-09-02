@@ -567,6 +567,7 @@ class sa
 
   public function updatehead($config, $isupdate)
   {
+    $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
     $data = [];
     if ($isupdate) {
@@ -574,11 +575,14 @@ class sa
       unset($head['docno']);
     }
 
+    $dateTables = ['sahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -941,6 +945,7 @@ class sa
   // insert and update item
   public function additem($action, $config)
   {
+    $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
@@ -988,8 +993,14 @@ class sa
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    
+    $dateTables = ['sastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+
+
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.amt,item.amt2,item.famt,item.amt4,item.markup,p.dateid as pdate
     from item left join uom on uom.itemid=item.itemid and uom.uom=? left join priceupdate as p on p.itemid=item.itemid where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -999,7 +1010,7 @@ class sa
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
 
       if ($action == 'insert') {
-        $amt1 = $this->othersClass->sanitizekeyfield('amt', $item[0]->amt);
+        $amt1 = $this->othersClass->sanitizekeyfieldFast('amt', $item[0]->amt, $lookups);
         $amt2 = $item[0]->amt2;
         $amt3 = $item[0]->famt;
         $amt4 = $item[0]->amt4;
@@ -1052,7 +1063,7 @@ class sa
       'expiry' => $expiry
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

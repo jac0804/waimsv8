@@ -104,13 +104,12 @@ class entryaddotherfees
     {
         $data = [];
         $row = $config['params']['data'];
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['en_fees'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['trno'] = $config['params']['tableid'];

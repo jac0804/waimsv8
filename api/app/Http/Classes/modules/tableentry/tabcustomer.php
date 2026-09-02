@@ -169,6 +169,10 @@ class  tabcustomer
         $row = $config['params']['row'];
         $trno = $config['params']['tableid'];
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         $data = [
             'trno' => $trno,
             'line' => $row['line'],
@@ -176,7 +180,7 @@ class  tabcustomer
             'rem' => $row['rem']
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         }
 
         $this->coreFunctions->sbcupdate("cntnum", ['statid' => 0], ['trno' => $trno]);
@@ -213,6 +217,9 @@ class  tabcustomer
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $trno = $config['params']['tableid'];
         $this->coreFunctions->sbcupdate("cntnum", ['statid' => 0], ['trno' => $trno]);
 
@@ -223,7 +230,7 @@ class  tabcustomer
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
                 $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
                 $data2['editby'] = $config['params']['user'];

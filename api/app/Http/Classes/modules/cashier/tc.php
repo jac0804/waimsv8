@@ -446,7 +446,6 @@ class tc
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
@@ -579,7 +578,7 @@ class tc
     public function openstock($trno, $config)
     {
         $sqlselect = $this->getdetailselect($config);
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
 
         $qry = "select " . $sqlselect . " 
@@ -611,8 +610,6 @@ class tc
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($detail as $key => $value) {
-            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
             $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
             $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);
@@ -630,7 +627,7 @@ class tc
         $sqlselect = $this->getdetailselect($config);
         $trno = $config['params']['trno'];
         $line = $config['params']['line'];
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
         $qry = "select " . $sqlselect . " 
         from " . $this->detail . " as d
@@ -655,8 +652,6 @@ class tc
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($detail as $key => $value) {
-            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
             $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
             $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);
@@ -846,7 +841,7 @@ class tc
         $deduction = $config['params']['data']['deduction'];
         $balance = $config['params']['data']['balance'];
         $empname = $config['params']['data']['empname'];
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
 
         $acno = $config['params']['data']['acno'];
@@ -885,7 +880,6 @@ class tc
 
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -923,7 +917,7 @@ class tc
         $trno = $config['params']['trno'];
         $stock = $this->openstock($trno, $config);
         $isposted = $this->othersClass->isposted2($trno, 'transnum');
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
         $htable = $this->head;
         if ($isposted) {
@@ -940,8 +934,6 @@ class tc
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($stock as $key => $value) {
-            // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-            // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
             $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
             $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
             $runningbal = $runningbal + ($value->amount - $value->deduction);

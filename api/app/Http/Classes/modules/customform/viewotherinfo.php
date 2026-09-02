@@ -254,7 +254,6 @@ class viewotherinfo
 
 
                     $data['rem2'] = $rem2;
-                    // $data['driverid'] = $this->othersClass->sanitizekeyfield("driverid", $driverid);
                     $data['driverid'] = $this->othersClass->sanitizekeyfieldFast("driverid", $driverid, $lookups);
 
                     $this->coreFunctions->sbcupdate($tablenum, $data, ['trno' => $trno]);

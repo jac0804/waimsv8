@@ -342,7 +342,6 @@ class hr
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -560,7 +559,6 @@ class hr
 
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
@@ -702,12 +700,16 @@ class hr
 
   public function save($config, $row = 'row')
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params'][$row];
     $doc = $config['params']['doc'];
     $stockfields = ['itemname', 'amt', 'rem', 'ref', 'refx', 'linex'];
+    
+    $dateTables = ['returnitemdetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($stockfields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     $data['trno'] = $config['params']['trno'];
 

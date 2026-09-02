@@ -117,11 +117,13 @@ class entryexpiration
     {
         $data = $config['params']['data'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
                 if ($data[$key]['line'] == 0 && $data[$key]['days'] != '') {
                     $qry = "select days from expiration where days = '" . $data[$key]['days'] . "' limit 1";
@@ -153,8 +155,8 @@ class entryexpiration
                                 return ['status' => false, 'msg' => ' Expiration ( ' . $resultdata[0]['days'] . ' )' . ' is already exist', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
                             } else {
                                 update:
-
-                                if ($resultdata[0]['days'] != $data[$key]['expiry']) {
+                                if (isset($resultdata[0]['days']) && $resultdata[0]['days'] != $data[$key]['expiry']) {
+                                // if ($resultdata[0]['days'] != $data[$key]['expiry']) {
                                     $count = $this->checkusedexpiry($data[$key]['line']);
                                     if ($count != 0) {
                                         return ['status' => false, 'msg' => "Can't be Change Already used."];
@@ -181,9 +183,11 @@ class entryexpiration
         $data = [];
         $row = $config['params']['row'];
         $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         if ($row['line'] == 0 && $row['days'] != '') {
             $qry = "select days from expiration where days = '" . $row['days'] . "' limit 1";
@@ -221,9 +225,10 @@ class entryexpiration
                         }
                         return ['status' => false, 'msg' => ' Expiration ( ' . $resultdata[0]['days'] . ' )' . ' is already exist', 'data' => [$resultdata], 'rowid' => [$row['line'] . ' -- ' . $resultdata[0]['line']]];
                     } else {
-
+                        
                         update:
-                        if ($resultdata[0]['expiry'] != $row['expiry']) {
+                            if (isset($resultdata[0]['days']) && $resultdata[0]['expiry'] != $row['expiry']) {
+                        // if ($resultdata[0]['expiry'] != $row['expiry']) {
                             $count = $this->checkusedexpiry($row['line']);
                             if ($count != 0) {
                                 return ['status' => false, 'msg' => "Can't be Change Already used."];

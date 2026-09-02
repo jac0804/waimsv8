@@ -52,34 +52,34 @@ class closequeue
   {
     $attrib = array(
       'load' => 5624
-  );
+    );
     return $attrib;
   }
 
   public function createHeadbutton($config)
-    {
-        return [];
-    }
-  
-    public function createHeadField($config)
+  {
+    return [];
+  }
+
+  public function createHeadField($config)
   {
     return [];
   }
 
   public function paramsdata($config)
-    {
+  {
 
-      return [];
-    }
+    return [];
+  }
 
-    public function data($config)
-    {
-        return $this->paramsdata($config);
-    }
+  public function data($config)
+  {
+    return $this->paramsdata($config);
+  }
 
   public function createTab($config)
   {
-    $columns = ['isselected', 'dateid', 'served','pwdamt','pending'];
+    $columns = ['isselected', 'dateid', 'served', 'pwdamt', 'pending'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -142,34 +142,33 @@ class closequeue
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['currentservice', 'hcurrentservice'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
-      if($data[$key]['isselected'] == 'true'){
-          $data[$key]['dateid'] = $this->othersClass->sanitizekeyfield('dateonly',$data[$key]['dateid']);
-          $prevdate = $this->coreFunctions->getfieldvalue('currentservice','left(dateid,10)','left(dateid,10)<?',[$data[$key]['dateid']]);
-        
-          if ($prevdate !="") {
-            return ['status' => false, 'msg' => 'Please close previous dates'];
-          }
-          $return =  $this->coreFunctions->execqry("insert into hcurrentservice(line,serviceline,ctr,counterline,isdone,ishold,iscancel,ispwd,isskip,dateid,startdate,enddate,users)
-          select line,serviceline,ctr,counterline,isdone,ishold,iscancel,ispwd,isskip,dateid,startdate,enddate,users from currentservice where left(dateid,10) = ?",'insert',[$data[$key]['dateid']]);
-          if($return){
-              $this->coreFunctions->execqry("delete from currentservice where left(dateid,10) = ?",'delete',[$data[$key]['dateid']]);
-          }
+      if ($data[$key]['isselected'] == 'true') {
+        // $data[$key]['dateid'] = $this->othersClass->sanitizekeyfield('dateonly', $data[$key]['dateid']);
+        $data[$key]['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateonly', $data[$key]['dateid'], $lookups);
+
+        $prevdate = $this->coreFunctions->getfieldvalue('currentservice', 'left(dateid,10)', 'left(dateid,10)<?', [$data[$key]['dateid']]);
+
+        if ($prevdate != "") {
+          return ['status' => false, 'msg' => 'Please close previous dates'];
+        }
+        $return =  $this->coreFunctions->execqry("insert into hcurrentservice(line,serviceline,ctr,counterline,isdone,ishold,iscancel,ispwd,isskip,dateid,startdate,enddate,users)
+          select line,serviceline,ctr,counterline,isdone,ishold,iscancel,ispwd,isskip,dateid,startdate,enddate,users from currentservice where left(dateid,10) = ?", 'insert', [$data[$key]['dateid']]);
+        if ($return) {
+          $this->coreFunctions->execqry("delete from currentservice where left(dateid,10) = ?", 'delete', [$data[$key]['dateid']]);
+        }
       }
-      
     }
     $returndata = $this->loaddata($config);
     return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
   }
 
-  public function save($config)
-  {
-    
-  } // end function
+  public function save($config) {} // end function
 
-  public function delete($config)
-  {
-  }
+  public function delete($config) {}
 
   public function lookupsetup($config)
   {

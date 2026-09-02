@@ -689,10 +689,10 @@ class cr
         break;
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['accounting']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['accounting']['columns'][$rem]['type'] = 'textarea';
-    }   
+    }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -1217,11 +1217,14 @@ class cr
       unset($head['docno']);
     }
 
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1821,6 +1824,9 @@ class cr
     $type = '';
     $client = '';
 
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if (isset($config['params']['data']['client'])) {
       $client = $config['params']['data']['client'];
     }
@@ -2029,7 +2035,7 @@ class cr
       $data['subamenityid'] = $subamenityid;
     }
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2456,9 +2462,13 @@ class cr
 
   public function generateautoentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $ourref = $this->coreFunctions->getfieldvalue($this->head, "ourref", "trno=?", [$trno]);
     $contra = $this->coreFunctions->getfieldvalue($this->head, "contra", "trno=?", [$trno]);
+
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($ourref != "" && strtoupper($ourref) != 'OTHERS') {
       //delete existing entry
@@ -2720,7 +2730,7 @@ class cr
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($detail as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $detail[$key]['editdate'] = $current_timestamp;
             $detail[$key]['editby'] = $config['params']['user'];
@@ -2774,9 +2784,13 @@ class cr
 
   public function applytoar($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $cptrno = $this->coreFunctions->getfieldvalue("cntnuminfo", "cptrno", "trno=?", [$trno]);
     $headamt = $this->coreFunctions->getfieldvalue($this->head, "amount", "trno=?", [$trno]);
+
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (floatval($headamt) == 0) {
       return ['accounting' => [], 'status' => false, 'msg' => 'Please enter amount received...'];
@@ -2788,9 +2802,9 @@ class cr
 
     $totalar = $this->coreFunctions->datareader($qry);
 
-    if ($headamt > $totalar) {
-      return ['accounting' => [], 'status' => false, 'msg' => 'Payment received bigger than total outstanding receivables...'];
-    }
+    // if ($headamt > $totalar) {
+    //   return ['accounting' => [], 'status' => false, 'msg' => 'Payment received bigger than total outstanding receivables...'];
+    // }
 
     if ($cptrno != 0) {
       //delete existing entry
@@ -2812,7 +2826,7 @@ class cr
       $dateid = '';
       $bal = 0;
       $pf = 0;
-
+      $overacnoid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'SA3'");
       if (!empty($head)) {
         switch (strtoupper($head[0]->ourref)) {
           case 'CASH':
@@ -2929,13 +2943,30 @@ class cr
             array_push($detail, $d);
             $line += 1;
           }
+
+          if ($colamt > $appamt) {
+            $d['trno'] = $trno;
+            $d['line'] = $line;
+            $d['refx'] = 0;
+            $d['linex'] = 0;
+            $d['client'] = $head[0]->client;
+            $d['acnoid'] = $overacnoid;
+            $d['postdate'] = $dateid;
+            $d['checkno'] = $head[0]->checkno;
+            $d['ref'] = '';
+            $d['db'] = $colamt - $appamt;
+            $d['cr'] = 0;
+            $d['rem'] = '';
+            array_push($detail, $d);
+            $line += 1;
+          }
         }
 
         if (!empty($detail)) {
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($detail as $key => $value) {
             foreach ($value as $key2 => $value2) {
-              $detail[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+              $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $detail[$key]['editdate'] = $current_timestamp;
             $detail[$key]['editby'] = $config['params']['user'];
@@ -2978,11 +3009,15 @@ class cr
   }
   public function getmccollection($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $headdate = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
     $rows = [];
     $mcrow = $config['params']['rows'][0];
     $status = true;
+
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($mcrow['trnxtype'] == 'Advance Payment') {
       $fb = $this->coreFunctions->getfieldvalue("coa", "acno", "acnoid=?", [$mcrow['acnoid']]);
@@ -3011,7 +3046,8 @@ class cr
       $head['checkdate'] = $mcrow['checkdate'];
       $head['dateid'] = $mcrow['dateid'];
       $head['rem'] = $mcrow['hrem'];
-      $head['amount'] = $this->othersClass->sanitizekeyfield('amt', $mcrow['amount']);
+      $head['amount'] = $this->othersClass->sanitizekeyfieldFast('amt', $mcrow['amount'], $lookups);
+
       $this->coreFunctions->sbcupdate($this->head, $head, ["trno" => $trno]);
     } else {
       if ($mcrow['center'] != $mcrow['arcenter']) {
@@ -3041,7 +3077,7 @@ class cr
         $head['checkdate'] = $mcrow['checkdate'];
         $head['dateid'] = $mcrow['dateid'];
         $head['rem'] = $mcrow['hrem'];
-        $head['amount'] = $this->othersClass->sanitizekeyfield('amt', $mcrow['amount']);
+        $head['amount'] = $this->othersClass->sanitizekeyfieldFast('amt', $mcrow['amount'], $lookups);
         $this->coreFunctions->sbcupdate($this->head, $head, ["trno" => $trno]);
       } else {
         $this->mctoar($config);
@@ -3054,11 +3090,15 @@ class cr
 
   private function mctoar($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $headdate = $this->coreFunctions->getfieldvalue($this->head, "dateid", "trno=?", [$trno]);
     $rows = [];
     $mcrow = $config['params']['rows'][0];
     $status = true;
+
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($mcrow['trnxtype'] == 'Downpayment-MC' || $mcrow['trnxtype'] == 'Downpayment-Spareparts') {
       $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
@@ -3250,7 +3290,7 @@ class cr
       $head['ourref'] = $mcrow['ourref'];
       $head['dateid'] = $data[0]->mcdate;
       $head['rem'] = $mcrow['hrem'];
-      $head['amount'] = $this->othersClass->sanitizekeyfield('amt', $mcrow['amount']);
+      $head['amount'] = $this->othersClass->sanitizekeyfieldFast('amt', $mcrow['amount'], $lookups);
       $this->coreFunctions->sbcupdate($this->head, $head, ["trno" => $trno]);
       $this->coreFunctions->sbcupdate("hmchead", ["isok" => 1], ["trno" => $mcrow['mctrno']]);
     }

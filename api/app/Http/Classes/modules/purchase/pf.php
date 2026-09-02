@@ -289,7 +289,8 @@ class pf
     $companyid = $config['params']['companyid'];
     $viewrrcost = $this->othersClass->checkAccess($config['params']['user'], 843);
     $isproject = $this->companysetup->getisproject($config['params']);
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $rrqty = 1;
     $uom = 2;
@@ -421,10 +422,23 @@ class pf
       $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
     }
 
-    $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-    if ($companyid != 8) { // not maxipro
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    }
+    // $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
+    // if ($companyid != 8) { // not maxipro
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    // }
+
+     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa PF
+        case 8: //maxipro
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
+      }
+    } 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -754,6 +768,8 @@ class pf
   {
     $companyid = $config['params']['companyid'];
     $head = $config['params']['head'];
+    $dateTables = ['pfhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
@@ -763,7 +779,7 @@ class pf
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1632,6 +1648,8 @@ class pf
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
+    $dateTables = ['pfstock', 'stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $ref = '';
     $void = 'false';
     if (isset($config['params']['data']['void'])) {
@@ -1726,8 +1744,8 @@ class pf
         $projectid = $config['params']['data']['projectid'];
       }
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select barcode, itemname
     from generalitem
@@ -1773,7 +1791,7 @@ class pf
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

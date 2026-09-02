@@ -111,7 +111,7 @@ class contactinfoentry
 
     public function save($config)
     {
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
         $data = [];
         $row = $config['params']['row'];
 
@@ -119,7 +119,6 @@ class contactinfoentry
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
@@ -161,7 +160,7 @@ class contactinfoentry
     {
         $empid = $config['params']['tableid'];
         $data = $config['params']['data'];
-        $companyid = ['params']['companyid'];
+        $companyid = $config['params']['companyid'];
 
         $dateTables = ['contacts'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -170,7 +169,6 @@ class contactinfoentry
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
                     $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['line'] == 0) {

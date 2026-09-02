@@ -341,6 +341,9 @@ class fi
   public function additem($action, $config)
   {
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->stock];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     if ($itemid == '') {
@@ -373,7 +376,8 @@ class fi
       'rem' => $rem
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+
     }
     if ($action == 'insert') {
       if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
@@ -506,6 +510,11 @@ class fi
     $trno = $config['params']['trno'];
     $head = $config['params']['head'];
     $data = [];
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -515,7 +524,7 @@ class fi
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }

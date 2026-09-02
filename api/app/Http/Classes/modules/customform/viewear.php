@@ -277,10 +277,7 @@ class viewear
                 $tablename = 'obapplication';
                 $dateTables = [$tablename];
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-                // $data = [
-                //     'dateid' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
-                //     'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
-                // ];
+                
                 $data = [
                     'dateid' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
                     'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
@@ -309,10 +306,7 @@ class viewear
                 $tablename = 'undertime';
                 $dateTables = [$tablename];
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-                // $data = [
-                //     'dateid' => $this->othersClass->sanitizekeyfield('dateid', $head['dateid'] . " " . $head['itime']),
-                //     'dateid2' =>  $this->othersClass->sanitizekeyfield('dateid', $head['dateid2'] . " " . $head['itime1'])
-                // ];
+                
                 $data = [
                     'dateid' => $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
                     'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
@@ -339,7 +333,6 @@ class viewear
         foreach ($this->fields as $key => $value) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
-                // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                 $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }

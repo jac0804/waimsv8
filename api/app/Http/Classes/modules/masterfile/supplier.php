@@ -709,6 +709,9 @@ class supplier
     $companyid = $config['params']['companyid'];
     $otherdata = [];
 
+    $dateTables = ['client', 'clientinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields[0]);
     }
@@ -721,7 +724,7 @@ class supplier
           continue;
         }
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], 'SUPPLIER', $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -730,7 +733,7 @@ class supplier
       if (array_key_exists($key, $head)) {
         $otherdata[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $otherdata[$key] = $this->othersClass->sanitizekeyfield($key, $otherdata[$key], 'SUPPLIER', $companyid);
+          $otherdata[$key] = $this->othersClass->sanitizekeyfieldFast($key, $otherdata[$key], $lookups);
         } //end if    
       }
     }

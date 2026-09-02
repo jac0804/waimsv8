@@ -165,13 +165,15 @@ class entryppbranch
     $data = [];
     $row = $config['params']['row'];
     $trno = $config['params']['tableid'];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [
       'trno' => $trno,
       'clientid' => $row['clientid']
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
     }
 
     $exist = $this->coreFunctions->getfieldvalue("ppbranch", "trno", "trno=? and clientid=?", [$data['trno'], $data['clientid']], '', true);

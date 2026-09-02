@@ -28,7 +28,7 @@ class forecast_report
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
 
-  public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1200'];
+  public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1600'];
 
 
 
@@ -139,7 +139,8 @@ class forecast_report
     $query = "select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
         head.probability,date(head.dateid) as quodate,date(trans.postdate) as postdate,
-        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client
+        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client,
+        stock.isqty,stock.isamt,stock.ext,client.region,req.category as indusstry, req.reqtype as subindustry,req.description as intype,req.isindustry
         from qshead as head
         left join qsstock as stock on stock.trno=head.trno
         left join client on client.client=head.client
@@ -148,12 +149,14 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        where date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
+        left join reqcategory as req on req.line=head.industryid
+        where  req.isindustry=1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
         head.probability,date(head.dateid) as quodate,date(trans.postdate) as postdate,
-        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client
+        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client,
+        stock.isqty,stock.isamt,stock.ext,client.region,req.category as indusstry, req.reqtype as subindustry,req.description as intype,req.isindustry
         from qshead as head
         left join qtstock as stock on stock.trno=head.trno
         left join client on client.client=head.client
@@ -162,12 +165,14 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        where item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter 
+        left join reqcategory as req on req.line=head.industryid
+        where  req.isindustry=1 and item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
         head.probability,date(head.dateid) as quodate,date(trans.postdate) as postdate,
-        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client
+        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client,
+        stock.isqty,stock.isamt,stock.ext,client.region,req.category as indusstry, req.reqtype as subindustry,req.description as intype,req.isindustry
         from hqshead as head
         left join hqsstock as stock on stock.trno=head.trno
         left join client on client.client=head.client
@@ -176,12 +181,14 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        where date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
+        left join reqcategory as req on req.line=head.industryid
+        where  req.isindustry=1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
         head.probability,date(head.dateid) as quodate,date(trans.postdate) as postdate,
-        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client
+        info.rem,client.activity,head.docno,client.groupid,date(head.due) as due,client.client,
+        stock.isqty,stock.isamt,stock.ext,client.region,req.category as indusstry, req.reqtype as subindustry,req.description as intype,req.isindustry
         from hqshead as head
         left join hqtstock as stock on stock.trno=head.trno
         left join client on client.client=head.client
@@ -190,9 +197,11 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        where item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "'" . $filter . " 
+        left join reqcategory as req on req.line=head.industryid
+        where  req.isindustry=1 and item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "'" . $filter . " 
         order by docno ";
-
+    //  var_dump($query); 
+    //  break;
     return $query;
   }
 
@@ -205,9 +214,10 @@ class forecast_report
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
     $str = '';
-    $layoutsize = '1600';
+    $layoutsize = '1600'; //1600
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
+    $fontsize2 = "9";
     $border = "1px solid ";
 
     $str .= $this->reporter->begintable($layoutsize);
@@ -227,18 +237,35 @@ class forecast_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Sales', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Quotation Date', '110', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Quotation No', '80', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Company Name', '150', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col("Item Group", '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Model No.', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Selling Price(SGD)', '100', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Probability', '100', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Closing Month', '120', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Remarks/Status', '140', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Closing Year', '90', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Account Type', '130', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Sales', '80', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Quotation Date', '70', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Quotation No', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Company Name', '150', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+
+    //new add colums 8.12.2026
+    $str .= $this->reporter->col('Industry', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Sub-Industry', '85', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Type', '80', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    
+    //existing colums
+    $str .= $this->reporter->col("Item Group", '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Model No.', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+
+    // new add colums 8.12.2026
+    $str .= $this->reporter->col('Qty', '50', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Price', '75', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Total', '75', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+
+    //existing colums
+    $str .= $this->reporter->col('Selling Price(SGD)', '90', null, false, $border, 'BT', 'R', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Probability', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Closing Month', '80', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Remarks/Status', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Closing Year', '50', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+    $str .= $this->reporter->col('Account Type', '90', null, false, $border, 'BT', 'C', $font, $fontsize2, 'B', '', '');
+
+    //new add colum 8.12.2026
+    $str .= $this->reporter->col('Region', '95', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     return $str;
@@ -261,14 +288,15 @@ class forecast_report
     $str = '';
     $layoutsize = '1600';
     $font = $this->companysetup->getrptfont($config['params']);
-    $fontsize = "10";
+    $fontsize = "9";
     $border = "1px solid ";
 
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
 
-    $str .= $this->reporter->beginreport($layoutsize);
+    // $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:30px');
     $str .= $this->header_DEFAULT($config);
 
     $totalext = 0;
@@ -354,26 +382,45 @@ class forecast_report
         $acctstat = "Lapsed Account";
       }
 
-      $str .= $this->reporter->col($data->sales, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data->quodate, '110', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data->docno, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->sales, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->quodate, '70', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data->docno, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($clientname, '150', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+     
+      //new add colums 8.12.2026
+       $str .= $this->reporter->col($data->indusstry, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+       $str .= $this->reporter->col($data->subindustry, '85', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+       $str .= $this->reporter->col($data->intype, '80', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+
+     
+      //existing colums
       $str .= $this->reporter->col($data->itemgroup, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data->itemname, '100', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($data->rate, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+     
+      //new add colums 8.12.2026
+      $str .= $this->reporter->col(number_format($data->isqty, 2), '50', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->isamt, 2), '75', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->ext, 2), '75', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
+
+
+      //existing colums
+      $str .= $this->reporter->col(number_format($data->rate, 2), '90', null, false, $border, '', 'RT', $font, $fontsize, '', '', '');
       if ($config['params']['companyid'] == 10){ //afti
-        $str .= $this->reporter->col($data->probability, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->probability, '90', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
       }else{
-        $str .= $this->reporter->col($probability, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($probability, '90', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
       }
-      $str .= $this->reporter->col($closing, '120', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($rem, '140', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($closing, '80', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($rem, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
       if ($config['params']['companyid'] == 10){ //afti
-        $str .= $this->reporter->col($closingyr, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($closingyr, '50', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
       }else{
-        $str .= $this->reporter->col(date("Y", strtotime($this->othersClass->getCurrentDate())), '90', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(date("Y", strtotime($this->othersClass->getCurrentDate())), '50', null, false, $border, '', 'CT', $font, $fontsize, '', '', '');
       }
-      $str .= $this->reporter->col($acctstat, '130', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($acctstat, '90', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
+
+      //new add colum 8.12.2026
+      $str .= $this->reporter->col($data->region, '95', null, false, $border, '', 'LT', $font, $fontsize, '', '', '');
 
       $str .= $this->reporter->endrow();
       nextrow:

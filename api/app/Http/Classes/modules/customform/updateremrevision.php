@@ -188,12 +188,10 @@ class updateremrevision
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
                 foreach ($data as $key => $value) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 }
 
                 foreach ($datastock as $key => $value) {
-                    // $datastock[$key] = $this->othersClass->sanitizekeyfield($key, $datastock[$key]);
                      $datastock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datastock[$key], $lookups);
                 }
 

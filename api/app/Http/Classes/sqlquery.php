@@ -157,7 +157,7 @@ class sqlquery
       }
     }
 
-    if ($companyid == 64){ // excelin
+    if ($companyid == 64) { // excelin
       $addfield .= ", client.accountnum, client.alias";
     }
 
@@ -232,12 +232,24 @@ class sqlquery
 
   public function getdocno($config)
   {
+
     switch ($config['params']['doc']) {
       case 'EARNINGDEDUCTIONSETUP':
       case 'ADVANCESETUP':
       case 'LOANAPPLICATION':
       case 'LOANAPPLICATIONPORTAL':
         $head = $config['docmodule']->head;
+        break;
+
+      case 'POSREGISTRATION':
+        $config['params']['moduletype'] = $config['params']['doc'];
+        $config['params']['doc'] = 'SJ';
+        $head = 'lahead';
+        $hhead = 'glhead';
+        $tablenum = 'cntnum';
+        if (isset($config['params']['addedparams'])) { //center
+          $config['params']['center'] = $config['params']['addedparams'];
+        }
         break;
 
       default:
@@ -1526,10 +1538,10 @@ class sqlquery
         and tablenum.center = '" . $config['params']['center'] . "' 
         " . $addedgrp;
 
-        $orderby = "order by docno,dateid desc";
-        if ($config['params']['companyid'] == 60) { //transpower
-          $orderby = " order by dateid desc,docno";
-        }
+        // $orderby = "order by docno,dateid desc";
+        // if ($config['params']['companyid'] == 60) { //transpower
+        $orderby = " order by dateid desc,docno";
+        // }
         switch ($tablenum) {
           case 'cntnum':
             $qry = $qry . " UNION ALL
@@ -1561,7 +1573,6 @@ class sqlquery
         }
         break;
     }
-
 
     $data = $this->coreFunctions->opentable($qry);
     return $data;
@@ -1745,7 +1756,7 @@ class sqlquery
 
 
     //itemsearch
-    $qry .= "select '".$client."' as client,sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
+    $qry .= "select '" . $client . "' as client,sizeid,barcode,item.itemid as itemid,item.category,grp.stockgrp_name as groupid,item.othcode,
     " . $itemname . "," . $uomfield . ",uom1.factor" . $amtfield . ",brand,ifnull(cls.cl_name,'') as class,body,
     ifnull(part.part_name,'') as part,ifnull(model.model_name,'') as model,item.disc, item.partno,item.shortname,
     round(item.amt - (item.amt * (REPLACE(item.disc,'%','')/100)),2) as netprice, ifnull(brand.brand_desc,'') as brandname,item.color,
@@ -2792,7 +2803,7 @@ class sqlquery
       case 'OQ':
         $addedfields .= ", cat.category";
         $addedjoin .= " left join reqcategory as cat on cat.line=hpr.ourref ";
-        $filter .= " and ((stock.qty-stock.voidqty)>stock.oqqa) and stock.status=1 and cat.isoracle=1 and stock.void = 0";
+        $filter .= " and ((stock.qty-stock.voidqty)>stock.oqqa) and stock.status=1 and cat.isoracle=1 and (stock.void=0 or stock.qty>stock.voidqty)";
         $qafield = 'oqqa';
         $voidqtyfld = ' + stock.voidqty';
         break;
@@ -8475,7 +8486,7 @@ class sqlquery
     $qry = "select sr.trno as srtrno, sr.docno, date(sr.dateid) as dateid, sr.trno,sr.yourref,
     FORMAT(sum(stock.ext)," . $this->companysetup->getdecimal('currency', $config['params']) . ") as totalamt
     from hsrhead as sr left join hsrstock as stock on stock.trno=sr.trno left join transnum on transnum.trno = sr.trno
-    where sr.doc='SR' and stock.iss > stock.qa and stock.void = 0 and sr.sotrno<>0 and transnum.center = ?  group by sr.trno, sr.docno, sr.dateid, sr.yourref";
+    where sr.doc='SR' and stock.iss > stock.qa and stock.void = 0 and sr.sotrno<>0 and transnum.center = ?    group by sr.trno, sr.docno, sr.dateid, sr.yourref";
 
     $data = $this->coreFunctions->opentable($qry, [$center]);
     return $data;
@@ -9297,4 +9308,30 @@ class sqlquery
 
     return  $this->coreFunctions->opentable($query);
   }
+
+   // detachment
+  public function getledgerfirearms($config)
+  {
+    $fields = array('expiry', 'code', 'make');
+    $filter = '';
+    $filter = $this->othersClass->createfilter($fields, $config['params']['search']);
+    $filter = ' where 1=1 ' . $filter;
+    $qry = "select fr.line as clientid,fr.code,fr.make,fr.type,fr.serialno,fr.licenseno,date(fr.expiry) as expiry,fr.cal from firearms as fr " . $filter;
+    $data = $this->coreFunctions->opentable($qry);
+    return $data;
+  }
+
+  
+  public function getledgerdtcdiv($config)
+  {
+    $fields = array('divcode', 'divname', 'address');
+    $filter = '';
+    $filter = $this->othersClass->createfilter($fields, $config['params']['search']);
+    $filter = ' where 1=1 ' . $filter;
+    $qry = "select dv.divid as clientid,dv.divcode,dv.divname,dv.address,dv.group,dv.remarks,
+                  dv.attention,dv.tel,dv.faxno from division as dv " . $filter;
+    $data = $this->coreFunctions->opentable($qry);
+    return $data;
+  }
+
 }//end class

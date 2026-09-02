@@ -219,15 +219,18 @@ class entryserialout
 
   public function addserial($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $dinsert = [];
     $trno = $config['params']['data']['trno'];
     $line = $config['params']['data']['line'];
     $serial = $config['params']['loc'];
     $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
-    $trno = $this->othersClass->sanitizekeyfield('trno', $trno);
-    $line = $this->othersClass->sanitizekeyfield('line', $line);
-    $serial = $this->othersClass->sanitizekeyfield('serial', $serial);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno,$lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line,$lookups);
+    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial,$lookups);
     $qry = "select itemid,whid,loc,ifnull(expiry,'') as expiry from lastock where trno=? and line=?";
     $item = $this->coreFunctions->opentable($qry, [$trno, $line]);
     $msg = 'Successfully updated.';
@@ -300,11 +303,14 @@ class entryserialout
 
   public function addmultipleserial($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $dinsert = [];
     $trno = $config['params']['data']['trno'];
     $line = $config['params']['data']['line'];
-    $trno = $this->othersClass->sanitizekeyfield('trno', $trno);
-    $line = $this->othersClass->sanitizekeyfield('line', $line);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno, $lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line, $lookups);
     $dinsert['trno'] = $trno;
     $dinsert['line'] = $line;
     $dinsert['outline'] = 0;
@@ -364,10 +370,13 @@ class entryserialout
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['sline'] == 0) {
       $stockgrp_id = $this->coreFunctions->insertGetId($this->table, $data);
@@ -457,12 +466,15 @@ class entryserialout
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $msg = '';
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
-        $data2['rem'] = $this->othersClass->sanitizekeyfield('rem', $data[$key]['rem']);
+        $data2['rem'] = $this->othersClass->sanitizekeyfieldFast('rem', $data[$key]['rem'], $lookups);
 
         $this->coreFunctions->sbcupdate($this->table, $data2, ['sline' => $data[$key]['sline']]);
       } // end if

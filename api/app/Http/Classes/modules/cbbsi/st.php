@@ -229,6 +229,8 @@ class st
   public function createTab($access, $config)
   {
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $isqty = 1;
@@ -260,15 +262,22 @@ class st
       $stockbuttons = ['save', 'delete', 'showbalance', 'stockinfo'];
     }
 
-    if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-    }
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    if (!$isexpiry) {
+      $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
+    }
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
+
+    $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   } //end function
 
@@ -415,7 +424,7 @@ class st
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = [];
     if ($isupdate) {
@@ -429,7 +438,6 @@ class st
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -788,7 +796,7 @@ class st
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $expiry = $config['params']['data']['expiry'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $rem = '';
     if (isset($config['params']['data']['rem'])) {
@@ -830,8 +838,6 @@ class st
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -870,7 +876,6 @@ class st
       'rem' => $rem
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1144,7 +1149,7 @@ class st
 
   public function recomputecost($head, $config)
   {
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
@@ -1154,8 +1159,6 @@ class st
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data2 as $key => $value) {
-      // $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-      // $dqty = round($this->othersClass->sanitizekeyfield('qty', $data2[$key][$this->dqty]), $this->companysetup->getdecimal('qty', $config['params']));
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));

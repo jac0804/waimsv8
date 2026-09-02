@@ -125,17 +125,13 @@ class cvvrelease
 
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-        // $data['releasedate'] = $this->othersClass->sanitizekeyfield("releasedate", $releasedate);
-        // $data['orno'] = $this->othersClass->sanitizekeyfield("orno", $orno);
-        // $data['ordate'] = $this->othersClass->sanitizekeyfield("ordate", $ordate);
 
         $data['releasedate'] = $this->othersClass->sanitizekeyfieldFast("releasedate", $releasedate, $lookups);
         $data['orno'] = $this->othersClass->sanitizekeyfieldFast("orno", $orno, $lookups);
         $data['ordate'] = $this->othersClass->sanitizekeyfieldFast("ordate", $ordate, $lookups);
 
 
-        // $headdata['yourref'] = $this->othersClass->sanitizekeyfield("yourref", $yourref);
-        // $headdata['ourref'] = $this->othersClass->sanitizekeyfield("ourref", $ourref);
+       
 
         $headdata['yourref'] = $this->othersClass->sanitizekeyfieldFast("yourref", $yourref, $lookups);
         $headdata['ourref'] = $this->othersClass->sanitizekeyfieldFast("ourref", $ourref, $lookups);

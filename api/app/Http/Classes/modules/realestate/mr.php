@@ -428,6 +428,7 @@ class mr
 
     public function updatehead($config, $isupdate)
     {
+        $companyid = $config['params']['companyid'];
         $head = $config['params']['head'];
         $data = [];
         if ($isupdate) {
@@ -435,11 +436,14 @@ class mr
             unset($head['docno']);
         }
 
+        $dateTables = ['mrhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -1116,6 +1120,9 @@ class mr
         $linex = isset($config['params']['data']['linex']) ? $config['params']['data']['linex'] : 0;
         $ref = isset($config['params']['data']['ref']) ? $config['params']['data']['ref'] : 0;
 
+        $dateTables = ['mrstock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (isset($config['params']['data']['projectid'])) {
             $projectid = $config['params']['data']['projectid'];
         } else {
@@ -1176,8 +1183,8 @@ class mr
         if (floatval($forex) == 0) {
             $forex = 1;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
         $wh = isset($config['params']['data']['wh']) ? $config['params']['data']['wh'] : '';
         if ($wh == '') {
             $whid = isset($config['params']['data']['whid']) ? $config['params']['data']['whid'] : 0;
@@ -1211,7 +1218,7 @@ class mr
 
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;

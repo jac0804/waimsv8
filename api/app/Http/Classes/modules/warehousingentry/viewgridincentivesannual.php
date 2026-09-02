@@ -97,11 +97,13 @@ class viewgridincentivesannual
     $user = $config['params']['user'];
 
     $releasedate = $this->othersClass->getCurrentTimeStamp();
-
+    $dateTables = ['incentivesyr', 'incentives'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
     foreach ($data as $key => $value) {
       if ($value['added'] == 'true') {
-        $agentquota = $this->othersClass->sanitizekeyfield('amt', $value['agentquota']);
-        $sales = $this->othersClass->sanitizekeyfield('amt', $value['amt']);
+
+        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'],$lookups);
+        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'],$lookups );
 
         if (floatval($sales) >= floatval($agentquota)) {
           $this->coreFunctions->execqry("update incentivesyr set agrelease='" . $releasedate . "', agreleaseby='" . $user . "' where agrelease is null and agentid=? and agtype=?", "UPDATE", [$value['agentid'], $value['agtypecode']]);

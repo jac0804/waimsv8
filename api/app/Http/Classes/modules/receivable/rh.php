@@ -435,11 +435,15 @@ class rh
             unset($this->fields[1]);
             unset($head['docno']);
         }
+
+        $dateTables = ['rhhead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -907,6 +911,7 @@ class rh
     // insert and update detail
     public function additem($action, $config)
     {
+        $companyid = $config['params']['companyid'];
         $trno = $config['params']['trno'];
         $amount = $config['params']['data']['amount'];
         $ortrno = $config['params']['data']['ortrno'];
@@ -915,6 +920,9 @@ class rh
         $clientid = $config['params']['data']['clientid'];
         $bank = $config['params']['data']['bank'];
         $branch = $config['params']['data']['branch'];
+
+        $dateTables = ['rhdetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $line = 0;
         if ($action == 'insert') {
@@ -941,7 +949,7 @@ class rh
             'clientid' => $clientid
         ];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;

@@ -235,6 +235,8 @@ class sj
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
     $inv = $this->companysetup->isinvonly($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
 
     $column = ['action', 'isqty', 'isqty2', 'original_qty', 'uom', 'isamt', 'disc', 'lessvat', 'sramt', 'pwdamt', 'ext', 'markup', 'rebate', 'wh', 'ref', 'loc', 'expiry', 'channel', 'client', 'clientname', 'itemname', 'cost', 'banktype', 'bankrate', 'terminalid', 'modepayamt', 'comm1', 'comap', 'cardcharge', 'comm2', 'comap2', 'netap', 'stock_projectname', 'noprint', 'agent', 'barcode'];
@@ -269,7 +271,6 @@ class sj
     }
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     }
 
@@ -333,6 +334,12 @@ class sj
     $obj[0]['inventory']['columns'][$uom]['type'] = 'input';
     $obj[0]['inventory']['columns'][$uom]['readonly'] = true;
 
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
+    
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
     return $obj;

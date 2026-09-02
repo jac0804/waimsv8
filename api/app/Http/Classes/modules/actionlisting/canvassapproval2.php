@@ -296,7 +296,6 @@ class canvassapproval2
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
@@ -509,9 +508,7 @@ class canvassapproval2
                     $uom = $value["UOM"];
                     $status = 1;
 
-                    
-                    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-                    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+                  
 
                     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
                     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);

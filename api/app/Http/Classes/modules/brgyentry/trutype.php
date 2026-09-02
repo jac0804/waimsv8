@@ -142,12 +142,17 @@ class trutype
     $qry = "Select max(line) as maxLine from  {$this->table}";
     $res = $this->coreFunctions->opentable($qry);
     $maxLine = (!empty($res) && !empty($res[0]->maxLine)) ? (int)$res[0]->maxLine : 0;
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
       $data2 = [];
       if (!empty($data[$key]['bgcolor'])) {
         foreach ($this->fields as $key2 => $field) {
           $value = isset($data[$key][$field]) ? $data[$key][$field] : null;
-          $data2[$field] = $this->othersClass->sanitizekeyfield($field, $value);
+          $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value, $lookups);
+
         }
         if (empty(trim($data2['description']))) {
           return ['status' => false, 'msg' => 'Saving failed. Please complete the empty description.'];
@@ -230,8 +235,12 @@ class trutype
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+
     }
 
     if ($row['line'] == 0 && $row['description'] != '') {

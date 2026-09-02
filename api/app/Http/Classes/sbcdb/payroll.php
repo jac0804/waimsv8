@@ -1151,7 +1151,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["empprojdetail", "hempprojdetail"], ["achrs", "rate", "othrs"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["empprojdetail", "hempprojdetail"], ["tothrs"], "DECIMAL(18,10) NOT NULL DEFAULT '0.00'", 1);
 		$this->coreFunctions->sbcaddcolumngrp(["tmshifts"], ["breakinam", "breakoutam", "breakinpm", "breakoutpm"], "datetime DEFAULT NULL", 0);
-		$this->coreFunctions->sbcaddcolumngrp(["tmshifts"], ["isonelog", "isdefault", "isfixhrs"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
+		$this->coreFunctions->sbcaddcolumngrp(["tmshifts"], ["isonelog", "isdefault", "isfixhrs", "istimein"], "TINYINT(2) NOT NULL DEFAULT '0'", 1);
 		$this->coreFunctions->sbcaddcolumn("tmshifts", "sig", "INT(2) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["latehrs2", "lateoffset", "earlyothrs"], "DECIMAL(15,2) NOT NULL DEFAULT '0.00'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timesheet", "timesheethistory", "paytrancurrent", "paytranhistory"], ["qty", "qty2"], "DECIMAL(15,3) NOT NULL DEFAULT '0.000'");
@@ -1405,7 +1405,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["ismactualin", "ismactualout", "isobactualin", "isobactualout", "ischangesched", "ismbrkin", "ismbrkout", "ismlunchin", "ismlunchout", "isnologin", "isnologout", "isnologbreak", "isnologunder", "ispbrkin", "ispbrkout"], "TINYINT(2) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["isnombrkin", "isnombrkout", "isnolunchout", "isnolunchin", "isnopbrkin", "isnopbrkout", "isnologpin", "isitinerary", "earlyotapproved"], "TINYINT(2) NOT NULL DEFAULT '0'", 0);
 
-		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["logactualin", "logactualout", "loglunchin", "loglunchout"], "INT(4) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["logactualin", "logactualout", "loglunchin", "loglunchout", "ispostlog"], "INT(2) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumn("changeshiftapp", "isrestday", "tinyint(1) unsigned not null default '0'", 0);
 
 		$this->coreFunctions->sbcaddcolumn("changeshiftapp", "isword", "tinyint(1) unsigned not null default '0'", 0);
@@ -1668,7 +1668,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumn("itinerary", "area", "VARCHAR(300) NOT NULL DEFAULT ''", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["annualtax"], "TINYINT(1) NOT NULL DEFAULT '0'", 0);
 
-		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["othrs", "spot"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["othrs", "spot"], "DECIMAL(18,4) NOT NULL DEFAULT '0.0000'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["paygroup"], ["ndiffhrs"], "DECIMAL(18,5) NOT NULL DEFAULT '0.00000'", 0);
 		$this->coreFunctions->sbcaddcolumn("paygroup", "s3maxbracket", "int(2) NOT NULL DEFAULT '0'");
 
@@ -1686,5 +1686,272 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["legotmulti", "spotmulti", "ndiffmulti"], "DECIMAL(10,5) NOT NULL DEFAULT '0.00000'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timecard"], ["maxsss"], "INT(11) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumngrp(["timesheet"], ["qtymulti"], "DECIMAL(10,5) NOT NULL DEFAULT '0.00000'", 0);
+
+		$this->coreFunctions->sbcaddcolumn("paccount", "isnocheck", "TINYINT(2) UNSIGNED DEFAULT 0", 0);
+
+
+		$qry = "CREATE TABLE `cllicence` (
+		`clientid` int(11) unsigned NOT NULL DEFAULT '0', 
+		`sagsd` varchar(100) NOT NULL DEFAULT '',
+		`sagsdexp` datetime DEFAULT NULL,
+		`solicense` varchar(100) NOT NULL DEFAULT '',
+		`soexp` datetime DEFAULT NULL,
+		`palicense` varchar(100) NOT NULL DEFAULT '',
+		`paexp` datetime DEFAULT NULL,
+		`ntclicense` varchar(100) NOT NULL DEFAULT '',
+		`ntcexp` datetime DEFAULT NULL,
+		`brgystart` datetime DEFAULT NULL,
+		`brgyend` datetime DEFAULT NULL,
+		`pnpstart` datetime DEFAULT NULL,
+		`pnpend` datetime DEFAULT NULL,
+		`nbistart` datetime DEFAULT NULL,
+		`nbiend` datetime DEFAULT NULL,
+		`nuerostart` datetime DEFAULT NULL,
+		`nueroend` datetime DEFAULT NULL,
+		`drugstart` datetime DEFAULT NULL,
+		`drugend` datetime DEFAULT NULL,
+		`medicalstart` datetime DEFAULT NULL,
+		`medicalend` datetime DEFAULT NULL,
+		`dilgstart` datetime DEFAULT NULL,
+		`dilgend` datetime DEFAULT NULL,
+		`occustart` datetime DEFAULT NULL,
+		`occuend` datetime DEFAULT NULL,
+		`courtstart` datetime DEFAULT NULL,
+		`courtend` datetime DEFAULT NULL,
+		`ctcno` varchar(100) NOT NULL DEFAULT '',
+		`ctcdate` datetime DEFAULT NULL,
+		`ctcissue` varchar(100) NOT NULL DEFAULT '',
+		`insurance` varchar(100) NOT NULL DEFAULT '',
+		`policy` varchar(100) NOT NULL DEFAULT '',
+		`premium` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`amt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`policyend` datetime DEFAULT NULL,
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		PRIMARY KEY (`clientid`), 
+		KEY `Index_clientid` (`clientid`));";
+		$this->coreFunctions->sbccreatetable("cllicence", $qry);
+
+		$this->coreFunctions->sbcaddcolumngrp(["traininghead"], ["istraining", "iscitation"], "TINYINT(2) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["traininghead"], ["empid"], "INT(11) NOT NULL DEFAULT '0'", 0);
+
+		$qry = "CREATE TABLE `cluniform` (
+		`line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		`clientid` int(11) unsigned NOT NULL DEFAULT '0',
+		`description` varchar(100) NOT NULL DEFAULT '',
+		`issued` datetime DEFAULT NULL,
+		`cyyear` varchar(45) NOT NULL DEFAULT '',
+		`rem` varchar(1000) NOT NULL DEFAULT '',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		PRIMARY KEY (`line`), 
+		KEY `Index_clientid` (`clientid`));";
+		$this->coreFunctions->sbccreatetable("cluniform", $qry);
+
+
+		$qry = "CREATE TABLE  `firearms` (
+		`line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		`code` varchar(20) NOT NULL DEFAULT '',
+		`make` varchar(45) NOT NULL DEFAULT '',
+		`type` varchar(45) NOT NULL DEFAULT '',
+		`expiry` datetime DEFAULT NULL,
+		`serialno` varchar(45) NOT NULL DEFAULT '',
+		`licenseno` varchar(45) NOT NULL DEFAULT '',
+		`cal` varchar(45) NOT NULL DEFAULT '',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		`viewby` varchar(100) not null default '',
+		`viewdate` datetime default null,
+		`center` varchar(45) not null default '',
+		PRIMARY KEY (`line`), 
+		KEY `Index_code` (`code`));";
+		$this->coreFunctions->sbccreatetable("firearms", $qry);
+
+
+		$qry = "CREATE TABLE `divinfo` (
+		`divid` int(11) unsigned NOT NULL DEFAULT '0',
+		`colltype` varchar(30) NOT NULL DEFAULT '',
+		`isexcessbasic` tinyint NOT NULL DEFAULT '0',
+		`isnodeductbank` tinyint NOT NULL DEFAULT '0',
+		`isnodeductemp` tinyint NOT NULL DEFAULT '0',
+		`isbasic8` tinyint NOT NULL DEFAULT '0',
+		`isbasic4` tinyint NOT NULL DEFAULT '0',
+		`isexcessduty` tinyint NOT NULL DEFAULT '0',
+		`isregot` tinyint NOT NULL DEFAULT '0',
+		`isndiff` tinyint NOT NULL DEFAULT '0',
+		`isworkingrd` tinyint NOT NULL DEFAULT '0',
+		`isholiday` tinyint NOT NULL DEFAULT '0',
+		`noguards` INT(11) NOT NULL DEFAULT '0',
+		`yrdays` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`wkdays` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`dutyhrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`mons` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`days` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`hrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`excesshrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`dailywage` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`salary` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`excessduty` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`cola` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`otamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`amt13th` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`incentive` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`uniformamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`retireamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`sssamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`phicamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`hdmfamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`eccamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`agencyfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`agencyvat` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		`viewby` varchar(100) NOT NULL DEFAULT '',
+		`viewdate` datetime DEFAULT NULL,
+		PRIMARY KEY (`divid`));";
+		$this->coreFunctions->sbccreatetable("divinfo", $qry);
+
+
+		$qry = "CREATE TABLE `hdivinfo` (
+		`divid` int(11) unsigned NOT NULL DEFAULT '0',
+		`colltype` varchar(30) NOT NULL DEFAULT '',
+		`isexcessbasic` tinyint NOT NULL DEFAULT '0',
+		`isnodeductbank` tinyint NOT NULL DEFAULT '0',
+		`isnodeductemp` tinyint NOT NULL DEFAULT '0',
+		`isbasic8` tinyint NOT NULL DEFAULT '0',
+		`isbasic4` tinyint NOT NULL DEFAULT '0',
+		`isexcessduty` tinyint NOT NULL DEFAULT '0',
+		`isregot` tinyint NOT NULL DEFAULT '0',
+		`isndiff` tinyint NOT NULL DEFAULT '0',
+		`isworkingrd` tinyint NOT NULL DEFAULT '0',
+		`isholiday` tinyint NOT NULL DEFAULT '0',
+		`noguards` INT(11) NOT NULL DEFAULT '0',
+		`yrdays` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`wkdays` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`dutyhrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`mons` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`days` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`hrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`excesshrs` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`dailywage` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`salary` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`excessduty` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`cola` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`otamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`amt13th` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`incentive` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`uniformamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`retireamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`sssamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`phicamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`hdmfamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`eccamt` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`agencyfee` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`agencyvat` decimal(18,2) NOT NULL DEFAULT '0.00',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		`viewby` varchar(100) NOT NULL DEFAULT '',
+		`viewdate` datetime DEFAULT NULL,
+		PRIMARY KEY (`divid`));";
+		$this->coreFunctions->sbccreatetable("hdivinfo", $qry);
+
+		$qry = "CREATE TABLE `sgviolation` (
+		`line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		`violation` varchar(1000) NOT NULL DEFAULT '',
+		`offense` varchar(45) NOT NULL DEFAULT '',
+		`vaction` varchar(100) NOT NULL DEFAULT '',
+		`type` varchar(100) NOT NULL DEFAULT '',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,				
+		PRIMARY KEY (`line`));";
+		$this->coreFunctions->sbccreatetable("sgviolation", $qry);
+
+		$this->coreFunctions->sbcaddcolumngrp(["division"], ["faxno", "group", "center"], "varchar(45) not null default ''", 1);
+		$this->coreFunctions->sbcaddcolumngrp(["division"], ["remarks"], "varchar(200) not null default ''", 0);
+
+
+		$qry = "CREATE TABLE `clviolation` (
+		`line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		`clientid` int(11) unsigned NOT NULL DEFAULT '0',
+        `dateid` datetime DEFAULT NULL,
+        `vioid` int(11) unsigned NOT NULL DEFAULT '0',
+        `divid` int(11) unsigned NOT NULL DEFAULT '0',
+		`rem` varchar(1000) NOT NULL DEFAULT '',
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`encodedby` varchar(100) NOT NULL DEFAULT '',
+		`encodeddate` datetime DEFAULT NULL,
+		PRIMARY KEY (`line`), 
+		KEY `Index_clientid` (`clientid`));";
+		$this->coreFunctions->sbccreatetable("clviolation", $qry);
+
+		$this->coreFunctions->sbcaddcolumngrp(["standardsetup"], ["amtinterest"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["standardsetup"], ["grantdate"],  "DATETIME DEFAULT NULL", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["standardsetup"], ["appno"],  "VARCHAR(45) NOT NULL DEFAULT ''", 0);
+
+		$qry = "CREATE TABLE `ddhead` (
+		`trno` int(10) unsigned NOT NULL DEFAULT '0',
+		`docno` VARCHAR(20) NOT NULL DEFAULT '',
+		`divid` int(11) NOT NULL DEFAULT '0',
+		`dateid` datetime DEFAULT NULL,
+		`dateid2` datetime DEFAULT NULL,
+		`paydate` datetime DEFAULT NULL,
+		`paydate2` datetime DEFAULT NULL,
+		`createby` varchar(100) NOT NULL DEFAULT '',
+		`createdate` datetime DEFAULT NULL,
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		`viewby` varchar(100) NOT NULL DEFAULT '',
+		`viewdate` datetime DEFAULT NULL,
+		PRIMARY KEY (`trno`),
+		KEY `IndexDateID` (`dateid`),
+		KEY `IndexDateID2` (`dateid2`),
+		KEY `IndexPayDate` (`paydate`),
+		KEY `IndexPayDate2` (`paydate2`),
+		KEY `IndexDivID` (`divid`))";
+		$this->coreFunctions->sbccreatetable("ddhead", $qry);
+
+		$qry = "CREATE TABLE `dddetail` (
+		`trno` int(11) NOT NULL DEFAULT '0',
+		`line` int(11) NOT NULL DEFAULT '0',
+		`empid` int(11) NOT NULL DEFAULT '0',
+		`rate` decimal(18,2) DEFAULT '0.00',
+		`createby` varchar(100) NOT NULL DEFAULT '',
+		`createdate` datetime DEFAULT NULL,
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		PRIMARY KEY (`trno`,`line`),
+		KEY `IndexEmpID` (`empid`))";
+		$this->coreFunctions->sbccreatetable("dddetail", $qry);
+
+		$qry = "CREATE TABLE `ddfirearms` (
+		`trno` int(11) NOT NULL DEFAULT '0',
+		`fireid` int(11) NOT NULL DEFAULT '0',
+		`rate` decimal(18,2) DEFAULT '0.00',
+		`createby` varchar(100) NOT NULL DEFAULT '',
+		`createdate` datetime DEFAULT NULL,
+		`editby` varchar(100) NOT NULL DEFAULT '',
+		`editdate` datetime DEFAULT NULL,
+		KEY `IndexTrno` (`trno`),
+		KEY `IndexFireID` (`fireid`))";
+		$this->coreFunctions->sbccreatetable("ddfirearms", $qry);
+
+		$qry = "CREATE TABLE `hddhead` LIKE `ddhead`";
+		$this->coreFunctions->sbccreatetable("hddhead", $qry);
+
+		$qry = "CREATE TABLE `hdddetail` LIKE `dddetail`";
+		$this->coreFunctions->sbccreatetable("hdddetail", $qry);
 	} //end function
 } // end class

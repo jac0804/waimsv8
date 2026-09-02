@@ -40,6 +40,8 @@ class setreportlist
     $rep_trucklist = "";
     $rep_carmake_list = "";
 
+    $rep_documents_per_wh = "";
+
     // PRODUCT PORTAL
     $productportal = "";
     $rep_catalog = "";
@@ -83,6 +85,10 @@ class setreportlist
 
         if ($this->companysetup->getisautoservice($params)) {
           $rep_carmake_list = "('','\\900','','','',0,1,0,'Car Make List','\\90016',5882,'0'," . $params['levelid'] . ")";
+        }
+
+        if ($params['companyid'] == 68) { //JDA
+          $rep_documents_per_wh = "('','\\900','','','',0,1,0,'Documents Per Warehouse','\\90017',5943,'0'," . $params['levelid'] . ")";
         }
 
         if ($params['companyid'] == 57) {
@@ -1771,6 +1777,8 @@ class setreportlist
     $rep_end_of_contract_report = "";
     $rep_applicant_status_report = "";
     $rep_mode_of_application = "";
+    $rep_retirement = "";
+    $rep_emp_requirements_expiry_report = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -1832,6 +1840,11 @@ class setreportlist
 
         if ($params['companyid'] == 58) { //cdohris
           $rep_mode_of_application = "('','\\A01','','','',0,1,0,'Mode of Application','\\A01033',5897,'0'," . $params['levelid'] . ")";
+        }
+
+        if ($params['companyid'] == 68) { //jda
+          $rep_retirement = "('','\\A01','','','',0,1,0,'Retirement Report','\\A01035',5942,'0'," . $params['levelid'] . ")";
+          $rep_emp_requirements_expiry_report = "('','\\A01','','','',0,1,0,'Employee Requirements Expiry Report','\\A01034',5941,'0'," . $params['levelid'] . ")";
         }
         break;
     }
@@ -3234,6 +3247,7 @@ class setreportlist
           $rep_end_of_contract_report,
           $rep_applicant_status_report,
           $rep_mode_of_application,
+          $rep_retirement,
 
           // PAYROLL
           $subparent_other_report,
@@ -4034,6 +4048,7 @@ class setreportlist
           $employee_list,
           $department_list,
           $project_list,
+          $rep_documents_per_wh,
           // ACCOUNTING BOOKS
           $parent_accountingbooks,
           $rep_cashdisbursementbook,
@@ -4264,6 +4279,8 @@ class setreportlist
           $rep_recruitment_status_report,
           $rep_stayin_employee_report,
           $rep_wage_and_career_history_report,
+          $rep_retirement,
+          $rep_emp_requirements_expiry_report,
 
           // PAYROLL
           $subparent_other_report,

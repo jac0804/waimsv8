@@ -353,7 +353,8 @@ class dm
     $isproject = $this->companysetup->getisproject($config['params']);
     $iskgs = $this->companysetup->getiskgs($config['params']);
     $invonly = $this->companysetup->isinvonly($config['params']);
-
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $action = 0;
     $ctrlno = 1;
     $isqty2 = 2;
@@ -478,9 +479,7 @@ class dm
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-
       $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
     }
 
@@ -536,6 +535,12 @@ class dm
     $obj[0]['inventory']['columns'][$isqty2]['type'] = 'input';
     $obj[0]['inventory']['columns'][$isqty3]['label'] = 'Inv Qty';
     $obj[0]['inventory']['columns'][$isqty3]['type'] = 'input';
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+     if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -854,7 +859,6 @@ class dm
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
@@ -863,7 +867,6 @@ class dm
     $dataother = [];
     foreach ($this->otherfields as $key) {
       $dataother[$key] = $head[$key];
-      // $dataother[$key] = $this->othersClass->sanitizekeyfield($key, $dataother[$key]);
       $dataother[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataother[$key], $lookups);
     }
 
@@ -1615,9 +1618,6 @@ class dm
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1670,12 +1670,10 @@ class dm
     ];
 
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($datainfo as $key => $value) {
-      // $datainfo[$key] = $this->othersClass->sanitizekeyfield($key, $datainfo[$key]);
       $datainfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datainfo[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -2132,7 +2130,6 @@ class dm
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;

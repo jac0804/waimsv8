@@ -100,14 +100,19 @@ class entryactivitymaster
 
     public function saveallentry($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
         $data2 = [];
+
+        $dateTables = ['reqcategory'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
-                $data2['isactivity'] = $this->othersClass->sanitizekeyfield('isactivity', $data[$key]['isactivity']);
+                $data2['isactivity'] = $this->othersClass->sanitizekeyfieldFast('isactivity', $data[$key]['isactivity'], $lookups);
 
                 if ($data[$key]['line'] == 0 && $data[$key]['category'] != '') {
                     $qry = "select category from reqcategory where category = '" . $data[$key]['category'] . "' limit 1";

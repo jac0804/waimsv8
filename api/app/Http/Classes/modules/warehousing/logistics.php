@@ -29,7 +29,7 @@ class logistics
   public $tablelogs = 'table_log';
   public $htablelogs = 'htable_log';
   public $tablelogs_del = 'del_table_log';
-
+  public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => false];
   public $transdoc = "'SD', 'SE', 'SF', 'SH'";
 
   private $fields = ['truckid', 'scheddate', 'receivedate', 'receiveby', 'courier'];
@@ -431,14 +431,17 @@ class logistics
     $trno  = $head['clientid'];
     $data = [];
     $msg = '';
+
+    $dateTables = ['lahead','cntnuminfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
     foreach ($this->fields as $key) {
-      if (array_key_exists($key, $head)) {        
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $head[$key]);
+      if (array_key_exists($key, $head)) {
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key],$lookups);
       }
     }
 
-    $head['shipto']  = $this->othersClass->sanitizekeyfield('shipto', $head['shipto']);
-    $head['waybill']  = $this->othersClass->sanitizekeyfield('shipto', $head['waybill']);
+    $head['shipto']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['shipto'],$lookups);
+    $head['waybill']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['waybill'],$lookups);
 
     $this->coreFunctions->sbcupdate('cntnuminfo', $data, ['trno' => $trno]);
     $this->coreFunctions->sbcupdate('lahead', ['shipto' => $head['shipto'], 'waybill' => $head['waybill']], ['trno' => $trno]);
@@ -622,10 +625,12 @@ class logistics
     }
 
     if (!empty($this->acctg)) {
+      $dateTables = ['ladetail'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

@@ -803,10 +803,10 @@ class aging_of_accounts_receivable_report
     $orderby = "";
     switch ($reporttype) {
       case '0': // group by salesman
-        $orderby = "order by agentname";
+        $orderby = "order by agentname, clientname ";
         break;
       case '1': //  group by area
-        $orderby = "order by area";
+        $orderby = "order by area, clientname";
         break;
     }
 
@@ -1903,7 +1903,6 @@ class aging_of_accounts_receivable_report
     $layoutsize = '1100';
     $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:40px');
     $str .= $this->roosevelt_displayHeader($params, $data);
-    $str .= $this->reporter->begintable($layoutsize);
     $border = "1px solid";
     $font_size = '14';
     $font = 'Calibri';
@@ -1954,9 +1953,10 @@ class aging_of_accounts_receivable_report
           $subtotes = $subtote;
           $subgts = $subgt;
           $str .= $this->reporter->addline();
+          $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '35', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
-          $str .= $this->reporter->col('SALESMAN TOTAL', '230', '', false, $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
+          $str .= $this->reporter->col('', '50', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
+          $str .= $this->reporter->col('SALESMAN TOTAL', '215', '', false, $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
@@ -1964,6 +1964,8 @@ class aging_of_accounts_receivable_report
           $str .= $this->reporter->col($subtotes != 0 ? number_format($subtote, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subgts != 0 ? number_format($subgt, 2) : '-', '140', '', false, $border, 'LTBR', 'R',  $font, $font_size, 'B', '', '');
           $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
 
           $subtota = 0;
           $subtotb = 0;
@@ -1972,10 +1974,10 @@ class aging_of_accounts_receivable_report
           $subtote = 0;
           $subgt = 0;
 
-
+          $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('&nbsp;', '35', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
-          $str .= $this->reporter->col('&nbsp;', '230', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '50', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '215', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
@@ -1983,6 +1985,8 @@ class aging_of_accounts_receivable_report
           $str .= $this->reporter->col('&nbsp;', '140', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', '', false, '1px solid ', '', 'C',  $font,  '4', 'B', '', '');
           $str .= $this->reporter->endrow();
+          $str .= $this->reporter->endtable();
+
 
           // $rowCount += 2; // subtotal + spacer
         } //end if
@@ -1990,25 +1994,23 @@ class aging_of_accounts_receivable_report
         $countclient = 0; // reset numbering for new agent
 
         $str .= $this->reporter->addline(); //space sa pagitan ng header
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col(strtoupper($data[$i]['agentname']), '230', '', false, $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TB', 'R',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('&nbsp', '140', '', false, $border, 'TBR', 'C',  $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '50', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col(strtoupper($data[$i]['agentname']), '1055', '', false, $border, 'TBR', 'L',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
         // $rowCount++;
         // var_dump($rowCount);
       } //end if
 
       // var_dump($rowCount);
       $countclient++;
+      $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($countclient . '.', '35', '', false, '1px solid ', 'L', 'LT',  $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($data[$i]['clientname'], '230', '', false, '1px solid ', '', 'L',  $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($countclient . '.', '50', '', false, '1px solid ', 'L', 'LT',  $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col($data[$i]['clientname'], '215', '', false, '1px solid ', '', 'LT',  $font, $font_size, '', '', '');
 
       if ($data[$i]['elapse'] >= 0 && $data[$i]['elapse'] <= 30) {
         $a = $data[$i]['balance'];
@@ -2095,6 +2097,8 @@ class aging_of_accounts_receivable_report
         $subgt = $subgt + $data[$i]['balance'];
       }
       $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
 
       // $rowCount++;
       $agent = $data[$i]['agentname'];
@@ -2117,7 +2121,7 @@ class aging_of_accounts_receivable_report
 
       //   // reprint current agent header
       //   $str .= $this->reporter->startrow();
-      //   $str .= $this->reporter->col(strtoupper($agent), '335', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
+      //   $str .= $this->reporter->col(strtoupper($agent), '350', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
@@ -2134,10 +2138,10 @@ class aging_of_accounts_receivable_report
         // close current page
         // $str .= $this->reporter->endrow();
         // $str .= $this->reporter->endtable();
-        // $str .= $this->reporter->begintable('1000');
+        $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
-        $str .= $this->reporter->col('', '230', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
+        $str .= $this->reporter->col('', '50', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
+        $str .= $this->reporter->col('', '215', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
@@ -2145,8 +2149,8 @@ class aging_of_accounts_receivable_report
         $str .= $this->reporter->col('', '140', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', '', false, $border, 'T', 'L',  $font, '7', '', '', '');
         $str .= $this->reporter->endrow();
-
         $str .= $this->reporter->endtable();
+
         $str .= $this->reporter->page_break();
 
         // reset line counter
@@ -2155,11 +2159,10 @@ class aging_of_accounts_receivable_report
         // print new header
         $str .= $this->roosevelt_displayHeader($params, $data);
         $str .= $this->reporter->begintable($layoutsize);
-
         // reprint current agent name
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col(strtoupper($agent), '230', '', false, $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '50', '', false, $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col(strtoupper($agent), '215', '', false, $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
@@ -2167,6 +2170,7 @@ class aging_of_accounts_receivable_report
         $str .= $this->reporter->col('&nbsp;', '140', '', false, $border, 'TB', 'C',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', '', false, $border, 'TBR', 'C',  $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
       }
     }
     $subtotas = $subtota;
@@ -2175,9 +2179,11 @@ class aging_of_accounts_receivable_report
     $subtotds = $subtotd;
     $subtotes = $subtote;
     $subgts = $subgt;
+
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '35', '', false,  $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');;
-    $str .= $this->reporter->col(' SALESMAN TOTAL', '230', '', false,  $border, 'TB', 'L',  $font, $font_size, 'B', '',  '');
+    $str .= $this->reporter->col('', '50', '', false,  $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');;
+    $str .= $this->reporter->col(' SALESMAN TOTAL', '215', '', false,  $border, 'TB', 'L',  $font, $font_size, 'B', '',  '');
     $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
@@ -2185,11 +2191,13 @@ class aging_of_accounts_receivable_report
     $str .= $this->reporter->col($subtotes != 0 ? number_format($subtote, 2) : '-', '140', '', false, $border, 'LTB', 'R',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($subgts != 0 ? number_format($subgt, 2) : '-', '140', '', false, $border, 'LTBR', 'R',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
 
+    $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '35', '', false,  $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col(' GRAND TOTAL', '230', '', false,  $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '50', '', false,  $border, 'TBL', 'L',  $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(' GRAND TOTAL', '215', '', false,  $border, 'TB', 'L',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($tota != 0 ? number_format($tota, 2) : '-', '140', '', false,  $border, 'LTB', 'r',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($totb != 0 ? number_format($totb, 2) : '-', '140', '', false,  $border, 'LTB', 'r',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($totc != 0 ? number_format($totc, 2) : '-', '140', '', false,  $border, 'LTB', 'r',  $font, $font_size, 'B', '', '');
@@ -2197,9 +2205,8 @@ class aging_of_accounts_receivable_report
     $str .= $this->reporter->col($tote != 0 ? number_format($tote, 2) : '-', '140', '', false,  $border, 'LTB', 'r',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($gt != 0 ? number_format($gt, 2) : '-', '140', '', false,  $border, 'LTBR', 'r',  $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
-
-
     $str .= $this->reporter->endtable();
+
     $str .= $this->reporter->printline();
     $str .= $this->reporter->endreport();
     return $str;
@@ -2267,8 +2274,8 @@ class aging_of_accounts_receivable_report
           $str .= $this->reporter->addline();
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '35', '', false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
-          $str .= $this->reporter->col('AREA TOTAL', '230', '', false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+          $str .= $this->reporter->col('', '50', '', false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
+          $str .= $this->reporter->col('AREA TOTAL', '215', '', false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '140', '', false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '140', '', false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '140', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
@@ -2287,8 +2294,8 @@ class aging_of_accounts_receivable_report
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('&nbsp;', '35', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
-          $str .= $this->reporter->col('&nbsp;', '230', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '50', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
+          $str .= $this->reporter->col('&nbsp;', '215', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
           $str .= $this->reporter->col('&nbsp;', '140', null, false, '1px solid ', '', 'C', $font,  '4', 'B', '', '');
@@ -2306,7 +2313,7 @@ class aging_of_accounts_receivable_report
         $str .= $this->reporter->addline(); //space sa pagitan ng header
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp;', '35', null, false, '1px solid ', 'LTB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('&nbsp;', '50', null, false, '1px solid ', 'LTB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col(strtoupper($data[$i]['area']) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . ($data[$i]['province']), '1070', null, false, $border, 'RTB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -2318,8 +2325,8 @@ class aging_of_accounts_receivable_report
       $countclient++;
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($countclient . '.', '35', null, false, '1px solid ', 'L', 'LT', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($data[$i]['clientname'], '230', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($countclient . '.', '50', null, false, '1px solid ', 'L', 'LT', $font, $font_size, 'B', '', '');
+      $str .= $this->reporter->col($data[$i]['clientname'], '215', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
 
       if ($data[$i]['elapse'] >= 0 && $data[$i]['elapse'] <= 30) {
         $a = $data[$i]['balance'];
@@ -2429,7 +2436,7 @@ class aging_of_accounts_receivable_report
 
       //   // reprint current agent header
       //   $str .= $this->reporter->startrow();
-      //   $str .= $this->reporter->col(strtoupper($agent), '335', null, false, $border, 'TBL', 'L',$font, $font_size, 'B', '', '');
+      //   $str .= $this->reporter->col(strtoupper($agent), '350', null, false, $border, 'TBL', 'L',$font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C',$font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C',$font, $font_size, 'B', '', '');
       //   $str .= $this->reporter->col('&nbsp;', '110', null, false, $border, 'TB', 'C',$font, $font_size, 'B', '', '');
@@ -2449,8 +2456,8 @@ class aging_of_accounts_receivable_report
         // $str .= $this->reporter->begintable('1000');
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', null, false, $border, 'T', 'L', $font, '7', '', '', '');
-        $str .= $this->reporter->col('', '230', null, false, $border, 'T', 'L', $font, '7', '', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'L', $font, '7', '', '', '');
+        $str .= $this->reporter->col('', '215', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', null, false, $border, 'T', 'L', $font, '7', '', '', '');
         $str .= $this->reporter->col('', '140', null, false, $border, 'T', 'L', $font, '7', '', '', '');
@@ -2471,8 +2478,8 @@ class aging_of_accounts_receivable_report
 
         // reprint current area name
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '35', null, false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col(strtoupper($area), '230', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '50', null, false, $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col(strtoupper($area), '215', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('&nbsp;', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
@@ -2491,8 +2498,8 @@ class aging_of_accounts_receivable_report
     $subgts = $subgt;
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '35', null, false,  $border, 'TBL', 'L', $font, $font_size, 'B', '', '');;
-    $str .= $this->reporter->col('AREA TOTAL', '230', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '',  '');
+    $str .= $this->reporter->col('', '50', null, false,  $border, 'TBL', 'L', $font, $font_size, 'B', '', '');;
+    $str .= $this->reporter->col('AREA TOTAL', '215', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '',  '');
     $str .= $this->reporter->col($subtotas != 0 ? number_format($subtota, 2) : '-', '140', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($subtotbs != 0 ? number_format($subtotb, 2) : '-', '140', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($subtotcs != 0 ? number_format($subtotc, 2) : '-', '140', null, false, $border, 'LTB', 'R', $font, $font_size, 'B', '', '');
@@ -2503,8 +2510,8 @@ class aging_of_accounts_receivable_report
 
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '35', null, false,  $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col(' GRAND TOTAL', '230', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', '50', null, false,  $border, 'TBL', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(' GRAND TOTAL', '215', null, false,  $border, 'TB', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($tota != 0 ? number_format($tota, 2) : '-', '140', null, false,  $border, 'LTB', 'r', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($totb != 0 ? number_format($totb, 2) : '-', '140', null, false,  $border, 'LTB', 'r', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col($totc != 0 ? number_format($totc, 2) : '-', '140', null, false,  $border, 'LTB', 'r', $font, $font_size, 'B', '', '');

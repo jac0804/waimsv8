@@ -203,7 +203,7 @@ class endofday
   {
     $action = $config['params']["action2"];
     $center = $config['params']['center'];
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
 
 
@@ -262,7 +262,6 @@ class endofday
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($ins as $key => $value) {
-          // $ins[$key] = $this->othersClass->sanitizekeyfield($key, $ins[$key]);
           $ins[$key] = $this->othersClass->sanitizekeyfieldFast($key, $ins[$key], $lookups);
         }
 
@@ -298,7 +297,7 @@ class endofday
     $center = $config['params']['center'];
     $user = $config['params']['user'];
     $dateid = $this->othersClass->sbcdateformat($dateid);
-    $companyid = ['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
 
     $closed = $this->coreFunctions->getfieldvalue("eod", "line", "date(dateid) = ? and center=? and closeby = ?", [$dateid, $center, $user], '', true);
@@ -307,7 +306,7 @@ class endofday
     }
 
     $unposted = $this->coreFunctions->datareader("select trno  as value  from (select num.trno from cehead as ce left join transnum as num on num.trno = ce.trno where num.center ='" . $center . "' and date(ce.dateid)='" . $dateid . "' and ce.createby = '" . $user . "' union all 
-    select ce.trno from dxhead as ce left join transnum as num on num.trno = ce.trno  where num.center ='" . $center . "' and date(ce.dateid)='" . $dateid . "' and dx.createby = '" . $user . "') as a limit 1");
+    select ce.trno from dxhead as ce left join transnum as num on num.trno = ce.trno  where num.center ='" . $center . "' and date(ce.dateid)='" . $dateid . "' and ce.createby = '" . $user . "') as a limit 1");
     if ($unposted != 0) {
       return ['status' => false, 'msg' => 'There are unposted transactions.', 'action' => 'load'];
     }
@@ -350,7 +349,6 @@ class endofday
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($config['params']['dataparams']['begbal'] != 0) {
-      // $begbal = $this->othersClass->sanitizekeyfield("amt", $config['params']['dataparams']['begbal']);
       $begbal = $this->othersClass->sanitizekeyfieldFast("amt", $config['params']['dataparams']['begbal'], $lookups);
     } else {
       $begbal = $this->coreFunctions->getfieldvalue("eod", "ifnull(endingbal,0)", "date(dateid)<? and closeby = ?", [$dateid, $user], "dateid desc", true);
@@ -358,8 +356,6 @@ class endofday
 
 
     foreach ($data as $key => $value) {
-      // $value->amount = $this->othersClass->sanitizekeyfield('amt', $value->amount);
-      // $value->deduction = $this->othersClass->sanitizekeyfield('amt', $value->deduction);
       $value->amount = $this->othersClass->sanitizekeyfieldFast('amt', $value->amount, $lookups);
       $value->deduction = $this->othersClass->sanitizekeyfieldFast('amt', $value->deduction, $lookups);
       $totalcoll = $totalcoll + $value->amount;
@@ -400,7 +396,8 @@ class endofday
   public function deleteitem($config)
   {
     $line = $config['params']['line'];
-    $latestdate = $this->coreFunctions->datareader("select date(dateid) as value from eod order by dateid desc limit 1");
+    $center = $config['params']['center'];
+    $latestdate = $this->coreFunctions->datareader("select date(dateid) as value from eod where center = '".$center."' order by dateid desc limit 1");
 
     if ($latestdate != null) {
       $rowdate = $config['params']['row']['dateid'];

@@ -228,11 +228,14 @@ class viewservice
 
     public function save($config)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $data = [];
         $row = $config['params']['row'];
         $srow = $config['params']['sourcerow'];
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
         $query =  "select serviceline as value from counterservice where counterline = " . $srow['line'] . " and serviceline = " . $row['serviceline'] . "";

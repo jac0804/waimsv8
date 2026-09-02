@@ -225,8 +225,6 @@ class tripdetails
 
         $datainfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $datainfo['editby'] = $config['params']['user'];
-        // $datainfo['rem2'] = $this->othersClass->sanitizekeyfield("rem", $rem);
-        // $datainfo['tripdate'] = $this->othersClass->sanitizekeyfield("dateid", $tripdate);
         $datainfo['rem2'] = $this->othersClass->sanitizekeyfieldFast("rem", $rem, $lookups);
         $datainfo['tripdate'] = $this->othersClass->sanitizekeyfieldFast("dateid", $tripdate, $lookups);
 

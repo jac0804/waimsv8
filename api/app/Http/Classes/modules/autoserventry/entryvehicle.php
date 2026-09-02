@@ -150,12 +150,9 @@ class entryvehicle
         $dateTables = ['cvehicle'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            // $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
-        // $data['carid']      = $this->othersClass->sanitizekeyfield('carid', $row['carid']);
-        // $data['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $row['cmodelline']);
 
         $data['carid'] = $this->othersClass->sanitizekeyfieldFast('carid', $row['carid'], $lookups);
         $data['cmodelline'] = $this->othersClass->sanitizekeyfieldFast('cmodelline', $row['cmodelline'], $lookups);
@@ -252,12 +249,9 @@ class entryvehicle
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    // $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
                     $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
-                // $data2['carid']      = $this->othersClass->sanitizekeyfield('carid', $data[$key]['carid']);
-                // $data2['cmodelline'] = $this->othersClass->sanitizekeyfield('cmodelline', $data[$key]['cmodelline']);
                 $data2['carid'] = $this->othersClass->sanitizekeyfieldFast('carid', $data[$key]['carid'], $lookups);
                 $data2['cmodelline'] = $this->othersClass->sanitizekeyfieldFast('cmodelline', $data[$key]['cmodelline'], $lookups);
                 $data2['clientid']   = $clientid;

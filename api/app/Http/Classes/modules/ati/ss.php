@@ -521,7 +521,6 @@ class ss
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -1008,9 +1007,6 @@ class ss
       $isqty2 = $config['params']['data']['isqty2'];
       $config['params']['line'] = $line;
     }
-    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    // $isqty2 = $this->othersClass->sanitizekeyfield('isqty2', $isqty2);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $isqty2 = $this->othersClass->sanitizekeyfieldFast('isqty2', $isqty2, $lookups);
@@ -1066,12 +1062,10 @@ class ss
       'ctrlno' => $ctrlno
     ];
     foreach ($data as $key => $value) {
-      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     foreach ($datainfo as $key => $value) {
-      // $datainfo[$key] = $this->othersClass->sanitizekeyfield($key, $datainfo[$key]);
       $datainfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datainfo[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1603,7 +1597,6 @@ class ss
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;

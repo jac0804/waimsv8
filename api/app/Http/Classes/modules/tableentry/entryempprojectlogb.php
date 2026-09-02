@@ -138,10 +138,14 @@ class entryempprojectlogb
 
     public function save($config)
     {
+        $companyid = $config['params']['companyid'];
         $data = [];
         $row = $config['params']['row'];
 
-        $data['othrs'] = $this->othersClass->sanitizekeyfield('othrs', $row['othrs']);
+        $dateTables = ['empprojdetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $data['othrs'] = $this->othersClass->sanitizekeyfieldFast('othrs', $row['othrs'], $lookups);
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
 

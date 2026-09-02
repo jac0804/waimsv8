@@ -127,7 +127,6 @@ class customformrem
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
              $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $this->coreFunctions->sbcupdate("issueitemstock", $data, ['trno' => $trno, 'line' => [$line]]);

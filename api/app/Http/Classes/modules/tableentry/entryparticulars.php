@@ -125,6 +125,10 @@ class entryparticulars
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
       $data2 = [];
@@ -142,7 +146,7 @@ class entryparticulars
           array_push($this->fields, 'createby');
           array_push($this->fields, 'createdate');
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
           $insert = $this->coreFunctions->sbcinsert($this->table, $data2);
           if ($insert) {
@@ -159,7 +163,7 @@ class entryparticulars
           array_push($this->fields, 'editby');
           array_push($this->fields, 'editdate');
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
           $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line'], 'trno' => $data[$key]['trno']]);
         }
@@ -174,8 +178,12 @@ class entryparticulars
     $userid = $config['params']['adminid'];
     $data = [];
     $row = $config['params']['row'];
+    
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     if ($row['line'] == 0) {
       $qry = "select line as value from " . $this->table . " where trno=? order by line desc limit 1";

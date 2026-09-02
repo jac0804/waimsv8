@@ -18,6 +18,8 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
+use App\Http\Classes\reportheader;
+
 use DateTime;
 use PDF;
 use TCPDF_FONTS;
@@ -33,6 +35,7 @@ class dm
   private $othersClass;
   private $logger;
   private $reporter;
+  private $reportheader;
 
   public function __construct()
   {
@@ -42,6 +45,7 @@ class dm
     $this->othersClass = new othersClass;
     $this->logger = new Logger;
     $this->reporter = new SBCPDF;
+    $this->reportheader = new reportheader;
   }
 
   public function createreportfilter($config)
@@ -492,10 +496,10 @@ class dm
     PDF::SetFont($font, '', 9);
 
     
-      // $this->reportheader->getheader($params);
-         PDF::MultiCell(0, 0, '', '', 'L');
-         PDF::SetFont($fontbold, '', 14);
-         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    $this->reportheader->getheader($params);
+        //  PDF::MultiCell(0, 0, '', '', 'L');
+        //  PDF::SetFont($fontbold, '', 14);
+        //  PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
   
    
     // PDF::MultiCell(0, 0, '', '', 'L');

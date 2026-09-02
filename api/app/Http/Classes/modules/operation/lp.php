@@ -579,6 +579,10 @@ class lp
     $data = [];
     $info = [];
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head, $this->info];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -588,7 +592,7 @@ class lp
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -599,8 +603,8 @@ class lp
     $info['editby'] = $config['params']['user'];
 
     if ($head['secdepmos'] != 0) {
-      $lease = $this->othersClass->sanitizekeyfield('amt', $head['leaserate']);
-      $area = $this->othersClass->sanitizekeyfield('amt', $head['area']);
+      $lease = $this->othersClass->sanitizekeyfieldFast('amt', $head['leaserate'], $lookups);
+      $area = $this->othersClass->sanitizekeyfieldFast('amt', $head['area'], $lookups);
       if ($vatex) {
         $head['secdep'] =  $lease * $area * $head['secdepmos'];
       } else {
@@ -615,7 +619,7 @@ class lp
     foreach ($this->infofields as $key2) {
       $info[$key2] = $head[$key2];
       if (!in_array($key2, $this->except)) {
-        $info[$key2] = $this->othersClass->sanitizekeyfield($key2, $info[$key2]);
+        $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
       } //end if    
     }
 
@@ -821,6 +825,10 @@ class lp
     $center = $config['params']['center'];
     $data = [];
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head, $this->info, 'escalation'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $clientname = $this->coreFunctions->getfieldvalue($this->head, "clientname", "trno=?", [$trno]);
 
     if ($clientname == '') {
@@ -857,7 +865,7 @@ class lp
     foreach ($this->fields as $key) {
       $data[$key] = $res[0]->$key;
       if (!in_array($key, $this->except)) {
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if    
     }
 

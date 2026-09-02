@@ -90,7 +90,11 @@ class editboq
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
+
+    $dateTables = ['hsostock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       if ($data[$key]['bgcolor'] != '') {
@@ -98,7 +102,8 @@ class editboq
           $returndata = $this->loaddata($config);
           return ['status' => false, 'msg' => 'Cannot update, item quantity is already served.', 'data' => $data, 'reloaddata' => true];
         }
-        $isqty = $this->othersClass->sanitizekeyfield("isqty", $data[$key]['isqty']);
+        $isqty = $this->othersClass->sanitizekeyfieldFast("isqty", $data[$key]['isqty'], $lookups);
+
         $this->coreFunctions->execqry("update " . $this->table . " set oqty=isqty where trno=? and line=?", 'update', [$data[$key]['trno'], $data[$key]['line']]);
         $this->coreFunctions->execqry("update " . $this->table . " set isqty=" . $isqty . ",iss=" . $isqty . " where trno=? and line=?", 'update', [$data[$key]['trno'], $data[$key]['line']]);
       } // end if

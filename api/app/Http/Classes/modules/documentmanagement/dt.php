@@ -382,7 +382,6 @@ class dt
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
         $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if
     }

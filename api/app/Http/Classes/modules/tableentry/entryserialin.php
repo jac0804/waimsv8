@@ -133,14 +133,17 @@ class entryserialin
 
   public function addserial($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $dinsert = [];
     $trno = $config['params']['data']['trno'];
     $line = $config['params']['data']['line'];
     $doc = $config['params']['doc'];
     $serial = $config['params']['loc'];
-    $trno = $this->othersClass->sanitizekeyfield('trno', $trno);
-    $line = $this->othersClass->sanitizekeyfield('line', $line);
-    $serial = $this->othersClass->sanitizekeyfield('serial', $serial);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno,$lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line,$lookups);
+    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial,$lookups);
     $dinsert['trno'] = $trno;
     $dinsert['line'] = $line;
     $dinsert['serial'] = $serial;
@@ -175,12 +178,15 @@ class entryserialin
 
   public function addmultipleserial($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $dinsert = [];
     $trno = $config['params']['data']['trno'];
     $line = $config['params']['data']['line'];
     $companyid = $config['params']['companyid'];
-    $trno = $this->othersClass->sanitizekeyfield('trno', $trno);
-    $line = $this->othersClass->sanitizekeyfield('line', $line);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno, $lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line, $lookups);
     $dinsert['trno'] = $trno;
     $dinsert['line'] = $line;
     $dinsert['outline'] = 0;
@@ -237,6 +243,8 @@ class entryserialin
     $data = [];
     $doc = $config['params']['doc'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $row = $config['params']['row'];
     $trno = $config['params']['tableid'];
 
@@ -261,7 +269,7 @@ class entryserialin
     }
 
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['sline'] == 0) {
       $stockgrp_id = $this->coreFunctions->insertGetId($this->table, $data);
@@ -290,6 +298,8 @@ class entryserialin
     $data = $config['params']['data'];
     $doc = $config['params']['doc'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $trno = $config['params']['data']['trno'];
 
     $path = '';
@@ -316,7 +326,7 @@ class entryserialin
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['sline'] == 0) {
           $line = $this->coreFunctions->insertGetId($this->table, $data2);

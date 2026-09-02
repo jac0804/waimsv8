@@ -463,6 +463,8 @@ class packhouseloading
         $ispallet = $this->companysetup->getispallet($config['params']);
         $iskgs = $this->companysetup->getiskgs($config['params']);
         $makecr = $this->othersClass->checkAccess($config['params']['user'], 3578);
+        $islocation = $this->companysetup->getislocation($config['params']);
+        $locname = $this->companysetup->getlocname($config['params']);
 
         $action = 0;
         $itemdesc = 1;
@@ -549,7 +551,7 @@ class packhouseloading
         }
 
         if (!$isexpiry) {
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+            // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
             $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         }
 
@@ -607,6 +609,13 @@ class packhouseloading
 
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+
+        $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+        
+        if (!$islocation) {
+            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        }
+
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
         return $obj;
@@ -893,11 +902,13 @@ class packhouseloading
             unset($head['docno']);
         }
 
+        $dateTables = ['lahead'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
+                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -1730,6 +1741,7 @@ class packhouseloading
 
     public function generateAJComponent($config, $batchno)
     {
+        $companyid = $config['params']['companyid'];
         $status = true;
         $msg = '';
         $trno = $config['params']['trno'];
@@ -1795,8 +1807,10 @@ class packhouseloading
                         'iscomponent' => 1
                     ];
 
+                    $dateTables = ['lastock'];
+                    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
                     foreach ($stock as $skey => $sval) {
-                        $stock[$skey] = $this->othersClass->sanitizekeyfield($skey, $stock[$skey]);
+                         $stock[$skey] = $this->othersClass->sanitizekeyfieldFast($skey, $stock[$skey], $lookups);
                     }
 
                     // $this->coreFunctions->LogConsole(json_encode($stock));
@@ -2229,9 +2243,15 @@ class packhouseloading
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-        $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-        $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+        $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+        $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+
+
 
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -2267,7 +2287,7 @@ class packhouseloading
                 $hamt = number_format($computedata['amt'] * $curtopeso, 2, '.', '');
             }
         }
-        $hamt = $this->othersClass->sanitizekeyfield('amt', $hamt);
+          $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
         $data = [
             'trno' => $trno,
@@ -2306,7 +2326,7 @@ class packhouseloading
 
 
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -3354,11 +3374,14 @@ class packhouseloading
             $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
         }
 
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if (!empty($this->acctg)) {
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                     $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -3713,10 +3736,12 @@ class packhouseloading
         $data2 = json_decode(json_encode($data), true);
         $exec = true;
         $companyid = $config['params']['companyid'];
+        $dateTables = ['lastock'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data2 as $key => $value) {
-            $damt = $this->othersClass->sanitizekeyfield('amt', $data2[$key][$this->damt]);
-            $dqty = $this->othersClass->sanitizekeyfield('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])));
-            if ($companyid == 10) {
+              $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+              $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
+              if ($companyid == 10) {
                 if ($data[$key]->disc != "") {
                     $computedata = $this->othersClass->computestock(
                         $damt * $head['forex'],
@@ -3746,7 +3771,7 @@ class packhouseloading
                     0
                 );
             }
-            $computedata['amt'] = $this->othersClass->sanitizekeyfield('amt', $computedata['amt']);
+             $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
             $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
         }

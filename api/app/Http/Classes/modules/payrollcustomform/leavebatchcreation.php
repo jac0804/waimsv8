@@ -194,10 +194,13 @@ class leavebatchcreation
 
   private function saveentry($config)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $config['params']['rows'];
     foreach ($this->fields as $key => $value) {
       foreach ($data as $k => $v) {
-        $data[$k][$value] = $this->othersClass->sanitizekeyfield($value, $data[$k][$value]);
+        $data[$k][$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$k][$value],$lookups);
       }
     }
   }

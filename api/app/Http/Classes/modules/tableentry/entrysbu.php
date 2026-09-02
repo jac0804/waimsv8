@@ -118,12 +118,14 @@ class entrysbu
   {
     $data = $config['params']['data'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $i = 0;
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
         $i++;
         $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "' limit 1";
@@ -179,8 +181,10 @@ class entrysbu
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
+    $dateTables = [$this->table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
     $qry = "select line,category from  reqcategory where category = '" . $row['category'] . "' limit 1";
     $opendata = $this->coreFunctions->opentable($qry);

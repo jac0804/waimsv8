@@ -102,8 +102,13 @@ class viewbreconbanksummary
         }
         $acnoname = $config['params']['dataparams']['acnoname'];
 
-        $start = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-        $end = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['brecon'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+        $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+        $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
+
 
         $txtqry = "select '" . $acno . "' as contra, '" . $acnoname . "' as acnoname,
         '" . $start . "' as `start`, '" . $end . "' as `end`";
@@ -135,9 +140,13 @@ class viewbreconbanksummary
     public function openBankBook($config)
     {
         $acno = $config['params']['dataparams']['contra'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['brecon'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        $date1 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['start']);
-        $date2 = $this->othersClass->sanitizekeyfield('dateid', $config['params']['dataparams']['end']);
+        $date1 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
+        $date2 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
+
 
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);

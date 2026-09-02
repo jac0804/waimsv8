@@ -448,11 +448,15 @@ class pw
     if ($companyid == 0) { //main
       array_push($this->fields, 'sotype');
     }
+
+    $dateTables = ['pwhead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1153,13 +1157,17 @@ class pw
       $config['params']['line'] = $line;
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $isqty3 = $this->othersClass->sanitizekeyfield('qty', $isqty3);
-    $isqty2 = $this->othersClass->sanitizekeyfield('qty', $isqty2);
+    $dateTables = ['pwstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $isqty3 = $this->othersClass->sanitizekeyfieldFast('qty', $isqty3, $lookups);
+    $isqty2 = $this->othersClass->sanitizekeyfieldFast('qty', $isqty2, $lookups);
+
+  
 
     $qty = $isqty3 - $isqty2;
     // if ($isqty2 == 0)  $qty = 0;
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $factor = 1;
     $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);
@@ -1182,7 +1190,7 @@ class pw
       'isqty3' => $isqty3
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

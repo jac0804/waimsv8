@@ -112,13 +112,15 @@ class entryreasoncodesetup
         $companyid = $config['params']['companyid'];
         $data = $config['params']['data'];
         $data2 = [];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
                 }
-                $data2['isreasoncode'] = $this->othersClass->sanitizekeyfield('isreasoncode', $data[$key]['isreasoncode']);
+                $data2['isreasoncode'] = $this->othersClass->sanitizekeyfieldFast('isreasoncode', $data[$key]['isreasoncode'],$lookups);
                 $data2['isloantype'] = 0;
                 if ($data[$key]['line'] == 0 && $data[$key]['description'] != '') {
                     $qry = "select description from reqcategory where description = '" . $data[$key]['description'] . "' limit 1";
@@ -181,8 +183,10 @@ class entryreasoncodesetup
         $data = [];
         $companyid = $config['params']['companyid'];
         $row = $config['params']['row'];
+        $dateTables = [$this->table];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
         }
 
         $data['isreasoncode'] = 1;

@@ -149,6 +149,11 @@ class batchsetup
         $cols[$tax01]['label'] = 'TAX';
         $cols[$tax01]['style'] = 'width:30px;whiteSpace: normal;min-width:30px;';
         break;
+      case 53: //camera
+        $cols[$listdate]['type'] = 'coldel';
+        $cols[$divname]['type'] = 'coldel';
+        $cols[$branch]['type'] = 'coldel';
+        break;
       default:
         $cols[$divname]['type'] = 'coldel';
         $cols[$branch]['type'] = 'coldel';
@@ -205,9 +210,18 @@ class batchsetup
 
   public function createHeadbutton($config)
   {
-    $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'backlisting', 'toggleup', 'toggledown');
-    if ($config['params']['companyid'] == 66) { //metro dragon
-      $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown');
+    switch ($config['params']['companyid']) {
+      case 53: //camera
+        $btns = array('load', 'backlisting', 'toggleup', 'toggledown');
+        $this->showcreatebtn = false;
+        break;
+      case 66: //metro dragon
+        $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'edit', 'backlisting', 'toggleup', 'toggledown');
+        break;
+
+      default:
+        $btns = array('load', 'new', 'save', 'delete', 'cancel', 'print', 'logs', 'backlisting', 'toggleup', 'toggledown');
+        break;
     }
     $buttons = $this->btnClass->create($btns);
     return $buttons;
@@ -411,7 +425,9 @@ class batchsetup
   {
     $head = $config['params']['head'];
     $center = $config['params']['center'];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->head];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
 
     $clientid = $head['clientid'];
@@ -429,7 +445,7 @@ class batchsetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -485,7 +501,8 @@ class batchsetup
         if ($dateid->format('yyyy-mm-dd') < $startdate->format('yyyy-mm-dd')) {
           return ['status' => false, 'msg' => 'From: startdate is greater than month covered'];
         }
-        if ($config['params']['companyid'] == 58) { //cdohris
+
+        if ($config['params']['companyid'] == 58 || $config['params']['companyid'] == 62) { //late cut-off: cdohris | onesky
         } else {
           if ($enddate->format('yyyy-mm-dd') < $dateid->format('yyyy-mm-dd')) {
             return ['status' => false, 'msg' => 'To: enddate is less  than month covered'];

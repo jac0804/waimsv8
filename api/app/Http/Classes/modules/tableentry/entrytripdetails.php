@@ -181,7 +181,8 @@ class entrytripdetails
     $isposted = $this->othersClass->isposted2($trno, "cntnum");
     $isapproved = $this->othersClass->isapproved($config['params']['tableid'], "hcntnuminfo");
     $table = $this->head;
-    if ($isposted) {
+    
+     if ($isposted) {
       $table = $this->hhead;
       switch ($config['params']['doc']) {
         case 'RR':
@@ -191,11 +192,16 @@ class entrytripdetails
           break;
       }
     }
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$table];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+  
     $row = $config['params']['data'];
     foreach ($row as $key => $rows) {
       $data = [];
       foreach ($this->fields as $key2 => $value) {
-        $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$key][$value]);
+        $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value],$lookups);
       }
       if ($data['line'] == 0) {
         if (isset($rows['bgcolor'])) {
@@ -281,6 +287,10 @@ class entrytripdetails
     if ($isposted) {
       $infotab = $this->hhead;
     }
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$infotab];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+  
     switch ($config['params']['lookupclass2']) {
       case 'addtogrid':
         $trno = $config['params']['tableid'];
@@ -300,7 +310,7 @@ class entrytripdetails
 
         $insertdata = [];
         foreach ($this->fields as $key => $value) {
-          $insertdata[$value] = $this->othersClass->sanitizekeyfield($value, $data[$value]);
+          $insertdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value],$lookups);
         }
 
         $qry = "select line as value from $infotab where trno=? order by line desc limit 1";

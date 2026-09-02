@@ -374,6 +374,9 @@ class downloadapi
     $acctg = [];
     $amt = 0;
 
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($doc, $companyid, [], false, $dateTables);
     $qry = "select t.docno as ref,t.ref as tref,t.amount,t.cost,t.dateid,t.client,c.clientname,t.reftrno,c.addr as address from temptrans as t left join client as c on c.client = t.client where t.iscancel = 0 and  t.trno =0 and t.reftrno = " . $id;
     $data = $this->coreFunctions->opentable($qry);
 
@@ -499,7 +502,7 @@ class downloadapi
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($acctg as $key => $value) {
               foreach ($value as $key2 => $value2) {
-                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
               }
               $acctg[$key]['editdate'] = $current_timestamp;
               $acctg[$key]['editby'] = $config['params']['user'];

@@ -339,6 +339,9 @@ class ttc
         $msg = '';
         $msg2 = '';
         $msg3 = '';
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['temptimecard'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($rows as $key => $val) {
             $update = true;
 
@@ -371,7 +374,7 @@ class ttc
                     }
                     foreach ($this->fields as $k) {
                         if (isset($val[$k])) {
-                            $data[$k] = $this->othersClass->sanitizekeyfield($k, $val[$k]);
+                            $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
                             if ($k == 'dateid') {
                                 $data[$k] = date_format(date_create($val[$k]), "Y-m-d");
                             }

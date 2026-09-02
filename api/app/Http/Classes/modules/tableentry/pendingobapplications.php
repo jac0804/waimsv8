@@ -296,10 +296,13 @@ class pendingobapplications
         $isapp = $row['approver']; //issupervisor,isapprover
         $initial_remarks = $row['initial_remarks'];
 
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['obapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         if ($isapp == '' || $isapp == null) $isapp = $this->coreFunctions->datareader("select approver as value from pendingapp where doc='OB' and line=" . $row['line']);
 
         $admin = $config['params']['adminid'];
-        $companyid = $config['params']['companyid'];
 
         if ($isapp == 'LATE FILLING') { //cdo
             $approver = 1;
@@ -393,7 +396,7 @@ class pendingobapplications
             foreach ($this->obfields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                    $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -476,7 +479,7 @@ class pendingobapplications
                                     }
                                 }
                                 // $result = $this->linkemail->createOBEmail($params);
-                                $result = $this->linkemail->weblink($params,$config);
+                                $result = $this->linkemail->weblink($params, $config);
                                 if (!$result['status']) {
                                     $msg = $result['msg'];
                                     $re_status = false;
@@ -498,7 +501,7 @@ class pendingobapplications
                 }
             }
 
-            
+
             $this->logger->sbcmasterlog($row['line'], $config, $label . $row['type'] . ' (' . $row['clientname'] . ') - ' . $row['dateid'] . ' ' . $rem2 . ' - ' . $remarkslast);
             return ['status' => true, 'msg' => 'Successfully ' . $label, 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
         } else {

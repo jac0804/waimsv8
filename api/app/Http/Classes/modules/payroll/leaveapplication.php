@@ -7,6 +7,7 @@ use App\Http\Requests;
 use DB;
 use Session;
 
+use App\Http\Classes\common\payrollcommon;
 use App\Http\Classes\builder\buttonClass;
 use App\Http\Classes\builder\txtfieldClass;
 use App\Http\Classes\builder\tabClass;
@@ -35,6 +36,7 @@ class leaveapplication
   public $prefix = '';
   public $tablelogs_del = '';
   private $stockselect;
+  private $payrollcommon;
 
   private $fields = [
     'dateid',
@@ -67,6 +69,7 @@ class leaveapplication
     $this->othersClass = new othersClass;
     $this->logger = new Logger;
     $this->sqlquery = new sqlquery;
+    $this->payrollcommon = new payrollcommon;
     $this->reporter = new SBCPDF;
   }
 
@@ -309,13 +312,16 @@ class leaveapplication
 
   public function updatehead($config, $udpate)
   {
+    $companyid = $config['params']['companyid'];
+    $dateTables = [$this->stock];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $head = $config['params']['head'];
     $msg = '';
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $head[$key] = $this->othersClass->sanitizekeyfield($key, $head[$key]);
+          $head[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key],$lookups);
         } //end if 
       }
     }
@@ -332,9 +338,10 @@ class leaveapplication
     $data['empid'] = $head['empid'];
     $data['remarks'] = $head['remarks'];
 
+    $head['uom'] = $this->coreFunctions->getfieldvalue("paccount", "uom", "line=?", [$head['acnoid']]);
 
     $date = date('Y-m-d', strtotime($data['effectivity']));
-    $result = $this->checking($config, $date);
+    $result = $this->checking($config, $date, $head);
 
     if ($result) {
       return ['status' => false, 'msg' => 'You already have application at the same date - ' . $date];
@@ -408,22 +415,27 @@ class leaveapplication
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
-  public function checking($config, $date)
-  {
+
+  public function checking($config, $date, $head){
     $empid = $config['params']['head']['empid'];
-    $dis = ['D'];
-    $status = ['A', 'E'];
-    $data =  $this->coreFunctions->opentable("select status,status2 from $this->stock where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
-    $s = false;
-    if (!empty($data)) {
-      if (!in_array($data[0]->status, $dis) || !in_array($data[0]->status2, $dis)) {
-        $s = true;
-      } else {
-        if (!in_array($data[0]->status, $status) && !in_array($data[0]->status2, $status)) {
-          $s = true;
-        }
-      }
-    }
-    return $s;
+    return $this->payrollcommon->leaveappchecking($config, $date, $head, $empid);
   }
+  // public function checking($config, $date)
+  // {
+  //   $empid = $config['params']['head']['empid'];
+  //   $dis = ['D'];
+  //   $status = ['A', 'E'];
+  //   $data =  $this->coreFunctions->opentable("select status,status2 from $this->stock where empid = $empid and date(effectivity) = '" . $date . "' order by line desc ");
+  //   $s = false;
+  //   if (!empty($data)) {
+  //     if (!in_array($data[0]->status, $dis) || !in_array($data[0]->status2, $dis)) {
+  //       $s = true;
+  //     } else {
+  //       if (!in_array($data[0]->status, $status) && !in_array($data[0]->status2, $status)) {
+  //         $s = true;
+  //       }
+  //     }
+  //   }
+  //   return $s;
+  // }
 } //end class

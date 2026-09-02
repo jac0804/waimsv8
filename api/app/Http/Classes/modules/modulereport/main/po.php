@@ -385,7 +385,6 @@ class po
     PDF::MultiCell(50, 20, "Terms : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-
     PDF::MultiCell(0, 0, "\n\n");
 
     PDF::SetFont($font, 'B', $fontsize);

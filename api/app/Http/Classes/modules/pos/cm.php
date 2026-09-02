@@ -233,6 +233,8 @@ class cm
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
     $invonly = $this->companysetup->isinvonly($config['params']);
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
 
     $action = 0;
     $rrqty = 1;
@@ -304,12 +306,8 @@ class cm
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
     if (!$isexpiry) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     } else {
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
     }
 
@@ -385,6 +383,14 @@ class cm
     $obj[0]['inventory']['columns'][$rem]['readonly'] = true;
     $obj[0]['inventory']['columns'][$ref]['readonly'] = true;
     $obj[0]['inventory']['columns'][$wh]['readonly'] = true;
+
+      $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    } 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -584,17 +590,21 @@ class cm
   public function updatehead($config, $isupdate)
   {
     $head = $config['params']['head'];
+    $companyid = $config['params']['companyid'];
     $data = [];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
     }
+    $dateTables = ['lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
         } //end if
       }
     }
@@ -1455,8 +1465,14 @@ class cm
       $config['params']['line'] = $line;
     }
 
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+    $dateTables = ['lastock', 'stockinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
+    // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt,$lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty,$lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1503,8 +1519,10 @@ class cm
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
     }
+   
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
     $data['editby'] = $config['params']['user'];
@@ -1865,11 +1883,15 @@ class cm
         $this->distribution($params, $config);
       }
     }
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -2116,10 +2138,14 @@ class cm
       $qry = "select line as value from gldetail where trno=? order by line desc limit 1";
       $line = $this->coreFunctions->datareader($qry, [$trno], '', true);
       $line += 1;
+      $companyid = $config['params']['companyid'];
+      $dateTables = ['pxstock'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
       foreach ($this->acctg as $key3 => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          // $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
+          $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
         }
         $this->acctg[$key3]['line'] = $line;
         $this->acctg[$key3]['editdate'] = $current_timestamp;

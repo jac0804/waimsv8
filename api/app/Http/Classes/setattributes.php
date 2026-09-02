@@ -1521,7 +1521,8 @@ class setattributes
         "(1305,1,'Allow Click Change Code EMP','',0,'\\201016','\\2010',0,'0',0)",
         "(1306,1,'Allow Click Delete Button EMP','',0,'\\201017','\\2010',0,'0',0)",
         "(1307,1,'Allow Click Print Button EMP','',0,'\\201018','\\2010',0,'0',0)",
-        "(5228,1,'Allow To View All Employees','',0,'\\201029','\\2010',0,'0',0)"
+        "(5228,1,'Allow To View All Employees','',0,'\\201029','\\2010',0,'0',0)",
+        "(5950,1,'Allow Click Button Citation','',0,'\\201032','\\2010',0,0,0)"
       ]
     ];
     return $value;

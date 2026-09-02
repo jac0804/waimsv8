@@ -17,6 +17,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\common\payrollcommon;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
+use App\Http\Classes\sbcscript\sbcscript;
 
 use Carbon\Carbon;
 
@@ -32,6 +33,7 @@ class payrollprocess
   private $payrollcommon;
   private $logger;
   private $btnClass;
+  private $sbcscript;
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = false;
   public $showclosebtn = false;
@@ -45,6 +47,7 @@ class payrollprocess
     $this->othersClass = new othersClass;
     $this->payrollcommon = new payrollcommon;
     $this->logger = new Logger;
+    $this->sbcscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -172,10 +175,28 @@ class payrollprocess
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['readfile']; // 'createschedule'
+    $companyid = $config['params']['companyid'];
+
+    if ($companyid == 68) {
+      $tbuttons = ['createschedule', 'readfile']; // jda
+    } else {
+      $tbuttons = ['readfile']; // 'createschedule'
+    }
+
+    foreach ($tbuttons as $key => $value) {
+      $$value = $key;
+    }
+
     $obj = $this->tabClass->createtabbutton($tbuttons);
-    $obj[0]['label'] = 'READ TXTFILE FROM BIOMETRIC';
-    $obj[0]['access'] = 'view';
+    $obj[$readfile]['label'] = 'READ TXTFILE FROM BIOMETRIC';
+    $obj[$readfile]['access'] = 'view';
+
+    if (isset($createschedule)) {
+      $obj[$createschedule]['label'] = 'READ DTR FROM EXCEL';
+      $obj[$createschedule]['access'] = 'view';
+      $obj[$createschedule]['lookupclass'] = 'uploadexcel';
+      $obj[$createschedule]['action'] = 'uploadexcel';
+    }
     return $obj;
   }
 
@@ -322,6 +343,53 @@ class payrollprocess
             }
             break;
 
+          case 66: //metro dragon
+            $arrcsv = explode("\r\n", $csv);
+
+            $counter = 1;
+            foreach ($arrcsv as $arr) {
+              $name = '';
+              $time = '';
+              $machno = '';
+              $type = '';
+
+              $arr = trim($arr);
+              if ($arr === '') {
+                goto exithere;
+              }
+
+              // fixed-width/space-padded fields: pin, date, time, status, verify
+              $newarr = preg_split('/\s+/', $arr);
+
+              if (count($newarr) < 5) {
+                goto exithere;
+              }
+
+              $name = trim($newarr[0]);
+              $time = date('Y-m-d H:i:s', strtotime(trim($newarr[1]) . ' ' . trim($newarr[2])));
+              $type = trim($newarr[3]);
+              $machno = trim($newarr[4]);
+
+              if ($type == "1") {
+                $type = "IN";
+              } else {
+                $type = "OUT";
+              }
+
+              $cdate = date('Y-m-d', strtotime($time));
+
+              if (($cdate >= $start) && ($cdate <= $end)) {
+                $chkexist = $this->coreFunctions->datareader("select userid as value from timerec where userid='" . $name . "' and timeinout='" . $time . "'");
+                if ($chkexist == "") {
+                  $qry = "insert into timerec (machno,userid,timeinout,mode,curdate) values (" . $machno . ",'" . $name . "','" . $time . "','" . $type . "','" . $cdate . "') ";
+                  $this->coreFunctions->execqry($qry);
+                }
+              }
+
+              $counter = $counter + 1;
+            }
+            break;
+
 
           default: //XComp
             $arrcsv = explode("\r\n", $csv);
@@ -419,9 +487,348 @@ class payrollprocess
 
         return ['status' => true, 'msg' => 'Txt file ready to Download', 'name' => 'BPI', 'data' => $merged, 'filename' => 'BPI SUMMARY CONVERTER'];
         break;
+
+      case 'uploadexcel': //jda
+        return $this->uploadExcelDTR($config);
+        break;
     }
   }
 
+
+  public function uploadExcelDTR($config)
+  {
+    $excel = $config['params']['data'];
+
+    $msg = '';
+    $status = true;
+
+    try {
+
+      if (empty($excel)) {
+        $msg = $this->othersClass->addMsg($msg, 'Invalid Excel Format, No data found.');
+        return array('status' => false, 'msg' => $msg);
+      }
+
+      // ---- Validate TimeShift ----
+      $uniqueShift = array_values(array_unique(array_column($excel, 'TimeShift')));
+
+      $shiftMap = array(); // shftcode => line(shiftid)
+      if (!empty($uniqueShift)) {
+        $placeholders = implode(',', array_fill(0, count($uniqueShift), '?'));
+        $rows = $this->coreFunctions->opentable("select shftcode, line from tmshifts where shftcode in ($placeholders)", $uniqueShift);
+
+        foreach ($rows as $row) {
+          $shiftMap[$row->shftcode] = $row->line;
+        }
+      }
+
+      $invalidShiftCodes = array_diff($uniqueShift, array_keys($shiftMap));
+      foreach ($invalidShiftCodes as $badShift) {
+        $status = false;
+        $msg = $this->othersClass->addMsg($msg, 'Invalid TimeShift ' . $badShift . ', Shift not found.');
+      }
+
+      // ---- Validate BioID against employee table ----
+      $uniqueBioID = array_values(array_unique(array_column($excel, 'BioID')));
+
+      $empMap = array(); // idbarcode => ['empid' => ..., 'defaultShiftId' => ..., 'paygroup' => ...]
+      if (!empty($uniqueBioID)) {
+        $placeholders = implode(',', array_fill(0, count($uniqueBioID), '?'));
+        $rows = $this->coreFunctions->opentable("select idbarcode, empid, shiftid, paygroup from employee where isactive=1 and idbarcode in ($placeholders)", $uniqueBioID);
+        foreach ($rows as $row) {
+          $empMap[$row->idbarcode] = array(
+            'empid'          => $row->empid,
+            'defaultShiftId' => $row->shiftid,
+            'paygroup'       => $row->paygroup,
+          );
+        }
+      }
+
+      $invalidBioIDs = array_diff($uniqueBioID, array_keys($empMap));
+      foreach ($invalidBioIDs as $badBioID) {
+        $status = false;
+        $msg = $this->othersClass->addMsg($msg, 'Invalid BioID ' . $badBioID . ', Employee not found.');
+      }
+
+      // ---- Keep rows with a valid BioID AND (valid Excel shift OR employee default shift) ----
+      $validExcel = array_values(array_filter($excel, function ($row) use ($shiftMap, $empMap) {
+        if (!isset($row['BioID']) || !isset($empMap[$row['BioID']])) {
+          return false;
+        }
+
+        $hasValidExcelShift = isset($row['TimeShift']) && isset($shiftMap[$row['TimeShift']]);
+        $hasDefaultShift     = !empty($empMap[$row['BioID']]['defaultShiftId']);
+
+        return $hasValidExcelShift || $hasDefaultShift;
+      }));
+
+      // --- Fetch paygroup setup for later use ---
+      $paygroupsetup = $this->coreFunctions->opentable("select line, othrs, spot, ndiffhrs, s3maxbracket from paygroup");
+      $paygroupsetup = json_decode(json_encode($paygroupsetup), true);
+
+
+      // ---- Main loop only processes rows already guaranteed valid ----
+      foreach ($validExcel as $key => $value) {
+
+        if (!isset($value['DTR Date'])) {
+          $status = false;
+          $msg = $this->othersClass->addMsg($msg, 'Invalid Excel Format, DTR Date column not found.');
+          break;
+        }
+
+        // Logger()->info('Processing ow: ' . json_encode($value));
+
+        $data = array();
+        $data['empid'] = $empMap[$value['BioID']]['empid'];
+        $excelShift = isset($value['TimeShift']) ? trim($value['TimeShift']) : null;
+        $data['shiftid'] = isset($shiftMap[$excelShift]) ? $shiftMap[$excelShift] : $empMap[$value['BioID']]['defaultShiftId'];
+
+        $data['pgline'] = $empMap[$value['BioID']]['paygroup'];
+
+        if (isset($value['Work Type'])) {
+          switch (strtolower($value['Work Type'])) {
+            case 'regular work day':
+            case 'special working holiday':
+              $worktype = 'WORKING';
+              break;
+            case 'rest day':
+            case 'rest day duty':
+              $worktype = 'RESTDAY';
+              break;
+            case 'legal holiday':
+            case 'legal holiday duty':
+            case 'rest day legal holiday':
+            case 'rest day legal holiday duty':
+              $worktype = 'LEG';
+              break;
+            case 'special holiday duty':
+            case 'rest day special holiday duty':
+              $worktype = 'SP';
+              break;
+            default:
+              $worktype = '';
+              break;
+          }
+
+          if ($worktype != '') {
+            $data['daytype'] = $worktype;
+          }
+        }
+
+        if ($value['DTR Date'] != "") {
+          if (is_numeric($value['DTR Date'])) {
+            $UNIX_DATE = ($value['DTR Date'] - 25569) * 86400;
+            $data['dateid'] = gmdate("Y-m-d", $UNIX_DATE);
+          } else {
+            $data['dateid'] = $this->othersClass->sanitizekeyfield("dateid", $value['DTR Date']);
+          }
+        }
+
+        if ($empMap[$value['BioID']]['defaultShiftId'] != $data['shiftid']) {
+          $dayNumber = date('N', strtotime($data['dateid']));
+          $defShift = $this->coreFunctions->opentable("
+                      select concat('" . $data['dateid'] . "',' ',time(schedin)) as schedin, concat('" . $data['dateid'] . "',' ',time(schedout)) as schedout, 
+                      concat('" . $data['dateid'] . "',' ',time(breakin)) as breakin, concat('" . $data['dateid'] . "',' ',time(breakout)) as breakout, tothrs from shiftdetail 
+                      where shiftsid='" . $data['shiftid'] . "' and dayn=" . $dayNumber);
+          foreach ($defShift as $key2 => $val) {
+            $data['schedin'] = $val->schedin;
+            $data['schedout'] = $val->schedout;
+            $data['schedbrkin'] = $val->breakin;
+            $data['schedbrkout'] = $val->breakout;
+            $data['reghrs'] = $val->tothrs;
+          }
+        }
+
+        $noStart = false;
+        $noEnd = false;
+
+        $data['absdays'] = 0;
+        $data['underhrs'] = 0;
+        $data['latehrs'] = 0;
+        $data['othrs'] = 0;
+        $data['ndiffhrs'] = 0;
+        $data['ndiffot'] = 0;
+        $data['otapproved'] = 0;
+        $data['ndiffsapprvd'] = 0;
+        $data['Ndiffapproved'] = 0;
+        $data['isprevwork'] = 0;
+
+        $data['actualin']  = null;
+        $data['actualout']  = null;
+
+        $data['actualbrkin']  = null;
+        $data['actualbrkout']  = null;
+
+        if (isset($value['Start'])) {
+          if ($value['Start'] != "") {
+            if (is_numeric($value['Start'])) {
+              $UNIX_DATE = round(($value['Start'] - 25569) * 86400);
+              $data['actualin'] = gmdate("Y-m-d H:i:s", $UNIX_DATE);
+            } else {
+              $data['actualin'] = $this->othersClass->sanitizekeyfield("dateid", $value['Start']);
+            }
+          } else {
+            $noStart = true;
+          }
+        } else {
+          $noStart = true;
+        }
+
+        if (isset($value['End'])) {
+          if ($value['End'] != "") {
+            if (is_numeric($value['End'])) {
+              $UNIX_DATE = round(($value['End'] - 25569) * 86400);
+              $data['actualout'] = gmdate("Y-m-d H:i:s", $UNIX_DATE);
+            } else {
+              $data['actualout'] = $this->othersClass->sanitizekeyfield("dateid", $value['End']);
+            }
+          } else {
+            $noEnd = true;
+          }
+        } else {
+          $noEnd = true;
+        }
+
+        //absent
+        if ($noStart && $noEnd) {
+          $regHrs = $this->coreFunctions->datareader("select reghrs as value from timecard where empid='" . $data['empid'] . "' and dateid='" . $data['dateid'] . "'", [], '', true);
+          $data['absdays'] = $regHrs;
+          if (isset($data['daytype']) && $data['daytype'] == 'RESTDAY') {
+            $data['reghrs'] = 0;
+            $data['absdays'] = 0;
+          }
+
+          if (isset($data['daytype']) && $data['daytype'] == 'LEG') {
+            $data['reghrs'] = 0;
+            $data['absdays'] = 0;
+            if (floatval($value['LegHRS']) != 0 || floatval($value['RD+REGHRS']) != 0) $data['isprevwork'] = 1;
+          }
+
+          goto savehere;
+        }
+
+        $late = 0;
+        if (isset($value['LateMIN'])) $late = floatval($value['LateMIN']);
+        if (isset($value['Over BreakMIN'])) $late += floatval($value['Over BreakMIN']);
+        if ($late != 0) $data['latehrs'] = $late / 60;
+
+        if ((isset($value['UTMIN'])) && floatval($value['UTMIN']) != 0) $data['underhrs'] = floatval($value['UTMIN']);
+
+        if (isset($value['RegHRS'])) $data['reghrs'] = floatval($value['RegHRS']);
+        if (isset($value['RegOT'])) $data['othrs'] = floatval($value['RegOT']);
+        if (isset($value['RegND'])) $data['ndiffhrs'] = floatval($value['RegND']);
+        if (isset($value['RegND'])) $data['reghrs'] += floatval($value['RegND']);
+        if (isset($value['RegNDOT'])) $data['othrs'] += floatval($value['RegNDOT']);
+        if (isset($value['RegNDOT'])) $data['ndiffhrs'] += floatval($value['RegNDOT']);
+        if (isset($data['othrs']) && $data['othrs'] != 0) $data['otapproved'] = 1;
+        if (isset($data['ndiffhrs']) && $data['ndiffhrs'] != 0) $data['ndiffsapprvd'] = 1;
+        if (isset($data['ndiffot']) && $data['ndiffot'] != 0) $data['Ndiffapproved'] = 1;
+
+        if (isset($data['daytype']) && $data['daytype'] == 'RESTDAY') {
+          if (isset($value['RDHRS']) && $value['RDHRS'] != 0) $data['reghrs'] = floatval($value['RDHRS']);
+          if (isset($value['RDOT']) && $value['RDOT'] != 0) $data['othrs'] = floatval($value['RDOT']);
+          if (isset($value['RDND']) && $value['RDND'] != 0) $data['ndiffhrs'] = floatval($value['RDND']);
+          if (isset($value['RDND']) && $value['RDND'] != 0) $data['reghrs'] += floatval($value['RDND']);
+          if (isset($value['RDNDOT']) && $value['RDNDOT'] != 0) $data['othrs'] += floatval($value['RDNDOT']);
+          if (isset($value['RDNDOT']) && $value['RDNDOT'] != 0) $data['ndiffhrs'] += floatval($value['RDNDOT']);
+
+          if ($data['reghrs'] != 0) $data['RDapprvd'] = 1;
+          if (isset($data['othrs']) && $data['othrs'] != 0) $data['RDOTapprvd'] = 1;
+          if (isset($data['ndiffhrs']) && $data['ndiffhrs'] != 0) $data['ndiffsapprvd'] = 1;
+          if (isset($data['ndiffot']) && $data['ndiffot'] != 0) $data['Ndiffapproved'] = 1;
+        }
+
+        if (isset($data['daytype']) && $data['daytype'] == 'LEG') {
+          if (isset($value['LegHRS']) && $value['LegHRS'] != 0) {
+            if (floatval($value['LegHRS']) > 8) {
+              $data['reghrs'] = floatval($value['LegHRS']) - 8;
+            } else {
+              $data['reghrs'] = floatval($value['LegHRS']);
+            }
+          }
+          if (isset($value['LegOT']) && $value['LegOT'] != 0) $data['othrs'] = floatval($value['LegOT']);
+          if (isset($value['LegND']) && $value['LegND'] != 0) $data['ndiffhrs'] = floatval($value['LegND']);
+          if (isset($value['LegND']) && $value['LegND'] != 0) $data['reghrs'] += floatval($value['LegND']);
+          if (isset($value['LegNDOT']) && $value['LegNDOT'] != 0) $data['othrs'] += floatval($value['LegNDOT']);
+          if (isset($value['LegNDOT']) && $value['LegNDOT'] != 0) $data['ndiffhrs'] += floatval($value['LegNDOT']);
+
+          if (isset($value['RD+REGHRS']) && $value['RD+REGHRS'] != 0) $data['reghrs'] = floatval($value['RD+REGHRS']) / 2;
+          if (isset($value['RD+REGOT']) && $value['RD+REGOT'] != 0) $data['othrs'] = floatval($value['RD+REGOT']);
+          if (isset($value['RD+REGND']) && $value['RD+REGND'] != 0) $data['ndiffhrs'] = floatval($value['RD+REGND']);
+          if (isset($value['RD+REGND']) && $value['RD+REGND'] != 0) $data['reghrs'] += floatval($value['RD+REGND']);
+          if (isset($value['RD+REGNDOT']) && $value['RD+REGNDOT'] != 0) $data['othrs'] += floatval($value['RD+REGNDOT']);
+          if (isset($value['RD+REGNDOT']) && $value['RD+REGNDOT'] != 0) $data['ndiffhrs'] += floatval($value['RD+REGNDOT']);
+
+          if (isset($data['reghrs']) && $data['reghrs'] != 0) $data['LEGapprvd'] = 1;
+          if (isset($data['othrs']) && $data['othrs'] != 0) $data['LEGOTapprvd'] = 1;
+          if (isset($data['ndiffhrs']) && $data['ndiffhrs'] != 0) $data['ndiffsapprvd'] = 1;
+          if (isset($data['ndiffot']) && $data['ndiffot'] != 0) $data['Ndiffapproved'] = 1;
+        }
+
+        if (isset($data['daytype']) && $data['daytype'] == 'SP') {
+          if (isset($value['SPHRS']) && $value['SPHRS'] != 0) $data['reghrs'] = floatval($value['SPHRS']);
+          if (isset($value['SPOT']) && $value['SPOT'] != 0) $data['othrs'] = floatval($value['SPOT']);
+          if (isset($value['SPND']) && $value['SPND'] != 0) $data['ndiffhrs'] = floatval($value['SPND']);
+          if (isset($value['SPND']) && $value['SPND'] != 0) $data['reghrs'] += floatval($value['SPND']);
+          if (isset($value['SPNDOT']) && $value['SPNDOT'] != 0) $data['othrs'] += floatval($value['SPNDOT']);
+          if (isset($value['SPNDOT']) && $value['SPNDOT'] != 0) $data['ndiffhrs'] += floatval($value['SPNDOT']);
+
+          if (isset($value['RD+SPNHRS']) && $value['RD+SPNHRS'] != 0) $data['reghrs'] = floatval($value['RD+SPNHRS']);
+          if (isset($value['RD+SPNOT']) && $value['RD+SPNOT'] != 0) $data['othrs'] = floatval($value['RD+SPNOT']);
+          if (isset($value['RD+SPNND']) && $value['RD+SPNND'] != 0) $data['ndiffhrs'] = floatval($value['RD+SPNND']);
+          if (isset($value['RD+SPNND']) && $value['RD+SPNND'] != 0) $data['reghrs'] += floatval($value['RD+SPNND']);
+          if (isset($value['RD+SPNNDOT']) && $value['RD+SPNNDOT'] != 0) $data['othrs'] += floatval($value['RD+SPNNDOT']);
+          if (isset($value['RD+SPNNDOT']) && $value['RD+SPNNDOT'] != 0) $data['ndiffhrs'] += floatval($value['RD+SPNNDOT']);
+
+          if (isset($data['reghrs']) && $data['reghrs'] != 0) $data['SPapprvd'] = 1;
+          if (isset($data['othrs']) && $data['othrs'] != 0) $data['SPOTapprvd'] = 1;
+          if (isset($data['ndiffhrs']) && $data['ndiffhrs'] != 0) $data['ndiffsapprvd'] = 1;
+          if (isset($data['ndiffot']) && $data['ndiffot'] != 0) $data['Ndiffapproved'] = 1;
+        }
+
+
+        savehere:
+
+        $pgline =  $data['pgline'];
+        $tmpaygroup = array_filter($paygroupsetup, function ($row) use ($pgline) {
+          return (string)$row['line'] === (string)$pgline;
+        });
+
+        $firstRowPG = reset($tmpaygroup);
+
+        if ($firstRowPG) {
+          if ($data['ndiffhrs'] != 0) {
+            $data['ndiffmulti'] = $firstRowPG['ndiffhrs'];
+          }
+
+          if ($data['othrs'] != 0) {
+            if ($data['daytype'] == 'LEG') {
+              $data['legotmulti'] = $firstRowPG['othrs'];
+            } else if ($data['daytype'] == 'SP') {
+              $data['spotmulti'] = $firstRowPG['spot'];
+            }
+          }
+
+          $data['maxsss'] = $firstRowPG['s3maxbracket'];
+        }
+
+        // Logger()->info('Processing data: ' . json_encode($data));
+        $exist = $this->coreFunctions->datareader("select empid as value from timecard where empid='" . $data['empid'] . "' and dateid='" . $data['dateid'] . "'", [], '', true);
+        if ($exist) {
+          $this->coreFunctions->sbcupdate('timecard', $data, ['empid' => $data['empid'], 'dateid' => $data['dateid']]);
+        } else {
+          // $this->coreFunctions->sbcinsert('timecard', $data);
+          $msg = $this->othersClass->addMsg($msg, 'Create schedule first for employee ' . $value['Employee'] . ' on date ' . $data['dateid'] . '.');
+          $status = false;
+        }
+      }
+    } catch (Exception $e) {
+      $msg = $this->othersClass->addMsg($msg, '(Line:' . $e->getLine() . ') ' . $e->getMessage());
+      return array('status' => false, 'msg' => $msg);
+    }
+
+    return array('status' => $status, 'msg' => $msg);
+  }
 
   public function paramsdata($config)
   {
@@ -804,6 +1211,9 @@ class payrollprocess
     $end = $config['params']['dataparams']['enddate'];
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
     $check_access = $this->othersClass->checkAccess($config['params']['user'], 2483);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $msg = '';
 
@@ -892,7 +1302,7 @@ class payrollprocess
     foreach ($data as $key => $val) {
 
       $empName  = $val->clientname;
-      unset($val->clientname);    
+      unset($val->clientname);
 
       $shift = $this->payrollcommon->getShiftDetails($val->empid);
 
@@ -955,7 +1365,7 @@ class payrollprocess
           break;
       }
 
-      if ($val->actualin == null || $val->actualout == null) {
+      if ($val->actualin == null && $val->actualout == null) {
         $absent = $val->reghrs;
       } else {
         // $actualin =  $actualin_gtin->addMinute($shift[0]->gtin * -1);
@@ -1251,11 +1661,11 @@ class payrollprocess
         }
       }
 
-      $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
+      $val["dateid"] = $this->othersClass->sanitizekeyfieldFast('dateonly', $val["dateid"], $lookups);
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      if($this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+      if ($this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])) {
         if ($config['params']['companyid'] == 45) { //pdpi payroll
           if ($val['reghrs'] > 0) {
             // $totloghrs = $this->coreFunctions->datareader("select ifnull(sum(tothrs),0) as value from empprojdetail where empid=" . $val["empid"] . " and date(dateid)='" . $val["dateid"] . "'", [], '', true);
@@ -1280,11 +1690,9 @@ class payrollprocess
             }
           }
         }
-      }else{
+      } else {
         $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
-
-
     }
 
     if ($msg != '') {
@@ -1304,7 +1712,9 @@ class payrollprocess
     $end = $config['params']['dataparams']['enddate'];
     $empdivid = $config['params']['dataparams']['empdivid'];
     $empbranchid = $config['params']['dataparams']['empbranchid'];
-
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $msg = '';
 
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
@@ -1415,7 +1825,7 @@ class payrollprocess
       // $val["dateid"]
 
       $empName  = $val->clientname;
-      unset($val->clientname);      
+      unset($val->clientname);
       unset($val->bgcolor);
 
       $absent = 0;
@@ -1844,11 +2254,11 @@ class payrollprocess
 
       $val = json_decode(json_encode($val), true);
 
-      $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
+      $val["dateid"] = $this->othersClass->sanitizekeyfieldFast('dateonly', $val["dateid"], $lookups);
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      if(!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+      if (!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])) {
         $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
     }
@@ -1870,6 +2280,9 @@ class payrollprocess
     $end = $config['params']['dataparams']['enddate'];
     $empdivid = $config['params']['dataparams']['empdivid'];
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $msg = '';
 
@@ -2289,20 +2702,18 @@ class payrollprocess
 
       $val = json_decode(json_encode($val), true);
 
-      $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
+      $val["dateid"] = $this->othersClass->sanitizekeyfieldFast('dateonly', $val["dateid"], $lookups);
 
       if (!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])) {
         $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
     }
 
-    if($msg != ''){
+    if ($msg != '') {
       return ['status' => false, 'msg' => $msg];
-    }else{
+    } else {
       return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
     }
-
-  
   }
 
   public function computetimecard_jda($config, $blnExtract = false)
@@ -2323,6 +2734,9 @@ class payrollprocess
     $paygroupsetup = $this->coreFunctions->opentable("select line, othrs, spot, ndiffhrs, s3maxbracket from paygroup");
     $paygroupsetup = json_decode(json_encode($paygroupsetup), true);
     // Logger("paygroupsetup: " . json_encode($paygroupsetup));
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['timecard'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $msg = '';
 
@@ -2419,7 +2833,7 @@ class payrollprocess
 
       $pgline = $val->pgline;
       $tmpaygroup = array_filter($paygroupsetup, function ($row) use ($pgline) {
-        return $row['line'] === $pgline;
+        return (string)$row['line'] === (string)$pgline;
       });
 
       $firstRowPG = reset($tmpaygroup);
@@ -2504,19 +2918,6 @@ class payrollprocess
         }
 
         if ($late > 0) {
-
-          if ($config['params']['companyid'] == 43) { //mighty
-            if ($late > 0 && $late <= 5) {
-              $late2 = 0.08;
-            } elseif ($late > 5 && $late <= 10) {
-              $late2 = 0.5;
-            } elseif ($late > 10 && $late <= 45) {
-              $late2 = 1;
-            } elseif ($late > 45 && $late <= 120) {
-              $late2 = 2;
-            }
-          }
-
           $late = round($late / 60, 2);
         } else {
           $late = 0;
@@ -2748,11 +3149,11 @@ class payrollprocess
 
       $val = json_decode(json_encode($val), true);
 
-      $val["dateid"] = $this->othersClass->sanitizekeyfield('dateonly', $val["dateid"]);
+      $val["dateid"] = $this->othersClass->sanitizekeyfieldFast('dateonly', $val["dateid"], $lookups);
 
       // $this->coreFunctions->LogConsole(json_encode($val));
 
-      if(!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])){
+      if (!$this->coreFunctions->sbcupdate("timecard", $val, ['empid' => $val["empid"], 'dateid' => $val["dateid"]])) {
         $msg .=  'Failed to compute timecard of ' . $empName . ' for date ' . $val->dateid . ' <>';
       }
     }
@@ -2761,7 +3162,7 @@ class payrollprocess
       return ['status' => false, 'msg' => $msg];
     } else {
       return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
-    }    
+    }
 
     return ['status' => true, 'msg' => 'Compute Success', 'action' => 'load'];
   }
@@ -2849,11 +3250,11 @@ class payrollprocess
   {
     $dateid = date('Y-m-d', strtotime($dateid));
 
-    $valid = $this->coreFunctions->datareader("SELECT reghrs AS value FROM timecard WHERE empid=" . $empid . " AND dateid<'" . $dateid . "' AND daytype='WORKING' ORDER BY dateid DESC LIMIT 1", [], '', true);
+    $valid = $this->coreFunctions->datareader("SELECT reghrs-absdays AS value FROM timecard WHERE empid=" . $empid . " AND dateid<'" . $dateid . "' AND daytype='WORKING' ORDER BY dateid DESC LIMIT 1", [], '', true);
     if ($valid != 0) {
       return 1;
     } else {
-      $valid = $this->coreFunctions->datareader("SELECT reghrs AS value FROM timecard WHERE empid=" . $empid . " AND dateid>'" . $dateid . "' AND daytype='WORKING' ORDER BY dateid ASC LIMIT 1", [], '', true);
+      $valid = $this->coreFunctions->datareader("SELECT reghrs-absdays AS value FROM timecard WHERE empid=" . $empid . " AND dateid>'" . $dateid . "' AND daytype='WORKING' ORDER BY dateid ASC LIMIT 1", [], '', true);
       if ($valid != 0) {
         return 1;
       }
@@ -2900,6 +3301,7 @@ class payrollprocess
     $companyid = $config['params']['companyid'];
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
     $empid = $config['params']['dataparams']['empid'];
+    $empdivid = $config['params']['dataparams']['empdivid'];
 
     $batch = $config['params']['dataparams']['batch'];
     $paygroup = $config['params']['dataparams']['pgroup'];
@@ -2912,13 +3314,24 @@ class payrollprocess
     if ($batch == '') {
       return ['status' => false, 'msg' => 'Please select valid Batch.', 'action' => 'load'];
     }
+    if ($checkall) {
+      switch ($companyid) {
+        case 62: //onesky
+        case 58: //cdo
+          if ($empdivid == 0) {
+            return ['status' => false, 'msg' => 'Please select valid Company.', 'action' => 'load'];
+          }
+          break;
+      }
+    } else {
+      if ($empid == 0) {
+        return ['status' => false, 'msg' => 'Please select valid Employee.', 'action' => 'load'];
+      }
+    }
 
     $emplog = '';
 
     if (!$checkall) {
-      if ($empid == 0) {
-        return ['status' => false, 'msg' => 'Please select valid Employee.', 'action' => 'load'];
-      }
 
       if (isset($config['params']['dataparams']['empname'])) {
         if ($config['params']['dataparams']['empname'] == '') {
@@ -3082,6 +3495,9 @@ class payrollprocess
             case 58: //cdo
               $result = $this->payrollcommon->postactualinout_cdo($config, $val->empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
               break;
+            case 68: //jda
+              $result = $this->payrollcommon->postactualinout_jda($config, $val->empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
+              break;
             default:
               $result = $this->payrollcommon->postactualinout($config, $val->empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
               break;
@@ -3097,6 +3513,9 @@ class payrollprocess
         switch ($companyid) {
           case 58: //cdo
             $result = $this->payrollcommon->postactualinout_cdo($config, $empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
+            break;
+          case 68: //jda
+            $result = $this->payrollcommon->postactualinout_jda($config, $empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
             break;
           default:
             $result = $this->payrollcommon->postactualinout($config, $empid, $start, $end, $checkall, $config['params']['dataparams']['pgroup'], $config['params']['dataparams']['paymode']);
@@ -3118,5 +3537,9 @@ class payrollprocess
     }
 
     return ['status' => $status, 'msg' => $msg, 'action' => 'load'];
+  }
+  public function sbcscript($config)
+  {
+    return $this->sbcscript->payrollprocess($config);
   }
 } //end class

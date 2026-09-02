@@ -474,6 +474,10 @@ class warehouse
     $head = $config['params']['head'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+
+    $dateTables = ['client', 'clientinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     $data = [];
     $clientinfo = [];
     if ($isupdate) {
@@ -486,7 +490,7 @@ class warehouse
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $config['params']['doc'], $companyid);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -494,7 +498,7 @@ class warehouse
       if (!in_array($key, $this->except)) {
         if (array_key_exists($key, $head)) {
           $clientinfo[$key] = $head[$key];
-          $clientinfo[$key] = $this->othersClass->sanitizekeyfield($key, $clientinfo[$key], $config['params']['doc']);
+          $clientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $clientinfo[$key], $lookups);
         }
       } //end if    
     }
@@ -643,10 +647,15 @@ class warehouse
   {
     $whid = $config['params']['data']['whid'];
     $line = $config['params']['data']['line'];
+    $companyid = $config['params']['companyid'];
+
+    $dateTables = ['floor'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $data = [];
     $data['whid'] =  $whid;
-    $data['floor'] =  $this->othersClass->sanitizekeyfield("floor", $config['params']['data']['floor']);
+    // $data['floor'] =  $this->othersClass->sanitizekeyfield("floor", $config['params']['data']['floor']);
+    $data['floor'] =  $this->othersClass->sanitizekeyfieldFast("floor", $config['params']['data']['floor'], $lookups);
     $data['line'] = $line;
 
     $exist = $this->coreFunctions->datareader("select floor as value from floor where whid=? and floor=?", [$whid, $data['floor']]);

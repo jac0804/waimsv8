@@ -206,11 +206,15 @@ class seminar
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
 
+    $dateTables = ['seminar'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     $data['dateid'] = date("Y-m-d", strtotime($data['dateid']));
@@ -313,15 +317,19 @@ class seminar
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
     unset($data['newtrans']);
+
+    $dateTables = ['seminar'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
 
         foreach ($this->fields as $key2 => $value2) {
-
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data2['dateid'] = date("Y-m-d", strtotime($data2['dateid']));
         $data2['enddate'] = date("Y-m-d", strtotime($data2['enddate']));

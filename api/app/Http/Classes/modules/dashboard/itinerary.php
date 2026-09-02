@@ -118,6 +118,7 @@ class itinerary
 
     public function loaddata($config)
     {
+        $companyid = $config['params']['companyid'];
         $remarks = $config['params']['dataparams']['remarks']; // emp remarks
         $remark = $config['params']['dataparams']['remark']; // app remark
         $trno = $config['params']['dataparams']['trno'];
@@ -132,6 +133,10 @@ class itinerary
         $issupervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'itinerary';
         $approversetup = app($url)->approvers($config['params']);
+
+        $dateTables = ['itinerary'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        
         if (isset($config['params']['dataparams']['trno'])) {
             $trno = $config['params']['dataparams']['trno'];
 
@@ -174,7 +179,7 @@ class itinerary
                 foreach ($this->fields as $key2) {
                     if (isset($data[$key2])) {
                         $tempdata[$key2] = $data[$key2];
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfield($key2, $tempdata[$key2]);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                     }
                 }
 
@@ -204,6 +209,7 @@ class itinerary
     }
     public function generate_ob($config, $start, $end, $tempdata, $empid, $empname, $trno)
     {
+        $companyid = $config['params']['companyid'];
         $start = new DateTime(date('Y-m-d', strtotime($start)));
         $end = new DateTime($end);
         $status = true;
@@ -214,6 +220,10 @@ class itinerary
         $dates = [];
         $filter = "";
         $c = 0;
+
+        $dateTables = ['obapplication'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
         foreach ($period as $date) {
             $query = "select time(schedin) as value,daytype from timecard where empid = $empid and dateid = '" . $date->format('Y-m-d') . "' and daytype = 'WORKING'";
             $tmcd_sched = $this->coreFunctions->opentable($query);
@@ -262,7 +272,7 @@ class itinerary
                     $tempdata['scheddate'] = $date;
                 }
                 if (in_array($key2, $sanitized_fields)) {
-                    $this->othersClass->sanitizekeyfield('dateid', $tempdata[$key2]);
+                    $this->othersClass->sanitizekeyfieldFast('dateid', $tempdata[$key2], $lookups);
                 }
             }
             $lineob = $this->coreFunctions->insertGetId('obapplication', $tempdata);

@@ -298,6 +298,8 @@ class at
         $isexpiry = $this->companysetup->getisexpiry($config['params']);
         $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
         $systemtype = $this->companysetup->getsystemtype($config['params']);
+        $islocation = $this->companysetup->getislocation($config['params']);
+        $locname = $this->companysetup->getlocname($config['params']);
 
         $column = [
             'action',
@@ -344,8 +346,8 @@ class at
         if ($viewcost == '0') {
             if ($isexpiry) {
                 //loc
-                $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-                $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+                // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+                // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
                 //expiry
                 $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
             }
@@ -354,15 +356,15 @@ class at
         } else {
             if ($isexpiry) {
                 //loc
-                $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-                $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+                // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+                // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
                 //expiry
                 $obj[0]['inventory']['columns'][$expiry]['type'] = 'date';
             }
         }
 
         if (!$isexpiry) {
-            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+            // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
             $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         }
 
@@ -389,6 +391,11 @@ class at
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
+        $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+
+        if (!$islocation) {
+            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        } 
 
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -570,7 +577,6 @@ class at
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
@@ -1110,8 +1116,6 @@ class at
             $qty = $config['params']['data'][$this->dqty];
             $config['params']['line'] = $line;
         }
-        // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-        // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
         $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -1150,7 +1154,6 @@ class at
         ];
 
         foreach ($data as $key => $value) {
-            // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();

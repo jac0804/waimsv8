@@ -391,15 +391,24 @@ class pdailytask
                                 UpdateRequestorTM:
                                 if ($row['tasktrno'] != 0) { //KAPAG GALING TASK MONITORING
                                     $tmdetail = ['status' => 4, 'fcheckingdate' => $datenow, 'editdate' => $datenow, 'editby' => $config['params']['user']];
+
+                                    //auto complete if user is the requestor of the task and no checker assigned
+                                    if ($requestorid == $adminid) {
+                                        $tmdetail['status'] = 5;
+                                        $tmdetail['enddate'] = $datenow;
+                                    }
+
                                     if ($this->coreFunctions->sbcupdate('tmdetail', $tmdetail, ['trno' => $row['tasktrno'], 'line' => $row['taskline']])) {
 
-                                        //UPDATE SA PENDINGAPP NG CHECKER
-                                        $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
+                                        if ($tmdetail['status'] != 5) {
+                                            //UPDATE SA PENDINGAPP NG CHECKER
+                                            $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
 
-                                        $this->othersClass->insertUpdatePendingapp($row['tasktrno'], $row['taskline'], 'TM', [], $url, $config, $requestorid, false, true, 'FOR CHECKING'); //create sa pendingapp
+                                            $this->othersClass->insertUpdatePendingapp($row['tasktrno'], $row['taskline'], 'TM', [], $url, $config, $requestorid, false, true, 'FOR CHECKING'); //create sa pendingapp
 
-                                        $config['params']['doc'] = 'ENTRYTASK';
-                                        $this->logger->sbcmasterlog2($row['tasktrno'], $config, ' Line: ' . $row['taskline'] . ' Task submitted for checking by ' . $creator, 'masterfile_log');
+                                            $config['params']['doc'] = 'ENTRYTASK';
+                                            $this->logger->sbcmasterlog2($row['tasktrno'], $config, ' Line: ' . $row['taskline'] . ' Task submitted for checking by ' . $creator, 'masterfile_log');
+                                        }
                                     }
                                 }
                             }
@@ -585,14 +594,14 @@ class pdailytask
             from glhead sj
             join glstock lst on lst.trno = sj.trno where sj.doc = 'SJ'   ) as x on x.refx = head.trno and x.linex = stock.line where stock.dytrno = ? and head.createby = ? limit 1 ";
 
-            $existing = $this->coreFunctions->opentable($checkQry, [$sourceTrno, $username]);
+        $existing = $this->coreFunctions->opentable($checkQry, [$sourceTrno, $username]);
 
-            if (!empty($existing)) {
-                return [ 'status' => false, 'msg' => 'Failed to generate SJ. SJ document already exists for item ' . $existing[0]->itemname . '. SJ docno: '   . $existing[0]->sjdocno];
-            }
+        if (!empty($existing)) {
+            return ['status' => false, 'msg' => 'Failed to generate SJ. SJ document already exists for item ' . $existing[0]->itemname . '. SJ docno: '   . $existing[0]->sjdocno];
+        }
 
-            // Kapag walang existing SJ, kunin lahat ng SO items
-            $qry = "
+        // Kapag walang existing SJ, kunin lahat ng SO items
+        $qry = "
             select head.client, head.clientname, i.itemname, i.itemid, head.cur, head.forex, head.address, 
             head.terms, date(head.due) as due, head.wh, head.agent, head.yourref, head.ourref, 
             head.projectid, head.vattype, head.tax, head.rem, head.trno, stock.line,
@@ -606,7 +615,7 @@ class pdailytask
             left join item as i on i.itemid = stock.itemid
             where stock.dytrno = ? and head.createby = ? ";
 
-         $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
+        $soitem = $this->coreFunctions->opentable($qry, [$sourceTrno, $username]);
 
         $getdoc = $this->coreFunctions->getfieldvalue($table, 'doc', 'bref=?', [$sjref]);
         $seq = $this->othersClass->getlastseq($sjref, $config, $table);
@@ -690,11 +699,11 @@ class pdailytask
             $config['params']['data']['projectid'] = $soitem[$key2]->sprojid;
             if (isset($soitem[$key2]->itemdesc)) $config['params']['data']['itemdesc'] = $soitem[$key2]->itemdesc;
             $return = app($path)->additem('insert', $config, true);
-             if (!$return['status']) {
+            if (!$return['status']) {
 
                 $msg = $return['msg'];
                 // $msg = "Error generating SJ. Please review transaction.";
-                
+
                 $stat = false;
                 //delete
                 $cntnum = $this->coreFunctions->execqry("delete from cntnum where  trno=" . $sjTrno, 'delete');
@@ -704,10 +713,7 @@ class pdailytask
                 $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0, 'qa' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
 
                 break;
-             }
-
-
-            
+            }
         }
 
         if ($stat) {
@@ -743,7 +749,7 @@ class pdailytask
             $uphsostock =  $this->coreFunctions->sbcupdate('hsostock', ['dytrno' => 0, 'qa' => 0], ['trno' => $soitem[$key2]->trno, 'line' => $soitem[$key2]->line, 'dytrno' => $sourceTrno]);
         }
 
-        
+
 
         return ['status' => $stat, 'msg' => $msg];
     }

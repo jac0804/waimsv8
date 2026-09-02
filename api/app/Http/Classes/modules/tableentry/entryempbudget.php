@@ -162,11 +162,16 @@ class entryempbudget
 
   public function save($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
     $params = $config;
+
+    $dateTables = ['empbudget'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value]);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['total'] = $data['janamt'] + $data['febamt'] + $data['maramt'] + $data['apramt'] + $data['mayamt'] + $data['junamt'] + $data['julamt'] + $data['augamt'] + $data['sepamt'] + $data['octamt'] + $data['novamt'] + $data['decamt'];
     if ($row['line'] == 0) {
@@ -210,13 +215,17 @@ class entryempbudget
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $data = $config['params']['data'];
+
+    $dateTables = ['empbudget'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data2['total'] = $data2['janamt'] + $data2['febamt'] + $data2['maramt'] + $data2['apramt'] + $data2['mayamt'] + $data2['junamt'] + $data2['julamt'] + $data2['augamt'] + $data2['sepamt'] + $data2['octamt'] + $data2['novamt'] + $data2['decamt'];
         if ($data[$key]['line'] == 0) {

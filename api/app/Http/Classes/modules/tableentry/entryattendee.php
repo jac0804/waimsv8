@@ -254,11 +254,13 @@ class entryattendee
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
 
+    $dateTables = ['attendee'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $row['contactid'] = isset($row['contactid']) ? $row['contactid'] : 0;
     $row['salesid'] = isset($row['salesid']) ? $row['salesid'] : 0;
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfield($value, $row[$value], '', $companyid);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['isinactive'] == 'false') {
@@ -671,9 +673,13 @@ class entryattendee
 
   public function saveallentry($config)
   {
+    $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
     $data = $config['params']['data'];
     $status = 0;
+
+    $dateTables = ['attendee'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
       $data2 = [];     
@@ -681,7 +687,7 @@ class entryattendee
 
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfield($value2, $data[$key][$value2]);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if ($data[$key]['isinactive'] == 'false') {
@@ -1070,6 +1076,9 @@ class entryattendee
     $line = $row['line'];
     $filter = '';
 
+    $dateTables = ['attendee'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     switch ($doc) {
       case 'EXHIBIT':
         $filter = ' and a.isexhibit=1';
@@ -1127,7 +1136,7 @@ from attendee as a
       $data['officialwebsite'] = $res[0]->officialwebsite;
 
       foreach ($data as $key => $value) {
-        $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       }
       // create client
       $clientid = $this->coreFunctions->insertGetId('client', $data);
@@ -1147,7 +1156,7 @@ from attendee as a
 
 
       foreach ($data2 as $key2 => $value2) {
-        $data2[$key2] = $this->othersClass->sanitizekeyfield($key2, $data2[$key2]);
+        $data2[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data2[$key2], $lookups);
       }
 
       $contactid = $this->coreFunctions->insertGetId('contactperson', $data2);

@@ -86,7 +86,13 @@ class payrolllookup
     $empid = $config['params']['addedparams'][0];
     $batchid = $config['params']['addedparams'][1];
 
-    $qry = "select p.code, p.codename, FORMAT(sum(t.db),2) as db, FORMAT(sum(t.cr),2) as cr from paytrancurrent as t left join paccount as p on p.line=t.acnoid where t.empid=" . $empid . " and t.batchid=" . $batchid . " group by p.code, p.codename, t.torder order by t.torder";
+    $companyid = $config['params']['companyid'];
+    $decNo = 2;
+    if ($companyid == 66) { //metro dragon payroll
+      $decNo = 3;
+    }
+
+    $qry = "select p.code, p.codename, FORMAT(sum(t.db),$decNo) as db, FORMAT(sum(t.cr),$decNo) as cr from paytrancurrent as t left join paccount as p on p.line=t.acnoid where t.empid=" . $empid . " and t.batchid=" . $batchid . " group by p.code, p.codename, t.torder order by t.torder";
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
@@ -615,4 +621,105 @@ class payrolllookup
     $rowindex = $config['params']['index'];
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table, 'rowindex' => $rowindex];
   }
+
+
+  public function lookupledger_firearms($config)
+  {
+    $title = 'List of Fire Arms';
+    $lookupsetup = array(
+      'type' => 'singlesearch',
+      'actionsearch' => 'searchledgerfirearms',
+      'title' => $title,
+      'style' => 'width:100%;max-width:100%;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'callback',
+      'action' => 'loadledgerdata'
+    );
+    // lookup columns
+    $cols = array();
+    $col = array('name' => 'expiry', 'label' => 'Expiry', 'align' => 'left', 'field' => 'expiry', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+
+    $col = array('name' => 'code', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+
+    $col = array('name' => 'make', 'label' => 'Make', 'align' => 'left', 'field' => 'make', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+    return ['status' => true, 'msg' => 'ok', 'data' => [], 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+
+   public function lookupledger_detachmentdv($config)
+  {
+    $title = 'List of Divisions';
+    $lookupsetup = array(
+      'type' => 'singlesearch',
+      'actionsearch' => 'searchledgerdtcdiv',
+      'title' => $title,
+      'style' => 'width:100%;max-width:100%;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'callback',
+      'action' => 'loadledgerdata'
+    );
+    // lookup columns
+    $cols = array();
+    $col = array('name' => 'divcode', 'label' => 'Code', 'align' => 'left', 'field' => 'divcode', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+
+    $col = array('name' => 'divname', 'label' => 'Name', 'align' => 'left', 'field' => 'divname', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+
+    $col = array('name' => 'address', 'label' => 'Address', 'align' => 'left', 'field' => 'address', 'sortable' => true, 'style' => 'font-size:16px;');
+    array_push($cols, $col);
+    return ['status' => true, 'msg' => 'ok', 'data' => [], 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+
+   public function lookuprandom2($config)
+  {
+    // note use field1 ... as alias
+    $title = '';
+    $label = '';
+    $index = '';
+    $table = '';
+    $btnadd = [];
+    $doc = $config['params']['doc'];
+    $companyid = $config['params']['companyid'];
+    switch ($config['params']['lookupclass']) {
+      case 'lookupcollection':
+        $plotting = array('colltype' => 'field1');
+        $plottype = 'plothead';
+        $title = '';
+        $label = '';
+        $qry = "select 'MONTHLY' as field1 
+        union all 
+        select 'SEMI-MONTHLY' as field1 ";
+        break;
+      default:
+        break;
+    }
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => $plottype,
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    $cols = [
+      ['name' => 'field1', 'label' => $label, 'align' => 'left', 'field' => 'field1', 'sortable' => true, 'style' => 'font-size:16px;']
+    ];
+
+    $data = $this->coreFunctions->opentable($qry);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'rowindex' => $index, 'table' => $table, 'btnadd' => $btnadd];
+  } //end function
 }

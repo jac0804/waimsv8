@@ -653,8 +653,8 @@ class so
     $changedisc = $this->othersClass->checkAccess($config['params']['user'], 4037);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
-
-    
+    $islocation = $this->companysetup->getislocation($config['params']);
+    $locname = $this->companysetup->getlocname($config['params']);
     $viewfieldsforgate2users = $this->othersClass->checkAccess($config['params']['user'], 5939);
 
     switch ($companyid) {
@@ -858,10 +858,14 @@ class so
         break;
     }
 
-    if ($iscreateversion) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } else {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    if (!$iscreateversion) {
+    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    // } else {
+        // if(!$islocation) {
+        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        // }
+    
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
     }
@@ -890,6 +894,11 @@ class so
     if ($systemtype == 'REALESTATE') {
       $obj[0][$this->gridname]['columns'][$blk]['readonly'] = true;
       $obj[0][$this->gridname]['columns'][$lot]['readonly'] = true;
+    }
+
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1454,13 +1463,12 @@ class so
     }
 
     $dateTables = ['sohead', 'headinfotrans'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], '', $companyid);
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
@@ -2700,9 +2708,17 @@ class so
 
       $config['params']['line'] = $line;
     }
-    $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
-    $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
-    $kgs = $this->othersClass->sanitizekeyfield('qty', $kgs);
+
+    $dateTables = ['sostock','stockinfotrans'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+
+
+
+  
 
     if ($systemtype == 'REALESTATE') {
       $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
@@ -2811,7 +2827,7 @@ class so
     }
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2889,7 +2905,7 @@ class so
               $stockinfo_data['editdate'] = $this->othersClass->getCurrentTimeStamp();
               $stockinfo_data['editby'] = $config['params']['user'];
               foreach ($stockinfo_data as $key => $valueinfo) {
-                $stockinfo_data[$key] = $this->othersClass->sanitizekeyfield($key, $stockinfo_data[$key]);
+                $stockinfo_data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stockinfo_data[$key], $lookups);
               }
               $this->coreFunctions->sbcupdate("stockinfotrans", $stockinfo_data, ['trno' => $trno, 'line' => $line]);
             }
@@ -3436,5 +3452,45 @@ class so
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+  }
+  public function sbcscript($config)
+  {
+    if ($config['params']['companyid'] == 29) { //sbc
+      return [
+        'report' => '
+               let rytpe = state.reportdata.params.reporttype;
+               
+              switch(rytpe) {
+                  case "1":
+                  case "2":
+                      state.reportobject.txtfield.col1.requested.style="display:block"
+                      state.reportobject.txtfield.col1.approved.style="display:block"
+                      state.reportobject.txtfield.col1.checked.style="display:block"
+                      state.reportobject.txtfield.col1.itime.style="display:block"
+                      state.reportobject.txtfield.col1.htime.style="display:block"
+                      state.reportobject.txtfield.col1.clientname.style="display:block"
+
+                      state.reportobject.txtfield.col1.prepared.style="display:none"
+                      state.reportobject.txtfield.col1.received.style="display:none"
+                    
+                      break;
+                  case "0":
+                    
+                      state.reportobject.txtfield.col1.requested.style="display:none"
+                      state.reportobject.txtfield.col1.checked.style="display:none"
+                      state.reportobject.txtfield.col1.itime.style="display:none"
+                      state.reportobject.txtfield.col1.htime.style="display:none"
+                      state.reportobject.txtfield.col1.clientname.style="display:none"
+                      
+                      state.reportobject.txtfield.col1.prepared.style="display:block"
+                      state.reportobject.txtfield.col1.received.style="display:block"
+                      state.reportobject.txtfield.col1.approved.style="display:block"
+                      break;
+              }
+       '
+      ];
+    } else {
+      return true;
+    }
   }
 } //end class

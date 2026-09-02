@@ -151,6 +151,9 @@ class pendingreassignment
     }
     public function updateapp($config, $status)
     {
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['employee'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $row = $config['params']['row'];
         if ($status == 'A') {
 
@@ -166,7 +169,7 @@ class pendingreassignment
                 'supervisorid' => $row['supid']
             ];
             foreach ($data as $key => $v) {
-                $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
             }
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['editby'] = $config['params']['user'];

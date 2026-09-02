@@ -2998,9 +2998,7 @@ class hrislookup
       array('name' => 'rank', 'label' => 'Rank', 'align' => 'left', 'field' => 'rank', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $qry = "
-      SELECT 0 AS selectid,0 AS orderid, rank from rank order by rank
-    ";
+    $qry = "SELECT 0 AS selectid,0 AS orderid, `rank` from `rank` order by `rank`";
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
@@ -4365,6 +4363,35 @@ class hrislookup
     );
 
     $qry = "select trno as hqtrno,docno as hqdocno from hpersonreq where job = '" . $jobcode . "'";
+
+    $data = $this->coreFunctions->opentable($qry);
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
+
+  public function empreqlookup($config)
+  {
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Requirements',
+      'style' => 'width:900px;max-width:900px;'
+    );
+
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'plotting' => array(
+        'empreq' => 'req',
+        'reqcode' => 'code',
+        'reqline' => 'line'
+      )
+    );
+
+    // lookup columns
+    $cols = array(
+      array('name' => 'reqcode', 'label' => 'Code', 'align' => 'left', 'field' => 'code', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'empreq', 'label' => 'Requirement', 'align' => 'left', 'field' => 'req', 'sortable' => true, 'style' => 'font-size:16px;')
+    );
+
+    $qry = "select line, code, req from emprequire order by line";
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

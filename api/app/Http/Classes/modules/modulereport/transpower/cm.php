@@ -507,10 +507,10 @@ class cm
     PDF::SetFont($font, '', 9);
 
     
-      // $this->reportheader->getheader($params);
-         PDF::MultiCell(0, 0, '', '', 'L');
-         PDF::SetFont($fontbold, '', 14);
-         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+      $this->reportheader->getheader($params);
+        //  PDF::MultiCell(0, 0, '', '', 'L');
+        //  PDF::SetFont($fontbold, '', 14);
+        //  PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
   
    
     // PDF::MultiCell(0, 0, '', '', 'L');
