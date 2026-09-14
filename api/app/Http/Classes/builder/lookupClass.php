@@ -12479,7 +12479,7 @@ class lookupClass
     // lookup columns
     $cols = array();
     array_push($cols, array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'));
-    if ($config['params']['companyid'] == 29) { //sbc
+    if ($config['params']['companyid'] == 29 || $config['params']['companyid'] == 63) { //sbc ericco
       array_push($cols, array('name' => 'client', 'label' => 'Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;'));
       array_push($cols, array('name' => 'clientname', 'label' => 'Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'));
     }
