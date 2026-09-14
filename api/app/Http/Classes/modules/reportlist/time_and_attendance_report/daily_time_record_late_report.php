@@ -101,25 +101,31 @@ class daily_time_record_late_report
     }
     public function reportplotting($config)
     {
+        $companyid = $config['params']['companyid'];
         $reporttype = $config['params']['dataparams']['reporttype'];
         $data = $this->defualt_query($config);
         if ($reporttype != '0') {
-            return $this->report_default_detailed($config, $data);
+            if ($companyid == 58){
+                return $this->cdo_default_detailed($config, $data);
+            }else{
+                return $this->report_default_detailed($config, $data);
+            }
         } else {
             return $this->report_default_summary($config, $data);
         }
     }
     public function defualt_query($config)
     {
-        $client     = $config['params']['dataparams']['client'];
-        $divid     = $config['params']['dataparams']['divid'];
-        $deptid     = $config['params']['dataparams']['deptid'];
-        $sectid     = $config['params']['dataparams']['sectid'];
-        $divname     = $config['params']['dataparams']['divname'];
-        $deptname     = $config['params']['dataparams']['deptname'];
-        $sectname     = $config['params']['dataparams']['sectname'];
-        $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-        $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $companyid = $config['params']['companyid'];
+        $client = $config['params']['dataparams']['client'];
+        $divid = $config['params']['dataparams']['divid'];
+        $deptid = $config['params']['dataparams']['deptid'];
+        $sectid = $config['params']['dataparams']['sectid'];
+        $divname = $config['params']['dataparams']['divname'];
+        $deptname = $config['params']['dataparams']['deptname'];
+        $sectname = $config['params']['dataparams']['sectname'];
+        $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+        $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $reporttype = $config['params']['dataparams']['reporttype'];
         $filter = "";
         if ($client != "") {
@@ -144,20 +150,41 @@ class daily_time_record_late_report
 
         if ($reporttype != '0') {
             //for detailed
+            $offsetInner = "";
+            $offsetOuter = "";
+            if ($companyid == 58) {
+                $offsetInner = " ,timecard.lateoffset";
+                $offsetOuter = " ,t.lateoffset";
+            }
+
             $outerfields = " ,client as code, concat(date_format(schedin,'%l %p'),'-',date_format(schedout,'%l %p')) as shift,
-        schedin,schedout,actualin,actualout,
-        dateid,daytype,empid,detpname,jobtitle";
+            schedin,schedout,actualin,actualout,
+            dateid,daytype,empid,detpname,jobtitle" . $offsetOuter;
             $innerfields = " ,e.client ,timecard.dateid,
-        time(timecard.schedin) as schedin,
-        time(timecard.schedout) as schedout,time(timecard.actualin) as actualin,
-        time(timecard.actualout) as actualout,timecard.daytype,emp.empid,dept.clientname as detpname,jt.jobtitle";
+            time(timecard.schedin) as schedin,
+            time(timecard.schedout) as schedout,time(timecard.actualin) as actualin,
+            time(timecard.actualout) as actualout,timecard.daytype,emp.empid,dept.clientname as detpname,jt.jobtitle" . $offsetInner;
             $hrs = " latehrs ,";
             $leftjoin = "       
-        left join client as dept on dept.clientid = emp.deptid
-        left join jobthead as jt on jt.line = emp.jobid
-        left join section as sect on sect.sectid = emp.sectid";
+            left join client as dept on dept.clientid = emp.deptid
+            left join jobthead as jt on jt.line = emp.jobid
+            left join section as sect on sect.sectid = emp.sectid";
             $groupby = "";
+        } else {
+            // for summary
+            $offsetInner = "";
+            $offsetHrs = "";
+            if ($companyid == 58) {
+                $offsetInner = " ,timecard.lateoffset";
+                $offsetHrs = " sum(t.lateoffset) as lateoffset,";
+            }
+
+            $innerfields = $offsetInner;
+            if ($offsetHrs != "") {
+                $hrs = " sum(latehrs) as latehrs," . $offsetHrs;
+            }
         }
+
         $emplvl = $this->othersClass->checksecuritylevel($config);
         // 01-10-2025 JF add summary
         // $query = "select client as code, clientname as empname,concat(date_format(schedin,'%l %p'),'-',date_format(schedout,'%l %p')) as shift,
@@ -186,8 +213,10 @@ class daily_time_record_late_report
         where dateid between '" . $start . "' and '" . $end . "' and timecard.latehrs <> 0 and emp.level in $emplvl $filter
         order by e.clientname,timecard.dateid) as t 
         $groupby";
+        
         return $this->coreFunctions->opentable($query);
     }
+
     public function getcountdata($config, $empid)
     {
         $emplvl = $this->othersClass->checksecuritylevel($config);
@@ -341,6 +370,126 @@ class daily_time_record_late_report
 
         return $str;
     }
+
+    public function cdo_default_detailed($config, $data)
+    {
+        $border = '1px solid';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $font_size = '10';
+        $count = 55;
+        $page = 55;
+        $layoutsize = '1000';
+        $str = '';
+        if (empty($data)) {
+            return $this->othersClass->emptydata($config);
+        }
+
+        $str .= $this->reporter->beginreport($layoutsize);
+        $str .= $this->displayHeader($config, $layoutsize);
+        $str .= $this->reporter->begintable($layoutsize);
+        $client = "";
+        $totallatehrs = 0;
+        $nodays = 0;
+        $clno = 0;
+        $count = 0;
+        $lateoffset = 0;
+        foreach ($data as $key => $value) {
+
+            if ($client == "" || $client != $data[$key]->empname) {
+                $client = $data[$key]->empname;
+
+                $str .= $this->reporter->begintable($layoutsize);
+                if ($clno != 0) {
+                    $str .= '<br/>';
+                }
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('Code : ' . $data[$key]->code, '500', null, false, $border, 'T', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Department : ' . $data[$key]->detpname, '500', null, false, $border, 'T', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('Name : ' . $client, '500', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Job Title : ' . $data[$key]->jobtitle, '500', null, false, $border, 'B', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('Date', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Shift', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('SchedIn', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Schedout', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Actual In', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Actual Out', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Late', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Day Type', '100', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Remarks', '200', null, false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+                $totallatehrs = 0;
+                $nodays = 0;
+                $clno++;
+            }
+
+            $lateoffset = isset($data[$key]->lateoffset) && $data[$key]->lateoffset > 0
+            ? 'Late Offset: ' . (float) $data[$key]->lateoffset . ' min(s)'
+            : '';
+
+            $latehrs = isset($data[$key]->latehrs) && $data[$key]->latehrs > 0
+            ? round((float) $data[$key]->latehrs * 60) . ' min(s)'
+            : '-';
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data[$key]->dateid, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->shift, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->schedin, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->schedout, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->actualin, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->actualout, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($latehrs, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data[$key]->daytype, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($lateoffset, '200', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $totallatehrs += $latehrs;
+            $nodays++;
+            $count = $this->getcountdata($config, $data[$key]->empid);
+            if ($nodays == $count) {
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '200', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('Number of days: ' . $nodays, '200', null, false, $border, 'T', 'L', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('Total: ', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col(isset($totallatehrs) ? number_format($totallatehrs) . ' min(s)' : '', '100', null, false, $border, 'T', 'C', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->col('', '200', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+                $count = 0;
+            }
+        }
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->endreport();
+
+        return $str;
+    }
+
     public function report_default_summary($config, $data)
     {
         $border = '1px solid';

@@ -550,7 +550,7 @@ class current_customer_receivables
         break;
       case 68: //jda
         $addfield .= ",head.rem as notes";
-        $addfield2 .=",notes";
+        $addfield2 .= ",notes";
         $grp .= ',head.rem';
         break;
     }
@@ -1459,6 +1459,7 @@ class current_customer_receivables
     $acnoid = $config['params']['dataparams']['acnoid'];
     $tagging = $config['params']['dataparams']['tagging'];
     $collectorid = $config['params']['dataparams']['collectorid'];
+    $collectorname = $config['params']['dataparams']['collectorname'];
     $startdate = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
     $enddate = date("Y-m-d", strtotime($config['params']['dataparams']['enddate']));
 
@@ -1494,7 +1495,7 @@ class current_customer_receivables
       $filter .= " and client.isemployee = 1 ";
     }
 
-    if ($collectorid != 0) {
+    if ($collectorname != "") {
       $filter = " and client.collectorid='$collectorid'";
     }
 
@@ -2597,7 +2598,7 @@ class current_customer_receivables
             $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
             $str .= $this->reporter->col('', '120', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');;
             $str .= $this->reporter->col('', '270', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
-          break;
+            break;
 
           default:
             $str .= $this->reporter->col($data->clientname, '270', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
@@ -2719,7 +2720,7 @@ class current_customer_receivables
               $str .= $this->reporter->col('', '50', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '110', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               break;
-            case 68://jda
+            case 68: //jda
               $str .= $this->reporter->col($data->clientname, '300', null, false, '1px dotted ', 'B', 'L', $font, $fontsize, 'B', '', '5px');
               $str .= $this->reporter->col('', '90', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');
               $str .= $this->reporter->col('', '130', null, false, '1px dotted ', 'B', 'C', $font, $fontsize, '', '', '');

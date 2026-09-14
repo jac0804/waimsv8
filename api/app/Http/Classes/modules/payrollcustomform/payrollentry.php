@@ -149,6 +149,7 @@ class payrollentry
       adddate(DATE_ADD(DATE_ADD(LAST_DAY(curdate()), INTERVAL 1 DAY), INTERVAL -1 MONTH), 14) as enddate,
       '' as empcode,
       '' as empname,
+      '' as paygroup,
       0 as empid,
       '' as cur,
       '' as paymode,
@@ -204,7 +205,7 @@ class payrollentry
     $data = $config['params']['rows'];
     foreach ($this->fields as $key => $value) {
       foreach ($data as $k => $v) {
-        $data[$k][$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$k][$value],$lookups);
+        $data[$k][$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$k][$value], $lookups);
       }
     }
 

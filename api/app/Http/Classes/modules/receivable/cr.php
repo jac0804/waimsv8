@@ -446,7 +446,7 @@ class cr
      left join cntnuminfo as i on i.trno = head.trno
      left join heahead as ea on ea.catrno = i.cptrno
      left join heainfo as info on info.trno = ea.trno  $leftjoin  $join
-     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
+     where head.doc=? and num.center = ? and head.layref='' and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
      group by  head.trno,head.docno,head.clientname,head.dateid,status,
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate),
       head.crref, head.ourref, head.yourref, head.rem,info.clientname,head.amount,head.lockdate,head.voiddate $groupby
@@ -461,7 +461,7 @@ class cr
      left join hcntnuminfo as i on i.trno = head.trno
      left join heahead as ea on ea.catrno = i.cptrno
      left join heainfo as info on info.trno = ea.trno $leftjoin   $hjoin
-     where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
+     where head.doc=? and num.center = ? and head.layref='' and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
      group by  head.trno,head.docno,head.clientname,head.dateid,status,
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate),
       head.crref, head.ourref, head.yourref, head.rem,info.clientname,head.amount,head.voiddate $groupby
@@ -1144,7 +1144,7 @@ class cr
         left join heahead as ea on ea.catrno = ci.cptrno
         left join heainfo as i on i.trno = ea.trno  
         left join plantype as pt on pt.line = ea.planid and pt.plangrpid = ea.plangrpid      
-        where head.trno = ? and num.doc=? and num.center = ? 
+        where head.trno = ? and num.doc=? and num.center = ? and left(num.bref,3) <> 'CRS' and head.layref=''
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.clientid = client.clientid
@@ -1162,7 +1162,7 @@ class cr
         left join heahead as ea on ea.catrno = ci.cptrno
         left join heainfo as i on i.trno = ea.trno      
         left join plantype as pt on pt.line = ea.planid and pt.plangrpid = ea.plangrpid   
-        where head.trno = ? and num.doc=? and num.center=? ";
+        where head.trno = ? and num.doc=? and num.center=? and left(num.bref,3) <> 'CRS' and head.layref=''";
     $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
     if (!empty($head)) {
       $detail = $this->opendetail($trno, $config);

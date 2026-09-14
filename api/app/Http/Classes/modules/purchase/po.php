@@ -1230,7 +1230,7 @@ class po
           break;
         case 65: //metrodragon
           data_set($col2, 'ddeptname.label', 'Department');
-          data_set($col2, 'ddeptname.type', 'input');
+          data_set($col2, 'ddeptname.type', 'lookup');
           break;
         case 67: //yulick
           data_set($col2, 'shipto.label', 'Delivery Address');
@@ -1264,6 +1264,7 @@ class po
         case 28: //xcomp
         case 27: //NTE
         case 36: //rozlab
+        case 68: //jda
           $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype'];
           break;
         case 69: //cemphil
@@ -3791,6 +3792,9 @@ class po
             if ($companyid == 68) { //jda
               $this->coreFunctions->sbcupdate($this->head, ['ourref' => $data[0]->docno], ['trno' => $trno]);
             }
+            if ($companyid == 65) { //metrodragon
+              $this->coreFunctions->sbcupdate($this->head, ['deptid' => $data[0]->deptid], ['trno' => $trno]);
+            }
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
               $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
               $line = $return['row'][0]->line;
@@ -3895,7 +3899,7 @@ class po
         (stock.qty-stock.qa) as qty,stock.rrcost,
         round((stock.qty-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
         stock.disc,st.line as stageid,stock.rem,stock.ext,
-        stock.projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid
+        stock.projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid, head.deptid
         FROM hprhead as head 
         left join hprstock as stock on stock.trno=head.trno
         left join transnum on transnum.trno=head.trno left join item on item.itemid=
@@ -3924,6 +3928,9 @@ class po
           if ($return['status']) {
             if ($companyid == 68) { //jda
               $this->coreFunctions->sbcupdate($this->head, ['ourref' => $data[0]->docno], ['trno' => $trno]);
+            }
+            if ($companyid == 65) { //metrodragon
+              $this->coreFunctions->sbcupdate($this->head, ['deptid' => $data[0]->deptid], ['trno' => $trno]);
             }
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
               $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];

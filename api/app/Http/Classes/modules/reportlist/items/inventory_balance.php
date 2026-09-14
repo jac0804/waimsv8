@@ -1137,7 +1137,7 @@ class inventory_balance
     $filter = "";
     $join = "";
 
-  
+
     if ($brand != "") {
       $filteritem = $filteritem . " and item.brand='$brand'";
     }
@@ -1163,7 +1163,7 @@ class inventory_balance
     }
 
     if ($groupid != "") {
-        $filteritem = $filteritem . " and item.groupid='$groupid'";
+      $filteritem = $filteritem . " and item.groupid='$groupid'";
     }
 
     if ($uom != '') {
@@ -2196,7 +2196,7 @@ class inventory_balance
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
             $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
@@ -2223,14 +2223,14 @@ class inventory_balance
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            // $str .= $this->reporter->addline();
+            // $this->reporter->addline();
             // $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             // $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             // $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
             // $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
             // $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
 
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
             $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
@@ -2249,7 +2249,7 @@ class inventory_balance
         }
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
         $str .= $this->reporter->col($data->barcode, '80', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data->itemname, '550', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data->groupname, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -2639,7 +2639,7 @@ class inventory_balance
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($part, '340', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -2666,7 +2666,7 @@ class inventory_balance
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($scatgrp, '340', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -2686,7 +2686,7 @@ class inventory_balance
 
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       $str .= $this->reporter->col($data->barcode, '80', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->itemname, '550', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->groupname, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -3062,7 +3062,7 @@ class inventory_balance
   //       } else {
   //         $part = strtoupper($data->part);
   //         $str .= $this->reporter->startrow();
-  //         $str .= $this->reporter->addline();
+  //         $this->reporter->addline();
   //         $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
   //         $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
   //         $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3081,7 +3081,7 @@ class inventory_balance
   //         $scatgrp = strtoupper($data->category);
   //         $str .= $this->reporter->begintable($layoutsize);
   //         $str .= $this->reporter->startrow();
-  //         $str .= $this->reporter->addline();
+  //         $this->reporter->addline();
   //         $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
   //         $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
   //         $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3096,7 +3096,7 @@ class inventory_balance
   //     // }
   //     $str .= $this->reporter->begintable($layoutsize);
   //     $str .= $this->reporter->startrow();
-  //     $str .= $this->reporter->addline();
+  //     $this->reporter->addline();
   //     $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
 
   //     // if ($companyid == 17) { // unihome
@@ -3546,7 +3546,7 @@ class inventory_balance
       $username   = $config['params']['user'];
       $companyid = $config['params']['companyid'];
 
-      $asof       = $config['params']['dataparams']['start'];
+      $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
       $client     = $config['params']['dataparams']['client'];
       $clientname = $config['params']['dataparams']['clientname'];
       $barcode    = $config['params']['dataparams']['barcode'];
@@ -3626,7 +3626,7 @@ class inventory_balance
             } else {
               $part = strtoupper($data->part);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3644,7 +3644,7 @@ class inventory_balance
             } else {
               $scatgrp = strtoupper($data->category);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3665,7 +3665,7 @@ class inventory_balance
             } else {
               $igrp = strtoupper($data->stockgrp_name);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3682,7 +3682,7 @@ class inventory_balance
         }
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
         if ($companyid == 40) { //cdo
           $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -3761,9 +3761,10 @@ class inventory_balance
         switch ($companyid) {
           case 10: //afti
           case 12: //afti usd
+          case 68: //jda
             $itemserialno = '';
 
-            $serialdata = $this->serialquery2($data->itemid);
+            $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
             if (!empty($serialdata)) {
               foreach ($serialdata as $key => $value) {
                 $itemserialno .= $value['serialno'];
@@ -4112,7 +4113,8 @@ class inventory_balance
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
-        $str .= $this->reporter->col('SERIAL NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      case 68: //jda
+        $str .= $this->reporter->col('SERIAL NO.', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
     }
 
@@ -4124,7 +4126,7 @@ class inventory_balance
         $str .= $this->reporter->col('UOM', '40', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
         break;
     }
-    $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('BALANCE', '80', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('COST', '80', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
@@ -4148,7 +4150,7 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -4229,7 +4231,7 @@ class inventory_balance
           } else {
             $part = strtoupper($data->part);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
             $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4247,7 +4249,7 @@ class inventory_balance
           } else {
             $scatgrp = strtoupper($data->category);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4269,7 +4271,7 @@ class inventory_balance
           } else {
             $igrp = strtoupper($data->stockgrp_name);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4286,7 +4288,7 @@ class inventory_balance
       }
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       if ($companyid == 40) { //cdo
         $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
       } else {
@@ -4364,15 +4366,16 @@ class inventory_balance
       switch ($companyid) {
         case 10: //afti
         case 12: //afti usd
+        case 68: //jda
           $itemserialno = '';
-          $serialdata = $this->serialquery2($data->itemid);
+          $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
           if (!empty($serialdata)) {
             foreach ($serialdata as $key => $value) {
               $itemserialno .= $value['serialno'];
             }
           }
           $itemserialno = rtrim($itemserialno, ", ");
-          $str .= $this->reporter->col($itemserialno, '75', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
+          $str .= $this->reporter->col($itemserialno, '100', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
           break;
       }
       $totalext = $data->balance * $cost;
@@ -4407,7 +4410,7 @@ class inventory_balance
           $str .= $this->reporter->col($data->uom, '40', null, false, '1px solid ', '', 'CT', $font, $font_size, '', '', '');
           break;
       }
-      $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($balance, '80', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($cost, '80', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($totalext, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
       $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'B', 'CT', $font, $font_size, '', '', '');
@@ -4763,65 +4766,65 @@ class inventory_balance
     $companyid = $config['params']['companyid'];
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $amountformat   = $config['params']['dataparams']['amountformat'];
-    $str .= $this->reporter->printline();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
     if ($companyid == 10) { //afti
-      $str .= $this->reporter->col('SKU/PART NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('SKU/PART NO.', '75', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
     } else {
-      $str .= $this->reporter->col('ITEM CODE', '120', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('ITEM CODE', '120', null, false, '1px solid ', 'TB', 'L', $font, '10', 'B', '', '', '8px');
     }
 
-    $str .= $this->reporter->col('ITEM DESCRIPTION', '420', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '420', null, false, '1px solid ', 'TB', 'L', $font, '10', 'B', '', '', '8px');
 
     switch ($companyid) {
       case 1: //vitaline
       case 23: //labsol cebu
       case 41: //labsolparanaque
       case 52: //technolab
-        $str .= $this->reporter->col('LOT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
-        $str .= $this->reporter->col('EXPIRY', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('LOT', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('EXPIRY', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
         break;
       case 17: //unihome
       case 39: //CBBSI
-        $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
-        $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('LAST REC DATE', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('LAST SOLD DATE', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
         break;
       case 69: //cemphil
       case 24: //goodfound
-        $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('LOCATION', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
         break;
       case 50: //unitech
-        $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+        $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'TB', 'L', $font, '10', 'B', '', '', '8px');
         break;
     }
 
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
-        $str .= $this->reporter->col('SERIAL NO.', '75', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      case 68: //jda
+        $str .= $this->reporter->col('SERIAL NO.', '75', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
         break;
     }
 
-    $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
-    $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
+    $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'TB', 'R', $font, '10', 'B', '', '', '8px');
     switch ($companyid) {
       case 50:
         break;
       default:
         if ($itemstock != '(0,1)') {
-          $str .= $this->reporter->col('SRP', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
-          $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+          $str .= $this->reporter->col('SRP', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
+          $str .= $this->reporter->col('TOTAL', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
         }
         break;
     }
 
     if ($amountformat == 'testing') {
-      $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
     } else {
-      $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
+      $str .= $this->reporter->col('COUNT', '100', null, false, '1px solid ', 'TB', 'C', $font, '10', 'B', '', '', '8px');
     }
 
     return $str;
@@ -4845,6 +4848,9 @@ class inventory_balance
       // $center     = $config['params']['center'];
       // $username   = $config['params']['user'];
       $companyid = $config['params']['companyid'];
+      $current = $config['params']['dataparams']['dtagathering'];
+      $itemstock  = $config['params']['dataparams']['itemstock'];
+      $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
 
       if ($companyid == 49) {
         $font_size = 12;
@@ -4931,7 +4937,7 @@ class inventory_balance
             } else {
               $part = strtoupper($data->part);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4949,7 +4955,7 @@ class inventory_balance
             } else {
               $scatgrp = strtoupper($data->category);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4969,7 +4975,7 @@ class inventory_balance
             } else {
               $igrp = strtoupper($data->stockgrp_name);
               $str .= $this->reporter->startrow();
-              $str .= $this->reporter->addline();
+              $this->reporter->addline();
               $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -4985,7 +4991,7 @@ class inventory_balance
 
         $totalext = $data->balance * $data->amt;
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
         switch ($companyid) {
           case 40: //cdo
@@ -5069,8 +5075,13 @@ class inventory_balance
         switch ($companyid) {
           case 10: //afti
           case 12: //afti usd
+          case 68: //jda
             $itemserialno = '';
-            $serialdata = $this->serialquery2($data->itemid);
+            if ($current == 'dhistory') {
+              $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+            } else {
+              $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+            }
             if (!empty($serialdata)) {
               foreach ($serialdata as $key => $value) {
                 $itemserialno .= $value['serialno'];
@@ -5079,10 +5090,12 @@ class inventory_balance
             $itemserialno = rtrim($itemserialno, ", ");
             $str .= $this->reporter->col($itemserialno, '75', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
             break;
-          default:
-            $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
-            break;
+            // default:
+            //   $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
+            //   break;
         }
+
+        $str .= $this->reporter->col($data->uom, '60', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
 
         $str .= $this->reporter->col($balance, '100', null, false, '1px solid ', '', 'RT', $font, $font_size, '', '', '');
         switch ($companyid) {
@@ -5196,13 +5209,25 @@ class inventory_balance
       $str .= $this->reporter->begintable($layoutsize);
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      $str .= $this->reporter->col('', '120', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+      $str .= $this->reporter->col('', '420', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+
+
       switch ($companyid) {
         case 1: //vitaline
         case 23: //labsol cebu
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
           break;
+      }
+
+      if ($this->companysetup->getserial($config['params'])) {
+        $str .= $this->reporter->col('', '75', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'TB', '', '', '');
+      }
+
+      $overallsize = "200";
+      if ($itemstock != '(0,1)') {
+        $overallsize = "300";
       }
 
       switch ($companyid) {
@@ -5220,14 +5245,14 @@ class inventory_balance
           $str .= $this->reporter->col('', '50', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
           break;
         default:
-          $str .= $this->reporter->col('OVERALL STOCKS :', '375', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
-          $str .= $this->reporter->col(number_format($totalbalqty, 2), '75', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col('', '60', null, false, '1px solid ', 'TB', 'C', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col('OVERALL STOCKS :', $overallsize, null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
+          $str .= $this->reporter->col(number_format($totalbalqty, 2), '100', null, false, '1px solid ', 'TB', 'R', $font, $font_size, 'B', '', '', '');
           break;
       }
 
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-      $str .= $this->reporter->printline();
       $str .= $this->reporter->endreport();
     } catch (Exception $e) {
       $this->othersClass->logConsole('Exception' . $e->getMessage());
@@ -5350,7 +5375,7 @@ class inventory_balance
         } else {
           $part = strtoupper($data->part);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
           $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -5369,7 +5394,7 @@ class inventory_balance
           $scatgrp = strtoupper($data->category);
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -5385,7 +5410,7 @@ class inventory_balance
       $totalext = $data->balance * $data->amt;
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
       if ($itemstock == '(0)') {
         $border = '';
@@ -5619,7 +5644,8 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+    $current = $config['params']['dataparams']['dtagathering'];
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -5672,7 +5698,7 @@ class inventory_balance
       }
 
       $discounted = $this->othersClass->Discount($data->amt, $data->disc);
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
 
       $str .= $this->reporter->startrow();
@@ -5699,7 +5725,12 @@ class inventory_balance
       $str .= $this->reporter->col($totalext, '75', null, false, '1px solid ', '', 'RT', $font, '10', '', '', '');
       $itemserialno = '';
 
-      $serialdata = $this->serialquery2($data->itemid);
+      if ($current == 'dhistory') {
+        $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+      } else {
+        $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+      }
+
       if (!empty($serialdata)) {
         foreach ($serialdata as $key => $value) {
           $itemserialno .= $value['serialno'];
@@ -5923,7 +5954,8 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+    $current = $config['params']['dataparams']['dtagathering'];
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -5968,7 +6000,7 @@ class inventory_balance
     $grandtotal = 0;
     foreach ($result as $key => $data) {
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
       $balance = number_format($data->balance, 0);
       if ($balance == 0) {
@@ -5997,7 +6029,11 @@ class inventory_balance
       $str .= $this->reporter->col($totalext, '75', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
 
       $itemserialno = '';
-      $serialdata = $this->serialquery2($data->itemid);
+      if ($current == 'dhistory') {
+        $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+      } else {
+        $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+      }
       if (!empty($serialdata)) {
         foreach ($serialdata as $key => $value) {
           $itemserialno .= $value['serialno'];
@@ -6219,7 +6255,7 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -6239,6 +6275,7 @@ class inventory_balance
     $amountformat   = $config['params']['dataparams']['amountformat'];
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
+    $current = $config['params']['dataparams']['dtagathering'];
 
     $count = 45;
     $page = 45;
@@ -6262,7 +6299,7 @@ class inventory_balance
     foreach ($result as $key => $data) {
 
 
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
 
 
@@ -6302,7 +6339,11 @@ class inventory_balance
         $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'RT', $font, '10', '', '', '');
       }
       $itemserialno = '';
-      $serialdata = $this->serialquery2($data->itemid);
+      if ($current == 'dhistory') {
+        $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+      } else {
+        $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+      }
       if (!empty($serialdata)) {
         foreach ($serialdata as $key => $value) {
           $itemserialno .= $value['serialno'];
@@ -6513,6 +6554,11 @@ class inventory_balance
     if ($companyid == 50) { //unitech
       $str .= $this->reporter->col('BRAND', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
     }
+
+    if ($companyid == 68) { //unitech
+      $str .= $this->reporter->col('SERIAL NO', '100', null, false, '1px solid ', 'B', 'L', $font, '10', 'B', '', '', '8px');
+    }
+
     $str .= $this->reporter->col('BALANCE', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('UOM', '60', null, false, '1px solid ', 'B', 'C', $font, '10', 'B', '', '', '8px');
     $str .= $this->reporter->col('UNIT COST', '100', null, false, '1px solid ', 'B', 'R', $font, '10', 'B', '', '', '8px');
@@ -6536,7 +6582,8 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+    $current = $config['params']['dataparams']['dtagathering'];
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -6611,7 +6658,7 @@ class inventory_balance
           } else {
             $part = strtoupper($data->part);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, '10', 'B', '', '');
             $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, '10', '', '', '');
@@ -6629,7 +6676,7 @@ class inventory_balance
           } else {
             $scatgrp = strtoupper($data->category);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '100', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
             $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, '10', '', '', '');
@@ -6643,7 +6690,7 @@ class inventory_balance
       }
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       $str .= $this->reporter->col($data->barcode, '75', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
 
       if ($companyid == 17) { //unihome
@@ -6686,8 +6733,13 @@ class inventory_balance
       switch ($companyid) {
         case 10: //afti
         case 12: //afti usd
+        case 68: //jda
           $itemserialno = '';
-          $serialdata = $this->serialquery2($data->itemid);
+          if ($current == 'dhistory') {
+            $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+          } else {
+            $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+          }
           if (!empty($serialdata)) {
             foreach ($serialdata as $key => $value) {
               $itemserialno .= $value['serialno'];
@@ -6804,7 +6856,8 @@ class inventory_balance
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    $asof       = $config['params']['dataparams']['start'];
+    $asof       = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
+    $current = $config['params']['dataparams']['dtagathering'];
     $client     = $config['params']['dataparams']['client'];
     $clientname = $config['params']['dataparams']['clientname'];
     $barcode    = $config['params']['dataparams']['barcode'];
@@ -6901,7 +6954,7 @@ class inventory_balance
           } else {
             $part = strtoupper($data->part);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
             $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -6920,7 +6973,7 @@ class inventory_balance
             $scatgrp = strtoupper($data->category);
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -6935,7 +6988,7 @@ class inventory_balance
       }
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
 
       if ($companyid == 17) { // unihome
@@ -6983,8 +7036,13 @@ class inventory_balance
       switch ($companyid) {
         case 10: //afti
         case 12: //afti usd
+        case 68: //jda
           $itemserialno = '';
-          $serialdata = $this->serialquery2($data->itemid);
+          if ($current == 'dhistory') {
+            $serialdata = $this->serialquery2($data->itemid, $asof, $config['params']['dataparams']['whid']);
+          } else {
+            $serialdata = $this->serialquerybalance($data->itemid, $config['params']['dataparams']['wh']);
+          }
           if (!empty($serialdata)) {
             foreach ($serialdata as $key => $value) {
               $itemserialno .= $value['serialno'];
@@ -7142,20 +7200,39 @@ class inventory_balance
     return $result;
   }
 
-  private function serialquery2($itemid)
+  private function serialquery2($itemid, $date, $whid = 0)
   {
+    $whfilter = '';
+    if ($whid != 0) $whfilter = " and stock.whid=" . $whid;
+
     $query = "select ifnull(concat(rr.serial,', '),'') as serialno
     from lahead as head
     left join lastock as stock on stock.trno=head.trno
     left join serialin as rr on rr.trno = stock.trno and rr.line = stock.line
-    where stock.itemid='$itemid' and rr.outline = 0 
+    where stock.itemid='$itemid' and rr.outline = 0 and head.dateid<'" . $date . "' $whfilter
     union all
     select ifnull(concat(rr.serial,', '),'') as serialno
     from glhead as head
     left join glstock as stock on stock.trno=head.trno
     left join serialin as rr on rr.trno = stock.trno and rr.line = stock.line
-    where stock.itemid='$itemid' and rr.outline = 0
+    where stock.itemid='$itemid' and rr.outline = 0 and head.dateid<'" . $date . "' $whfilter
     order by serialno";
+    $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    return $result;
+  }
+
+  private function serialquerybalance($itemid, $wh)
+  {
+    $whfilter = '';
+    if ($wh != '') $whfilter = " and wh.client='" . $wh . "'";
+
+    $query = "
+        select ifnull(concat(serialin.serial,', '),'') as serialno
+        from rrstatus left join serialin on serialin.trno=rrstatus.trno and serialin.line=rrstatus.line
+        left join client as wh on wh.clientid=rrstatus.whid
+        left join serialout on serialout.sline=serialin.outline
+        where rrstatus.itemid=" . $itemid . $whfilter . " and serialin.outline=0
+        ";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   }
@@ -7338,7 +7415,7 @@ class inventory_balance
           }
           $wh = strtoupper($data->whname);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($wh, '100', null, false, '1px solid ', '', 'L', $font, '10', 'B', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, '10', '', '', '');
@@ -7355,7 +7432,7 @@ class inventory_balance
         } else {
           $part = strtoupper($data->part);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, '10', 'B', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, '10', '', '', '');
@@ -7373,7 +7450,7 @@ class inventory_balance
         } else {
           $scatgrp = strtoupper($data->category);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
+          $this->reporter->addline();
           $str .= $this->reporter->col($scatgrp, '100', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
           $str .= $this->reporter->col('', '200', null, false, '1px solid ', '', 'L', $font, '10', 'Bi', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, '10', '', '', '');
@@ -7392,7 +7469,7 @@ class inventory_balance
       }
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       $str .= $this->reporter->col($data->barcode, '100', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
       $str .= $this->reporter->col($data->itemname, '200', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
       if ($uom != "") {
@@ -8462,7 +8539,7 @@ class inventory_balance
       $cost = $this->getLatestCost($data->itemid);
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
       $str .= $this->reporter->col($data->barcode, '100', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
       $str .= $this->reporter->col('', '10', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
@@ -8850,7 +8927,7 @@ class inventory_balance
 
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
         $str .= $this->reporter->col($data->barcode, '100', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
         $str .= $this->reporter->col('', '10', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
@@ -9390,7 +9467,7 @@ class inventory_balance
 
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
 
       $str .= $this->reporter->col($data->barcode, '100', null, false, '1px solid ', '', 'LT', $font, '10', '', '', '');
       $str .= $this->reporter->col('', '10', null, false, '1px solid ', '', 'RT', $font, '10', '', '', '');
@@ -9540,7 +9617,7 @@ class inventory_balance
 
         $totalext = $data->balance * $data->amt;
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
 
         if ($itemstock != '(0,1)') {
@@ -9957,7 +10034,7 @@ class inventory_balance
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '640', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -9981,7 +10058,7 @@ class inventory_balance
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '640', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -9998,7 +10075,7 @@ class inventory_balance
 
         $totalext = $data->balance * $data->amt;
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
         $str .= $this->reporter->col($data->barcode, '80', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data->itemname, '590', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -10340,7 +10417,7 @@ class inventory_balance
           } else {
             $part = strtoupper($data->part);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B',  '', '');
             $str .= $this->reporter->col('',    '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('',    '100', null, false, '1px solid ', '', 'R', $font, $font_size, '',   '', '');
@@ -10359,7 +10436,7 @@ class inventory_balance
           } else {
             $scatgrp = strtoupper($data->category);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->addline();
+            $this->reporter->addline();
             $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('',       '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
             $str .= $this->reporter->col('',       '100', null, false, '1px solid ', '', 'R', $font, $font_size, '',   '', '');
@@ -10374,7 +10451,7 @@ class inventory_balance
 
         $totalext = $data->balance * $data->amt;
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->addline();
+        $this->reporter->addline();
 
         $str .= $this->reporter->col($data->barcode,  '120', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data->itemname, '320', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');

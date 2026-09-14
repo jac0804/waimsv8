@@ -43,21 +43,21 @@ class retirement_report
 
   public function createHeadField($config)
   {
-    
     $companyid = $config['params']['companyid'];
-    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep','start', 'end','tpaygroup', 'radioreporttype'];
-
+    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep','start', 'end','tpaygroup','radioreporttypepcv','radioreporttype'];
     $col1 = $this->fieldClass->create($fields);
-    if ($companyid != 53) {
       data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
       data_set($col1, 'dclientname.label', 'Employee');
       data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
       data_set($col1, 'divrep.label', 'Company');
       data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
       data_set($col1, 'deptrep.label', 'Department');
-      data_set($col2, 'start.required', true);
-      data_set($col2, 'end.required', true);
-    }
+      data_set($col1, 'start.required', true);
+      data_set($col1, 'end.required', true);
+      data_set($col1, 'radioreporttypepcv.label', 'Option');
+      data_set($col1, 'radioreporttypepcv.options', 
+      [['label' => 'Resigned', 'value' => '0', 'color' => 'red'],
+       ['label' => '13th Month Basis', 'value' => '1', 'color' => 'red']]);
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
     return array('col1' => $col1, 'col2' => $col2);
@@ -82,7 +82,8 @@ class retirement_report
     '0' as reporttype,
     '' as deptrep,
     '0' as paygroupid,
-    '' as tpaygroup
+    '' as tpaygroup,
+    '0' as reporttypepcv
     ");
   }
 
@@ -115,6 +116,7 @@ class retirement_report
   public function JDA_QRY($config)
   {
     // QUERY
+    $reportbasis = $config['params']['dataparams']['reporttypepcv'];
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
     $dividname     = $config['params']['dataparams']['divname'];
@@ -127,6 +129,7 @@ class retirement_report
     $filter   = "";
     $filter  = "";
     $filter  = "";
+    $basis = "";
 
     if ($client != "") {
       $filter .= " and c.client = '$client'";
@@ -142,12 +145,32 @@ class retirement_report
     if ($payname != "") {
       $filter .= " and paygroup.line = $payid";
     }
+
+    if( $reportbasis == 0){
+      $basis = "'' as amt";
+    }else if( $reportbasis == 1){ //13th month option
+      $basis = "((select ifnull(sum(vtran.db),0) - ifnull(sum(vtran.cr),0)
+      from paytrancurrent as vtran
+      left join paccount on paccount.line = vtran.acnoid
+      where vtran.empid = emp.empid and dateid between '$start' and '$end'
+      and paccount.alias in ('BSA','ABSENT','LATE','UNDERTIME','VL','SL','SIL','ML','PL','BL','ADJUSTMENT'))
+      +
+      (select ifnull(sum(vtran.db),0) - ifnull(sum(vtran.cr),0)
+      from paytranhistory as vtran
+      left join paccount on paccount.line = vtran.acnoid
+      where vtran.empid = emp.empid and dateid between '$start' and '$end'
+      and paccount.alias in ('BSA','ABSENT','LATE','UNDERTIME','VL','SL','SIL','ML','PL','BL','ADJUSTMENT'))
+    ) as amt";
+    }
+
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
-    $query = "select  client, clientname,date(hired) as hired, date(resigned) as resigned, reghrs, abshrs, basicrate from (
+
+    $query = "select  client, clientname,date(hired) as hired, date(resigned) as resigned, reghrs, abshrs, basicrate, amt from (
     select c.client, c.clientname,emp.hired, emp.resigned, rate.basicrate,
     (select sum(reghrs) from timecard as t where t.empid = emp.empid) as reghrs,
-    (select sum(absdays) from timecard as t where t.empid = emp.empid) as abshrs
+    (select sum(absdays) from timecard as t where t.empid = emp.empid) as abshrs,
+    $basis
     from employee as emp
     left join client as c on c.clientid = emp.empid and isemployee = 1
     left join paygroup on paygroup.line = emp.paygroup
@@ -176,7 +199,8 @@ class retirement_report
     $reporttype     = $config['params']['dataparams']['reporttype'];
     $payid     = $config['params']['dataparams']['paygroupid'];
     $payname     = $config['params']['dataparams']['tpaygroup'];
-
+    $reportbasis     = $config['params']['dataparams']['reporttypepcv'];
+    $basis = '';
     $str = '';
     $layoutsize = '1000';
 
@@ -189,6 +213,12 @@ class retirement_report
       $type = '(SUMMARY)';
     } else {
       $type = '(DETAILED)';
+    }
+
+    if ($reportbasis == 0) {
+      $basis = 'RETIREMENT';
+    } else {
+      $basis = 'AMOUNT';
     }
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
@@ -242,7 +272,7 @@ class retirement_report
         $str .= $this->reporter->col('C O D E', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('E M P L O Y E E &nbsp N A M E', '210', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('NO OF REG DAYS', '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('RETIREMENT', '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($basis, '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         break;
       case '1': // DETAIL
@@ -252,7 +282,7 @@ class retirement_report
         $str .= $this->reporter->col('FROM', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('TO', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('NO OF <br> REG DAYS', '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('RETIREMENT', '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col($basis, '60', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         break;
     }
@@ -261,7 +291,7 @@ class retirement_report
 
   public function JDA_SUMMARY_Layout($config)
   {
-
+    $reportbasis = $config['params']['dataparams']['reporttypepcv'];
     $result = $this->JDA_QRY($config);
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($config['params']);
@@ -283,7 +313,11 @@ class retirement_report
     foreach ($result as $key => $data) {
 
       $regdays = ($data->reghrs - $data->abshrs)/8;
-      $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays;
+      if($reportbasis == 0){
+        $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays;
+      }else if($reportbasis == 1){
+        $retirement = $data->amt/12;
+      }
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
@@ -325,6 +359,7 @@ class retirement_report
     $count = 45;
     $page = 45;
     $layoutsize = '1000';
+    $reportbasis     = $config['params']['dataparams']['reporttypepcv'];
 
     $str = '';
     $regdays = 0;
@@ -339,9 +374,13 @@ class retirement_report
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->display_JDA_Header($config);
     foreach ($result as $key => $data) {
-
+      
       $regdays = ($data->reghrs - $data->abshrs)/8;
-      $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays;
+      if($reportbasis == 0){
+        $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays; 
+      }else if($reportbasis == 1){
+        $retirement = $data->amt/12;
+      }
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();

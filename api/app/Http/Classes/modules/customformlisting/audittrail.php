@@ -131,7 +131,7 @@ class audittrail
 
     $data = $this->coreFunctions->opentable("
       select 
-      adddate(left(now(),10),-360) as start,
+      left(now(),10) as start,
       left(now(),10) as end,
       '' as username,
       '' as moduledoc,
@@ -229,19 +229,19 @@ class audittrail
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username $doc_filter
         union all        
-        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master, tl.docno
+        select cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as clientname, '' as client, profile.master, tl.docno
         from del_transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
         left join profile on profile.psection=cntnum.doc
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $module $username $doc_filter
         union all
-        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master, tl.docno
+        select cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as clientname, '' as client, profile.master, tl.docno
         from del_table_log as tl left join cntnum as cntnum on cntnum.trno = tl.trno
         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $module $username $doc_filter
         union all
-        select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master, tl.docno
+        select '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as clientname, '' as client, '' as master, tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username

@@ -125,10 +125,11 @@ class trip_incentive_report
         $start        = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end          = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $batchid      = $config['params']['dataparams']['line'];
+        $batchrep      = $config['params']['dataparams']['batchrep'];
         $order = '';
         $filter = "";
 
-        if ($batchid != 0) {
+        if ($batchrep != "") {
             $filter .= " and htd.batchid = " . $batchid . " ";
         }
 
@@ -187,10 +188,12 @@ class trip_incentive_report
         $start        = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end          = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $batchid      = $config['params']['dataparams']['line'];
+        $batchrep      = $config['params']['dataparams']['batchrep'];
+
 
         $filter = "";
         $order = "";
-        if ($batchid != 0) {
+        if ($batchrep != "") {  
             $filter .= " and htd.batchid = " . $batchid . " ";
         }
 

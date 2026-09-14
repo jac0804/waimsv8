@@ -1076,7 +1076,7 @@ class gridcolumnClass
                             'label' => 'Expiry',
                             'align' => 'text-left',
                             'field' => 'expiry',
-                            'style' => 'min-width:100px;',
+                            'style' => 'min-width:150px;',
                             'readonly' => true,
                             'lookupclass' => 'expirystock',
                             'action' => 'lookupexpiry'

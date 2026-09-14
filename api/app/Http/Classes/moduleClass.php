@@ -2063,12 +2063,12 @@ class moduleClass
 			case 'LOANAPPLICATIONPORTAL':
 				return array('loanapplication', 'trno', 'docno');
 				break;
-		    case 'FIREARMS':
+			case 'FIREARMS':
 				return array('firearms', 'line', 'code');
-			    break;
-		    case 'DETACHMENT':
+				break;
+			case 'DETACHMENT':
 				return array('division', 'divid', 'divcode');
-			    break;		
+				break;
 			default:
 				return array('client', 'clientid', 'client');
 				break;
@@ -2242,8 +2242,8 @@ class moduleClass
 				case 'batch':
 				case 'replenishitem':
 					break;
-				case 'tmhead';
-				case 'dailytask';
+				case 'tmhead':
+				case 'dailytask':
 					$clientid = $this->config['params']['head']['trno'];
 					break;
 				default:
@@ -2975,6 +2975,7 @@ class moduleClass
 					case 'DP':
 					case 'TC':
 					case 'CH':
+					case 'DD':
 						$msg = ' Data is still updated, you can continue to edit...';
 						$ischange = false;
 						break;

@@ -746,7 +746,7 @@ class payrollcommon
                                 break;
                         }
 
-                        if ($qty != 0) $this->addTimeSheetAccount($empid, $batchid, $val->acnoid, $val->dateid, $val->uom, $val->seq, $qty, $user, $qty2, $params);
+                        $this->addTimeSheetAccount($empid, $batchid, $val->acnoid, $val->dateid, $val->uom, $val->seq, $qty, $user, $qty2, $params);
                         unset($params['qtymulti']);
                     }
                 }
@@ -3912,7 +3912,7 @@ class payrollcommon
 
             $blnNoGovEDAdv = false;
 
-            //checking if paygroup is not same with employee setup and batch setup - no deduction of gov contri/earning/deduction/advance
+            //checking if paygroup is not same with employee setup (paygroup) and batch setup (pgroup) - no deduction of gov contri/earning/deduction/advance
             if ($params['dataparams']['paygroup'] != $params['dataparams']['pgroup'])
                 $blnNoGovEDAdv = true;
 
@@ -4735,11 +4735,11 @@ class payrollcommon
         if ($companyid == 68) { //jda
             if (isset($params['qtymulti'])) {
                 $data['qtymulti'] = $params['qtymulti'];
-                $existData = $this->coreFunctions->opentable("select qty, qty2, qtymulti from timesheet where empid=" . $empid . " and batchid=" . $batchid . " and acnoid=" . $acnoid);
-                if (!empty($existData)) {
-                    $data['qty'] = $data['qty'] + $existData[0]->qty;
-                    $data['qty2'] = $data['qty2'] + $existData[0]->qty2;
-                }
+            }
+            $existData = $this->coreFunctions->opentable("select qty, qty2, qtymulti from timesheet where empid=" . $empid . " and batchid=" . $batchid . " and acnoid=" . $acnoid);
+            if (!empty($existData)) {
+                $data['qty'] = $data['qty'] + $existData[0]->qty;
+                $data['qty2'] = $data['qty2'] + $existData[0]->qty2;
             }
         }
 

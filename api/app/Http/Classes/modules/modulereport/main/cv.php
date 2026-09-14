@@ -602,9 +602,11 @@ class cv
 
       PDF::SetFont($font, '', 10);
 
-      PDF::MultiCell(50, 5, '', '', 'C', false, 0);
-      PDF::MultiCell(170, 5, '', '', 'C', false, 0);
-      PDF::MultiCell(420, 5, ('' . isset($cdate) ? $cdate : ''), '', 'C', false, 0);
+      PDF::MultiCell(120, 5, '', '', 'C', false, 0);
+      PDF::MultiCell(230, 5, '', '', 'C', false, 0);
+      PDF::MultiCell(50, 5, date('m', strtotime($data2[$i]['postdate'])), '', 'L', false, 0);
+      PDF::MultiCell(50, 5, date('d', strtotime($data2[$i]['postdate'])), '', 'L', false, 0);
+      PDF::MultiCell(350, 5, date('Y', strtotime($data2[$i]['postdate'])), '', 'L', false, 0);
 
       // PDF::MultiCell(420, 5, 'DATEEEEEEEE', '', 'R',false,0);
       PDF::MultiCell(120, 5, '', '', 'C', false);
@@ -937,7 +939,7 @@ class cv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -947,7 +949,7 @@ class cv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1212,12 +1214,12 @@ class cv
 
       PDF::MultiCell(350, 0, strtoupper($data[0]['clientname']), '', 'L', false, 0);
       PDF::MultiCell(150, 0, '', '', 'L', false, 0);
-      PDF::MultiCell(220, 0, (isset($cc) ? '***' . number_format($cc, $decimal) . '***' : ''), '', 'L', false);
+      PDF::MultiCell(220, 0, (isset($cc) ? number_format($cc, $decimal)  : ''), '', 'L', false);
 
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       $dd = number_format((float)$cc, 2, '.', '');
-      PDF::MultiCell(720, 0, '***' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);
+      PDF::MultiCell(720, 0, $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '', 'L', false);
     }
 
 
@@ -1295,15 +1297,15 @@ class cv
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       PDF::MultiCell(30, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(320, 0, '**' . strtoupper($data[0]['clientname']) . '**', '', 'L', false, 0);
+      PDF::MultiCell(320, 0,  strtoupper($data[0]['clientname']), '', 'L', false, 0);
       PDF::MultiCell(150, 0, '', '', 'L', false, 0);
-      PDF::MultiCell(220, 0, (isset($cc) ? '**' . number_format($cc, $decimal) . '**' : ''), '', 'L', false);
+      PDF::MultiCell(220, 0, (isset($cc) ?  number_format($cc, $decimal)  : ''), '', 'L', false);
 
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       $dd = number_format((float)$cc, 2, '.', '');
       PDF::MultiCell(30, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(690, 0, '**' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY**', '', 'L', false);
+      PDF::MultiCell(690, 0,  $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '', 'L', false);
     }
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
@@ -1378,15 +1380,15 @@ class cv
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       PDF::MultiCell(30, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(320, 0, '**' . strtoupper($data[0]['clientname']) . '**', '', 'L', false, 0);
+      PDF::MultiCell(320, 0,  strtoupper($data[0]['clientname']), '', 'L', false, 0);
       PDF::MultiCell(150, 0, '', '', 'L', false, 0);
-      PDF::MultiCell(220, 0, (isset($cc) ? '**' . number_format($cc, $decimal) . '**' : ''), '', 'L', false);
+      PDF::MultiCell(220, 0, (isset($cc) ?  number_format($cc, $decimal)  : ''), '', 'L', false);
 
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       $dd = number_format((float)$cc, 2, '.', '');
       PDF::MultiCell(30, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(690, 0, '**' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY**', '', 'L', false);
+      PDF::MultiCell(690, 0, $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '', 'L', false);
     }
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
@@ -2519,7 +2521,7 @@ class cv
       $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '30px', '4px');
 
       $str .= $this->reporter->col(strtoupper($data[0]['clientname']), '720', null, false, '1px solid ', '', 'L', 'Verdana', '13', '', '30px', '4px');
-      $str .= $this->reporter->col((isset($cc) ? '***' . number_format($cc, $decimal) . '***' : ''), '150', null, false, '1px solid ', '', 'C', 'Verdana', '13', '', '30px', '4px');
+      $str .= $this->reporter->col((isset($cc) ? number_format($cc, $decimal) : ''), '150', null, false, '1px solid ', '', 'C', 'Verdana', '13', '', '30px', '4px');
       $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
@@ -2531,7 +2533,7 @@ class cv
       $dd = number_format((float)$cc, 2, '.', '');
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '30px', '4px');
-      $str .= $this->reporter->col('***' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY***', '900', null, false, '1px solid ', '', 'L', 'Verdana', '13', '', '30px', '4px');
+      $str .= $this->reporter->col($this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '900', null, false, '1px solid ', '', 'L', 'Verdana', '13', '', '30px', '4px');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
       $str .= "</div>";

@@ -118,7 +118,7 @@ class is
     item.barcode, item.itemname, item.color, item.sizeid, stock.rrcost as gross, 
     stock.cost as netamt, stock.rrqty as qty,
     stock.uom, stock.disc, stock.ext, stock.line,
-    wh.client as wh,wh.clientname as whname,stock.loc,
+    wh.client as wh,wh.clientname as whname, wh.addr as whaddr,stock.loc,
     date(stock.expiry) as expiry,stock.rem as srem,
     item.sizeid,m.model_name as model
     from lahead as head 
@@ -133,7 +133,7 @@ class is
     item.barcode, item.itemname, item.color, item.sizeid, stock.rrcost as gross, 
     stock.cost as netamt, stock.rrqty as qty,
     stock.uom, stock.disc, stock.ext, stock.line,
-    wh.client as wh,wh.clientname as whname,stock.loc,
+    wh.client as wh,wh.clientname as whname, wh.addr as whaddr,stock.loc,
     date(stock.expiry) as expiry,stock.rem as srem,
     item.sizeid,m.model_name as model
     from (glhead as head 
@@ -348,6 +348,17 @@ class is
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
 
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(0, 20, "", '', 'L');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(470, 0, (isset($data[0]['whaddr']) ? $data[0]['whaddr'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 0, "", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0, '',  '');
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
@@ -359,7 +370,7 @@ class is
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, "", '', 'L', false, 0, '',  '');
 
-    PDF::MultiCell(0, 0, "\n\n\n");
+    PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
 

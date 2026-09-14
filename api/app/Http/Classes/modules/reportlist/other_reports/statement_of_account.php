@@ -30,7 +30,7 @@ use DateTime;
 
 class statement_of_account
 {
-  public $modulename = 'Statement of Accounts';
+  public $modulename = 'STATEMENT OF ACCOUNT';
   private $companysetup;
   private $coreFunctions;
   private $fieldClass;
@@ -390,6 +390,10 @@ class statement_of_account
         }
         break;
     }
+
+    if ($companyid == 68) {
+      $addfield .= ", client.tin";
+    }
     // if ($companyid == 59) { //roosevelt
     //   $addfield .= ", client.area, datediff('" . $asof . "', head.dateid) as elapse ";
     // }
@@ -745,7 +749,7 @@ class statement_of_account
 
     $str .= $this->reporter->begintable($width);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+    $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1141,7 +1145,7 @@ class statement_of_account
 
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -1346,7 +1350,7 @@ class statement_of_account
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+    $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1827,7 +1831,7 @@ class statement_of_account
 
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -2559,6 +2563,12 @@ class statement_of_account
           $str .= $this->reporter->col('ADDRESS    : ' . $data->addr, null, null, false, $border, 'LR', 'L', $font, '10', 'B');
           $str .= $this->reporter->endrow();
 
+          if ($companyid == 68) {
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('TIN    : ' . $data->tin, null, null, false, $border, 'LR', 'L', $font, '10', 'B');
+            $str .= $this->reporter->endrow();
+          }
+
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('ATTENTION : ' . $attention, null, null, false, $border, 'LRB', 'L', $font, '10', 'B');
           $str .= $this->reporter->endrow();
@@ -2595,7 +2605,11 @@ class statement_of_account
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col($data->docdate, '100', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->col($data->trcode, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          if ($companyid == 68) {
+            $str .= $this->reporter->col($data->rem, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col($data->trcode, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          }
           $str .= $this->reporter->col($data->refno, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
           if ($data->applied == 0) {
             $str .= $this->reporter->col('None', '120', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
@@ -2628,7 +2642,11 @@ class statement_of_account
           $str .= $this->reporter->startrow();
           //($txt='',$w=null,$h=null, $bg=false,  $b=false, $b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
           $str .= $this->reporter->col($data->docdate, '100', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->col($data->trcode, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          if ($companyid == 68) {
+            $str .= $this->reporter->col($data->rem, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          } else {
+            $str .= $this->reporter->col($data->trcode, '230', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
+          }
           $str .= $this->reporter->col($data->refno, '250', null, false, $border, 'LTRB', 'C', $font, $fontsize, '', '', '');
 
           if ($data->applied == 0) {
@@ -2869,7 +2887,7 @@ class statement_of_account
 
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -3389,7 +3407,7 @@ class statement_of_account
 
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -4781,7 +4799,7 @@ class statement_of_account
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', $font, '17', 'B');
+    $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', $font, '17', 'B');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -5661,7 +5679,7 @@ class statement_of_account
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
+      $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -5695,7 +5713,7 @@ class statement_of_account
 
       $str .= $this->reporter->begintable($width);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
+      $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '22', 'B');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -6070,7 +6088,7 @@ class statement_of_account
 
           $str .= $this->reporter->begintable('1000');
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
+          $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, $border, '', 'C', 'Courier New', '17', 'B');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -6703,7 +6721,7 @@ class statement_of_account
     $str .= "</div>";
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('STATEMENT OF ACCOUNTS', null, null, false, '10px solid ', '', 'C', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('STATEMENT OF ACCOUNT', null, null, false, '10px solid ', '', 'C', $font, '18', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';

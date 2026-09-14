@@ -144,6 +144,7 @@ class sales_report_monthly_by_sales_date
         $posttype = $config['params']['dataparams']['posttype'];
         $clientid = $config['params']['dataparams']['clientid'];
         $client = $config['params']['dataparams']['client'];
+        $clientname = $config['params']['dataparams']['clientname'];
         $area     = $config['params']['dataparams']['area'];
         $region   = $config['params']['dataparams']['region'];
         $province = $config['params']['dataparams']['province'];
@@ -153,7 +154,7 @@ class sales_report_monthly_by_sales_date
         $filter = "";
         $filter2 = "";
 
-        if ($client != '' && $clientid != 0) {
+        if ($clientname != "") {
             $filter .= " and client.clientid='$clientid'";
         }
 
@@ -328,10 +329,11 @@ class sales_report_monthly_by_sales_date
         $group    = $config['params']['dataparams']['groupid'];
         $agentid  = $config['params']['dataparams']['agentid'];
         $agent    = $config['params']['dataparams']['agent'];
+        $clientname = $config['params']['dataparams']['clientname'];
         $filter   = "";
         $filter2  = "";
 
-        if ($client != '' && $clientid != 0) {
+        if ($clientname != "") {
             $filter .= " and client.clientid='$clientid'";
         }
         if ($area != "") {

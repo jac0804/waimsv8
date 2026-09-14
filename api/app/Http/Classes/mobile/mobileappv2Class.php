@@ -359,7 +359,7 @@ class mobileappv2Class
         $clientitems = [];
 
         $wh = "'" . implode("','", $whs) . "'";
-        $clientitem = $this->coreFunctions->opentable("select client.clientid, ci.barcode, ci.sku, client.client as wh from clientitem as ci left join client on client.clientid=ci.clientid where client.client in (" . $wh . ")");
+        $clientitem = $this->coreFunctions->opentable("select client.clientid, ci.barcode, ci.sku, client.client as wh from client join clientitem as ci on ci.clientid=client.clientid where client.client in (" . $wh . ")");
         if (!empty($clientitem)) {
           $clientitems = $clientitem;
           // foreach($clientitem as $cli) {
@@ -369,7 +369,7 @@ class mobileappv2Class
           foreach ($whs as $w) {
             $parent = $this->coreFunctions->opentable("select parent from client where client='" . $w . "'");
             if (!empty($parent)) {
-              $ci = $this->coreFunctions->opentable("select client.clientid, ci.barcode, ci.sku, '" . $w . "' as wh from clientitem as ci left join client on client.clientid=ci.clientid where client.client='" . $parent[0]->parent . "'");
+              $ci = $this->coreFunctions->opentable("select client.clientid, ci.barcode, ci.sku, '" . $w . "' as wh from client join clientitem as ci on ci.clientid=client.clientid where client.client='" . $parent[0]->parent . "'");
               if (!empty($ci)) {
                 foreach ($ci as $cci) {
                   array_push($clientitems, $ci);
@@ -649,7 +649,7 @@ class mobileappv2Class
         $branchstation = $this->coreFunctions->datareader("select wh as value from branchstation limit 1");
         $isallitems = 1;
         if ($branchstation != '') {
-          $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='".$branchstation."'");
+          $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='" . $branchstation . "'");
         }
         if ($isallitems == 0) $filter = " and item.brand in (select brand from branchbrand) ";
         if ($iend == 0) {
@@ -671,8 +671,8 @@ class mobileappv2Class
           group by item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt order by itemid asc limit 5000";
         $items = $this->coreFunctions->opentable($qry);
         if (!empty($items)) {
-          foreach($items as $ikey => $i) {
-            $bal = $this->coreFunctions->datareader("select sum(qty-iss) as value from glstock where itemid=".$i->itemid." and whid=14");
+          foreach ($items as $ikey => $i) {
+            $bal = $this->coreFunctions->datareader("select sum(qty-iss) as value from glstock where itemid=" . $i->itemid . " and whid=14");
             $items[$ikey]->bal = $bal;
           }
         }
@@ -1809,8 +1809,8 @@ class mobileappv2Class
       case md5('getUserLogs'):
         $date = $params['date'];
         $date = str_replace('/', '-', $date);
-        $logs = $this->coreFunctions->opentable("select c.clientid, c.email, c.clientname as name, time(t.timeinout) as timeinout, t.mode from timerec as t left join client as c on c.email=t.userid where date(t.timeinout)='".$date."'");
-        return json_encode(['status'=>true, 'msg'=>'Logs loaded', 'logs'=>$logs]);
+        $logs = $this->coreFunctions->opentable("select c.clientid, c.email, c.clientname as name, time(t.timeinout) as timeinout, t.mode from timerec as t left join client as c on c.email=t.userid where date(t.timeinout)='" . $date . "'");
+        return json_encode(['status' => true, 'msg' => 'Logs loaded', 'logs' => $logs]);
         break;
       case md5('getUserImageLog'):
         $user = $params['user'];
@@ -1818,8 +1818,8 @@ class mobileappv2Class
         $msg = '';
         // $inpic = $this->coreFunctions->datareader("select picture as value from loginpic where date(dateid)='".$date."' and `mode`='IN' and idbarcode='".$user['clientid']."'");
         // $outpic = $this->coreFunctions->datareader("select picture as value from loginpic where date(dateid)='".$date."' and `mode`='OUT' and idbarcode='".$user['clientid']."'");
-        $inpic = $this->coreFunctions->datareader("select picture as value from timerec where date(curdate)='".$date."' and `mode`='IN' and userid='".$user['id']."'");
-        $outpic = $this->coreFunctions->datareader("select picture as value from timerec where date(curdate)='".$date."' and `mode`='OUT' and userid='".$user['id']."'");
+        $inpic = $this->coreFunctions->datareader("select picture as value from timerec where date(curdate)='" . $date . "' and `mode`='IN' and userid='" . $user['id'] . "'");
+        $outpic = $this->coreFunctions->datareader("select picture as value from timerec where date(curdate)='" . $date . "' and `mode`='OUT' and userid='" . $user['id'] . "'");
         if ($inpic != '') {
           if (Storage::disk('public')->exists($inpic)) {
             $data = Storage::disk('public')->get($inpic);
@@ -1844,7 +1844,7 @@ class mobileappv2Class
           $outpic = '';
           $msg .= ' Time-out picture not found';
         }
-        return json_encode(['msg'=>$msg, 'inpic'=>$inpic, 'outpic'=>$outpic]);
+        return json_encode(['msg' => $msg, 'inpic' => $inpic, 'outpic' => $outpic]);
         break;
     }
   }
@@ -3401,17 +3401,17 @@ class mobileappv2Class
     if (isset($params['token'])) {
       $token = $params['token'];
       $user = $params['storage'];
-      if ($this->coreFunctions->execqry("update employee set dtoken='".$token."' where empid='".$user['id']."'", 'update') == 1) {
+      if ($this->coreFunctions->execqry("update employee set dtoken='" . $token . "' where empid='" . $user['id'] . "'", 'update') == 1) {
         $status = true;
         $msg = 'Token updated';
       }
     }
-    return json_encode(['status'=>$status, 'msg'=>$msg]);
+    return json_encode(['status' => $status, 'msg' => $msg]);
   }
 
   public function sendSampleNotif($params)
   {
     $dtoken = $this->coreFunctions->datareader("select dtoken as value from employee where empid=182");
-    return $this->othersClass->sendNotif($dtoken, ['title'=>'Employee Parnaso, Jad Oelzon Logged-in', 'body'=>'Date:2025-07-07 Time:08:00:00']);
+    return $this->othersClass->sendNotif($dtoken, ['title' => 'Employee Parnaso, Jad Oelzon Logged-in', 'body' => 'Date:2025-07-07 Time:08:00:00']);
   }
 }

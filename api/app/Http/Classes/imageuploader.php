@@ -100,6 +100,9 @@ class imageuploader
       case 'waims_attachments':
         $this->waimsattachupload($request);
         break;
+      case 'uploadfilebybatch':
+        $this->uploadfilebybatch($request);
+        break;
     }
     return $this;
   }
@@ -132,7 +135,8 @@ class imageuploader
     if ($oldpass != '') {
       if ($oldpass == $this->config['params']['oldpass']) {
         if ($oldpass != md5($this->config['params']['pwd'])) {
-          $qry = "update client set password='" . $this->config['params']['pwd'] . "' where md5(clientid)='" . $this->config['params']['userid'] . "'";
+          $qry = "update client set password='" . $this->config['params']['pwd'] . "', 
+            editby='" . $this->config['params']['user'] . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where md5(clientid)='" . $this->config['params']['userid'] . "'";
           $this->coreFunctions->execqry($qry);
           $this->config['return'] = ['status' => true, 'msg' => 'Update Password success'];
         } else {
@@ -155,7 +159,8 @@ class imageuploader
     if ($oldpass != '') {
       if ($oldpass == $this->config['params']['oldpass']) {
         if ($oldpass != md5($this->config['params']['pwd'])) {
-          $qry = "update useraccess set pwd='" . $this->config['params']['pwd'] . "',password=md5('" . $this->config['params']['pwd'] . "') where md5(userid)='" . $this->config['params']['userid'] . "'";
+          $qry = "update useraccess set pwd='" . $this->config['params']['pwd'] . "',password=md5('" . $this->config['params']['pwd'] . "'), 
+            editby='" . $this->config['params']['user'] . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' where md5(userid)='" . $this->config['params']['userid'] . "'";
           $this->coreFunctions->execqry($qry);
           $this->config['return'] = ['status' => true, 'msg' => 'Update Password success'];
         } else {
@@ -331,6 +336,45 @@ class imageuploader
     }
     return $this;
   } //end function
+
+
+    private function uploadfilebybatch(Request $request)
+  {
+    $required = ['file', 'action', 'user', 'companyid', 'folder', 'table', 'filename', 'ext'];
+    $creds = $request->only($required);
+    $myfile = $request->file('file');
+
+    $hasfile = $request->hasFile('file');
+    $file_ext = $creds['ext'];
+    $filename = $creds['filename'];
+    $data = [];
+    $fullpath = $creds['folder'].'/'.$filename;
+    if ($hasfile) {
+      $file_ext = $myfile->extension();
+      $available_ext = ["jpg", "jpeg", "png"];
+      if (!in_array($file_ext, $available_ext)) {
+        $msg = "Only Required Extensions are (" . $available_ext . ") [ERR_S3_001]";
+        $this->config['return'] = ['status' => false, 'msg' => $msg];
+      }
+
+      $img = Image::make($myfile);
+      $img->stream(); // <-- Key point
+      
+      if (Storage::disk('public')->exists($fullpath)) {
+        Storage::disk('public')->delete($fullpath);
+      }
+      $directory = Storage::disk('public')->put($fullpath, $img);
+      if($directory){
+        $msg = "'Successfully uploaded. ".$filename;      
+        $this->config['return'] = ['status' => true, 'msg' => $msg, 'filename' => $fullpath];
+      } else {
+        $msg = "'Uploade Failed. ".$filename;      
+        $this->config['return'] = ['status' => false, 'msg' => $msg, 'filename' => $fullpath];
+      }
+    }
+    return $this;
+  } //end function
+
 
   private function saveSignature($request)
   {

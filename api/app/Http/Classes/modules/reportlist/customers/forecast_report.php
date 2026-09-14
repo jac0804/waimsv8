@@ -149,8 +149,8 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        left join reqcategory as req on req.line=head.industryid
-        where  req.isindustry=1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
+        left join reqcategory as req on req.line=head.industryid  and req.isindustry=1
+        where  date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
@@ -165,8 +165,8 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        left join reqcategory as req on req.line=head.industryid
-        where  req.isindustry=1 and item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
+        left join reqcategory as req on req.line=head.industryid  and req.isindustry=1
+        where  item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
@@ -181,8 +181,8 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        left join reqcategory as req on req.line=head.industryid
-        where  req.isindustry=1 and date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
+        left join reqcategory as req on req.line=head.industryid and req.isindustry=1
+        where   date(head.dateid) between '" . $start . "' and '" . $end . "' $filter
         union all
         select head.trno, agent.agentcode as sales,client.clientname as companyname,
         head.industry,proj.name as itemgroup,item.itemname,(stock.amt*stock.iss*stock.sgdrate) as rate,
@@ -197,8 +197,8 @@ class forecast_report
         left join projectmasterfile as proj on proj.line=item.projectid
         left join stockinfotrans as info on info.trno=stock.trno and info.line=stock.line
         left join client as agent on agent.client=head.agent
-        left join reqcategory as req on req.line=head.industryid
-        where  req.isindustry=1 and item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "'" . $filter . " 
+        left join reqcategory as req on req.line=head.industryid  and req.isindustry=1
+        where  item.islabor =1 and date(head.dateid) between '" . $start . "' and '" . $end . "'" . $filter . " 
         order by docno ";
     //  var_dump($query); 
     //  break;

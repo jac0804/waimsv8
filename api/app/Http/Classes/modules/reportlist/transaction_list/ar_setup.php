@@ -95,11 +95,16 @@ class ar_setup
   {
     $center = $config['params']['center'];
     $username = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
 
     $reporttype = $config['params']['dataparams']['reporttype'];
     switch ($reporttype) {
       case '0': // SUMMARIZED
-        $result = $this->reportDefaultLayout_SUMMARIZED($config);
+        if($companyid == 68){
+          $result = $this->JDA_Layout_SUMMARIZED($config);
+        }else{
+          $result = $this->reportDefaultLayout_SUMMARIZED($config);
+        }
         break;
       case '1': // DETAILED
         $result = $this->reportDefaultLayout_DETAILED($config);
@@ -181,6 +186,7 @@ class ar_setup
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
 
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -190,6 +196,8 @@ class ar_setup
     $fcenter    = $config['params']['dataparams']['center'];
 
     $filter = "";
+    $addfield = "";
+    $globalselect = "";
     if ($prefix != "") {
       $filter .= " and cntnum.bref = '$prefix' ";
     }
@@ -200,10 +208,15 @@ class ar_setup
       $filter .= " and cntnum.center = '$fcenter'";
     }
 
-    $query = "select docno, createby, dateid, GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, sum(db) as debit, sum(cr) as credit, rem
+    if ($companyid == 68) {
+      $addfield = ",head.yourref";
+      $globalselect = ",yourref";
+    }
+
+    $query = "select docno, createby, dateid, hclient, hclientname, GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, sum(db) as debit, sum(cr) as credit, rem $globalselect
   from(
     select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
-          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref 
+          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref,head.yourref 
           from lahead as head
           left join ladetail as detail on detail.trno=head.trno 
           left join client as hclient on hclient.client=head.client
@@ -213,20 +226,20 @@ class ar_setup
           where head.doc='ar' and head.dateid between '$start' and '$end' $filter 
           union all
           select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
-          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref from glhead as head
+          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref,head.yourref from glhead as head
           left join gldetail as detail on detail.trno=head.trno left join client as hclient on hclient.clientid=head.clientid
           left join client as dclient on dclient.clientid=detail.clientid left join coa on coa.acnoid=detail.acnoid
           left join cntnum on cntnum.trno=head.trno
           where head.doc='ar' and head.dateid between '$start' and '$end' $filter 
           union all
           select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
-          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref from hglhead as head
+          concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,detail.cr,head.rem,detail.ref,head.yourref from hglhead as head
           left join hgldetail as detail on detail.trno=head.trno left join client as hclient on hclient.clientid=head.clientid
           left join client as dclient on dclient.clientid=detail.clientid left join coa on coa.acnoid=detail.acnoid
           left join cntnum on cntnum.trno=head.trno
           where head.doc='ar' and head.dateid between '$start' and '$end' $filter 
           order by dateid,docno) as t 
-          group by docno, createby, dateid, rem order by docno";
+          group by docno, createby, dateid, hclient, hclientname, rem, yourref order by docno";
 
     return $query;
   }
@@ -534,6 +547,105 @@ class ar_setup
     return $str;
   }
 
+  public function JDA_Layout_SUMMARIZED($config)
+  {
+    $result = $this->reportDefault($config);
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $companyid = $config['params']['companyid'];
+
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $filterusername  = $config['params']['dataparams']['username'];
+    $prefix     = $config['params']['dataparams']['approved'];
+
+    $count = 61;
+    $page = 60;
+    $this->reporter->linecounter = 0;
+
+    $str = '';
+    $layoutsize = '1000'; //1000
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->summarized_header_DEFAULT($config, $layoutsize);
+    $str .= $this->summarized_header_table($config, $layoutsize);
+
+    $i = 0;
+    $docno = "";
+    $supplier = "";
+    $debit = 0;
+    $credit = 0;
+    $totaldb = 0;
+    $totalcr = 0;
+
+    if (!empty($result)) {
+      foreach ($result as $key => $data) {
+        $totaldb += $data->debit;
+        $totalcr += $data->credit;
+        $str .= $this->reporter->addline();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        
+        $str .= $this->reporter->col($data->dateid, '80', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col($data->docno, '120', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col($data->hclient, '130', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col($data->hclientname, '210', null, false, $border, '', 'LT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col($data->yourref, '120', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col(number_format($data->debit, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, 'R', '', '');
+        $str .= $this->reporter->col($data->rem, '250', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
+        
+        $str .= $this->reporter->endrow($layoutsize);
+
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+          $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+          if (!$isfirstpageheader) $str .= $this->summarized_header_DEFAULT($config, $layoutsize);
+          $str .= $this->summarized_header_table($config, $layoutsize);
+          $page = $page + $count;
+        } //end if
+
+      }
+    }
+
+    // Footer with Grand Total
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '80', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '120', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '130', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '210', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '120', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '100', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col("<div style='height:10px;'></div>", '250', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
+    
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    
+    $str .= $this->reporter->col('', '80', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col('', '120', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col('', '210', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
+    $str .= $this->reporter->col('Grand Total:', '120', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, 2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
+    
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
   public function summarized_header_DEFAULT($config, $layoutsize)
   {
     $center     = $config['params']['center'];
@@ -581,21 +693,38 @@ class ar_setup
 
   public function summarized_header_table($config, $layoutsize)
   {
+    $companyid = $config['params']['companyid'];
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
     $border = "1px solid";
     $str = "";
 
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Docno', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Check#', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Debit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Credit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Notes', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
+    if ($companyid == 68){
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('Date', '80', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Docno', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Customer Code', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Customer Name', '210', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Your Ref', '120', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Debit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      // $str .= $this->reporter->col('Credit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Notes', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+    }else {
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('Date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Docno', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Check#', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Debit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Credit', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Notes', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+    }
+
     return $str;
   }
 }//end class

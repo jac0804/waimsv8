@@ -601,7 +601,6 @@ class balance_sheet
     } //end switch
 
 
-
     return $query1;
   } // DEFAULT BALANCE SHEET
 

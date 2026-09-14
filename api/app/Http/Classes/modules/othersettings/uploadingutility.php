@@ -87,6 +87,11 @@ class uploadingutility
 
     array_push($fields, 'uploadexcel');
 
+    switch ($config['params']['companyid']) {
+      case 70: //sportrunner
+        array_push($fields, 'uploadfilebybatch');
+        break;
+    }
     $col1 = $this->fieldClass->create($fields);
     switch ($config['params']['companyid']) {
       case 64: //excelin
@@ -399,7 +404,8 @@ class uploadingutility
       case 70: //sportrunner
         data_set($col1, 'optionuploading.options', array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'primary'],
-          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary']
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary'],
+          ['label' => 'Upload Product Image', 'value' => 'uploadproductimage', 'color' => 'primary'],
         ));
         break;
     }
@@ -446,10 +452,13 @@ class uploadingutility
 
       case 58: //cdo-hris
       case 62: //onesky
-      case 70: //sportrunner
         $fields = [];
         break;
+      case 70: //sportrunner
+        $fields = [];
+        data_set($col1, 'uploadfilebybatch.addedparams', ['folder'=>'products','table'=>'uploadfilebybatch']);
 
+        break;
       case 56; //homeworks
         $fields = ['downloaditemexcel', 'downloadcustomerexcel', 'downloadwhexcel', 'downloadsupplierexcel', 'downloadpricelistexcel'];
         break;
@@ -4097,7 +4106,7 @@ class uploadingutility
           }
 
           if ($type == 'newemployeepayroll' || $type == 'updateemployeepayroll') {
-            if ($status) $this->updateroleinfo($uniqueval);
+            if ($status) $this->updateroleinfo($uniqueval, $config['params']['user']);
           }
 
           if ($tabletype == 'pricelist') {
@@ -4281,7 +4290,7 @@ class uploadingutility
       case 'agentcode':
       case 'warehousecode':
       case 'truckcode':
-        if ($table == 'client' && strtolower($field) == 'agentcode') {
+        if ($table == 'client' && $type != 'newagent' && $type != 'updateagent' && strtolower($field) == 'agentcode') {
           return 'agent';
         }
         return 'client';
@@ -5030,7 +5039,11 @@ class uploadingutility
 
       case 'jobtitle':
       case 'job title':
-        return 'jobid';
+        if ($table == 'jobthead') { //direct db table
+          return 'jobtitle';
+        } else {
+          return 'jobid';
+        }
         break;
 
       case 'hired job title':
@@ -6342,10 +6355,18 @@ class uploadingutility
     return ['status' => true, 'msg' => $msg];
   }
 
-  public function updateroleinfo($empid)
+  public function updateroleinfo($empid, $user)
   {
     $this->coreFunctions->execqry("update employee as emp left join client on client.clientid=emp.empid left join rolesetup as r on r.line=emp.roleid 
-    set emp.divid=ifnull(r.divid,0), emp.deptid=ifnull(r.deptid,0), emp.sectid=ifnull(r.sectionid,0), emp.supervisorid=ifnull(r.supervisorid,0) where client.client='" . $empid . "' and emp.roleid<>0");
+    set emp.divid=ifnull(r.divid,0), emp.deptid=ifnull(r.deptid,0), emp.sectid=ifnull(r.sectionid,0), emp.supervisorid=ifnull(r.supervisorid,0), editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' 
+        where client.client='" . $empid . "' and emp.roleid<>0");
+  }
+
+  public function updateroleinfoid($empid, $user)
+  {
+    $this->coreFunctions->execqry("update employee as emp left join client on client.clientid=emp.empid left join rolesetup as r on r.line=emp.roleid 
+    set emp.divid=ifnull(r.divid,0), emp.deptid=ifnull(r.deptid,0), emp.sectid=ifnull(r.sectionid,0), emp.supervisorid=ifnull(r.supervisorid,0), editby='" . $user . "', editdate='" . $this->othersClass->getCurrentTimeStamp() . "' 
+        where client.client='" . $empid . "' and emp.roleid=0");
   }
 
   public function updatePriceListEffectivity($data, $user)

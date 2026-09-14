@@ -324,6 +324,7 @@ class pay_slip
     $divname     = $config['params']['dataparams']['divname'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
@@ -344,7 +345,7 @@ class pay_slip
       }
     }
 
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
 
@@ -421,6 +422,7 @@ class pay_slip
     $deptid     = $config['params']['dataparams']['deptid'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
@@ -436,7 +438,7 @@ class pay_slip
       $filter2 .= " and emp.divid = $divid";
     }
 
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
 
@@ -484,6 +486,7 @@ class pay_slip
     $deptid     = $config['params']['dataparams']['deptid'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
@@ -499,7 +502,7 @@ class pay_slip
       $filter2 .= " and emp.divid = $divid";
     }
 
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
 
@@ -550,6 +553,7 @@ class pay_slip
     $divname     = $config['params']['dataparams']['divname'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $branch     = $config['params']['dataparams']['dbranchname'];
     $branchid     = $config['params']['dataparams']['branchid'];
 
@@ -573,7 +577,7 @@ class pay_slip
       $filter2 .= " and emp.divid = $divid";
     }
 
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
 
@@ -645,17 +649,19 @@ class pay_slip
     // QUERY
     $clientid     = $config['params']['dataparams']['clientid'];
     $client     = $config['params']['dataparams']['client'];
+    $dclientname= $config['params']['dataparams']['dclientname'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $divid     = $config['params']['dataparams']['divid'];
     $divname     = $config['params']['dataparams']['divname'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
     $filter3   = "";
 
-    if ($clientid != 0) {
+    if ($dclientname != "") {
       $filter .= " and emp.empid = $clientid";
     }
     if ($client != "") {
@@ -664,7 +670,7 @@ class pay_slip
     if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and emp.deptid = $deptid";
     }
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
     if ($divid != 0  && $divname != '') {
@@ -723,6 +729,7 @@ class pay_slip
     $divname     = $config['params']['dataparams']['divname'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
@@ -734,7 +741,7 @@ class pay_slip
     if ($deptid != 0 && $deptname != '') {
       $filter1 .= " and emp.deptid = $deptid";
     }
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
     if ($divid != 0 && $divname != '') {
@@ -10233,6 +10240,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $deptid     = $config['params']['dataparams']['deptid'];
     $deptname     = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
@@ -10248,7 +10256,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
       $filter2 .= " and emp.divid = $divid";
     }
 
-    if ($batchid != 0) {
+    if ($batchrep != "") {
       $filter2 .= " and p.batchid = " . $batchid . " ";
     }
 

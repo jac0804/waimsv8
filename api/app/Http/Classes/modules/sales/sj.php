@@ -99,10 +99,12 @@ class sj
     'invoiceno',
     'plateno',
     'rfno',
-    'conaddr'
+    'conaddr',
+    'ismarkup'
   ];
 
   private $except = ['trno', 'dateid', 'due'];
+  private $blnfields = ['ismarkup'];
   private $acctg = [];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -637,14 +639,14 @@ class sj
         break;
     }
 
-    if(!$issuemultiloc){
+    if (!$issuemultiloc) {
       if ($isshortcutso) {
         $allownew = $this->othersClass->checkAccess($config['params']['user'], 171);
         if ($allownew == '1') {
           array_push($fields, 'pickpo');
         }
       }
-    }    
+    }
 
     $col1 = $this->fieldClass->create($fields);
     if ($companyid == 20) { //proline
@@ -763,7 +765,7 @@ class sj
         break;
       default:
         $buttons['others']['items']['testloc'] = ['label' => 'Test Loc', 'todo' => ['type' => 'testloc', 'action' => 'entrylocexpiry', 'lookupclass' => 'tableentry', 'access' => 'view']];
-      break;
+        break;
     }
 
     if ($this->companysetup->getisshowmanual($config['params'])) {
@@ -849,6 +851,7 @@ class sj
     $stock_projectname = 22;
     $noprint = 23;
     $barcode = 24;
+    $issp = 25;
 
 
     if ($inv) {
@@ -857,8 +860,8 @@ class sj
       $headgridbtns = ['viewdistribution', 'viewref', 'viewdiagram', 'viewitemstockinfo'];
     }
 
-    $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode'];
-    $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
+    $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp'];
+    $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp'];
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -938,9 +941,8 @@ class sj
         }
         break;
       case 64: //excilin
-
-        $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'markup', 'wh', 'ref', 'rem'];
-        $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'markup', 'wh', 'ref', 'rem'];
+        $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
         foreach ($column as $key => $value) {
           $$value = $key;
         }
@@ -954,8 +956,8 @@ class sj
         }
         break;
       case 67: //yulick
-        $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
-        $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
+        $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
         foreach ($column as $key => $value) {
           $$value = $key;
         }
@@ -1267,6 +1269,10 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
         $obj[0]['inventory']['columns'][$itemname]['label'] = 'Itemname';
+        $obj[0]['inventory']['columns'][$consignpr]['label'] = 'Customer Markup Price';
+        $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Markup Discount';
+        $obj[0]['inventory']['columns'][$disc2]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
+        $obj[0]['inventory']['columns'][$disc2]['align'] = 'text-right';
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
       case 65: //metrodragon
@@ -1309,6 +1315,16 @@ class sj
         break;
     }
 
+    if ($companyid == 71) { //buenatech
+      $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
+      $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
+      $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
+    }
+
+    if ($companyid != 71) { //buenatech
+      $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+    }
+
     if (!$access['changeamt']) {
       // 3 - isamt
       $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
@@ -1321,24 +1337,24 @@ class sj
       $obj[0][$this->gridname]['columns'][$lot]['readonly'] = true;
     }
 
-      $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-      if(!$islocation){
-        switch($companyid){ 
-           ////mga naka false ang islocation pero may naka show ang loc sa SJ
-          case 24: //goodfound
-          case 28: //xcomp
-            $obj[0]['inventory']['columns'][$loc]['readonly'] = true;
-            break;
-          case 50: //unitech
-            $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-          case 69: //cemphil
-              break;
-          default:
-             $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-              break;
-        }
+    if (!$islocation) {
+      switch ($companyid) {
+        ////mga naka false ang islocation pero may naka show ang loc sa SJ
+        case 24: //goodfound
+        case 28: //xcomp
+          $obj[0]['inventory']['columns'][$loc]['readonly'] = true;
+          break;
+        case 50: //unitech
+          $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+        case 69: //cemphil
+          break;
+        default:
+          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+          break;
       }
+    }
 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1356,10 +1372,9 @@ class sj
         $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
       } else {
         $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
-        if($issuemultiloc){
+        if ($issuemultiloc) {
           $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
         }
-      
       }
     } elseif ($ispallet) {
       $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
@@ -1393,7 +1408,7 @@ class sj
         $obj[0]['action'] = 'soserial';
       }
 
-      if($issuemultiloc){
+      if ($issuemultiloc) {
         $obj[1]['lookupclass'] = 'additemmultiloc';
         $obj[1]['action'] = 'additemmultiloc';
       }
@@ -1538,6 +1553,9 @@ class sj
         break;
       case 65: //metrodragon
         array_push($fields, 'plateno');
+        break;
+      case 64: //excelin 
+        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'ismarkup'];
         break;
     }
 
@@ -1983,6 +2001,7 @@ class sj
 
     $data[0]['frno'] = '';
     $data[0]['conaddr'] = '';
+    $data[0]['ismarkup'] = 0;
     return $data;
   }
 
@@ -2080,7 +2099,7 @@ class sj
          hinfo.interestrate,hinfo.downpayment,  head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, 
            bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
            subamen.line as subamenityid, subamen.description as subamenityname, head.isreported,
-           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno";
+           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno, head.ismarkup";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2127,6 +2146,12 @@ class sj
     $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
 
     if (!empty($head)) {
+      foreach ($this->blnfields as $key => $value) {
+        if ($head[0]->$value) {
+          $head[0]->$value = "1";
+        } else
+          $head[0]->$value = "0";
+      }
       $stock = $this->openstock($trno, $config);
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
@@ -2297,7 +2322,7 @@ class sj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-               $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -2684,7 +2709,7 @@ class sj
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
       case 64: //execilin
-        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck";
+        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, format(ifnull(stock.custdisc,0), 2) as disc2";
         $color = ",case when stock.limitcheck = 2  then 'bg-red-2'
                           when stock.limitcheck = 1 then 'bg-yellow-2'
                           else '' end as qacolor";
@@ -2694,6 +2719,9 @@ class sj
         break;
       case 67: //yulick
         $serialfield = ",format(ifnull(stock.isqty2,0), 2) as isqty2";
+        break;
+      case 71:  //buenatech
+        $serialfield = ",case when stock.issp=0 then 'false' else 'true' end as issp";
         break;
     }
 
@@ -2785,7 +2813,7 @@ class sj
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
         break;
       case 64: //excilin
-        $stockinfogroup = 'stock.consignpr,stock.limitcheck,';
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc, ';
         break;
       case 65: //metrodragon
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -2794,6 +2822,9 @@ class sj
         break;
       case 67: //yulick
         $stockinfogroup = 'stock.isqty2,';
+        break;
+      case 71: //buenatech
+        $stockinfogroup = 'stock.issp,';
         break;
     }
 
@@ -2905,7 +2936,7 @@ class sj
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
         break;
       case 64: //excilin
-        $stockinfogroup = 'stock.consignpr,stock.limitcheck,';
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc, ';
         break;
       case 65: //metrodragon  
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -2947,7 +2978,7 @@ class sj
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . "),
     FORMAT(stock." . $this->dqty . "," . $qty_dec . "),
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") ,
-    stock.encodeddate,stock.disc,stock.void,stock.ref,stock.whid,warehouse.client,
+    stock.encodeddate,stock.disc,stock.void,stock.issp,stock.ref,stock.whid,warehouse.client,
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
@@ -3893,8 +3924,13 @@ class sj
     $palletid = isset($config['params']['data']['palletid']) ? $config['params']['data']['palletid'] : 0;
     $weight = isset($config['params']['data']['weight']) ? $config['params']['data']['weight'] : 0;
     $expiry = '';
+    $issp = 'false';
     if (isset($config['params']['data']['expiry'])) {
       $expiry = $config['params']['data']['expiry'];
+    }
+
+    if (isset($config['params']['data']['issp'])) {   // NEW
+      $issp = $config['params']['data']['issp'];
     }
 
     if ($this->companysetup->getiskgs($config['params'])) {
@@ -3913,6 +3949,7 @@ class sj
     $rebate = isset($config['params']['data']['rebate']) ? $config['params']['data']['rebate'] : 0;
     $projectid = isset($config['params']['data']['projectid']) ? $config['params']['data']['projectid'] : 0;
     $noprint = isset($config['params']['data']['noprint']) ? $config['params']['data']['noprint'] : 'false';
+    // $issp = isset($config['params']['data']['issp']) ? $config['params']['data']['issp'] : 'false'; // ADD THIS
     $rem = isset($config['params']['data']['rem']) ? $config['params']['data']['rem'] : '';
     $poref = isset($config['params']['data']['poref']) ? $config['params']['data']['poref'] : '';
     $podate = isset($config['params']['data']['podate']) ? $config['params']['data']['podate'] : null;
@@ -3951,9 +3988,13 @@ class sj
     }
 
     $consignmarkup = 0;
+    $custdisc = 0;
     if ($companyid == 64) { //excilin
       if (isset($config['params']['data']['consignpr'])) {
         $consignmarkup = $config['params']['data']['consignpr'];
+      }
+      if (isset($config['params']['data']['disc2'])) {
+        $custdisc = $config['params']['data']['disc2'];
       }
     }
 
@@ -3991,11 +4032,11 @@ class sj
       }
     }
 
-      $dateTables = ['lastock','stockinfo'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
-      $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+    $dateTables = ['lastock', 'stockinfo'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
     if ($systemtype == 'REALESTATE') {
       $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
@@ -4099,6 +4140,7 @@ class sj
       'noprint' => $noprint,
       'drrefx' => $drrefx,
       'drlinex' => $drlinex,
+      // 'issp' => $issp,
     ];
 
     switch ($companyid) {
@@ -4140,11 +4182,12 @@ class sj
 
           $data['agentamt'] = $this->othersClass->sanitizekeyfieldFast('agentamt', $agentamt, $lookups);
           $data['startwire'] = $this->othersClass->sanitizekeyfieldFast('startwire', $startwire, $lookups);
-          $data['endwire'] = $this->othersClass->sanitizekeyfieldFast('endwire', $endwire,$lookups);
+          $data['endwire'] = $this->othersClass->sanitizekeyfieldFast('endwire', $endwire, $lookups);
         }
         break;
       case 64: //excelin
         $data['consignpr'] = $consignmarkup;
+        $data['custdisc'] = $custdisc;
         if ($hamt < $lastpr) { //if the amount is less than last price
           $data['limitcheck'] = 1;
         } else {
@@ -4161,6 +4204,9 @@ class sj
       case 67: //yulick
         $data['isqty2'] = $isqty2;
         break;
+      case 71: //buenatech
+        $data['issp'] = $issp;
+        break;
     }
 
     if ($systemtype == 'REALESTATE') {
@@ -4171,9 +4217,8 @@ class sj
       $data['amenityid'] = $amenityid;
       $data['subamenityid'] = $subamenityid;
     }
-
     foreach ($data as $key => $value) {
-       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -5048,25 +5093,31 @@ class sj
       case 29: //sbc
         $addfield .= ",head.tax,head.vattype";
         break;
+      case 71: //buenatech
+        $addfield .= ",stock.issp";
+        break;
+      case 64: //excilin
+        $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
+        break;
     }
     return "
-        select head.docno,head.client, head.clientname, head.address, ifnull(head.rem,'') as rem, 
-        head.cur, head.forex, head.shipto " . $addfield . " , head.yourref, head.terms, 
-        ifnull(head.branch,0) as branch,item.itemid,stock.trno,stock.line, item.barcode,
-        stock.uom,stock.amt,(stock.iss-stock.qa) as iss,stock.isamt,stock.kgs,stock.weight,
-        round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
-        stock.disc,stock.loc,stock.expiry,stock.projectid,head.shipto,head.mlcp_freight,
-        head.ms_freight,head.agent,head.projectid as hprojectid,wh.client as swh,
-        info.driverid,info.helperid,info.checkerid,info.plateno,info.truckid,sinfo.itemdesc,head.sano,head.pono,head.wh,head.salestype,head.due
-        FROM hsohead as head left join hsostock as stock on stock.trno=head.trno 
-        left join item on item.itemid=stock.itemid 
-        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
-        left join client as wh on wh.clientid=stock.whid 
-        left join hheadinfotrans as info on info.trno=head.trno
-        left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
-        left join clientsano as sa on sa.line=head.sano
-        left join clientsano as po on po.line=head.pono
-        where stock.trno = ? and stock.iss>stock.qa and stock.void=0";
+      select head.docno,head.client, head.clientname, head.address, ifnull(head.rem,'') as rem, 
+      head.cur, head.forex, head.shipto " . $addfield . " , head.yourref, head.terms, 
+      ifnull(head.branch,0) as branch,item.itemid,stock.trno,stock.line, item.barcode,
+      stock.uom,stock.amt,(stock.iss-stock.qa) as iss,stock.isamt,stock.kgs,stock.weight,
+      round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
+      stock.disc,stock.loc,stock.expiry,stock.projectid,head.shipto,head.mlcp_freight,
+      head.ms_freight,head.agent,head.projectid as hprojectid,wh.client as swh,
+      info.driverid,info.helperid,info.checkerid,info.plateno,info.truckid,sinfo.itemdesc,head.sano,head.pono,head.wh,head.salestype,head.due
+      FROM hsohead as head left join hsostock as stock on stock.trno=head.trno 
+      left join item on item.itemid=stock.itemid 
+      left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+      left join client as wh on wh.clientid=stock.whid 
+      left join hheadinfotrans as info on info.trno=head.trno
+      left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
+      left join clientsano as sa on sa.line=head.sano
+      left join clientsano as po on po.line=head.pono
+      where stock.trno = ? and stock.iss>stock.qa and stock.void=0";
   }
 
   public function getsosummary($config)
@@ -5124,6 +5175,10 @@ class sj
               'sano' => $data[0]->sano,
               'pono' => $data[0]->pono
             ];
+          }
+
+          if ($companyid == 64) { //excilin
+            $headupdate['ismarkup'] = $data[0]->ismarkup;
           }
 
           if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
@@ -5195,6 +5250,15 @@ class sj
 
             if ($companyid == 67) { //yulick
               $config['params']['data']['isqty2'] = $data[$key2]->isqty;
+            }
+
+            if ($companyid == 71) { //buenatech
+              $config['params']['data']['issp'] = $data[$key2]->issp;
+            }
+
+            if ($companyid == 64) { //excilin
+              $config['params']['data']['consignpr'] = $data[$key2]->markup;
+              $config['params']['data']['disc2'] = $data[$key2]->custdisc;
             }
 
             $return = $this->additem('insert', $config);
@@ -5317,7 +5381,7 @@ class sj
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno,
-        stock.line, item.barcode,stock.uom, stock.amt,
+        stock.line, item.barcode,stock.uom, stock.amt,stock.issp,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
         stock.disc,stock.loc,stock.expiry,stock.whid
@@ -5345,6 +5409,7 @@ class sj
           $config['params']['data']['linex'] = $data[$key2]->line;
           $config['params']['data']['ref'] = $data[$key2]->docno;
           $config['params']['data']['amt'] = $data[$key2]->isamt;
+          $config['params']['data']['issp'] = isset($data[$key2]->issp) ? $data[$key2]->issp : 'false';   // NEW
           $return = $this->additem('insert', $config);
           if ($return['status']) {
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
@@ -5378,7 +5443,7 @@ class sj
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno,
-        stock.line, item.barcode,stock.uom, stock.amt,
+        stock.line, item.barcode,stock.uom, stock.amt,stock.issp,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
         stock.disc,stock.loc,stock.expiry,stock.whid
@@ -5406,6 +5471,7 @@ class sj
           $config['params']['data']['linex'] = $data[$key2]->line;
           $config['params']['data']['ref'] = $data[$key2]->docno;
           $config['params']['data']['amt'] = $data[$key2]->isamt;
+          $config['params']['data']['issp'] = isset($data[$key2]->issp) ? $data[$key2]->issp : 'false';   // NEW
           $return = $this->additem('insert', $config);
           if ($return['status']) {
             if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
@@ -5453,6 +5519,12 @@ class sj
       case 29: //sbc
         $addfield .= ",head.tax,head.vattype";
         break;
+      case 71: //buenatech
+        $addfield .= ",stock.issp";
+        break;
+      case 64: //excilin
+        $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
+        break;
     }
 
 
@@ -5460,17 +5532,17 @@ class sj
     foreach ($config['params']['rows'] as $key => $value) {
 
       $qry = "
-        select head.docno, head.ourref, head.yourref, head.terms, head.agent, head.shipto, head.projectid as hprojectid,head.rem,item.itemid,stock.trno,
-        stock.line, item.barcode,stock.uom, stock.amt,
-        (stock.iss-stock.qa) as iss,stock.isamt,stock.kgs,
-        round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
-        stock.disc,stock.loc,stock.expiry,stock.projectid,wh.client as swh,info.driverid,info.helperid,info.checkerid,info.plateno,stock.weight,sinfo.itemdesc,head.sano,head.pono,head.wh,head.due  $addfield
-        FROM hsohead as head left join hsostock as stock on stock.trno=head.trno left join item on item.itemid=
-        stock.itemid left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
-        left join client as wh on wh.clientid=stock.whid left join hheadinfotrans as info on info.trno=head.trno
-        left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
-        where stock.trno = ? and stock.line=? and stock.iss>stock.qa and stock.void=0
-    ";
+      select head.docno, head.ourref, head.yourref, head.terms, head.agent, head.shipto, head.projectid as hprojectid,head.rem,item.itemid,stock.trno,
+      stock.line, item.barcode,stock.uom, stock.amt,
+      (stock.iss-stock.qa) as iss,stock.isamt,stock.kgs,
+      round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
+      stock.disc,stock.loc,stock.expiry,stock.projectid,wh.client as swh,info.driverid,info.helperid,info.checkerid,info.plateno,stock.weight,sinfo.itemdesc,head.sano,head.pono,head.wh,head.due,stock.issp $addfield
+      FROM hsohead as head left join hsostock as stock on stock.trno=head.trno left join item on item.itemid=
+      stock.itemid left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+      left join client as wh on wh.clientid=stock.whid left join hheadinfotrans as info on info.trno=head.trno
+      left join hstockinfotrans as sinfo on sinfo.trno=stock.trno and sinfo.line=stock.line
+      where stock.trno = ? and stock.line=? and stock.iss>stock.qa and stock.void=0
+  ";
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       if (!empty($data)) {
         $updatehead = 0;
@@ -5517,6 +5589,9 @@ class sj
               ];
             }
 
+            if ($companyid == 64) { //excilin
+              $headupdate['ismarkup'] = $data[0]->ismarkup;
+            }
 
             if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
               if (substr($data[0]->docno, 0, 2) == 'SO') {
@@ -5584,7 +5659,10 @@ class sj
               $config['params']['data']['isqty2'] = $data[$key2]->isqty;
             }
 
-
+            if ($companyid == 64) { //excilin
+              $config['params']['data']['consignpr'] = $data[$key2]->markup;
+              $config['params']['data']['disc2'] = $data[$key2]->custdisc;
+            }
 
             $return = $this->additem('insert', $config);
             if ($msg = '') {
@@ -5980,7 +6058,7 @@ class sj
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -6671,8 +6749,8 @@ class sj
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
-      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])),$lookups);
-        if ($companyid == 10) { //afti
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
+      if ($companyid == 10) { //afti
         if ($data[$key]->disc != "") {
           $computedata = $this->othersClass->computestock(
             $damt * $head['forex'],
@@ -6708,8 +6786,8 @@ class sj
           0
         );
 
-          $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-          $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
+        $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
+        $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
         $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
       }

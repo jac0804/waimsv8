@@ -420,7 +420,7 @@ class txtfieldClass
                 'name' => 'lblcostuom',
                 'type' => 'label',
                 'label' => 'COST/UOM',
-                
+
                 'class' => '',
                 'style' => 'font-weight:bold;font-size:30px;'
             ),
@@ -2814,6 +2814,18 @@ class txtfieldClass
                 'required' => false,
                 'access' => 'save'
             ),
+            'uploadfilebybatch' => array(
+                'name' => 'uploadfilebybatch',
+                'type' => 'actionbtn',
+                'label' => 'Upload Product Images by batch',
+                'class' => 'csupdate',
+                'action' => 'uploadfilebybatch',
+                'lookupclass' => 'uploadfilebybatch',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'access' => 'save'            
+            ),
             'downloadexcel' => array(
                 'name' => 'downloadexcel',
                 'type' => 'downloadexcel',
@@ -4557,6 +4569,17 @@ class txtfieldClass
             ),
             'helpername' => array(
                 'name' => 'helpername',
+                'type' => 'lookup',
+                'label' => 'Helper',
+                'class' => 'cshelpername sbccsreadonly',
+                'lookupclass' => 'helper',
+                'action' => 'lookupclient',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'helpername2' => array(
+                'name' => 'helpername2',
                 'type' => 'lookup',
                 'label' => 'Helper',
                 'class' => 'cshelpername sbccsreadonly',
@@ -20847,7 +20870,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'sagsdexp' => array(
+            'sagsdexp' => array(
                 'name' => 'sagsdexp',
                 'type' => 'date',
                 'label' => 'SAGSD EXPIRY DATE',
@@ -20858,7 +20881,7 @@ class txtfieldClass
             ),
 
 
-             'solicense' => array(
+            'solicense' => array(
                 'name' => 'solicense',
                 'type' => 'input',
                 'label' => 'SO LICENSE',
@@ -20869,7 +20892,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'soexp' => array(
+            'soexp' => array(
                 'name' => 'soexp',
                 'type' => 'date',
                 'label' => 'SO EXPIRY DATE',
@@ -20880,7 +20903,7 @@ class txtfieldClass
             ),
 
 
-             'palicense' => array(
+            'palicense' => array(
                 'name' => 'palicense',
                 'type' => 'input',
                 'label' => 'PA LICENSE',
@@ -20891,7 +20914,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'paexp' => array(
+            'paexp' => array(
                 'name' => 'paexp',
                 'type' => 'date',
                 'label' => 'PA EXPIRY DATE',
@@ -20913,7 +20936,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'ntcexp' => array(
+            'ntcexp' => array(
                 'name' => 'ntcexp',
                 'type' => 'date',
                 'label' => 'NTC EXPIRY DATE',
@@ -20923,7 +20946,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'brgystart' => array(
+            'brgystart' => array(
                 'name' => 'brgystart',
                 'type' => 'date',
                 'label' => 'Brgy Clearance Date',
@@ -20933,7 +20956,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-               'brgyend' => array(
+            'brgyend' => array(
                 'name' => 'brgyend',
                 'type' => 'date',
                 'label' => 'Brgy Validity Date',
@@ -20953,7 +20976,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-               'pnpend' => array(
+            'pnpend' => array(
                 'name' => 'pnpend',
                 'type' => 'date',
                 'label' => 'PNP Validity Date',
@@ -20963,7 +20986,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'nbistart' => array(
+            'nbistart' => array(
                 'name' => 'nbistart',
                 'type' => 'date',
                 'label' => 'NBI Clearance Date',
@@ -20973,7 +20996,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-               'nbiend' => array(
+            'nbiend' => array(
                 'name' => 'nbiend',
                 'type' => 'date',
                 'label' => 'NBI Validity Date',
@@ -20993,7 +21016,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-               'nueroend' => array(
+            'nueroend' => array(
                 'name' => 'nueroend',
                 'type' => 'date',
                 'label' => 'Neuro Evaluation Validity Date',
@@ -21004,7 +21027,7 @@ class txtfieldClass
             ),
 
 
-              'drugstart' => array(
+            'drugstart' => array(
                 'name' => 'drugstart',
                 'type' => 'date',
                 'label' => 'Drug Test Date',
@@ -21024,7 +21047,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'medicalstart' => array(
+            'medicalstart' => array(
                 'name' => 'medicalstart',
                 'type' => 'date',
                 'label' => 'Medical Exam Date',
@@ -21064,7 +21087,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'occustart' => array(
+            'occustart' => array(
                 'name' => 'occustart',
                 'type' => 'date',
                 'label' => 'Occupational Date',
@@ -21084,7 +21107,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'courtstart' => array(
+            'courtstart' => array(
                 'name' => 'courtstart',
                 'type' => 'date',
                 'label' => 'Court Clearance Date',
@@ -21125,7 +21148,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'ctcissue' => array(
+            'ctcissue' => array(
                 'name' => 'ctcissue',
                 'type' => 'input',
                 'label' => 'Issue',
@@ -21135,7 +21158,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-              'insurance' => array(
+            'insurance' => array(
                 'name' => 'insurance',
                 'type' => 'input',
                 'label' => 'Insurance',
@@ -21145,7 +21168,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'policy' => array(
+            'policy' => array(
                 'name' => 'policy',
                 'type' => 'input',
                 'label' => 'Policy',
@@ -21214,7 +21237,7 @@ class txtfieldClass
                 'required' => false
             ),
 
-             'colltype' => array(
+            'colltype' => array(
                 'name' => 'colltype',
                 'type' => 'lookup',
                 'lookupclass' => 'lookupcollection',
@@ -21225,8 +21248,46 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => true
             ),
+            'allowance' => array(
+                'name' => 'allowance',
+                'type' => 'input',
+                'label' => 'Allowance',
+                'class' => 'csrate',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 20
+            ),
+            'ismarkup' => array(
+                'name' => 'ismarkup',
+                'type' => 'checkbox',
+                'label' => 'With Customer Markup',
+                'class' => 'csismarkup',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
 
-       
+            'odoin' => array(
+                'name' => 'odoin',
+                'type' => 'input',
+                'label' => 'ODO IN',
+                'class' => 'csodoin',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'odoout' => array(
+                'name' => 'odoout',
+                'type' => 'input',
+                'label' => 'ODO OUT',
+                'class' => 'codoout',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+
 
 
 

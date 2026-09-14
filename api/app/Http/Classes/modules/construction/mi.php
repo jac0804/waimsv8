@@ -308,14 +308,14 @@ class mi
       //   $obj[0]['inventory']['columns'][$location]['label'] = 'Brand';
       // }
     }
-    
+
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
-    if(!$islocation) {
-    $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -344,6 +344,7 @@ class mi
       case 36: //ROZLAB
       case 39: //CBBSI
       case 43: //mighty
+      case 68: //68
         $tbuttons = ['pendingmr', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
         break;
       default:
@@ -1335,7 +1336,8 @@ class mi
 
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
+      Logger(json_encode($value));
+      $data[$key] = $this->othersClass->sanitizekeyfieldfast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2128,8 +2130,10 @@ class mi
 
   public function getposummaryqry($config)
   {
-    $qry = "select head.doc, head.docno, head.client, head.clientname, ifnull(head.address, '') as address, head.wh, head.rem, 
-      head.yourref, head.ourref, item.itemid, stock.trno, stock.line, stock.uom, stock.disc, stock.isamt, round((stock.iss - stock.qa)/ case when uom.factor=0 then 1 else uom.factor end, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty
+    $qry = "select head.doc, head.docno, head.client, head.clientname, ifnull(head.address, '') as address, head.wh, head.rem, head.projectid,
+      head.yourref, head.ourref, item.itemid, stock.trno, stock.line, stock.uom, stock.disc, stock.isamt, 
+      round((stock.iss - stock.qa)/ case when uom.factor=0 then 1 else uom.factor end, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
+      round((stock.iss - stock.qa)/ case when uom.factor=0 then 1 else uom.factor end, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty, 0 as rrcost, 0 as stageid
       from hmrhead as head 
       left join hmrstock as stock on stock.trno=head.trno 
       left join transnum on transnum.trno=head.trno 

@@ -611,19 +611,17 @@ class viewstockcardtransactionledger
 
 
   public function loadhistory($itemid, $center, $date, $uom, $filterwh, $config, $enddate = '')
-  {
+    {
     $companyid = $config['params']['companyid'];
-
     $filtercenter = " and cntnum.center='" . $center . "' ";
     $isshareinv = $this->companysetup->getisshareinv($config['params']);
     if ($isshareinv) {
       $filtercenter = '';
     }
-
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
-        $qry = "select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, FORMAT(ifnull(stock.rrcost,0),2) as rrcost2,wh.client as wh, 
+        $qry = "select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, FORMAT(ifnull(stock.rrcost,0),2) as rrcost2,wh.client as wh,
         FORMAT(ifnull((stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),2) as rrcost,
         FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),0) as rrqty,
         FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),2) as isamt,
@@ -664,7 +662,7 @@ class viewstockcardtransactionledger
         stock.disc, head.yourref, head.ourref,head.cur,head.forex,head.isimport, head.factor, stock.rem,  item.itemid,
         stock.loc,stock.expiry,cntnum.center,uom.factor,stock.cost,stock.qty,stock.amt,stock.iss,pallet.name, location.loc,wh.clientname,stock.ref,stock.line,cntnum.center
         UNION ALL
-        select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, round(ifnull(stock.rrcost,0),2) as rrcost2,wh.client as wh, 
+        select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, round(ifnull(stock.rrcost,0),2) as rrcost2,wh.client as wh,
         FORMAT(ifnull((stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),2) as rrcost,
         FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),0) as rrqty,
         FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0),2) as isamt,
@@ -711,9 +709,8 @@ class viewstockcardtransactionledger
         $decimalqty = 2;
         $decimalprice = 2;
         $rrcost = "(stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end))";
-
         $qry = "select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,wh.client as wh,
-                FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, 
+                FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext,
                 FORMAT(ifnull($rrcost,0)," . $decimalprice . ") as rrcost,
                 FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalqty . ") as rrqty,
                 FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalcurr . ") as isamt,
@@ -733,7 +730,7 @@ class viewstockcardtransactionledger
                 where item.itemid=" . $itemid . " and head.dateid>='" . $date . "'" . $filterwh . $filtercenter . "
                 UNION ALL
                 select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,wh.client as wh,
-                FORMAT(ifnull(stock.ext,0)," . $decimalprice . "), 
+                FORMAT(ifnull(stock.ext,0)," . $decimalprice . "),
                 FORMAT(ifnull($rrcost,0)," . $decimalprice . ") as rrcost,
                 FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as rrqty,
                 FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as isamt,
@@ -742,7 +739,7 @@ class viewstockcardtransactionledger
                 (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, stock.itemid,
                 stock.loc,stock.expiry,cntnum.center, svno.docno as svnum,
                 ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location,whref.clientname as whref,stock.ref, 'LEDGERTAB' as tabtype,stock.line,stock.rrcost as rrcost3,'' as suppinvno,'' as siref
-                from glhead as head 
+                from glhead as head
                 left join glstock as stock on stock.trno=head.trno
                 left join uom on uom.itemid=stock.itemid and uom.uom='" . $uom . "'
                 left join client as wh on wh.clientid=stock.whid
@@ -754,7 +751,7 @@ class viewstockcardtransactionledger
                 where cntnum.doc <>'RR' and stock.itemid=" . $itemid . " and head.dateid>='" . $date . "'" . $filterwh . $filtercenter . "
                 UNION ALL
                 select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,wh.client as wh,
-                FORMAT(ifnull(stock.ext,0)," . $decimalprice . "), 
+                FORMAT(ifnull(stock.ext,0)," . $decimalprice . "),
                 FORMAT(case ifnull(a.cost,0) when 0 then $rrcost else (a.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)) end," . $decimalprice . ") as rrcost,
                 FORMAT(ifnull((stock.qty / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as rrqty,
                 FORMAT(ifnull((stock.amt * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as isamt,
@@ -763,8 +760,8 @@ class viewstockcardtransactionledger
                 (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, stock.itemid,
                 stock.loc,stock.expiry,cntnum.center, svno.docno as svnum,
                 ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location,whref.clientname as whref,stock.ref, 'LEDGERTAB' as tabtype,stock.line,stock.rrcost as rrcost3, ifnull(hsh.docno,'') as suppinvno,ifnull(hsh.yourref,'') as siref
-                from glhead as head 
-                left join glstock as stock on stock.trno=head.trno                
+                from glhead as head
+                left join glstock as stock on stock.trno=head.trno
                 left join uom on uom.itemid=stock.itemid and uom.uom='" . $uom . "'
                 left join client as wh on wh.clientid=stock.whid
                 left join cntnum on cntnum.trno=head.trno
@@ -777,7 +774,6 @@ class viewstockcardtransactionledger
                 where cntnum.doc ='RR' and stock.itemid=" . $itemid . " and head.dateid>='" . $date . "'" . $filterwh . $filtercenter . "
                 order by status,dateid desc,trno desc";
         break;
-
       default;
         switch ($companyid) {
           case 27: //nte
@@ -786,17 +782,14 @@ class viewstockcardtransactionledger
             $decimalqty = $this->companysetup->getdecimal('qty', $config['params']);
             $decimalprice = $this->companysetup->getdecimal('price', $config['params']);
             $rrcost = "(stock.rrcost)";
-
             break;
           default:
             $decimalcurr = 2;
             $decimalqty = 2;
             $decimalprice = 2;
             $rrcost = "(stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end))";
-
             break;
         }
-
         $addqry = "";
         if ($companyid == 8) { //maxipro
           $addqry = " union all select * from (
@@ -838,15 +831,13 @@ class viewstockcardtransactionledger
                               pallet,location,tabtype,isqty2
                       ";
         }
-
         // if ($companyid == 43) { //mighty
         //   $addfield = ",wh.clientname as whref";
         // }
-
         $addfield = ",whref.clientname as whref";
         $baseamt = "";
         $itemj = "";
-
+        $remField = "(case when head.doc='ST' then head.rem else stock.rem end) as rem";
         $amt = " ,FORMAT(ifnull(stock.amt,0)," . $decimalprice . ") as amt ";
         $cost = " ,FORMAT(ifnull(stock.cost,0)," . $decimalprice . ") as cost ";
         $ext = " FORMAT(ifnull(stock.ext,0)," . $decimalprice . ") as ext, ";
@@ -860,7 +851,6 @@ class viewstockcardtransactionledger
             $isamt = " 0.00 as isamt,";
           }
         }
-
         switch ($companyid) {
           case 43: //mighty
             $addfield = ",wh.clientname as whref";
@@ -871,11 +861,11 @@ class viewstockcardtransactionledger
             $baseamt = ", (case when stock.iss<>0 then stock.isamt else stock.rrcost end) as baseamt";
             $itemj = "  left join item on item.itemid=stock.itemid";
             $addfield = ",whref.clientname as whref, format(stock.startwire,2) as startwire, format(stock.endwire,2) as endwire ";
+            $remField = "(case when head.doc='ST' then head.rem when stock.rem<>'' then stock.rem else head.rem end) as rem";
             break;
         }
-
         $qry = "
-                select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, 
+                select '' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid,
                 head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,
                 wh.client as wh,wh.clientname as whname,
                 $ext
@@ -884,7 +874,7 @@ class viewstockcardtransactionledger
                 $isamt
                 FORMAT(ifnull((stock.iss / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalqty . ") as isqty,stock.isqty2,
                 stock.disc, head.yourref, head.ourref, ifnull(head.cur,'P') as cur, ifnull(head.forex,1) as forex,
-                (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, item.itemid,
+                (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, $remField, 0 as balance, item.itemid,
                 stock.loc,stock.expiry,cntnum.center, '' as svnum,
                 ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location,stock.ref, 'LEDGERTAB' as tabtype,stock.line,stock.rrcost as rrcost3 $addfield  $amt $baseamt $cost
                 from lahead as head  left join lastock as stock on stock.trno=head.trno
@@ -897,7 +887,7 @@ class viewstockcardtransactionledger
                 left join client as whref on whref.client = head.whref
                 where item.itemid=" . $itemid . " and head.dateid>='" . $date . "'" . $filterwh . $filtercenter . "
                 UNION ALL
-                select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid, 
+                select 'POSTED' as status, head.trno, head.doc, head.docno, date(head.dateid) as dateid,
                 head.clientname, FORMAT(ifnull(if(stock.rrcost<>0,stock.ext/stock.qty,0),0),2) as rrcost2,
                 wh.client as wh,wh.clientname as whname,
                 $ext
@@ -906,7 +896,7 @@ class viewstockcardtransactionledger
                 $isamt
                 FORMAT(ifnull((stock.iss / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0)," . $decimalprice . ") as isqty,stock.isqty2,
                 stock.disc, head.yourref, head.ourref, ifnull(head.cur,'P') as cur, ifnull(head.forex,1) as forex,
-                (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, (case when head.doc='ST' then head.rem else stock.rem end) as rem, 0 as balance, stock.itemid,
+                (case when stock.iss<>0 then 1 else 0 end) as type, head.isimport, head.factor, $remField, 0 as balance, stock.itemid,
                 stock.loc,stock.expiry,cntnum.center, svno.docno as svnum,
                 ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location,stock.ref, 'LEDGERTAB' as tabtype,stock.line,stock.rrcost as rrcost3 $addfield  $amt $baseamt $cost
                 from glhead as head left join glstock as stock on stock.trno=head.trno
@@ -919,14 +909,10 @@ class viewstockcardtransactionledger
                 left join client as whref on whref.client = head.whref $itemj
                 where stock.itemid=" . $itemid . " and head.dateid>='" . $date . "'" . $filterwh . $filtercenter . "
                 " . $addqry . "
-                
                 order by status,dateid desc,trno desc";
         // var_dump($qry);
-
-
         break;
     }
-
     return $this->coreFunctions->opentable($qry);
   }
 

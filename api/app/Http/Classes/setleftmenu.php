@@ -415,7 +415,7 @@ class setleftmenu
         $sales = ['parentsales', 'so', 'sl', 'sj', 'cm'];
         break;
       case 64: //execilin 
-        $sales = ['parentsales', 'qt', 'so', 'sj', 'cm'];
+        $sales = ['parentsales', 'qt', 'so', 'sj', 'cm', 'td'];
         break;
       case 65: //metro dragon - aims
         $sales = ['parentsales', 'so', 'sj', 'cm', 'mi'];
@@ -945,7 +945,7 @@ class setleftmenu
 
   public function detachmentoperation($params)
   {
-    $detachmentoperation = ['parentdetachmentoperation', 'dd'];
+    $detachmentoperation = ['parentdetachmentoperation', 'dd','hb'];
     return ['detachmentoperation' => ['parent' => 30, 'modules' => $detachmentoperation]];
   } //end function
 
@@ -1277,6 +1277,9 @@ class setleftmenu
       case 50: //unitech
         $prod = ['parentproduction', 'pt', 'pe', 'mi', 'pn', 'pk'];
         //$prod = ['parentproduction', 'prodinstruction', 'prodorder', 'rm', 'finishgoodsentry'];
+        break;
+      case 71: //Buenatech
+        $prod = ['parentproduction', 'prodorder', 'ue', 'st'];
         break;
       default:
         $prod = ['parentproduction', 'prodinstruction', 'prodorder', 'tr', 'trapproval', 'rm', 'stages', 'finishgoodsentry', 'pr', 'ts'];

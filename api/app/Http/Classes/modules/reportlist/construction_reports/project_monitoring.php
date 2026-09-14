@@ -111,12 +111,13 @@ class project_monitoring
     $username   = $config['params']['user'];
 
     $projectid = $config['params']['dataparams']['projectid'];
+    $projectname = $config['params']['dataparams']['projectname'];
     $start = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $end = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
 
     $filter = "";
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and prj.line = '$projectid'";
     }
     $filter .= " and date(head.dateid) between '$start' and '$end'";

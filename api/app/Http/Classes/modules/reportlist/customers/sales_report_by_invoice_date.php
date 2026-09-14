@@ -48,29 +48,29 @@ class sales_report_by_invoice_date
     {
         $companyid = $config['params']['companyid'];
 
-       
-                $fields = ['radioprint', 'start', 'end', 'dclientname', 'radioposttype'];
-                $col1 = $this->fieldClass->create($fields);
 
-                data_set($col1, 'start.required', true);
-                data_set($col1, 'end.required', true);
-                data_set($col1, 'dclientname.label', 'Customer');
-                data_set($col1, 'dclientname.lookupclass', 'rcustomer');
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'radioposttype'];
+        $col1 = $this->fieldClass->create($fields);
 
-                data_set(
-                    $col1,
-                    'radioposttype.options',
-                    [
-                        ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
-                        ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
-                        ['label' => 'All', 'value' => '2', 'color' => 'teal']
-                    ]
-                );
+        data_set($col1, 'start.required', true);
+        data_set($col1, 'end.required', true);
+        data_set($col1, 'dclientname.label', 'Customer');
+        data_set($col1, 'dclientname.lookupclass', 'rcustomer');
 
-                $fields = ['print'];
-                $col2 = $this->fieldClass->create($fields);
-          
-          
+        data_set(
+            $col1,
+            'radioposttype.options',
+            [
+                ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
+                ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
+                ['label' => 'All', 'value' => '2', 'color' => 'teal']
+            ]
+        );
+
+        $fields = ['print'];
+        $col2 = $this->fieldClass->create($fields);
+
+
 
         return array('col1' => $col1, 'col2' => $col2);
     }
@@ -110,7 +110,7 @@ class sales_report_by_invoice_date
         $companyid = $config['params']['companyid'];
 
         $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
-        
+
         $str = $this->reportplotting($config);
         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
     }
@@ -123,9 +123,10 @@ class sales_report_by_invoice_date
         $posttype = $config['params']['dataparams']['posttype'];
         $clientid = $config['params']['dataparams']['clientid'];
         $client = $config['params']['dataparams']['client'];
+        $clientname  = $config['params']['dataparams']['clientname'];
         $filter = "";
 
-        if ($client != '' && $clientid != 0) {
+        if ($clientname != "") {
             $filter .= " and client.clientid='$clientid'";
         }
 
@@ -266,7 +267,7 @@ class sales_report_by_invoice_date
 
 
         $data = $this->query_ericco($config);
-             
+
         return $data;
     }
 

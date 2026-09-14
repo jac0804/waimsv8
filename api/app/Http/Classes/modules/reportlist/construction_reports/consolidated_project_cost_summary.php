@@ -137,14 +137,16 @@ class consolidated_project_cost_summary
     $posttype   = $config['params']['dataparams']['posttype'];
     $subprojectid = $config['params']['dataparams']['subproject'];
     $projectid = $config['params']['dataparams']['projectid'];
+    $subprojectname = $config['params']['dataparams']['subprojectname'];
+    $projectname = $config['params']['dataparams']['projectname'];
 
     $filter = "";
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and prj.line = '$projectid'";
     }
 
-    if ($subprojectid != 0) {
+    if ($subprojectname != "") {
       $filter .= " and sprj.line = '$subprojectid'";
     }
 
@@ -264,6 +266,8 @@ class consolidated_project_cost_summary
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $subprojectid = $config['params']['dataparams']['subproject'];
     $projectid = $config['params']['dataparams']['projectid'];
+    $subprojectname = $config['params']['dataparams']['subprojectname'];
+    $projectname = $config['params']['dataparams']['projectname'];
     $posttype = $config['params']['dataparams']['posttype'];
 
     $count = 38;
@@ -351,11 +355,11 @@ class consolidated_project_cost_summary
 
     $filter = "";
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and prj.line = '$projectid'";
     }
 
-    if ($subprojectid != 0) {
+    if ($subprojectname != "") {
       $filter .= " and sprj.line = '$subprojectid'";
     }
 

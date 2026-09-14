@@ -1946,6 +1946,10 @@ class lookupClass
     case 'lookuprandom2': //detachment collection
          return $this->payrolllookup->lookuprandom2($config);
         break;     
+        
+    case 'addpacno': //detachment bcb
+        return $this->payrolllookup->lookupoacnodetail($config);
+        break;
 
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
@@ -3539,7 +3543,7 @@ class lookupClass
             break;
 
           case 'whonly':
-            if ($config['params']['companyid'] == 56) { //homeworks
+            if ($config['params']['companyid'] == 56 || ($config['params']['companyid']==71 &&  $config['params']['doc']=='ST') ) { //homeworks and buenatech
               $plotting = array('client' => 'client', 'fname' => 'clientname');
             } else {
               $plotting = array('client' => 'client');
@@ -3585,7 +3589,7 @@ class lookupClass
           case 'whs2':
             $plottype = 'plothead';
             switch ($config['params']['doc']) {
-              case 'TR':
+              case 'TR':  
                 if ($config['params']['companyid'] == 43 ||  $config['params']['companyid'] == 39) { //mighty & cbbsi --wh2
                   $plotting = array(
                     'whid2' => 'client',
@@ -3600,6 +3604,13 @@ class lookupClass
                   );
                 }
                 break;
+             case 'UE': //buenatech
+               $plotting = array(
+                    'whid2' => 'client',
+                    'wh2name' => 'clientname',
+                    'wh2' => 'clientid'
+                  );
+              break; 
               default:
                 $plotting = array(
                   'wh2' => 'client',
@@ -4079,6 +4090,9 @@ class lookupClass
                   $plotting['deptname'] = 'deptname';
                   $plotting['section'] = 'section';
                 }
+                if($config['params']['companyid'] == 68){
+                   $plotting['paygroup'] = 'paygroup';
+                }
 
                 $blnuser = false;
                 switch ($config['params']['doc']) {
@@ -4130,6 +4144,10 @@ class lookupClass
                   case 'PAYROLLENTRY':
                     $addonfield = ", '' as cur";
                     $leftjoin = "left join employee on employee.empid = client.clientid left join client as dc on dc.clientid=employee.deptid";
+
+                    if ($companyid == 68){  // jda
+                      $addonfield .= ",employee.paygroup";       
+                    }
 
                     $allemp = true;
                     $filterpaytran = '';
@@ -6263,15 +6281,25 @@ class lookupClass
     }
 
     $data = [];
-    switch ($config['params']['doc']) {
-      case 'PD':
+    // switch ($config['params']['doc']) {
+    //   case 'PD':
+    //     if ($config['params']['addedparams'][0] != '') {
+    //       $lookupsetup['type'] = 'single';
+    //       $lookupsetup['actionsearch'] = '';
+    //       $data = $this->coreFunctions->opentable("select item.itemid, item.barcode, item.itemname, item.uom from item left join hpihead as head on head.itemid=item.itemid where head.trno=?", [$config['params']['addedparams'][0]]);
+    //     }
+    //     break;
+    // }
+
+    if($config['params']['doc']=='PD' && $config['params']['companyid'] != 71) {
         if ($config['params']['addedparams'][0] != '') {
           $lookupsetup['type'] = 'single';
           $lookupsetup['actionsearch'] = '';
           $data = $this->coreFunctions->opentable("select item.itemid, item.barcode, item.itemname, item.uom from item left join hpihead as head on head.itemid=item.itemid where head.trno=?", [$config['params']['addedparams'][0]]);
         }
-        break;
     }
+
+    
     switch ($systemtype) {
       case "FAMS":
         if ($config['params']['doc'] == "PF" || $config['params']['doc'] == "RA") {
@@ -10369,14 +10397,18 @@ class lookupClass
   public function pendingsodetail($config)
   {
     $companyid = $config['params']['companyid'];
+     $doc = $config['params']['doc'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $detail = ['summary' => ['label' => 'Show Summary', 'lookupclass' => 'lookupsetup', 'action' => 'pendingsosummary']];
-
 
     switch ($config['params']['lookupclass']) {
       case 'pendingtsso':
         $detail = ['summary' => ['label' => 'Show Summary', 'lookupclass' => 'pendingtsso', 'action' => 'pendingsosummary']];
         break;
+    }
+
+    if($companyid==71 && $doc=='PD'){
+      $detail = [];
     }
 
 
@@ -10418,7 +10450,7 @@ class lookupClass
       array_push($cols, array('name' => 'podesc', 'label' => 'PO #', 'align' => 'left', 'field' => 'podesc', 'sortable' => true, 'style' => 'font-size:16px;'));
     }
 
-    if ($systemtype == 'MANUFACTURING') {
+    if ($systemtype == 'MANUFACTURING' ||($config['params']['lookupclass']=='pendingsopddetail')) {
       $lookupsetup['btns'] = [];
       $lookupsetup['type'] = 'single';
       $cols[8]['field'] = 'pdqa';
@@ -10427,6 +10459,11 @@ class lookupClass
         'plottype' => 'plothead',
         'plotting' => ['sodocno' => 'docno', 'itemid' => 'itemid', 'qty' => 'pdpending', 'itemname' => 'itemname', 'uom' => 'uom', 'sotrno' => 'trno', 'wh' => 'wh', 'soline' => 'line']
       ];
+      
+      if ($config['params']['lookupclass']=='pendingsopddetail') {
+        $plotsetup['plotting']['barcode'] = 'barcode';
+      }
+
     }
 
     if ($config['params']['doc'] == 'PO') {
@@ -10434,6 +10471,8 @@ class lookupClass
     } else {
       $data = $this->sqlquery->getpendingsodetails($config);
     }
+
+   
 
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
@@ -16863,6 +16902,7 @@ class lookupClass
 
   public function pendingjodetail($config)
   {
+    $lookupclass = $config['params']['lookupclass'];
     $lookupsetup = array(
       'type' => 'multi',
       'rowkey' => 'keyid',
@@ -16894,8 +16934,74 @@ class lookupClass
       array('name' => 'pending', 'label' => 'Pending', 'align' => 'left', 'field' => 'pending', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $data = $this->sqlquery->getpendingjodetails($config);
+   switch($lookupclass){ //UE Buenatech
+    case 'pendingjoheaddetail': //head
+      if($config['params']['companyid'] == 71){
+        switch($config['params']['doc']){
+          case 'UE': //produce item
+            $plotting = [
+                    'sodocno' => 'docno',
+                    'pdtrno'  => 'trno',
+                    'barcode' => 'barcode',
+                    'itemname'=> 'itemname',
+                    'qty'     => 'qty',
+                    'uom'     => 'uom',
+                    'client'  => 'wh',
+                    'whid2'   => 'wh'
+                ];
+            break;
+          case 'ST': //transfer materials
+             $plotting = [
+                    'sodocno' => 'docno',
+                    'pdtrno'  => 'trno',
+                    'barcode' => 'barcode',
+                    'itemname'=> 'itemname',
+                    'qty'     => 'qty',
+                    'uom'     => 'uom'
+                ];
+            break;
+        }
 
+      }
+      array_splice($cols, 4, 0, [
+        ['name' => 'qty', 'label' => 'QTY', 'align' => 'left', 'field' => 'qty', 'sortable' => true, 'style' => 'font-size:16px;'],
+        ['name' => 'uom','label' => 'UOM', 'align' => 'left',  'field' => 'uom','sortable' => true, 'style' => 'font-size:16px;']]);
+
+        $lookupsetup['btns'] = [];
+        $lookupsetup['type'] = 'single';
+
+        // Starting sa index 7, tanggalin ang 6 columns
+        array_splice($cols, 7, 6);
+
+        $plotsetup = [
+            'plottype' => 'plothead',
+            'plotting' => $plotting
+        ];
+      break;
+    case 'pendingjobtndetail': //tabbutton
+            if($config['params']['companyid'] == 71){
+            switch($config['params']['doc']){
+              case 'UE':
+                $lookupsetup = array(
+                  'type' => 'singlesearch',
+                  'actionsearch' => 'searchitem',
+                  'title' => 'List of Pending Job Orders',
+                  'style' => 'width:100%;max-width:100%;');
+                $plotsetup = array(
+                  'plottype' => 'callback',
+                  'action' => 'issuemultipleexpiry'
+                  );
+                break;
+              case 'ST':
+                   $lookupsetup['btns'] = [];
+                break;  
+              }
+            }
+              
+      break; 
+   }
+
+    $data = $this->sqlquery->getpendingjodetails($config);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
 

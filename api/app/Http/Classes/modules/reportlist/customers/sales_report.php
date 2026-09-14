@@ -48,8 +48,8 @@ class sales_report
   {
     $companyid = $config['params']['companyid'];
 
-     switch ($companyid) {
-      case 63://ericco
+    switch ($companyid) {
+      case 63: //ericco
         $fields = ['radioprint', 'start', 'end', 'dclientname', 'radioposttype'];
         $col1 = $this->fieldClass->create($fields);
 
@@ -58,8 +58,10 @@ class sales_report
         data_set($col1, 'dclientname.label', 'Customer');
         data_set($col1, 'dclientname.lookupclass', 'rcustomer');
 
-        data_set( $col1,'radioposttype.options',
-        [
+        data_set(
+          $col1,
+          'radioposttype.options',
+          [
             ['label' => 'Posted', 'value' => '0', 'color' => 'teal'],
             ['label' => 'Unposted', 'value' => '1', 'color' => 'teal'],
             ['label' => 'All', 'value' => '2', 'color' => 'teal']
@@ -80,7 +82,7 @@ class sales_report
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
         break;
-      }
+    }
 
     return array('col1' => $col1, 'col2' => $col2);
   }
@@ -119,14 +121,14 @@ class sales_report
   {
     $companyid = $config['params']['companyid'];
 
-      switch ($companyid) {
-        case 63://ericco
-          $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
-          break;
-        default:
-           $this->reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
-          break;
-        }
+    switch ($companyid) {
+      case 63: //ericco
+        $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
+        break;
+      default:
+        $this->reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
+        break;
+    }
     $str = $this->reportplotting($config);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
   }
@@ -315,10 +317,11 @@ class sales_report
     $posttype = $config['params']['dataparams']['posttype'];
     $clientid = $config['params']['dataparams']['clientid'];
     $client = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $filter = "";
 
-    if ($client != '' && $clientid != 0) {
-        $filter .= " and client.clientid='$clientid'";
+    if ($clientname != "") {
+      $filter .= " and client.clientid='$clientid'";
     }
 
     switch ($posttype) {
@@ -354,7 +357,7 @@ class sales_report
         ";
         break;
 
-        case 1: //Unposted
+      case 1: //Unposted
         $query = "
         select
           'Unposted' as status,
@@ -385,9 +388,9 @@ class sales_report
           group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
           order by docno
         ";
-          break;
-        case 2: //All
-          $query = "
+        break;
+      case 2: //All
+        $query = "
           select
           'Posted' as status,
             right(head.docno, 5) as docno, left(head.dateid,10) as dateid, client.tin,
@@ -444,11 +447,11 @@ class sales_report
             group by right(head.docno, 5), clientname, head.dateid, address, trno, client.tin, vattype
             order by docno
           ";
-          break;
-      }
-      // var_dump($query);
-    
-   return $this->coreFunctions->openTable($query);  
+        break;
+    }
+    // var_dump($query);
+
+    return $this->coreFunctions->openTable($query);
   }
 
   public function reportDefault($config)
@@ -457,7 +460,7 @@ class sales_report
     $reporttype = $config['params']['dataparams']['reporttype'];
 
     switch ($companyid) {
-      case 63://ericco
+      case 63: //ericco
         $data = $this->query_ericco($config);
         break;
       default:
@@ -471,7 +474,7 @@ class sales_report
             break;
         }
         break;
-      }
+    }
     return $data;
   }
 
@@ -482,8 +485,8 @@ class sales_report
     $companyid = $config['params']['companyid'];
     $reporttype = $config['params']['dataparams']['reporttype'];
 
-     switch ($companyid) {
-      case 63://ericco
+    switch ($companyid) {
+      case 63: //ericco
         $result = $this->layout_ericco($config, $this->query_ericco($config));
         break;
       default:
@@ -497,7 +500,7 @@ class sales_report
             break;
         }
         break;
-      }
+    }
     return $result;
   }
 
@@ -1552,16 +1555,15 @@ class sales_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-     if ($start == $end) 
-    {
-      $str .= $this->reporter->col('FOR THE MONTH OF  '. $start, null, null, false, $border, '', 'L', $font, $fontsize_title, '', '', ''); 
-    }else{
-      $str .= $this->reporter->col('FOR THE MONTHS OF  '. $start . ' TO ' . $end, null, null, false, $border, '', 'L', $font, $fontsize_title, '', '', '');
+    if ($start == $end) {
+      $str .= $this->reporter->col('FOR THE MONTH OF  ' . $start, null, null, false, $border, '', 'L', $font, $fontsize_title, '', '', '');
+    } else {
+      $str .= $this->reporter->col('FOR THE MONTHS OF  ' . $start . ' TO ' . $end, null, null, false, $border, '', 'L', $font, $fontsize_title, '', '', '');
     }
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    $str .='</br>';
+    $str .= '</br>';
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('INVOICE DATE', 150, 60, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
@@ -1595,15 +1597,14 @@ class sales_report
     $maxRows = 23;
     $rowCount = 0;
     $months = '';
-    
+
     if (empty($result)) {
-        return $this->othersClass->emptydata($config);
+      return $this->othersClass->emptydata($config);
     }
 
-     if ($start == $end) 
-    {
+    if ($start == $end) {
       $months = $start;
-    }else{
+    } else {
       $months = $start . ' to ' . $end;
     }
 
@@ -1623,87 +1624,84 @@ class sales_report
 
     foreach ($result as $key => $data) {
 
-    if ($rowCount > $maxRows) {
+      if ($rowCount > $maxRows) {
         $str .= $this->reporter->page_break();
         $str .= "</br></br>";
         $rowCount = 0;
-    }
-    $vat = $data->amount - ($data->amount/1.12);
+      }
+      $vat = $data->amount - ($data->amount / 1.12);
 
-    if ($data->vattype == 'VATABLE')
-    {
-      $vat = $data->amount - ($data->amount/1.12);  
-    }else {
-      $vat = 0;
-    }
-
+      if ($data->vattype == 'VATABLE') {
+        $vat = $data->amount - ($data->amount / 1.12);
+      } else {
+        $vat = 0;
+      }
 
 
-    if ($data->vattype == 'VATABLE')
-    {
-      $vatSales = ($data->amount/1.12);    
-    }else {
-      $vatSales = $data->amount;
-    }
-    
 
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(isset($data->dateid) ? date('d-M-y', strtotime($data->dateid)) : '', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(isset($data->clientname) ? $data->clientname : '', 400, null, false, $border, 'BLR', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(isset($data->docno) ? $data->docno : '', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(isset($data->tin) ? $data->tin : '', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(isset($data->address) ? $data->address : '', 650, null, false, $border, 'BLR', 'L', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format(isset($data->amount) ? $data->amount : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format(isset($vat) ? $vat : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(number_format(isset($vatSales) ? $vatSales : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
+      if ($data->vattype == 'VATABLE') {
+        $vatSales = ($data->amount / 1.12);
+      } else {
+        $vatSales = $data->amount;
+      }
 
-    $rowCount ++;
-    $totalamount += $data->amount;
-    $totalvat += $vat;
-    $totalvatSales += $vatSales;
-
-    }//space
-      $str .= $this->reporter->begintable($layoutsize); 
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', 150, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 400, 20, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 100, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 120, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 650, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('Total ' . $months, 400, null, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 650, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($totalamount, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col(number_format($totalvat, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col(number_format( $totalvatSales, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col(isset($data->dateid) ? date('d-M-y', strtotime($data->dateid)) : '', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(isset($data->clientname) ? $data->clientname : '', 400, null, false, $border, 'BLR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(isset($data->docno) ? $data->docno : '', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(isset($data->tin) ? $data->tin : '', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(isset($data->address) ? $data->address : '', 650, null, false, $border, 'BLR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format(isset($data->amount) ? $data->amount : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format(isset($vat) ? $vat : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format(isset($vatSales) ? $vatSales : 0, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $str .= $this->reporter->begintable($layoutsize); 
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 400, null, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 650, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
+      $rowCount++;
+      $totalamount += $data->amount;
+      $totalvat += $vat;
+      $totalvatSales += $vatSales;
+    } //space
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 150, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 400, 20, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 100, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 120, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 650, 20, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 130, 20, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('Total ' . $months, 400, null, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 650, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalamount, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalvat, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalvatSales, 2), 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 150, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 400, null, false, $border, 'BLR', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 120, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 650, null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', 130, null, false, $border, 'BLR', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     return $str;
   }

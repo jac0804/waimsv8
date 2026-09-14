@@ -405,10 +405,13 @@ class ep
             'multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2], 'label' => 'EMPLOYMENT STATUS'],
             'multiinput2' => ['inputcolumn' => ['col1' => $col3], 'label' => 'WORK STATUS'],
             'designationtab' => ['action' => 'tableentry', 'lookupclass' => 'tabdesignation', 'label' => 'DESIGNATION'],
-            'multiinput4' => ['inputcolumn' => ['col1' => $col4, 'col2' => $col5, 'col6' => $col6], 'label' => 'BENEFITS'],
-            'multiinput5' => ['inputcolumn' => ['col1' => $col7, 'col2' => $col8, 'col9' => $col9], 'label' => 'PAYROLL']
-
+            'multiinput4' => ['inputcolumn' => ['col1' => $col4, 'col2' => $col5, 'col6' => $col6], 'label' => 'BENEFITS']
         ];
+
+        $rate_access = $this->othersClass->checkAccess($config['params']['user'], 5300);
+        if ($rate_access) {
+            $tab['multiinput5'] = ['inputcolumn' => ['col1' => $col7, 'col2' => $col8, 'col9' => $col9], 'label' => 'PAYROLL'];
+        }
 
         $stockbuttons = [];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -1035,7 +1038,7 @@ class ep
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if 
             }
         }

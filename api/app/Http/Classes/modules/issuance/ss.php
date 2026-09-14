@@ -479,7 +479,7 @@ class ss
     stock." . $this->hqty . ",
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as " . $this->damt . ",
     FORMAT(stock." . $this->dqty . "," . $this->companysetup->getdecimal('qty', $config['params']) . ")  as " . $this->dqty . ",
-    FORMAT(stock.cost * stock.iss," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext, 
+    FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,
     left(stock.encodeddate,10) as encodeddate,
     stock.disc, 
     FORMAT(stock.cost," . $this->companysetup->getdecimal('qty', $config['params']) . ")  as cost,

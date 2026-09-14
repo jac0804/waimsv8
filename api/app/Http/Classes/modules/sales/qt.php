@@ -42,7 +42,8 @@ class qt
   public $hqty = 'iss';
   public $damt = 'isamt';
   public $hamt = 'amt';
-  public $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'agent', 'branch', 'deptid', 'tin', 'position', 'agentcno', 'industry', 'shipid', 'billid'];
+  public $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'agent', 'branch', 'deptid', 'tin', 'position', 'agentcno', 'industry', 'shipid', 'billid', 'markup', 'ismarkup', 'custdisc'];
+  public $blnfields = ['ismarkup'];
   public $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -103,7 +104,9 @@ class qt
 
   public function loaddoclisting($config)
   {
-
+    $companyid = $config['params']['companyid'];
+    $userid = $config['params']['adminid'];
+    $user = $config['params']['user'];
     $date1 = date('Y-m-d', strtotime($config['params']['date1']));
     $date2 = date('Y-m-d', strtotime($config['params']['date2']));
     $itemfilter = $config['params']['itemfilter'];
@@ -136,16 +139,36 @@ class qt
         $condition = ' and head.lockdate is not null ';
         break;
     }
-    $qry = "select head.trno,head.docno,head.clientname,left(head.dateid,10) as dateid, 'DRAFT' as status,head.createby,head.editby,head.viewby,num.postedby  
-     from " . $this->head . " as head left join " . $this->tablenum . " as num 
-     on num.trno=head.trno where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
-     union all
-     select head.trno,head.docno,head.clientname,left(head.dateid,10) as dateid,'POSTED' as status,head.createby,head.editby,head.viewby, num.postedby  
-     from " . $this->hhead . " as head left join " . $this->tablenum . " as num 
-     on num.trno=head.trno where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . "  " . $filtersearch . "
-     order by dateid desc,docno desc " . $limit;
 
-    $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
+    if ($companyid == 64) { // excelin
+      $viewaccess = $this->othersClass->checkAccess($user, 6031);
+      if ($viewaccess == '0') {
+          if (empty($user)) {
+              return ['data' => [], 'status' => false, 'msg' => 'Sorry, you`re not allowed to view transaction. Please setup first your Employee Code.'];
+          }
+          $condition .= " and head.createby = ? ";
+      }
+    }
+
+    $qry = "select head.trno,head.docno,head.clientname,left(head.dateid,10) as dateid, 'DRAFT' as status,head.createby,head.editby,head.viewby,num.postedby
+    from " . $this->head . " as head left join " . $this->tablenum . " as num
+    on num.trno=head.trno where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $filtersearch . "
+    union all
+    select head.trno,head.docno,head.clientname,left(head.dateid,10) as dateid,'POSTED' as status,head.createby,head.editby,head.viewby, num.postedby
+    from " . $this->hhead . " as head left join " . $this->tablenum . " as num
+    on num.trno=head.trno where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . "  " . $filtersearch . "
+    order by dateid desc,docno desc " . $limit;
+
+    $params = [$doc, $center, $date1, $date2];
+    if ($companyid == 64 && $viewaccess == '0') {
+        $params[] = $user;
+    }
+    $params = array_merge($params, [$doc, $center, $date1, $date2]);
+    if ($companyid == 64 && $viewaccess == '0') {
+        $params[] = $user;
+    }
+
+    $data = $this->coreFunctions->opentable($qry, $params);
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
   }
 
@@ -242,20 +265,29 @@ class qt
   public function createTab($access, $config)
   {
     $iscreateversion = $this->companysetup->getiscreateversion($config['params']);
+    $companyid = $config['params']['companyid'];
 
-    $action = 0;
-    $isqty = 1;
-    $uom = 2;
-    $isamt = 3;
-    $disc = 4;
-    $ext = 5;
-    $wh = 6;
-    $qa = 7;
-    $void = 8;
-    $itemname = 9;
-    $barcode = 10;
+    // $action = 0;
+    // $isqty = 1;
+    // $uom = 2;
+    // $isamt = 3;
+    // $disc = 4;
+    // $ext = 5;
+    // $wh = 6;
+    // $qa = 7;
+    // $void = 8;
+    // $itemname = 9;
+    // $barcode = 10;
 
-    $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
+    if ($companyid == 64){
+      $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'markup', 'disc2', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
+    }else {
+      $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
+    }
+
+    foreach ($gridcolumn as $key => $value) {
+      $$value = $key;
+    }
 
     if ($iscreateversion) {
       $headgridbtns = ['itemvoiding', 'viewref', 'viewdiagram', 'viewversion'];
@@ -292,6 +324,12 @@ class qt
     if (!$access['changeamt']) {
       $obj[0]['inventory']['columns'][$isamt]['readonly'] = true;
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
+    }
+
+    if ($companyid == 64){ //excelin
+        $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer Markup Price';
+        $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
+        $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Discount';
     }
 
     return $obj;
@@ -344,6 +382,9 @@ class qt
       data_set($col3, 'ddeptname.label', 'Department');
     } else {
       $fields = [['yourref', 'ourref'], ['cur', 'forex']];
+      if ($companyid == 64){
+        array_push($fields, 'ismarkup');
+      }
       $col3 = $this->fieldClass->create($fields);
     }
 
@@ -388,6 +429,7 @@ class qt
     $data[0]['position'] = '';
     $data[0]['industry'] = '';
     $data[0]['agentcno'] = '';
+    $data[0]['ismarkup'] = '0';
     return $data;
   }
 
@@ -412,34 +454,36 @@ class qt
     $htable = $this->hhead;
     $tablenum = $this->tablenum;
     $qryselect = "select 
-         num.center,
-         head.trno, 
-         head.docno,
-         client.client,
-         head.terms,
-         head.cur,
-         head.forex,
-         head.tin,
-         head.position,
-         head.agentcno,
-         head.industry,
-         head.yourref,
-         head.ourref,
-         left(head.dateid,10) as dateid, 
-         head.clientname,
-         head.address, 
-         head.shipto, 
-         date_format(head.createdate,'%Y-%m-%d') as createdate,
-         head.rem,
-         head.shipid,
-         head.billid,
-         ifnull(head.agent, '') as agent, 
-         ifnull(agent.clientname, '') as agentname,'' as dagentname,
-         head.wh as wh,
-         warehouse.clientname as whname,
-         '' as dwhname, 
-         left(head.due,10) as due, 
-         client.groupid,ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, head.branch,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname  ";
+                  num.center,
+                  head.trno, 
+                  head.docno,
+                  client.client,
+                  head.terms,
+                  head.cur,
+                  head.forex,
+                  head.tin,
+                  head.position,
+                  head.agentcno,
+                  head.industry,
+                  head.yourref,
+                  head.ourref,
+                  left(head.dateid,10) as dateid, 
+                  head.clientname,
+                  head.address, 
+                  head.shipto, 
+                  date_format(head.createdate,'%Y-%m-%d') as createdate,
+                  head.rem,
+                  head.shipid,
+                  head.billid,
+                  head.createby,
+                  head.ismarkup,
+                  ifnull(head.agent, '') as agent, 
+                  ifnull(agent.clientname, '') as agentname,'' as dagentname,
+                  head.wh as wh,
+                  warehouse.clientname as whname,
+                  '' as dwhname, 
+                  left(head.due,10) as due, 
+                  client.groupid,ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, head.branch,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname  ";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -448,7 +492,7 @@ class qt
         left join client as agent on agent.client = head.agent
         left join client as b on b.clientid = head.branch
         left join client as d on d.clientid = head.deptid
-        where head.trno = ? and num.center = ? 
+        where head.trno = ? and num.center = ?
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.client = client.client
@@ -459,7 +503,24 @@ class qt
           where head.trno = ? and num.center=? ";
 
     $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
+    
     if (!empty($head)) {
+      if ($config['params']['companyid'] == 64) { //excelin
+          $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 6031);
+          if ($viewaccess == '0') {
+              if ($head[0]->createby != $config['params']['user']) {
+                  $head[0]->trno = 0;
+                  $head[0]->docno = '';
+                  return ['status' => false, 'isnew' => false, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Quotation was created by another user.'];
+              }
+          }
+      }
+      foreach ($this->blnfields as $key => $value) {
+        if ($head[0]->$value) {
+          $head[0]->$value = "1";
+        } else
+          $head[0]->$value = "0";
+      }
       $stock = $this->openstock($trno, $config);
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
@@ -494,7 +555,7 @@ class qt
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-        } //end if    
+        } //end if
       }
     }
     if ($data['terms'] == '') {
@@ -558,13 +619,14 @@ class qt
     }
     //for glhead
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
-      terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,branch,deptid,shipid,billid,tin,agentcno)
+      terms,rem,forex,yourref,ourref,ismarkup,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,branch,deptid,shipid,billid,tin,agentcno)
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
-      head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
+      head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref, head.ismarkup,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.branch,head.deptid,head.shipid,head.billid,head.tin,head.agentcno FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
+    Logger($posthead);
     if ($posthead) {
 
       // if (!$this->othersClass->postingheadinfotrans($config)) {
@@ -578,9 +640,9 @@ class qt
 
       // for glstock
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
-        whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,
+        whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,markup,custdisc,
         encodeddate,encodedby,editdate,editby)
-        SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext,
+        SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext, markup,custdisc,
         encodeddate, encodedby,editdate,editby FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
@@ -598,7 +660,7 @@ class qt
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
         return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting stock'];
       }
-      //if($posthead){      
+      //if($posthead){
     } else {
       return ['status' => false, 'msg' => 'Error on Posting Head'];
     }
@@ -616,9 +678,9 @@ class qt
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
-  yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,agent,shipid,billid,tin,agentcno)
-  select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
-  head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
+  yourref,ourref,ismarkup,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,agent,shipid,billid,tin,agentcno)
+  select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto, 
+  head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.ismarkup, head.createdate,
   head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.agent,head.shipid,head.billid,head.tin,head.agentcno
   from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
   where head.trno=? limit 1";
@@ -636,8 +698,8 @@ class qt
 
       $qry = "insert into " . $this->stock . "(
       trno,line,itemid,uom,whid,loc,expiry,disc,
-      amt,iss,void,isamt,isqty,ext,rem,encodeddate,encodedby,editdate,editby)
-      select trno, line, itemid, uom,whid,loc,expiry,disc,amt, iss,void, isamt, isqty,
+      amt,markup,custdisc,iss,void,isamt,isqty,ext,rem,encodeddate,encodedby,editdate,editby)
+      select trno, line, itemid, uom,whid,loc,expiry,disc,amt,markup,custdisc,iss,void, isamt, isqty,
       ext,ifnull(rem,''), encodeddate,encodedby, editdate, editby
       from " . $this->hstock . " where trno=?";
       //stock
@@ -666,17 +728,19 @@ class qt
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
     item.itemid,
-    stock.trno, 
+    stock.trno,
     stock.line,
-    item.barcode, 
+    item.barcode,
     " . $itemname . " as itemname,
-    stock.uom, 
+    stock.uom,
     stock.iss,
+    FORMAT(stock.markup," . $this->companysetup->getdecimal('currency', $config['params']) . ") as markup,
+    FORMAT(stock.custdisc," . $this->companysetup->getdecimal('currency', $config['params']) . ") as disc2,
     FORMAT(stock.isamt," . $this->companysetup->getdecimal('price', $config['params']) . ") as isamt,
     FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ")  as isqty,
-    FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext, 
+    FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,
     left(stock.encodeddate,10) as encodeddate,
-    stock.disc, 
+    stock.disc,
     case when stock.void=0 then 'false' else 'true' end as void,
     round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
     stock.whid,
@@ -684,7 +748,7 @@ class qt
     warehouse.clientname as whname,
     stock.loc,stock.expiry,
     item.brand,
-    stock.rem, 
+    stock.rem,
     ifnull(uom.factor,1) as uomfactor,
     '' as bgcolor,
     case when stock.void=0 then '' else 'bg-red-2' end as errcolor ";
@@ -695,22 +759,22 @@ class qt
   {
     $sqlselect = $this->getstockselect($config);
 
-    $qry = $sqlselect . " 
+    $qry = $sqlselect . "
     FROM $this->stock as stock
-    left join item on item.itemid=stock.itemid 
+    left join item on item.itemid=stock.itemid
     left join model_masterfile as mm on mm.model_id = item.model
-    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
-    left join client as warehouse on warehouse.clientid=stock.whid 
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+    left join client as warehouse on warehouse.clientid=stock.whid
     left join frontend_ebrands as brand on brand.brandid = item.brand
     left join stockinfotrans as sit on sit.trno = stock.trno and sit.line=stock.line
-    where stock.trno =? 
-    UNION ALL  
-    " . $sqlselect . "  
-    FROM $this->hstock as stock 
-    left join item on item.itemid=stock.itemid 
+    where stock.trno =?
+    UNION ALL
+    " . $sqlselect . "
+    FROM $this->hstock as stock
+    left join item on item.itemid=stock.itemid
     left join model_masterfile as mm on mm.model_id = item.model
-    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
-    left join client as warehouse on warehouse.clientid=stock.whid 
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+    left join client as warehouse on warehouse.clientid=stock.whid
     left join frontend_ebrands as brand on brand.brandid = item.brand
     left join hstockinfotrans as sit on sit.trno = stock.trno and sit.line=stock.line
     where stock.trno =? ";
@@ -724,12 +788,12 @@ class qt
     $sqlselect = $this->getstockselect($config);
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
-    $qry = $sqlselect . "  
+    $qry = $sqlselect . "
    FROM $this->stock as stock
-  left join item on item.itemid=stock.itemid 
+  left join item on item.itemid=stock.itemid
   left join model_masterfile as mm on mm.model_id = item.model
-  left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
-  left join client as warehouse on warehouse.clientid=stock.whid 
+  left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+  left join client as warehouse on warehouse.clientid=stock.whid
   left join frontend_ebrands as brand on brand.brandid = item.brand
   left join stockinfotrans as sit on sit.trno = stock.trno and sit.line=stock.line
   where stock.trno = ? and stock.line = ? ";
@@ -806,16 +870,16 @@ class qt
 
     $qry = "select so.trno,so.docno,left(so.dateid,10) as dateid,
      CAST(concat('Total SO Amt: ',round(sum(s.ext),2)) as CHAR) as rem
-     from hsohead as so 
+     from hsohead as so
      left join hsostock as s on s.trno = so.trno
-     where so.trno = ? 
+     where so.trno = ?
      group by so.trno,so.docno,so.dateid";
     $t = $this->coreFunctions->opentable($qry, [$config['params']['trno']]);
     if (!empty($t)) {
       $startx = 550;
       $a = 0;
       foreach ($t as $key => $value) {
-        //SO            
+        //SO
         data_set(
           $nodes,
           $t[$key]->docno,
@@ -840,17 +904,17 @@ class qt
     $qry = "
     select head.docno,
     date(head.dateid) as dateid,
-    CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), ' - ', 'Balance: ', round(ar.bal, 2)) as CHAR) as rem, 
+    CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), ' - ', 'Balance: ', round(ar.bal, 2)) as CHAR) as rem,
     head.trno
     from glhead as head
     left join glstock as stock on head.trno = stock.trno
     left join arledger as ar on ar.trno = head.trno
     where stock.refx=?
     group by head.docno, head.dateid, head.trno, ar.bal
-    union all 
+    union all
     select head.docno,
     date(head.dateid) as dateid,
-    CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), ' - ', 'Balance: ', round(sum(stock.ext),2)) as CHAR) as rem, 
+    CAST(concat('Total SJ Amt: ', round(sum(stock.ext),2), ' - ', 'Balance: ', round(sum(stock.ext),2)) as CHAR) as rem,
     head.trno
     from lahead as head
     left join lastock as stock on head.trno = stock.trno
@@ -915,17 +979,17 @@ class qt
         //CM
         $dmqry = "
         select head.docno as docno,left(head.dateid,10) as dateid,
-        CAST(concat('Total CM Amt: ', round(sum(stock.ext), 2)) as CHAR) as rem 
+        CAST(concat('Total CM Amt: ', round(sum(stock.ext), 2)) as CHAR) as rem
         from glhead as head
-        left join glstock as stock on stock.trno=head.trno 
+        left join glstock as stock on stock.trno=head.trno
         left join item on item.itemid = stock.itemid
         where stock.refx=?
         group by head.docno, head.dateid
         union all
         select head.docno as docno,left(head.dateid,10) as dateid,
-        CAST(concat('Total CM Amt: ', round(sum(stock.ext), 2)) as CHAR) as rem 
+        CAST(concat('Total CM Amt: ', round(sum(stock.ext), 2)) as CHAR) as rem
         from lahead as head
-        left join lastock as stock on stock.trno=head.trno 
+        left join lastock as stock on stock.trno=head.trno
         left join item on item.itemid=stock.itemid
         where stock.refx=?
         group by head.docno, head.dateid";
@@ -1028,6 +1092,8 @@ class qt
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
+    $custdisc = $config['params']['data']['disc2'];
+    $markup = $config['params']['data']['markup'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $void = 'false';
@@ -1114,7 +1180,9 @@ class qt
       'isqty' => $qty,
       'iss' => $computedata['qty'],
       'ext' => $computedata['ext'],
+      'markup' => $markup,
       'disc' => $disc,
+      'custdisc' => $custdisc,
       'whid' => $whid,
       'loc' => $loc,
       'void' => $void,
@@ -1219,7 +1287,7 @@ class qt
           left join glstock as stock on stock.trno = head.trno
           left join item on item.itemid = stock.itemid
           left join client on client.clientid = head.clientid
-          left join cntnum on cntnum.trno=head.trno 
+          left join cntnum on cntnum.trno=head.trno
           where head.doc = 'SJ' and cntnum.center = ?
           and item.barcode = ? and client.client = ?
           and stock.isamt <> 0
@@ -1261,13 +1329,13 @@ class qt
         item.itemid,stock.trno, stock.line, item.barcode,stock.uom, stock.amt,  stock.iss,stock.isamt as rrcost,
         round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
         stock.disc, ifnull(st.line,0) as stageid,stock.projectid,head.deptid,head.industry,agent.tel as contactno,client.tin,head.designation
-        FROM hophead as head 
-        left join hopstock as stock on stock.trno=head.trno 
-        left join transnum on transnum.trno=head.trno 
-        left join item on item.itemid=stock.itemid 
-        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
-        left join stagesmasterfile as st on st.line = stock.stageid 
-        left join client on client.client = head.client 
+        FROM hophead as head
+        left join hopstock as stock on stock.trno=head.trno
+        left join transnum on transnum.trno=head.trno
+        left join item on item.itemid=stock.itemid
+        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
+        left join stagesmasterfile as st on st.line = stock.stageid
+        left join client on client.client = head.client
         left join client as agent on agent.client = head.agent
         where item.islabor = 1 and stock.trno = ? and transnum.center='" . $config['params']['center'] . "' and head.strno=0 ";
   }
@@ -1336,7 +1404,7 @@ class qt
     return $this->coreFunctions->execqry("update hopstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
   }
 
-  // report 
+  // report
 
   public function reportsetup($config)
   {

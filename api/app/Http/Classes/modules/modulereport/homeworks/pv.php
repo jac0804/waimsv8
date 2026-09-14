@@ -1668,76 +1668,135 @@ class pv
         where head.doc='PV' and head.trno ='$trno' and (detail.isewt = 1 or detail.isvewt=1))
         as tbl order by tbl.ewtdesc";
 
-                $this->coreFunctions->LogConsole($query);
                 $result1 = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
-                $arrs = [];
-                $arrss = [];
-                $ewt = '';
+                // Dito ilalagay ang final grouped result per EWT code.
+                $finalarrs = [];
+
+                // I-loop ang bawat row na galing sa SQL query.
                 foreach ($result1 as $key => $value) {
+
+                    // Gawing decimal ang EWT rate para magamit sa computation.
                     $ewtrateval = floatval($value['ewtrate']) / 100;
+
+                    // Kapag walang DB amount, CR ang gagamitin na base amount.
                     if ($value['db'] == 0) {
-                        //FOR CR
+
+                        // Process kapag CR ang source ng amount.
                         if ($value['cr'] < 0) {
                             $db = $value['cr'];
                         } else {
                             $db = floatval($value['cr']) * -1;
-                        } //end if
+                        }
 
+                        // Kapag VAT-inclusive, alisin muna ang 12% VAT.
                         if ($value['isvewt'] == 1) {
                             $db = $db / 1.12;
                         }
 
+                        // I-compute ang EWT amount gamit ang base amount at rate.
                         $ewtamt = $db * $ewtrateval;
                     } else {
-                        //FOR DB
+
+                        // Process kapag DB ang source ng amount.
                         if ($value['db'] < 0) {
                             $db = floatval($value['db']) * -1;
                         } else {
                             $db = $value['db'];
-                        } //end if
+                        }
 
+                        // Kapag VAT-inclusive, alisin muna ang 12% VAT.
                         if ($value['isvewt'] == 1) {
                             $db = $db / 1.12;
                         }
+
+                        // I-compute ang EWT amount gamit ang base amount at rate.
                         $ewtamt = $db * $ewtrateval;
-                    } //end if
-
-                    if ($ewt != $value['ewtcode']) {
-                        $arrs[$value['ewtcode']]['oamt'] = $db;
-                        $arrs[$value['ewtcode']]['xamt'] = $ewtamt;
-                        $arrs[$value['ewtcode']]['month'] = $value['month'];
-                    } else {
-                        array_push($arrss, $arrs);
-                        $arrs[$value['ewtcode']]['oamt'] = $db;
-                        $arrs[$value['ewtcode']]['xamt'] = $ewtamt;
-                        $arrs[$value['ewtcode']]['month'] = $value['month'];
                     }
 
-                    $ewt = $value['ewtcode'];
-                } //end for each
-
-                array_push($arrss, $arrs);
-                $keyers = '';
-                $finalarrs = [];
-                foreach ($arrss as $key => $value) {
-                    foreach ($value as $key => $y) {
-                        if ($keyers == '') {
-                            $keyers = $key;
-                            $finalarrs[$key]['oamt'] = $y['oamt'];
-                            $finalarrs[$key]['xamt'] = $y['xamt'];
-                        } else {
-                            if ($keyers == $key) {
-                                $finalarrs[$key]['oamt'] = floatval($finalarrs[$key]['oamt']) + floatval($y['oamt']);
-                                $finalarrs[$key]['xamt'] = floatval($finalarrs[$key]['xamt']) + floatval($y['xamt']);
-                            } else {
-                                $finalarrs[$key]['oamt'] = $y['oamt'];
-                                $finalarrs[$key]['xamt'] = $y['xamt'];
-                            } //end if
-                        } //end if
-                        $finalarrs[$key]['month'] = $y['month'];
+                    // Pagsasama-samahin ang mga row na may parehong EWT code.
+                    if (!isset($finalarrs[$value['ewtcode']])) {
+                        // Gumawa ng bagong group para sa EWT code kung wala pa ito.
+                        $finalarrs[$value['ewtcode']] = [ 'oamt' => 0, 'xamt' => 0,'month' => $value['month'] ];
                     }
-                } //end for each
+
+                    // Idagdag ang current base amount sa existing total ng EWT code.
+                    $finalarrs[$value['ewtcode']]['oamt'] += $db;
+
+                    // Idagdag ang current EWT amount sa existing total ng EWT code.
+                    // $finalarrs[$value['ewtcode']]['xamt'] += $ewtamt;
+                    $finalarrs[$value['ewtcode']]['xamt'] += round($ewtamt, 2);
+                }
+
+                // $arrs = [];
+                // $arrss = [];
+                // $ewt = '';
+                // foreach ($result1 as $key => $value) {
+                //     $ewtrateval = floatval($value['ewtrate']) / 100;
+                //     if ($value['db'] == 0) {
+                //         //FOR CR
+                //         if ($value['cr'] < 0) {
+                //             $db = $value['cr'];
+                //         } else {
+                //             $db = floatval($value['cr']) * -1;
+                //         } //end if
+
+                //         if ($value['isvewt'] == 1) {
+                //             $db = $db / 1.12;
+                //         }
+
+                //         $ewtamt = $db * $ewtrateval;
+                //     } else {
+                //         //FOR DB
+                //         if ($value['db'] < 0) {
+                //             $db = floatval($value['db']) * -1;
+                //         } else {
+                //             $db = $value['db'];
+                //         } //end if
+
+                //         if ($value['isvewt'] == 1) {
+                //             $db = $db / 1.12;
+                //         }
+                //         $ewtamt = $db * $ewtrateval;
+                //     } //end if
+
+                //     if ($ewt != $value['ewtcode']) {
+                //         $arrs[$value['ewtcode']]['oamt'] = $db;
+                //         $arrs[$value['ewtcode']]['xamt'] = $ewtamt;
+                //         $arrs[$value['ewtcode']]['month'] = $value['month'];
+                //     } else {
+                //         array_push($arrss, $arrs);
+                //         $arrs[$value['ewtcode']]['oamt'] = $db;
+                //         $arrs[$value['ewtcode']]['xamt'] = $ewtamt;
+                //         $arrs[$value['ewtcode']]['month'] = $value['month'];
+                //     }
+
+                //     $ewt = $value['ewtcode'];
+                // } //end for each
+
+                // array_push($arrss, $arrs);
+                // $keyers = '';
+                // $finalarrs = [];
+                // foreach ($arrss as $key => $value) {
+                //     foreach ($value as $key => $y) {
+                //         if ($keyers == '') {
+                //             $keyers = $key;
+                //             $finalarrs[$key]['oamt'] = $y['oamt'];
+                //             $finalarrs[$key]['xamt'] = $y['xamt'];
+                //         } else {
+                //             if ($keyers == $key) {
+                //                 $finalarrs[$key]['oamt'] = floatval($finalarrs[$key]['oamt']) + floatval($y['oamt']);
+                //                 $finalarrs[$key]['xamt'] = floatval($finalarrs[$key]['xamt']) + floatval($y['xamt']);
+                //             } else {
+                //                 $finalarrs[$key]['oamt'] = $y['oamt'];
+                //                 $finalarrs[$key]['xamt'] = $y['xamt'];
+                //             } //end if
+                //         } //end if
+                //         $finalarrs[$key]['month'] = $y['month'];
+                //     }
+                // } //end for each
+
+
                 if (empty($result1)) {
                     $returnarr[0]['payee'] = '';
                     $returnarr[0]['tin'] = '';

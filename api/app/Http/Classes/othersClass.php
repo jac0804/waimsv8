@@ -812,7 +812,7 @@ class othersClass
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
-    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc');
+    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr', 'custdisc');
 
     return $number;
   }
@@ -1594,6 +1594,22 @@ class othersClass
             break;
         }
         break;
+      case 71: //buenatech
+        switch ($config['params']['doc']) {
+          case 'UE':
+            $addedfield = ",pdtrno";
+            $selectaddedfield = ",head.pdtrno";
+            break;
+        }
+        break;
+      case 64: //excelin
+        switch ($config['params']['doc']) {
+          case 'SJ':
+            $addedfield = ",ismarkup";
+            $selectaddedfield = ",head.ismarkup";
+            break;
+        }
+        break;
       default:
         switch ($config['params']['doc']) {
           case 'RM':
@@ -1703,7 +1719,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1713,7 +1729,8 @@ class othersClass
                 stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,stock.poref, 
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
+                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2297,6 +2314,17 @@ class othersClass
     }
   }
 
+  public function hasbeenpo($config)
+  {
+    $trno = $config['params']['trno'];
+    $a = $this->coreFunctions->getfieldvalue('glstock', 'trno', 'trno=? and poqa<>0', [$trno]);
+    if ($a !== '') {
+      return 'This Transaction cannot be UNPOSTED, Already picked on PO.';
+    } else {
+      return '';
+    }
+  }
+
   public function hasbeenmcpaid($config)
   {
     $trno = $config['params']['trno'];
@@ -2482,6 +2510,14 @@ class othersClass
             break;
         }
         break;
+      case 71: //buenatech
+        switch ($config['params']['doc']) {
+          case 'UE':
+            $addedfield = ",pdtrno";
+            $selectaddedfield = ",head.pdtrno";
+            break;
+        }
+        break;
       default:
         switch ($config['params']['doc']) {
           case 'RM':
@@ -2597,7 +2633,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2606,7 +2642,8 @@ class othersClass
                 stock.isextract,stock.pickerid,stock.pickerstart,stock.pickerend,stock.whmanid,stock.whmandate,stock.forkliftid,stock.suppid,stock.itemstatus, stock.projectid,stock.sorefx,stock.solinex,stock.sgdrate,
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
-                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline
+                stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
+                stock.rrrefx,stock.rrlinex
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -3516,15 +3553,13 @@ class othersClass
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
         break;
     }
-    if ($doc != 'AJ') {
+    if ($doc != 'AJ' && $doc != 'CH' && $doc != 'AD' && $doc != 'AB' && $doc != 'AN') {
       // $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
       // $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
-      if ($doc != 'CH') {
-        $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";
-        $items  = $this->coreFunctions->datareader($qry, [$trno]);
-        if ($items != "") {
-          return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative. Please check items : ' . $items];
-        }
+      $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";
+      $items  = $this->coreFunctions->datareader($qry, [$trno]);
+      if ($items != "") {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed, Total amount must not be Negative. Please check items : ' . $items];
       }
     }
 
@@ -3590,6 +3625,7 @@ class othersClass
         case 'MT':
         case 'REPLENISHPALLET';
         case 'REPLENISHITEM';
+        case 'UE':
           $ts = $this->tsreverse($config);
           if (!$ts['status']) {
             $msg = $ts['msg'];
@@ -3942,6 +3978,11 @@ class othersClass
       if ($msg !== '') {
         return ['trno' => $trno, 'status' => false, 'msg' => $msg];
       }
+
+      // $msg = $this->hasbeenpo($config);
+      // if ($msg !== '') {
+      //   return ['trno' => $trno, 'status' => false, 'msg' => $msg];
+      // }
     }
 
     $tmpuser = $this->coreFunctions->getfieldvalue($config['docmodule']->tablenum, "tmpuser", "trno=?", [$trno]);
@@ -3997,7 +4038,6 @@ class othersClass
           case 'LL':
           case 'FA':
           case 'WO':
-          case 'MI':
           case 'AM':
             $cntnuminfo = $this->postcntnuminfo($config, false);
             if (!$cntnuminfo['status']) {
@@ -8948,7 +8988,8 @@ class othersClass
         }
       } catch (Exception $e) {
         $status = false;
-        $msg .= 'Failed to upload. Exception error ' . $e->getMessage();
+        // $msg .= 'Failed to upload. Exception error ' . $e->getMessage();
+        $msg .= "Failed to upload. File: " . $e->getFile() . " Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
         goto exithere;
       }
     }
@@ -9426,6 +9467,7 @@ class othersClass
       case 'RC':
       case 'RD':
       case 'PX':
+      case 'UE':
         $table = 'transnum_picture';
         $trno = $config['params']['trno'];
         break;
@@ -9488,6 +9530,9 @@ class othersClass
       case 'ON':
       case 'AM':
       case 'RI':
+      case 'AD':
+      case 'AB':
+      case 'AN':
         $table = 'cntnum_picture';
         $trno = $config['params']['trno'];
         break;
@@ -9500,7 +9545,7 @@ class othersClass
       case 'BRANCH':
       case 'BG':
       case 'BY':
-      case 'WL': 
+      case 'WL':
         $table = 'client_picture';
         $trno = $config['params']['clientid'];
         break;

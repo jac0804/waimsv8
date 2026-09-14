@@ -106,7 +106,7 @@ class firearms
     $condition = "";
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['fr.code', 'fr.make', 'fr.type','fr.expiry','fr.serialno','fr.licenseno','fr.cal'];
+      $searchfield = ['fr.code', 'fr.make', 'fr.type', 'fr.expiry', 'fr.serialno', 'fr.licenseno', 'fr.cal'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -163,7 +163,7 @@ class firearms
 
   public function createTab2($access, $config)
   {
-    return []; 
+    return [];
   }
 
   public function createtabbutton($config)
@@ -175,7 +175,7 @@ class firearms
 
   public function createHeadField($config)
   {
-    $fields = ['client', 'make', 'type',  'serialno','licenseno'];
+    $fields = ['client', 'make', 'type',  'serialno', 'licenseno'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.label', 'Fire Arms No.');
     data_set($col1, 'make.readonly', false);
@@ -186,7 +186,7 @@ class firearms
     data_set($col1, 'client.lookupclass', 'lookupledger_firearms');
     data_set($col1, 'client.action', 'lookupledger');
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
-  
+
     $fields = ['expiry1', 'cal'];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'expiry1.label', 'Expiry');
@@ -198,10 +198,10 @@ class firearms
     $data = [];
     $data[0]['line'] = 0;
     $data[0]['code'] = $config['newclient'];
-    
+
     $data[0]['clientid'] = 0;
     $data[0]['client'] = $config['newclient'];
-    
+
     $data[0]['make'] = '';
     $data[0]['type'] = '';
     $data[0]['expiry1'] = null;
@@ -228,9 +228,9 @@ class firearms
     }
     $center = $config['params']['center'];
     $head = [];
-    $qry =" select fr.line as clientid, fr.code as client, fr.make, fr.type, fr.expiry as expiry1, fr.serialno, fr.licenseno, fr.cal from firearms as fr where fr.line = ? ";
+    $qry = " select fr.line as clientid, fr.code as client, fr.make, fr.type, fr.expiry as expiry1, fr.serialno, fr.licenseno, fr.cal from firearms as fr where fr.line = ? ";
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
-   
+
     if (!empty($head)) {
       foreach ($this->blnfields as $key => $value) {
         if ($head[0]->$value) {
@@ -276,17 +276,18 @@ class firearms
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
       }
 
       // expiry1 sa head -> expiry sa firearms (dito isesave)
       // kaya to existing para mag ok ang saving dahil nagkakaproblem ng Incorrect datetime value: '08/26/2026' for column 'expiry', wala yung expiry1 sa table ng firearms
       if ($key == 'expiry' && array_key_exists('expiry1', $head)) {
-        $data['expiry'] = date('Y-m-d 00:00:00',strtotime($head['expiry1'])
+        $data['expiry'] = date(
+          'Y-m-d 00:00:00',
+          strtotime($head['expiry1'])
         );
       }
-
     }
 
     if ($isupdate) {
@@ -322,6 +323,12 @@ class firearms
     $clientid = $config['params']['clientid'];
     $doc = $config['params']['doc'];
     $client = $this->coreFunctions->getfieldvalue('firearms', 'code', 'line=?', [$clientid]);
+
+    $inuse = $this->coreFunctions->datareader("select trno as value from ddfirearms where fireid=? limit 1", [$clientid]);
+    if ($inuse != '') {
+      return ['status' => false, 'msg' => 'Cannot delete, this firearm is already used in a DDO ISSUANCE.'];
+    }
+
     $qry = "select line as value from firearms where line<? order by line desc limit 1 ";
     $clientid2 = $this->coreFunctions->datareader($qry, [$clientid]);
     $this->coreFunctions->execqry('delete from firearms where line=?', 'delete', [$clientid]);

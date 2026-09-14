@@ -84,12 +84,18 @@ class price_list
 
     public function reportdata($config)
     {
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '-1');
+
         $str = $this->reportplotting($config);
         return ['status' => true, 'msg' => 'Generating REPORT successfully', 'report' => $str, 'params' => $this->reportParams];
     }
 
     public function reportplotting($config)
     {
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '-1');
+
         $data = $this->data_query($config);
         return $this->reportDefaultLayout($config, $data);
     }
@@ -120,13 +126,14 @@ class price_list
             case 5:
             case 6:
                 // picture-based price list: only show items that actually have a picture
-                $filter = " and i.picture is not null and i.picture <> '' ";
+                // $filter = " and i.picture is not null and i.picture <> '' ";
                 $orderby = "order by partno";
                 break;
         }
 
 
-        $query = "select ifnull(cat.name, '') as category, ifnull(b.brand_desc, '') as brand, partno, othcode as equiv,i.picture, ifnull(m.model_name, '') as crmodel,
+        $query = "select ifnull(cat.name, '') as category, ifnull(b.brand_desc, '') as brand, partno, othcode as equiv,
+        concat('/images/product/',i.partno,'.PNG') as picture ,ifnull(m.model_name, '') as crmodel,
         p.positions, cb.brand as cbrand, info.fyear as yrmodel,
         `type` as stype, amt as price
         from item as i
@@ -146,14 +153,24 @@ class price_list
 
     private function buildPictureCell($picturePath, $boxW, $boxH, $imgW, $imgH)
     {
-        $box = '<div style="width:' . $boxW . 'px;height:' . $boxH . 'px;border:1px solid #dcdcdc;background:#ffffff;text-align:center;line-height:' . $boxH . 'px;font-size:11px;">PICTURE</div>';
+        $box = '<div style="width:' . $boxW . 'px;height:' . $boxH . 'px;border:1px solid #dcdcdc;background:#ffffff;text-align:center;line-height:' . $boxH . 'px;font-size:11px;">IMAGE UNAVAILABLE</div>';
 
         if (!empty($picturePath)) {
             $src = asset('/public' . ltrim($picturePath));
-            $box = '<div style="width:' . $boxW . 'px;height:' . $boxH . 'px;border:1px solid #dcdcdc;background:#ffffff;text-align:center;">
-                <img src="' . $src . '" style="width:' . $imgW . 'px;height:' . $imgH . 'px;object-fit:contain;margin-top:5px;">
-            </div>';
+
+            if (file_exists(public_path(ltrim($picturePath, '/')))) {
+                $box = '<div style="width:' . $boxW . 'px;height:' . $boxH . 'px;border:1px solid #dcdcdc;background:#ffffff;text-align:center;">
+                            <img src="' . $src . '" style="width:' . $imgW . 'px;height:' . $imgH . 'px;object-fit:contain;margin-top:5px;">
+                        </div>';
+            }
         }
+
+        // if (!empty($picturePath)) {
+        //     $src = asset(ltrim($picturePath));
+        //     $box = '<div style="width:' . $boxW . 'px;height:' . $boxH . 'px;border:1px solid #dcdcdc;background:#ffffff;text-align:center;">
+        //         <img src="' . $src . '" style="width:' . $imgW . 'px;height:' . $imgH . 'px;object-fit:contain;margin-top:5px;">
+        //     </div>';
+        // }
 
         return $box;
     }
@@ -301,7 +318,13 @@ class price_list
         // }
 
         // Picture rows are taller than plain text rows, so fewer fit per page.
-        $limitPerPage = ($poption == 4 || $poption == 5) ? 6 : 42;
+        if ($poption == 5) {
+            $limitPerPage = 6;
+        } elseif ($poption == 6) {
+            $limitPerPage = 7;
+        } else {
+            $limitPerPage = 35;
+        }
         $rowCount = 0;
         $currentLabel = '';
         $grpLabel = '';

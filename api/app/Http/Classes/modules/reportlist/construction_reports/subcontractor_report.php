@@ -128,7 +128,7 @@ class subcontractor_report
       $filter .= " and client.client = '" . $client . "' ";
     }
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and detail.projectid = " . $projectid . " ";
     }
 
@@ -295,7 +295,7 @@ class subcontractor_report
     $page = 32;
     $layoutsize = '1400';
     $font = "Century Gothic";
-    $fontsize ="10";
+    $fontsize = "10";
     $border = "1px solid ";
     $bankcharge = 0;
     $fines = 0;

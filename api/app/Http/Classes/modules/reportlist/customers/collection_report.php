@@ -250,7 +250,7 @@ class collection_report
       $filter .= " and client.client = '" . $client . "' ";
     }
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and detail.projectid = " . $projectid . " ";
     }
 
@@ -791,7 +791,7 @@ class collection_report
                    0 as bankcharge, 0 as netamt, detail.checkno as paymentdetails,
                    (case left(coa.alias,2) when 'CB' then coa.acnoname else '' end) as banktransfer, 
                    group_concat(case left(coa.alias,2) when 'CB' then date(detail.postdate) else date(crled.depodate) end separator '/') as datedeposited, di.rem as remarks, '' as jovrem,
-                   (select sum(d.db) from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = detail.trno and left(c.alias,2) in ('CA','CB','CR')) as cramt, 0 as lessewt, detail.checkno, detail.ref,coa.alias,detail.refx, 0 as fines 
+                   (select sum(d.db) from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = detail.trno and d.line = detail.line and left(c.alias,2) in ('CA','CB','CR')) as cramt, 0 as lessewt, detail.checkno, detail.ref,coa.alias,detail.refx, 0 as fines 
             from glhead as head
             left join gldetail as detail on detail.trno = head.trno
             left join crledger as crled on crled.trno = head.trno and crled.line = detail.line
@@ -1640,7 +1640,7 @@ class collection_report
     $str .= $this->reporter->col(number_format($grandtotal, 2), '100', null, false, '2px solid', 'TB', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= $this->reporter->endreport();
     return $str;
   }

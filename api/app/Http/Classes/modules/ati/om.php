@@ -232,11 +232,7 @@ class om
                           head.yourref, head.ourref, info.inspo , head.rem, pr.itemdesc, stock.oraclecode, stock.rrqty, stock.line,
                           (select group_concat('SO#:',sono,' (Qty:',qty,')' SEPARATOR '\n\r') 
                           from omso where omso.trno=stock.trno and omso.line=stock.line) as sodetails, 'false' as isposted,stock.ref,
-                          (select group_concat(distinct yourref separator ', ')
-                          from (select yourref,pos.reqtrno,pos.reqline
-                                from hpohead as po
-                                left join hpostock as pos on pos.trno=po.trno) as k
-                                where k.reqtrno=stock.reqtrno and k.reqline=stock.reqline and reqtrno <> 0) as pono,
+                          (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,
                           (case when stock.statid in (0,12) then 'true' else 'false' end) as forrevision, pr.ctrlno
                     from " . $this->head . " as head 
                     left join " . $this->tablenum . " as num on num.trno=head.trno 
@@ -968,7 +964,7 @@ class om
             union all
             select cvs.scamt,cvs.reqtrno,cvs.reqline,cvs.cdrefx,cvs.cdlinex
             from cvitems as cvs) as a
-     where a.reqtrno=stock.reqtrno and a.reqline=stock.reqline),0) as surcharge,
+     where a.reqtrno=stock.reqtrno and a.reqline=stock.reqline and a.cdrefx=stock.cdrefx and a.cdlinex=stock.cdlinex),0) as surcharge,
     left(stock.encodeddate,10) as encodeddate,
     stock.disc,
     case when stock.void=0 then 'false' else 'true' end as void,
@@ -997,11 +993,9 @@ class om
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,stock.osrefx,stock.oslinex,stock.sgdrate,stock.poref,
     ifnull(info.itemdesc,'') as itemdesc, ifnull(xinfo.unit,'') as unit, ifnull(xinfo.specs,'') as specs, ifnull(info.purpose,'') as purpose,ifnull(info.requestorname,'') as requestorname,stock.reqtrno,stock.reqline,
     ifnull(dept.clientname,'') as department, ifnull(sup.clientname,'') as supplier, stock.oraclecode, pr.clientname as customer, ifnull(svs.sano,'') as svsnum, stock.svsno, ifnull(sa.sano,'') as sanodesc,
-    if(stock.statid=12,'true','false') as isposted, (select group_concat(distinct yourref separator ', ')
-         from (select yourref,pos.reqtrno,pos.reqline
-               from hpohead as po
-               left join hpostock as pos on pos.trno=po.trno where pos.void=0) as k
-         where k.reqtrno=stock.reqtrno and k.reqline=stock.reqline and reqtrno <> 0) as pono,info.ctrlno,xinfo.uom2";
+    if(stock.statid=12,'true','false') as isposted, 
+    (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,info.ctrlno,xinfo.uom2";
+
     return $sqlselect;
   }
 
@@ -1537,7 +1531,7 @@ class om
     $msg = '';
     $status = true;
 
-    $companyid = $config['params']['companyid']; 
+    $companyid = $config['params']['companyid'];
     $isproject = $this->companysetup->getisproject($config['params']);
     $uom = $config['params']['data']['uom'];
     $barcode = '';

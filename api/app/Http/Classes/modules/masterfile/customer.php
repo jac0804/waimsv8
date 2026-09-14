@@ -176,7 +176,7 @@ class customer
       $this->prefix = "C";
     }
     if ($companyid == 64) {
-      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'listarea', 'listprovince', 'agentname',   'listcategory', 'notes', 'shipto', 'tel', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
+      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'listarea', 'listprovince', 'agentname', 'listcategory', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
     } else {
       $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
     };
@@ -262,13 +262,16 @@ class customer
         break;
       case 64: // EXCELIN 
         $cols[$listgroup]['type'] = 'coldel';
-        $cols[$tel]['type'] = 'coldel';
+        // $cols[$tel]['type'] = 'coldel';
         $cols[$fax]['type'] = 'coldel';
         $cols[$contact]['type'] = 'coldel';
         $cols[$listregion]['type'] = 'coldel';
         $cols[$listareacode]['type'] = 'coldel';
         $cols[$listbrgy]['type'] = 'coldel';
         $cols[$agentname]['style'] =  'width: 200px;whiteSpace: normal;max-width:200px;text-align:left;';
+        $cols[$tin]['style'] =  'width: 150px;whiteSpace: normal;max-width:150px;text-align:left;';
+        $cols[$tel]['style'] =  'width: 120px;whiteSpace: normal;max-width:120px;text-align:left;';
+        $cols[$mobile]['style'] =  'width: 120px;whiteSpace: normal;max-width:120px;text-align:left;';
         break;
       default:
         $cols[$listgroup]['type'] = 'coldel';
@@ -385,7 +388,7 @@ class customer
         }
         break;
       case 64:
-        $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname";
+        $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname, client.tel, client.tel2 as mobile";
         $leftjoin = "left join client as ag on ag.client = client.agent";
         $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
         if ($search != "") {

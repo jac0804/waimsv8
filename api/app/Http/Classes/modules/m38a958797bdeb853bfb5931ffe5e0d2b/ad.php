@@ -1667,7 +1667,7 @@ class ad
         $stock = $this->coreFunctions->opentable($qry, [$trno]);
         $tax = 0;
         if (!empty($stock)) {
-            $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN1']);
+            $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN3']);
             $vat = $stock[0]->tax;
             $tax1 = 0;
             $tax2 = 0;

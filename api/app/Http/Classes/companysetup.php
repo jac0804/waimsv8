@@ -246,7 +246,7 @@ class companysetup
 
 
     switch ($params['companyid']) {
-      case 71://buenatech
+      case 71: //buenatech
         $this->ismysql8 = true;
         $this->clientlength = 15;
         $this->locationlength = 0;
@@ -282,14 +282,12 @@ class companysetup
         $this->timekeeping = false;
         $this->isconstruction = false;
         $this->ispurchases = false;
-        $this->linearapproval = false;
-        $this->isticketing = false;
-        $this->isserviceticketing = false;
         $this->showdept = false;
         $this->isshowtsso = false;
         $this->showloading = true;
         $this->isautoservice = false;
         $this->issuemultipleexpiry = true;
+        $this->reportpath = "\Http\Classes\modules\modulereport\buenatech\\";
         break;
       case 70: //sportrunner
         $this->clientlength = 15;
@@ -353,6 +351,7 @@ class companysetup
         $this->isconsign = false;
         $this->isshortcutpo = true;
         $this->isshortcutpr = true;
+        $this->isshortcutmr = true;
         $this->iscrm = false;
         $this->ispos = false;
         $this->ispr = true;
@@ -2060,6 +2059,9 @@ class companysetup
     $modulelist = [];
     $systemtype = $this->getsystemtype($params);
     switch ($params['companyid']) {
+      case 71: //buenatech
+        $modulelist = ['masterfile', 'production', 'purchase', 'sales', 'inventory', 'payable', 'receivable', 'accounting', 'itemmaster', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
+        break;
       case 57:
         $modulelist = ['masterfile', 'cashier', 'transactionutilities', 'accountutilities', 'announcement', 'branch', 'dashboard'];
         break;

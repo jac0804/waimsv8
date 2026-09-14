@@ -722,4 +722,29 @@ class payrolllookup
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index, 'rowindex' => $index, 'table' => $table, 'btnadd' => $btnadd];
   } //end function
+
+  public function lookupoacnodetail($config)
+  {
+      $lookupsetup = array(
+          'type' => 'multi',
+          'rowkey' => 'keyid',
+          'title' => 'Payroll Accounts',
+          'style' => 'width:100%;max-width:100%;'
+      );
+
+      $plotsetup = array(
+          'plottype' => 'callback',
+          'action' => 'addpacno',
+      );
+      // lookup columns
+      $cols = array(
+        array('name' => 'acno', 'label' => 'Accounts', 'align' => 'left', 'field' => 'acno', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'acnoname', 'label' => 'Account Name', 'align' => 'left', 'field' => 'acnoname', 'sortable' => true, 'style' => 'font-size:16px;'),
+      );
+      $qry = "select line as keyid, code as acno, codename as acnoname, line, uom from paccount order by codename";
+
+      $data = $this->coreFunctions->opentable($qry);
+
+      return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+  }
 }

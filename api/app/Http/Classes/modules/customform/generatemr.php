@@ -78,7 +78,7 @@ class generatemr
         $col4 = $this->fieldClass->create($fields);
         return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
     }
-    
+
     public function createTab($config)
     {
         $cols = [];
@@ -379,7 +379,7 @@ class generatemr
             $data = $this->coreFunctions->opentable($qry, [$billtype]);
 
             if (empty($data)) {
-                $msg2 .= 'No customers with ' . $billtype . ' billing setup found.<br>';
+                $msg2 .= 'No customers with ' . $billtype . ' billing setup found.' . "\n";
                 continue;
             }
 
@@ -392,7 +392,7 @@ class generatemr
             }
 
             if (empty($eligibleLines)) {
-                $msg2 .= 'All ' . count($data) . ' customer(s) with ' . $billtype . ' already generated this month.<br>';
+                $msg2 .= 'All ' . count($data) . ' customer(s) with ' . $billtype . ' already generated this month.' . "\n";
                 continue;
             }
 
@@ -402,14 +402,14 @@ class generatemr
                 $generatedDocs[] = $result['docno'] . ' (' . $billtype . ')';
             } else {
                 $failedDocs[] = $billtype;
-                $msg2 .= $result['msg'] . ' for ' . $billtype . '<br>';
+                $msg2 .= $result['msg'] . ' for ' . $billtype . "\n";
             }
         } // end foreach billtype
 
         if (!empty($generatedDocs)) {
             $resultMsg = 'MR Documents Generated: ' . implode(', ', $generatedDocs);
             if ($msg2 != '') {
-                $resultMsg .= '<br>' . $msg2;
+                $resultMsg .= "\n" . $msg2;
             }
             return ['status' => true, 'msg' => $resultMsg];
         } else {
@@ -659,7 +659,25 @@ class generatemr
                 'cur' => $head[0]->cur,
                 'forex' => $head[0]->forex,
                 'fdb' => floatval($head[0]->forex) == 1 ? 0 : $detail->db,
-                'fcr' => 0
+                'fcr' => 0,
+                'rem' => $detail->rem,
+                'projectid' => 0,
+                'subproject' => 0,
+                'stageid' => 0,
+                'branch' => 0,
+                'deptid' => 0,
+                'poref' => '',
+                'podate' => null,
+                'dpref' => '',
+                'storetrno' => 0,
+                'station' => '',
+                'ref' => $detail->ref,
+                'refx' => 0,
+                'linex' => 0,
+                'ewtcode' => '',
+                'ewtrate' => 0,
+                'isewt' => 0,
+                'isvat' => $detail->isvat
             );
             $acctg[] = $entry;
 
@@ -674,7 +692,25 @@ class generatemr
                 'cur' => $head[0]->cur,
                 'forex' => $head[0]->forex,
                 'fcr' => floatval($head[0]->forex) == 1 ? 0 : $salesAmount,
-                'fdb' => 0
+                'fdb' => 0,
+                'rem' => $detail->rem,
+                'projectid' => 0,
+                'subproject' => 0,
+                'stageid' => 0,
+                'branch' => 0,
+                'deptid' => 0,
+                'poref' => '',
+                'podate' => null,
+                'dpref' => '',
+                'storetrno' => 0,
+                'station' => '',
+                'ref' => $detail->ref,
+                'refx' => 0,
+                'linex' => 0,
+                'ewtcode' => '',
+                'ewtrate' => 0,
+                'isewt' => 0,
+                'isvat' => $detail->isvat
             );
             $acctg[] = $entry;
 
@@ -690,7 +726,25 @@ class generatemr
                     'cur' => $head[0]->cur,
                     'forex' => $head[0]->forex,
                     'fcr' => floatval($head[0]->forex) == 1 ? 0 : $tax,
-                    'fdb' => 0
+                    'fdb' => 0,
+                    'rem' => $detail->rem,
+                    'projectid' => 0,
+                    'subproject' => 0,
+                    'stageid' => 0,
+                    'branch' => 0,
+                    'deptid' => 0,
+                    'poref' => '',
+                    'podate' => null,
+                    'dpref' => '',
+                    'storetrno' => 0,
+                    'station' => '',
+                    'ref' => $detail->ref,
+                    'refx' => 0,
+                    'linex' => 0,
+                    'ewtcode' => '',
+                    'ewtrate' => 0,
+                    'isewt' => 0,
+                    'isvat' => $detail->isvat
                 );
                 $acctg[] = $entry;
             }
@@ -803,7 +857,7 @@ class generatemr
                     $generatedDocs[] = $result['docno'] . ' (' . $billtype . ' - ' . $customer->client . ')';
                 } else {
                     $failedDocs[] = $billtype . ' - ' . $customer->client;
-                    $msg2 .= $result['msg'] . ' for ' . $billtype . ' - ' . $customer->client . '<br>';
+                    $msg2 .= $result['msg'] . ' for ' . $billtype . ' - ' . $customer->client . "\n";
                 }
             }
         }
@@ -811,7 +865,7 @@ class generatemr
         if (!empty($generatedDocs)) {
             $resultMsg = 'YB Documents Generated: ' . implode(', ', $generatedDocs);
             if ($msg2 != '') {
-                $resultMsg .= '<br>' . $msg2;
+                $resultMsg .= "\n" . $msg2;
             }
             return ['status' => true, 'msg' => $resultMsg];
         } else {
@@ -1046,7 +1100,7 @@ class generatemr
                 'trno' => $lahead[0]->trno,
                 'doc' => $lahead[0]->doc,
                 'docno' => $lahead[0]->docno,
-                'clientid' => $clientid,  // Only clientid, no client column
+                'clientid' => $clientid,
                 'clientname' => $lahead[0]->clientname,
                 'address' => $lahead[0]->address,
                 'dateid' => $lahead[0]->dateid,
@@ -1075,7 +1129,7 @@ class generatemr
                 $glDetailRow = [
                     'trno' => $detail->trno,
                     'line' => $detail->line,
-                    'clientid' => $clientid,  // Only clientid, no client column
+                    'clientid' => $clientid,
                     'rem' => $detail->rem,
                     'db' => $detail->db,
                     'cr' => $detail->cr,

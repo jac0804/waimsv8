@@ -2129,7 +2129,7 @@ class mobileCommonFunctions
             $q.loading.hide();
           } else {
             console.log("---------------asd-", serveraddr);
-            let url = serveraddr + "/sbcmobilev2/download";
+            let url = "http://" +serveraddr + "/mobileapi/sbcmobilev2/download";
             // let url = "";
             // if (serveraddr.includes("https://")) {
             //   url = serveraddr;
@@ -7905,7 +7905,7 @@ class mobileCommonFunctions
                     { name: "clientname", label: "Name", align: "left", field: "clientname" }
                   ];
                   let wh = [];
-                  api.post(serveraddr + "/sbcmobilev2/download", { type: "wh" }).then(res => {
+                  api.post("http://" + serveraddr + "/mobileapi/sbcmobilev2/download", { type: "wh" }).then(res => {
                     wh = res.data.wh;
                     if (wh.length > 0) {
                       sbc.db.transaction(function (tx) {
@@ -8265,7 +8265,7 @@ class mobileCommonFunctions
 
         function getItems (serveraddr) {
           cfunc.showLoading("Downloading Items, Please wait...");
-          api.post(serveraddr + "/sbcmobilev2/download", { type: "invItems", iend: iend, whs: whs }).then(res => {
+          api.post("http://" + serveraddr + "/mobileapi/sbcmobilev2/download", { type: "invItems", iend: iend, whs: whs }).then(res => {
             if (res) {
               if (res.data.items.length > 0) {
                 if (iend === 0) icount = res.data.icount;
@@ -8311,7 +8311,7 @@ class mobileCommonFunctions
 
         function getItemBal (serveraddr) {
           cfunc.showLoading("Downloading Item Balance, Please wait...");
-          api.post(serveraddr + "/sbcmobilev2/download", { type: "invItemBal", whs: whs }).then(res => {
+          api.post("http://" + serveraddr + "/mobileapi/sbcmobilev2/download", { type: "invItemBal", whs: whs }).then(res => {
             if (res) {
               if (res.data.itembal.length > 0) {
                 ibcount = res.data.itembal.length;
@@ -8457,7 +8457,14 @@ class mobileCommonFunctions
           cfunc.showLoading("Saving Client Items (Batch " + index + " of " + clientitem.length + ")");
           if (index === 0) $q.loading.hide();
           if (index === clientitem.length) {
-            cfunc.showLoading("Successfully imported " + sbc.globalFunc.iccount + " Client Items");
+            // cfunc.showLoading("Successfully imported " + sbc.globalFunc.iccount + " Client Items");
+            $q.loading.hide(); // close the loading spinner
+            $q.notify({
+              type: "positive",
+              message: "Successfully imported " + sbc.globalFunc.iccount + " Client Items",
+              timeout: 0, // 0 = stays until dismissed
+              actions: [{ label: "OK", color: "white", handler: () => {} }]
+            });            
             setTimeout(function () {
               $q.loading.hide();
               sbc.showSelectLookup = false;
@@ -8485,7 +8492,7 @@ class mobileCommonFunctions
       },
       getClientItems: function (serveraddr, whs) {
         cfunc.showLoading("Downloading Client Items, Please wait...");
-        api.post(serveraddr + "/sbcmobilev2/download", { type: "invClientItem", whs: whs }).then(res => {
+        api.post("http://" + serveraddr + "/mobileapi/sbcmobilev2/download", { type: "invClientItem", whs: whs }).then(res => {
           if (res) {
             if (res.data.clientitem.length > 0) {
               sbc.globalFunc.iccount = res.data.clientitem.length;

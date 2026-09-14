@@ -27,6 +27,8 @@ class trigger_hris
 			$line = "( select concat(itemname,'(',barcode,')',' - ') from item where itemid = OLD.itemid )";
 		} else if (strtoupper($level) == 'DETAIL') {
 			$line = "( select concat(acnoname,'(',acno,')',' - ') from coa where acnoid = OLD.acnoid )";
+		} else if (strtoupper($level) == 'PAYROLLDETAIL') {
+			$line = "( select concat(codename,'(',code,')',' - ') from paccount where line = OLD.pacnoid )";
 		} else {
 			$line = "''";
 		}
@@ -81,6 +83,7 @@ class trigger_hris
 		$this->hd_triggers();
 		$this->hc_triggers();
 		$this->hs_triggers();
+		$this->hb_triggers();
 	}
 
 	// HRIS TRIGGERS LOGS
@@ -332,5 +335,24 @@ class trigger_hris
 			'To Basic Salary' => ['tbasicrate' => []],
 		];
 		$this->settriggerlogs('hs_triggers', 'AFTER UPDATE', 'eschange', 'hrisnum_log', $fields, 'trno', 'HEAD');
+	}
+
+	private function hb_triggers()
+	{//detachment - hb 
+		$fields = [//head
+			'Date' => ['dateid' => []],
+			'EMPID' => ['empid' => []],
+		];
+		$this->settriggerlogs('hb_triggers', 'AFTER UPDATE', 'hbhead', 'hrisnum_log', $fields, 'trno', 'HEAD');
+
+		$fields = [//details
+			'Line #' => ['line' => []],
+			'PACNO ID' => ['pacnoid' => []],
+			'UOM' => ['uom' => []],
+			'Debit' => ['db' => []],
+			'Credit' => ['cr' => []],
+			'Remarks' => ['rem' => []],
+		];
+		$this->settriggerlogs('hbd_triggers', 'AFTER UPDATE', 'hbdetail', 'hrisnum_log', $fields, 'trno','PAYROLLDETAIL');
 	}
 }// end class

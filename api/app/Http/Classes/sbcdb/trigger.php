@@ -620,6 +620,7 @@ class trigger
       'LC No.' => ['orderno' => []],
       'rfno' => ['rfno' => []],
       'conaddr' => ['conaddr' => []],
+      'JO docno' => ['pdtrno' => [true, "docno", "hpdhead", "trno"]]
     ];
 
     $this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
@@ -2666,6 +2667,115 @@ class trigger
     $this->settriggerlogs('rghead_update', 'AFTER UPDATE', 'rghead', 'transnum_log', $fields, 'trno', 'HEAD');
   }
 
+  //////production
+
+  private function hpd_triggers($config)
+  {
+    //HPDHEAD TRIGGER ===================================================================================================================
+    $fields = [
+      'document #' => ['docno' => []],
+      'client' => ['client' => []],
+      'client name' => ['clientname' => []],
+      'date' => ['dateid' => []],
+      'warehouse' => ['wh' => []],
+      'rem' => ['rem' => []],
+      'Itemname' => ['itemid' => [true, "itemname", "item", "itemid"]],
+      'Barcode' => ['itemid' => [true, "barcode", "item", "itemid"]],
+      'itemid' => ['itemid' => []],
+      'uom' => ['uom' => []],
+      'qty' => ['qty' => []],
+      'SO docno' => ['sotrno' => [true, "docno", "hsohead", "sotrno"]],
+      'sotrno' => ['sotrno' => []],
+      'soline' => ['soline' => []]
+    ];
+
+    if ($config['params']['companyid'] != 71) { // Buenatech
+      $fields['pitrno'] = ['pitrno' => []];
+      $fields['due']    = ['due' => []];
+      $fields['yourref']    = ['yourref' => []];
+      $fields['ourref']    = ['ourref' => []];
+    }
+
+    $this->settriggerlogs('hpdhead_update', 'AFTER UPDATE', 'hpdhead', 'transnum_log', $fields, 'trno', 'HEAD');
+    //END OF HPDHEAD TRIGGER ====================================================================================================================================    
+  }
+
+  private function pd_triggers($config)
+  {
+    //HPDSTOCK TRIGGER =================================================================================================================
+    $qry = "create TRIGGER hpdstock_update BEFORE UPDATE on hpdstock FOR EACH ROW
+        BEGIN
+
+          if New.qa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PD;
+          end if;
+        END";
+    $this->coreFunctions->execqry($qry, 'trigger');
+    //END OF HPDSTOCK TRIGGER ====================================================================================================================================
+
+    //PDHEAD TRIGGER ===================================================================================================================
+    $fields = [
+      'document #' => ['docno' => []],
+      'client' => ['client' => []],
+      'client name' => ['clientname' => []],
+      'date' => ['dateid' => []],
+      'warehouse' => ['wh' => []],
+      'rem' => ['rem' => []],
+      'Itemname' => ['itemid' => [true, "itemname", "item", "itemid"]],
+      'Barcode' => ['itemid' => [true, "barcode", "item", "itemid"]],
+      'itemid' => ['itemid' => []],
+      'uom' => ['uom' => []],
+      'qty' => ['qty' => []],
+      'SO docno' => ['sotrno' => [true, "docno", "hsohead", "sotrno"]],
+      'sotrno' => ['sotrno' => []],
+      'soline' => ['soline' => []]
+    ];
+
+    if ($config['params']['companyid'] != 71) { // Buenatech
+      $fields['pitrno'] = ['pitrno' => []];
+      $fields['due']    = ['due' => []];
+      $fields['yourref']    = ['yourref' => []];
+      $fields['ourref']    = ['ourref' => []];
+    }
+    $this->settriggerlogs('pdhead_update', 'AFTER UPDATE', 'pdhead', 'transnum_log', $fields, 'trno', 'HEAD');
+    //END OF PDHEAD TRIGGER ====================================================================================================================================    
+
+    //PDSTOCK TRIGGER ==================================================================================================================
+    $qry = "create TRIGGER pdstock_update_before BEFORE UPDATE on pdstock FOR EACH ROW
+        BEGIN
+
+         if New.QA>New.QTY then
+            CALL QTY_IS_GREATER_THAN_PD;
+          end if;
+        END";
+    $this->coreFunctions->execqry($qry, 'trigger');
+
+    $fields = [
+      'qty' => ['rrqty' => []],
+      'amount' => ['rrcost' => []],
+      'discount' => ['disc' => []],
+      'uom' => ['uom' => []],
+      'warehouse' => ['wh' => []],
+      'Product ID' => ['itemid' => []],
+      'Product Name' => ['itemname' => []],
+      'notes' => ['rem' => []],
+      'total' => ['ext' => []],
+    ];
+    $this->settriggerlogs('pdstock_update_after', 'AFTER UPDATE', 'pdstock', 'transnum_log', $fields, 'trno', 'STOCK');
+
+
+    $qry = "create TRIGGER pdstock_delete BEFORE DELETE on pdstock FOR EACH ROW
+        BEGIN
+
+          if OLD.QA<>0 then
+            CALL QTY_SERVED_CANNOT_DELETE_PDSTOCK;
+          end if;
+        END";
+    $this->coreFunctions->execqry($qry, 'trigger');
+    //END OF pdstock TRIGGER ====================================================================================================================================    
+  }
+
+
 
 
   public function createtriggers($config)
@@ -2810,6 +2920,10 @@ class trigger
 
     //detachment license
     $this->emp_license_triggers();
+
+    //production
+    $this->pd_triggers($config);
+    $this->hpd_triggers($config);
 
 
 

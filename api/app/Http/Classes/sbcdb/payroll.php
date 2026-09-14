@@ -1821,6 +1821,7 @@ class payroll
 
 
 		$qry = "CREATE TABLE `hdivinfo` (
+		`line` int(11) unsigned NOT NULL AUTO_INCREMENT,
 		`divid` int(11) unsigned NOT NULL DEFAULT '0',
 		`colltype` varchar(30) NOT NULL DEFAULT '',
 		`isexcessbasic` tinyint NOT NULL DEFAULT '0',
@@ -1862,7 +1863,7 @@ class payroll
 		`encodeddate` datetime DEFAULT NULL,
 		`viewby` varchar(100) NOT NULL DEFAULT '',
 		`viewdate` datetime DEFAULT NULL,
-		PRIMARY KEY (`divid`));";
+		PRIMARY KEY (`line`));";
 		$this->coreFunctions->sbccreatetable("hdivinfo", $qry);
 
 		$qry = "CREATE TABLE `sgviolation` (
@@ -1953,5 +1954,51 @@ class payroll
 
 		$qry = "CREATE TABLE `hdddetail` LIKE `dddetail`";
 		$this->coreFunctions->sbccreatetable("hdddetail", $qry);
+
+
+		$qry = "CREATE TABLE `hbhead` (
+        `trno` int(10) unsigned not null default '0',
+        `docno` VARCHAR(20) NOT NULL DEFAULT '',
+        `dateid` datetime DEFAULT NULL,
+        `empid` int(11) not null default '0',
+        `createby` varchar(100) not null default '',
+        `createdate` datetime default null,
+        `editby` varchar(100) not null default '',
+        `editdate` datetime default null,
+        `viewby` varchar(100) not null default '',
+        `viewdate` datetime default null,
+        PRIMARY KEY (`trno`),
+        KEY `IndexDateID` (`dateid`),
+        KEY `IndexEmpID` (`empid`))";
+		$this->coreFunctions->sbccreatetable("hbhead", $qry);
+
+
+		$qry = "CREATE TABLE `hbdetail` (
+        `trno` int(11) not null default '0',
+        `line` int(11) not null default '0',
+        `pacnoid` int(11) not null default '0',
+        `uom` varchar(20) not null default '',
+        `db` decimal(18,2) not null default '0.00',
+        `cr` decimal(18,2) not null default '0.00',
+        `rem` varchar(1000) not null default '',
+        `createby` varchar(100) not null default '',
+        `createdate` datetime default null,
+        `editby` varchar(100) not null default '',
+        `editdate` datetime default null,
+        PRIMARY KEY (`trno`,`line`),
+        KEY `IndexPAcno` (`pacnoid`))";
+		$this->coreFunctions->sbccreatetable("hbdetail", $qry);
+
+		$qry = "CREATE TABLE `hhbhead` LIKE `hbhead`";
+		$this->coreFunctions->sbccreatetable("hhbhead", $qry);
+
+		$qry = "CREATE TABLE `hhbdetail` LIKE `hbdetail`";
+		$this->coreFunctions->sbccreatetable("hhbdetail", $qry);
+
+		$this->coreFunctions->sbcaddcolumngrp(["hbhead", "hhbhead"], ["lockuser"], "varchar(50) NOT NULL DEFAULT ''", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["hbhead", "hhbhead"], ["lockdate"], "datetime DEFAULT NULL", 0);
+
+		$qry = "CREATE TABLE `hddfirearms` LIKE `ddfirearms`";
+		$this->coreFunctions->sbccreatetable("hddfirearms", $qry);
 	} //end function
 } // end class

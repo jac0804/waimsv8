@@ -300,6 +300,7 @@ class setreportlist
     $rep_sales_summary_per_item_per_price = "";
     $rep_item_sales_report = "";
     $rep_inventory_vs_receiving_report = "";
+    $rep_inventory_valuation = "";
 
 
 
@@ -373,6 +374,10 @@ class setreportlist
               $rep_schedule_of_inventory = "('','\\904','','','',0,1,0,'Schedule of Inventory','\\90441',4369,'0'," . $params['levelid'] . ")";
               $rep_item_min_max_listing = "('','\\904','','','',0,1,0,'Item Min Max Listing','\\90443',4390,'0'," . $params['levelid'] . ")";
               $rep_stock_on_hand_per_warehouse = "('','\\904','','','',0,1,0,'Stock On Hand Per Warehouse','\\90444',4407,'0'," . $params['levelid'] . ")";
+              break;
+            case 71:
+              $rep_item_sales_report = "('','\\904','','','',0,1,0,'Item Sales Report','\\90454',5457,'0'," . $params['levelid'] . ")";
+              $rep_inventory_valuation = "('','\\904','','','',0,1,0,'Inventory Valuation','\\90456',6030,'0'," . $params['levelid'] . ")";
               break;
             default: // UNIHOME
               if ($this->companysetup->getsystemtype($params) == 'AIMS') {
@@ -579,6 +584,12 @@ class setreportlist
 
     //excelin
     $rep_profit_sales_report = "";
+    $rep_receivables_by_terms_report = "";
+    $rep_receivable_overdue_report = "";
+    $rep_sales_markup_customer_difference_report = "";
+
+    //buenatech
+    $rep_gross_profit_percentage_report = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -726,8 +737,14 @@ class setreportlist
               $rep_sales_report_monthly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Monthly By Sales Date','\\90567',5884,'0'," . $params['levelid'] . ")";
               $rep_sales_report_yearly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Yearly By Sales Date','\\90568',5896,'0'," . $params['levelid'] . ")";
               break;
-            case 64:
+            case 64://excelin
               $rep_profit_sales_report = "('','\\905','','','',0,1,0,'Profit Sales Report','\\90565',5857,'0'," . $params['levelid'] . ")";
+              $rep_receivables_by_terms_report = "('','\\905','','','',0,1,0,'Receivables By Terms Report','\\90570',6012,'0'," . $params['levelid'] . ")";
+              $rep_receivable_overdue_report = "('','\\905','','','',0,1,0,'Receivable Overdue Report','\\90572',6014,'0'," . $params['levelid'] . ")";
+              $rep_sales_markup_customer_difference_report = "('','\\905','','','',0,1,0,'Sales Markup Customer Difference Report','\\90571',6013,'0'," . $params['levelid'] . ")";
+              break;
+            case 71: //beunatech
+              $rep_gross_profit_percentage_report = "('','\\905','','','',0,1,0,'Gross Profit Percentage Report','\\90569',6011,'0'," . $params['levelid'] . ")";
               break;
           }
         }
@@ -2756,6 +2773,7 @@ class setreportlist
           $rep_inventoryreport,
           $rep_item_sales_report,
           $rep_inventory_vs_receiving_report,
+          $rep_inventory_valuation,
 
           // CUSTOMER
           $parent_customers,
@@ -2818,6 +2836,10 @@ class setreportlist
           $rep_sales_report_by_invoicedate,
           $rep_sales_report_monthly_by_salesdate,
           $rep_sales_report_yearly_by_salesdate,
+          $rep_gross_profit_percentage_report,
+          $rep_receivables_by_terms_report,
+          $rep_receivable_overdue_report,
+          $rep_sales_markup_customer_difference_report,
 
           // SUPPLIER
           $parent_supplier,

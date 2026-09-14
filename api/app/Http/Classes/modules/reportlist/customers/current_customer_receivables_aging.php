@@ -74,14 +74,14 @@ class current_customer_receivables_aging
             data_set($col1, 'dateid.readonly', false);
             break;
           case 55: //afli
-            array_push($fields,  'start', 'end','dclientname', 'dcentername', 'contra');
-            
+            array_push($fields,  'start', 'end', 'dclientname', 'dcentername', 'contra');
+
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
             break;
-          case 34://evergreen
+          case 34: //evergreen
             array_push($fields, 'dclientname', 'dcentername', 'contra');
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
@@ -89,7 +89,7 @@ class current_customer_receivables_aging
             data_set($col1, 'dclientname.label', 'Payor');
             break;
 
-          case 63://ericco
+          case 63: //ericco
             array_push($fields, 'dclientname', 'customercategory', 'groupid',  'dcentername', 'contra', 'radioreporttype');
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
@@ -100,16 +100,19 @@ class current_customer_receivables_aging
             data_set($col1, 'groupid.label', 'Customer Group');
             data_set($col1, 'groupid.lookupclass', 'lookupclientgroupledger');
             data_set($col1, 'groupid.action', 'lookupclientgroupledger');
-         
-            data_set($col1, 'radioreporttype.options',[
-                  ['label' => 'Summarized', 'value' => '0', 'color' => 'orange'],
-                  ['label' => 'Detailed', 'value' => '1', 'color' => 'orange'],
-                  ['label' => 'Customer Group', 'value' => '2', 'color' => 'orange']
-                ]
-                );
+
+            data_set(
+              $col1,
+              'radioreporttype.options',
+              [
+                ['label' => 'Summarized', 'value' => '0', 'color' => 'orange'],
+                ['label' => 'Detailed', 'value' => '1', 'color' => 'orange'],
+                ['label' => 'Customer Group', 'value' => '2', 'color' => 'orange']
+              ]
+            );
             break;
           default:
-            array_push($fields, 'dclientname','dcentername', 'contra');
+            array_push($fields, 'dclientname', 'dcentername', 'contra');
             if ($companyid == 32) array_push($fields, 'dagentname'); //3m
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
@@ -141,11 +144,13 @@ class current_customer_receivables_aging
             ['label' => 'All', 'value' => '2', 'color' => 'teal']
           ]
         );
-        data_set($col2, 'radioreporttype.options',
-        [
-          ['label' => 'Summarized', 'value' => '0', 'color' => 'orange'],
-          ['label' => 'Detailed', 'value' => '1', 'color' => 'orange'],
-        ]
+        data_set(
+          $col2,
+          'radioreporttype.options',
+          [
+            ['label' => 'Summarized', 'value' => '0', 'color' => 'orange'],
+            ['label' => 'Detailed', 'value' => '1', 'color' => 'orange'],
+          ]
         );
 
         $fields = ['print'];
@@ -261,7 +266,7 @@ class current_customer_receivables_aging
             break;
         }
         break;
-        case 63: //3m
+      case 63: //3m
         switch ($reporttype) {
           case '0': // SUMMARIZED
             $data = $this->reportDefaultLayout_LAYOUT_SUMMARIZED($config, $result);
@@ -284,9 +289,9 @@ class current_customer_receivables_aging
             break;
 
             // Added by Elmer 2026-02-27
-          // case '2': // GROUP
-          //   $data = $this->reportDefaultLayout_LAYOUT_GROUP($config, $result); 
-          //   break;
+            // case '2': // GROUP
+            //   $data = $this->reportDefaultLayout_LAYOUT_GROUP($config, $result); 
+            //   break;
         }
         break;
     }
@@ -370,7 +375,7 @@ class current_customer_receivables_aging
         }
         break;
 
-        case 63: //evergreen
+      case 63: //evergreen
         switch ($posttype) {
           case '0': // POSTED
             $query = $this->ericco_QUERY_POSTED($config); // POSTED
@@ -402,10 +407,10 @@ class current_customer_receivables_aging
     return $this->reportplotting($config, $result);
   }
 
-  
+
   public function AFLI_QUERY_POSTED($config)
   {
-    
+
     $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -436,7 +441,7 @@ class current_customer_receivables_aging
     }
 
     $filter1 .= "";
-  
+
 
     $addfields3m = "";
     $addfields3m2 = "";
@@ -447,8 +452,8 @@ class current_customer_receivables_aging
 
     switch ($reporttype) {
       case '1': // DETAILED
-        
-            $query = "select tr,trno,doc,ref,clientname,dateid,docno,yourref, name, sum(balance) as balance,elapse,deldate
+
+        $query = "select tr,trno,doc,ref,clientname,dateid,docno,yourref, name, sum(balance) as balance,elapse,deldate
             from (select 'p' as tr,head.trno,head.doc,detail.ref, client.clientname, ifnull(client.clientname,'no name') as name,
             date(detail.dateid) as dateid, detail.docno, datediff(now(), $elapsedate) as elapse,
             (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref,date(head.deldate) as deldate
@@ -461,7 +466,7 @@ class current_customer_receivables_aging
             where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid between '$start' and '$end' $filter $filter1 $filter2 ) as x
             group by tr, clientname, dateid,docno,yourref,name,elapse,trno,doc,ref,deldate
             order by tr, clientname";
-           
+
 
         break;
       case '0': // SUMMARIZED
@@ -488,7 +493,7 @@ class current_customer_receivables_aging
 
   public function AFLI_QUERY_UNPOSTED($config)
   {
-    
+
     $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
@@ -519,19 +524,19 @@ class current_customer_receivables_aging
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
 
-    
+
     $filter1 .= "";
 
     $addfields3m = "";
     $addfields3m2 = "";
     $addfields3m3 = "";
-    
+
 
     $elapsedate = 'head.dateid';
-    
+
     switch ($reporttype) {
       case '1': // DETAILED
-        
+
         $ref1 = "detail.ref";
         $ref2 = " '' as ref";
         $field = "";
@@ -594,10 +599,10 @@ class current_customer_receivables_aging
 
   public function AFLI_QUERY_ALL($config)
   {
-    
+
     $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    
+
     $filtercenter = $config['params']['dataparams']['center'];
     $client       = $config['params']['dataparams']['client'];
     $clientid       = $config['params']['dataparams']['clientid'];
@@ -631,9 +636,9 @@ class current_customer_receivables_aging
     $addfields3m = "";
     $addfields3m2 = "";
     $addfields3m3 = "";
-    
+
     $elapsedate = 'head.dateid';
-    
+
 
     switch ($reporttype) {
       case '1': // DETAILED
@@ -641,7 +646,7 @@ class current_customer_receivables_aging
         $ref1 = "detail.ref";
         $ref2 = " '' as ref";
         $field = "";
-      
+
 
         $query = "select ref,clientname,dateid,docno, name, sum(balance) as balance,elapse
             from (
@@ -1107,6 +1112,7 @@ class current_customer_receivables_aging
     $acnoid = $config['params']['dataparams']['acnoid'];
     $tagging = $config['params']['dataparams']['tagging'];
     $collectorid = $config['params']['dataparams']['collectorid'];
+    $collectorname = $config['params']['dataparams']['collectorname'];
     $startdate = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
     $enddate = date("Y-m-d", strtotime($config['params']['dataparams']['enddate']));
 
@@ -1139,7 +1145,7 @@ class current_customer_receivables_aging
       $filter .= " and client.isemployee = 1 ";
     }
 
-    if ($collectorid != 0) {
+    if ($collectorname != "") {
       $filter = " and client.collectorid='$collectorid'";
     }
 
@@ -1190,8 +1196,6 @@ class current_customer_receivables_aging
         ) as x
         group by tr, client,clientname,doc, name,elapse,receivedate 
         order by tr, clientname";
-
-
         break;
     } //end switch
 
@@ -1212,7 +1216,7 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
-    
+
 
     $filter = "";
     $filter1 = "";
@@ -1221,7 +1225,7 @@ class current_customer_receivables_aging
       $filter = " and client.clientid='$clientid'";
     }
 
-     
+
 
     if ($filtercenter != "") {
       $filter .= " and cntnum.center='$filtercenter'";
@@ -1339,7 +1343,7 @@ class current_customer_receivables_aging
 
         break;
       case '0': // SUMMARIZED
-          $query = "select tr, (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse " . $addfields3m3 . "
+        $query = "select tr, (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse " . $addfields3m3 . "
           from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
           date(detail.dateid) as dateid, detail.docno, datediff(now(), $elapsedate) as elapse,
           (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref,date(head.deldate) as deldate " . $addfields3m . "
@@ -1720,15 +1724,15 @@ class current_customer_receivables_aging
     if ($contra != '') {
       $filter .= " and coa.acnoid='$acnoid'";
     }
-    
+
     $filter1 .= "";
 
     $addfields3m = "";
     $addfields3m2 = "";
     $addfields3m3 = "";
-    
+
     $elapsedate = 'detail.dateid';
-    
+
     switch ($reporttype) {
       case '1': // DETAILED
         $query = "select tr,trno,doc,ref,clientname,dateid,docno,yourref, name, sum(balance) as balance,elapse,deldate
@@ -1806,10 +1810,10 @@ class current_customer_receivables_aging
     $addfields3m = "";
     $addfields3m2 = "";
     $addfields3m3 = "";
-    
+
 
     $elapsedate = 'head.dateid';
-    
+
     switch ($reporttype) {
       case '1': // DETAILED
         $ref1 = "detail.ref";
@@ -1910,15 +1914,15 @@ class current_customer_receivables_aging
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
 
-   
+
     $filter1 .= "";
 
     $addfields3m = "";
     $addfields3m2 = "";
     $addfields3m3 = "";
-   
+
     $elapsedate = 'head.dateid';
-    
+
     switch ($reporttype) {
       case '1': // DETAILED
 
@@ -2269,7 +2273,7 @@ class current_customer_receivables_aging
     return $query;
   }
 
-   public function ericco_QUERY_POSTED($config)
+  public function ericco_QUERY_POSTED($config)
   {
     $filtercenter = $config['params']['dataparams']['center'];
     $client       = $config['params']['dataparams']['client'];
@@ -2282,11 +2286,11 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
-      // Added 2026-02-27 - Elmer
+    // Added 2026-02-27 - Elmer
     $categoryname  = $config['params']['dataparams']['category_name'];
     $categoryid  = $config['params']['dataparams']['category_id'];
     $groupid =  isset($config['params']['dataparams']['groupid']) ? $config['params']['dataparams']['groupid'] : '';
-      // Added 2026-02-27 - end
+    // Added 2026-02-27 - end
 
     $filter = "";
     $filter1 = "";
@@ -2295,17 +2299,17 @@ class current_customer_receivables_aging
       $filter = " and client.clientid='$clientid'";
     }
 
-          // Added Filter 2026--02-27 -start
+    // Added Filter 2026--02-27 -start
     if ($categoryname != '') {
       if ($categoryid != '0') {
-          $filter   .= " and client.category = '" . $categoryid . "'";
+        $filter   .= " and client.category = '" . $categoryid . "'";
       }
     }
 
     if ($groupid != "") {
       $filter .= " and client.groupid='$groupid'";
     }
-        // Added Filter 2026--02-27 -end
+    // Added Filter 2026--02-27 -end
 
     if ($filtercenter != "") {
       $filter .= " and cntnum.center='$filtercenter'";
@@ -2317,7 +2321,7 @@ class current_customer_receivables_aging
 
     switch ($reporttype) {
       case '1': // DETAILED
-            $query = "select tr,trno,doc,ref,clientname,dateid,docno,yourref, name, sum(balance) as balance,elapse,deldate
+        $query = "select tr,trno,doc,ref,clientname,dateid,docno,yourref, name, sum(balance) as balance,elapse,deldate
             from (select 'p' as tr,head.trno,head.doc,detail.ref, client.clientname, ifnull(client.clientname,'no name') as name,
             date(detail.dateid) as dateid, detail.docno, datediff(now(), head.dateid) as elapse,
             (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref,date(head.deldate) as deldate
@@ -2330,12 +2334,12 @@ class current_customer_receivables_aging
             left join coa on coa.acnoid=gdetail.acnoid
             where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid<=now() $filter $filter1 $filter2 ) as x
             group by tr, clientname, dateid,docno,yourref,name,elapse,trno,doc,ref,deldate
-            order by tr, clientname"; 
-            // var_dump($query);        
+            order by tr, clientname";
+        // var_dump($query);        
         break;
 
       case '0': // SUMMARIZED
-            $query = "select tr, (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
+        $query = "select tr, (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
             from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
             date(detail.dateid) as dateid, detail.docno, datediff(now(), head.dateid) as elapse,
             (case when detail.db>0 then detail.bal else (detail.bal*-1) end) as balance,head.yourref,date(head.deldate) as deldate 
@@ -2354,7 +2358,7 @@ class current_customer_receivables_aging
         break;
 
       case '2': // GROUP
-            $query = "select groupid as `groupid`,
+        $query = "select groupid as `groupid`,
             sum(case when elapse between 0 and 30 then balance else 0 end) as `Current`,
             sum(case when elapse between 31 and 60 then balance else 0 end) as `31-60 days`,
             sum(case when elapse between 61 and 90 then balance else 0 end) as `61-90 days`,
@@ -2392,7 +2396,7 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
-     // Added 2026-02-27 - Elmer
+    // Added 2026-02-27 - Elmer
     $categoryname  = $config['params']['dataparams']['category_name'];
     $categoryid  = $config['params']['dataparams']['category_id'];
     $groupid =  isset($config['params']['dataparams']['groupid']) ? $config['params']['dataparams']['groupid'] : '';
@@ -2406,19 +2410,19 @@ class current_customer_receivables_aging
       $filter = " and client.clientid='$clientid'";
     }
 
-        // Added Filter 2026--02-27 -start
+    // Added Filter 2026--02-27 -start
     if ($categoryname != '') {
       if ($categoryid != '0') {
-          $filter   .= " and client.category = '" . $categoryid . "'";
+        $filter   .= " and client.category = '" . $categoryid . "'";
       }
     }
     // if ($groupid != "") {
     //   $filter .= " and client.groupid='$groupid'";
     // }
     if ($groupid != "") {
-    $filter .= " and client.groupid='$groupid'";
+      $filter .= " and client.groupid='$groupid'";
     }
-        // Added Filter 2026--02-27 -end
+    // Added Filter 2026--02-27 -end
 
 
     if ($filtercenter != "") {
@@ -2430,10 +2434,10 @@ class current_customer_receivables_aging
     }
 
 
-    
+
     switch ($reporttype) {
       case '1': // DETAILED
-            $query = "select cntnum.center, 'u' as tr,head.trno,head.doc, client.clientname, ifnull(client.clientname,'no name') as name,
+        $query = "select cntnum.center, 'u' as tr,head.trno,head.doc, client.clientname, ifnull(client.clientname,'no name') as name,
             date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
             detail.db as balance,head.yourref,date(head.deldate) as deldate 
             from (((lahead as head left join ladetail as detail on detail.trno=head.trno)
@@ -2454,11 +2458,11 @@ class current_customer_receivables_aging
             where cntnum.doc IN ('SJ','MJ','CM')  $filter $filter1 $filter3
             group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,head.trno,head.doc,head.deldate
             order by clientname, dateid, docno";
-            // var_dump($query);
+        // var_dump($query);
         break;
 
       case '0': // SUMMARIZED
-            $query = "select (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
+        $query = "select (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
             from (
             select cntnum.center, 'u' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
             date(head.dateid) as dateid, head.docno, datediff(now(), head.dateid) as elapse,
@@ -2488,11 +2492,11 @@ class current_customer_receivables_aging
             union all
             select 'z' as clientname, '' as name, '' as balance, '' as elapse
             order by clientname, name";
-            // var_dump($query);
+        // var_dump($query);
         break;
 
       case '2': // GROUP 
-            $query = "select  groupid as `groupid`,
+        $query = "select  groupid as `groupid`,
             sum(case when elapse between 0 and 30 then balance else 0 end) as `Current`,
             sum(case when elapse between 31 and 60 then balance else 0 end) as `31-60 days`,
             sum(case when elapse between 61 and 90 then balance else 0 end) as `61-90 days`,
@@ -2520,7 +2524,7 @@ class current_customer_receivables_aging
             ) as combined
             group by groupid
             order by groupid";
-            // var_dump($query);
+        // var_dump($query);
         break;
     } //end swicth
 
@@ -2540,11 +2544,11 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
-        // Added 2026-02-27 - Elmer
+    // Added 2026-02-27 - Elmer
     $categoryname  = $config['params']['dataparams']['category_name'];
     $categoryid  = $config['params']['dataparams']['category_id'];
     $groupid =  isset($config['params']['dataparams']['groupid']) ? $config['params']['dataparams']['groupid'] : '';
-        // Added 2026-02-27 - end
+    // Added 2026-02-27 - end
 
     $filter = "";
     $filter1 = "";
@@ -2555,17 +2559,17 @@ class current_customer_receivables_aging
     }
     // (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname
 
-          // Added Filter 2026--02-27 -start
+    // Added Filter 2026--02-27 -start
     if ($categoryname != '') {
       if ($categoryid != '0') {
-          $filter   .= " and client.category = '" . $categoryid . "'";
+        $filter   .= " and client.category = '" . $categoryid . "'";
       }
     }
     if ($groupid != "") {
       $filter .= " and client.groupid='$groupid'";
     }
-        // Added Filter 2026--02-27 -end
-        
+    // Added Filter 2026--02-27 -end
+
 
     if ($filtercenter != "") {
       $filter .= " and cntnum.center='$filtercenter'";
@@ -2575,7 +2579,7 @@ class current_customer_receivables_aging
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
 
- 
+
     switch ($reporttype) {
       case '1': // DETAILED
 
@@ -2617,11 +2621,11 @@ class current_customer_receivables_aging
             order by clientname, dateid, docno) as x
             group by clientname, dateid,docno,name,elapse
             order by  clientname";
-            // var_dump($query);
+        // var_dump($query);
         break;
 
       case '0': // SUMMARIZED
-            $query = "select  (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
+        $query = "select  (case when ifnull(clientname,'')='' then 'no name' else clientname end) as clientname, name, sum(balance) as balance,elapse 
             from (
             select cntnum.center, 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
             date(detail.dateid) as dateid, detail.docno, datediff(now(), head.dateid) as elapse,
@@ -2672,7 +2676,7 @@ class current_customer_receivables_aging
         break;
 
       case '2': // GROUP
-            $query = "select groupid as `groupid`,
+        $query = "select groupid as `groupid`,
             sum(case when elapse between 0 and 30 then balance else 0 end) as `Current`,
             sum(case when elapse between 31 and 60 then balance else 0 end) as `31-60 days`,
             sum(case when elapse between 61 and 90 then balance else 0 end) as `61-90 days`,
@@ -2714,8 +2718,8 @@ class current_customer_receivables_aging
             group by groupid
             order by groupid";
 
-            // var_dump($query);
-      break;
+        // var_dump($query);
+        break;
     } //end swicth
     return $query;
   }
@@ -2739,7 +2743,7 @@ class current_customer_receivables_aging
       $contra   = $config['params']['dataparams']['contra'];
     }
 
-    
+
     if ($companyid == 55) { //afli
       $startdate = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
       $enddate = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -3048,7 +3052,7 @@ class current_customer_receivables_aging
       } else {
         $str .= $this->reporter->col($data->dateid, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
       }
-              
+
       $str .= $this->reporter->col(($a > 0 ? number_format($a, 2) : '-'), '100', null, false, $border, '', 'r', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col(($b > 0 ? number_format($b, 2) : '-'), '100', null, false, $border, '', 'r', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col(($c > 0 ? number_format($c, 2) : '-'), '100', null, false, $border, '', 'r', $font, $fontsize, '', '', '');
@@ -3173,7 +3177,7 @@ class current_customer_receivables_aging
       $contra   = $config['params']['dataparams']['contra'];
     }
 
-    
+
     if ($companyid == 55) { //afli
       $startdate = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
       $enddate = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -3271,7 +3275,7 @@ class current_customer_receivables_aging
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    if ($companyid == 10 || $companyid == 12|| $companyid == 55) { //afti, afti usd, afli
+    if ($companyid == 10 || $companyid == 12 || $companyid == 55) { //afti, afti usd, afli
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('Date Range : ' . $startdate . ' - ' . $enddate, '660px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
@@ -5411,8 +5415,8 @@ class current_customer_receivables_aging
     $contra       = $config['params']['dataparams']['contra'];
 
     $groupid =  isset($config['params']['dataparams']['groupid']) ? $config['params']['dataparams']['groupid'] : '';
-   
-  
+
+
     $str = '';
     $layoutsize = '1050';
     $font = $this->companysetup->getrptfont($config['params']);
@@ -5434,7 +5438,7 @@ class current_customer_receivables_aging
     $str .=  '<br/>';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-   
+
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -5442,12 +5446,12 @@ class current_customer_receivables_aging
       $str .= $this->reporter->col('Customer : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
       $str .= $this->reporter->col('Customer : ' . strtoupper($client), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    } 
+    }
     if ($groupid == '') {
       $str .= $this->reporter->col('Group : ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
       $str .= $this->reporter->col('Group : ' . strtoupper($groupid), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-    } 
+    }
     if ($contra == '') {
       $str .= $this->reporter->col('Account: ALL', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
@@ -5457,31 +5461,31 @@ class current_customer_receivables_aging
     switch ($posttype) {
       case '0':
         $posttype = 'Posted';
-      break;
+        break;
       case '1':
         $posttype = 'Unposted';
-      break;
+        break;
       default:
         $posttype = 'All';
-      break;
+        break;
     }
-    
+
     $str .= $this->reporter->col('Transaction: ' . $posttype, '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('Center : ' . $filtercenter, '110px', null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('GROUP NAME', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Current', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('31-60 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('61-90 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('91-120 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('120+ days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('TOTAL', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');      
+    $str .= $this->reporter->col('GROUP NAME', '110', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Current', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('31-60 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('61-90 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('91-120 days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('120+ days', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL', '110', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -5490,77 +5494,77 @@ class current_customer_receivables_aging
 
   public function reportDefaultLayout_LAYOUT_GROUP($config, $result)
   {
-      $this->reporter->linecounter = 0;
-      $count = 60;
-      $page = 64;
-      $layoutsize = '1050';
-      $companyid = $config['params']['companyid'];
-      $font = $this->companysetup->getrptfont($config['params']);
-      $fontsize = "10";
-      $border = "1px solid ";
-      $str = '';
+    $this->reporter->linecounter = 0;
+    $count = 60;
+    $page = 64;
+    $layoutsize = '1050';
+    $companyid = $config['params']['companyid'];
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+    $str = '';
 
-      if (empty($result)) {
-          return $this->othersClass->emptydata($config);
-      }
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
 
-      $str .= $this->reporter->beginreport($layoutsize);
-      $str .= $this->displayHeader_GROUP($config);
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->displayHeader_GROUP($config);
 
-      $tota = 0;
-      $totb = 0;
-      $totc = 0;
-      $totd = 0;
-      $tote = 0;
-      $gt   = 0;
+    $tota = 0;
+    $totb = 0;
+    $totc = 0;
+    $totd = 0;
+    $tote = 0;
+    $gt   = 0;
 
-      foreach ($result as $key => $data) {
+    foreach ($result as $key => $data) {
 
-          // Print Row
-          $str .= $this->reporter->begintable($layoutsize);
-          $str .= $this->reporter->startrow();
-              $str .= $this->reporter->col($data->groupid, '110', null, false, $border, '', 'L', $font, $fontsize);
-              $str .= $this->reporter->col(($data->{'Current'} != 0 ? number_format($data->{'Current'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col(($data->{'31-60 days'} != 0 ? number_format($data->{'31-60 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col(($data->{'61-90 days'} != 0 ? number_format($data->{'61-90 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col(($data->{'91-120 days'} != 0 ? number_format($data->{'91-120 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col(($data->{'120+ days'} != 0 ? number_format($data->{'120+ days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col(number_format($data->TOTAL, 2), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->endrow();
-          $str .= $this->reporter->endtable();
-
-          // Grand Total Value for Computation
-          $tota += $data->{'Current'};
-          $totb += $data->{'31-60 days'};
-          $totc += $data->{'61-90 days'};
-          $totd += $data->{'91-120 days'};
-          $tote += $data->{'120+ days'};
-          $gt   += $data->TOTAL;
-
-          if ($this->reporter->linecounter == $page) {
-              $str .= $this->reporter->page_break();
-              $str .= $this->displayHeader_GROUP($config);
-              $page = $page + $count;
-          }
-      }
-
-      // Grand Total Row
+      // Print Row
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('TOTAL : ', '110', null, false, '1px dotted', 'T', 'L', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($tota, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($totb, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($totc, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($totd, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($tote, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col(number_format($gt, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col($data->groupid, '110', null, false, $border, '', 'L', $font, $fontsize);
+      $str .= $this->reporter->col(($data->{'Current'} != 0 ? number_format($data->{'Current'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(($data->{'31-60 days'} != 0 ? number_format($data->{'31-60 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(($data->{'61-90 days'} != 0 ? number_format($data->{'61-90 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(($data->{'91-120 days'} != 0 ? number_format($data->{'91-120 days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(($data->{'120+ days'} != 0 ? number_format($data->{'120+ days'}, 2) : '-'), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data->TOTAL, 2), '110', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-      $str .= $this->reporter->printline();
-      $str .= $this->reporter->endreport();
+      // Grand Total Value for Computation
+      $tota += $data->{'Current'};
+      $totb += $data->{'31-60 days'};
+      $totc += $data->{'61-90 days'};
+      $totd += $data->{'91-120 days'};
+      $tote += $data->{'120+ days'};
+      $gt   += $data->TOTAL;
 
-      return $str;
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->page_break();
+        $str .= $this->displayHeader_GROUP($config);
+        $page = $page + $count;
+      }
+    }
+
+    // Grand Total Row
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('TOTAL : ', '110', null, false, '1px dotted', 'T', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($tota, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totb, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totc, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totd, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($tote, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($gt, 2), '110', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->printline();
+    $str .= $this->reporter->endreport();
+
+    return $str;
   }
   // Added By Elmer 2026-02-27 end
 

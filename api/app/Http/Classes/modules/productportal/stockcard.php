@@ -82,7 +82,7 @@ class stockcard
     public function createdoclisting($config)
     {
 
-        $getcols = ['action', 'barcode', 'itemname', 'carbrand', 'activestat', 'amt'];
+        $getcols = ['action', 'barcode', 'itemname', 'carbrand', 'partno', 'activestat', 'amt'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -91,6 +91,7 @@ class stockcard
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
         $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
         $cols[$itemname]['label'] = 'Itemname';
+        $cols[$partno]['label'] = 'Part No';
         $cols[$amt]['label'] = 'Price';
         $cols[$amt]['align'] = 'text-left';
 
@@ -236,6 +237,7 @@ class stockcard
         data_set($col4, 'picture.folder', 'product');
         data_set($col4, 'picture.table', 'item');
         data_set($col4, 'picture.fieldid', 'itemid');
+        data_set($col4, 'picture.viewable', false);
         return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
     }
 
@@ -297,10 +299,16 @@ class stockcard
         $fields = 'item.itemid, item.barcode as docno';
 
         foreach ($this->fields as $key => $value) {
-            if ($value == 'amt') {
-                $fields = $fields . ",format(item.$value,2) as amt";
-            } else {
-                $fields = $fields . ',item.' . $value;
+            switch ($value) {
+                case 'amt':
+                    $fields = $fields . ",format(item.$value,2) as amt";
+                    break;
+                case 'picture':
+                    $fields = $fields . ',concat("/images/product/",item.partno,".PNG") as picture';
+                    break;
+                default:
+                    $fields = $fields . ',item.' . $value;
+                    break;
             }
         }
 

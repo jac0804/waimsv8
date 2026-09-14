@@ -148,14 +148,23 @@ class issuemultipleexpiry
         $config['params']['data']['linex'] = $data[$key2]['linex'];
         $config['params']['data']['ref'] = (isset($data[$key2]['docno']) ? $data[$key2]['docno'] :'') ;
         $config['params']['data']['amt'] = $data[$key2]['amt'];
+        if ($config['params']['companyid'] == 71) { //buenatech
+          $config['params']['data']['issp'] = $data[$key2]['issp'];
+        }
 
+        if ($config['params']['doc'] == 'UE') {
+        $return = app($path)->additem('insert', $config, true);
+        }else{
         $return = app($path)->additem('insert', $config);
+        }
+        
         if ($return['status']) {
           if($data[$key2]['refx'] !=0){
             if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
               $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
               $line = $return['row'][0]->line;
               $config['params']['trno'] = $trno;
+
               $config['params']['line'] = $line;
               $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
               app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
@@ -174,12 +183,16 @@ class issuemultipleexpiry
     if($refx != 0){
       //condition per lookup
       $config['params']['client'] = $client;
-      $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
+      if($config['params']['doc']=='UE'){
+        $lookupdata = $this->sqlquery->getpendingjodetails($config);
+      }else{
+        $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
+      }
+      
       return ['status' => true, 'msg'=> 'Success','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
       return ['status' => true, 'msg'=> 'Success','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
-    
   } //end function
 
   public function delete($config)
@@ -225,6 +238,7 @@ class issuemultipleexpiry
     $disc ='';
     $ref = '';
     $client ='';
+    $issp = 0;
 
     if (isset($row['docno'])){
       $ref= $row['docno'];
@@ -253,6 +267,9 @@ class issuemultipleexpiry
     if (isset($row['client'])){
       $client= $row['client'];
     }
+    if (isset($row['issp'])) {
+      $issp = $row['issp'];
+    }
 
     if($refx == 0){
       $config['params']['barcode'] = $row['barcode'];
@@ -267,13 +284,10 @@ class issuemultipleexpiry
         $uom = $latesprice[0]->uom;
       }
     }
-    
-    
-    $qry = "select '".$client."' as client,$refx as refx, $linex as linex,'".$uom."' as uom,'".$disc."' as disc,".$amt." as amt,'".$ref."' as docno,item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh,
+    $qry = "select '" . $client . "' as client,$refx as refx, $linex as linex,'" . $uom . "' as uom,'" . $disc . "' as disc,'" . $amt . "' as amt,'" . $ref . "' as docno,item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh, '" . $issp . "' as issp,
     format(sum(bal),2) as bal from rrstatus as rr left join item on item.itemid = rr.itemid
     left join client as wh on wh.clientid = rr.whid
-    where rr.itemid =? and rr.bal<>0  " . $filtersearch . " group by  item.barcode,item.itemname,wh.client,rr.loc,rr.expiry order by rr.expiry";
-
+    where rr.itemid =? and rr.bal<>0  " . $filtersearch . " group by  item.itemid,item.barcode,item.itemname,wh.client,rr.loc,rr.expiry order by rr.expiry";
     $data = $this->coreFunctions->opentable($qry,[$itemid]);
     return $data;
   }
@@ -295,6 +309,9 @@ class issuemultipleexpiry
       case 'SO': case 'SJ': case 'CM':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
+      case 'UE'://Buenatech
+        $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\\' . strtolower($doc);
+        break;  
       default:
         $path = 'App\Http\Classes\modules\purchase\\' . strtolower($doc);
       break;

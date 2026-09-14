@@ -94,7 +94,7 @@ class so
       left join client as agent on agent.client=head.agent
       left join client on client.client=head.wh
       left join client as cust on cust.client = head.client
-      where  head.doc='so' and head.trno='$trno'
+      where  head.doc='so' and head.trno='$trno' and stock.void=0
       union all
       select concat(left(head.docno,2),right(head.docno,9)) as docno,head.trno, head.clientname, head.address, 
       date(head.dateid) as dateid, head.terms,head.agent,head.wh,
@@ -107,7 +107,7 @@ class so
       left join client as agent on agent.client=head.agent
       left join client on client.client=head.wh
       left join client as cust on cust.client = head.client
-      where head.doc='so' and head.trno='$trno' order by line";
+      where head.doc='so' and head.trno='$trno' and stock.void=0 order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn  
@@ -366,7 +366,7 @@ class so
           $totalext += $data[$i]['ext'];
           if (PDF::getY() > 900) {
             $next = 1;
-            $this->default_footer($params, $data);
+            $this->default_footer($params, $data, false);
             PDF::SetCellPaddings(0, 0, 0, 0);
             $this->default_so_header_PDF($params, $data, $next);
             PDF::SetCellPaddings(5, 5, 5, 5);
@@ -378,20 +378,21 @@ class so
       PDF::MultiCell(720, 0, '', 'T');
 
       PDF::MultiCell(0, 0, "\n");
-
       PDF::SetFont($font, '', $fontsize);
       // PDF::MultiCell(75, 0, 'REMARKS: ', 'TLB', 'L', false, 0);
       // PDF::MultiCell(645, 0, $data[0]['rem'], 'TRB', 'L');
 
 
-      $remarksLabel = 'REMARKS:';
-      $remarksText  = strtoupper($data[0]['rem']);
-      $labelW = 80;
-      $textW  = 645;
-      $lineH  = 5;
-      $textHeight = PDF::getStringHeight($textW, $remarksText, false, true, '', 1, $lineH);
-      PDF::MultiCell($labelW, $textHeight, $remarksLabel, 'TLB', 'L', false, 0);
-      PDF::MultiCell($textW, $textHeight, $remarksText, 'TRB', 'L', false, 1);
+      // $remarksLabel = 'REMARKS:';
+      // $remarksText  = strtoupper($data[0]['rem']);
+      // $labelW = 80;
+      // $textW  = 645;
+      // $lineH  = 5;
+      // $textHeight = PDF::getStringHeight($textW, $remarksText, false, true, '', 1, $lineH);
+      // PDF::MultiCell($labelW, $textHeight, $remarksLabel, 'TLB', 'L', false, 0);
+      // PDF::MultiCell($textW, $textHeight, $remarksText, 'TRB', 'L', false, 1);
+
+      $this->printRemarks($params, $data);
 
       PDF::MultiCell(0, 0, "\n\n\n");
 
@@ -411,7 +412,7 @@ class so
       PDF::MultiCell(60, 0, '', '', '', false);
 
       PDF::MultiCell(0, 0, "\n");
-
+      PDF::SetFont($font, '', 11);
       // $y = (float) 960;
       // $x = (float) 40;
       $y = (float) 945; //955
@@ -655,15 +656,18 @@ class so
         PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
       }
     }
-    PDF::MultiCell(0, 0, "\n");
+     PDF::MultiCell(0, 0, "\n");
 
+      if($next != 2) {
+        PDF::SetFont($font, 'B', 11);
+        PDF::SetCellPaddings(4, 4, 4, 4);
+        PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
+        PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
+        PDF::MultiCell(360, 0, 'DESCRIPTION', 'TLB', 'C', false, 0);
+        PDF::MultiCell(200, 0, 'REMARKS', 'TLRB', 'C', false);
 
-    PDF::SetFont($font, 'B', 11);
-    PDF::SetCellPaddings(4, 4, 4, 4);
-    PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
-    PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
-    PDF::MultiCell(360, 0, 'DESCRIPTION', 'TLB', 'C', false, 0);
-    PDF::MultiCell(200, 0, 'REMARKS', 'TLRB', 'C', false);
+      }
+    
   }
 
   public function default_orderform_PDF($params, $data)
@@ -720,7 +724,7 @@ class so
           $totalext += $data[$i]['ext'];
           if (PDF::getY() > 900) {
             $next = 1;
-            $this->default_footer($params, $data);
+            $this->default_footer($params, $data, true);
             PDF::SetCellPaddings(0, 0, 0, 0);
             $this->default_orderform_header_PDF($params, $data, $next);
             PDF::SetCellPaddings(5, 5, 5, 5);
@@ -736,14 +740,17 @@ class so
       // PDF::MultiCell(75, 0, 'REMARKS: ', 'TLB', 'L', false, 0);
       // PDF::MultiCell(645, 0, $data[0]['rem'], 'TRB', 'L');
 
-      $remarksLabel = 'REMARKS:';
-      $remarksText  = strtoupper($data[0]['rem']);
-      $labelW = 80; //75
-      $textW  = 645;
-      $lineH  = 5;
-      $textHeight = PDF::getStringHeight($textW, $remarksText, false, true, '', 1, $lineH);
-      PDF::MultiCell($labelW, $textHeight, $remarksLabel, 'TLB', 'L', false, 0);
-      PDF::MultiCell($textW, $textHeight, $remarksText, 'TRB', 'L', false, 1);
+      // $remarksLabel = 'REMARKS:';
+      // $remarksText  = strtoupper($data[0]['rem']);
+      // $labelW = 80; //75
+      // $textW  = 645;
+      // $lineH  = 5;
+      // $textHeight = PDF::getStringHeight($textW, $remarksText, false, true, '', 1, $lineH);
+      // PDF::MultiCell($labelW, $textHeight, $remarksLabel, 'TLB', 'L', false, 0);
+      // PDF::MultiCell($textW, $textHeight, $remarksText, 'TRB', 'L', false, 1);
+
+      //09/10/2026 -rwen
+      $this->printRemarks($params, $data);
 
 
       PDF::MultiCell(0, 0, "\n\n\n");
@@ -764,7 +771,7 @@ class so
       PDF::MultiCell(60, 0, '', '', '', false);
 
       PDF::MultiCell(0, 0, "\n");
-
+      PDF::SetFont($font, '', 11);
       $y = (float) 945; //960
       $x = (float) 40;
       $username = $params['params']['user'];
@@ -1008,23 +1015,28 @@ class so
     }
     PDF::MultiCell(0, 0, "\n");
 
-
-    PDF::SetFont($font, 'B', 11);
-    PDF::SetCellPaddings(4, 4, 4, 4);
-    PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
-    PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
-    PDF::MultiCell(480, 0, 'DESCRIPTION', 'TLB', 'C', false, 0); //520
-    PDF::MultiCell(80, 0, 'REMARKS', 'TLRB', 'C', false);
+    if($next != 2){
+      PDF::SetFont($font, 'B', 11);
+      PDF::SetCellPaddings(4, 4, 4, 4);
+      PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
+      PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
+      PDF::MultiCell(480, 0, 'DESCRIPTION', 'TLB', 'C', false, 0); //520
+      PDF::MultiCell(80, 0, 'REMARKS', 'TLRB', 'C', false);
+    }
+    
   }
 
-  public function default_footer($params, $data)
+  public function default_footer($params, $data, $showLine = true)
   {
     $fontsize = 11;
     $font = "Courier";
     $fontbold = "CourierB";
 
-    PDF::SetFont($font, '', 5);
-    PDF::MultiCell(720, 0, '', 'T');
+  
+    if ($showLine) {
+      PDF::SetFont($font, '', 5);
+      PDF::MultiCell(720, 0, '', 'T');
+    }
 
 
     $y = (float) 945; //955
@@ -1041,4 +1053,49 @@ class so
     PDF::MultiCell(250, 0, '', '', 'L', false, 0, $x + 400, $y);
     PDF::MultiCell(70, 0, 'Page ' . PDF::PageNo(), '', 'R', false, 1, $x + 650, $y);
   }
+
+
+        private function printRemarks($params, $data)
+    {
+      $remarks = strtoupper(trim($data[0]['rem']));
+      $labelWidth = 80;
+      $textWidth = 645;
+      $lineHeight = 5;
+      $pageLimit = 900;
+
+      // Space needed for Prepared By and Checked By
+      $signatureSpace = 100;
+
+      $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
+
+      // Check if Remarks and signatures will fit on the current page
+      $currentY = PDF::getY();
+
+      if ($currentY + $remarksHeight + $signatureSpace <= $pageLimit) {
+
+        PDF::MultiCell($labelWidth, $remarksHeight, 'REMARKS:', 'TLB', 'L', false, 0);
+        PDF::MultiCell($textWidth, $remarksHeight, $remarks, 'TRB', 'L', false, 1);
+
+        return;
+      }
+
+      // Remarks and signatures do not fit, move them to the next page
+      $this->default_footer($params, $data, false);
+
+      // 2 means Remarks continuation page
+      $next = 2;
+
+      PDF::SetCellPaddings(0, 0, 0, 0);
+      $this->default_orderform_header_PDF($params, $data, $next);
+      PDF::SetCellPaddings(5, 5, 5, 5);
+
+      PDF::SetFont('Courier', '', 14);
+
+      // Calculate Remarks height again on the new page
+      $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
+
+      PDF::MultiCell($labelWidth, $remarksHeight, 'REMARKS:', 'TLB', 'L', false, 0);
+      PDF::MultiCell($textWidth, $remarksHeight, $remarks, 'TRB', 'L', false, 1);
+    }
+  
 }

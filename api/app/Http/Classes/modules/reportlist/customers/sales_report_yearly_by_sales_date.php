@@ -152,9 +152,10 @@ class sales_report_yearly_by_sales_date
         $group    = $config['params']['dataparams']['groupid'];
         $agentid  = $config['params']['dataparams']['agentid'];
         $agent    = $config['params']['dataparams']['agent'];
+        $clientname = $config['params']['dataparams']['clientname'];
         $filter   = "";
 
-        if ($client != '' && $clientid != 0) {
+        if ($clientname != "") {
             $filter .= " and client.clientid='$clientid'";
         }
         if ($area != "") {
@@ -308,9 +309,10 @@ class sales_report_yearly_by_sales_date
         $group    = $config['params']['dataparams']['groupid'];
         $agentid  = $config['params']['dataparams']['agentid'];
         $agent    = $config['params']['dataparams']['agent'];
+        $clientname    = $config['params']['dataparams']['clientname'];
         $filter   = "";
 
-        if ($client != '' && $clientid != 0) {
+        if ($clientname != "") {
             $filter .= " and client.clientid='$clientid'";
         }
         if ($area != "") {

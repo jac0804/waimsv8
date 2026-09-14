@@ -105,7 +105,7 @@ class entryempcitation
     //   $tbuttons = [];
     // } else {
     //   if ($doc != 'MYINFO') {
-    $tbuttons = ['addrecord', 'saveallentry'];
+    $tbuttons = ['addrecord', 'saveallentry','masterfilelogs'];
     //   }
     // }
 
@@ -305,7 +305,18 @@ class entryempcitation
       order by dateid desc
     ";
 
-    $data = $this->coreFunctions->opentable($qry, [$doc, $doc]);
+    //  select trno, doc, task, left(dateid,10) as dateid, user, editby, editdate
+    //   from masterfile_log
+    //   where doc = ?
+    //   order by dateid desc
+    //  --- SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: 
+    //   select trno, doc, task, left(dateid,10) as dateid, user, editby, editdate
+    //   from masterfile_log
+    //   where doc = EMP_CONTRACT
+    //   order by dateid desc
+    // )
+
+    $data = $this->coreFunctions->opentable($qry, [$doc]);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
   }

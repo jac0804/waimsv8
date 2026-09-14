@@ -4472,7 +4472,7 @@ class waims2
         PRIMARY KEY (`line`, `billtype`))
         ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("billingmaster", $qry);
-          
+
     $qry = "CREATE TABLE `clbilling` (
         `clientid` int(11) unsigned NOT NULL DEFAULT '0',
         `bline` int(11) unsigned NOT NULL DEFAULT '0',
@@ -4487,5 +4487,23 @@ class waims2
         `encodeddate` datetime DEFAULT NULL)
         ENGINE = MyISAM DEFAULT CHARSET=latin1;";
     $this->coreFunctions->sbccreatetable("clbilling", $qry);
+
+
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["issp"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["sostock", "hsostock"], ["issp"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["pdstock", "hpdstock"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["isproduce", "istransfer"], "tinyint(1) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["ismarkup"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ["odoin", "odoout"], "varchar(100) NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ["checkedby"], "varchar(100) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ['amt'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["headinfotrans", "hheadinfotrans"], ['helperid2'], "int(10) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock"], ["markup"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["ismarkup"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+    
   }
 }

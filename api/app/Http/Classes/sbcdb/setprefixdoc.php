@@ -134,7 +134,8 @@ class setprefixdoc
       'ON' => ['prefix' => 'OI', 'title' => 'Outright Invoice'],
       'DR' => ['prefix' => 'DR', 'title' => 'Delivery Receipt'],
       'RI' => ['prefix' => 'RI', 'title' => 'Repossesed Units'],
-      'FU' => ['prefix' => 'FU', 'title' => 'Financing']
+      'FU' => ['prefix' => 'FU', 'title' => 'Financing'],
+      'TD' => ['prefix' => 'TD', 'title' => 'Delivery Trucking']
     ];
 
     switch ($params['companyid']) {
@@ -317,6 +318,7 @@ class setprefixdoc
       'FG' => ['prefix' => 'FG', 'title' => 'FINISH GOODS ENTRY'],
       'JP' => ['prefix' => 'JP', 'title' => 'JOB ORDER'], //NTE
       'PG' => ['prefix' => 'PG', 'title' => 'PRODUCTION INPUT'], //NTE
+      'UE' => ['prefix' => 'UE', 'title' => 'PRODUCE ITEMS'], //BUENATECH
     ];
 
     $menu['operation'] = [
@@ -450,7 +452,8 @@ class setprefixdoc
     ];
 
     $menu['detachmentoperation'] = [
-      'DD' => ['prefix' => 'DDO', 'title' => 'DDO ISSUANCE']
+      'DD' => ['prefix' => 'DDO', 'title' => 'DDO ISSUANCE'],
+      'HB' => ['prefix' => 'BCB', 'title' => 'BEGINNING AND CLOSING BALANCE']
     ];
 
 

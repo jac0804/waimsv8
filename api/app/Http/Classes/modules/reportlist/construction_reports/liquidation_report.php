@@ -134,14 +134,16 @@ class liquidation_report
     $posttype   = $config['params']['dataparams']['posttype'];
     $subprojectid = $config['params']['dataparams']['subproject'];
     $projectid = $config['params']['dataparams']['projectid'];
+    $subprojectname = $config['params']['dataparams']['subprojectname'];
+    $projectname = $config['params']['dataparams']['projectname'];
 
     $filter = "";
 
-    if ($projectid != 0) {
+    if ($projectname != "") {
       $filter .= " and prj.line = '$projectid'";
     }
 
-    if ($subprojectid != 0) {
+    if ($subprojectname != "") {
       $filter .= " and sprj.line = '$subprojectid'";
     }
 

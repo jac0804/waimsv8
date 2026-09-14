@@ -33,7 +33,7 @@ class entryuniform
     public $style = 'width:100%;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['issued', 'description', 'rem'];
+    private $fields = ['description', 'rem'];
     public $showclosebtn = false;
     private $reporter;
     private $logger;
@@ -121,7 +121,7 @@ class entryuniform
 
     private function selectqry()
     {
-        $qry = "line, cyyear as byear";
+        $qry = "line, cyyear as byear, date(issued) as issued";
         foreach ($this->fields as $key => $value) {
             $qry = $qry . ',' . $value;
         }
@@ -149,7 +149,7 @@ class entryuniform
         $dateTables = ['cluniform'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        $fieldsToSave = array_merge($this->fields, ['cyyear']);
+        $fieldsToSave = array_merge($this->fields, ['cyyear', 'issued']);
 
         foreach ($data as $key => $value) {
             $data2 = [];
@@ -157,6 +157,8 @@ class entryuniform
                 foreach ($fieldsToSave as $key2 => $value2) {
                     if ($value2 == 'cyyear') {
                         $val = isset($data[$key]['byear']) ? $data[$key]['byear'] : '';
+                    } elseif ($value2 == 'issued') {
+                        $val = !empty($data[$key]['issued']) ? substr($data[$key]['issued'], 0, 10) : $this->othersClass->getCurrentDate();
                     } else {
                         $val = $data[$key][$value2];
                     }
@@ -192,12 +194,14 @@ class entryuniform
         $dateTables = ['cluniform'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        $fieldsToSave = array_merge($this->fields, ['cyyear']);
+        $fieldsToSave = array_merge($this->fields, ['cyyear', 'issued']);
 
         $data = [];
         foreach ($fieldsToSave as $key2 => $value) {
             if ($value == 'cyyear') {
                 $val = isset($row['byear']) ? $row['byear'] : '';
+            } elseif ($value == 'issued') {
+                $val = !empty($row['issued']) ? substr($row['issued'], 0, 10) : $this->othersClass->getCurrentDate();
             } else {
                 $val = $row[$value];
             }

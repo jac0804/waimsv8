@@ -284,7 +284,7 @@ class item_list
         // }
         break;
 
-         case 60: //transpower
+      case 60: //transpower
         switch ($reporttype) {
           case 1:
             $result = $this->reportPriceGroupLayout($config, $result);
@@ -324,9 +324,9 @@ class item_list
       case 56: // homeworks
         $query = $this->homeworks_query($config);
         break;
-      case 60://transpower
-           $query = $this->TRANSPOWER_QUERY($config);
-         break;
+      case 60: //transpower
+        $query = $this->TRANSPOWER_QUERY($config);
+        break;
 
       default: // default
         $query = $this->DEFAULT_QUERY($config);
@@ -520,6 +520,7 @@ class item_list
     $itemstatus = $config['params']['dataparams']['itemstatus'];
     $reporttype = $config['params']['dataparams']['reporttype'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $isassettag = $config['params']['dataparams']['isassettag'];
 
 
@@ -548,7 +549,7 @@ class item_list
       $subcat = $config['params']['dataparams']['subcat'];
       $filter .= " and item.subcat='$subcat'";
     }
-    if ($clientid != 0) {
+    if ($clientname != "") {
       $filter .= " and item.supplier='$clientid'";
     }
 
@@ -622,7 +623,7 @@ class item_list
   }
 
 
-    public function TRANSPOWER_QUERY($config)
+  public function TRANSPOWER_QUERY($config)
   {
     ini_set('memory_limit', '-1');
     ini_set('max_execution_time', 0);
@@ -670,7 +671,7 @@ class item_list
        amt7 as priceE,amt8 as priceF,amt9 as priceG ";
     }
 
-    $query=" select 0 as sort, item.barcode, item.itemname, cat.name as maincat,subcat.name as subcatname,
+    $query = " select 0 as sort, item.barcode, item.itemname, cat.name as maincat,subcat.name as subcatname,
        frontend_ebrands.brand_desc as brand,item.uom as unit,
        item.amt5 as invoiceprice, item.disc5 as invoicedisc,item.namt5 as netinvoice,
        item.amt as baseprice,item.disc as basedisc,
@@ -695,7 +696,7 @@ class item_list
   }
 
 
-  
+
 
   private function MAJESTY_displayHeader($config)
   {
@@ -3211,11 +3212,11 @@ class item_list
   }
 
 
-    private function transpower_displayHeader($config)
+  private function transpower_displayHeader($config)
   {
     $border = '1px solid';
     // $font = $this->companysetup->getrptfont($config['params']);
-     $font = 'calibri';
+    $font = 'calibri';
     $font_size = '10';
 
     $center     = $config['params']['center'];
@@ -3286,25 +3287,25 @@ class item_list
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('2000');
-      $str .= $this->reporter->startrow(null, null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Item :' . $ritem, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Group :' . $rgroup, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Brand :' . $rbrand, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Class :' . $rclass, '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      if ($categoryname == '') {
-        $str .= $this->reporter->col('Category : ALL', '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      } else {
-        $str .= $this->reporter->col('Category : ' . $categoryname, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      }
+    $str .= $this->reporter->startrow(null, null, false, $border, '', '', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Item :' . $ritem, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Group :' . $rgroup, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Brand :' . $rbrand, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Class :' . $rclass, '150', null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    if ($categoryname == '') {
+      $str .= $this->reporter->col('Category : ALL', '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    } else {
+      $str .= $this->reporter->col('Category : ' . $categoryname, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    }
 
-      if ($subcatname == '') {
-        $str .= $this->reporter->col('Sub-Category: ALL', '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      } else {
-        $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
-      }
+    if ($subcatname == '') {
+      $str .= $this->reporter->col('Sub-Category: ALL', '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    } else {
+      $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '150', null, false, '1px solid ', '', 'L', $font, $font_size, '', '', '');
+    }
 
-      $str .= $this->reporter->pagenumber('Page', '100');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->pagenumber('Page', '100');
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     return $str;
@@ -3322,7 +3323,7 @@ class item_list
 
 
 
-    $str .= $this->reporter->startrow(); 
+    $str .= $this->reporter->startrow();
 
     $str .= $this->reporter->col('', '57', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
@@ -3365,7 +3366,7 @@ class item_list
 
     $str .= $this->reporter->endrow();
 
-    $str .= $this->reporter->startrow(); 
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('ITEM', '57', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('MAIN', '55', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
@@ -3406,7 +3407,7 @@ class item_list
 
     $str .= $this->reporter->endrow();
 
-    $str .= $this->reporter->startrow(); 
+    $str .= $this->reporter->startrow();
 
     $str .= $this->reporter->col('CODE', '57', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('FULL ITEM NAME', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
@@ -3448,7 +3449,7 @@ class item_list
     $str .= $this->reporter->endrow();
 
 
-  
+
 
 
     // $str .= $this->reporter->startrow(); 
@@ -3498,11 +3499,11 @@ class item_list
   }
 
 
-   public function transpower_layout($config, $result)
+  public function transpower_layout($config, $result)
   {
     $border = '1px solid';
     // $font = $this->companysetup->getrptfont($config['params']);
-     $font = 'calibri';
+    $font = 'calibri';
     $font_size = '8';
     $fontsize11 = 9;
     $this->reporter->linecounter = 0;
@@ -3520,139 +3521,139 @@ class item_list
     $this->reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => $layoutsize];
 
     $str = '';
- 
+
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->transpower_displayHeader($config);
     $str .= $this->transpower_table_cols($layoutsize, $border, $font, $fontsize11, $config);
 
-        // $part = "";
-        // $brand = "";
-        foreach ($result as $key => $data) {
-          // if (strtoupper($part) == strtoupper($data->part)) {
-          //   $part = "";
-          // } else {
-          //   $part = $data->part;
-          // } //end if
+    // $part = "";
+    // $brand = "";
+    foreach ($result as $key => $data) {
+      // if (strtoupper($part) == strtoupper($data->part)) {
+      //   $part = "";
+      // } else {
+      //   $part = $data->part;
+      // } //end if
 
-          // if (strtoupper($brand) == strtoupper($data->brand)) {
-          //   $brand = "";
-          // } else {
-          //   $brand = strtoupper($data->brand);
-          // } //end if
+      // if (strtoupper($brand) == strtoupper($data->brand)) {
+      //   $brand = "";
+      // } else {
+      //   $brand = strtoupper($data->brand);
+      // } //end if
 
-          // $price = number_format($data->price, 2);
-          // if ($price == 0) {
-          //   $price = '-';
-          // } //end if
+      // $price = number_format($data->price, 2);
+      // if ($price == 0) {
+      //   $price = '-';
+      // } //end if
 
-          // if ($companyid != 28) { //not xcomp
-          //   if ($part != "") {
-          //     $str .= $this->reporter->startrow();
-          //     $str .= $this->reporter->col($part, '150', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-          //     $str .= $this->reporter->col('', '400', null, false, $border, '', 'R', $font, $font_size, 'Bi', '', '');
-          //     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->endrow();
-          //   }
-          //   if ($brand != "") {
-          //     $str .= $this->reporter->startrow();
-          //     $str .= $this->reporter->col($brand, '150', null, false, $border, '', 'R', $font, $font_size, 'Bi', '', '');
-          //     $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, $font_size, 'Bi', '', '');
-          //     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-          //     $str .= $this->reporter->endrow();
-          //   }
-          // }
-
-
-          // $invoiceprice = number_format($data->invoiceprice, 2);
-          // if ($invoiceprice == 0) {
-          //   $invoiceprice = '-';
-          // } //end if
+      // if ($companyid != 28) { //not xcomp
+      //   if ($part != "") {
+      //     $str .= $this->reporter->startrow();
+      //     $str .= $this->reporter->col($part, '150', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+      //     $str .= $this->reporter->col('', '400', null, false, $border, '', 'R', $font, $font_size, 'Bi', '', '');
+      //     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->endrow();
+      //   }
+      //   if ($brand != "") {
+      //     $str .= $this->reporter->startrow();
+      //     $str .= $this->reporter->col($brand, '150', null, false, $border, '', 'R', $font, $font_size, 'Bi', '', '');
+      //     $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, $font_size, 'Bi', '', '');
+      //     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      //     $str .= $this->reporter->endrow();
+      //   }
+      // }
 
 
-
-
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
-          // if ($data->isinactive) {
-          //   $isinactive = 'INACTIVE';
-          // } else {
-          //   $isinactive = 'ACTIVE';
-          // } //end if
-
-          $str .= $this->reporter->col($data->barcode, '57', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->itemname, '100', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->maincat, '55', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->subcatname, '55', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->brand, '55', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col('', '60', null, false, $border, '', 'CT', $font, $font_size, '', '', '');//desc1
-          $str .= $this->reporter->col('', '60', null, false, $border, '', 'CT', $font, $font_size, '', '', '');//desc2
-          $str .= $this->reporter->col($data->unit, '50', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->invoiceprice !=0 ? number_format($data->invoiceprice,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->invoicedisc !=0 ?  number_format($data->invoicedisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->netinvoice !=0 ? number_format($data->netinvoice,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->baseprice !=0 ? number_format($data->baseprice,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->basedisc !=0 ? number_format($data->basedisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->wholesaleprice !=0 ? number_format($data->wholesaleprice,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->wholesaledisc !=0 ? number_format($data->wholesaledisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->netwholesale !=0 ? number_format($data->netwholesale,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->cost != 0 ? number_format($data->cost,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-
-          $str .= $this->reporter->col($data->costdisc != 0 ? number_format($data->costdisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->netcost !=0 ? number_format($data->netcost,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->distr !=0 ? number_format($data->distr,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-
-
-          $str .= $this->reporter->col($data->distrdisc !=0 ? $data->distrdisc:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      // $invoiceprice = number_format($data->invoiceprice, 2);
+      // if ($invoiceprice == 0) {
+      //   $invoiceprice = '-';
+      // } //end if
 
 
 
 
-          $str .= $this->reporter->col($data->lowestp !=0 ? number_format($data->lowestp,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->lowestdisc !=0 ? number_format($data->lowestdisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->netlow !=0 ? number_format($data->netlow,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->drp !=0 ? number_format($data->drp,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->drdisc !=0 ? number_format($data->drdisc,0):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->netdr !=0 ? number_format($data->netdr,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->minimum !=0 ? number_format($data->minimum,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->maximum !=0 ? number_format($data->maximum,2):'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-               
-          $str .= $this->reporter->col($data->startwire !=0 ? $data->startwire:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->endwire !=0 ? $data->endwire:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->itemwiretag !=0 ? $data->itemwiretag:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->reversewiretag !=0 ? $data->reversewiretag:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-          $str .= $this->reporter->col($data->inactiveitemtag !=0 ? $data->inactiveitemtag:'-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
-                              
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      // if ($data->isinactive) {
+      //   $isinactive = 'INACTIVE';
+      // } else {
+      //   $isinactive = 'ACTIVE';
+      // } //end if
 
-          // $str .= $this->reporter->col($data->barcode, '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-          // $str .= $this->reporter->col($data->itemname, '400', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-          // $str .= $this->reporter->col($data->groupid, '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-          // $str .= $this->reporter->col($price, '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-          // $str .= $this->reporter->col($isinactive, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->barcode, '57', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->itemname, '100', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->maincat, '55', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->subcatname, '55', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->brand, '55', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '60', null, false, $border, '', 'CT', $font, $font_size, '', '', ''); //desc1
+      $str .= $this->reporter->col('', '60', null, false, $border, '', 'CT', $font, $font_size, '', '', ''); //desc2
+      $str .= $this->reporter->col($data->unit, '50', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->invoiceprice != 0 ? number_format($data->invoiceprice, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->invoicedisc != 0 ?  number_format($data->invoicedisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->netinvoice != 0 ? number_format($data->netinvoice, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->baseprice != 0 ? number_format($data->baseprice, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->basedisc != 0 ? number_format($data->basedisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->wholesaleprice != 0 ? number_format($data->wholesaleprice, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->wholesaledisc != 0 ? number_format($data->wholesaledisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->netwholesale != 0 ? number_format($data->netwholesale, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->cost != 0 ? number_format($data->cost, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
 
-          // $brand = strtoupper($data->brand);
-          // $part = $data->part;
+      $str .= $this->reporter->col($data->costdisc != 0 ? number_format($data->costdisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->netcost != 0 ? number_format($data->netcost, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->distr != 0 ? number_format($data->distr, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
 
-          $str .= $this->reporter->endrow();
 
-          // if ($companyid != 28) { //not xcomp
-            if ($this->reporter->linecounter == $page) {
-              $str .= $this->reporter->endtable();
-              $str .= $this->reporter->page_break();
+      $str .= $this->reporter->col($data->distrdisc != 0 ? $data->distrdisc : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
 
-              $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
-              if (!$allowfirstpage) {
-                $str .= $this->transpower_displayHeader($config);
-              }
-              $str .= $this->transpower_table_cols($layoutsize, $border, $font, $fontsize11, $config);
-              $str .= $this->reporter->addline();
-              $page = $page + $count;
-            } //end if
+
+
+
+      $str .= $this->reporter->col($data->lowestp != 0 ? number_format($data->lowestp, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->lowestdisc != 0 ? number_format($data->lowestdisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->netlow != 0 ? number_format($data->netlow, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->drp != 0 ? number_format($data->drp, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->drdisc != 0 ? number_format($data->drdisc, 0) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->netdr != 0 ? number_format($data->netdr, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->minimum != 0 ? number_format($data->minimum, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->maximum != 0 ? number_format($data->maximum, 2) : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+
+      $str .= $this->reporter->col($data->startwire != 0 ? $data->startwire : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->endwire != 0 ? $data->endwire : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->itemwiretag != 0 ? $data->itemwiretag : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->reversewiretag != 0 ? $data->reversewiretag : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->inactiveitemtag != 0 ? $data->inactiveitemtag : '-', '58', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+
+
+      // $str .= $this->reporter->col($data->barcode, '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      // $str .= $this->reporter->col($data->itemname, '400', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      // $str .= $this->reporter->col($data->groupid, '150', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      // $str .= $this->reporter->col($price, '200', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      // $str .= $this->reporter->col($isinactive, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+
+      // $brand = strtoupper($data->brand);
+      // $part = $data->part;
+
+      $str .= $this->reporter->endrow();
+
+      // if ($companyid != 28) { //not xcomp
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->transpower_displayHeader($config);
         }
-        // break;
+        $str .= $this->transpower_table_cols($layoutsize, $border, $font, $fontsize11, $config);
+        $str .= $this->reporter->addline();
+        $page = $page + $count;
+      } //end if
+    }
+    // break;
     // }
 
     $str .= $this->reporter->endtable();
@@ -3678,7 +3679,9 @@ class item_list
     $itemstatus = $config['params']['dataparams']['itemstatus'];
     $reporttype = $config['params']['dataparams']['reporttype'];
     $clientid = $config['params']['dataparams']['clientid'];
+    $clientname = $config['params']['dataparams']['clientname'];
     $isassettag = $config['params']['dataparams']['isassettag'];
+    $clientname = $config['params']['dataparams']['clientname'];
 
     $filter = "";
     if ($barcode != "") {
@@ -3705,7 +3708,7 @@ class item_list
       $subcat = $config['params']['dataparams']['subcat'];
       $filter .= " and item.subcat='$subcat'";
     }
-    if ($clientid != 0) {
+    if ($clientname != "") {
       $filter .= " and item.supplier='$clientid'";
     }
 

@@ -386,11 +386,19 @@ class pr
         PDF::MultiCell(70, 25, "UNIT PRICE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(100, 25, "TOTAL", 'TB', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
         break;
+      case  68:
+        PDF::MultiCell(110, 25, "BARCODE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(80, 25, "QTY", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(80, 25, "UNIT", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(200, 25, "DESCRIPTION", 'TB', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(100, 25, "UNIT PRICE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(130, 25, "TOTAL", 'TB', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
+        break;
       default:
         PDF::MultiCell(110, 25, "BARCODE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(80, 25, "QTY", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(80, 25, "UNIT", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(250, 25, "DESCRIPTION", 'TB', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(200, 25, "DESCRIPTION", 'TB', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(80, 25, "", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(100, 25, "", 'TB', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
         // PDF::MultiCell(80, 25, "UNIT PRICE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
@@ -460,6 +468,14 @@ class pr
               PDF::MultiCell(220, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(70, 18, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(100, 18, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+              break;
+            case 68:
+              PDF::MultiCell(110, 18, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(80, 18, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(80, 18, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(200, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false,0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(100, 18, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : '-'), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(130, 18, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : '-'), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
               break;
             default:
               PDF::MultiCell(110, 18, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);

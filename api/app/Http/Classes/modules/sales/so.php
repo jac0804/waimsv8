@@ -82,8 +82,12 @@ class so
     'subamenityid',
     'tax',
     'vattype',
-    'createby'
+    'createby',
+    'markup',
+    'disc2',
+    'ismarkup'
   ];
+  public $blnfields = ['ismarkup'];
 
   private $infoheadfields = ['trnxtype', 'approvalreason'];
 
@@ -666,9 +670,13 @@ class so
         $column = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         $sortcolumn = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         break;
+      case 64:
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','disc', 'markup','disc2', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc','markup','disc2',  'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        break;
       default:
-        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode'];
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         break;
     }
 
@@ -795,6 +803,12 @@ class so
         $obj[0]['inventory']['columns'][$roqa]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$agentamt]['type'] = 'coldel';
+
+        if ($viewfieldsforgate2users == '0') {
+          $obj[0]['inventory']['columns'][$isamt]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
+        }
         break;
       case 2: //MIS
         $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
@@ -831,15 +845,6 @@ class so
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'ORDER FORM';
         break;
-      case 24: //goodfound
-        
-        if ($viewfieldsforgate2users == '0') {
-          $obj[0]['inventory']['columns'][$isamt]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
-        }
-
-        break;
       default:
         $obj[0]['inventory']['columns'][$weight]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$roqa]['type'] = 'coldel';
@@ -853,18 +858,33 @@ class so
 
         if ($companyid != 60) {
           $obj[0]['inventory']['columns'][$agentamt]['type'] = 'coldel';
+          $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         }
 
+        if ($companyid == 64) { //excelin
+          $obj[0]['inventory']['columns'][$markup]['label'] = 'Markup Price';
+          $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
+          $obj[0]['inventory']['columns'][$disc2]['label'] = 'Markup Discount';
+        }
+
+        if ($companyid == 71) { //buenatech
+          $obj[0]['inventory']['columns'][$void]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
+          $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
+          $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
+          $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
+         
+        }
+        // var_dump($issp);
         break;
     }
 
     if (!$iscreateversion) {
-    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    // } else {
-        // if(!$islocation) {
-        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        // }
-    
+      //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+      // } else {
+      // if(!$islocation) {
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+      // }
+
       // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
@@ -873,6 +893,11 @@ class so
     if ($companyid != 59) { //roosevelt
       $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
       $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+    }
+
+
+    if ($companyid != 71) { //buenatech
+      $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
     }
 
     if (!$access['changeamt']) {
@@ -1049,6 +1074,9 @@ class so
         if ($systemtype == 'REALESTATE') {
           $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'rem'];
         }
+        if ($companyid == 64){
+          array_push($fields, 'ismarkup');
+        }
         $col3 = $this->fieldClass->create($fields);
         break;
     }
@@ -1064,6 +1092,7 @@ class so
     if ($companyid == 47) { //kitchenstar
       data_set($col3, 'yourref.label', 'PO #');
     }
+
 
     // col 4
     $fields = ['rem'];
@@ -1151,6 +1180,10 @@ class so
     $data[0]['creditinfo'] = '';
     $data[0]['rem2'] = '';
 
+    if ($params['companyid'] == 64 ) {//excelin
+       $data[0]['ismarkup'] = '0';
+    }
+   
     if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
@@ -1264,6 +1297,7 @@ class so
             subamen.line as subamenityid, subamen.description as subamenityname, info.tmpref,
              head.tax,
              head.vattype,
+             head.ismarkup,
              '' as dvattype";
 
     $qry = $qryselect . " from $table as head
@@ -1342,8 +1376,14 @@ class so
           }
         }
       }
+      
 
-
+      foreach ($this->blnfields as $key => $value) {
+        if ($head[0]->$value) {
+          $head[0]->$value = "1";
+        } else
+          $head[0]->$value = "0";
+      }
       $stock = $this->openstock($trno, $config);
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
@@ -1835,17 +1875,20 @@ class so
       case 64: //excelin 
         $addsfield = ",limitcheck";
         break;
+      case 71: //buenatech
+        $addsfield = ",issp";
+        break;
     }
 
 
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,creditinfo,crline,overdue, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
+       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.creditinfo,head.crline,head.overdue, head.projectid, 
-      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
+      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
@@ -1864,9 +1907,9 @@ class so
 
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
         whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,kgs,
-        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . ")
+        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc" . $addsfield . ")
         SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext,kgs,
-        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . " FROM " . $this->stock . " where trno =?";
+        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc " . $addsfield . " FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
@@ -1930,16 +1973,19 @@ class so
       case 64: //excelin 
         $addsfield = ",limitcheck";
         break;
+      case 71: //buenatech
+        $addsfield = ",issp";
+        break;
     }
 
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
     yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,creditinfo,crline,overdue,agent, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
+    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
     select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
     head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
     head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.creditinfo,head.crline,head.overdue,head.agent,
-    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
+    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
     from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
     where head.trno=? limit 1";
     //head
@@ -1957,9 +2003,9 @@ class so
 
       $qry = "insert into " . $this->stock . "(
       trno,line,itemid,uom,whid,loc,expiry,disc,
-      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . ")
+      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc " . $addsfield . ")
       select trno, line, itemid, uom,whid,loc,expiry,disc,amt, iss,void, isamt, isqty,
-      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . "
+      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc" . $addsfield . "
       from " . $this->hstock . " where trno=?";
       //stock
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
@@ -2013,6 +2059,7 @@ class so
     $itemname = 'item.itemname,';
     $itemdesc = '';
     $color = '';
+    $specialprice = '';
 
     if ($companyid == 28) { //xcomp
       $itemname = "case when item.itemname like '%misc%' and stockinfo.itemdesc <>'' then stockinfo.itemdesc else item.itemname end as itemname,";
@@ -2026,6 +2073,9 @@ class so
       $color = ",case when stock.limitcheck = 1  then 'bg-yellow-2' else '' end as qacolor";
     }
 
+    if ($companyid == 71) { //buenatech
+      $specialprice = ",case when stock.issp=0 then 'false' else 'true' end as issp";
+    }
 
 
     $sqlselect = "select item.brand as brand,
@@ -2047,6 +2097,7 @@ class so
     case when stock.void=0 then 'false' else 'true' end as void,
     round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
     round((stock.iss-stock.roqa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as roqa
+    " . $specialprice . "
     " . $itemdesc . ",
     stock.whid,
     warehouse.client as wh,
@@ -2059,6 +2110,10 @@ class so
     stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,stock.blklotid, bl.blk, bl.lot,
     stock.projectid, proj.code as project,
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
+
+
+     FORMAT(stock.markup," . $this->companysetup->getdecimal('currency', $config['params']) . ") as markup,
+     stock.custdisc as disc2,
 
     '' as bgcolor,
     case when stock.void=0 then '' else 'bg-red-2' end as errcolor,
@@ -2643,11 +2698,14 @@ class so
     $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : "";
     $void = 'false';
     $rem = '';
+    $issp = 'false';
     $ref = '';
     $expiry = '';
     $refx = 0;
     $linex = 0;
     $noprint = 'false';
+    $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : "";
+    $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
 
     if ($this->companysetup->getiskgs($config['params'])) {
       $kgs = isset($config['params']['data']['kgs']) ? $config['params']['data']['kgs'] : 1;
@@ -2660,6 +2718,10 @@ class so
 
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
+    }
+
+    if (isset($config['params']['data']['issp'])) {   // NEW
+      $issp = $config['params']['data']['issp'];
     }
 
     if (isset($config['params']['data']['rem'])) {
@@ -2709,7 +2771,7 @@ class so
       $config['params']['line'] = $line;
     }
 
-    $dateTables = ['sostock','stockinfotrans'];
+    $dateTables = ['sostock', 'stockinfotrans'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
@@ -2718,7 +2780,7 @@ class so
 
 
 
-  
+
 
     if ($systemtype == 'REALESTATE') {
       $projectid = $this->coreFunctions->getfieldvalue($this->head, "projectid", "trno=?", [$trno]);
@@ -2796,6 +2858,7 @@ class so
       'whid' => $whid,
       'loc' => $loc,
       'void' => $void,
+      'issp' => $issp,
       'uom' => $uom,
       'rem' => $rem,
       'refx' => $refx,
@@ -2804,7 +2867,9 @@ class so
       'ref' => $ref,
       'weight' => $weight,
       'fstatus' => $fstatus,
-      'noprint' => $noprint
+      'noprint' => $noprint,
+      'markup' => $markup,
+      'custdisc' => $disc2,
     ];
     if ($systemtype == 'REALESTATE') {
       $data['projectid'] = $projectid;
@@ -3103,6 +3168,31 @@ class so
               and stock.isamt <> 0
               order by dateid desc limit 5) as tbl order by dateid desc ";
             $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $center, $barcode, $client]);
+            break;
+          case 71: //buenatech - exclude items tagged Special Price from the "latest given price" 
+            $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,round(amt,2) as defamt,disc,uom from(select head.docno,head.dateid,
+              stock.isamt as amt,stock.uom,stock.disc
+              from lahead as head
+              left join lastock as stock on stock.trno = head.trno
+              left join cntnum on cntnum.trno=head.trno
+              left join item on item.itemid = stock.itemid
+              where head.doc = 'SJ' and cntnum.center = ?
+              and item.barcode = ? and head.client = ?
+              and stock.isamt <> 0
+              and ifnull(stock.issp,0) = 0
+              UNION ALL
+              select head.docno,head.dateid,stock.isamt as amt,
+              stock.uom,stock.disc from glhead as head
+              left join glstock as stock on stock.trno = head.trno
+              left join item on item.itemid = stock.itemid
+              left join client on client.clientid = head.clientid
+              left join cntnum on cntnum.trno=head.trno 
+              where head.doc = 'SJ' and cntnum.center = ?
+              and item.barcode = ? and client.client = ?
+              and stock.isamt <> 0
+              and ifnull(stock.issp,0) = 0
+              order by dateid desc limit 5) as tbl order by dateid desc limit 1";
+            $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
             break;
           default:
             $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,round(amt,2) as defamt,disc,uom from(select head.docno,head.dateid,

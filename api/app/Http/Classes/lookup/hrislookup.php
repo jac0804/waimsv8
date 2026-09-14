@@ -10,7 +10,7 @@ use App\Http\Classes\sqlquery;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Classes\common\payrollcommon;
-
+use App\Http\Classes\companysetup;
 
 class hrislookup
 {
@@ -18,6 +18,7 @@ class hrislookup
   private $othersClass;
   private $sqlquery;
   private $payrollcommon;
+  private $companysetup;
 
   public function __construct()
   {
@@ -25,6 +26,7 @@ class hrislookup
     $this->othersClass = new othersClass;
     $this->sqlquery = new sqlquery;
     $this->payrollcommon = new payrollcommon;
+    $this->companysetup = new companysetup;
   }
 
   //HRIS
@@ -1116,6 +1118,16 @@ class hrislookup
       case 'lookupcontributecomp':
         $plotting = array('contricompid' => 'divid', 'divrep' => 'divname');
         break;
+      case 'lookupispayrolldetachment':
+        $plotting = array(
+          'divid' => 'divid',
+          'division' => 'divcode',
+          'divname' => 'divname',
+          'rate' => 'salary',
+          'cola' => 'cola',
+          'allowance' => 'incentive'
+        );
+        break;
       default:
         $plotting = array(
           'divid' => 'divid',
@@ -1142,11 +1154,21 @@ class hrislookup
     $cols = array();
     array_push($cols, array('name' => 'divcode', 'label' => 'Code', 'align' => 'left', 'field' => 'divcode', 'sortable' => true, 'style' => 'font-size:16px;'));
     array_push($cols, array('name' => 'divname', 'label' => 'Name', 'align' => 'left', 'field' => 'divname', 'sortable' => true, 'style' => 'font-size:16px;'));
+    $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
     $fitler = '';
+    $leftjoin = '';
+    $addfield = '';
+
     if ($divid != 0) {
       $fitler = " where divid in ($divid) ";
     }
-    $qry = "select divid, divcode,divname from division $fitler order by divcode";
+
+    if ($ispayrolldetachment) {
+      $addfield = ", info.salary, info.cola, info.incentive";
+      $leftjoin = " left join divinfo as info on info.divid = division.divid";
+    }
+
+    $qry = "select division.divid, divcode,divname $addfield from division $leftjoin $fitler order by divcode";
 
     $data = $this->coreFunctions->opentable($qry);
     $btnadd = $this->sqlquery->checksecurity($config, 1410, '/tableentries/payrollsetup/division');
@@ -1806,12 +1828,15 @@ class hrislookup
 
   public function lookupempgrids($config)
   {
+    $payrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
     $lookupsetup = array(
       'type' => 'multi',
       'rowkey' => 'keyid',
       'title' => 'List of Employees',
       'style' => 'width:900px;max-width:900px;'
     );
+
+
 
     // lookup columns
     $cols = array(
@@ -1820,10 +1845,18 @@ class hrislookup
       array('name' => 'jobtitle', 'label' => 'Job Title', 'align' => 'left', 'field' => 'jobtitle', 'sortable' => true, 'style' => 'font-size:16px;'),
     );
 
+
     $plotsetup = array(
       'plottype' => 'callback',
       'action' => 'addempgrid',
     );
+
+
+    if ($config['params']['doc'] == 'DD') {
+      if ($payrolldetachment) {
+        $plotsetup['callbackfieldlookup'] = array('trno');
+      }
+    }
 
     if ($config['params']['companyid'] == 58 && $config['params']['doc'] == 'RS') { //cdo
       $qry = "select e.empid as keyid,e.empid as clientid,c.client,

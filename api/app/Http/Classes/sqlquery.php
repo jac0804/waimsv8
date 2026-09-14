@@ -4892,7 +4892,7 @@ class sqlquery
               FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,stock.uom,item.itemid,
               FORMAT((stock.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
               FORMAT(((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,stock.loc,head.yourref,
-              0 as trno, 0 as line,stock.rem,head.client
+              0 as trno, 0 as line,stock.rem,head.client,stock.issp
               from hsohead as head
               right join hsostock as stock on stock.trno = head.trno
               left join item on item.itemid=stock.itemid
@@ -4974,19 +4974,24 @@ class sqlquery
     $client = isset($config['params']['client']) ? $config['params']['client'] : '';
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $lookupclass= $config['params']['lookupclass'];
     $addfield = "";
     $addfilter = "";
     $filterdata = [$center];
     $filter = 'stock.iss>stock.qa';
     $fieldqa = 'stock.qa';
-    if ($systemtype == 'MANUFACTURING') {
+    if ($systemtype == 'MANUFACTURING' || ($lookupclass== 'pendingsopddetail')) { //buenatech
       $addfield = ",FORMAT((stock.pdqa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pdqa,
         FORMAT(((stock.iss-stock.pdqa) / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pdpending,
         stock.uom";
-      $addfilter = "and stock.iss>stock.pdqa and head.sotype=1";
+        $addfilter = "and stock.iss>stock.pdqa and head.sotype=1";
+         if($lookupclass=='pendingsopddetail'){
+        $addfilter = "and stock.iss>stock.pdqa";
+        }
     } else {
-      switch ($config['params']['lookupclass']) {
+      switch ($lookupclass) {
         case 'pendingsorodetail':
           $filter = "stock.roqa<>stock.iss";
           $fieldqa = 'stock.roqa';
@@ -5003,6 +5008,7 @@ class sqlquery
           break;
       }
     }
+
     $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,stock.kgs,
               FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
               FORMAT(stock.iss," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
@@ -7544,14 +7550,53 @@ class sqlquery
 
   public function getpendingjodetails($config)
   {
-    $client = $config['params']['client'];
-    $center = $config['params']['center'];
+    $doc = $config['params']['doc'];
     $trno = $config['params']['trno'];
-    $project = $this->coreFunctions->getfieldvalue("jchead", "projectid", "trno=?", [$trno]);
-    $subproject = $this->coreFunctions->getfieldvalue("jchead", "subproject", "trno=?", [$trno]);
-    $stageid = $this->coreFunctions->getfieldvalue("jchead", "stageid", "trno=?", [$trno]);
+    $center = $config['params']['center'];
 
-    $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
+    if($doc=='UE' || $doc='ST'){ //buenatech
+    
+      $condition = " and jo.isproduce<>1 "; //picked in produce item
+      if($doc=='ST'){
+        $condition= " and jo.istransfer<>1 "; // picked in transfer material
+      }
+
+      $lookupclass = $config['params']['lookupclass'];
+      switch($lookupclass){
+          case 'pendingjoheaddetail':
+          $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname,jo.qty,jo.uom,jo.isproduce,jo.rem,jo.wh from hpdhead as jo
+            left join item as it on it.itemid=jo.itemid
+            left join transnum as num on num.trno=jo.trno where num.center=? $condition";
+          $params = [$center];
+          break;
+          case 'pendingjobtndetail': 
+          case 'issuemultipleexpiry':
+          $jotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$config['params']['trno']]);
+          $qry = "select joh.trno,date(joh.dateid) as dateid,joh.docno,it.barcode,it.itemname, jos.qty,jos.uom,
+                  concat(jos.trno,jos.line) as keyid,jos.trno as refx,jos.line as linex,wh.clientid as whid,
+                  FORMAT(jos.rrqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
+                  FORMAT(jos.qty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
+                  FORMAT(jos.rrcost," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,jos.disc,
+                  FORMAT(jos.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,jos.uom,it.itemid,
+                  FORMAT((jos.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
+                  FORMAT(((jos.qty-jos.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,jos.loc,joh.yourref,
+                  jos.rem,joh.client,jos.line
+            from hpdhead as joh
+            left join hpdstock as jos on jos.trno=joh.trno
+            left join item as it on it.itemid=jos.itemid
+            left join client as wh on wh.client=jos.wh
+            left join uom on uom.itemid=it.itemid and uom.uom=jos.uom
+            left join transnum as num on num.trno=joh.trno where  num.center=? and  joh.trno=$jotrno and  jos.void = 0";
+          $params = [$center];
+          break;
+      }
+      }else{
+
+      $client = $config['params']['client'];
+      $project = $this->coreFunctions->getfieldvalue("jchead", "projectid", "trno=?", [$trno]);
+      $subproject = $this->coreFunctions->getfieldvalue("jchead", "subproject", "trno=?", [$trno]);
+      $stageid = $this->coreFunctions->getfieldvalue("jchead", "stageid", "trno=?", [$trno]);
+      $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
           FORMAT(stock.rrqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
           FORMAT(stock.qty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qty,
           FORMAT(stock.rrcost," . $this->companysetup->getdecimal('price', $config['params']) . ") as rrcost,stock.disc,
@@ -7566,11 +7611,12 @@ class sqlquery
           left join transnum as cntnum on cntnum.trno = head.trno
           left join client as wh on wh.clientid=stock.whid
           left join stagesmasterfile as st on st.line = stock.stageid
-          where head.projectid=? and head.subproject =? and head.client = ? and head.stageid =? and stock.qty>stock.qa
-          and cntnum.center = ?
+          where  head.projectid=? and head.subproject =? and head.client = ? and head.stageid =? and stock.qty>stock.qa and cntnum.center = ?
           and stock.void = 0 ";
-    $data = $this->coreFunctions->opentable($qry, [$project, $subproject, $client, $stageid, $center]);
-
+      $params = [$project,  $subproject,  $client, $stageid, $center];
+    }
+         
+    $data = $this->coreFunctions->opentable($qry, $params);
     return $data;
   } // end function
 

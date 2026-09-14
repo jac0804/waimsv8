@@ -1183,8 +1183,11 @@ class payroll_register
     // QUERY
     $client     = $config['params']['dataparams']['client'];
     $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divnmae$divname'];
     $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname      = $config['params']['dataparams']['deptname'];
     $batchid      = $config['params']['dataparams']['line'];
+    $batchrep      = $config['params']['dataparams']['batchrep'];
     $branch     = $config['params']['dataparams']['dbranchname'];
     $branchid     = $config['params']['dataparams']['branchid'];
 
@@ -1198,15 +1201,15 @@ class payroll_register
       $filter .= " and emp.branchid = $branchid";
     }
 
-    if ($deptid != 0) {
+    if ($deptname != "") {
       $filter .= " and emp.deptid = $deptid";
     }
 
-    if ($divid != 0) {
+    if ($divname != "") {
       $filter .= " and emp.divid = $divid";
     }
 
-    if ($batchid != '') {
+    if ($batchrep != "") {
       $filter .= " and p.batchid = " . $batchid . " ";
     }
 

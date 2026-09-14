@@ -568,9 +568,10 @@ class leave_filling_reports
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Date Applied', '90', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Employee Name', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Date Applied', '70', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Employee Name', '255', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Type of Leave', '65', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');// New Column
+        $str .= $this->reporter->col('Leave Day', '65', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Effectivity', '75', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Days', '40', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Reason', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
@@ -584,7 +585,7 @@ class leave_filling_reports
         $str .= $this->reporter->col('Approved/ Disapproved By', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Date Approved/ Disapproved', '115', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Supervisor Reason', '135', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Batch', '85', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('Batch','85', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         return $str;
@@ -601,8 +602,8 @@ class leave_filling_reports
         $page = 21;
         $str = '';
 
-        $this->reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1400'];
-        $layoutsize = '1400';
+        $this->reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1600'];
+        $layoutsize = '1600';
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
@@ -643,34 +644,44 @@ class leave_filling_reports
         $totalday = 0;
 
         foreach ($result as $key => $data) {
+            $leaveDay = '';
+            if ($data->adays == 1) {
+                $leaveDay = 'WHOLE DAY';
+            } elseif ($data->adays == 0.5) {
+                $leaveDay = 'HALF DAY';
+            } else {
+                $leaveDay = '';
+            }
+
             $str .= $this->reporter->addline();
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($data->dateid, '90', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->empname, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->codename, '65', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->effectivity, '75', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->days, '40', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->remarks, '115', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->status2, '75', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->dateid, '70', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->empname, '255', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->codename, '65', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($leaveDay, '65', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->effectivity, '75', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->days, '40', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->remarks, '115', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->status2, '75', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
             
-            $str .= $this->reporter->col($data->appname2, '105', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->sdate, '105', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->reason2, '85', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->appname2, '105', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->sdate, '105', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->reason2, '85', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
             
-            $str .= $this->reporter->col($data->status, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->appname, '115', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->fdate, '115', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->reason, '135', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col($data->batch, '85', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->status, '85', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->appname, '115', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->fdate, '115', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->reason, '135', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col($data->batch, '85', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
 
-            if ($this->reporter->linecounter == $page) {
-                $str .= $this->reporter->page_break();
-                $str .= $this->camera_header($config, $layoutsize);
-                $page = $page + $count;
-            }
+            // if ($this->reporter->linecounter == $page) {
+            //     $str .= $this->reporter->page_break();
+            //     $str .= $this->camera_header($config, $layoutsize);
+            //     $page = $page + $count;
+            // }
         }
         $str .= $this->reporter->endreport();
         return $str;

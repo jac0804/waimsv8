@@ -407,7 +407,7 @@ class rr
 
         break;
       case 'forapproval':
-        $condition .= " and num.postdate is null and head.lockdate is null and num.statid=10 
+        $condition .= " and num.postdate is null and head.lockdate is null and num.statid=10
                         and num.appuser='" . $config['params']['user'] . "'";
         $lstatus = "'FOR APPROVAL'";
         break;
@@ -523,20 +523,20 @@ class rr
           if (isset($test)) {
             $join .= " left join lastock on lastock.trno = head.trno
             left join item on item.itemid = lastock.itemid left join item as item2 on item2.itemid = lastock.itemid
-            left join model_masterfile as model on model.model_id = item.model 
-            left join model_masterfile as model2 on model2.model_id = item2.model 
-            left join frontend_ebrands as brand on brand.brandid = item.brand 
+            left join model_masterfile as model on model.model_id = item.model
+            left join model_masterfile as model2 on model2.model_id = item2.model
+            left join frontend_ebrands as brand on brand.brandid = item.brand
             left join frontend_ebrands as brand2 on brand2.brandid = item2.brand
-            left join projectmasterfile as p on p.line = item.projectid 
+            left join projectmasterfile as p on p.line = item.projectid
             left join projectmasterfile as p2 on p2.line = item2.projectid ";
 
             $hjoin .= " left join glstock on glstock.trno = head.trno
             left join item on item.itemid = glstock.itemid left join item as item2 on item2.itemid = glstock.itemid
-            left join model_masterfile as model on model.model_id = item.model 
+            left join model_masterfile as model on model.model_id = item.model
             left join model_masterfile as model2 on model2.model_id = item2.model
-            left join frontend_ebrands as brand on brand.brandid = item.brand 
+            left join frontend_ebrands as brand on brand.brandid = item.brand
             left join frontend_ebrands as brand2 on brand2.brandid = item2.brand
-            left join projectmasterfile as p on p.line = item.projectid 
+            left join projectmasterfile as p on p.line = item.projectid
             left join projectmasterfile as p2 on p2.line = item2.projectid ";
             $limit = '';
           }
@@ -570,7 +570,7 @@ class rr
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,
      head.yourref, head.ourref, head.rem $fields
      from " . $this->head . " as head left join " . $this->tablenum . " as num
-     on num.trno=head.trno 
+     on num.trno=head.trno
      " . $join . "
      where head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $projectfilter . $condition . $filtersearch . $addparams . $groupbylocal . " "  . "
      union all
@@ -666,6 +666,10 @@ class rr
       $return['OTHER CHARGES'] = ['icon' => 'fa fa-envelope', 'customform' => $othercharges];
     }
 
+    if ($companyid == 71) { //buenatech
+      $return['OTHER CHARGES'] = ['icon' => 'fa fa-envelope', 'customform' => $othercharges];
+    }
+
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entrycntnumpicture', 'label' => 'Attachment', 'access' => 'view']];
     $obj = $this->tabClass->createtab($tab, []);
 
@@ -680,7 +684,7 @@ class rr
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
 
-    if ($config['params']['companyid'] == 60) { //transpower      
+    if ($config['params']['companyid'] == 60) { //transpower
       $changecode = $this->othersClass->checkAccess($config['params']['user'], 5492);
       if ($changecode) {
         $changecode = ['customform' => ['action' => 'customform', 'lookupclass' => 'changebarcode']];
@@ -1046,6 +1050,15 @@ class rr
         $obj[0]['inventory']['columns'][$original_qty]['type'] = 'label';
         $obj[0]['inventory']['columns'][$original_qty]['style'] = 'text-align: center; width: 80px;whiteSpace: normal;min-width:80px;max-width:80px;';
         break;
+      case 60: //transpower
+
+        $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
+
+        $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
+        $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
+        break;
 
       default:
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
@@ -1058,13 +1071,11 @@ class rr
     if ($companyid != 10) { //not afti
       $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$poref]['type'] = 'coldel';
-      if ($companyid == 68) { // jda
-        if (!$this->companysetup->getserial($config['params'])) {
-          $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
-        } else {
-          $obj[0]['inventory']['columns'][$serialno]['type'] = 'textarea';
-          $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
-        }
+      if (!$this->companysetup->getserial($config['params'])) {
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
+      } else {
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
       }
       // $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
@@ -1124,7 +1135,7 @@ class rr
         case 8: //maxipro
         case 24: //goodfound
         case 69: //cemphil
-        case 50: //unitech 
+        case 50: //unitech
           $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
           $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
           break;
@@ -1730,17 +1741,17 @@ class rr
         head.branch,ifnull(b.clientname,'') as branchname,ifnull(b.client,'') as branchcode,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,
         head.deptid,'' as ddeptname,head.invoiceno,left(head.invoicedate,10) as invoicedate,head.ewt,head.ewtrate,head.excess,head.excessrate,
         head.driver,head.plateno,head.cur2,head.forex2,hinfo.carrier,hinfo.waybill,cinfo.transtype as transtyperr,head.freight,head.agentfee,num.statid,
-        
-        head.phaseid, 
+
+        head.phaseid,
         ph.code as phase,
 
-        head.modelid, 
-        hm.model as housemodel, 
-        
-        head.blklotid, 
-        bl.blk as blklot, 
+        head.modelid,
+        hm.model as housemodel,
+
+        head.blklotid,
+        bl.blk as blklot,
         bl.lot,
-        
+
         amh.line as amenityid,
         amh.description as amenityname,
         subamh.line as subamenityid,
@@ -1767,7 +1778,7 @@ class rr
         left join amenities as amh on amh.line= head.amenityid
         left join subamenities as subamh on subamh.line=head.subamenityid and subamh.amenityid=head.amenityid
          $leftjoin
-        
+
         where head.trno = ? and num.doc=? and num.center = ? " . $projectfilter . "
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
@@ -2288,10 +2299,10 @@ class rr
 
     stock.phaseid, ph.code as phasename,
 
-    stock.modelid, hm.model as housemodel, 
+    stock.modelid, hm.model as housemodel,
 
     stock.blklotid, bl.blk, bl.lot,
-    
+
     am.line as amenity,
     am.description as amenityname,
     subam.line as subamenity,
@@ -2332,7 +2343,7 @@ class rr
     left join item on item.itemid=stock.itemid
     left join pallet on pallet.line=stock.palletid
     left join location on location.line=stock.locid
-    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
     left join client as warehouse on warehouse.clientid=stock.whid
     left join stagesmasterfile as st on st.line = stock.stageid
 
@@ -2361,21 +2372,21 @@ class rr
     stock.encodeddate,stock.disc,stock.void,round((stock." . $this->hqty . "-" . $qafield . ")/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") ,
     stock.ref,stock.whid,warehouse.client,warehouse.clientname, stock.loc,stock.expiry,item.brand,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,stock.fcost,stock.stageid,st.stage,
-    
+
     prj.name,stock.projectid,
     prj.code,
 
     stock.phaseid, ph.code,
 
-    stock.modelid, hm.model, 
+    stock.modelid, hm.model,
 
     stock.blklotid, bl.blk, bl.lot,
-    
+
     am.line,
     am.description,
     subam.line,
     subam.description,
-    
+
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . "),stock.poref,stock.sgdrate,
     brand.brand_desc,i.itemdescription,stock.freight,sit.itemdesc,sit.isbo,stock.rtrefx,stock.rtlinex,stock.sjrefx, stock.sjlinex $grpby
     UNION ALL
@@ -2412,21 +2423,21 @@ class rr
     stock.encodeddate,stock.disc,stock.void,round((stock." . $this->hqty . "-" . $qafield . ")/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") ,
     stock.ref,stock.whid,warehouse.client,warehouse.clientname, stock.loc,stock.expiry,item.brand,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,stock.fcost,stock.stageid,st.stage,
-    
+
     prj.name,stock.projectid,
     prj.code,
 
     stock.phaseid, ph.code,
 
-    stock.modelid, hm.model, 
+    stock.modelid, hm.model,
 
     stock.blklotid, bl.blk, bl.lot,
-    
+
     am.line,
     am.description,
     subam.line,
     subam.description,
-    
+
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . "),stock.poref,stock.sgdrate,
     brand.brand_desc,i.itemdescription,stock.freight,sit.itemdesc ,sit.isbo,stock.rtrefx,stock.rtlinex,stock.sjrefx, stock.sjlinex $grpby order by sortline,line";
 
@@ -2463,10 +2474,10 @@ class rr
     left join item on item.itemid=stock.itemid
     left join pallet on pallet.line=stock.palletid
     left join location on location.line=stock.locid
-    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
     left join client as warehouse on warehouse.clientid=stock.whid
-    left join stagesmasterfile as st on st.line = stock.stageid 
-    
+    left join stagesmasterfile as st on st.line = stock.stageid
+
     left join projectmasterfile as prj on prj.line = stock.projectid
     left join phase as ph on ph.line = stock.phaseid
     left join housemodel as hm on hm.line = stock.modelid
@@ -2481,7 +2492,7 @@ class rr
     left join stockinfo as sit on sit.trno = stock.trno and sit.line=stock.line
     left join rrstatus on rrstatus.trno=stock.trno and rrstatus.line=stock.line
     left join hpostock as po on po.trno=stock.refx and po.line=stock.linex
-    where stock.trno = ? and stock.line = ? 
+    where stock.trno = ? and stock.line = ?
     group by item.brand,
     mm.model_name,item.itemid,stock.trno,stock.line,stock.sortline,
     stock.refx,stock.linex,item.barcode,item.itemname,stock.uom,stock.kgs,
@@ -2492,21 +2503,21 @@ class rr
     stock.encodeddate,stock.disc,stock.void,round((stock." . $this->hqty . "-" . $qafield . ")/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") ,
     stock.ref,stock.whid,warehouse.client,warehouse.clientname, stock.loc,stock.expiry,item.brand,stock.rem,stock.palletid,stock.locid,
     pallet.name,location.loc,uom.factor,stock.fcost,stock.stageid,st.stage,
-    
+
     prj.name,stock.projectid,
     prj.code,
 
     stock.phaseid, ph.code,
 
-    stock.modelid, hm.model, 
+    stock.modelid, hm.model,
 
     stock.blklotid, bl.blk, bl.lot,
-    
+
     am.line,
     am.description,
     subam.line,
     subam.description,
-    
+
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . "),stock.poref,stock.sgdrate,
     brand.brand_desc,i.itemdescription,stock.freight,sit.itemdesc,sit.isbo,stock.rtrefx,stock.rtlinex" . $addgroupby . $grpby;
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
@@ -2961,7 +2972,7 @@ class rr
     $data['width'] = 1500;
     $startx = 100;
 
-    $qry = "select po.trno,po.docno,left(po.dateid,10) as dateid,concat('Total PO Amt: ',round(sum(s.ext),2)) as rem,s.refx 
+    $qry = "select po.trno,po.docno,left(po.dateid,10) as dateid,concat('Total PO Amt: ',round(sum(s.ext),2)) as rem,s.refx
     from hpohead as po left join hpostock as s on s.trno = po.trno left join glstock as g on g.refx = po.trno and g.linex = s.line where g.trno = ? group by po.trno,po.docno,po.dateid,s.refx";
     $t = $this->coreFunctions->opentable($qry, [$config['params']['trno']]);
     if (!empty($t)) {
@@ -3431,6 +3442,8 @@ class rr
       }
     }
 
+
+
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
     if ($this->companysetup->getvatexpurch($config['params'])) {
       $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, 'P', $kgs);
@@ -3814,10 +3827,10 @@ class rr
         head.ewt,head.ewtrate,head.wh,hwh.clientid as whid,
         stock.projectid as stock_projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid
         $fields
-        FROM hpohead as head 
-        left join hpostock as stock on stock.trno=head.trno 
-        left join item on item.itemid=stock.itemid 
-        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+        FROM hpohead as head
+        left join hpostock as stock on stock.trno=head.trno
+        left join item on item.itemid=stock.itemid
+        left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
         left join client as wh on wh.clientid=stock.whid left join client as hwh on hwh.client = head.wh
         $joins
         where stock.trno = ? and stock.qty>stock.qa and stock.void=0 ";
@@ -3853,7 +3866,7 @@ class rr
             break;
           case 69: //cemphil
           case 24: //goodfound
-            $this->coreFunctions->execqry("update lahead set terms='" . $data[0]->terms . "', vattype='" . $data[0]->vattype . "', tax=" . $data[0]->tax . ", 
+            $this->coreFunctions->execqry("update lahead set terms='" . $data[0]->terms . "', vattype='" . $data[0]->vattype . "', tax=" . $data[0]->tax . ",
                                                   yourref='" . $data[0]->yourref . "', ourref='" . $data[0]->ourref . "',ewt='" . $data[0]->ewt . "' ,
                                                   ewtrate='" . $data[0]->ewtrate . "' where trno = " . $trno, 'update');
             break;
@@ -3982,12 +3995,12 @@ class rr
         head.vattype,head.tax,head.ourref,head.ewt,head.ewtrate,head.wh,wh.clientid as whid,
         stock.projectid, stock.phaseid, stock.modelid, stock.blklotid, stock.amenityid, stock.subamenityid
         " . $fields . "
-        FROM hpohead as head 
-        left join hpostock as stock on stock.trno=head.trno 
+        FROM hpohead as head
+        left join hpostock as stock on stock.trno=head.trno
         left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and
         uom.uom=stock.uom left join client as wh on wh.client = head.wh " . $joins . " where stock.trno = ? and stock.line=? and stock.qty>stock.qa and stock.void=0
-        
+
     ";
 
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
@@ -4006,11 +4019,11 @@ class rr
 
 
         if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
-          $this->coreFunctions->execqry("update lahead set 
-          terms='" . $data[0]->terms . "', 
-          vattype='" . $data[0]->vattype . "', 
-          tax=" . $data[0]->tax . ", 
-          yourref='" . $data[0]->yourref . "', 
+          $this->coreFunctions->execqry("update lahead set
+          terms='" . $data[0]->terms . "',
+          vattype='" . $data[0]->vattype . "',
+          tax=" . $data[0]->tax . ",
+          yourref='" . $data[0]->yourref . "',
           ourref='" . $data[0]->ourref . "',
           ewt='" . $data[0]->ewt . "' ,
           ewtrate='" . $data[0]->ewtrate . "'
@@ -4141,7 +4154,7 @@ class rr
         stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,stock.projectid,head.subproject,stock.stageid,head.branch,head.deptid,head.ewtrate,head.ewt,stock.freight
         from ' . $this->head . ' as head left join ' . $this->stock . ' as stock on stock.trno=head.trno
         left join client as wh on wh.clientid=stock.whid
-        left join item on item.itemid=stock.itemid left join projectmasterfile as p on p.line = stock.projectid 
+        left join item on item.itemid=stock.itemid left join projectmasterfile as p on p.line = stock.projectid
         left join coa as a on a.acnoid = p.assetid left join coa as r on r.acnoid = p.revenueid where head.trno=?';
         break;
       case 69: //cemphil
@@ -4170,7 +4183,7 @@ class rr
         } else {
           $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
                 stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt' . $fields . '
-                from ' . $this->head . ' as head  left join ' . $this->stock . ' as stock on stock.trno=head.trno left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid 
+                from ' . $this->head . ' as head  left join ' . $this->stock . ' as stock on stock.trno=head.trno left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid
                 where head.trno=?';
         }
         break;
@@ -4187,10 +4200,10 @@ class rr
 
     if (!empty($stock)) {
       if ($periodic) {
-        $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['PS1']); //Purchases acct under asset 
+        $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['PS1']); //Purchases acct under asset
       } else {
         $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN1']);
-        if ($companyid == 24 || $companyid == 69) $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['INS1']); //goodfound, cemphil        
+        if ($companyid == 24 || $companyid == 69) $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['INS1']); //goodfound, cemphil
       }
 
       $vat = $stock[0]->tax;
@@ -4281,6 +4294,8 @@ class rr
           'cur' => $stock[$key]->cur,
           'forex' => $stock[$key]->forex,
           'cost' =>  $cost,
+          'rrcost' => $stock[$key]->rrcost,
+          'qty' => $stock[$key]->rrqty,
           'projectid' => $stock[$key]->projectid,
           'subproject' => $stock[$key]->subproject,
           'stageid' => $stock[$key]->stageid,
@@ -4525,7 +4540,6 @@ class rr
 
     $cur = $params['cur'];
     $invamt = $params['cost'];
-
 
     $ewt = isset($params['ewt']) ? $params['ewt'] : 0;
     $ext = $params['ext'];
@@ -4955,8 +4969,8 @@ class rr
   private function updateitemsrp($config, $trno)
   {
 
-    $qry = "select head.docno,stock.itemid,stock.cost,head.rrfactor 
-    from glstock as stock 
+    $qry = "select head.docno,stock.itemid,stock.cost,head.rrfactor
+    from glstock as stock
     left join glhead as head on head.trno=stock.trno
     where stock.trno = ? and head.rrfactor<>0";
     $data = $this->coreFunctions->opentable($qry, [$trno]);
@@ -5096,16 +5110,16 @@ class rr
       }
 
       foreach ($generic as $key => $value) {
-        $qry = "select s.trno, s.line, s.itemid, s.qty as rrqty, s.uom, item.barcode, item.itemname, 
-                       item.brand, item.model, item.groupid, item.class, item.part, item.category, item.sizeid, 
+        $qry = "select s.trno, s.line, s.itemid, s.qty as rrqty, s.uom, item.barcode, item.itemname,
+                       item.brand, item.model, item.groupid, item.class, item.part, item.category, item.sizeid,
                        item.body, client.clientid, h.dateid
-                from lastock as s 
-                left join item on item.itemid=s.itemid 
-                left join lahead as h on h.trno=s.trno 
+                from lastock as s
+                left join item on item.itemid=s.itemid
+                left join lahead as h on h.trno=s.trno
                 left join client on client.client=h.client
                 left join rrfams as rrf on rrf.trno=s.trno and rrf.line=s.line
                 where s.trno=? and item.isgeneric=1 and s.itemid=? and s.trno=? and s.line=?
-                group by s.trno, s.line, s.itemid, s.qty, s.uom, item.barcode, item.itemname, item.brand, item.model, 
+                group by s.trno, s.line, s.itemid, s.qty, s.uom, item.barcode, item.itemname, item.brand, item.model,
                 item.groupid, item.class, item.part, item.category, item.sizeid, item.body, client.clientid, h.dateid";
         $generics = $this->coreFunctions->opentable($qry, [$trno, $value->itemid, $value->trno, $value->line]);
 
@@ -5179,11 +5193,11 @@ class rr
   {
     $trno = $config['params']['trno'];
     $qry = "select s.itemid, s.trno, s.line, s.rrqty, ifnull(sum(rr.qty),0) as qty
-            from lastock as s 
-            left join item on item.itemid=s.itemid 
-            left join rrfams as rr on rr.trno=s.trno and rr.line=s.line 
+            from lastock as s
+            left join item on item.itemid=s.itemid
+            left join rrfams as rr on rr.trno=s.trno and rr.line=s.line
             where s.trno=? and item.isgeneric=1
-            group by s.itemid, s.trno, s.line, s.rrqty 
+            group by s.itemid, s.trno, s.line, s.rrqty
             having s.rrqty<>ifnull(sum(rr.qty),0)";
     return $this->coreFunctions->opentable($qry, [$trno]);
   }

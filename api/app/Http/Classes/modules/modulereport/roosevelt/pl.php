@@ -241,7 +241,6 @@ class pl
     PDF::SetCellPaddings(0, 0, 0, 0);
   }
 
-
   public function roosevelt_pl_PDF($params, $data)
   {
     $companyid = $params['params']['companyid'];
@@ -250,11 +249,8 @@ class pl
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $count = $page = 45; //30 45
-    $totalext = 0;
+    $page = 23;
 
-
-    $border = "1px solid ";
     $fontsize = 15;
     $font = "";
     $fontbold = "";
@@ -267,70 +263,98 @@ class pl
     $this->roosevelt_pl_header_PDF($params, $data, $tablehead = 0);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
-    // PDF::SetCellPaddings(0, 0, 0, 0); //left ,top, right,bottom
-    // PDF::SetCellPaddings(0, 1, 0, 0);
+    PDF::SetCellPaddings(5, 5, 5, 5);
+
     $rowCount = 0;
-    $countarr = 0;
     $y = (float)230;
     $x = PDF::GetX();
-    PDF::setCellHeightRatio(1);
+
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
-
-        $maxrow = 1;
         $itemname = $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 2);
-        $uom = $data[$i]['uom']; //$data[$i]['uom']
-        $sizeid = $data[$i]['sizeid'];
+        $uom = $data[$i]['uom'];
 
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '15', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '15', 0);
-        $arr_sizeid = $this->reporter->fixcolumn([$sizeid], '15', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom]);
+
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
+          $height = 20;
           PDF::SetXY($x, $y);
-          PDF::MultiCell(30, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(85, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //(isset($arr_qty[$r]) ? $arr_qty[$r] : '')
-          PDF::MultiCell(25, 0, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(480, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(30, $height, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(85, $height, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //(isset($arr_qty[$r]) ? $arr_qty[$r] : '')
+          PDF::MultiCell(25, $height, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, $height, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(480, $height, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           $y = PDF::getY();
           $rowCount++;
+
           if ($rowCount >= $page && $i < count($data) - 1) {
-            $this->continuation_footer($params, $data);
-            $this->default_footer3($params, $data);
+            $y = $this->roosevelt_pl_newpage($params, $data);
             $rowCount = 0;
-            $y = (float)230;
-            $this->roosevelt_pl_header_PDF($params, $data, $tablehead = 0);
-            // PDF::SetCellPaddings(0, 1, 0, 0);
-            PDF::setCellHeightRatio(1);
           }
         }
       }
     }
-    if ($rowCount > 30 && $rowCount <= $count) { //kapag > 30 and less then or equal 45 
-      $this->continuation_footer($params, $data);
-      $this->default_footer3($params, $data);
-      $rowCount = 0;
-      $y = (float)230;
-      $tablehead = 1;
-      $this->roosevelt_pl_header_PDF($params, $data, $tablehead);
-      // PDF::SetCellPaddings(0, 1, 0, 0);
-      PDF::MultiCell(0, 0, "\n");
-      $this->default_footer1($params, $data);
-      $this->default_footer2($params, $data);
-    } else { //36 pababa
-      $this->default_footer1($params, $data);
-      $this->default_footer2($params, $data);
+
+    // Kung umabot sa max rows ang huling page, o kung hindi na kasya ang invoice list
+    // bago ang fixed footer position (Y=800), ilipat sa bagong page ang footer.
+    if ($rowCount >= $page || !$this->roosevelt_pl_footer_fits($data)) {
+      $this->roosevelt_pl_newpage($params, $data, $tablehead = 1);
     }
 
+    $this->default_footer1($params, $data);
+    $this->default_footer2($params, $data);
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
+  
+   //Isinasara ang kasalukuyang page (continuation footer + page number),
+   //pagkatapos ay nagbubukas ng bagong page na may header.
+   // Ibinabalik ang starting Y para sa item rows sa bagong page.
+
+  private function roosevelt_pl_newpage($params, $data, $tablehead = 0)
+  {
+    $this->continuation_footer($params, $data);
+    $this->default_footer3($params, $data);
+
+    PDF::SetCellPaddings(0, 0, 0, 0);
+    $this->roosevelt_pl_header_PDF($params, $data, $tablehead);
+    PDF::SetCellPaddings(5, 5, 5, 5);
+
+    return (float)230;
+  }
+
+  //Tinitingnan kung kasya pa ang footer1 (kasama ang invoice list) bago umabot sa fixed Y position ng footer2 (Y=800).
+  private function roosevelt_pl_footer_fits($data)
+  {
+    $invoices = [];
+    foreach ($data as $row) {
+      if ($row['invoice'] != '') {
+        $invoices[] = $row['invoice'];
+      }
+    }
+    $invoicesstring = implode(" , ", array_unique($invoices));
+
+    $invoiceHeight = 0;
+    if ($invoicesstring != '') {
+      $invoiceHeight = PDF::getStringHeight(690, $invoicesstring, false, true, '', 1);
+    }
+
+    $footer1BeforeInvoice = 100;
+    $footerSafety = 15;
+    $requiredFooterSpace = $footer1BeforeInvoice + $invoiceHeight + $footerSafety;
+
+    $currentY = PDF::getY();
+    $footerLimitY = 800;
+
+    return ($currentY + $requiredFooterSpace) < $footerLimitY;
+  }
 
 
   public function default_footer1($params, $data)
@@ -404,41 +428,41 @@ class pl
     foreach ($data as $row) {
       $totalext += $row['ext'];
     }
-
-    PDF::SetY(810);
+    PDF::setCellHeightRatio(1.25);
+    PDF::SetY(800);
     //
     PDF::SetLineStyle(array('width' => 0.4, 'cap' => 'butt', 'join' => 'miter', 'dash' => 3));
     PDF::MultiCell(720, 0, '', 'T', 'L', false, 1);
 
     PDF::SetLineStyle(array('width' => 0.4, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0));
 
-    PDF::SetY(825);
+    PDF::SetY(805);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(170, 0, 'VIA : JADES CARGO', '', 'L', false, 0);
     PDF::MultiCell(90, 0, 'WAYBILL# :', '', '', false, 0);
     PDF::MultiCell(230, 0, '', '', '', false, 0);
-    PDF::MultiCell(110, 0, 'AMOUNT :', '', 'R', false, 0);
+    PDF::MultiCell(100, 0, 'AMOUNT :', '', 'R', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(90, 0,  number_format($totalext, 2), '', 'R', false, 1);
+    PDF::MultiCell(100, 0,  number_format($totalext, 2), '', 'R', false, 1);
 
-    PDF::SetY(855);
+    PDF::SetY(835);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(690, 0, 'Received in good order & condition', '', 'L', false, 1, '', '');
     // PDF::MultiCell(400, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::SetY(920);
+    PDF::SetY(900);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(250, 0, '', 'T', 'C', false, 0, '', '');
     PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::SetY(925);
+    PDF::SetY(905);
     PDF::MultiCell(30, 0, '', '', 'L', false, 0, '', '');
     PDF::MultiCell(250, 0, 'Signature over printed name', '', 'C', false, 0, '', '');
     PDF::MultiCell(440, 0, '', '', 'L', false, 1, '', '');
 
-    PDF::SetY(962);
+    PDF::SetY(956);
     $printeddate = $this->othersClass->getCurrentTimeStamp();
     $datetime = new DateTime($printeddate);
     $formattedDate = $datetime->format('Y/m/d h:i:s a'); //2025-09-25 16:46:32 pm

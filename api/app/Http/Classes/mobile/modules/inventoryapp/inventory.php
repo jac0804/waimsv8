@@ -1250,6 +1250,7 @@ class inventory
           ];
           sbc.globalFunc.visibleCols = ["barcode", "itemname", "brand", "bal"];
           let brands = sbc.modulefunc.docForm.brands;
+          let wh = sbc.modulefunc.docForm.wh;
           brands = brands.split(",");
           brands = brands.map(waw => `"${waw}"`).join(",");
           // sbc.modulefunc.lookupTableFilter = { type: "filter", field: "", label: "Search Item", func: "" };
@@ -1259,12 +1260,12 @@ class inventory
           sbc.lookupTitle = "Items List";
           sbc.showLookup = true;
           sbc.db.transaction(function (tx) {
-            let qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode where item.brand in (" + brands + ") order by item.barcode asc";
+            let qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode where item.brand in (" + brands + ") and itembal.wh=? order by item.barcode asc";
             if (sbc.globalFunc.company === "mbs") {
               // qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode order by item.barcode asc";
               qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(item.bal as float), 0), 2) as bal, clientitem.sku from item left join clientitem on clientitem.barcode=item.barcode order by item.barcode asc";
             }
-            tx.executeSql(qry, [], function (tx, res) {
+            tx.executeSql(qry, [wh], function (tx, res) {
               sbc.globalFunc.lookupData = [];
               let items = [];
               if (res.rows.length > 0) {
@@ -1293,6 +1294,7 @@ class inventory
         if (sbc.modulefunc.cLookupForm.scanitem !== "") {
           cfunc.showLoading();
           let brands = sbc.modulefunc.docForm.brands;
+          let wh = sbc.modulefunc.docForm.wh;
           brands = brands.split(",");
           brands = brands.map(waw => `"${waw}"`).join(",");
           if (sbc.modulefunc.docForm.trno !== 0 && sbc.modulefunc.docForm.trno !== "" && sbc.modulefunc.docForm.trno !== undefined) {
@@ -1302,8 +1304,8 @@ class inventory
               //   // qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
               //   qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(item.bal as float), 0), 2) as bal, clientitem.sku from item left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
               // }
-              let qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(item.bal as float), 0), 2) as bal, clientitem.sku from item left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
-              tx.executeSql(qry, [sbc.modulefunc.cLookupForm.scanitem.toLowerCase(), sbc.modulefunc.cLookupForm.scanitem.toLowerCase()], function (tx, res) {
+              let qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) and itembal.wh = ? left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
+              tx.executeSql(qry, [wh, sbc.modulefunc.cLookupForm.scanitem.toLowerCase(), sbc.modulefunc.cLookupForm.scanitem.toLowerCase()], function (tx, res) {
                 if (res.rows.length > 0) {
                   let seq = 0;
                   console.log("-----------------scanBarcode: ", res.rows.item(0));
@@ -1931,7 +1933,7 @@ class inventory
               left join clientitem as ci on ci.barcode=item.barcode\
               left join itembal as ib on cast(ib.itemid as integer)=item.itemid\
               left join soldqtyitems as sitems on sitems.barcode=item.barcode\
-              where item.brand in (" + brands2 + ") " + filter + " order by qty desc";
+              where item.brand in (" + brands2 + ") " + filter + " and ib.wh=? order by qty desc";
             if (sbc.globalFunc.company === "mbs") {
               if (sbc.modulefunc.gtype === "Initial") {
                 qry = "select ? as wh, ? as dateid, item.itemid, item.barcode, item.partno, item.itemname, round(ifnull(cast(item.bal as float), 0), 2) as syscount, ifnull(ci.sku, ?) as sku, item.brand,\
@@ -1949,7 +1951,14 @@ class inventory
                   order by qty desc";
               }
             }
-            tx.executeSql(qry, [sbc.modulefunc.cLookupForm.wh, pcdate, ""], function (tx, ires) {
+
+            let dd = [sbc.modulefunc.cLookupForm.wh, pcdate, ""];
+
+            if (sbc.globalFunc.company === "ulitc") {
+              dd.push(sbc.modulefunc.cLookupForm.wh)
+            }
+
+            tx.executeSql(qry, dd, function (tx, ires) {
                 if (ires.rows.length) {
                   let variance = 0;
                   // sbc.modulefunc.cLookupForm.itemcount = ires.rows.length;
@@ -2218,7 +2227,7 @@ class inventory
               <th>Cust. SKU</th>\
               <th>Item Name</th>\
               <th>Brand</th>\
-              <th>Sys. Count</th>\
+              <th>Sys. Balance</th>\
               <th>Actual</th>\
               <th>Sales</th>\
               <th>Variance</th>\
@@ -2312,39 +2321,90 @@ class inventory
             if (sbc.globalFunc.company === "mbs" && sbc.modulefunc.gtype === "Final") {
               filename = "FINAL PC-" + sbc.modulefunc.cLookupForm.wh + "-" + sbc.modulefunc.inputLookupForm.pcdate;
             }
-            filePath = cordova.file.externalDataDirectory + "Download/pdfs/" + filename + ".pdf";
-            const fileTransfer = new window.FileTransfer();
+            // filePath = cordova.file.externalDataDirectory + "Download/pdfs/" + filename + ".pdf";
+            window.resolveLocalFileSystemURL(
+              cordova.file.externalDataDirectory,
+              function (dirEntry) {
+                dirEntry.getFile(
+                  filename + ".pdf",
+                  { create: true, exclusive: false },
+                  function (fileEntry) {
+                    fileEntry.createWriter(function (fileWriter) {
+                      fileWriter.onwriteend = function () {
+                        console.log("Document successfully saved, full path:", fileEntry.nativeURL);
+                        sbc.db.transaction(function (tx) {
+                          tx.executeSql(
+                            "update wh set generated=1, filename=? where client=?",
+                            [filename, sbc.modulefunc.cLookupForm.wh],
+                            function () {
+                              $q.loading.hide();
+                              sbc.modulefunc.cLookupForm.generated = 1;
+                              sbc.modulefunc.cLookupForm.filename = filename;
+                              if ($q.localStorage.has("sbcInvAppPDFDoc")) {
+                                $q.localStorage.removeItem("sbcInvAppPDFDoc");
+                              }
+                              $q.localStorage.set(
+                                "sbcInvAppPDFDoc",
+                                filename + ".pdf"
+                              );
+                              cfunc.showMsgBox("Document successfully saved.", "positive");
+                              generateSaveExcel(pdfData);
+                            }
+                          );
+                        });
+                      };
+                      fileWriter.onerror = function (err) {
+                        console.error(err);
+                        $q.loading.hide();
+                        sbc.globalFunc.showErrMsg("Error saving document.");
+                      };
 
-            window.resolveLocalFileSystemURL(filePath, function(dir) {
-             dir.getFile(filename, {create:false}, function(fileEntry) {
-               fileEntry.remove(function () {
-                  console.log("Document deleted");
-                },function (error) {
-                  // cfunc.showMsgBox("Error deleting existing document, Please try again.", "negative", "warning", 0, "", [{ icon: "close", color: "white", round: true }]);
-                  sbc.globalFunc.showErrMsg("Error deleting existing document, Please try again.");
-                  return;
-                });
-              });
-            });
+                      fileWriter.write(blob);
 
-            fileTransfer.download(b64, filePath, (entry) => {
-              console.log("Document successfully saved, full path: ", entry.fullPath,);
-              sbc.db.transaction(function (tx) {
-                tx.executeSql("update wh set generated=1, filename=? where client=?", [filename, sbc.modulefunc.cLookupForm.wh], function (tx, res) {
-                  $q.loading.hide();
-                  sbc.modulefunc.cLookupForm.generated = 1;
-                  sbc.modulefunc.cLookupForm.filename = filename;
-                  if ($q.localStorage.has("sbcInvAppPDFDoc")) $q.localStorage.removeItem("sbcInvAppPDFDoc");
-                  $q.localStorage.set("sbcInvAppPDFDoc", filename + ".pdf");
-                  cfunc.showMsgBox("Document successfully saved, full path: " + entry.fullPath, "positive");
-                  generateSaveExcel(pdfData);
-                });
-              });
-            }, (error) => {
-              console.log("error saving document error: ", error);
-              $q.loading.hide();
-              sbc.globalFunc.showErrMsg("Error saving document err: ", error);
-            });
+                    });
+                  }
+                );
+              },
+              function (err) {
+                console.error(err);
+                $q.loading.hide();
+                sbc.globalFunc.showErrMsg(
+                  "Unable to access storage folder."
+                );
+              }
+            );
+            // const fileTransfer = new window.FileTransfer();
+
+            // window.resolveLocalFileSystemURL(filePath, function(dir) {
+            //  dir.getFile(filename, {create:false}, function(fileEntry) {
+            //    fileEntry.remove(function () {
+            //       console.log("Document deleted");
+            //     },function (error) {
+            //       // cfunc.showMsgBox("Error deleting existing document, Please try again.", "negative", "warning", 0, "", [{ icon: "close", color: "white", round: true }]);
+            //       sbc.globalFunc.showErrMsg("Error deleting existing document, Please try again.");
+            //       return;
+            //     });
+            //   });
+            // });
+
+            // fileTransfer.download(b64, filePath, (entry) => {
+            //   console.log("Document successfully saved, full path: ", entry.fullPath,);
+            //   sbc.db.transaction(function (tx) {
+            //     tx.executeSql("update wh set generated=1, filename=? where client=?", [filename, sbc.modulefunc.cLookupForm.wh], function (tx, res) {
+            //       $q.loading.hide();
+            //       sbc.modulefunc.cLookupForm.generated = 1;
+            //       sbc.modulefunc.cLookupForm.filename = filename;
+            //       if ($q.localStorage.has("sbcInvAppPDFDoc")) $q.localStorage.removeItem("sbcInvAppPDFDoc");
+            //       $q.localStorage.set("sbcInvAppPDFDoc", filename + ".pdf");
+            //       cfunc.showMsgBox("Document successfully saved, full path: " + entry.fullPath, "positive");
+            //       generateSaveExcel(pdfData);
+            //     });
+            //   });
+            // }, (error) => {
+            //   console.log("error saving document error: ", error);
+            //   $q.loading.hide();
+            //   sbc.globalFunc.showErrMsg("Error saving document err: ", error);
+            // });
           }
         },
         function (err) {
@@ -2376,7 +2436,7 @@ class inventory
           let datas = [];
           data.map((waw, i, rows) => {
             sbc.db.transaction(function (tx) {
-              tx.executeSql("select head.loc from hhead as head left join hstock as stock on stock.trno=head.trno where stock.barcode=?", [waw.barcode], function (tx, res) {
+              tx.executeSql("select head.loc from hhead as head left join hstock as stock on stock.trno=head.trno where stock.barcode=? and head.wh=?", [waw.barcode, waw.wh], function (tx, res) {
                 let loc1 = [];
                 if (res.rows.length > 0) {
                   for (var x = 0; x < res.rows.length; x++) {
@@ -2428,8 +2488,9 @@ class inventory
             });
             csv.unshift(fields.join(","));
             csv = csv.join("\r\n");
-            csv = "data:text/csv;charset=utf-8," + csv;
-            encodedUri = encodeURI(csv);
+            // csv = "data:text/csv;charset=utf-8," + csv;
+            // encodedUri = encodeURI(csv);
+            encodedUri = csv;
             let errorCallback = function () {
               console.log("............... permission error");
               $q.loading.hide();
@@ -2439,37 +2500,80 @@ class inventory
         }
 
         function contSaveExcelFile () {
+          const folderPath = cordova.file.externalDataDirectory;
+          window.resolveLocalFileSystemURL(folderPath, function (dirEntry) {
+            dirEntry.getFile(
+              filename + ".csv",
+              { create: true, exclusive: false },
+              function (fileEntry) {
+                fileEntry.createWriter(function (writer) {
+                  writer.onwriteend = function () {
+                    console.log("Saved CSV:", fileEntry.nativeURL);
+                    cfunc.showMsgBox("Successfully saved excel file: " + fileEntry.nativeURL, "positive");
+                    $q.loading.hide();
+                    sbc.db.transaction(function (tx) {
+                      tx.executeSql("delete from soldqtyitems where wh=?", [sbc.modulefunc.cLookupForm.wh], function () {
+                        sbc.modulefunc.generateReport(true);
+                      });
+                      if (sbc.globalFunc.company === "mbs" && sbc.modulefunc.gtype === "Final") {
+                        let datenow = cfunc.getDateTime("datetime");
+                        tx.executeSql("insert into mbssettings values(?, ?)", ["FGENERATED", datenow]);
+                      } else {
+                        tx.executeSql("update wh set generated=true where client=?", [sbc.modulefunc.cLookupForm.wh]);
+                      }
+                    });
+                  };
+                  writer.onerror = function (err) {
+                    console.error("CSV write error:", err);
+                    cfunc.showMsgBox("Error saving excel file", "negative", "warning");
+                    $q.loading.hide();
+                  };
+                  const BOM = "\uFEFF";
+                  const blob = new Blob([BOM + encodedUri], {
+                    type: "text/csv;charset=utf-8"
+                  });
+
+                  writer.write(blob);
+                  // writer.write(new Blob([encodedUri], { type: "text/csv" }));
+                });
+              }
+            );
+          }, function (err) {
+            console.error("Folder access error:", err);
+            cfunc.showMsgBox("Unable to access storage folder", "negative", "warning");
+            $q.loading.hide();
+          });
           // const filePath = cordova.file.externalRootDirectory + "FAMS/" + data + ".csv";
           // const filePath = cordova.file.externalDataDirectory + "Download/excels/" + filename + ".csv";
-          const filePath = cordova.file.externalDataDirectory + "Download/excels";
-          const fileTransfer = new window.FileTransfer();
+          // const filePath = cordova.file.externalDataDirectory + "Download/excels";
+          // const fileTransfer = new window.FileTransfer();
 
-          fileTransfer.download(encodedUri, filePath + "/" + filename + ".csv",
-            function (entry) {
-              console.log("--------waw------", encodedUri);
-              cfunc.showMsgBox("Successfully saved excel file, full path is " + entry.fullPath, "positive");
-              $q.loading.hide();
-              console.log("newreport: ", sbc.modulefunc.newreport);
-              sbc.db.transaction(function (tx) {
-                tx.executeSql("delete from soldqtyitems where wh=?", [sbc.modulefunc.cLookupForm.wh], function (tx, res) {
-                  sbc.modulefunc.generateReport(true);
-                });
-                if (sbc.globalFunc.company === "mbs" && sbc.modulefunc.gtype === "Final") {
-                  let datenow = cfunc.getDateTime("datetime");
-                  tx.executeSql("insert into mbssettings values(?, ?)", ["FGENERATED", datenow]);
-                } else {
-                  tx.executeSql("update wh set generated=true where client=?", [sbc.modulefunc.cLookupForm.wh]);
-                }
-              }, function (err) {
-                console.log("error generating excel file #1: ", err.message);
-              });
-            },
-            function (error) {
-              cfunc.showMsgBox("Error saving excel file", "negative", "warning");
-              $q.loading.hide()
-            },
-            false
-          );
+          // fileTransfer.download(encodedUri, filePath + "/" + filename + ".csv",
+          //   function (entry) {
+          //     console.log("--------waw------", encodedUri);
+          //     cfunc.showMsgBox("Successfully saved excel file, full path is " + entry.fullPath, "positive");
+          //     $q.loading.hide();
+          //     console.log("newreport: ", sbc.modulefunc.newreport);
+          //     sbc.db.transaction(function (tx) {
+          //       tx.executeSql("delete from soldqtyitems where wh=?", [sbc.modulefunc.cLookupForm.wh], function (tx, res) {
+          //         sbc.modulefunc.generateReport(true);
+          //       });
+          //       if (sbc.globalFunc.company === "mbs" && sbc.modulefunc.gtype === "Final") {
+          //         let datenow = cfunc.getDateTime("datetime");
+          //         tx.executeSql("insert into mbssettings values(?, ?)", ["FGENERATED", datenow]);
+          //       } else {
+          //         tx.executeSql("update wh set generated=true where client=?", [sbc.modulefunc.cLookupForm.wh]);
+          //       }
+          //     }, function (err) {
+          //       console.log("error generating excel file #1: ", err.message);
+          //     });
+          //   },
+          //   function (error) {
+          //     cfunc.showMsgBox("Error saving excel file", "negative", "warning");
+          //     $q.loading.hide()
+          //   },
+          //   false
+          // );
         }
       },
       viewDocument: function () {
@@ -2485,7 +2589,7 @@ class inventory
             if ($q.localStorage.has("sbcInvAppPDFDoc")) {
               // const filename = $q.localStorage.getItem("sbcInvAppPDFDoc");
               const filename = sbc.modulefunc.cLookupForm.filename;
-              const filePath = cordova.file.externalDataDirectory + "Download/pdfs/" + filename + ".pdf";
+              const filePath = cordova.file.externalDataDirectory + filename + ".pdf";
               cordova.plugins.fileOpener2.showOpenWithDialog(
                 filePath,
                 "application/pdf",
@@ -2524,9 +2628,9 @@ class inventory
         if (sbc.modulefunc.inputLookupForm.email !== "") {
           let files = [];
           const filename = sbc.modulefunc.cLookupForm.filename;
-          const filePath = cordova.file.externalDataDirectory + "Download/pdfs/" + filename;
-          files.push(cordova.file.externalDataDirectory + "Download/pdfs/" + filename + ".pdf");
-          files.push(cordova.file.externalDataDirectory + "Download/excels/" + filename + ".csv");
+          const filePath = cordova.file.externalDataDirectory + filename;
+          files.push(cordova.file.externalDataDirectory + filename + ".pdf");
+          files.push(cordova.file.externalDataDirectory + filename + ".csv");
           console.log("..........", files);
           cordova.plugins.email.open({
             to: sbc.modulefunc.inputLookupForm.email,
@@ -2623,13 +2727,14 @@ class inventory
       },
       searchItem: function (waw) {
         let brands = sbc.modulefunc.docForm.brands;
+        let wh =sbc.modulefunc.docForm.wh;
         brands = brands.split(",");
         brands = brands.map(waw => `"${waw}"`).join(",");
         let sql = "select item.itemid, item.barcode, item.itemname, item.brand, ifnull(cast(itembal.bal as float), 0) as bal, clientitem.sku\
           from item\
           left join itembal on itembal.itemid=cast(item.itemid as integer)\
           left join clientitem on clientitem.barcode=item.barcode\
-          where item.brand in (" + brands + ")";
+          where item.brand in (" + brands + ") and itembal.wh=?";
         if (sbc.globalFunc.company === "mbs") {
           sql = "select item.itemid, item.barcode, item.itemname, item.brand, ifnull(cast(item.bal as float), 0) as bal, clientitem.sku\
           from item\
@@ -2639,6 +2744,11 @@ class inventory
         let strs = [];
         let f = "";
         let d = [];
+
+        if (sbc.globalFunc.company === "ulitc") {
+          d.push([wh]);
+        }  
+
         if (waw !== "") strs = waw.split(",");
         if (strs.length > 0) {
           for (var s in strs) {

@@ -640,7 +640,7 @@ class employee
     $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
     $uniform = $this->othersClass->checkAccess($config['params']['user'], 5949);
     $violations = $this->othersClass->checkAccess($config['params']['user'], 5968);
-
+    $ddo = $this->othersClass->checkAccess($config['params']['user'], 6032);
 
     $citation_access = $this->othersClass->checkAccess($config['params']['user'], 5950);
 
@@ -712,6 +712,7 @@ class employee
     $tab = ['tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'entryempviolation', 'label' => 'NEW VIOLATION']];
     $violation = $this->tabClass->createtab($tab, []);
 
+    $hddo = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewddo']];
 
 
 
@@ -765,6 +766,9 @@ class employee
       }
       if ($violations) {
         $return['VIOLATION'] = ['icon' => 'fa fa-exclamation', 'tab' => $violation];
+      }
+      if ($ddo) {
+        $return['DDO HISOTRY'] = ['icon' => 'fa fa-paste', 'customform' => $hddo];
       }
     }
 

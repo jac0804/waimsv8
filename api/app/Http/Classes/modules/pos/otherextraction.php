@@ -304,7 +304,7 @@ class otherextraction
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         foreach ($fields as $k) {
           $data[$k] = $head[$k];
-          $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k],$lookups);
+          $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k], $lookups);
         }
 
         $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -321,8 +321,10 @@ class otherextraction
           $cashname = $checkname = $cardname = $arname = $arname2 = '';
           $dcAR = 0;
 
-          $savingacct = $this->coreFunctions->getfieldvalue("client", "savingsacct", "client=?", [$value['branch']]);
+          $savingacct = $this->coreFunctions->getfieldvalue("client", "savingsacct", "client=?", [$value['branch']], '', true);
+          if ($savingacct == '') $savingacct == '\1-01-01-02-29';
           $cashid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "acno=?", [$savingacct]);
+
 
           $arid = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARL1']);
           $arid2 = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias=?", ['ARL2']);
@@ -456,7 +458,7 @@ class otherextraction
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key3 => $value3) {
               foreach ($value3 as $key2 => $value2) {
-                $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+                $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
               }
               $this->acctg[$key3]['editdate'] = $current_timestamp;
               $this->acctg[$key3]['editby'] = $config['params']['user'];

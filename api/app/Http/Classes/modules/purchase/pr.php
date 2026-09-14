@@ -591,6 +591,10 @@ class pr
       $obj[0]['inventory']['columns'][$netamt]['type'] = 'coldel';
     } elseif ($companyid == 39) { //cbbsi
       $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
+    }elseif ($companyid == 68) { //jda
+      $obj[0]['inventory']['columns'][$netamt]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
     } else {
       $obj[0]['inventory']['columns'][$netamt]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';

@@ -177,6 +177,7 @@ class profit_and_loss_statement_by_product
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $branch = $config['params']['dataparams']['clientid'];
         $projectid = $config['params']['dataparams']['projectid'];
+        $projectname = $config['params']['dataparams']['projectname'];
 
         $count = 38;
         $page = 38;
@@ -222,7 +223,7 @@ class profit_and_loss_statement_by_product
 
         $filter = "";
 
-        if ($projectid != 0) {
+        if ($projectname != "") {
             $filter .= " and detail.projectid = '$projectid'";
         }
 

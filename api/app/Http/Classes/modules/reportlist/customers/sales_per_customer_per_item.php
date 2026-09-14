@@ -236,7 +236,9 @@ class sales_per_customer_per_item
     $subcatname =  $config['params']['dataparams']['subcat'];
     $custid =  $config['params']['dataparams']['category_id']; // custumer category
     $agentid     = $config['params']['dataparams']['agentid'];
+    $agentname    = $config['params']['dataparams']['agentname'];
 
+    $itemname = "item.itemname ";
     $filter = "";
 
     if (
@@ -255,7 +257,7 @@ class sales_per_customer_per_item
       $filter = $filter . " and client.category='$custid'";
     }
 
-    if ($agentid != 0) {
+    if ($agentname != "") {
       $filter .= " and ag.clientid = '$agentid'";
     }
 
@@ -310,9 +312,13 @@ class sales_per_customer_per_item
       $opt = " sum($option) as sales";
     }
 
+    if($companyid == 47){//kstar
+      $itemname = " concat(item.itemname,' ',item.color,' ',item.sizeid) as itemname ";
+    }
+
     $query = "select docno,client, clientname, barcode, itemname,$opt, amt as price,shipto,yourref, ourref,dateid,agentname
               from (select 'u' as tr, head.trno, head.doc, head.docno, head.client, head.clientname, item.barcode, 
-                           item.itemname, stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
+                          ".$itemname.", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
                     from lahead as head 
                     left join lastock as stock on stock.trno=head.trno 
                     left join client on client.client=head.client
@@ -324,7 +330,7 @@ class sales_per_customer_per_item
                     union all
                     select 'p' as tr, head.trno, head.doc, head.docno, 
                     client.client, head.clientname, item.barcode, 
-                    item.itemname, stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
+                    ".$itemname.", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
                     from glhead as head 
                     left join glstock as stock on stock.trno=head.trno 
                     left join client on client.clientid=head.clientid
@@ -335,8 +341,6 @@ class sales_per_customer_per_item
                     and date(head.dateid) between '$start' and '$end') as sa
               group by client, clientname, barcode, itemname,amt,docno,shipto,yourref, ourref,dateid,agentname
               order by clientname, itemname";
-    $this->othersClass->logConsole("==========");
-    $this->othersClass->logConsole($query);
 
     return $this->coreFunctions->opentable($query);
   }

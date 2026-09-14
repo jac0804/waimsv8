@@ -391,6 +391,35 @@ class stockcard
         $cols = $this->tabClass->delcollisting($cols);
         return $cols;
         break;
+      case 59: //roosevelt 
+        $getcols = ['action', 'barcode', 'itemname',  'supplier', 'uom', 'cat_name', 'subcat_name', 'subclass',  'activestat', 'amt', 'amt2', 'famt', 'amt4'];
+        $stockbuttons = ['view'];
+
+        foreach ($getcols as $key => $value) {
+          $$value = $key;
+        }
+
+        $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+        $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
+        $cols[$itemname]['label'] = 'Itemname';
+        $cols[$supplier]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
+        $cols[$cat_name]['label'] = 'Category';
+        $cols[$cat_name]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
+        $cols[$amt2]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
+        $cols[$amt4]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
+        $cols[$famt]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
+
+        $cols[$amt]['label'] = 'Dealer Price';
+        $cols[$amt2]['label'] = 'Dealer 2';
+        $cols[$famt]['label'] = 'Industrial ';
+        $cols[$amt4]['label'] = 'Walk-in';
+        $cols[$amt]['align'] = 'text-left';
+        $cols[$amt2]['align'] = 'text-left';
+        $cols[$amt4]['align'] = 'text-left';
+        $cols[$famt]['align'] = 'text-left';
+
+        return $cols;
+        break;
       case 67: //yulick
         $getcols = ['action', 'barcode', 'itemname', 'subclass', 'supplier', 'uom', 'cat_name', 'subcat_name', 'activestat', 'amt'];
         $stockbuttons = ['view'];
@@ -554,6 +583,7 @@ class stockcard
         $condition .= "where 1=1 and item.isfa=0 and item.isinactive =0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
         break;
       case 59:
+        $addedfields .= ", cls.cl_name as subclass, format(item.amt2,2) as amt2, format(item.famt,2) as famt, format(item.amt4,2) as amt4";
         $searchfield = ['item.itemname', 'item.barcode', 'item.uom', 'item.amt', 'item.partno'];
         $condition .= "where 1=1 and item.isfa=0 and item.israwmat=0 and item.barcode not in ('#','$','*','**','***','$$','$$$','##')";
         break;
