@@ -177,7 +177,7 @@ class dashboardClass
     $companyid = $this->config['params']['companyid'];
     $istodo = $this->companysetup->getistodo($this->config['params']);
 
-    if ($companyid == 29) { //sbc
+    if ($companyid == 29) { //sbc     
       if ($this->checksecurity(5564)) $this->dailytask();
     }
 
@@ -213,7 +213,7 @@ class dashboardClass
 
     if ($companyid == 29) { //sbc
       $this->taskassign();
-
+      if ($this->checksecurity(6033)) $this->clientpendingtask();
       if ($this->checkapprover($this->config) || $this->othersClass->isSBCProjectHead($this->config['params']['adminid'])) {
         $this->currenttimerec($this->config);
       }
@@ -805,6 +805,10 @@ class dashboardClass
                 $this->taskassign();
               }
 
+              if ($this->checksecurity(6033)) {
+                $this->clientpendingtask();
+              }
+              
               if ($this->checksecurity(5564)) {
                 $this->dailytask();
               }
@@ -1941,6 +1945,10 @@ class dashboardClass
         break;
       case 'dailytask':
         $data = $this->getdailytask();
+        $this->config['return'] = ['status' => true, 'msg' => 'Data was successfully received.', 'data' => $data, 'table' => $this->config['params']['action2']];
+        break;
+      case 'clientpendingtask':
+        $data = $this->getclientpendingtask();
         $this->config['return'] = ['status' => true, 'msg' => 'Data was successfully received.', 'data' => $data, 'table' => $this->config['params']['action2']];
         break;
       default:
@@ -5677,6 +5685,51 @@ class dashboardClass
     $this->config['sbclist']['taskassign'] = ['cols' => $cols, 'data' => $data, 'title' => 'Listing of Assigned Task', 'txtfield' => ['col1' => $col1], 'paramsdata' => $paramsdata[0]];
   }
 
+  public function clientpendingtask()
+  {
+    $center = $this->config['params']['center'];
+    $adminid = $this->config['params']['adminid'];
+    $getcols = ['action', 'clientname', 'rem'];
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
+    $stockbuttons = ['view'];
+    $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+    $cols[$action]['btns']['view']['action'] = 'clientpendingtask';
+    $cols[$action]['btns']['view']['lookupclass'] = 'tableentry';
+    $cols[$action]['btns']['view']['classid'] = '';
+    $cols[$clientname]['label'] = 'Customer';
+    $cols[$action]['style'] = 'width:50px;whiteSpace: normal;min-width:50px;max-width:50px;';
+    $cols[$clientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+    $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+    $cols[$rem]['label'] = 'Pending Task';
+    $data = $this->getclientpendingtask();
+    $this->config['sbclist']['clientpendingtask'] = ['cols' => $cols, 'data' => $data, 'title' => 'List of Pending Task per Client', 'txtfield' => ['col1' => []]];
+  }
+
+  public function getclientpendingtask()
+  {
+    $adminid = $this->config['params']['adminid'];
+
+    $qry = "select t.clientid,
+    if(t.reseller <> '', concat(c.clientname, ' / ', t.reseller), c.clientname) as clientname,
+    sum(t.completed) as completed,
+    sum(t.overall)   as overall,
+    concat(sum(t.completed), ' / ', sum(t.overall)) as rem
+    from (select h.trno, h.clientid, h.reseller,
+    (select count(enddate) from tmdetail as tm 
+    where tm.trno = h.trno and isassigntype = 0) as completed,
+    (select count(line) from tmdetail as tm 
+    where tm.trno = h.trno and isassigntype = 0) as overall
+    from tmhead as h
+    where h.status = 1) as t
+    left join client as c on c.clientid = t.clientid
+    group by t.clientid, c.clientname, t.reseller
+    order by t.clientid desc";
+    $result = $this->coreFunctions->opentable($qry);
+
+    return $result;
+  }
 
   public function dailytask()
   {

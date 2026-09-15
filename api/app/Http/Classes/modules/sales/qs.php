@@ -2078,7 +2078,7 @@ class qs
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
           stock.disc, ifnull(st.line,0) as stageid,stock.projectid,head.deptid,head.designation as position,
           head.industry,agent.tel as contactno,client.tin,
-          client.billid,client.shipid,client.billcontactid,client.shipcontactid,stock.sgdrate, head.contactname
+          client.billid,client.shipid,client.billcontactid,client.shipcontactid,stock.sgdrate, head.contactname,client.vattype,client.tax
           FROM hophead as head left join hopstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
           left join item on item.itemid=stock.itemid left join uom on uom.itemid=item.itemid and
           uom.uom=stock.uom left join stagesmasterfile as st on st.line = stock.stageid 

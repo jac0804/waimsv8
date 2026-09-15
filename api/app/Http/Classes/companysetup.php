@@ -1245,7 +1245,7 @@ class companysetup
         $this->multibranch = true;
         $this->branchaccess = 1;
         $this->companyname = 'SBC';
-        $this->systemtype = 'AIMS';
+        $this->systemtype = 'AIMSPAYROLL';
         $this->checkbelowcost = true;
         $this->isproject = false;
         $this->iscreateversion = false;

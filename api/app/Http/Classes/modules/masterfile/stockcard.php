@@ -392,7 +392,7 @@ class stockcard
         return $cols;
         break;
       case 59: //roosevelt 
-        $getcols = ['action', 'barcode', 'itemname',  'supplier', 'uom', 'cat_name', 'subcat_name', 'subclass',  'activestat', 'amt', 'amt2', 'famt', 'amt4'];
+        $getcols = ['action', 'barcode', 'itemname',  'supplier', 'uom', 'cat_name',  'subclass',  'activestat', 'amt', 'amt2', 'famt', 'amt4'];
         $stockbuttons = ['view'];
 
         foreach ($getcols as $key => $value) {
@@ -404,6 +404,7 @@ class stockcard
         $cols[$itemname]['label'] = 'Itemname';
         $cols[$supplier]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
         $cols[$cat_name]['label'] = 'Category';
+        $cols[$subclass]['label'] = 'Class';
         $cols[$cat_name]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;text-align:left;';
         $cols[$amt2]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
         $cols[$amt4]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';

@@ -9798,7 +9798,8 @@ class leftmenu
         (5472,1,'Allow Click View Attachment Task Setup','',0,'\\420609','\\4206',0,0,0," . $params['levelid'] . "),
         (5478,1,'Allow Click Reassign Task','',0,'\\420610','\\4206',0,0,0," . $params['levelid'] . "),
         (5480,1,'Allow View Rate','',0,'\\4206011','\\4206',0,0,0," . $params['levelid'] . "),
-        (5572,0,'Allow Click Delete Button Per Task','',0,'\\4206012','\\4206',0,'0',0," . $params['levelid'] . ")";
+        (5572,0,'Allow Click Delete Button Per Task','',0,'\\4206012','\\4206',0,'0',0," . $params['levelid'] . "),
+        (6033,0,'Allow View Dashboard Pending Task Per Client','',0,'\\4206013','\\4206',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
         return "($sort,$p,'tm','/ledgergrid/taskmonitoring/tm','Task Setup','fa fa-user-clock sub_menu_ico',5459," . $params['levelid'] . ")";
     } //end function

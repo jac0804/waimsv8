@@ -1072,6 +1072,12 @@ class othersClass
     return (new Datetime($date))->format($newf);
   }
 
+  function reportdateformat($params, $date)
+  {
+    $newf = $this->companysetup->getreportdateformat($params);
+    return (new Datetime($date))->format($newf);
+  }
+
   function datefilter($date)
   {
     return
@@ -1597,6 +1603,7 @@ class othersClass
       case 71: //buenatech
         switch ($config['params']['doc']) {
           case 'UE':
+          case 'ST':  
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
             break;
@@ -2513,6 +2520,7 @@ class othersClass
       case 71: //buenatech
         switch ($config['params']['doc']) {
           case 'UE':
+          case 'ST': //transfer material
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
             break;
@@ -6179,6 +6187,8 @@ class othersClass
                   $head['deldate'] = date('Y-m-d');
                   if ($config['params']['companyid'] == 10) {
                     $head['probability'] = '25%';
+                    $head['vattype'] = $data[0]->vattype;
+                    $head['tax'] =  $data[0]->tax;
                   }
                   break;
               }
