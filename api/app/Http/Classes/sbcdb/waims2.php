@@ -4501,9 +4501,10 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ['amt'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["headinfotrans", "hheadinfotrans"], ['helperid2'], "int(10) NOT NULL DEFAULT '0'", 0);
 
-    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock"], ["markup"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead"], ["ismarkup"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
-    
+    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock", "sostock", "hsostock"], ["markup"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock", "sostock", "hsostock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead", "sohead", "hsohead"], ["ismarkup"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["tdtrno"], "int(11) NOT NULL DEFAULT '0'", 0);
   }
 }

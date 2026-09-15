@@ -363,35 +363,6 @@ class oq
     $isproject = $this->companysetup->getisproject($config['params']);
     $editprice = $this->othersClass->checkAccess($config['params']['user'], 4030);
 
-    $action = 0;
-    $ctrlno = 1;
-    $isexisted = 2;
-    $oraclecode = 3;
-    $rrqty = 4;
-    $unit = 5;
-    $rrcost = 6;
-    $ispa = 7;
-    $disc = 8;
-    $ext = 9;
-    $void = 10;
-    $itemdesc = 11;
-    $specs = 12;
-    $rem = 13;
-    $requestorname = 14;
-    $department = 15;
-    $ref = 16;
-    $pono = 17;
-    $rem1 = 18;
-    $supplier = 19;
-    $customer = 20;
-    $svsnum = 21;
-    $sanodesc = 22;
-    $itemname = 23;
-    $priolvl = 24;
-    $barcode = 25;
-    $category = 26;
-
-
     $column = [
       'action',
       'ctrlno',
@@ -403,6 +374,7 @@ class oq
       'ispa',
       'disc',
       'ext',
+      'qa',
       'void',
       'itemdesc',
       'specs',
@@ -421,6 +393,10 @@ class oq
       'barcode',
       'category'
     ];
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
@@ -462,6 +438,7 @@ class oq
     $obj[0][$this->gridname]['columns'][$itemdesc]['readonly'] = false;
     $obj[0][$this->gridname]['columns'][$specs]['readonly'] = false;
 
+    $obj[0][$this->gridname]['columns'][$pono]['label'] = 'PO #';
 
     if ($editprice != "1") {
       $obj[0][$this->gridname]['columns'][$ispa]['type'] = 'coldel';

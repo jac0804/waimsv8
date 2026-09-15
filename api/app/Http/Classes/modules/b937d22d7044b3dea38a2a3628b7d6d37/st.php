@@ -156,22 +156,8 @@ class st
 
   public function paramsdatalisting($config)
   {
-    $companyid = $config['params']['companyid'];
-    $isshortcutdr = $this->companysetup->getisshortcutdr($config['params']);
-
     $fields = [];
-    if ($companyid == 39) { //cbbsi
-      $allownew = $this->othersClass->checkAccess($config['params']['user'], 884);
-      if ($allownew == '1') $fields = ['pickpo'];
-    }
     $col1 = $this->fieldClass->create($fields);
-    if ($companyid == 39) { //cbbsi
-      data_set($col1, 'pickpo.label', 'pick str');
-      data_set($col1, 'pickpo.lookupclass', 'strshortcut');
-      data_set($col1, 'pickpo.action', 'pendingstrsummary');
-      data_set($col1, 'pickpo.confirmlabel', 'Proceed to pick STR?');
-    }
-
     $fields = [];
     $col2 = $this->fieldClass->create($fields);
 
@@ -222,10 +208,6 @@ class st
       'next' => ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']],
       'last' => ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']],
     ];
-    if ($config['params']['companyid'] == 56) { // homeworks
-      $buttons['others']['items']['uploadexcel'] = ['label' => 'Upload Items', 'todo' => ['type' => 'uploadexcel', 'action' => 'uploadexcel', 'lookupclass' => 'uploadexcel', 'access' => 'view']];
-      $buttons['others']['items']['downloadexcel'] = ['label' => 'Download ST Template', 'todo' => ['type' => 'downloadexcel', 'action' => 'downloadexcel', 'lookupclass' => 'downloadexcel', 'access' => 'view']];
-    }
     return $buttons;
   } // createHeadbutton
 
@@ -240,39 +222,26 @@ class st
 
   public function createTab($access, $config)
   {
-    $companyid = $config['params']['companyid'];
+
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
 
-    $action = 0;
-    $isqty = 1;
-    $uom = 2;
-    $isamt = 3;
-    $disc = 4;
-    $ext = 5;
-    $wh = 6;
-    $ref = 7;
-    $rem = 8;
-    $loc = 9;
-    $expiry = 10;
-    $itemname = 11;
-    $barcode = 12;
-    $column = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'ref', 'rem', 'loc', 'expiry', 'itemname', 'barcode'];
+    $columns = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'ref', 'rem', 'loc', 'expiry', 'itemname', 'barcode'];
+
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => $column,
+        'gridcolumns' => $columns,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => []
       ],
     ];
 
-    if ($this->companysetup->getserial($config['params'])) {
-      $stockbuttons = ['save', 'delete', 'serialout'];
-    } else {
-      $stockbuttons = ['save', 'delete', 'showbalance', 'stockinfo'];
-    }
+    $stockbuttons = ['save', 'delete']; //, 'showbalance', 'stockinfo'
 
     if (!$isexpiry) {
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
@@ -281,12 +250,8 @@ class st
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
     if (!$islocation) {
-      if ($companyid != 28) { // not xcomp
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-      }
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel'; 
     }
-
-
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
@@ -311,8 +276,6 @@ class st
   {
     $fields = ['docno', 'sodocno', 'barcode', 'itemname']; //'clientname'
     $col1 = $this->fieldClass->create($fields);
-    // data_set($col1, 'clientname.label', 'Department Name');
-    // data_set($col1, 'dept.lookupclass', 'lookupdept');
     data_set($col1, 'docno.label', 'Transaction#');
 
     data_set($col1, 'sodocno.required', true);
@@ -367,7 +330,6 @@ class st
     $data[0]['wh'] = $this->companysetup->getwh($params);
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
-    $data[0]['trnxtype'] = '';
     $data[0]['pdtrno'] = 0;
     return $data;
   }
@@ -488,6 +450,21 @@ class st
     $data['editby'] = $config['params']['user'];
 
     if ($isupdate) {
+      
+      $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
+      if (!empty($stock)) {
+        return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
+      }else{
+        $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
+        $newjotrno = $head['pdtrno'];
+        if ($newjotrno != $prevjotrno) {
+          $updatejohead = $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 0], ['trno' => $prevjotrno]);
+          if ($updatejohead == 0) {
+            return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. Problems in updating previous Job Order head.'];
+          }
+          $newupdate = $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 1], ['trno' => $newjotrno]); //17258
+        }
+      }
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->recomputecost($head, $config);
     } else {
@@ -496,7 +473,7 @@ class st
       $data['createby'] = $config['params']['user'];
       $this->coreFunctions->sbcinsert($this->head, $data);
       $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 1], ['trno' => $head['pdtrno']]);
-      $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['fname']);
+      $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' SOURCE WH - ' . $head['wh'] . ', DESTINATION WH - ' . $head['client']);
     }
   } // end function
 
@@ -506,11 +483,14 @@ class st
     $doc = $config['params']['doc'];
     $table = $config['docmodule']->tablenum;
     $docno = $this->coreFunctions->datareader("select docno as value from " . $table . ' where trno=?', [$trno]);
+    $jotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$trno]);
+    $jodocno = $this->coreFunctions->datareader("select docno as value from hpdhead where trno=?", [$jotrno]);
     $qry = "select trno as value from " . $this->tablenum . " where doc=? and trno<? order by trno desc limit 1 ";
     $trno2 = $this->coreFunctions->datareader($qry, [$doc, $trno]);
     $this->deleteallitem($config);
     $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
+    $this->coreFunctions->execqry("update hpdhead set istransfer =0 where docno = ?", "update", [$jodocno]);
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
@@ -529,14 +509,13 @@ class st
   private function getstockselect($config)
   {
     $sqlselect = "select item.brand as brand,
-    ifnull(mm.model_name,'') as model,
     item.itemid,
     stock.trno, 
     stock.line,
     stock.refx, 
     stock.linex, 
     item.barcode, 
-    if(ifnull(sit.itemdesc,'')='',item.itemname,sit.itemdesc) as itemname,
+    ifnull(item.itemname,'') as itemname,
     stock.uom, 
     stock." . $this->hamt . ", 
     stock." . $this->hqty . " as qty,
@@ -569,15 +548,13 @@ class st
     $qry = $sqlselect . " 
     FROM $this->stock as stock
     left join item on item.itemid=stock.itemid 
-    left join model_masterfile as mm on mm.model_id = item.model
-    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom left join client as warehouse on warehouse.clientid=stock.whid 
-    left join stockinfo as sit on sit.trno = stock.trno and sit.line=stock.line
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+    left join client as warehouse on warehouse.clientid=stock.whid 
     where stock.tstrno=0 and stock.trno =? 
     UNION ALL  
     " . $sqlselect . "  
     FROM $this->hstock as stock 
     left join item on item.itemid=stock.itemid 
-    left join model_masterfile as mm on mm.model_id = item.model
     left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
     left join client as warehouse on warehouse.clientid=stock.whid 
     left join hstockinfo as sit on sit.trno = stock.trno and sit.line=stock.line
@@ -593,12 +570,11 @@ class st
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
     $qry = $sqlselect . "  
-   FROM $this->stock as stock
-  left join item on item.itemid=stock.itemid 
-  left join model_masterfile as mm on mm.model_id = item.model
-  left join uom on uom.itemid=item.itemid and uom.uom=stock.uom left join client as warehouse on warehouse.clientid=stock.whid 
-  left join stockinfo as sit on sit.trno = stock.trno and sit.line=stock.line
-  where stock.trno = ? and stock.line = ? ";
+    FROM $this->stock as stock
+    left join item on item.itemid=stock.itemid 
+    left join uom on uom.itemid=item.itemid and uom.uom=stock.uom 
+    left join client as warehouse on warehouse.clientid=stock.whid 
+    where stock.trno = ? and stock.line = ? ";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -627,9 +603,6 @@ class st
       case 'saveperitem':
         return $this->updateperitem($config);
         break;
-      // case 'gettrsummary':
-      //   return $this->gettrsummary($config);
-      //   break;
       case 'getjodetails':
         return $this->getjodetails($config);
         break;
@@ -673,7 +646,7 @@ class st
         if ($data[$key]->refx == 0) {
           $msg1 = ' Out of stock ';
         } else {
-          $msg2 = ' Qty Received is Greater than PO Qty ';
+          $msg2 = ' Qty Received is Greater than RR Qty ';
         }
       }
     }
@@ -703,7 +676,7 @@ class st
         if ($data[$key]->refx == 0) {
           $msg1 = ' Out of stock ';
         } else {
-          $msg2 = ' Qty Received is Greater than PO Qty ';
+          $msg2 = ' Qty Received is Greater than RR Qty ';
         }
       }
     }
@@ -717,8 +690,7 @@ class st
 
   public function addallitem($config)
   {
-    $fifoexpiration = $this->companysetup->getfifoexpiration($config['params']);
-
+  
     $msg = '';
     foreach ($config['params']['row'] as $key => $value) {
       $config['params']['data'] = $value;
@@ -737,74 +709,6 @@ class st
     $data = $this->openstock($config['params']['trno'], $config);
     return ['inventory' => $data, 'status' => true, 'msg' => $msg];
   } //end function
-
-
-  public function insertfifoexpiration($config, $value, $wh, $setlog = false)
-  {
-    $companyid = $config['companyid'];
-    $trno = $config['trno'];
-    $return_row = [];
-
-    $sql = "select rrstatus.expiry,rrstatus.loc,rrstatus.whid,ifnull(sum(rrstatus.bal),0) as bal from rrstatus
-        left join item on item.itemid = rrstatus.itemid left join client on client.clientid=rrstatus.whid
-        where rrstatus.itemid = " . $value['data']['itemid'] . " and client.client = '" . $wh . "' and rrstatus.bal <> 0 
-        group by rrstatus.expiry,rrstatus.loc,rrstatus.whid order by rrstatus.expiry,rrstatus.loc,rrstatus.whid asc";
-
-    $invdata = $this->coreFunctions->opentable($sql);
-
-    $running_qty = $value->isqty;
-    $qty = 0;
-
-    foreach ($invdata as $key => $val) {
-
-      $expiry  = $val->expiry;
-      $loc = $val->loc;
-
-      if ($running_qty > 0) {
-        if ($running_qty > $val->bal) {
-          $qty = $val->bal;
-        } else {
-          $qty = $running_qty;
-        }
-
-        inserthere:
-        $running_qty = $running_qty - $qty;
-
-        $config['params']['data']['uom'] = $value['data']['uom'];
-        $config['params']['data']['itemid'] = $value['data']['itemid'];
-        $config['params']['trno'] = $trno;
-        $config['params']['data']['qty'] = $qty;
-        $config['params']['data']['wh'] = $wh;
-        $config['params']['data']['loc'] = $loc;
-        $config['params']['data']['expiry'] = $expiry;
-        $return = $this->additem('insert', $config, $setlog);
-
-        if ($msg = '') {
-          $msg = $return['msg'];
-        } else {
-          $msg = $msg . $return['msg'];
-        }
-
-        if ($return['status']) {
-          array_push($return_row, $return['row'][0]);
-        }
-      }
-
-      $this->coreFunctions->LogConsole('key: ' . $key . ' - count: ' . count($invdata) . ' - bal:' . $running_qty);
-
-      if ($key >= (count($invdata) - 1)) {
-        if ($running_qty > 0) {
-          $qty = $running_qty;
-          $expiry  = '';
-          $loc = '';
-          goto inserthere;
-        }
-        break;
-      }
-    } //end foreach
-
-    return $return_row;
-  }
 
 
   public function quickadd($config)
@@ -921,6 +825,9 @@ class st
       'uom' => $uom,
       'rem' => $rem
     ];
+
+    // var_dump($data);
+    // break;
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
@@ -980,19 +887,8 @@ class st
   public function deleteallitem($config)
   {
     $trno = $config['params']['trno'];
-    if ($this->companysetup->getserial($config['params'])) {
-      $data2 = $this->coreFunctions->opentable('select trno,line from ' . $this->stock . ' where trno=?', [$trno]);
-      foreach ($data2 as $key => $value) {
-        $this->othersClass->deleteserialout($data2[$key]->trno, $data2[$key]->line);
-      }
-    }
-
-    $data = $this->coreFunctions->opentable('select refx,linex from ' . $this->stock . ' where trno=? and refx<>0', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
-    // foreach ($data as $key => $value) {
-    //   $this->setserveditems($data[$key]->refx, $data[$key]->linex);
-    // }
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
   }
@@ -1020,14 +916,11 @@ class st
     $data = $this->openstockline($config);
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
-    if ($this->companysetup->getserial($config['params'])) {
-      $this->othersClass->deleteserialout($trno, $line);
-    }
-
+   
     $qry = "delete from " . $this->stock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
     $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-    // if ($data[0]->refx != 0) {
+    // if ($data[0]->refx != 0) { //walang ina update na qa kc transfer
     //   $this->setserveditems($data[0]->refx, $data[0]->linex);
     // }
     $data = json_decode(json_encode($data), true);
@@ -1045,61 +938,10 @@ class st
     return $this->othersClass->getlatestcostTS($config, $barcode, $client, $center, $trno);
   } // end function
 
-  // public function gettrsummary($config)
-  // {
-  //   $trno = $config['params']['trno'];
-  //   $wh = $config['params']['wh'];
-  //   $rows = [];
-  //   foreach ($config['params']['rows'] as $key => $value) {
-  //     $qry = "
-  //       select head.docno, item.itemid,stock.trno, 
-  //       stock.line, item.barcode,stock.uom, stock.cost,
-  //       (stock.qty-stock.qa) as qty,stock.rrcost,
-  //       round((stock.qty-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty, 
-  //       stock.disc
-  //       FROM htrhead as head left join htrstock as stock on stock.trno=head.trno left join item on item.itemid=
-  //       stock.itemid left join uom on uom.itemid=item.itemid and 
-  //       uom.uom=stock.uom where stock.trno = ? and stock.qty>stock.qa and stock.void=0
-  //   ";
-  //     $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno']]);
-  //     if (!empty($data)) {
-  //       foreach ($data as $key2 => $value) {
-  //         $config['params']['data']['uom'] = $data[$key2]->uom;
-  //         $config['params']['data']['itemid'] = $data[$key2]->itemid;
-  //         $config['params']['trno'] = $trno;
-  //         $config['params']['data']['disc'] = $data[$key2]->disc;
-  //         $config['params']['data']['qty'] = $data[$key2]->rrqty;
-  //         $config['params']['data']['wh'] = $wh;
-  //         $config['params']['data']['loc'] = '';
-  //         $config['params']['data']['expiry'] = '';
-  //         $config['params']['data']['rem'] = '';
-  //         $config['params']['data']['refx'] = $data[$key2]->trno;
-  //         $config['params']['data']['linex'] = $data[$key2]->line;
-  //         $config['params']['data']['ref'] = $data[$key2]->docno;
-  //         $config['params']['data']['amt'] = $data[$key2]->rrcost;
-  //         $return = $this->additem('insert', $config);
-  //         if ($return['status']) {
-  //           if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
-  //             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-  //             $line = $return['row'][0]->line;
-  //             $config['params']['trno'] = $trno;
-  //             $config['params']['line'] = $line;
-  //             $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-  //             $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
-  //             $row = $this->openstockline($config);
-  //             $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
-  //           }
-  //           array_push($rows, $return['row'][0]);
-  //         }
-  //       } // end foreach
-  //     } //end if
-  //   } //end foreach
-  //   return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.'];
-  // } //end function
-
+ 
   public function getjodetails($config)
   {
-    // var_dump($config['params']);
+  
     $trno = $config['params']['trno'];
     $wh = $config['params']['wh'];
     $rows = [];
@@ -1113,13 +955,8 @@ class st
         FROM hpdhead as head left join hpdstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.qty>stock.qa and stock.void=0 ";
-      // var_dump($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
-      // break;
+ 
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
-
-      // var_dump($data);
-
-      break;
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {
           $config['params']['data']['uom'] = $data[$key2]->uom;

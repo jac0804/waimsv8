@@ -31,7 +31,7 @@ class inventory_valuation
     // orientations: portrait=p, landscape=l
     // formats: letter, a4, legal
     // layoutsize: reportWidth
-    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
     public function __construct()
     {
@@ -105,58 +105,70 @@ class inventory_valuation
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '-1');
 
-        // $data = $this->data_query($config);
+        $data = $this->data_query($config);
         return $this->reportDefaultLayout($config);
     }
 
-    // public function data_query($config)
-    // {
-    //     $companyid = $config['params']['companyid'];
-    //     $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    //     $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-    //     $poption = $config['params']['dataparams']['poption'];
+    public function data_query($config)
+    {
+        $companyid = $config['params']['companyid'];
+        $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+        $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $poption = $config['params']['dataparams']['poption'];
 
-    //     $filter = '';
-    //     $leftjoin = '';
-    //     $orderby = '';
-    //     $query = '';
+        $filter = '';
+        $leftjoin = '';
+        $orderby = '';
+        $query = '';
 
-    //     switch ($poption) {
-    //         case 1:
-    //             $orderby = "order by brand";
-    //             break;
-    //         case 2:
-    //             $orderby = "order by category";
-    //             break;
-    //         case 3:
-    //             $orderby = "order by cb.brand";
-    //             break;
-    //         case 4:
-    //         case 5:
-    //         case 6:
-    //             // picture-based price list: only show items that actually have a picture
-    //             // $filter = " and i.picture is not null and i.picture <> '' ";
-    //             $orderby = "order by partno";
-    //             break;
-    //     }
+        switch ($poption) {
+            case 1:
+                $orderby = "order by brand";
+                break;
+            case 2:
+                $orderby = "order by category";
+                break;
+            case 3:
+                $orderby = "order by cb.brand";
+                break;
+            case 4:
+            case 5:
+            case 6:
+                // picture-based price list: only show items that actually have a picture
+                // $filter = " and i.picture is not null and i.picture <> '' ";
+                $orderby = "order by partno";
+                break;
+        }
 
 
-    //     $query = "select ifnull(cat.name, '') as category, ifnull(b.brand_desc, '') as brand, partno, othcode as equiv,
-    //     concat('/images/product/',i.partno,'.PNG') as picture ,ifnull(m.model_name, '') as crmodel,
-    //     p.positions, cb.brand as cbrand, info.fyear as yrmodel,
-    //     `type` as stype, amt as price
-    //     from item as i
-    //     left join iteminfo as info on info.itemid = i.itemid
-    //     left join model_masterfile as m on m.model_id = i.model
-    //     left join itemcategory as cat on cat.line = i.category
-    //     left join frontend_ebrands as b on b.brandid = i.brand
-    //     left join carbrand as cb on cb.id = i.carid
-    //     left join positions as p on p.id = info.positionid
-    //     where 1=1 $filter
-    //     $orderby";
-    //     // var_dump($query);
-    //     return $this->coreFunctions->opentable($query);
-    // }
+        $query = "select item.barcode,item.itemname, item.uom, sum(stock.rrcost) as value, round(sum(stat.bal),2) as bal,
+                sum(stat.cost) as cost, stock.loc
+                from lahead as head
+                left join lastock as stock on stock.trno=head.trno
+                left join client as wh on wh.clientid=stock.whid
+                left join item on item.itemid=stock.itemid
+                left join part_masterfile as partgrp on partgrp.part_id = item.part
+                left join rrstatus as stat on stat.itemid = stock.itemid
+                where head.dateid<='2026-01-01'
+                and ifnull(item.barcode,'')<>''
+                group by item.barcode,item.itemname, item.uom, stock.loc
+
+                union all
+
+                select item.barcode,item.itemname, item.uom, sum(stock.rrcost) as value, round(sum(stat.bal),2) as bal,
+                sum(stat.cost) as cost, stock.loc
+                from glhead as head
+                left join glstock as stock on stock.trno=head.trno
+                left join client as wh on wh.clientid=stock.whid
+                left join item on item.itemid=stock.itemid
+                left join part_masterfile as partgrp on partgrp.part_id = item.part
+                left join rrstatus as stat on stat.itemid = stock.itemid
+                where  head.dateid<='2026-01-01'
+                and ifnull(item.barcode,'')<>''
+                group by item.barcode,item.itemname, item.uom, stock.loc";
+        // var_dump($query);
+        return $this->coreFunctions->opentable($query);
+    }
 
     public function displayHeader($config)
     {
@@ -263,34 +275,64 @@ class inventory_valuation
 
     public function reportDefaultLayout($config)
     {
-        $layoutsize = '800';
+        $layoutsize = '1000';
         $font = 'Tahoma';
-        $fontsize = "10";
+        $fontsize2 = "10";
         $border = "1px solid ";
         $companyid = $config['params']['companyid'];
         $poption = $config['params']['dataparams']['poption'];
 
-        // if (empty($result)) {
-        //     return $this->othersClass->emptydata($config);
-        // }
+        $result = $this->data_query($config);
 
-        // Picture rows are taller than plain text rows, so fewer fit per page.
-        if ($poption == 5) {
-            $limitPerPage = 6;
-        } elseif ($poption == 6) {
-            $limitPerPage = 7;
-        } else {
-            $limitPerPage = 35;
+        if (empty($result)) {
+            return $this->othersClass->emptydata($config);
         }
-        $rowCount = 0;
+
+        $rowCount = 51;
+        $page = 50;
         $currentLabel = '';
         $grpLabel = '';
+        $price = 0;
 
         $str = '';
         $str .= $this->reporter->beginreport($layoutsize);
         // $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:75px');
         // $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '125px;margin-top:5px;');
         $str .= $this->displayHeader($config);
+
+        foreach ($result as $key => $data) {
+            $str .= $this->reporter->addline();
+
+                    // 120, 320, 100, 120, 100, 120, 120
+                    $str .= $this->reporter->begintable($layoutsize);
+                    $str .= $this->reporter->startrow();
+                    $str .= $this->reporter->col($data->barcode, '120', null, false, '2px solid', '', 'CT', $font, $fontsize2, '');
+                    $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->col($data->itemname, '310', null, false, '2px solid', '', 'LT', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '');
+                    $str .= $this->reporter->col($data->uom, '90', null, false, '2px solid', '', 'CT', $font, $fontsize2, '');
+                    $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '');
+                    $str .= $this->reporter->col($data->bal, '110', null, false, '2px solid', '', 'C', $font, $fontsize2, '');
+                    $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '');
+                    $str .= $this->reporter->col($data->loc, '90', null, false, '2px solid', '', 'C', $font, $fontsize2, '');
+                    $str .= $this->reporter->col('', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->col(number_format($data->cost, 2), '110', null, false, '2px solid', '', 'RT', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->col('  ', '10', null, false, '2px solid', '', 'C', $font, $fontsize2, '', '', '');
+                    // $str .= $this->reporter->col(number_format($data->value, 2), '110', null, false, '2px solid', '', 'RT', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->col('', '110', null, false, '2px solid', '', 'RT', $font, $fontsize2, '', '', '');
+                    $str .= $this->reporter->endrow();
+                    $str .= $this->reporter->endtable();
+
+
+            $item = $data->barcode;
+            // $subtotal = $subtotal + $data->price;
+            // $amt = $amt + $data->price;
+            if ($this->reporter->linecounter == $page) {
+                $str .= $this->reporter->page_break();
+                $str .= $this->displayHeader($config);
+                $page = $page + $rowCount;
+            }
+        }
 
         $str .= $this->reporter->endreport();
         return $str;

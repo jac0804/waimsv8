@@ -1279,7 +1279,7 @@ class setleftmenu
         //$prod = ['parentproduction', 'prodinstruction', 'prodorder', 'rm', 'finishgoodsentry'];
         break;
       case 71: //Buenatech
-        $prod = ['parentproduction', 'prodorder', 'ue', 'st'];
+        $prod = ['parentproduction', 'prodorder', 'st', 'ue'];
         break;
       default:
         $prod = ['parentproduction', 'prodinstruction', 'prodorder', 'tr', 'trapproval', 'rm', 'stages', 'finishgoodsentry', 'pr', 'ts'];

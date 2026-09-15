@@ -977,9 +977,9 @@ class moduleClass
 					$timer = ['timer' => 0, 'visible' => false];
 					break;
 				case 16: //ATI
-					if ($this->config['params']['doc'] == 'PRLISTING') {
-						$timer = ['timer' => 0, 'visible' => false];
-					}
+					// if ($this->config['params']['doc'] == 'PRLISTING') {
+					$timer = ['timer' => 0, 'visible' => false];
+					// }
 					break;
 			}
 
@@ -1013,6 +1013,9 @@ class moduleClass
 			} else {
 				if ($this->config['params']['companyid'] == 21) { //kinggeorge
 					$doclistdaterange = 1;
+				}
+				if ($this->config['params']['companyid'] == 16) { //kinggeorge
+					$doclistdaterange = 3;
 				}
 			}
 

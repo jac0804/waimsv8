@@ -135,10 +135,18 @@ class employee_listing
 
   public function reportplotting($config)
   {
+    $companyid = $config['params']['companyid'];
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
-    return $this->reportDefaultLayout($config);
+    switch ($companyid){
+      case 66: // metrodragon
+        return $this->metrodragon_DefaultLayout($config);
+        break;
+      default:
+        return $this->reportDefaultLayout($config);
+        break;
+    }
   }
 
   public function reportDefault($config)
@@ -200,6 +208,7 @@ class employee_listing
 
     // testing
     $leftjoin = "";
+    $addfield = "";
     $check = $this->payrollcommon->checkapproversetup($config, $adminid, '', 'e');
     if ($check['filter'] != "") {
       $filters .= $check['filter'];
@@ -229,10 +238,29 @@ class employee_listing
       $jobtitle = " jt.jobtitle ";
       $leftjoin .= " left join jobthead as  jt on jt.line = e.jobid ";
     }
+
+    if ($companyid == 66){ // metrodragon
+      $addfield .= ", e.level as emplevel, division.divname as company, dept.clientname as dept, sect.sectname,
+                    ifnull(date(e.resigned), '') as resigned, ifnull(date(e.regular), '') as regular, ts.shftcode as shift,
+                    case when e.paymode = 'S' then 'Semi-monthly' 
+                    when e.paymode = 'W' then 'Weekly' 
+                    when e.paymode = 'M' then 'Monthly' 
+                    when e.paymode = 'D' then 'Daily' 
+                    when e.paymode = 'P' then 'Piece Rate' 
+                    else '' end as paymode,
+                    case when e.classrate = 'D' then 'Daily' 
+                    when e.classrate = 'M' then 'Monthly' 
+                    else '' end as classrate";
+      $leftjoin .= " left join division on division.divid = e.divid left join client as dept on dept.clientid = e.deptid
+                    left join section as sect on sect.sectid = e.sectid
+                    left join tmshifts as ts on ts.line = e.shiftid";
+    }
+
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
     $query = "select client.client, CONCAT(e.emplast, ', ', e.empfirst, ' ', LEFT(e.empmiddle, 1), '.') as clientname, client.addr as address,e.telno,
   date(e.hired) as hired, date(e.bday) as bday, $jobtitle, e.tin, e.sss, e.hdmf, e.phic ,e.idbarcode as bioid,users.username as userlvl,e.bankacct
+  $addfield
   from employee as e 
   left join client on client.clientid=e.empid 
   left join paygroup on paygroup.line = e.paygroup
@@ -241,6 +269,207 @@ class employee_listing
   where e.emplast<>'' and e.level in $emplvl $filters
   order by users.username, e.emplast";
     return $this->coreFunctions->opentable($query);
+  }
+
+  private function metrodragon_displayHeader($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '9';
+    $padding = '';
+    $margin = '';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $sectid     = $config['params']['dataparams']['sectid'];
+    $sectname   = $config['params']['dataparams']['sectname'];
+
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+
+    $str = '';
+    $layoutsize = '2600';
+
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('EMPLOYEE LISTING', null, null, false, $border, '', '', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->startrow();
+
+    if ($client == '') {
+      $str .= $this->reporter->col('EMPLOYEE : ALL EMPLOYEE', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('EMPLOYEE : ' . strtoupper($clientname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+    if ($divid == 0) {
+      $str .= $this->reporter->col('COMPANY : ALL COMPANY', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('COMPANY : ' . strtoupper($divname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+    if ($deptid == 0) {
+      $str .= $this->reporter->col('DEPARTMENT : ALL DEPARTMENT', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('DEPARTMENT : ' . strtoupper($deptname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+    if ($sectid == 0) {
+      $str .= $this->reporter->col('SECTION : ALL SECTION', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('SECTION : ' . strtoupper($sectname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->endtable();
+    // $str .= $this->reporter->printline();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('CODE', '110', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE &nbsp NAME', '200', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('POSITION', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE LEVEL', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('COMPANY', '200', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('DEPARTMENT', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('SECTION', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('BIO ID', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('DATE &nbsp HIRED', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('REGULAR DATE', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('RESIGNED DATE', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('BIRTH &nbsp DATE', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('ADDRESS', '200', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('MOBILE #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('TIN #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('SSS #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('PHIC #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('HDMF #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('BANK #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('SHIFT', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('MODE OF PAYMENT', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('CLASS RATE', '90', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  public function metrodragon_DefaultLayout($config)
+  {
+    $result = $this->reportDefault($config);
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '9';
+    $padding = '';
+    $margin = '';
+    $total = 0;
+    $count = 39;
+    $page = 39;
+    $layoutsize = '2600';
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str = '';
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '50;margin-top:10px;margin-left:10px;');
+    $str .= $this->metrodragon_displayHeader($config);
+
+    $userlvl = "";
+    foreach ($result as $key => $data) {
+
+
+      $str .= $this->reporter->addline();
+
+
+      if (strtoupper($userlvl) == strtoupper($data->userlvl)) {
+        $userlvl = "";
+      } else {
+        $userlvl = strtoupper($data->userlvl);
+      } //end if
+
+      if ($userlvl != "") {
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col($userlvl, '100', null, false, $border, '', '', $font, $font_size, 'B', '', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, '', '', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, '', '', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+      }
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($data->client, '110', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '200', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->jobtitle, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->emplevel, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->company, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->dept, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->sectname, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bioid, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->hired, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->regular, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->resigned, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bday, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->address, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->telno, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->tin, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->sss, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->phic, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->hdmf, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bankacct, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->shift, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->paymode, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->classrate, '90', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+      $userlvl = strtoupper($data->userlvl);
+      $total = $total + 1;
+    }
+
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Total Employee: ', '100', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col($total, '1700', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
   }
 
   private function displayHeader($config)

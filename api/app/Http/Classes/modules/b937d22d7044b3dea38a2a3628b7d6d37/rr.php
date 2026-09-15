@@ -106,7 +106,8 @@ class rr
     'isfa',
     'rrfactor',
     'modeofpayment',
-    'orderno'
+    'orderno',
+    'charges'
   ];
   private $otherfields = ['transtyperr'];
   private $except = ['trno', 'dateid', 'due'];
@@ -520,8 +521,8 @@ class rr
       $allowgenerateapv = $this->othersClass->checkAccess($config['params']['user'], 5221);
     }
 
-    $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
-    $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+    $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc',  'freight','cost', 'ext', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+    $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc', 'freight','cost', 'ext',  'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
 
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -575,10 +576,7 @@ class rr
     $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
     $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
-    $obj[0]['inventory']['columns'][$kgs]['label'] = 'Buying Kgs';
-    $obj[0]['inventory']['columns'][$pallet]['type'] = 'coldel';
     $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-    $obj[0]['inventory']['columns'][$stage]['readonly'] = true;
 
     $obj[0]['inventory']['columns'][$partno]['label'] = 'Part No.';
     $obj[0]['inventory']['columns'][$partno]['type'] = 'label';
@@ -609,18 +607,7 @@ class rr
       $obj[0]['inventory']['columns'][$expiry]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
     }
 
-    if (!$iskgs) {
-      $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
-    }
-
-    if (!$isproject) {
-      $obj[0]['inventory']['columns'][$stage]['type'] = 'coldel';
-    }
-
-    if (!$ispallet) {
-      $obj[0]['inventory']['columns'][$location]['type'] = 'coldel';
-    }
-
+   
     if (!$access['changeamt']) {
       $obj[0]['inventory']['columns'][$rrcost]['readonly'] = true;
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
@@ -658,7 +645,6 @@ class rr
         $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
       }
     }
-    $obj[0]['inventory']['columns'][$freight]['type'] = 'coldel';
     $obj[0]['inventory']['columns'][$qa]['type'] = 'coldel';
     $obj[0]['inventory']['columns'][$void]['type'] = 'coldel';
 
@@ -982,22 +968,8 @@ class rr
         head.branch,ifnull(b.clientname,'') as branchname,ifnull(b.client,'') as branchcode,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,
         head.deptid,'' as ddeptname,head.invoiceno,left(head.invoicedate,10) as invoicedate,head.ewt,head.ewtrate,head.excess,head.excessrate,
         head.driver,head.plateno,head.cur2,head.forex2,hinfo.carrier,hinfo.waybill,cinfo.transtype as transtyperr,head.freight,head.agentfee,num.statid,
-
-        head.phaseid,
-        ph.code as phase,
-
-        head.modelid,
-        hm.model as housemodel,
-
-        head.blklotid,
-        bl.blk as blklot,
-        bl.lot,
-
-        amh.line as amenityid,
-        amh.description as amenityname,
-        subamh.line as subamenityid,
-        subamh.description as subamenityname, left(head.checkdate,10) as checkdate,head.checkno,head.rrfactor,ifnull(head.modeofpayment,'') as modeofpayment,
-        ifnull(head.orderno,'') as orderno
+        left(head.checkdate,10) as checkdate,head.checkno,head.rrfactor,ifnull(head.modeofpayment,'') as modeofpayment,
+        ifnull(head.orderno,'') as orderno,head.charges
         " . $addedfields;
 
     $qry = $qryselect . " from $table as head
@@ -1012,12 +984,6 @@ class rr
         left join " . $info . " as hinfo on hinfo.trno=head.trno
         left join cntnuminfo as cinfo on cinfo.trno=head.trno
 
-        left join phase as ph on ph.line = head.phaseid
-        left join housemodel as hm on hm.line = head.modelid
-        left join blklot as bl on bl.line = head.blklotid
-
-        left join amenities as amh on amh.line= head.amenityid
-        left join subamenities as subamh on subamh.line=head.subamenityid and subamh.amenityid=head.amenityid
          $leftjoin
 
         where head.trno = ? and num.doc=? and num.center = ? " . $projectfilter . "
@@ -1033,12 +999,6 @@ class rr
         left join " . $hinfo . " as hinfo on hinfo.trno=head.trno
         left join hcntnuminfo as cinfo on cinfo.trno=head.trno
 
-        left join phase as ph on ph.line = head.phaseid
-        left join housemodel as hm on hm.line = head.modelid
-        left join blklot as bl on bl.line = head.blklotid
-
-        left join amenities as amh on amh.line= head.amenityid
-        left join subamenities as subamh on subamh.line=head.subamenityid and subamh.amenityid=head.amenityid
          $leftjoin
 
         where head.trno = ? and num.doc=? and num.center=? " . $projectfilter;
@@ -1147,6 +1107,93 @@ class rr
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
   } // end function
+
+  public function headqry($config){
+    $doc = $config['params']['doc'];
+    $trno = $config['params']['trno'];
+    $center = $config['params']['center'];
+    $tablenum = $this->tablenum;
+    $center = $config['params']['center'];
+    $head = [];
+    $table = $this->head;
+    $htable = $this->hhead;
+    $info = $this->infohead;
+    $hinfo = $this->hinfohead;
+
+
+    $qryselect = "select
+        num.center,
+        head.trno,
+        head.docno,
+        client.client,
+        head.terms,
+        head.cur,
+        head.forex,
+        head.yourref,
+        head.ourref,
+        head.contra,
+        coa.acnoname,
+        '' as dacnoname,
+        left(head.dateid,10) as dateid,
+        head.clientname,
+        head.address,
+        head.shipto,
+        date_format(head.createdate,'%Y-%m-%d') as createdate,
+        head.rem,
+        head.tax,
+        head.vattype,
+        head.billid,
+        head.shipid,
+        head.isfa,
+        head.billcontactid,
+        head.shipcontactid,
+        '' as dvattype,
+        warehouse.client as wh,
+        warehouse.clientname as whname,
+        '' as dwhname,
+        cast(ifnull(head.istrip,0) as char) as istrip,
+        head.projectid,
+        '' as dprojectname,
+        '' as dexcess,
+        left(head.due,10) as due,
+        client.groupid,ifnull(p.code,'') as projectcode,ifnull(p.name,'') as projectname,ifnull(s.line,0) as subproject,ifnull(s.subproject,'') as subprojectname,
+        head.branch,ifnull(b.clientname,'') as branchname,ifnull(b.client,'') as branchcode,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,
+        head.deptid,'' as ddeptname,head.invoiceno,left(head.invoicedate,10) as invoicedate,head.ewt,head.ewtrate,head.excess,head.excessrate,
+        head.driver,head.plateno,head.cur2,head.forex2,hinfo.carrier,hinfo.waybill,cinfo.transtype as transtyperr,head.freight,head.agentfee,num.statid,
+        left(head.checkdate,10) as checkdate,head.checkno,head.rrfactor,ifnull(head.modeofpayment,'') as modeofpayment,
+        ifnull(head.orderno,'') as orderno,head.charges";
+
+    $qry = $qryselect . " from $table as head
+        left join $tablenum as num on num.trno = head.trno
+        left join client on head.client = client.client
+        left join client as warehouse on warehouse.client = head.wh
+        left join client as b on b.clientid = head.branch
+        left join coa on coa.acno=head.contra
+        left join projectmasterfile as p on p.line=head.projectid
+        left join client as d on d.clientid = head.deptid
+        left join subproject as s on s.line = head.subproject
+        left join " . $info . " as hinfo on hinfo.trno=head.trno
+        left join cntnuminfo as cinfo on cinfo.trno=head.trno
+
+        where head.trno = ? and num.doc=? and num.center = ? 
+        union all " . $qryselect . " from $htable as head
+        left join $tablenum as num on num.trno = head.trno
+        left join client on head.clientid = client.clientid
+        left join client as warehouse on warehouse.clientid = head.whid
+        left join client as b on b.clientid = head.branch
+        left join coa on coa.acno=head.contra
+        left join projectmasterfile as p on p.line=head.projectid
+        left join client as d on d.clientid = head.deptid
+        left join subproject as s on s.line = head.subproject
+        left join " . $hinfo . " as hinfo on hinfo.trno=head.trno
+        left join hcntnuminfo as cinfo on cinfo.trno=head.trno
+
+        where head.trno = ? and num.doc=? and num.center=? ";
+
+    $head= $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
+    $head = json_decode(json_encode($head), true);
+    return $head[0];
+  }
 
   public function deletetrans($config)
   {
@@ -3559,18 +3606,17 @@ class rr
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $exec = true;
+    $freight =0;
+    $perc = $head['charges'];
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
       $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $data2[$key]['kgs'], $lookups);
 
-      if ($this->companysetup->getvatexpurch($config['params'])) {
-        $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, 0, 'P', $kgs);
-      } else {
-        $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, $head['tax'], 'P', $kgs);
-      }
-
-      $exec = $this->coreFunctions->execqry("update lastock set cost = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
+      $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, $head['tax'], 'P', $kgs);
+      $freight = $computedata['amt']*$perc;
+      $cost =  $computedata['amt'] + $freight;
+      $exec = $this->coreFunctions->execqry("update lastock set cost = " . $cost . ",freight =".$freight." where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }
     return $exec;
   }

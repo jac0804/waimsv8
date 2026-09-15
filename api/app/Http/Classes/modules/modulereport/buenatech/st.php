@@ -25,10 +25,10 @@ use PDF;
 use TCPDF_FONTS;
 use Illuminate\Support\Facades\Storage;
 
-class ue
+class st
 {
 
-    private $modulename = "Produce Items";
+    private $modulename = "Transfer Slip - Materials";
     private $reportheader;
     private $fieldClass;
     private $companysetup;
@@ -95,7 +95,7 @@ class ue
             left join hpdhead as jo on jo.trno=head.pdtrno
             left join item as item2 on  item2.itemid = jo.itemid
             left join client as source on source.clientid=stock.whid
-            where head.doc='ue' and head.trno='$trno'
+            where head.doc='st' and head.trno='$trno' and stock.refx <>0
 
             union all
 
@@ -112,7 +112,7 @@ class ue
             left join hpdhead as jo on jo.trno=head.pdtrno
             left join item as item2 on  item2.itemid = jo.itemid
             left join client as source on source.clientid=stock.whid
-            where head.doc='ue' and head.trno='$trno'";
+            where head.doc='st' and head.trno='$trno' and stock.refx <>0 ";
 
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;

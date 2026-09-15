@@ -1951,6 +1951,10 @@ class lookupClass
         return $this->payrolllookup->lookupoacnodetail($config);
         break;
 
+    case 'unpostedsj': //detachment bcb
+        return $this->lookupunpostedsj($config);
+        break;
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
         break;
@@ -16982,6 +16986,7 @@ class lookupClass
             if($config['params']['companyid'] == 71){
             switch($config['params']['doc']){
               case 'UE':
+              case 'ST': 
                 $lookupsetup = array(
                   'type' => 'singlesearch',
                   'actionsearch' => 'searchitem',
@@ -16992,9 +16997,6 @@ class lookupClass
                   'action' => 'issuemultipleexpiry'
                   );
                 break;
-              case 'ST':
-                   $lookupsetup['btns'] = [];
-                break;  
               }
             }
               
@@ -26036,6 +26038,35 @@ class lookupClass
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
+
+ public function lookupunpostedsj($config)
+{
+    $lookupsetup = array(
+        'type' => 'multi',
+        'rowkey' => 'keyid',
+        'title' => 'Sales Journal Unposted',
+        'style' => 'width:100%;max-width:100%;'
+    );
+
+    $plotsetup = array(
+        'plottype' => 'callback',
+        'action' => 'unpostedsj',
+    );
+    // lookup columns
+    $cols = array(
+      array('name' => 'docno', 'label' => 'Docno #', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+      array('name' => 'clientname', 'label' => 'Clientname Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
+    );
+    $qry = "select head.trno as keyid, head.trno, head.docno, head.clientname, sum(stock.ext) as amount from lahead as head
+    left join lastock as stock on stock.trno = head.trno
+    where head.doc in ('DR','SI', 'SJ')
+    group by head.trno, head.docno,head.clientname
+    order by head.trno";
+
+    $data = $this->coreFunctions->opentable($qry);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+}
 
 
 } // end class

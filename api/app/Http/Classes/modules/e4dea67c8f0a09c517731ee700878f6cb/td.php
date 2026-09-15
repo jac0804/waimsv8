@@ -38,10 +38,10 @@ class td
     public $tablelogs_del = 'del_transnum_log';
     public $htablelogs = 'htransnum_log';
     private $stockselect;
-    public $dqty = 'isqty';
-    public $hqty = 'iss';
-    public $damt = 'isamt';
-    public $hamt = 'amt';
+    public $dqty = '';
+    public $hqty = '';
+    public $damt = '';
+    public $hamt = '';
     public $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'rem', 'address', 'tel', 'odoin', 'odoout', 'amt', 'checkedby'];
     public $fieldOthers = ['trno', 'truckid', 'plateno', 'helperid', 'loaddate'];
     public $except = ['trno', 'dateid', 'due'];
@@ -284,7 +284,7 @@ class td
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'contact.label', 'Contact No.');
         data_set($col2, 'truck.required', false);
-        data_set($col2, 'truck.type', 'input');
+        // data_set($col2, 'truck.type', 'input');
         data_set($col2, 'truck.readonly', false);
         data_set($col2, 'area.type', 'input');
         data_set($col2, 'area.readonly', false);
@@ -383,7 +383,7 @@ class td
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
         if (!empty($head)) {
-            $stock = $this->openstock($trno, $config);
+            // $stock = $this->openstock($trno, $config);
             $viewdate = $this->othersClass->getCurrentTimeStamp();
             $viewby = $config['params']['user'];
             $msg = 'Data Fetched Success';
@@ -410,7 +410,7 @@ class td
 
             return  [
                 'head' => $head,
-                'griddata' => ['inventory' => $stock],
+                'griddata' => [],
                 'islocked' => $islocked,
                 'isposted' => $isposted,
                 'isnew' => false,
@@ -544,7 +544,7 @@ class td
 
     public function createtabbutton($config)
     {
-        $tbuttons = ['pendingsjsummary', 'saveitem', 'deleteallitem'];
+        $tbuttons = ['additem', 'saveitem', 'deleteallitem'];
 
         foreach ($tbuttons as $key => $value) {
             $$value = $key;
@@ -553,12 +553,11 @@ class td
         $obj = $this->tabClass->createtabbutton($tbuttons);
 
         // Configure the button for employee lookup
-        $obj[$pendingsjsummary]['label'] = "ADD SJ";
+        $obj[$additem]['label'] = "ADD SJ";
         $obj[$saveitem]['label'] = "SAVE ALL";
         $obj[$deleteallitem]['label'] = "DELETE ALL";
-        $obj[$pendingsjsummary]['lookupclass'] = "pendingsjdetail";
-        $obj[$addempgrid]['action'] = "getpendingsj";
-
+        $obj[$additem]['lookupclass'] = "lookupunpostedsj";
+        $obj[$additem]['action'] = "unpostedsj";
 
         return $obj;
     }
@@ -566,8 +565,8 @@ class td
     public function stockstatus($config)
     {
         switch ($config['params']['action']) {
-            case 'pendingsjsummary':
-                return $this->getpendingsj($config);
+            case 'unpostedsj':
+                return $this->unpostedsj($config);
                 // case 'saveitem':
                 //     return $this->saveitem($config);
                 // case 'saveperitem':
@@ -582,120 +581,100 @@ class td
         }
     }
 
+    private function getdetailselect($config)
+    {
+        $qry = "head.trno,d.line,la.docno,la.clientname,
+        ifnull((select sum(ext) from lastock where trno = d.refx),0) as amt,
+        la.terms,la.agent,'' as modeofpayment,'' as rem, '' as bgcolor";
+
+        return $qry;
+    }
+
     public function openstock($trno, $config)
     {
-        $qry = "select detail.trno, detail.line, detail.sjtrno, detail.docno, detail.clientname,
-        detail.amt, detail.terms, detail.agent, detail.rem, detail.consignpr, detail.disc2,
-        detail.limitcheck, '' as modeofpayment,
-        case when detail.limitcheck = 2 then 'bg-red-2'
-             when detail.limitcheck = 1 then 'bg-yellow-2'
-             else '' end as bgcolor
-        from " . $this->stock . " as detail
-        left join client as ag on ag.client = detail.agent
-        where detail.trno = ?
-        order by detail.line";
-        return $this->coreFunctions->opentable($qry, [$trno]);
+        $sqlselect = $this->getdetailselect($config);
+
+        $qry = "select " . $sqlselect . " 
+        from " . $this->stock . " as d
+        left join " . $this->head . " as head on head.trno=d.trno
+        left join lahead as la on la.trno=d.refx
+        where d.trno=?
+        union all
+        select " . $sqlselect . "  
+        from " . $this->hstock . " as d
+        left join " . $this->hhead . " as head on head.trno=d.trno
+        left join lahead as la on la.trno=d.refx
+        where d.trno=?
+        order by line";
+
+        $detail = $this->coreFunctions->opentable($qry,[$trno, $trno]);
+        return $detail;
     }
 
-    public function getpendingsj($config)
+    public function openstockline($config)
     {
-        $center = $config['params']['center'];
+        $sqlselect = $this->getdetailselect($config);
         $trno = $config['params']['trno'];
+        $line = $config['params']['line'];
 
-        $qry = "select head.trno, head.docno, head.clientname, head.terms, head.agent, 
-        ifnull(sum(stock.ext),0) as amt
-        from lahead as head
-        left join lastock as stock on stock.trno = head.trno
-        left join cntnum on cntnum.trno = head.trno
-        where head.doc = 'SJ' and cntnum.center = ? and cntnum.postdate is null
-        and not exists (select 1 from " . $this->head . " as d where d.sjtrno = head.trno and d.trno = ?)
-        group by head.trno, head.docno, head.clientname, head.terms, head.agent, head.rem
-        order by head.docno desc";
+        $qry = "select " . $sqlselect . " 
+        from " . $this->stock . " as d
+        left join " . $this->head . " as head on head.trno=d.trno
+        left join lahead as la on la.trno=d.refx
+        where d.trno=? and d.line=?";
 
-        $data = $this->coreFunctions->opentable($qry, [$center, $trno]);
-        return ['status' => true, 'data' => $data, 'msg' => 'Loaded pending SJ.'];
+        $detail = $this->coreFunctions->opentable($qry,[$trno, $line]);
+        return $detail;
     }
 
-    // public function saveitem($config)
-    // {
-    //     $trno = $config['params']['trno'];
-    //     $rows = isset($config['params']['row']) ? $config['params']['row'] : [];
+    public function unpostedsj($config)
+    {
+        $trno = $config['params']['trno'];
+        $rows = $config['params']['rows'];
+        $returnrows = [];
 
+        foreach ($rows as $pacctrow) {
 
-    //     if (empty($rows)) {
-    //         return ['status' => false, 'msg' => 'No items to save.'];
-    //     }
+            $sjtrno = $pacctrow['trno'];
+            $exists = $this->coreFunctions->datareader(
+                "select refx as value 
+             from " . $this->stock . " 
+             where trno=? and refx=? 
+             limit 1",
+                [$trno, $sjtrno]
+            );
 
-    //     $saved = 0;
+            if ($exists != '') {
+                continue;
+            }
 
-    //     foreach ($rows as $key => $value) {
-    //         // only push rows the grid actually marked as edited
-    //         if (!isset($value['bgcolor']) || $value['bgcolor'] == '') {
-    //             continue;
-    //         }
+            $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
+            $line = $this->coreFunctions->datareader($qry,[$trno]);
+            if ($line == '') {$line = 0;}
+            $line = $line + 1;
+            $data = [
+                'line' => $line,
+                'trno' => $trno,
+                'refx' => $sjtrno
+            ];
 
-    //         $line = $value['line'];
-    //         $rate = $value['rate'];
+            $this->coreFunctions->sbcinsert($this->stock,$data );
 
-    //         $data = [
-    //             'rate' => $rate,
-    //             'editdate' => $this->othersClass->getCurrentTimeStamp(),
-    //             'editby' => $config['params']['user']
-    //         ];
+            $this->coreFunctions->execqry("update lahead set tdtrno=? where trno=?",'update',[$trno, $sjtrno]);
 
-    //         $this->coreFunctions->sbcupdate($this->detail, $data, ['trno' => $trno, 'line' => $line]);
-    //         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' Rate:' . $rate);
-    //         $saved++;
-    //     }
+            $config['params']['line'] = $line;
 
-    //     if ($saved == 0) {
-    //         return ['status' => false, 'msg' => 'No edited items to save.'];
-    //     }
+            $row = $this->openstockline($config);
 
-    //     $row = $this->openstock($trno, $config);
+            if (!empty($row)) {
+                array_push($returnrows, $row[0]);
+            }
 
-    //     return ['inventory' => $row, 'status' => true, 'msg' =>  ' Successfully saved.', 'reloadhead' => true, 'trno' => $config['params']['trno']];
-    // }
+            $this->logger->sbcwritelog($trno,$config,'DELIVERY TRUCKING','ADD - Line:' . $line . ' Doc:' . $pacctrow['docno']);
+        }
 
-    // public function saveperitem($config)
-    // {
-    //     $trno = $config['params']['trno'];
-    //     $row = $config['params']['row'];
-    //     $line = $row['line'];
-    //     $rate = $row['rate'];
-
-    //     $data = [
-    //         'rate' => $rate,
-    //         'editdate' => $this->othersClass->getCurrentTimeStamp(),
-    //         'editby' => $config['params']['user']
-    //     ];
-
-    //     $update = $this->coreFunctions->sbcupdate($this->detail, $data, ['trno' => $trno, 'line' => $line]);
-
-    //     if ($update) {
-    //         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' empid:' . $row['empid'] . ' Rate:' . $rate);
-    //         $returnrow = $this->openstockline($config, [$line]);
-    //         return ['row' => $returnrow, 'status' => true, 'msg' => 'Successfully saved.'];
-    //     } else {
-    //         return ['status' => false, 'msg' => 'Update failed.'];
-    //     }
-    // }
-
-    // public function deleteitem($config)
-    // {
-    //     $trno = $config['params']['row']['trno'];
-    //     $line = $config['params']['row']['line'];
-    //     $this->coreFunctions->execqry("delete from " . $this->detail . " where trno=? and line=?", 'delete', [$trno, $line]);
-    //     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line);
-    //     return ['status' => true, 'msg' => 'Item was successfully deleted.'];
-    // }
-
-    // public function deleteallitem($config)
-    // {
-    //     $trno = $config['params']['trno'];
-    //     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
-    //     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
-    // }
+        return ['status' => true,'msg' => 'Transaction(s) added successfully...','row' => $returnrows,'reloaddata' => true];
+    }
 
 
     public function deletetrans($config)

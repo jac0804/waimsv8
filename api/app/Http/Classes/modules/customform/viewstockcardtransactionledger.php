@@ -861,7 +861,7 @@ class viewstockcardtransactionledger
             $baseamt = ", (case when stock.iss<>0 then stock.isamt else stock.rrcost end) as baseamt";
             $itemj = "  left join item on item.itemid=stock.itemid";
             $addfield = ",whref.clientname as whref, format(stock.startwire,2) as startwire, format(stock.endwire,2) as endwire ";
-            $remField = "(case when head.doc='ST' then head.rem when stock.rem<>'' then stock.rem else head.rem end) as rem";
+            $remField = "(case when stock.rem<>'' then stock.rem else head.rem end) as rem";
             break;
         }
         $qry = "

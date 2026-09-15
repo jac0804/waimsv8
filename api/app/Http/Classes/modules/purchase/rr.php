@@ -2043,7 +2043,7 @@ class rr
     // DO NOT REMOVE THIS BLOCK
     // //checking zero cost
     switch ($config['params']['resellerid']) {
-      case 2;  //ms joy
+      case 2:  //ms joy
         break;
       default:
         switch ($companyid) {

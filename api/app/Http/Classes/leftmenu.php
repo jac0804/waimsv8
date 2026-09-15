@@ -265,9 +265,6 @@ class leftmenu
                 $modulename = 'Order Form';
                 $folder = 'rc952c55ab9eb85660b7cab413fa7c803';
                 break;
-            case 64: //excelin
-                $folder = 'e4dea67c8f0a09c517731ee700878f6cb';
-                break;
         }
 
         $qry = " (151,0,'" . $modulename . "','',0,'\\501','$parent',0,'0',0," . $params['levelid'] . "),

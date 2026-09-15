@@ -60,6 +60,7 @@ class companysetup
   private $reportpathdefault = "\Http\Classes\modules\modulereport\main\\";
   private $manualpath = "/images/manual/sbc/pdf/";
   private $logopath = "/images/reports/";
+  private $reportdateformat = "Y-m-d";
   private $isshowmanual = false;
   private $reportpath;
   public $leavestart = '2022-01-01';
@@ -242,6 +243,7 @@ class companysetup
     $this->ismirrortrans = false;
     $this->islocation = false;
     $this->ispayrolldetachment = false;
+    $this->reportdateformat = "Y-m-d";
 
 
 
@@ -358,9 +360,10 @@ class companysetup
         $this->isshortcutjo = false;
         $this->istodo = false;
         $this->restrictip = false;
-        $this->periodic = true;
+        $this->periodic = false;
         $this->ispurchasedisc = true;
         $this->itembatch = 0;
+        $this->reportdateformat = "m/d/Y";
         $this->reportpath = "\Http\Classes\modules\modulereport\jda\\";
         $this->logopath = "public/images/jda/";
         $this->ismysql8 = true;
@@ -3165,5 +3168,11 @@ class companysetup
   {
     $this->companylist($params);
     return $this->locname;
+  }
+
+  public function getreportdateformat($params)
+  {
+    $this->companylist($params);
+    return $this->reportdateformat;
   }
 }

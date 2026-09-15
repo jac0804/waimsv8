@@ -126,12 +126,15 @@ class issuemultipleexpiry
   {
     $d = $config['params']['data'];
     $trno = $config['params']['tableid'];
-    $data = array_filter($d, function($r) { return  $r['qty'] != 0; }); //gets only qty <>0
+    // $data = array_filter($d, function($r) { return  $r['qty'] != 0; }); //gets only qty <>0
+
+    $data = $this->saveMultiWarehouseSplit($config, $d);
     $path = $this->getapppath($config['params']['doc']);
     $rows = [];
     $refx =0;
     $client ='';
     if (!empty($data)) {
+     
       $refx = $data[0]['refx'];
       $client = $data[0]['client'];
       foreach ($data as $key2 => $value) {
@@ -158,35 +161,43 @@ class issuemultipleexpiry
         $return = app($path)->additem('insert', $config);
         }
         
-        if ($return['status']) {
-          if($data[$key2]['refx'] !=0){
-            if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
-              $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-              $line = $return['row'][0]->line;
-              $config['params']['trno'] = $trno;
+        if($config['params']['companyid'] != 71 && $config['params']['doc'] != 'ST'){ // kapag kahit anong company kahit 71 pa basta hindi st ang doc
+          if ($return['status']) {
+            if ($data[$key2]['refx'] != 0) {
+              if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
+                $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+                $line = $return['row'][0]->line;
+                $config['params']['trno'] = $trno;
 
-              $config['params']['line'] = $line;
-              $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
-              app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
-              $row = app($path)->openstockline($config);
-              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+                $config['params']['line'] = $line;
+                $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
+                $row = app($path)->openstockline($config);
+                $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+              }
             }
+
+            //array_push($rows, $return['row'][0]);
           }
-          
-          //array_push($rows, $return['row'][0]);
+
         }
+      
       } // end foreach
     } //end if
 
-  $stock = app($path)->openstock($trno,$config);
+    $stock = app($path)->openstock($trno,$config);
 
     if($refx != 0){
       //condition per lookup
       $config['params']['client'] = $client;
-      if($config['params']['doc']=='UE'){
-        $lookupdata = $this->sqlquery->getpendingjodetails($config);
-      }else{
-        $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
+      switch($config['params']['doc']){
+        case 'ST':
+        case 'UE':
+          $lookupdata = $this->sqlquery->getpendingjodetails($config);
+          break;
+        default:
+          $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
+        break; 
       }
       
       return ['status' => true, 'msg'=> 'Success','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
@@ -194,6 +205,22 @@ class issuemultipleexpiry
       return ['status' => true, 'msg'=> 'Success','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
+
+  private function saveMultiWarehouseSplit($config, $d)
+  {
+    if ($config['params']['companyid'] == 71 && in_array($config['params']['doc'], ['UE', 'ST'])) {
+      // FIX: array_values para ma-reindex ang array pagkatapos i-filter
+      return array_values(array_filter($d, function ($r) {
+        return $r['qty'] != 0;
+      }));
+    }
+
+    // ibang company/doc, walang binago ang behavior
+    return array_filter($d, function ($r) {
+      return $r['qty'] != 0;
+    });
+  }
+
 
   public function delete($config)
   {
@@ -311,7 +338,10 @@ class issuemultipleexpiry
         break;
       case 'UE'://Buenatech
         $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\\' . strtolower($doc);
-        break;  
+        break;
+      case 'ST': //Buenatech
+        $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\\' . strtolower($doc);
+        break;    
       default:
         $path = 'App\Http\Classes\modules\purchase\\' . strtolower($doc);
       break;

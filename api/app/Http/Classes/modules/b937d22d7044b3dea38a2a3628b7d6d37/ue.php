@@ -594,14 +594,20 @@ class ue
     $data['editby'] = $config['params']['user'];
 
     if ($isupdate) {
-      $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
-      $newjotrno= $head['pdtrno'];
-      if($newjotrno != $prevjotrno){
-        $updatejohead = $this->coreFunctions->sbcupdate('hpdhead', ['isproduce'=> 0], ['trno' => $prevjotrno]);
-        if($updatejohead ==0){
-          return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. Problems in updating previous Job Order head.'];
+
+      $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
+      if (!empty($stock)) {
+        return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
+       } else {
+        $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
+        $newjotrno = $head['pdtrno'];
+        if ($newjotrno != $prevjotrno) {
+          $updatejohead = $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 0], ['trno' => $prevjotrno]);
+          if ($updatejohead == 0) {
+            return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. Problems in updating previous Job Order head.'];
+          }
+          $newupdate = $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $newjotrno]); //17258
         }
-        $newupdate= $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $newjotrno]); //17258
       }
       $headUpdate = $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->recomputecost($head, $config);

@@ -671,8 +671,8 @@ class so
         $sortcolumn = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         break;
       case 64:
-        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','disc', 'markup','disc2', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc','markup','disc2',  'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'markup','disc2','disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','markup','disc2', 'disc',  'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         break;
       default:
         $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
@@ -862,9 +862,9 @@ class so
         }
 
         if ($companyid == 64) { //excelin
-          $obj[0]['inventory']['columns'][$markup]['label'] = 'Markup Price';
+          $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer Markup Price';
           $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
-          $obj[0]['inventory']['columns'][$disc2]['label'] = 'Markup Discount';
+          $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Discount';
         }
 
         if ($companyid == 71) { //buenatech
@@ -1252,9 +1252,15 @@ class so
 
   public function openhead($config)
   {
+    $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
     $center = $config['params']['center'];
     $trno = $config['params']['trno'];
+
+    $addfield = "";
+    if ($companyid == 64) { //excilin
+      $addfield = ",head.ismarkup";
+    }
 
     $tablenum = $this->tablenum;
 
@@ -1297,8 +1303,7 @@ class so
             subamen.line as subamenityid, subamen.description as subamenityname, info.tmpref,
              head.tax,
              head.vattype,
-             head.ismarkup,
-             '' as dvattype";
+             '' as dvattype $addfield";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -1377,13 +1382,16 @@ class so
         }
       }
       
-
+      
+    if ($config['params']['companyid'] == 64) { //excilin
       foreach ($this->blnfields as $key => $value) {
         if ($head[0]->$value) {
           $head[0]->$value = "1";
         } else
           $head[0]->$value = "0";
       }
+    }
+      
       $stock = $this->openstock($trno, $config);
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
@@ -1873,7 +1881,9 @@ class so
         $addsfield = ",fstatus";
         break;
       case 64: //excelin 
-        $addsfield = ",limitcheck";
+        $addfield = ",ismarkup";
+        $addfieldfilter = ",head.ismarkup";
+        $addsfield = "markup,custdisc,limitcheck,";
         break;
       case 71: //buenatech
         $addsfield = ",issp";
@@ -1883,12 +1893,12 @@ class so
 
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,creditinfo,crline,overdue, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
+       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.creditinfo,head.crline,head.overdue, head.projectid, 
-      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
+      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
@@ -1907,9 +1917,9 @@ class so
 
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
         whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,kgs,
-        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc" . $addsfield . ")
+        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . ")
         SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext,kgs,
-        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc " . $addsfield . " FROM " . $this->stock . " where trno =?";
+        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . " FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
@@ -1971,7 +1981,9 @@ class so
         $addsfield = ",fstatus";
         break;
       case 64: //excelin 
-        $addsfield = ",limitcheck";
+        $addfield = ",ismarkup";
+        $addfieldfilter = ",head.ismarkup";
+        $addsfield = ",markup,custdisc,limitcheck";
         break;
       case 71: //buenatech
         $addsfield = ",issp";
@@ -1981,11 +1993,11 @@ class so
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
     yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,creditinfo,crline,overdue,agent, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
+    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
     select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
     head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
     head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.creditinfo,head.crline,head.overdue,head.agent,
-    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
+    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
     from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
     where head.trno=? limit 1";
     //head
@@ -2003,9 +2015,9 @@ class so
 
       $qry = "insert into " . $this->stock . "(
       trno,line,itemid,uom,whid,loc,expiry,disc,
-      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc " . $addsfield . ")
+      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . ")
       select trno, line, itemid, uom,whid,loc,expiry,disc,amt, iss,void, isamt, isqty,
-      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc" . $addsfield . "
+      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . "
       from " . $this->hstock . " where trno=?";
       //stock
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
@@ -2071,11 +2083,14 @@ class so
 
     if ($companyid == 64) { //excelin
       $color = ",case when stock.limitcheck = 1  then 'bg-yellow-2' else '' end as qacolor";
+      $itemdesc = ",FORMAT(stock.markup," . $this->companysetup->getdecimal('currency', $config['params']) . ") as markup,
+     stock.custdisc as disc2";
     }
 
     if ($companyid == 71) { //buenatech
       $specialprice = ",case when stock.issp=0 then 'false' else 'true' end as issp";
     }
+
 
 
     $sqlselect = "select item.brand as brand,
@@ -2110,10 +2125,6 @@ class so
     stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,stock.blklotid, bl.blk, bl.lot,
     stock.projectid, proj.code as project,
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
-
-
-     FORMAT(stock.markup," . $this->companysetup->getdecimal('currency', $config['params']) . ") as markup,
-     stock.custdisc as disc2,
 
     '' as bgcolor,
     case when stock.void=0 then '' else 'bg-red-2' end as errcolor,
@@ -2704,8 +2715,12 @@ class so
     $refx = 0;
     $linex = 0;
     $noprint = 'false';
-    $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : "";
-    $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
+
+    if ($companyid == 64) { //Exceline
+      $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : "";
+      $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
+    }
+
 
     if ($this->companysetup->getiskgs($config['params'])) {
       $kgs = isset($config['params']['data']['kgs']) ? $config['params']['data']['kgs'] : 1;
@@ -2868,9 +2883,13 @@ class so
       'weight' => $weight,
       'fstatus' => $fstatus,
       'noprint' => $noprint,
-      'markup' => $markup,
-      'custdisc' => $disc2,
     ];
+
+    if ($companyid == 64) { //excelin
+      $data['markup'] = $markup;
+      $data['custdisc'] = $disc2;
+    }
+
     if ($systemtype == 'REALESTATE') {
       $data['projectid'] = $projectid;
       $data['phaseid'] = $phaseid;
@@ -3301,17 +3320,22 @@ class so
 
   public function getqtsummary($config)
   {
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $wh = $config['params']['wh'];
     $rows = [];
     $msg = '';
+    $addfield = "";
+    if ($companyid == 64) { //excilin
+      $addfield = ",head.ismarkup,stock.markup,stock.custdisc";
+    }
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno, 
         stock.line, item.barcode,stock.uom, stock.amt,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty, 
-        stock.disc,stock.loc,stock.expiry
+        stock.disc,stock.loc,stock.expiry $addfield
         FROM hqthead as head left join hqtstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.iss>stock.qa and stock.void=0
@@ -3332,8 +3356,20 @@ class so
           $config['params']['data']['linex'] = $data[$key2]->line;
           $config['params']['data']['ref'] = $data[$key2]->docno;
           $config['params']['data']['amt'] = $data[$key2]->isamt;
+          if ($companyid == 64) { //excilin
+            $config['params']['data']['markup'] = $data[$key2]->markup;
+            $config['params']['data']['disc2'] = $data[$key2]->custdisc;
+          }
+
           $return = $this->additem('insert', $config);
 
+          if ($companyid == 64) { //sbc
+            $headupdate = [
+              'ismarkup' => $data[0]->ismarkup
+            ];
+            $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
+          }
+          
           if ($msg = '') {
             $msg = $return['msg'];
           } else {
@@ -3356,22 +3392,29 @@ class so
         } // end foreach
       } //end if
     } //end foreach
-    return ['row' => $rows, 'status' => true, 'msg' => $msg];
+    return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
   } //end function
 
   public function getqtdetails($config)
-  {
+  { 
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $wh = $config['params']['wh'];
     $rows = [];
     $msg = '';
+
+    $addfield = "";
+    if ($companyid == 64) { //excilin
+      $addfield = ",head.ismarkup,stock.markup,stock.custdisc";
+    }
+    
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno, 
         stock.line, item.barcode,stock.uom, stock.amt,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty, 
-        stock.disc,stock.loc,stock.expiry
+        stock.disc,stock.loc,stock.expiry $addfield
         FROM hqthead as head left join hqtstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.iss>stock.qa and stock.void=0
@@ -3392,7 +3435,17 @@ class so
           $config['params']['data']['linex'] = $data[$key2]->line;
           $config['params']['data']['ref'] = $data[$key2]->docno;
           $config['params']['data']['amt'] = $data[$key2]->isamt;
+          if ($companyid == 64) { //excilin
+            $config['params']['data']['markup'] = $data[$key2]->markup;
+            $config['params']['data']['disc2'] = $data[$key2]->custdisc;
+          }
           $return = $this->additem('insert', $config);
+          if ($companyid == 64) { //sbc
+            $headupdate = [
+              'ismarkup' => $data[0]->ismarkup
+            ];
+            $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
+          }
           if ($msg = '') {
             $msg = $return['msg'];
           } else {

@@ -9777,15 +9777,6 @@ class gridcolumnClass
                             'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
                             'readonly' => false
                      ),
-                     'pono' => array(
-                            'name' => 'pono',
-                            'field' => 'pono',
-                            'type' => 'input',
-                            'label' => 'PO #',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
                      'buyer' => array(
                             'name' => 'buyer',
                             'field' => 'buyer',

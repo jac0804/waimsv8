@@ -166,7 +166,7 @@ class om
 
   public function loaddoclisting($config)
   {
-    ini_set('memory_limit', '-1');
+    ini_set('max_execution_time', 0);
     $date1 = date('Y-m-d', strtotime($config['params']['date1']));
     $date2 = date('Y-m-d', strtotime($config['params']['date2']));
     $itemfilter = isset($config['params']['doclistingparam']['typecode']) ? $config['params']['doclistingparam']['typecode'] : 'draft';
@@ -178,7 +178,7 @@ class om
     $limit = "limit 150";
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['docno', 'clientname', 'yourref', 'ourref', 'postedby', 'createby', 'editby', 'viewby', 'inspo', 'rem', 'pono'];
+      $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby', 'info.inspo', 'head.rem'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -224,53 +224,43 @@ class om
       if ($trnx != '') $trnxx = " and info.trnxtype='" . $trnx . "' ";
     }
 
-    $qry = "select trno,docno,clientname,dateid,stat,createby,editby,viewby,postedby,postdate,yourref,ourref,inspo,rem,itemdesc,
-                   oraclecode,rrqty,line,sodetails,isposted,ref,pono,forrevision,ctrlno from (
-                   select head.trno,head.docno,head.clientname,$dateid,
+    $qry = "select head.trno,head.docno,head.clientname,$dateid,
                           concat(" . $status . ",if(info.instructions='For Revision',' (For Revision)','')) as stat,
                           head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,
                           head.yourref, head.ourref, info.inspo , head.rem, pr.itemdesc, stock.oraclecode, stock.rrqty, stock.line,
                           (select group_concat('SO#:',sono,' (Qty:',qty,')' SEPARATOR '\n\r') 
                           from omso where omso.trno=stock.trno and omso.line=stock.line) as sodetails, 'false' as isposted,stock.ref,
-                          (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,
-                          (case when stock.statid in (0,12) then 'true' else 'false' end) as forrevision, pr.ctrlno
+                          (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx<>0 and pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,
+                          (case when stock.statid in (0,12) then 'true' else 'false' end) as forrevision, infostock.ctrlno
                     from " . $this->head . " as head 
                     left join " . $this->tablenum . " as num on num.trno=head.trno 
                     left join " . $this->stock . " as stock on stock.trno=head.trno
-                    left join trxstatus as stat on stat.line=num.statid
                     left join trxstatus as stat2 on stat2.line=stock.statid 
                     left join headinfotrans as info on info.trno=head.trno
+                    left join stockinfotrans as infostock on infostock.trno=stock.trno and infostock.line=stock.line
                     left join hstockinfotrans as pr on pr.trno=stock.reqtrno and pr.line=stock.reqline
                     " . $leftjoin . "
-                    where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and 
-                          CONVERT(head.dateid,DATE)<=?  $trnxx" . $condition . " 
+                    where head.doc=? and num.center=? and date(head.dateid)>=? and date(head.dateid)<=?  $trnxx" . $condition . $filtersearch . " 
                     union all
                     select head.trno,head.docno,head.clientname,$dateid," . $status . " as stat,head.createby,head.editby,head.viewby, 
                           num.postedby, date(num.postdate) as postdate,head.yourref, head.ourref, info.inspo, head.rem, pr.itemdesc, 
                           stock.oraclecode, stock.rrqty, stock.line,
                           (select group_concat('SO#:',sono,' (Qty:',qty,')' SEPARATOR '\n\r') 
                           from homso where homso.trno=stock.trno and homso.line=stock.line) as sodetails, 'true' as isposted,stock.ref,
-                          (select group_concat(distinct yourref separator ', ')
-                          from (select yourref,pos.reqtrno,pos.reqline
-                                from hpohead as po
-                                left join hpostock as pos on pos.trno=po.trno) as k
-                                where k.reqtrno=stock.reqtrno and k.reqline=stock.reqline and reqtrno <> 0) as pono,
-                          (case when stock.statid in (0,12) then 'true' else 'false' end) as forrevision, pr.ctrlno
+                          (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx<>0 and pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,
+                          (case when stock.statid in (0,12) then 'true' else 'false' end) as forrevision, infostock.ctrlno
                     from " . $this->hhead . " as head 
                     left join " . $this->tablenum . " as num on num.trno=head.trno 
                     left join " . $this->hstock . " as stock on stock.trno=head.trno
-                    left join trxstatus as stat on stat.line=num.statid
                     left join trxstatus as stat2 on stat2.line=stock.statid 
                     left join hheadinfotrans as info on info.trno=head.trno
+                    left join hstockinfotrans as infostock on infostock.trno=stock.trno and infostock.line=stock.line
                     left join hstockinfotrans as pr on pr.trno=stock.reqtrno and pr.line=stock.reqline
                     " . $leftjoin_posted . "
-                    where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? 
-                          and CONVERT(head.dateid,DATE)<=?  $trnxx" . $condition . "  ) as k
-            where 1=1 " . $filtersearch . "
-            group by trno,docno,clientname,dateid,stat,createby,editby,viewby,postedby,postdate,yourref,ourref,inspo,rem,itemdesc,
-                   oraclecode,rrqty,line,sodetails,isposted,ref,pono,forrevision,ctrlno
+                    where head.doc=? and num.center=? and date(head.dateid)>=? and date(head.dateid)<=?  $trnxx" . $condition . $filtersearch . "
             order by dateid desc,docno desc " . $limit;
     $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
+
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
   }
 
@@ -447,6 +437,7 @@ class om
     $obj[0][$this->gridname]['columns'][$surcharge]['readonly'] = true;
 
     $obj[0][$this->gridname]['columns'][$pono]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$pono]['label'] = 'PO #';
 
     $obj[0][$this->gridname]['columns'][$surcharge]['label'] = 'Surcharge';
 
@@ -990,17 +981,20 @@ class om
     case when stock.void=0 then '' else 'bg-red-2' end as errcolor,
     prj.name as stock_projectname,
     stock.projectid as projectid,
-    item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,stock.osrefx,stock.oslinex,stock.sgdrate,stock.poref,
+    item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,stock.osrefx,stock.oslinex,stock.sgdrate,
     ifnull(info.itemdesc,'') as itemdesc, ifnull(xinfo.unit,'') as unit, ifnull(xinfo.specs,'') as specs, ifnull(info.purpose,'') as purpose,ifnull(info.requestorname,'') as requestorname,stock.reqtrno,stock.reqline,
     ifnull(dept.clientname,'') as department, ifnull(sup.clientname,'') as supplier, stock.oraclecode, pr.clientname as customer, ifnull(svs.sano,'') as svsnum, stock.svsno, ifnull(sa.sano,'') as sanodesc,
     if(stock.statid=12,'true','false') as isposted, 
-    (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,info.ctrlno,xinfo.uom2";
+    (select group_concat(distinct poh.docno separator ', ') from hpostock as pos left join hpohead as poh on poh.trno=pos.trno where pos.cdrefx<>0 and pos.cdrefx=stock.cdrefx and pos.cdlinex=stock.cdlinex) as pono,info.ctrlno,xinfo.uom2";
 
     return $sqlselect;
   }
 
   public function openstock($trno, $config)
   {
+    ini_set('max_execution_time', 0);
+    ini_set('memory_limit', '-1');
+
     $sqlselect = $this->getstockselect($config);
 
     $qry = $sqlselect . ", (select group_concat('SO#:',sono,' (Qty:',qty,')' SEPARATOR '\n\r') from omso where omso.trno=stock.trno and omso.line=stock.line) as sodetails

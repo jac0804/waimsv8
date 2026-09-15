@@ -107,7 +107,7 @@ class viewothercharges
 
     public function paramsdata($config)
     {
-        $trno = $config['params']['clientid'];
+        $trno = isset($config['params']['clientid']) ? $config['params']['clientid'] : $config['params']['dataparams']['trno'];
         $companyid = $config['params']['companyid'];
 
         $qryselect = '';
@@ -194,7 +194,15 @@ class viewothercharges
         $qry .= " where trno=".$dataparams['trno'];
 
         if ($this->coreFunctions->execqry($qry, 'update')) {
-            return ['status' => true, 'msg' => 'Record updated'];
+            if($companyid == 71){//buena
+                $config['params']['trno'] = $dataparams['trno'];
+                $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\rr';
+                $head = app($path)->headqry($config);
+                app($path)->recomputecost($head,$config);
+            }
+
+            $txtdata = $this->paramsdata($config);
+            return ['status' => true, 'msg' => 'Record updated','reloadhead'=> true,'txtdata' => $txtdata];
         }
         return ['status' => false, 'msg' => 'Error updating record'];
     }
