@@ -57,7 +57,7 @@ class viewclientpendingtask
     {
         // $approver = $config['params']['row']['approver'];
 
-        $cols = ['action', 'dateid', 'clientname', 'empname', 'title', 'startdate', 'enddate', 'assignto'];
+        $cols = ['action', 'dateid', 'clientname', 'empname', 'title', 'startdate', 'enddate', 'assignto', 'status'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
@@ -97,6 +97,8 @@ class viewclientpendingtask
         $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'Reseller';
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width:200px;whiteSpace:normal;min-width:200px;max-width:200px';
+
+        $obj[0][$this->gridname]['columns'][$status]['readonly'] = true; 
 
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -153,7 +155,8 @@ class viewclientpendingtask
                 detail.task as tm,
                 detail.title,
                 head.requestby as head,
-                e.clientname as empname
+                e.clientname as empname,
+                case detail.status when 1 then 'Open' when 2 then 'Pending' when 3 then 'On-going' when 4 then 'For Checking' END AS status
                 from tmhead as head
                 left join tmdetail as detail on detail.trno = head.trno
                 left join client as e on e.clientid = head.requestby
