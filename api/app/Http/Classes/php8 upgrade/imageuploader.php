@@ -336,7 +336,7 @@ class imageuploader
     return $this;
   } //end function
 
-    private function uploadfilebybatch(Request $request)
+  private function uploadfilebybatch(Request $request)
   {
     $required = ['file', 'action', 'user', 'companyid', 'folder', 'table', 'filename', 'ext'];
     $creds = $request->only($required);
@@ -346,7 +346,7 @@ class imageuploader
     $file_ext = $creds['ext'];
     $filename = $creds['filename'];
     $data = [];
-    $fullpath = $creds['folder'].'/'.$filename;
+    $fullpath = $creds['folder'] . '/' . $filename;
     if ($hasfile) {
       $file_ext = $myfile->extension();
       $available_ext = ["jpg", "jpeg", "png"];
@@ -356,16 +356,16 @@ class imageuploader
       }
 
       $img = Image::read($myfile);
-      
+
       if (Storage::disk('public')->exists($fullpath)) {
         Storage::disk('public')->delete($fullpath);
       }
-      $directory = Storage::disk('public')->put($fullpath, $img);
-      if($directory){
-        $msg = "'Successfully uploaded. ".$filename;      
+      $directory = Storage::disk('public')->put($fullpath, $img->encodeByExtension($myfile->getClientOriginalExtension()));
+      if ($directory) {
+        $msg = "'Successfully uploaded. " . $filename;
         $this->config['return'] = ['status' => true, 'msg' => $msg, 'filename' => $fullpath];
       } else {
-        $msg = "'Uploade Failed. ".$filename;      
+        $msg = "'Uploade Failed. " . $filename;
         $this->config['return'] = ['status' => false, 'msg' => $msg, 'filename' => $fullpath];
       }
     }

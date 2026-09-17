@@ -2709,7 +2709,7 @@ class sj
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
       case 64: //execilin
-        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, format(ifnull(stock.custdisc,0), 2) as disc2";
+        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, stock.custdisc as disc2";
         $color = ",case when stock.limitcheck = 2  then 'bg-red-2'
                           when stock.limitcheck = 1 then 'bg-yellow-2'
                           else '' end as qacolor";
@@ -3988,7 +3988,7 @@ class sj
     }
 
     $consignmarkup = 0;
-    $custdisc = 0;
+    $custdisc = "";
     if ($companyid == 64) { //excilin
       if (isset($config['params']['data']['consignpr'])) {
         $consignmarkup = $config['params']['data']['consignpr'];
@@ -5687,17 +5687,8 @@ class sj
         } // end foreach
       } //end if
     } //end foreach
-    switch ($companyid) {
-      case 19: //housegem
-      case 69: //cemphil
-      case 24: //goodfound
-        return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
-        break;
 
-      default:
-        return ['row' => $rows, 'status' => true, 'msg' => $msg];
-        break;
-    }
+    return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
   } //end function
 
   public function getsqsummary($config)

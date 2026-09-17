@@ -1246,9 +1246,10 @@ class inventory
             { name: "barcode", label: "Item Code", align: "left", field: "barcode", sortable: true },
             { name: "itemname", label: "Item Name", align: "left", field: "itemname", sortable: true },
             { name: "brand", label: "Brand", align: "left", field: "brand", sortable: true },
-            { name: "bal", label: "Balance", align: "right", field: "bal", sortable: false }
+            { name: "bal", label: "Balance", align: "right", field: "bal", sortable: false },
+            { name: "sku", label: "SKU", align: "right", field: "sku", sortable: false }
           ];
-          sbc.globalFunc.visibleCols = ["barcode", "itemname", "brand", "bal"];
+          sbc.globalFunc.visibleCols = ["barcode", "itemname", "brand", "bal", "sku"];
           let brands = sbc.modulefunc.docForm.brands;
           let wh = sbc.modulefunc.docForm.wh;
           brands = brands.split(",");
@@ -1260,12 +1261,12 @@ class inventory
           sbc.lookupTitle = "Items List";
           sbc.showLookup = true;
           sbc.db.transaction(function (tx) {
-            let qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode where item.brand in (" + brands + ") and itembal.wh=? order by item.barcode asc";
+            let qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku, clientitem.wh from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode and clientitem.wh=? where item.brand in (" + brands + ") and itembal.wh=? order by item.barcode asc";
             if (sbc.globalFunc.company === "mbs") {
               // qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode order by item.barcode asc";
               qry = "select item.itemid, item.barcode, item.itemname, item.brand, item.partno, round(ifnull(cast(item.bal as float), 0), 2) as bal, clientitem.sku from item left join clientitem on clientitem.barcode=item.barcode order by item.barcode asc";
             }
-            tx.executeSql(qry, [wh], function (tx, res) {
+            tx.executeSql(qry, [wh, wh], function (tx, res) {
               sbc.globalFunc.lookupData = [];
               let items = [];
               if (res.rows.length > 0) {
@@ -1304,8 +1305,8 @@ class inventory
               //   // qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
               //   qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(item.bal as float), 0), 2) as bal, clientitem.sku from item left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
               // }
-              let qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) and itembal.wh = ? left join clientitem on clientitem.barcode=item.barcode where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
-              tx.executeSql(qry, [wh, sbc.modulefunc.cLookupForm.scanitem.toLowerCase(), sbc.modulefunc.cLookupForm.scanitem.toLowerCase()], function (tx, res) {
+              let qry = "select item.itemid, item.barcode, item.itemname, item.partno, item.brand, round(ifnull(cast(itembal.bal as float), 0), 2) as bal, clientitem.sku from item left join itembal on itembal.itemid=cast(item.itemid as integer) and itembal.wh = ? left join clientitem on clientitem.barcode=item.barcode and clientitem.wh = ? where (lower(item.barcode)=? or lower(item.partno)=?) limit 1";
+              tx.executeSql(qry, [wh, wh, sbc.modulefunc.cLookupForm.scanitem.toLowerCase(), sbc.modulefunc.cLookupForm.scanitem.toLowerCase()], function (tx, res) {
                 if (res.rows.length > 0) {
                   let seq = 0;
                   console.log("-----------------scanBarcode: ", res.rows.item(0));
@@ -1930,7 +1931,7 @@ class inventory
               ifnull((select sum(qty) as qty from (select qty from hstock where hstock.trno in (" + trnos.join(",") + ") and hstock.barcode=item.barcode) as t), 0) as qty,\
               ifnull(sitems.soldqty, 0) as sales, 0 as variance, item.amt\
               from item\
-              left join clientitem as ci on ci.barcode=item.barcode\
+              left join clientitem as ci on ci.barcode=item.barcode and ci.wh=?\
               left join itembal as ib on cast(ib.itemid as integer)=item.itemid\
               left join soldqtyitems as sitems on sitems.barcode=item.barcode\
               where item.brand in (" + brands2 + ") " + filter + " and ib.wh=? order by qty desc";
@@ -1955,6 +1956,7 @@ class inventory
             let dd = [sbc.modulefunc.cLookupForm.wh, pcdate, ""];
 
             if (sbc.globalFunc.company === "ulitc") {
+              dd.push(sbc.modulefunc.cLookupForm.wh)
               dd.push(sbc.modulefunc.cLookupForm.wh)
             }
 
@@ -2460,7 +2462,7 @@ class inventory
                 "Customer SKU": waw.sku,
                 "Item Description": waw.itemname,
                 "Brand": waw.brand,
-                "System Count": waw.syscount,
+                "System Balance": waw.syscount,
                 "Actual Count": waw.qty,
                 "Sales Count": waw.sales,
                 "Variance": waw.variance,
@@ -2733,7 +2735,7 @@ class inventory
         let sql = "select item.itemid, item.barcode, item.itemname, item.brand, ifnull(cast(itembal.bal as float), 0) as bal, clientitem.sku\
           from item\
           left join itembal on itembal.itemid=cast(item.itemid as integer)\
-          left join clientitem on clientitem.barcode=item.barcode\
+          left join clientitem on clientitem.barcode=item.barcode and clientitem.wh=? \
           where item.brand in (" + brands + ") and itembal.wh=?";
         if (sbc.globalFunc.company === "mbs") {
           sql = "select item.itemid, item.barcode, item.itemname, item.brand, ifnull(cast(item.bal as float), 0) as bal, clientitem.sku\
@@ -2744,9 +2746,9 @@ class inventory
         let strs = [];
         let f = "";
         let d = [];
-
+        
         if (sbc.globalFunc.company === "ulitc") {
-          d.push([wh]);
+          d.push([wh, wh]);
         }  
 
         if (waw !== "") strs = waw.split(",");
@@ -2790,6 +2792,7 @@ class inventory
           let items = [];
           let filter = "";
           let brands2 = [];
+          // alert("searchItem2");
           sbc.globalFunc.cLookupBrands.map(waw => {
             waw.split(",").map(wew => brands2.push(wew));
           });

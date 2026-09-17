@@ -42,29 +42,42 @@ class receivables_by_terms_report
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = array('radioprint', 'asofdate', 'dclientname');
+        $fields = array('radioprint', 'asofdate', 'dclientname', 'terms');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'asofdate.readonly', false);
         data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
         data_set($col1, 'dclientname.label', 'Customer');
+        data_set($col1, 'terms.type', 'lookup');
+        data_set($col1, 'terms.action', 'lookupterms');
+        data_set($col1, 'terms.lookupclass', 'ledgerterms');
+        data_set($col1, 'terms.label', 'Terms');
 
-        $fields = array('print');
+
+        $fields = array('radioreporttype', 'print');
         $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'radioreporttype.label', 'Format ');
+        data_set($col2, 'radioreporttype.options', [
+            ['label' => 'Summary', 'value' => '0', 'color' => 'red'],
+            ['label' => 'Detailed', 'value' => '1', 'color' => 'red']
+        ]);
 
         return array('col1' => $col1, 'col2' => $col2);
     }
 
     public function paramsdata($config)
     {
-        // NAME NG INPUT YUNG NAKA ALIAS
         $currentDate = $this->othersClass->getCurrentDate();
         return $this->coreFunctions->opentable("select 
-        'default' as print,
-        ' " . $currentDate . " ' as asofdate,
-        '' as client,
-        '' as dclientname, 
-        '0' as clientid
-        ");
+    'default' as print,
+    ' " . $currentDate . " ' as asofdate,
+    '' as client,
+    '' as clientname,
+    '' as dclientname, 
+    '0' as clientid,
+    '0' as reporttype,
+    '' as terms
+
+    ");
     }
 
     public function reportdata($config)
@@ -80,6 +93,13 @@ class receivables_by_terms_report
 
     public function reportplotting($config)
     {
+        $reporttype = $config['params']['dataparams']['reporttype'];
+
+        if ($reporttype == 1) {
+            $data = $this->data_query_detail($config);
+            return $this->reportDetailLayout($config, $data);
+        }
+
         $data = $this->data_query($config);
         return $this->reportDefaultLayout($config, $data);
     }
@@ -87,109 +107,79 @@ class receivables_by_terms_report
 
     public function data_query($config)
     {
-        $companyid = $config['params']['companyid'];
-        $asof      = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
-        $client    = $config['params']['dataparams']['client'];
-        $clientid  = $config['params']['dataparams']['clientid'];
+        $client   = $config['params']['dataparams']['client'];
+        $clientid = $config['params']['dataparams']['clientid'];
+        $asof     = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
+        $terms    = isset($config['params']['dataparams']['terms']) ? $config['params']['dataparams']['terms'] : '';
 
         $filter = "";
         if ($client != "") {
-            $filter = " and client.clientid='$clientid'";
+            $filter .= " and cl.clientid='$clientid'";
+        }
+        if ($terms != "") {
+            $filter .= " and head.terms='$terms'";
         }
 
         $query = "
         select
-            risks.terms,
-            risks.days,
-            count(distinct risks.clientid) as customer_count,
-            count(distinct risks.trno) as invoice_count,
-            sum(risks.bal) as outstanding_ar,
-            case
-                when risks.days = 0 then 'COD discipline'
-                when risks.days >= 60 then 'High exposure / monitor credit approvals'
-                else 'Standard terms'
-            end as risk_note
-        from (
-            select
-                xx.trno,
-                xx.clientid,
-                coalesce(gh.terms, lh.terms) as terms,
-                terms.days,
-                sum(xx.db - xx.cr) as bal
-            from (
-                select
-                    stock.trno as trno,
-                    client.clientid as clientid,
-                    sum(stock.ext) as db,
-                    0.0 as cr
-                from lahead as head
-                left join lastock as stock on stock.trno = head.trno
-                left join client on client.client = head.client
-                left join cntnum as num on head.trno = num.trno
-                where head.doc = 'SJ'
-                    and date(head.dateid) <= '" . $asof . "'
-                    " . $filter . "
-                group by stock.trno, client.clientid
+        coalesce(t.terms, 'N/A') as terms,
+        t.days,
+        count(distinct cl.clientid) as customer_count,
+        count(distinct ar.trno) as invoice_count,
+        sum(ar.bal) as outstanding_ar,
+        case
+        when t.days = 0 then 'COD discipline'
+        when t.days >= 60 then 'High exposure / monitor credit approvals'
+        else 'Standard terms'
+        end as risk_note
+        from arledger as ar
+        left join glhead as head on head.trno = ar.trno
+        left join client as cl on cl.clientid = ar.clientid
+        left join coa on coa.acnoid = ar.acnoid
+        left join terms as t on t.terms = head.terms
+        where left(coa.alias, 2) = 'AR'
+        and ar.bal <> 0
+        and head.dateid <= '" . $asof . "'
+        " . $filter . "
+        group by t.terms, t.days
+        order by t.days
+        ";
 
-                union all
+        return $this->coreFunctions->opentable($query);
+    }
 
-                select
-                    detail.trno as trno,
-                    client.clientid as clientid,
-                    ap.db as db,
-                    ap.cr as cr
-                from arledger as ap
-                left join glhead as head on head.trno = ap.trno
-                left join client on client.clientid = ap.clientid
-                left join gldetail as detail on detail.trno = ap.trno and detail.line = ap.line
-                left join cntnum as num on head.trno = num.trno
-                left join coa as c on c.acnoid = detail.acnoid
-                where date(ap.dateid) <= '" . $asof . "'
-                    " . $filter . "
+    public function data_query_detail($config)
+    {
+        $client   = $config['params']['dataparams']['client'];
+        $clientid = $config['params']['dataparams']['clientid'];
+        $asof     = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
+        $terms    = isset($config['params']['dataparams']['terms']) ? $config['params']['dataparams']['terms'] : '';
 
-                union all
+        $filter = "";
+        if ($client != "") {
+            $filter .= " and cl.clientid='$clientid'";
+        }
+        if ($terms != "") {
+            $filter .= " and head.terms='$terms'";
+        }
 
-                select
-                    detail.refx as trno,
-                    client.clientid as clientid,
-                    detail.db as db,
-                    detail.cr as cr
-                from glhead as head
-                left join gldetail as detail on detail.trno = head.trno
-                left join client on client.clientid = detail.clientid
-                left join cntnum as num on detail.trno = num.trno
-                left join coa as c on c.acnoid = detail.acnoid
-                where detail.refx <> 0
-                    and left(c.alias, 2) = 'AR'
-                    and date(head.dateid) <= '" . $asof . "'
-                    " . $filter . "
-
-                union all
-
-                select
-                    detail.refx as trno,
-                    client.clientid as clientid,
-                    detail.db as db,
-                    detail.cr as cr
-                from lahead as head
-                left join ladetail as detail on detail.trno = head.trno
-                left join client on client.client = detail.client
-                left join cntnum as num on detail.trno = num.trno
-                left join coa as c on c.acnoid = detail.acnoid
-                where detail.refx <> 0
-                    and left(c.alias, 2) = 'AR'
-                    and date(head.dateid) <= '" . $asof . "'
-                    " . $filter . "
-            ) as xx
-            left join glhead as gh on gh.trno = xx.trno
-            left join lahead as lh on lh.trno = xx.trno
-            left join terms on terms.terms = coalesce(gh.terms, lh.terms)
-            group by xx.trno, xx.clientid, coalesce(gh.terms, lh.terms), terms.days
-            having sum(xx.db - xx.cr) <> 0
-        ) as risks
-        group by risks.terms, risks.days
-        order by risks.days";
-
+        $query = "
+        select CONCAT(LEFT(ar.docno, 3), RIGHT(ar.docno, 5)) AS docno,
+        CONCAT(LEFT(cl.client, 3), RIGHT(cl.client, 5)) AS client,
+        cl.clientname, cl.addr, agent.clientname as agent, head.terms,
+        date(head.dateid) as invdate, date(head.due) as due,
+        ar.bal, ar.db, ar.ref, 0 as short, 0 as unapplied
+        from arledger as ar
+        left join glhead as head on head.trno = ar.trno
+        left join client as cl on cl.clientid = ar.clientid
+        left join client as agent on agent.clientid = ar.agentid
+        left join coa on coa.acnoid = ar.acnoid
+        where left(coa.alias, 2) = 'AR'
+            and ar.bal <> 0
+            and head.dateid <= '" . $asof . "'
+            " . $filter . "
+        order by ar.dateid
+        ";
 
         return $this->coreFunctions->opentable($query);
     }
@@ -199,7 +189,13 @@ class receivables_by_terms_report
         $center     = $config['params']['center'];
         $username   = $config['params']['user'];
         $companyid  = $config['params']['companyid'];
-
+        $asof = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $format = ($reporttype == 1) ? 'Detailed' : 'Summary';
+        $clientname = isset($config['params']['dataparams']['clientname']) ? $config['params']['dataparams']['clientname'] : '';
+        $customer = $clientname != '' ? $clientname : 'All Customers';
+        $terms = isset($config['params']['dataparams']['terms']) ? $config['params']['dataparams']['terms'] : '';
+        $termsdisplay = $terms != '' ? $terms : 'All Terms';
 
         $str = '';
         $layoutsize = '1010';
@@ -228,21 +224,21 @@ class receivables_by_terms_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('As Of Date :', null, null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('As Of Date : ', '100', null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col($asof, '300', null, false, '', '', 'L', $font, '10', '');
+        $str .= $this->reporter->col('', '240', null, false, '', '', 'L', $font, '10', '');
+        $str .= $this->reporter->col('Format : ', '70', null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col($format, null, null, false, '', '', 'L', $font, '10', '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Filter by :', null, null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col('Customer : ', '100', null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col($customer, '300', null, false, '', '', 'L', $font, '10', '');
+        $str .= $this->reporter->col('', '240', null, false, '', '', 'L', $font, '10', '');
+        $str .= $this->reporter->col('Terms : ', '70', null, false, '', '', 'L', $font, '10', 'B');
+        $str .= $this->reporter->col($termsdisplay, null, null, false, '', '', 'L', $font, '10', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-
-        //space
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', null, '20', false, '', '', 'L', $font, '10', 'B');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
 
         return $str;
     }
@@ -348,5 +344,188 @@ class receivables_by_terms_report
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->endreport();
         return $str;
+    }
+
+    public function displayHeaderDetail($config)
+    {
+        $center     = $config['params']['center'];
+        $username   = $config['params']['user'];
+        $companyid  = $config['params']['companyid'];
+        $asof = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
+        $reporttype = $config['params']['dataparams']['reporttype'];
+        $format = ($reporttype == 1) ? 'Detailed' : 'Summary';
+        $clientname = isset($config['params']['dataparams']['clientname']) ? $config['params']['dataparams']['clientname'] : '';
+        $customer = $clientname != '' ? $clientname : 'All Customers';
+        $terms = isset($config['params']['dataparams']['terms']) ? $config['params']['dataparams']['terms'] : '';
+        $termsdisplay = $terms != '' ? $terms : 'All Terms';
+
+        $str = '';
+        $layoutsize = '1250';
+        $font = 'TAHOMA';
+        $fontsize = "10";
+        $fontsize2 = "9";
+        $border = '1px solid ';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username, $config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Receivables By Terms Report - Detailed', null, null, false, '', '', 'C', $font, '16', 'B');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= '<br/><br/>';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('As-of Date : ', '100', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($asof, '300', null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col('', '480', null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col('Format : ', '70', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($format, null, null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->endrow();
+
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Customer : ', '100', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($customer, '300', null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col('', '480', null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col('Terms : ', '70', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($termsdisplay, null, null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', null, '20', false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->pagenumber('Page', null, null, false, '', '', 'R', $font, $fontsize, '');
+        $str .= $this->reporter->col('', 70, '20', false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        //columns
+        $str .= $this->reporter->begintable();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Document No.', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Customer Code', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Customer Name', 150, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Location', 100, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Sales Agent', 100, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Terms', 60, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Invoice Date', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Due Date', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Outstanding AR', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Days Overdue', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Aging Bucket', 100, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Action/Exception', 100, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->col('Short Payment', 80, '20', false, $border, 'TB', 'C', $font, $fontsize2, 'B');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        return $str;
+    }
+
+    public function reportDetailLayout($config, $result)
+    {
+        $asof = date("Y-m-d", strtotime($config['params']['dataparams']['asofdate']));
+        $layoutsize = '1250';
+        $font = 'TAHOMA';
+        $fontsize2 = "8";
+        $border = '1px solid ';
+        $this->reporter->linecounter = 0;
+        $count = 30;
+        $str = '';
+        $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:100px');
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->displayHeaderDetail($config);
+
+        if (empty($result)) {
+            return $this->othersClass->emptydata($config);
+        }
+
+        $str .= $this->reporter->begintable();
+        foreach ($result as $key => $data) {
+            $daysOverdue = isset($data->due) && $data->due != '' ? (strtotime($asof) - strtotime($data->due)) / 86400 : '';
+
+            if ($data->bal <= 0) {
+                $agingBucket = 'Settled';
+            } else if ($daysOverdue <= 30) {
+                $agingBucket = '1-30 days';
+            } else if ($daysOverdue <= 60) {
+                $agingBucket = '31-60 days';
+            } else if ($daysOverdue <= 90) {
+                $agingBucket = '61-90 days';
+            } else {
+                $agingBucket = '91+ days';
+            }
+
+            $exception = '';
+            if ($data->bal == 0) {
+                $exception = 'No action';
+            } else if ($data->short > 0) {
+                $exception = 'Resolve Short Payment';
+            } else if ($data->unapplied > 0) {
+                $exception = 'Match unapplied receipt';
+            } else if ($data->bal && ($daysOverdue > 0)) {
+                $exception = 'Collection follow-up';
+            }
+
+            $rowcols = [$data->docno, $data->clientname, $data->addr];
+            $rowlens = [8, 28, 20];
+            $next = $this->countline($rowcols, $rowlens, false);
+
+            if (($this->reporter->linecounter + $next) > ($count + 1)) {
+                $str .= $this->reporter->endtable();
+                $this->reporter->linecounter = 0;
+                $str .= $this->reporter->page_break();
+                $str .= $this->displayHeaderDetail($config);
+                $str .= $this->reporter->begintable();
+            }
+
+            $this->countline($rowcols, $rowlens);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data->docno, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->client, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->clientname, 150, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->addr, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->agent, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->terms, 60, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->invdate, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->due, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col(isset($data->bal) && $data->bal <> 0 ? number_format($data->bal, 2) : '-', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($daysOverdue, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($agingBucket, 100, '20', false, $border, '', 'C', $font, $fontsize2, '');
+            $str .= $this->reporter->col($exception, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col('', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->endrow();
+        }
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->endtable();
+
+        return $str;
+    }
+
+    function countline($col = [], $len = [], $commit = true)
+    {
+        if (!empty($col)) {
+            $arr = [];
+            foreach ($col as $key => $txt) {
+                $collen = isset($len[$key]) ? $len[$key] : 0;
+                if ($collen > 0) {
+                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));
+                }
+            }
+            $lines = $this->othersClass->getmaxcolumn($arr);
+            if ($commit) {
+                $this->reporter->linecounter = $this->reporter->linecounter + $lines;
+            }
+            return $lines;
+        } else {
+            if ($commit) {
+                $this->reporter->linecounter++;
+            }
+            return 1;
+        }
     }
 }//end class

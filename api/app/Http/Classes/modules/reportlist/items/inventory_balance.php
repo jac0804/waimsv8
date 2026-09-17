@@ -3576,8 +3576,8 @@ class inventory_balance
           $font_size = 12;
           break;
         default:
-          $count = 56;
-          $page = 56;
+          $count = 75;
+          $page = 75;
           break;
       }
 
@@ -3680,9 +3680,31 @@ class inventory_balance
             $igrp = "";
           }
         }
+        // Yung commented part ay condition para sa may mga casing na company na tumatawag sa itemname
+        // if ($companyid == 47) { // kitchenstar
+        //   $itemnameWidth = 400;
+        //   $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+        // } elseif ($companyid == 17) { // unihome
+        //   $itemnameWidth = 150;
+        //   $itemnameValue = $data->itemname;
+        // } else {
+        //   $itemnameWidth = 400;
+        //   $itemnameValue = $data->itemname;
+        // }
+
+        $lines = $this->reporter->estimateRowLines([
+          // [$itemnameValue, $itemnameWidth, '0px'],
+          [$data->itemname, 400, '6px'],
+          [$data->loc, 100, '6px'],
+          [$data->expiry, 100, '6px'],
+        ], $font_size);
+
+        for ($l = 0; $l < $lines; $l++) {
+          $this->reporter->addline();
+        }
 
         $str .= $this->reporter->startrow();
-        $this->reporter->addline();
+        // $this->reporter->addline();
 
         if ($companyid == 40) { //cdo
           $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -3833,9 +3855,25 @@ class inventory_balance
               $str .= $this->default_displayHeader_SELLING_PRICE($config);
             }
             $str .= $this->default_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
-            $page = $page + $count;
+            $this->reporter->linecounter = 0;
+            // $page = $page + $count;
           }
         }
+
+        // if ($multiheader) {
+        //   if ($this->reporter->linecounter >= $page) {
+        //     $str .= $this->reporter->endtable();
+        //     $str .= $this->reporter->page_break();
+        //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+        //     if (!$allowfirstpage) {
+        //       $str .= $this->default_displayHeader_SELLING_PRICE($config);
+        //     }
+        //     $str .= $this->default_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+        //     $this->reporter->linecounter = 0;
+        //     // $page = $page + $count;   
+        //     // reset instead of $page = $page + $count;
+        //   }
+        // }
       }
 
       $str .= $this->reporter->endtable();
@@ -4184,8 +4222,8 @@ class inventory_balance
         $font_size = 12;
         break;
       default:
-        $count = 60;
-        $page = 60;
+        $count = 75;
+        $page = 75;
         break;
     }
     $this->reporter->linecounter = 0;
@@ -4287,8 +4325,30 @@ class inventory_balance
         }
       }
 
+      // if ($companyid == 47) { // kitchenstar
+      //   $itemnameWidth = 460;
+      //   $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+      // } elseif ($companyid == 17) { // unihome
+      //   $itemnameWidth = 150;
+      //   $itemnameValue = $data->itemname;
+      // } else {
+      //   $itemnameWidth = 440;
+      //   $itemnameValue = $data->itemname;
+      // }
+
+      $lines = $this->reporter->estimateRowLines(array(
+        // array($itemnameValue, $itemnameWidth, '0px'),
+        array($data->itemname, 440, '6px'),
+        array($data->loc, 100, '6px'),
+        array($data->expiry, 100, '6px'),
+      ), $font_size);
+
+      for ($l = 0; $l < $lines; $l++) {
+        $this->reporter->addline();
+      }
+
       $str .= $this->reporter->startrow();
-      $this->reporter->addline();
+      // $this->reporter->addline();
       if ($companyid == 40) { //cdo
         $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
       } else {
@@ -4509,9 +4569,26 @@ class inventory_balance
             $str .= $this->default_displayHeader_LATEST_COST($config);
           }
           $str .= $this->default_latest_cost_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
-          $page = $page + $count;
+          $this->reporter->linecounter = 0;
+          // $page = $page + $count;
         }
       }
+
+
+      // Purpose nito sa casing ng company
+      // if ($multiheader) {
+      //   if ($this->reporter->linecounter >= $page) {
+      //     $str .= $this->reporter->endtable();
+      //     $str .= $this->reporter->page_break();
+      //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+      //     if (!$allowfirstpage) {
+      //       $str .= $this->default_displayHeader_LATEST_COST($config);
+      //     }
+      //     $str .= $this->default_latest_cost_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
+      //     // $page = $page + $count;
+      //     $this->reporter->linecounter = 0;
+      //   }
+      // }
     }
 
     $str .= $this->reporter->endtable();
@@ -4877,8 +4954,8 @@ class inventory_balance
       $itemstock  = isset($config['params']['dataparams']['itemstock']) ? $config['params']['dataparams']['itemstock'] : '(0,1)';
       // $itemtype   = $config['params']['dataparams']['itemtype'];
 
-      $count = 75;
-      $page = 75;
+      $count = 85;
+      $page = 85;
 
       $this->reporter->linecounter = 0;
 
@@ -4989,10 +5066,19 @@ class inventory_balance
           }
         }
 
+        $lines = $this->reporter->estimateRowLines([
+          [$data->itemname, 420, '0px'],
+          [$data->loc, 100, '0px'],
+          [$data->expiry, 100, '0px'],
+        ], $font_size);
+
+        for ($l = 0; $l < $lines; $l++) {
+          $this->reporter->addline();
+        }
+
         $totalext = $data->balance * $data->amt;
         $str .= $this->reporter->startrow();
-        $this->reporter->addline();
-
+        // $this->reporter->addline();
         switch ($companyid) {
           case 40: //cdo
             $str .= $this->reporter->col($data->partno == '' ? '-' : $data->partno, '120', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -5151,56 +5237,74 @@ class inventory_balance
         //     $page = $page + $count;
         //   }
         // }
+
+
+        // if ($multiheader) {
+        //   $this->reporter->linecounter -= 1;
+
+        //   // itemname
+        //   if ($companyid == 47) { // kitchenstar
+        //     $itemnameWidth = 420;
+        //     $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
+        //   } elseif ($companyid == 17) { // unihome
+        //     $itemnameWidth = 150;
+        //     $itemnameValue = $data->itemname;
+        //   } else {
+        //     $itemnameWidth = 420;
+        //     $itemnameValue = $data->itemname;
+        //   }
+        //   $charsPerLine = max(1, floor($itemnameWidth / ($font_size * 0.6)));
+        //   $textLength = strlen($itemnameValue);
+        //   $rowLines = max(1, ceil($textLength / $charsPerLine));
+
+        //   // barcode
+        //   $barcodeValue = ($companyid == 40) ? ($data->partno == '' ? '-' : $data->partno) : $data->barcode;
+        //   $barcodeCharsPerLine = max(1, floor(120 / ($font_size * 0.6)));
+        //   $barcodeLines = max(1, ceil(strlen($barcodeValue) / $barcodeCharsPerLine));
+        //   $rowLines = max($rowLines, $barcodeLines);
+
+        //   // loc (only for vitaline/labsol/technolab)
+        //   switch ($companyid) {
+        //     case 1:  // vitaline
+        //     case 23: // labsol cebu
+        //     case 41: // labsolparanaque
+        //     case 52: // technolab
+        //       $locValue = isset($data->loc) ? $data->loc : '';
+        //       $locCharsPerLine = max(1, floor(100 / ($font_size * 0.6)));
+        //       $locLines = max(1, ceil(strlen($locValue) / $locCharsPerLine));
+        //       $rowLines = max($rowLines, $locLines);
+        //       break;
+        //   }
+
+        //   $this->reporter->linecounter += $rowLines;
+
+        //   if ($this->reporter->linecounter >= $page) {
+        //     $str .= $this->reporter->endtable();
+        //     $str .= $this->reporter->page_break();
+        //     $str .= $this->reporter->begintable($layoutsize);
+        //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
+        
+        //     if (!$allowfirstpage) {
+        //       $str .= $this->default_displayHeader_NONE($config);
+        //     }
+        //     $str .= $this->default_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
+        //     $page = $page + $count;
+        //     // $this->reporter->linecounter = 0;
+        //   }
+        // }
+
         if ($multiheader) {
-          $this->reporter->linecounter -= 1;
-
-          // itemname
-          if ($companyid == 47) { // kitchenstar
-            $itemnameWidth = 420;
-            $itemnameValue = $data->itemname . ' ' . $data->color . ' ' . $data->sizeid;
-          } elseif ($companyid == 17) { // unihome
-            $itemnameWidth = 150;
-            $itemnameValue = $data->itemname;
-          } else {
-            $itemnameWidth = 420;
-            $itemnameValue = $data->itemname;
-          }
-          $charsPerLine = max(1, floor($itemnameWidth / ($font_size * 0.6)));
-          $textLength = strlen($itemnameValue);
-          $rowLines = max(1, ceil($textLength / $charsPerLine));
-
-          // barcode
-          $barcodeValue = ($companyid == 40) ? ($data->partno == '' ? '-' : $data->partno) : $data->barcode;
-          $barcodeCharsPerLine = max(1, floor(120 / ($font_size * 0.6)));
-          $barcodeLines = max(1, ceil(strlen($barcodeValue) / $barcodeCharsPerLine));
-          $rowLines = max($rowLines, $barcodeLines);
-
-          // loc (only for vitaline/labsol/technolab)
-          switch ($companyid) {
-            case 1:  // vitaline
-            case 23: // labsol cebu
-            case 41: // labsolparanaque
-            case 52: // technolab
-              $locValue = isset($data->loc) ? $data->loc : '';
-              $locCharsPerLine = max(1, floor(100 / ($font_size * 0.6)));
-              $locLines = max(1, ceil(strlen($locValue) / $locCharsPerLine));
-              $rowLines = max($rowLines, $locLines);
-              break;
-          }
-
-          $this->reporter->linecounter += $rowLines;
-
           if ($this->reporter->linecounter >= $page) {
             $str .= $this->reporter->endtable();
             $str .= $this->reporter->page_break();
             $str .= $this->reporter->begintable($layoutsize);
             $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
-
             if (!$allowfirstpage) {
               $str .= $this->default_displayHeader_NONE($config);
             }
             $str .= $this->default_none_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
-            $page = $page + $count;
+            // $page = $page + $count;
+            $this->reporter->linecounter = 0;
           }
         }
       }

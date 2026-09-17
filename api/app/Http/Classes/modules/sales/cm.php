@@ -2153,6 +2153,7 @@ class cm
     $cost = 0;
     $fcost = 0;
     $sgdrate = 0;
+    $agentamt = 0;
 
     $cost = isset($config['params']['data']['cost']) ? $config['params']['data']['cost'] : 0;
     $fcost = isset($config['params']['data']['fcost']) ? $config['params']['data']['fcost'] : 0;
@@ -2211,6 +2212,12 @@ class cm
         $sgdrate = $config['params']['data']['sgdrate'];
       } else {
         $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
+      }
+    }
+
+     if ($companyid == 60) { //transpower
+      if (isset($config['params']['data']['agentamt'])) {
+       $agentamt = $config['params']['data']['agentamt'];
       }
     }
 
@@ -2329,6 +2336,10 @@ class cm
       $data['sgdrate'] = $sgdrate;
     }
 
+    if ($companyid == 60) { //transpower
+      $data['agentamt'] = $agentamt;
+    }
+
     foreach ($data as $key => $value) {
        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
@@ -2366,6 +2377,11 @@ class cm
       }
     } elseif ($action == 'update') {
       $return = true;
+
+      if($companyid==60){//transpower
+         unset($data['agentamt']);
+      }
+
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
       if ($ckrefx != 0) {
         if ($this->setservedrqitems($refx, $linex, $ckrefx, $cklinex) === 0) {
@@ -2574,13 +2590,20 @@ class cm
     $forex = 1;
     $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
     $rows = [];
+
+      $addf="";
+      if ($companyid == 60) { //transpower
+      $addf=", stock.agentamt";
+      }
+
+
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno,
         stock.line, item.barcode,stock.uom, stock.cost,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
-        stock.disc,stock.fcost,stock.loc,stock.expiry,stock.projectid,stock.sgdrate
+        stock.disc,stock.fcost,stock.loc,stock.expiry,stock.projectid,stock.sgdrate $addf
         FROM glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and
         uom.uom=stock.uom where stock.trno = ? and stock.iss>stock.qa and stock.void=0
@@ -2604,6 +2627,10 @@ class cm
           $config['params']['data']['projectid'] = $data[$key2]->projectid;
           if ($companyid == 10) { //afti
             $config['params']['data']['sgdrate'] = $data[$key2]->sgdrate;
+          }
+
+          if ($companyid == 60) { //transpower
+            $config['params']['data']['agentamt'] = $data[$key2]->agentamt;
           }
 
           if (floatval($data[$key2]->cost) == 0) {
@@ -2644,13 +2671,19 @@ class cm
     $forex = 1;
     $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
     $rows = [];
+
+      $addf="";
+      if ($companyid == 60) { //transpower
+      $addf=", stock.agentamt";
+      }
+
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno,
         stock.line, item.barcode,stock.uom, stock.cost,
         (stock.iss-stock.qa) as iss,stock.isamt,
         round((stock.iss-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
-        stock.disc,stock.fcost,stock.loc,stock.expiry,stock.projectid,stock.sgdrate
+        stock.disc,stock.fcost,stock.loc,stock.expiry,stock.projectid,stock.sgdrate $addf
         FROM glhead as head left join glstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and
         uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.iss>stock.qa and stock.void=0
@@ -2675,6 +2708,10 @@ class cm
 
           if ($companyid == 10) { //afti
             $config['params']['data']['sgdrate'] = $data[$key2]->sgdrate;
+          }
+
+          if ($companyid == 60) { //transpower
+            $config['params']['data']['agentamt'] = $data[$key2]->agentamt;
           }
 
           if (floatval($data[$key2]->cost) == 0) {

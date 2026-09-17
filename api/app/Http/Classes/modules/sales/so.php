@@ -671,9 +671,13 @@ class so
         $sortcolumn = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         break;
       case 64:
-        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'markup','disc2','disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','markup','disc2', 'disc',  'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','disc', 'ext', 'markup','disc2', 'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'ext','markup','disc2',  'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         break;
+      case 71:
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc','expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc','expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        break;  
       default:
         $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
@@ -862,7 +866,7 @@ class so
         }
 
         if ($companyid == 64) { //excelin
-          $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer Markup Price';
+          $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer MarkUp';
           $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
           $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Discount';
         }
@@ -1880,25 +1884,18 @@ class so
       case 22: //EIPI
         $addsfield = ",fstatus";
         break;
-      case 64: //excelin 
-        $addfield = ",ismarkup";
-        $addfieldfilter = ",head.ismarkup";
-        $addsfield = "markup,custdisc,limitcheck,";
-        break;
-      case 71: //buenatech
-        $addsfield = ",issp";
-        break;
-    }
+    } // NOTE: DO NOT ADD NEW CASE CONDITIONS
+      // New fields must be added directly to $qry
 
 
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,creditinfo,crline,overdue, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
+       phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.creditinfo,head.crline,head.overdue, head.projectid, 
-      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
+      head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
@@ -1917,9 +1914,9 @@ class so
 
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
         whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,kgs,
-        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . ")
+        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp" . $addsfield . ")
         SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext,kgs,
-        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . " FROM " . $this->stock . " where trno =?";
+        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp " . $addsfield . " FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
@@ -1980,24 +1977,17 @@ class so
       case 22: //eipi
         $addsfield = ",fstatus";
         break;
-      case 64: //excelin 
-        $addfield = ",ismarkup";
-        $addfieldfilter = ",head.ismarkup";
-        $addsfield = ",markup,custdisc,limitcheck";
-        break;
-      case 71: //buenatech
-        $addsfield = ",issp";
-        break;
-    }
+    } // NOTE: DO NOT ADD NEW CASE CONDITIONS
+      // New fields must be added directly to $qry
 
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
     yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,creditinfo,crline,overdue,agent, projectid,mlcp_freight,ms_freight,sano,pono,statid,
-    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype " . $addfield . ")
+    phaseid,modelid,blklotid,amenityid,subamenityid,tax,vattype,ismarkup " . $addfield . ")
     select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
     head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
     head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.creditinfo,head.crline,head.overdue,head.agent,
-    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype " . $addfieldfilter . "
+    head.projectid,head.mlcp_freight,head.ms_freight,head.sano,head.pono,head.statid,head.phaseid,head.modelid,head.blklotid,head.amenityid,head.subamenityid,head.tax,head.vattype,head.ismarkup " . $addfieldfilter . "
     from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
     where head.trno=? limit 1";
     //head
@@ -2015,9 +2005,9 @@ class so
 
       $qry = "insert into " . $this->stock . "(
       trno,line,itemid,uom,whid,loc,expiry,disc,
-      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint " . $addsfield . ")
+      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp " . $addsfield . ")
       select trno, line, itemid, uom,whid,loc,expiry,disc,amt, iss,void, isamt, isqty,
-      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint" . $addsfield . "
+      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp" . $addsfield . "
       from " . $this->hstock . " where trno=?";
       //stock
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
@@ -2716,8 +2706,8 @@ class so
     $linex = 0;
     $noprint = 'false';
 
-    if ($companyid == 64) { //Exceline
-      $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : "";
+    if ($companyid == 64) { //Excelin
+      $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : 0;
       $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
     }
 
@@ -3467,7 +3457,7 @@ class so
         } // end foreach
       } //end if
     } //end foreach
-    return ['row' => $rows, 'status' => true, 'msg' => $msg];
+    return ['row' => $rows, 'status' => true, 'msg' => $msg, 'reloadhead' => true];
   } //end function
 
 

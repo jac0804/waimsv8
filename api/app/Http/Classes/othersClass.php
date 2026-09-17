@@ -812,7 +812,7 @@ class othersClass
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
-    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr', 'custdisc');
+    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr');
 
     return $number;
   }
@@ -1603,17 +1603,9 @@ class othersClass
       case 71: //buenatech
         switch ($config['params']['doc']) {
           case 'UE':
-          case 'ST':  
+          case 'ST':
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
-            break;
-        }
-        break;
-      case 64: //excelin
-        switch ($config['params']['doc']) {
-          case 'SJ':
-            $addedfield = ",ismarkup";
-            $selectaddedfield = ",head.ismarkup";
             break;
         }
         break;
@@ -1647,7 +1639,7 @@ class othersClass
                     salestype, sano,pono, deldate, crref, returndate, refunddate, sdate1,sdate2,empid,driver,
                     plateno,excess,excessrate,aftrno,checkno,checkdate,amount,refdate,istrip,voiddate,voidby,
                     orderno,strdate1,strdate2,trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,
-                    ista,layref,isfa,isnoentry,rrfactor,voyage" . $add . $addedfield  . ")
+                    ista,layref,isfa,isnoentry,rrfactor,voyage, ismarkup" . $add . $addedfield  . ")
             SELECT head.trno,head.doc, head.docno,ifnull(client.clientid,0), ifnull(head.clientname,''), head.address,head.shipto,
                     head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
                     head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,
@@ -1661,7 +1653,7 @@ class othersClass
                     sdate1,sdate2,head.empid,head.driver,head.plateno,head.excess,head.excessrate,head.aftrno,
                     head.checkno,head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                     head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,head.fpid,head.crno,head.rfno,head.chsino,head.swsno,head.cotrno,
-                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage " . $select . $selectaddedfield  . "    
+                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage, head.ismarkup " . $select . $selectaddedfield  . "    
             FROM " . $config['docmodule']->head . " as head 
             left join cntnum on cntnum.trno=head.trno 
             left join client on client.client=head.client
@@ -1726,7 +1718,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa, custdisc, consignpr)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1737,7 +1729,7 @@ class othersClass
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa
+                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa, stock.custdisc, stock.consignpr
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2559,7 +2551,7 @@ class othersClass
                   deldate, crref, returndate,refunddate,sdate1,sdate2,empid,excess,excessrate,aftrno,
                   checkno,checkdate,amount,refdate,istrip,voiddate,voidby,orderno,strdate1,strdate2,
                   trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,ista,layref,
-                  isfa,isnoentry,rrfactor" . $add . $addedfield  . ")
+                  isfa,isnoentry,rrfactor, ismarkup" . $add . $addedfield  . ")
             select head.trno,head.doc, head.docno, ifnull(client.client,'') as client, head.clientname,
                   head.address, head.shipto, head.dateid, head.terms, ifnull(warehouse.client,'') as wh, head.rem, head.forex,
                   head.yourref, head.ourref, head.contra, ifNull(agent.client,'') as agent, head.tax , head.createdate,head.createby,
@@ -2578,7 +2570,7 @@ class othersClass
                   head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                   head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,
                   head.fpid,head.crno, head.rfno,head.chsino,head.swsno,head.cotrno,head.petrno,
-                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor" . $select . $selectaddedfield  . "
+                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor, head.ismarkup" . $select . $selectaddedfield  . "
             from glhead as head left join cntnum on cntnum.trno=head.trno
             left join client  on head.clientid=client.clientid
             left join client  as warehouse on head.whid=warehouse.clientid
@@ -2641,7 +2633,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex, custdisc, consignpr)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2651,7 +2643,7 @@ class othersClass
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex
+                stock.rrrefx,stock.rrlinex, stock.custdisc, stock.consignpr
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -3651,8 +3643,8 @@ class othersClass
             case 'ST':
             case 'CO':
             case 'MT':
-            case 'REPLENISHPALLET';
-            case 'REPLENISHITEM';
+            case 'REPLENISHPALLET':
+            case 'REPLENISHITEM':
               $ts = $this->updatereceivedate($config);
               if (!$ts['status']) {
                 $msg = $ts['msg'];

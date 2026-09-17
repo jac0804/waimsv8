@@ -50,7 +50,7 @@ class tr
 
   public function createreportfilter()
   {
-    $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received','requested','noted', 'print'];
+    $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'requested', 'noted', 'print'];
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'noted.label', 'Reviewed and Noted by');
@@ -69,7 +69,7 @@ class tr
 
   public function reportparamsdata($config)
   {
-        $paramstr = "select
+    $paramstr = "select
           'PDFM' as print,
           '1' as reporttype,
           '' as prepared,
@@ -111,15 +111,15 @@ class tr
 
   public function reportplotting($params, $data)
   {
-     $format = $params['params']['dataparams']['reporttype'];
+    $format = $params['params']['dataparams']['reporttype'];
 
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_tr_layout($params, $data);
     } else if ($params['params']['dataparams']['print'] == "PDFM") {
 
-     $format = $params['params']['dataparams']['reporttype'];
+      $format = $params['params']['dataparams']['reporttype'];
 
-     switch ($format) {
+      switch ($format) {
         case '1':
           return $this->default_TR_PDF($params, $data);
           break;
@@ -128,7 +128,6 @@ class tr
           return $this->pullout_and_requisition($params, $data);
           break;
       }
-
     }
   }
 
@@ -323,11 +322,11 @@ class tr
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
- 
-    $reporttype = $params['params']['dataparams']['reporttype'];
-    $reportname='';
 
-    switch($reporttype) {
+    $reporttype = $params['params']['dataparams']['reporttype'];
+    $reportname = '';
+
+    switch ($reporttype) {
       case '1':
         $reportname = "STOCK REQUEST";
         break;
@@ -339,7 +338,7 @@ class tr
         break;
     }
 
- 
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $reportname, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -359,27 +358,27 @@ class tr
     PDF::MultiCell(120, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '',  '');
 
 
-    switch($reporttype){
-        case '1': 
-                PDF::SetFont($fontbold, '', $fontsize);
-                PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
-                PDF::SetFont($font, '', $fontsize);
-                PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'B', 'L', false, 0, '',  '');
-                PDF::SetFont($fontbold, '', $fontsize);
-                PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
-                PDF::SetFont($font, '', $fontsize);
-                PDF::MultiCell(120, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
+    switch ($reporttype) {
+      case '1':
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'B', 'L', false, 0, '',  '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(120, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
         break;
-        case '2':
-        case '3':
-                PDF::SetFont($fontbold, '', $fontsize);
-                PDF::MultiCell(80, 0, "Warehouse: ", '', 'L', false, 0, '',  '');
-                PDF::SetFont($font, '', $fontsize);
-                PDF::MultiCell(470, 0, (isset($data[0]['wh']) ? $data[0]['wh'] : ''), 'B', 'L', false, 0, '',  '');
-                PDF::SetFont($fontbold, '', $fontsize);
-                PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
-                PDF::SetFont($font, '', $fontsize);
-                PDF::MultiCell(120, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
+      case '2':
+      case '3':
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(80, 0, "Warehouse: ", '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(470, 0, (isset($data[0]['wh']) ? $data[0]['wh'] : ''), 'B', 'L', false, 0, '',  '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(120, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
         break;
     }
 
@@ -390,29 +389,29 @@ class tr
     PDF::MultiCell(720, 0, '', 'T');
 
 
-    switch($reporttype){
-        case '1':
-            PDF::SetFont($font, 'B', 12);
-            PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
-            PDF::MultiCell(230, 0, "DESCRIPTION", '', 'L', false, 0);
-            PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "REQUEST QTY", '', 'R', false, 0);
-            PDF::MultiCell(120, 0, "APPROVED QTY", '', 'R', false, 0);
-            PDF::MultiCell(120, 0, "WAREHOUSE", '', 'C', false);
+    switch ($reporttype) {
+      case '1':
+        PDF::SetFont($font, 'B', 12);
+        PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
+        PDF::MultiCell(230, 0, "DESCRIPTION", '', 'L', false, 0);
+        PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
+        PDF::MultiCell(100, 0, "REQUEST QTY", '', 'R', false, 0);
+        PDF::MultiCell(120, 0, "APPROVED QTY", '', 'R', false, 0);
+        PDF::MultiCell(120, 0, "WAREHOUSE", '', 'C', false);
         break;
-        case '2':
-        case '3':
-            PDF::SetFont($font, 'B', 12);
-            PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
-            PDF::MultiCell(200, 0, "DESCRIPTION", '', 'L', false, 0);
-            PDF::MultiCell(100, 0, "LOCATION", '', 'L', false, 0);
-            PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-            PDF::MultiCell(70, 0, "QTY", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "DATE ACQUIRED", '', 'C', false, 0);
-            PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
+      case '2':
+      case '3':
+        PDF::SetFont($font, 'B', 12);
+        PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
+        PDF::MultiCell(200, 0, "DESCRIPTION", '', 'L', false, 0);
+        PDF::MultiCell(100, 0, "LOCATION", '', 'L', false, 0);
+        PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
+        PDF::MultiCell(70, 0, "QTY", '', 'C', false, 0);
+        PDF::MultiCell(100, 0, "DATE ACQUIRED", '', 'C', false, 0);
+        PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
         break;
     }
-    
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'B');
@@ -473,7 +472,7 @@ class tr
         PDF::MultiCell(120, 0, (isset($arr_stockwh[$r]) ? $arr_stockwh[$r] : ''), '', 'C', false);
       }
 
-     
+
 
       if (intVal($i) + 1 == $page) {
         $this->default_TR_header_PDF($params, $data);
@@ -507,7 +506,7 @@ class tr
   }
 
 
-    public function pullout_and_requisition($params, $data)
+  public function pullout_and_requisition($params, $data)
   {
     $companyid = $params['params']['companyid'];
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
@@ -548,7 +547,7 @@ class tr
       $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
       $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
       $arr_uom = $this->reporter->fixcolumn([$uom], '16', 0);
-      $arr_rrqty = $this->reporter->fixcolumn([$rrqty], '13', 0);
+      $arr_rrqty = $this->reporter->fixcolumn([$reqqty], '13', 0);
       $arr_stockwh = $this->reporter->fixcolumn([$stockwh], '16', 0);
       $arr_rem = $this->reporter->fixcolumn([$rem], '35', 0);
       $arr_rrdate = $this->reporter->fixcolumn([$rrdate], '16', 0);
@@ -584,91 +583,90 @@ class tr
 
     PDF::MultiCell(0, 0, "\n\n\n");
 
-    if($reporttype == '3'){//requisition form
-        PDF::MultiCell(210, 0, 'Requested by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, 'Reviewed and Noted by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, 'Approved by: ', '', 'L');
+    if ($reporttype == '3') { //requisition form
+      PDF::MultiCell(210, 0, 'Requested by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, 'Reviewed and Noted by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, 'Approved by: ', '', 'L');
 
-        PDF::MultiCell(0, 0, "\n");
+      PDF::MultiCell(0, 0, "\n\n");
 
-        PDF::MultiCell(210, 0, $params['params']['dataparams']['requested'], '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, $params['params']['dataparams']['approved'], '', 'L');
+      PDF::MultiCell(210, 0, $params['params']['dataparams']['requested'], '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, $params['params']['dataparams']['approved'], '', 'L');
 
-        PDF::MultiCell(0, 0, "\n");
-
-
-        PDF::MultiCell(210, 0, 'Received by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, 'Signature: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, 'Date: ', '', 'L');
-
-        PDF::MultiCell(0, 0, "\n");
-
-        PDF::MultiCell(210, 0,  $params['params']['dataparams']['received'], 'B', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, '', 'B', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', 'B', 'L');
-    }else{ //pullout
+      PDF::MultiCell(0, 0, "\n\n\n");
 
 
-        PDF::MultiCell(210, 0, 'Responsible Person: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, 'Signature: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, 'Date: ', '', 'L');
+      PDF::MultiCell(210, 0, 'Received by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, 'Signature: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, 'Date: ', '', 'L');
 
-        PDF::MultiCell(0, 0, "\n");
+      PDF::MultiCell(0, 0, "\n\n");
 
-        PDF::MultiCell(210, 0, '', 'B', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, '', 'B', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', 'B', 'L');
-
-        PDF::MultiCell(0, 0, "\n");
-
-
-        PDF::MultiCell(210, 0, 'Requested by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, 'Reviewed and Noted by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, 'Approved by: ', '', 'L');
-
-        PDF::MultiCell(0, 0, "\n");
-
-        PDF::MultiCell(210, 0, $params['params']['dataparams']['requested'], '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, $params['params']['dataparams']['approved'], '', 'L');
-
-        PDF::MultiCell(0, 0, "\n\n");
+      PDF::MultiCell(210, 0,  $params['params']['dataparams']['received'], 'B', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, '', 'B', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, '', 'B', 'L');
+    } else { //pullout
 
 
-        PDF::MultiCell(210, 0, 'Received by: ', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', '', 'L');
+      PDF::MultiCell(210, 0, 'Responsible Person: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, 'Signature: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, 'Date: ', '', 'L');
 
-        PDF::MultiCell(0, 0, "\n");
+      PDF::MultiCell(0, 0, "\n");
 
-        PDF::MultiCell(210, 0,  $params['params']['dataparams']['received'], '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(180, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', '', 'L');
+      PDF::MultiCell(210, 0, '', 'B', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, '', 'B', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, '', 'B', 'L');
 
+      PDF::MultiCell(0, 0, "\n\n\n\n");
+
+
+      PDF::MultiCell(210, 0, 'Requested by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, 'Reviewed and Noted by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, 'Approved by: ', '', 'L');
+
+      PDF::MultiCell(0, 0, "\n");
+
+      PDF::MultiCell(210, 0, $params['params']['dataparams']['requested'], '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, $params['params']['dataparams']['approved'], '', 'L');
+
+      PDF::MultiCell(0, 0, "\n\n");
+
+
+      PDF::MultiCell(210, 0, 'Received by: ', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, '', '', 'L');
+
+      PDF::MultiCell(0, 0, "\n");
+
+      PDF::MultiCell(210, 0,  $params['params']['dataparams']['received'], '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(180, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+      PDF::MultiCell(210, 0, '', '', 'L');
     }
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }

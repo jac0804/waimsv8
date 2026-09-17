@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
+use Exception;
 
 class mc
 {
@@ -731,6 +732,7 @@ class mc
         $acnoid = 0;
         $rem = '';
         $daysdue = 0;
+        $companyid = $config['params']['companyid'];
 
         if (isset($config['params']['data']['refx'])) {
             $refx = $config['params']['data']['refx'];
@@ -889,6 +891,9 @@ class mc
                 $this->coreFunctions->execqry("delete from " . $this->detail . " where trno=?", "delete", [$trno]);
                 $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
                 $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
+
+                //cr creation
+                //$this->createcr($config);
                 return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
             } else {
                 $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
@@ -994,5 +999,193 @@ class mc
         $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+    }
+
+    private function createcr($config){
+      $companyid = $config['params']['companyid'];
+      $trno = $config['params']['trno'];
+
+      $isposted = $this->othersClass->isposted2($trno,$this->tablenum);
+
+      if(!$isposted){
+        return ['status' => false, 'msg' => 'Not yet Posted.'];
+      }
+
+      $dateTables = ['lahead', 'ladetail'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+      $exist = $this->coreFunctions->getfieldvalue($this->tablenum,"crtrno","trno=?",[$trno],'',true);
+      if($exist !=0){
+        return ['status' => false, 'msg' => 'Already have CR.'];
+      }
+
+      $path = 'App\Http\Classes\modules\receivable\cr';
+      $qry = "";
+
+      $head = $this->coreFunctions->opentable("select trnxtype from ".$this->hhead." where trno = ? ",[$trno]);
+
+      if ($head[0]['trnxtype'] == 'Downpayment-MC' || $head[0]['trnxtype'] == 'Downpayment-Spareparts') {
+        $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter
+        from  hmchead as head 
+        left join hmcdetail as mcd on mcd.trno = head.trno
+        left join gldetail as d on d.mctrno = head.trno 
+        left join arledger as ar on ar.trno = d.trno and ar.line = d.line
+        left join coa on coa.acnoid=ar.acnoid    
+        left join transnum as num on num.trno = head.trno
+        left join cntnum as cnum on cnum.trno = ar.trno
+        left join client as ctbl on ctbl.clientid = ar.clientid
+        where ar.bal<>0 and head.isok = 0 and num.trno =? and coa.alias ='ARDP' group by
+        ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center      
+        order by dateid";
+      } else {
+        $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,
+        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkno,head.checkdate
+        from  hmchead as head 
+        left join hmcdetail as mcd on mcd.trno = head.trno
+        left join gldetail as d on d.trno = mcd.refx and d.postdate = mcd.dateid
+        left join arledger as ar on ar.trno = d.trno and ar.line = d.line
+        left join coa on coa.acnoid=ar.acnoid    
+        left join transnum as num on num.trno = head.trno
+        left join cntnum as cnum on cnum.trno = ar.trno
+        left join client as ctbl on ctbl.clientid = ar.clientid
+        where ar.bal<>0 and head.isok = 0 and num.trno =? group by
+        ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkno,head.checkdate
+        union all
+        select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,
+        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkno,head.checkdate
+        from  hmchead as head 
+        left join hmcdetail as mcd on mcd.trno = head.trno
+        left join gldetail as d on d.trno = mcd.refx and d.postdate = mcd.dateid
+        left join apledger as ar on ar.trno = d.trno and ar.line = d.line
+        left join coa on coa.acnoid=ar.acnoid    
+        left join transnum as num on num.trno = head.trno
+        left join cntnum as cnum on cnum.trno = ar.trno
+        left join client as ctbl on ctbl.clientid = ar.clientid
+        where ar.bal<>0 and head.isok = 0 and num.trno =? and coa.alias = 'AP3' group by
+        ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkno,head.checkdate
+        order by dateid";
+      }
+    
+      $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+      $data2 =[];
+      if (!empty($data)) {         
+            try{
+                $crtrno = $this->othersClass->generatecntnum($config, "cntnum", 'CR','CR');
+                if ($crtrno != -1) {
+                    $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$crtrno]);
+            
+                    $head = ['trno' => $crtrno, 
+                            'doc' => 'CR',
+                            'docno' => $docno,
+                            'client' => $data[0]->client, 
+                            'clientname' => $data[0]->clientname, 
+                            'dateid' => $data[0]->dateid, //date('Y-m-d'), 
+                            'yourref' => $data[0]->yourref, //crno
+                            'ourref' => $data[0]->ourref, //rfno
+                            'rem' => $data[0]->rem,
+                            'checkno' => $data[0]->checkno,
+                            'checkdate' => $data[0]->checkdate,
+                            'amount' => $data[0]->amount,
+                            'createby' => $config['params']['user'],
+                            'createdate'=> $this->othersClass->getCurrentTimeStamp()
+                            ];
+        
+                        foreach($head as $k => $value){
+                            $data2[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
+                        }
+        
+                    $inserthead = $this->coreFunctions->sbcinsert(app($path)->head, $data2);
+                    $config['params']['trno']=$crtrno;
+                    $line = 1;
+                    $d =[];
+                    $detail =[];
+                    if($inserthead){
+                        $this->logger->sbcwritelog($crtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname,app($path)->tablelogs);
+                        //entries:
+                        $cash = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'CA1'");
+                        foreach ($data as $key2 => $value2) {
+                            if($data[0]->db != 0){
+                                $d['trno'] = $crtrno;
+                                $d['line'] = $line;
+                                $d['refx'] = 0;
+                                $d['linex'] = 0;
+                                $d['client'] = $data[$key2]->client;
+                                $d['acnoid'] = $data[$key2]->acnoid;
+                                $d['postdate'] = $data[$key2]->dateid;//date('Y-m-d');
+                                $d['checkno'] ='';
+                                $d['ref'] = '';
+                                $d['db'] = $data[0]->total;
+                                $d['cr'] = 0;
+                                $d['rem'] = 'Take out fee';
+                                array_push($detail, $d);
+                                $line +=1;
+                            }
+                        }
+                        
+
+                        //var_dump($detail);
+
+                        if (!empty($detail)) {
+                            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+                            foreach ($detail as $key => $value) {
+                              foreach ($value as $key2 => $value2) {
+                                $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+                              }
+                              $detail[$key]['editdate'] = $current_timestamp;
+                              $detail[$key]['editby'] = $config['params']['user'];
+                              $detail[$key]['encodeddate'] = $current_timestamp;
+                              $detail[$key]['encodedby'] = $config['params']['user'];
+                  
+                              if ($this->coreFunctions->sbcinsert(app($path)->detail, $detail[$key]) == 1) {
+                                $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS',app($path)->tablelogs);
+                                $this->logger->sbcwritelog($crtrno, $config, 'ACCTG', 'ADD - Line:' . $detail[$key]['line'] . ' Remarks:' . $detail[$key]['rem'] . ' DB:' . $detail[$key]['db'] . ' CR:' . $detail[$key]['cr'] . ' Client:' . $detail[$key]['client'] . ' Date:' . $detail[$key]['postdate'],app($path)->tablelogs);                               
+                              } else {
+                                $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',app($path)->tablelogs);
+                                return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
+                              }
+                            } //for $detail
+                  
+                          }
+
+                          $config['params']['trno'] = $crtrno;
+                          $this->tablenum = 'cntnum';
+                          $this->head = 'lahead';
+                          $this->hhead = 'glhead';
+                          $this->tablelogs = 'table_log';
+                          $this->htablelogs = 'htable_log';
+                          $return = $this->othersClass->posttransacctg($config);
+                          if ($return['status']) {                         
+                            $msg = "Auto entry Successful";
+                            $this->coreFunctions->execqry("update transnum set pstrno = ".$crtrno.". where trno =".$trno,"update");
+                            return ['status' => true, 'msg' => $msg];
+                          }
+                         
+                    
+                    }
+            
+                            
+                }else{
+                    return $crtrno;
+                }
+            }catch (Exception $e) {
+                return ['status' => false, 'msg' => $e->getMessage()];
+            }
+    
+       
+  
+       
+      }
     }
 } //end class

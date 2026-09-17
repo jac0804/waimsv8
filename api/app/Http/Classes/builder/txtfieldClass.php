@@ -4583,7 +4583,7 @@ class txtfieldClass
                 'type' => 'lookup',
                 'label' => 'Helper',
                 'class' => 'cshelpername sbccsreadonly',
-                'lookupclass' => 'helper',
+                'lookupclass' => 'helper2',
                 'action' => 'lookupclient',
                 'readonly' => true,
                 'style' => $this->style,

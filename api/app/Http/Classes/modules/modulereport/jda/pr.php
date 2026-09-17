@@ -55,23 +55,6 @@ class pr
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
 
-    if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { // afti
-      data_set($col1, 'prepared.readonly', true);
-      data_set($col1, 'prepared.type', 'lookup');
-      data_set($col1, 'prepared.action', 'lookupclient');
-      data_set($col1, 'prepared.lookupclass', 'prepared');
-
-      data_set($col1, 'approved.readonly', true);
-      data_set($col1, 'approved.type', 'lookup');
-      data_set($col1, 'approved.action', 'lookupclient');
-      data_set($col1, 'approved.lookupclass', 'approved');
-
-      data_set($col1, 'received.readonly', true);
-      data_set($col1, 'received.type', 'lookup');
-      data_set($col1, 'received.action', 'lookupclient');
-      data_set($col1, 'received.lookupclass', 'received');
-    }
-
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
@@ -88,22 +71,11 @@ class pr
     $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
     $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
 
-    switch ($companyid) {
-      case 40:
-        $paramstr = "select
-          'PDFM' as print,
-          '$username' as prepared,
-          '$approved' as approved,
-          '$received' as received";
-        break;
-      default:
-        $paramstr = "select
+    $paramstr = "select
           'PDFM' as print,
           '' as prepared,
           '' as approved,
           '' as received";
-        break;
-    }
 
     return $this->coreFunctions->opentable($paramstr);
   }

@@ -290,6 +290,7 @@ class companysetup
         $this->isautoservice = false;
         $this->issuemultipleexpiry = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\buenatech\\";
+        $this->locname = 'Lot#';
         break;
       case 70: //sportrunner
         $this->clientlength = 15;
@@ -1245,7 +1246,7 @@ class companysetup
         $this->multibranch = true;
         $this->branchaccess = 1;
         $this->companyname = 'SBC';
-        $this->systemtype = 'AIMSPAYROLL';
+        $this->systemtype = 'AIMS';
         $this->checkbelowcost = true;
         $this->isproject = false;
         $this->iscreateversion = false;
@@ -1375,6 +1376,7 @@ class companysetup
       //   $this->periodic = true;
       //   $this->ispurchasedisc = true;
       //   $this->usecamera = true;
+      //   $this->ispayrollportal = false;
       //   break;
       case 24: //GFC
         $this->clientlength = 15;

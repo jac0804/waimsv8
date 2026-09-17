@@ -5689,43 +5689,37 @@ class dashboardClass
   {
     $center = $this->config['params']['center'];
     $adminid = $this->config['params']['adminid'];
-    $getcols = ['action', 'clientname', 'rem'];
+    $getcols = ['action', 'shortname', 'counts'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-    $cols[$action]['btns']['view']['action'] = 'clientpendingtask';
+    $cols[$action]['btns']['view']['action'] = 'clientpersystype';
     $cols[$action]['btns']['view']['lookupclass'] = 'tableentry';
     $cols[$action]['btns']['view']['classid'] = '';
-    $cols[$clientname]['label'] = 'Customer';
+    $cols[$shortname]['label'] = 'System Type';
+    // $cols[$item]['type'] = 'coldel';
+    // $cols[$item]['label'] = '';
     $cols[$action]['style'] = 'width:50px;whiteSpace: normal;min-width:50px;max-width:50px;';
-    $cols[$clientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
-    $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
-    $cols[$rem]['label'] = 'Pending Task';
+    $cols[$shortname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+    $cols[$counts]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+    $cols[$counts]['label'] = 'Clients';
     $data = $this->getclientpendingtask();
-    $this->config['sbclist']['clientpendingtask'] = ['cols' => $cols, 'data' => $data, 'title' => 'List of Pending Task per Client', 'txtfield' => ['col1' => []]];
+    $this->config['sbclist']['clientpendingtask'] = ['cols' => $cols, 'data' => $data, 'title' => 'List of Client Pending Task', 'txtfield' => ['col1' => []]];
   }
 
   public function getclientpendingtask()
   {
     $adminid = $this->config['params']['adminid'];
 
-    $qry = "select t.clientid,
-    if(t.reseller <> '', concat(c.clientname, ' / ', t.reseller), c.clientname) as clientname,
-    sum(t.completed) as completed,
-    sum(t.overall)   as overall,
-    concat(sum(t.completed), ' / ', sum(t.overall)) as rem
-    from (select h.trno, h.clientid, h.reseller,
-    (select count(enddate) from tmdetail as tm 
-    where tm.trno = h.trno and isassigntype = 0) as completed,
-    (select count(line) from tmdetail as tm 
-    where tm.trno = h.trno and isassigntype = 0) as overall
-    from tmhead as h
-    where h.status = 1) as t
-    left join client as c on c.clientid = t.clientid
-    group by t.clientid, c.clientname, t.reseller
-    order by t.clientid desc";
+    $qry = "select h.systype as item, i.itemname as shortname, count(distinct c.clientid) as counts
+        from tmhead as h
+        left join client as c on c.clientid = h.clientid
+        left join item as i on i.itemid = h.systype
+        where 1=1 and h.`status` = 1
+        group by h.systype, i.itemname
+        order by i.itemname";
     $result = $this->coreFunctions->opentable($qry);
 
     return $result;

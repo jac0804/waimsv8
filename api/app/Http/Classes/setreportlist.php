@@ -958,7 +958,7 @@ class setreportlist
     $rep_dailytask_report = '';
     $rep_commission_report = '';
     $rep_soalog_report = '';
-
+    $rep_pendingtask_per_client = '';
 
     if ($this->companysetup->getispos($params)) {
       $rep_outofstock_sj_pos = "('','\\908','','','',0,1,0,'Out of Stock Sales Journal POS','\\90823',4757,'0'," . $params['levelid'] . ")";
@@ -1092,6 +1092,7 @@ class setreportlist
               $rep_dailytask_report = "('','\\908','','','',0,1,0,'DailyTask Report','\\90840',5586,'0'," . $params['levelid'] . ")";
               $rep_task_monitoring_report = "('','\\908','','','',0,1,0,'Task Monitoring Report','\\90839',5585,'0'," . $params['levelid'] . ")";
               $rep_soalog_report = "('','\\908','','','',0,1,0,'SOALog Report','\\90842',5881,'0'," . $params['levelid'] . ")";
+              $rep_pendingtask_per_client = "('','\\908','','','',0,1,0,'List of Pending Task per Client','\\90843',6034,'0'," . $params['levelid'] . ")";
               break;
             case 64: //excelin
               $rep_commission_report = "('','\\908','','','',0,1,0,'Commission Report by Agent','\\90841',5855,'0'," . $params['levelid'] . ")";
@@ -3922,6 +3923,7 @@ class setreportlist
           $rep_dailytask_report,
           $rep_task_monitoring_report,
           $rep_soalog_report,
+          $rep_pendingtask_per_client,
 
 
           // TRANSACTION LIST

@@ -8453,42 +8453,49 @@ class mobileCommonFunctions
         while (d.length) dd.push(d.splice(0, 100));
         save(dd);
 
-        function save (clientitem, index = 0) {
-          cfunc.showLoading("Saving Client Items (Batch " + index + " of " + clientitem.length + ")");
-          if (index === 0) $q.loading.hide();
-          if (index === clientitem.length) {
-            // cfunc.showLoading("Successfully imported " + sbc.globalFunc.iccount + " Client Items");
-            $q.loading.hide(); // close the loading spinner
-            $q.notify({
-              type: "positive",
-              message: "Successfully imported " + sbc.globalFunc.iccount + " Client Items",
-              timeout: 0, // 0 = stays until dismissed
-              actions: [{ label: "OK", color: "white", handler: () => {} }]
-            });            
-            setTimeout(function () {
+        function save (batches, index = 0) {
+            if (index >= batches.length) {
               $q.loading.hide();
+              $q.notify({
+                type: "positive",
+                message: "Successfully imported " + sbc.globalFunc.iccount + " Client Items",
+                timeout: 0,
+                actions: [{ label: "OK", color: "white", handler: () => {} }]
+              });
               sbc.showSelectLookup = false;
               sbc.globalFunc.lookupSelected = [];
-            }, 1500);
-          } else {
-            sbc.db.transaction(function (tx) {
-              for (var a in clientitem[index]) {
-                insertClientItem(clientitem[index][a]);
-                if (parseInt(a) + 1 === clientitem[index].length) save(clientitem, parseInt(index) + 1);
-              }
-            });
-          }
-        }
+              return;
+            }
 
-        function insertClientItem (data) {
-          sbc.db.transaction(function (tx) {
-            let qry = "insert into clientitem(wh, barcode, sku) values(?, ?, ?)";
-            let param = [data.wh, data.barcode, data.sku];
-            tx.executeSql(qry, param, null, function (tx, err) {
-              cfunc.saveErrLog(qry, param, err.message);
-            });
+            cfunc.showLoading("Saving Client Items (Batch " + (index + 1) + " of " + batches.length + ")");
+
+            sbc.db.transaction(
+              function (tx) {
+                batches[index].forEach(function (row) {
+                  insertClientItem(tx, row);   // pass tx down
+                });
+              },
+              function (err) {                 // transaction error
+                $q.loading.hide();
+                cfunc.saveErrLog("batch " + index, [], err.message);
+              },
+              function () {                    // transaction success → next batch
+                save(batches, index + 1);
+              }
+            );
+          }
+
+
+        function insertClientItem (tx, row) {
+        if (Array.isArray(row)) row = row[0];
+          let qry = "insert into clientitem(wh, barcode, sku) values(?, ?, ?)";
+          let param = [row.wh, row.barcode, row.sku];
+          tx.executeSql(qry, param, null, function (t, err) {
+            cfunc.saveErrLog(qry, param, err.message);
+            return false;                  
           });
         }
+
       },
       getClientItems: function (serveraddr, whs) {
         cfunc.showLoading("Downloading Client Items, Please wait...");
@@ -8723,6 +8730,70 @@ class mobileCommonFunctions
           )
         }
       },
+      viewitembal: function () {
+        sbc.lookupTitle = "Client Item Table";
+        sbc.globalFunc.lookupData = [];
+        sbc.globalFunc.lookupCols = [
+          { name: "itemid", label: "Item ID", field: "itemid", align: "left", sortable: true },
+          { name: "barcode", label: "Barcode", field: "barcode", align: "left", sortable: true },
+          { name: "wh", label: "Warehouse", field: "wh", align: "left", sortable: true },
+          { name: "bal", label: "Balance", field: "bal", align: "left", sortable: true },
+        ];
+        sbc.modulefunc.lookupTableFilter = { type: "filter", field: "", label: "Search", func: "" };
+        sbc.globalFunc.lookupTableSelect = false;
+        sbc.showLookup = true;
+        sbc.db.transaction(function (tx) {
+          tx.executeSql("select itembal.itemid, item.barcode, itembal.wh, itembal.bal from itembal left join item on item.itemid = cast(itembal.itemid as integer)", [], function (tx, res) {
+            if (res.rows.length > 0) {
+              for (var x = 0; x < res.rows.length; x++) {
+                sbc.globalFunc.lookupData.push(res.rows.item(x));
+              }
+            }
+          });
+        });
+      }, 
+      viewitemitable: function () {
+        sbc.lookupTitle = "Client Item Table";
+        sbc.globalFunc.lookupData = [];
+        sbc.globalFunc.lookupCols = [
+          { name: "itemid", label: "Item ID", field: "itemid", align: "left", sortable: true },
+          { name: "barcode", label: "Barcode", field: "barcode", align: "left", sortable: true },
+          { name: "itemname", label: "Item Name", field: "itemname", align: "left", sortable: true },
+        ];
+        sbc.modulefunc.lookupTableFilter = { type: "filter", field: "", label: "Search", func: "" };
+        sbc.globalFunc.lookupTableSelect = false;
+        sbc.showLookup = true;
+        sbc.db.transaction(function (tx) {
+          tx.executeSql("select itemid, barcode, itemname from item", [], function (tx, res) {
+            if (res.rows.length > 0) {
+              for (var x = 0; x < res.rows.length; x++) {
+                sbc.globalFunc.lookupData.push(res.rows.item(x));
+              }
+            }
+          });
+        });
+      }, 
+      viewclientitem: function () {
+        sbc.lookupTitle = "Client Item Table";
+        sbc.globalFunc.lookupData = [];
+        sbc.globalFunc.lookupCols = [
+          { name: "barcode", label: "Barcode", field: "barcode", align: "left", sortable: true },
+          { name: "wh", label: "Warehouse", field: "wh", align: "left", sortable: true },
+          { name: "sku", label: "SKU", field: "sku", align: "left", sortable: true },
+        ];
+        sbc.modulefunc.lookupTableFilter = { type: "filter", field: "", label: "Search", func: "" };
+        sbc.globalFunc.lookupTableSelect = false;
+        sbc.showLookup = true;
+        sbc.db.transaction(function (tx) {
+          tx.executeSql("select barcode, wh, sku from clientitem", [], function (tx, res) {
+            if (res.rows.length > 0) {
+              for (var x = 0; x < res.rows.length; x++) {
+                sbc.globalFunc.lookupData.push(res.rows.item(x));
+              }
+            }
+          });
+        });
+      },      
       viewheadtable: function () {
         sbc.lookupTitle = "Head Table";
         sbc.globalFunc.lookupData = [];

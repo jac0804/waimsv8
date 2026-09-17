@@ -372,7 +372,7 @@ class mobileappv2Class
               $ci = $this->coreFunctions->opentable("select client.clientid, ci.barcode, ci.sku, '" . $w . "' as wh from client join clientitem as ci on ci.clientid=client.clientid where client.client='" . $parent[0]->parent . "'");
               if (!empty($ci)) {
                 foreach ($ci as $cci) {
-                  array_push($clientitems, $ci);
+                  array_push($clientitems, $cci);
                 }
               }
             }

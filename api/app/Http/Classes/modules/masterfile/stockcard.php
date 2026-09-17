@@ -1167,7 +1167,7 @@ class stockcard
             $fields = ['modelname', 'classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];
             break;
           case 64: //excilin
-            $fields = ['classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname', 'lastpr', 'defcost', 'commrate'];
+            $fields = ['classname', 'brandname', 'stockgrp', 'categoryname', 'subcatname', 'lastpr', 'defcost', 'commrate', 'markup'];
             break;
           case 67: //yulick
             $fields = ['partname', 'modelname', 'classname', 'subclass', 'brandname', 'stockgrp', 'categoryname', 'subcatname'];
@@ -1248,6 +1248,8 @@ class stockcard
         data_set($col2, 'tqty.label', 'QTY/CTN');
         data_set($col2, 'dqty.label', 'CBM');
         break;
+      case 64: //excelin
+        data_set($col2, 'markup.label', 'Customer Markup');
     }
 
     switch ($systemtype) {
@@ -1552,7 +1554,11 @@ class stockcard
     $fields = 'item.itemid, item.barcode as docno';
 
     foreach ($this->fields as $key => $value) {
-      $fields = $fields . ',item.' . $value;
+      if ($value == 'markup') {
+        $fields = $fields . ', format(item.markup, 2) as markup';
+      } else {
+        $fields = $fields . ',item.' . $value;
+      }
     }
 
     foreach ($this->iteminfo as $key => $value) {

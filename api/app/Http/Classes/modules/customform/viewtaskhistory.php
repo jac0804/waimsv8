@@ -397,6 +397,31 @@ class viewtaskhistory
                 }
               }
             }
+
+            // Check muna lahat ng status ng stock (tmdetail) para sa task na ito
+            $closeqry = "select status from tmdetail where trno = ?";
+            $stockstatuses = $this->coreFunctions->opentable($closeqry, [$trno]);
+
+            $allclosed = true;
+            foreach ($stockstatuses as $s) {
+                if ($s->status != 5) {
+                    $allclosed = false;
+                    break;
+                }
+            }
+
+            if ($allclosed) {
+                $config['params']['trno'] = $trno; // kailangan para malaman ng closetask() kung anong task ic-close
+
+                $path = 'App\Http\Classes\modules\taskmonitoring\tm';
+                $closeresult = app($path)->closetask($config);
+
+                if ($closeresult['status']) {
+                    $label = 'Successfully completed and closed the task.';
+                }
+            }
+
+
           } else {  //done ng checker para sa manual DY
             $update_dailytask =  $this->coreFunctions->sbcupdate('dailytask', ['statid' => 1, 'donedate' => $datenow, 'rem1' => $solutionremarks], ['trno' => $checkertrno]);
             $label =  'Successfully done.';

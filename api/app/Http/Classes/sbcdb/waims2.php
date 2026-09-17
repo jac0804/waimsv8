@@ -55,6 +55,8 @@ class waims2
     $this->coreFunctions->execqrynolog("ALTER TABLE leave_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
     $this->coreFunctions->execqrynolog("ALTER TABLE client CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE client_log CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $this->coreFunctions->execqrynolog("ALTER TABLE client_log MODIFY oldversion TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $this->coreFunctions->execqrynolog("ALTER TABLE obapplication CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $this->coreFunctions->execqrynolog("ALTER TABLE la_picture CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $this->coreFunctions->execqrynolog("ALTER TABLE cmake CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -4493,7 +4495,7 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["sostock", "hsostock"], ["issp"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["pdstock", "hpdstock"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["isproduce", "istransfer"], "tinyint(1) NOT NULL DEFAULT '0'", 1);
-    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock", "qtstock", "hqtstock", "sostock", "hsostock"], ["custdisc"], "varchar(40) NOT NULL DEFAULT ''", 1);
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["ismarkup"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ["odoin", "odoout"], "varchar(100) NOT NULL DEFAULT ''", 1);
@@ -4502,9 +4504,8 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["headinfotrans", "hheadinfotrans"], ['helperid2'], "int(10) NOT NULL DEFAULT '0'", 0);
 
     $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock", "sostock", "hsostock"], ["markup"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["qtstock", "hqtstock", "sostock", "hsostock"], ["custdisc"], "DECIMAL(18,2) NOT NULL DEFAULT '0.00'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["qthead", "hqthead", "sohead", "hsohead"], ["ismarkup"], "tinyint(1) NOT NULL DEFAULT '0'", 0);
-
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["tdtrno"], "int(11) NOT NULL DEFAULT '0'", 0);
   }
+
 }

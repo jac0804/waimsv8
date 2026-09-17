@@ -280,7 +280,7 @@ class qt
     // $barcode = 10;
 
     if ($companyid == 64){
-      $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'markup', 'disc2', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
+      $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc',  'ext', 'markup', 'disc2',  'rem', 'wh', 'qa', 'void', 'itemname', 'barcode'];
     }else {
       $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
     }
@@ -640,9 +640,9 @@ class qt
 
       // for glstock
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
-        whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,markup,custdisc,
+        whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,markup,custdisc,rem,
         encodeddate,encodedby,editdate,editby)
-        SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext, markup,custdisc,
+        SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext, markup,custdisc,rem,
         encodeddate, encodedby,editdate,editby FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
@@ -735,7 +735,7 @@ class qt
     stock.uom,
     stock.iss,
     FORMAT(stock.markup," . $this->companysetup->getdecimal('currency', $config['params']) . ") as markup,
-    FORMAT(stock.custdisc," . $this->companysetup->getdecimal('currency', $config['params']) . ") as disc2,
+    stock.custdisc as disc2,
     FORMAT(stock.isamt," . $this->companysetup->getdecimal('price', $config['params']) . ") as isamt,
     FORMAT(stock.isqty," . $this->companysetup->getdecimal('qty', $config['params']) . ")  as isqty,
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,
@@ -1092,8 +1092,6 @@ class qt
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
-    $custdisc = $config['params']['data']['disc2'];
-    $markup = $config['params']['data']['markup'];
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $void = 'false';
@@ -1102,6 +1100,8 @@ class qt
     $projectid = 0;
     $refx = 0;
     $linex = 0;
+    $custdisc = '';
+    $markup = 0;
 
     if (isset($config['params']['data']['void'])) {
       $void = $config['params']['data']['void'];
@@ -1124,6 +1124,14 @@ class qt
     }
     if (isset($config['params']['data']['linex'])) {
       $linex = $config['params']['data']['linex'];
+    }
+
+    if (isset($config['params']['data']['disc2'])) {
+      $custdisc = $config['params']['data']['disc2'];
+    }
+
+    if (isset($config['params']['data']['markup'])) {
+      $markup = $config['params']['data']['markup'];
     }
 
 

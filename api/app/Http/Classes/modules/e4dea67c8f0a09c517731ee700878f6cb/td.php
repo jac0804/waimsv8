@@ -43,7 +43,7 @@ class td
     public $damt = '';
     public $hamt = '';
     public $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'rem', 'address', 'tel', 'odoin', 'odoout', 'amt', 'checkedby'];
-    public $fieldOthers = ['trno', 'truckid', 'plateno', 'helperid', 'loaddate'];
+    public $fieldOthers = ['trno', 'plateno', 'truckid', 'helperid', 'helperid2', 'loaddate'];
     public $except = ['trno', 'dateid', 'due'];
     public $showfilteroption = true;
     public $showfilter = true;
@@ -275,9 +275,7 @@ class td
         data_set($col1, 'client.label', 'Driver Code');
         data_set($col1, 'clientname.label', 'Driver Name');
         data_set($col1, 'helpername.label', 'Helper 1');
-        data_set($col1, 'helpername.action', 'lookupclient');
         data_set($col1, 'helpername2.label', 'Helper 2');
-        data_set($col1, 'helpername2.action', 'lookupclient');
 
         // col 2
         $fields = ['dateid', 'truck', 'area', 'contact', 'checked'];
@@ -312,14 +310,16 @@ class td
         $data[0]['clientname'] = '';
         $data[0]['helperid'] = 0;
         $data[0]['helpername'] = '';
+        $data[0]['helperid2'] = 0;
         $data[0]['helpername2'] = '';
+        $data[0]['truck'] = '';
         $data[0]['truckid'] = 0;
         $data[0]['plateno'] = '';
         $data[0]['area'] = '';
         $data[0]['contact'] = '';
         $data[0]['checked'] = '';
-        $data[0]['odoin'] = '0.00';
-        $data[0]['odoout'] = '0.00';
+        $data[0]['odoin'] = '';
+        $data[0]['odoout'] = '';
         $data[0]['amt'] = 0;
         $data[0]['rem'] = '';
 
@@ -362,14 +362,15 @@ class td
          info.helperid2,
          ifnull(hpp.clientname, '') as helpername2,  
          date_format(head.createdate,'%Y-%m-%d') as createdate,
-         head.rem,info.plateno,
+         head.rem,truck.clientname as truck,info.truckid,info.plateno,
          head.address as area,head.tel as contact,head.checkedby as checked,
          head.odoin,head.odoout,head.amt";
 
         $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.client = client.client   
-        left join headinfotrans as info on info.trno=head.trno     
+        left join headinfotrans as info on info.trno=head.trno
+        left join client as truck on truck.clientid=info.truckid     
         left join client as hp on hp.clientid=info.helperid
         left join client as hpp on hpp.clientid=info.helperid2
         where head.trno = ? and num.center = ? 
@@ -377,13 +378,14 @@ class td
         left join $tablenum as num on num.trno = head.trno
         left join client on head.client = client.client
         left join hheadinfotrans as info on info.trno=head.trno
+        left join client as truck on truck.clientid=info.truckid
         left join client as hp on hp.clientid=info.helperid
         left join client as hpp on hpp.clientid=info.helperid2
         where head.trno = ? and num.center=? ";
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
         if (!empty($head)) {
-            // $stock = $this->openstock($trno, $config);
+            $stock = $this->openstock($trno, $config);
             $viewdate = $this->othersClass->getCurrentTimeStamp();
             $viewby = $config['params']['user'];
             $msg = 'Data Fetched Success';
@@ -392,7 +394,7 @@ class td
             }
 
             $gpqry = "select sum(ext) as value from (select stock.weight * stock.iss as ext from $this->stock as stock where stock.trno =? 
-        union all select stock.weight * stock.iss as ext from $this->hstock as stock where stock.trno = ?) as a ";
+            union all select stock.weight * stock.iss as ext from $this->hstock as stock where stock.trno = ?) as a ";
             $gpext = round($this->coreFunctions->datareader($gpqry, [$head[0]->trno, $head[0]->trno]), 2);
             $head[0]->ext = number_format($gpext, $this->companysetup->getdecimal('price', $config['params']));
 
@@ -410,7 +412,7 @@ class td
 
             return  [
                 'head' => $head,
-                'griddata' => [],
+                'griddata' => [$this->gridname => $stock],
                 'islocked' => $islocked,
                 'isposted' => $isposted,
                 'isnew' => false,
@@ -421,7 +423,7 @@ class td
         } else {
             $head[0]['trno'] = 0;
             $head[0]['docno'] = '';
-            return ['status' => false, 'isnew' => true, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Data Head Fetched Failed'];
+            return ['status' => false, 'isnew' => true, 'head' => $head, 'griddata' => [$this->gridname => []], 'msg' => 'Data Head Fetched Failed'];
         }
     }
 
@@ -476,13 +478,12 @@ class td
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['createby'] = $config['params']['user'];
 
-            $newtrno = $this->coreFunctions->sbcinsert($this->head, $data);
-            if ($newtrno) {
-                $dataOthers['trno'] = $newtrno; // ensure headinfotrans links to the right trno
+            if ($this->coreFunctions->sbcinsert($this->head, $data)) {
+
                 $this->coreFunctions->sbcinsert('headinfotrans', $dataOthers);
             }
 
-            $this->logger->sbcwritelog($newtrno, $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
+            $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
         }
     } // end function
 
@@ -522,18 +523,18 @@ class td
         $obj[0]['inventory']['columns'][$clientname]['readonly'] = true;
         $obj[0]['inventory']['columns'][$amt]['readonly'] = true;
         $obj[0]['inventory']['columns'][$terms]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$modeofpayment]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$rem]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$modeofpayment]['readonly'] = false;
+        $obj[0]['inventory']['columns'][$rem]['readonly'] = false;
 
         //style
-        $obj[0]['inventory']['columns'][$docno]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
-        $obj[0]['inventory']['columns'][$clientname]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
-        $obj[0]['inventory']['columns'][$modeofpayment]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
-        $obj[0]['inventory']['columns'][$amt]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
-        $obj[0]['inventory']['columns'][$terms]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
-        $obj[0]['inventory']['columns'][$agent]['style'] = 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px';
-        $obj[0]['inventory']['columns'][$modeofpayment]['style'] = 'width: 70px;whiteSpace: normal;min-width:70px;max-width:70px';
-        $obj[0]['inventory']['columns'][$rem]['style'] = 'width: 70px;whiteSpace: normal;min-width:70px;max-width:70px; text-align:right;';
+        $obj[0]['inventory']['columns'][$docno]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$clientname]['style'] = 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px';
+        $obj[0]['inventory']['columns'][$modeofpayment]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$amt]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$terms]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$agent]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$modeofpayment]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
+        $obj[0]['inventory']['columns'][$rem]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px; text-align:right;';
 
         // remove the header per row
         $obj[0]['inventory']['descriptionrow'] = [];
@@ -607,7 +608,7 @@ class td
         where d.trno=?
         order by line";
 
-        $detail = $this->coreFunctions->opentable($qry,[$trno, $trno]);
+        $detail = $this->coreFunctions->opentable($qry, [$trno, $trno]);
         return $detail;
     }
 
@@ -623,7 +624,7 @@ class td
         left join lahead as la on la.trno=d.refx
         where d.trno=? and d.line=?";
 
-        $detail = $this->coreFunctions->opentable($qry,[$trno, $line]);
+        $detail = $this->coreFunctions->opentable($qry, [$trno, $line]);
         return $detail;
     }
 
@@ -649,8 +650,10 @@ class td
             }
 
             $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
-            $line = $this->coreFunctions->datareader($qry,[$trno]);
-            if ($line == '') {$line = 0;}
+            $line = $this->coreFunctions->datareader($qry, [$trno]);
+            if ($line == '') {
+                $line = 0;
+            }
             $line = $line + 1;
             $data = [
                 'line' => $line,
@@ -658,9 +661,9 @@ class td
                 'refx' => $sjtrno
             ];
 
-            $this->coreFunctions->sbcinsert($this->stock,$data );
+            $this->coreFunctions->sbcinsert($this->stock, $data);
 
-            $this->coreFunctions->execqry("update lahead set tdtrno=? where trno=?",'update',[$trno, $sjtrno]);
+            $this->coreFunctions->execqry("update lahead set tdtrno=? where trno=?", 'update', [$trno, $sjtrno]);
 
             $config['params']['line'] = $line;
 
@@ -670,10 +673,10 @@ class td
                 array_push($returnrows, $row[0]);
             }
 
-            $this->logger->sbcwritelog($trno,$config,'DELIVERY TRUCKING','ADD - Line:' . $line . ' Doc:' . $pacctrow['docno']);
+            $this->logger->sbcwritelog($trno, $config, 'DELIVERY TRUCKING', 'ADD - Line:' . $line . ' Doc:' . $pacctrow['docno']);
         }
 
-        return ['status' => true,'msg' => 'Transaction(s) added successfully...','row' => $returnrows,'reloaddata' => true];
+        return ['status' => true, 'msg' => 'Transaction(s) added successfully...', 'row' => $returnrows, 'reloaddata' => true];
     }
 
 

@@ -135,10 +135,10 @@ class SBCPDF
 
             $style = $this->styler($w, $h, $bg, $b, $b_, $al, $f, $fs,  $fw, $fc, $pad, $m);
 
-            if($len ==''){
+            if ($len == '') {
                 $len = 0;
             }
-            
+
             if ($len != 0) {
                 $this->breakword($txt, $key, $len, $col, $style, $linecounter);
             } else {
@@ -415,7 +415,7 @@ class SBCPDF
         $linenum = 0;
         $sam = ucwords($txt[$key]);
 
-        
+
 
         if ($key >= 0) {
             $linenum = ceil(strlen($sam) / $len);
@@ -1320,6 +1320,63 @@ class SBCPDF
             }
         }
         return ['view' => $mview, 'print' => $mprint];
+    }
+
+
+
+    private function parseHorizontalPadding($pad)
+    {
+        if ($pad === null || $pad === '') return 0;
+
+        // pull out numeric values regardless of unit (px, pt, etc.)
+        preg_match_all('/[\d.]+/', $pad, $matches);
+        $vals = $matches[0];
+
+        if (empty($vals)) return 0;
+
+        switch (count($vals)) {
+            case 1: // all sides
+                return (float) $vals[0] * 2;
+            case 2: // vertical, horizontal
+                return (float) $vals[1] * 2;
+            case 3: // top, horizontal, bottom
+                return (float) $vals[1] * 2;
+            case 4: // top, right, bottom, left
+                return (float) $vals[1] + (float) $vals[3];
+            default:
+                return 0;
+        }
+    }
+
+    public function estimateLines($text, $colWidthPx, $fontSizePt = 10, $pad = '6px', $isBold = false)
+    {
+        if ($text === null || $text === '') return 1;
+
+        $paddingPx = $this->parseHorizontalPadding($pad);
+        $usableWidth = max(1, $colWidthPx - $paddingPx);
+
+        $fontSizePx = $fontSizePt * 1.333;
+        $avgCharWidth = $fontSizePx * 0.62;
+        if ($isBold) {
+            $avgCharWidth *= 1.08;
+        }
+
+        $charsPerLine = max(1, (int) floor($usableWidth / $avgCharWidth));
+
+        return max(1, (int) ceil(mb_strlen($text) / $charsPerLine));
+    }
+
+    public function estimateRowLines(array $fields, $fontSizePt = 10)
+    {
+        $max = 1;
+        foreach ($fields as $field) {
+            $text   = $field[0];
+            $width  = $field[1];
+            $pad    = isset($field[2]) ? $field[2] : '6px'; // same default as your existing col() calls
+            $isBold = isset($field[3]) ? $field[3] : false;
+            $max = max($max, $this->estimateLines($text, $width, $fontSizePt, $pad, $isBold));
+        }
+        return $max;
     }
 }//end class
 

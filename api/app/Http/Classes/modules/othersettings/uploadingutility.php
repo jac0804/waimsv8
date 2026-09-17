@@ -404,8 +404,7 @@ class uploadingutility
       case 70: //sportrunner
         data_set($col1, 'optionuploading.options', array(
           ['label' => 'New Items', 'value' => 'newitem', 'color' => 'primary'],
-          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary'],
-          ['label' => 'Upload Product Image', 'value' => 'uploadproductimage', 'color' => 'primary'],
+          ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'primary']
         ));
         break;
     }
@@ -456,7 +455,7 @@ class uploadingutility
         break;
       case 70: //sportrunner
         $fields = [];
-        data_set($col1, 'uploadfilebybatch.addedparams', ['folder'=>'products','table'=>'uploadfilebybatch']);
+        data_set($col1, 'uploadfilebybatch.addedparams', ['folder' => 'products', 'table' => 'uploadfilebybatch']);
 
         break;
       case 56; //homeworks

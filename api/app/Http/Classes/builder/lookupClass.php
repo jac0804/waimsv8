@@ -4976,12 +4976,24 @@ class lookupClass
         $title = 'List of Helper';
         $condition = " where client.ispassenger=1 and client.isemployee=1 order by client.client ";
         $plottype = 'plotledger';
-        if ($config['params']['doc']  == 'RO') {
+        if ($config['params']['doc']  == 'RO' || $config['params']['doc']  == 'TD' ) {
           $plottype = 'plothead';
         }
         $plotting = array(
           'helperid' => 'clientid',
           'helpername' => 'clientname'
+        );
+        break;
+        case 'helper2':
+        $title = 'List of Helper';
+        $condition = " where client.ispassenger=1 and client.isemployee=1 order by client.client ";
+        $plottype = 'plotledger';
+        if ($config['params']['doc']  == 'TD' ) {
+          $plottype = 'plothead';
+        }
+        $plotting = array(
+          'helperid2' => 'clientid',
+          'helpername2' => 'clientname'
         );
         break;
       case 'vehicle':

@@ -27,7 +27,7 @@ class asset_accountability_report
   private $reporter;
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+  public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
   public function __construct()
   {
@@ -181,8 +181,8 @@ class asset_accountability_report
     $font = $this->companysetup->getrptfont($config['params']);
     $font_size = '10';
 
-    $count = 27;
-    $page = 27;
+    $count = 45; // kept for reference / potential future use, but no longer accumulated into $page
+    $page = 45;
     $this->reporter->linecounter = 0;
 
     if (empty($result)) {
@@ -201,6 +201,13 @@ class asset_accountability_report
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col("", null, '40', false, $border, '', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
+        $this->reporter->addline();
+
+        // FIX: use $data->empname (the employee being printed now), not $empname (the previous one)
+        $headerLines = $this->reporter->estimateLines($data->empname, 180, $font_size, '6px', true);
+        for ($l = 0; $l < $headerLines; $l++) {
+          $this->reporter->addline();
+        }
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
@@ -218,7 +225,17 @@ class asset_accountability_report
         $i = 1;
       }
 
-      $str .= $this->reporter->addline();
+      $lines = $this->reporter->estimateRowLines(array(
+        array($data->barcode,  180, '6px'),
+        array($data->itemname, 250, '6px'),
+        array($data->serialno, 120, '6px'),
+        array($data->rem,      150, '6px'),
+      ), $font_size);
+
+      for ($l = 0; $l < $lines; $l++) {
+        $this->reporter->addline();
+      }
+
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col($i++, '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
       $str .= $this->reporter->col($data->barcode, '180', '', false, $border, 'TBLR', 'L', $font, $font_size, '', '', '6px');
@@ -234,11 +251,47 @@ class asset_accountability_report
 
       $empname = $data->empname;
 
-      if ($this->reporter->linecounter == $page) {
+      if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $str .= $this->displayHeader($config);
-        $page += $count;
+
+        // FIX: linecounter resets each break, so $page must stay fixed at $count —
+        // do NOT accumulate ($page += $count removed), or the next break's threshold
+        // balloons and the manual break effectively stops firing.
+        $this->reporter->linecounter = 0;
+
+        // repeat the employee header row if the group continues onto this new page
+        $hasMore = false;
+        foreach ($result as $checkKey => $checkData) {
+          if ($checkKey > $key && $checkData->empname == $empname) {
+            $hasMore = true;
+            break;
+          }
+          if ($checkKey > $key) {
+            break; // next row belongs to a different employee, no continuation needed
+          }
+        }
+
+        if ($hasMore) {
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col($empname, '180', null, false, $border, 'TLR', 'L', $font, $font_size, 'B', '', '6px');
+          $str .= $this->reporter->col('(continued)', '250', null, false, $border, '', 'L', $font, $font_size, 'I', '', '6px');
+          $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->endrow();
+
+          $headerLines = $this->reporter->estimateLines($empname, 180, $font_size, '6px', true);
+          for ($l = 0; $l < $headerLines; $l++) {
+            $this->reporter->addline();
+          }
+        }
       }
     } //end foreach
 
@@ -294,7 +347,7 @@ class asset_accountability_report
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
     $str .= $this->reporter->col('AMD Coordinator', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('Sr. Asset Mgmt Head', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('AMD/RMA Head', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();

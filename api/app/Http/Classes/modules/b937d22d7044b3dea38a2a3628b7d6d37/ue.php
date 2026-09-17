@@ -597,7 +597,8 @@ class ue
 
       $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
       if (!empty($stock)) {
-        return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
+        unset($data['pdtrno']); //di na maeedit o mababago yung JO sa head pag may laman yung stock
+        // return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
        } else {
         $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
         $newjotrno = $head['pdtrno'];
@@ -636,6 +637,9 @@ class ue
     $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry("update hpdhead set isproduce =0 where docno = ?", "update", [$jodocno]);
+
+    $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
+    $this->coreFunctions->execqry("delete from rrstatus where trno= ? ", 'delete', [$trno]);
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
@@ -687,12 +691,25 @@ class ue
     }
   } //end function
 
+
   public function unposttrans($config)
   {
-    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
 
-    return $this->othersClass->unposttranstock($config);
+    $result = $this->othersClass->unposttranstock($config);
+    
+    //dinelete sa unposttrans kaya binalik ko dito
+    $qry = "select count(line) as value from lastock where trno=?";
+    $countitem = $this->coreFunctions->datareader($qry, [$trno]);
+      if ($countitem != 0) {
+        $checkexist = $this->coreFunctions->getfieldvalue('rrstatus', 'trno', 'trno=?', [$trno]);
+        if ($checkexist == 0) {
+          $path = 'App\Http\Classes\modules\tableentry\issuemultipleexpiry';
+          app($path)->transfertowh($config);
+        }
+      }
+
+    return $result;
   } //end function
 
 
@@ -1296,6 +1313,8 @@ class ue
     $data = $this->coreFunctions->opentable('select refx,linex from ' . $this->stock . ' where trno=? and refx<>0', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
+    $this->coreFunctions->execqry("delete from rrstatus where trno= ? ", 'delete', [$trno]);
+ 
   
     foreach ($data as $key => $value) {
       if ($data[$key]->refx != 0) {
@@ -1317,6 +1336,14 @@ class ue
     $qry = "delete from " . $this->stock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
     $this->coreFunctions->execqry("delete from costing where trno= ? and line= ? ", 'delete', [$trno, $line]);
+
+    $qry = "select count(line) as value from lastock where trno=?";
+    $countitem = $this->coreFunctions->datareader($qry, [$trno]);
+
+    if($countitem == 1){
+      $this->coreFunctions->execqry("delete from rrstatus where trno= ? ", 'delete', [$trno]);
+    }
+
     if ($data[0]->refx !== 0) {
       $this->setserveditems($data[0]->refx, $data[0]->linex);
     }

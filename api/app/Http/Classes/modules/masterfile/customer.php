@@ -176,7 +176,7 @@ class customer
       $this->prefix = "C";
     }
     if ($companyid == 64) {
-      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'listarea', 'listprovince', 'agentname', 'listcategory', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
+      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'buildingname', 'listarea', 'listprovince', 'agentname', 'listcategory', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
     } else {
       $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
     };
@@ -272,6 +272,10 @@ class customer
         $cols[$tin]['style'] =  'width: 150px;whiteSpace: normal;max-width:150px;text-align:left;';
         $cols[$tel]['style'] =  'width: 120px;whiteSpace: normal;max-width:120px;text-align:left;';
         $cols[$mobile]['style'] =  'width: 120px;whiteSpace: normal;max-width:120px;text-align:left;';
+        $cols[$buildingname]['style'] =  'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
+        $cols[$buildingname]['label'] =  'Business Type';
+        $cols[$listarea]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
+        $cols[$listprovince]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
         break;
       default:
         $cols[$listgroup]['type'] = 'coldel';
@@ -388,7 +392,8 @@ class customer
         }
         break;
       case 64:
-        $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname, client.tel, client.tel2 as mobile";
+        $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname, client.tel, client.tel2 as mobile,
+        client.building as buildingname";
         $leftjoin = "left join client as ag on ag.client = client.agent";
         $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
         if ($search != "") {
@@ -1014,7 +1019,7 @@ class customer
             $fields = ['terms', 'dagentname', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup', 'contact', 'tin', 'groupid', 'dvattype', 'dewt'];
             break;
           case 64: // excelin
-            $fields = ['terms', 'dagentname', 'groupid', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup', 'contact', 'owner', 'contactno', 'building'];
+            $fields = ['terms', 'dagentname', 'groupid', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup', 'contact', 'owner', 'contactno', 'bstyle'];
             break;
           default:
             $fields = ['terms', 'dagentname', 'groupid', 'dsalesacct', ['bal', 'isnocrlimit'], 'pricegroup'];
@@ -1120,8 +1125,8 @@ class customer
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'contact.label', 'Contact Person');
         data_set($col2, 'contactno.label', 'Owner Contact');
-        data_set($col2, 'building.label', 'Business Type');
-        data_set($col2, 'building.required', false);
+        data_set($col2, 'bstyle.label', 'Business Type');
+        data_set($col2, 'bstyle.required', false);
         break;
       default:
         $col2 = $this->fieldClass->create($fields);
