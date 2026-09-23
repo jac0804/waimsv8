@@ -59,7 +59,7 @@ class issuemultipleexpiry
   public function createTab($config)
   {
     $columns = ['itemdesc', 'qty','bal', 'loc', 'expiry', 'wh'];
-
+    $companyid= $config['params']['companyid'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -82,8 +82,11 @@ class issuemultipleexpiry
     $obj[0][$this->gridname]['columns'][$expiry]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$wh]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$bal]['type'] = "label";
+    if($companyid == 71){//buena
+      $obj[0][$this->gridname]['columns'][$loc]['label'] = "Lot#";  
+    }
     if(isset($config['params']['row']['pending'])){
-      $this->modulename = "LOC/EXPIRY ( Pending Qty: " .$config['params']['row']['pending'] .")";
+      $this->modulename = "LOT/EXPIRY ( Pending Qty: " .$config['params']['row']['pending'] .")";
     }
     
     return $obj;
@@ -206,9 +209,9 @@ class issuemultipleexpiry
         break; 
       }
       
-      return ['status' => true, 'msg'=> 'Success','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => true, 'msg'=> 'Successfully added','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
-      return ['status' => true, 'msg'=> 'Success','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => true, 'msg'=> 'Successfully added','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
 

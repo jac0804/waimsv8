@@ -242,7 +242,10 @@ class st
     ];
 
     $stockbuttons = ['save', 'delete']; //, 'showbalance', 'stockinfo'
-
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
+    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+    $obj[0]['inventory']['columns'][$isamt]['type'] = 'label';
     if (!$isexpiry) {
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     }
@@ -252,10 +255,6 @@ class st
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel'; 
     }
-
-    $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -821,6 +820,7 @@ class st
       'linex' => $linex,
       'ref' => $ref,
       'loc' => $loc,
+      'loc2' => $loc,
       'expiry' => $expiry,
       'uom' => $uom,
       'rem' => $rem
@@ -834,6 +834,7 @@ class st
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
     $data['editby'] = $config['params']['user'];
+    $cost2 = 0;
 
     if ($action == 'insert') {
       $data['encodeddate'] = $current_timestamp;
@@ -843,7 +844,9 @@ class st
         $havestock = true;
         $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
         if ($cost != -1) {
-          $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
+          $cost2 = $cost / $factor;
+          $computedata = $this->othersClass->computestock($cost2, $disc, $qty, $factor, $vat);
+          $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'isamt' => $cost2, 'amt' => $computedata['amt'], 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
         } else {
           $havestock = false;
           $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $current_timestamp], ['trno' => $trno, 'line' => $line]);
@@ -866,7 +869,9 @@ class st
 
       $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $data['expiry'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
       if ($cost != -1) {
-        $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
+        $cost2 = $cost / $factor;
+        $computedata = $this->othersClass->computestock($cost2, $disc, $qty, $factor, $vat);
+        $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'isamt' => $cost2, 'amt' => $computedata['amt'], 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
         // if ($this->setserveditems($refx, $linex) === 0) {
         //   $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
         //   $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);

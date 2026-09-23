@@ -831,11 +831,15 @@ class moduleClass
 			}
 
 			if ($isexpiry) {
+				$lbl ="Location";
 				$expirystatus = $this->config['docmodule']->expirystatus;
+				if ($this->config['params']['companyid'] == 71) { //buenatech
+					$lbl = "Lot#";
+				}
 				$itembalcol = [
 					['name' => 'wh', 'label' => 'Code', 'align' => 'left', 'field' => 'wh'],
-					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
-					['name' => 'loc', 'label' => 'Location', 'align' => 'left', 'field' => 'loc'],
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],					
+					['name' => 'loc', 'label' => $lbl, 'align' => 'left', 'field' => 'loc'],			
 					['name' => 'expiry', 'label' => 'Expiry', 'align' => 'left', 'field' => 'expiry'],
 					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
 					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],

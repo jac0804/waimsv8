@@ -7865,19 +7865,19 @@ class leftmenu
         }
 
         $qry = "(3672,0,'" . $label . "','',0,'\\3002','$parent',0,'0',0," . $params['levelid'] . "),
-            (3673,0,'Allow View Transaction PD','PD',0,'\\300201','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3674,0,'Allow Click Edit Button PD','',0,'\\300202','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3675,0,'Allow Click New Button PD','',0,'\\300203','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3676,0,'Allow Click Save Button PD','',0,'\\300204','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3677,0,'Allow Click Delete Button PD','',0,'\\300205','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3678,0,'Allow Click Print Button PD','',0,'\\300206','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3679,0,'Allow Click Lock Button PD','',0,'\\300207','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3680,0,'Allow Click UnLock Button PD','',0,'\\300208','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3681,0,'Allow Click Post Button PD','',0,'\\300209','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3682,0,'Allow Click UnPost Button PD','',0,'\\300210','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3683,0,'Allow Click Add Item PD','',0,'\\300211','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3684,0,'Allow Click Delete Item PD','',0,'\\300212','\\3002',0,'0',0," . $params['levelid'] . "),
-            (3685,0,'Allow Click Edit Item PD','',0,'\\300213','\\3002',0,'0',0," . $params['levelid'] . ")";
+            (3673,0,'Allow View Transaction '".$label."','PD',0,'\\300201','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3674,0,'Allow Click Edit Button '.$label,'',0,'\\300202','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3675,0,'Allow Click New Button '.$label,'',0,'\\300203','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3676,0,'Allow Click Save Button '.$label,'',0,'\\300204','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3677,0,'Allow Click Delete Button '.$label,'',0,'\\300205','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3678,0,'Allow Click Print Button '.$label,'',0,'\\300206','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3679,0,'Allow Click Lock Button '.$label,'',0,'\\300207','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3680,0,'Allow Click UnLock Button '.$label,'',0,'\\300208','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3681,0,'Allow Click Post Button '.$label,'',0,'\\300209','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3682,0,'Allow Click UnPost Button '.$label,'',0,'\\300210','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3683,0,'Allow Click Add Item '.$label,'',0,'\\300211','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3684,0,'Allow Click Delete Item '.$label,'',0,'\\300212','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3685,0,'Allow Click Edit Item '.$label,'',0,'\\300213','\\3002',0,'0',0," . $params['levelid'] . ")";
 
         switch ($params['companyid']) {
             case 71: // buenatech

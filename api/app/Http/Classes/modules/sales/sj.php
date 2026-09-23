@@ -1094,6 +1094,7 @@ class sj
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 23: //labsol cebu
       case 41: //labsol manila
@@ -1114,6 +1115,7 @@ class sj
         $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 19: //housegem
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
@@ -1131,6 +1133,7 @@ class sj
         // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 21: // kinggeorge
         $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
@@ -1148,6 +1151,7 @@ class sj
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 10: //afti
       case 12: //afti usd
@@ -1170,6 +1174,7 @@ class sj
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 40: //cdo
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
@@ -1199,6 +1204,7 @@ class sj
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 69: //cemphil
       case 24: //goodfound
@@ -1225,6 +1231,7 @@ class sj
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 60: //transpower
         // $obj[0]['inventory']['columns'][$barcode]['type'] = 'input';
@@ -1243,11 +1250,11 @@ class sj
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
         $obj[0]['inventory']['columns'][$whname]['label'] = 'Whname';
         $obj[0]['inventory']['columns'][$whname]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
 
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
       case 59: //roosevelt
-
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'label';
         $obj[0]['inventory']['columns'][$barcode]['style'] = 'text-align: left; width:125px;whiteSpace: normal;min-width:125px;max-width:125px;';
         $obj[0]['inventory']['columns'][$itemname]['type'] = 'label';
@@ -1260,7 +1267,7 @@ class sj
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left;width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'input';
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
-
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'SALES INVOICE';
         break;
@@ -1273,17 +1280,43 @@ class sj
         $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Markup Discount';
         $obj[0]['inventory']['columns'][$disc2]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0]['inventory']['columns'][$disc2]['align'] = 'text-right';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
       case 65: //metrodragon
         $obj[0]['inventory']['columns'][$weight]['label'] = 'Weight';
         $obj[0]['inventory']['columns'][$weight]['readonly'] = false;
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 67: //yulick
         $obj[0]['inventory']['columns'][$isqty2]['label'] = 'Customer Qty';
         $obj[0]['inventory']['columns'][$isqty2]['readonly'] = true;
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        break;
+      case 71://buenatech
+        $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
+        $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+
+      if (!$isexpiry) {
+          $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
+        }
+        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         break;
       default:
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
@@ -1296,6 +1329,7 @@ class sj
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
 
         if (!$isexpiry) {
           // switch ($companyid) {
@@ -1313,16 +1347,6 @@ class sj
         }
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         break;
-    }
-
-    if ($companyid == 71) { //buenatech
-      $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
-      $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
-      $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
-    }
-
-    if ($companyid != 71) { //buenatech
-      $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
     }
 
     if (!$access['changeamt']) {
@@ -1371,10 +1395,7 @@ class sj
       if ($companyid == 10 || $companyid == 12) { //afti, afti usd
         $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
       } else {
-        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
-        if ($issuemultiloc) {
-          $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
-        }
+        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];      
       }
     } elseif ($ispallet) {
       $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
@@ -1392,7 +1413,11 @@ class sj
           array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso', 'pendingdr');
           break;
         default:
-          array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso');
+          if ($issuemultiloc) {
+            $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
+          }else{
+            $tbuttons = [ 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso'];
+          }
           break;
       }
     }
@@ -1408,14 +1433,16 @@ class sj
         $obj[0]['action'] = 'soserial';
       }
 
-      if ($issuemultiloc) {
-        $obj[1]['lookupclass'] = 'additemmultiloc';
-        $obj[1]['action'] = 'additemmultiloc';
-      }
     } elseif ($ispallet) {
       $obj[0]['label'] = 'SO';
       $obj[0]['lookupclass'] = 'sopallet';
       $obj[0]['action'] = 'sopallet';
+    }elseif ($issuemultiloc) {
+      $obj[0]['label'] = 'SO Serial';
+      $obj[0]['lookupclass'] = 'soserial';
+      $obj[0]['action'] = 'soserial';
+      $obj[1]['lookupclass'] = 'additemmultiloc';
+      $obj[1]['action'] = 'additemmultiloc';
     }
     return $obj;
   }
@@ -4811,7 +4838,12 @@ class sj
     $pricedec = $this->companysetup->getdecimal('price', $config['params']);
 
     $pricegrp = '';
+    $cond ='';
     $data = [];
+
+    if($companyid == 71){//buenatech
+      $cond = " and stock.issp = 0 ";
+    }
 
     switch ($pricetype) {
       case 'Stockcard':
@@ -4933,7 +4965,7 @@ class sj
               left join item on item.itemid = stock.itemid
               where head.doc = 'SJ' and cntnum.center = ?
               and item.barcode = ? and head.client = ?
-              and stock.isamt <> 0 and cntnum.trno <> ?
+              and stock.isamt <> 0 and cntnum.trno <> ? ". $cond."
               UNION ALL
               select head.docno,head.dateid,stock.isamt as computeramt,
               stock.uom,stock.disc,'test' as rem from glhead as head
@@ -4943,7 +4975,7 @@ class sj
               left join cntnum on cntnum.trno=head.trno
               where head.doc = 'SJ' and cntnum.center = ?
               and item.barcode = ? and client.client = ?
-              and stock.isamt <> 0 and cntnum.trno <> ?
+              and stock.isamt <> 0 and cntnum.trno <> ?  ". $cond."
               order by dateid desc limit 5) as tbl order by dateid desc";
 
             $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);

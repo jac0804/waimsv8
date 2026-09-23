@@ -275,7 +275,7 @@ class companysetup
         $this->documentlength = 15;
         $this->barcodelength = 20;
         $this->tax = 12;
-        $this->serial = true;
+        $this->serial = false;
         $this->companyname = 'Buenatech';
         $this->systemtype = 'AIMS';
         $this->isexpiry = true;

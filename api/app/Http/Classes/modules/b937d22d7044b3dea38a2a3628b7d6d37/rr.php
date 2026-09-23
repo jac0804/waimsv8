@@ -521,8 +521,8 @@ class rr
       $allowgenerateapv = $this->othersClass->checkAccess($config['params']['user'], 5221);
     }
 
-    $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc',  'freight','cost', 'ext', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
-    $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc', 'freight','cost', 'ext',  'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+    $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc',  'freight','cost', 'ext', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+    $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom',  'rrcost', 'disc', 'freight','cost', 'ext',  'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry',  'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
 
     foreach ($column as $key => $value) {
       $$value = $key;
