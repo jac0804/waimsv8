@@ -82,7 +82,8 @@ class list_of_pending_task_per_client
         '" . $this->othersClass->getCurrentDate() . "' as start,
         '" . $this->othersClass->getCurrentDate() . "' as end, 
         '' as empname,
-        0 as empcode,
+        '' as empcode,
+        0 as empid,
         '' as dclientname,
         '' as clientid,
         '' as client,
@@ -116,6 +117,7 @@ class list_of_pending_task_per_client
     {
         $start  = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end  = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+        $empname = $config['params']['dataparams']['empname'];
         $phead = $config['params']['dataparams']['empcode'];
         $client   = $config['params']['dataparams']['client'];
         $clientid   = $config['params']['dataparams']['clientid'];
@@ -126,7 +128,7 @@ class list_of_pending_task_per_client
             $filter .= " and c.client = '$client' ";
         }
 
-        if ($phead != '') {
+        if ($empname != '') {
         $filter .= " and e.client = '$phead' ";
         }
 

@@ -22,7 +22,7 @@ class viewsjfinancing
   private $logger;
   public $modulename = 'Financing';
   public $gridname = 'customformacctg';
-  private $fields = ['downpayment', 'fmiscfee', 'interestrate', 'fma2', 'penalty', 'rebate', 'fma1'];
+  private $fields = ['downpayment', 'fmiscfee', 'interestrate', 'fma2', 'penalty', 'rebate', 'fma1','terms'];
   private $table = 'cntnuminfo';
   private $htable = 'hcntnuminfo';
 
@@ -56,11 +56,12 @@ class viewsjfinancing
     $trno = $config['params']['clientid'];
     $isposted = $this->othersClass->isposted2($trno, "cntnum");
 
-    $fields = ['downpayment', 'fmiscfee', 'fma1'];
+    $fields = ['terms','downpayment', 'fmiscfee', 'fma1'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'fmiscfee.readonly', false);
     data_set($col1, 'fma1.readonly', false);
     data_set($col1, 'fma1.label', 'Monthly Amortization');
+    data_set($col1, 'terms.lookupclass', 'sjfinanceterms');
 
 
     $fields = ['interestrate', 'fma2'];
@@ -107,14 +108,14 @@ class viewsjfinancing
   public function cntnuminfo_qry($trno)
   {
     $qry = "
-    select " . $trno . " as trno, ifnull(hinfo.interestrate,0) as interestrate,format(ifnull(hinfo.downpayment,0),2) as downpayment,format(ifnull(hinfo.fmiscfee,0),2) as fmiscfee,ifnull(hinfo.fma2,0) as fma2,
-    ifnull(hinfo.penalty,0) as penalty,format(ifnull(hinfo.rebate,0),2) as rebate,format(ifnull(hinfo.fma1,0),2) as fma1
-    from cntnuminfo as hinfo
+    select " . $trno . " as trno, ifnull(hinfo.interestrate,2) as interestrate,format(ifnull(hinfo.downpayment,0),2) as downpayment,format(ifnull(hinfo.fmiscfee,0),2) as fmiscfee,ifnull(hinfo.fma2,0) as fma2,
+    ifnull(hinfo.penalty,0) as penalty,format(ifnull(hinfo.rebate,0),2) as rebate,format(ifnull(hinfo.fma1,0),2) as fma1,h.terms
+    from cntnuminfo as hinfo left join lahead as h on h.trno = hinfo.trno
     where hinfo.trno=?
     union all
-    select " . $trno . " as trno,ifnull(hinfo.interestrate,0) as interestrate,format(ifnull(hinfo.downpayment,0),2) as downpayment,format(ifnull(hinfo.fmiscfee,0),2) as fmiscfee,ifnull(hinfo.fma2,0) as fma2,
-    ifnull(hinfo.penalty,0) as penalty,format(ifnull(hinfo.rebate,0),2) as rebate,format(ifnull(hinfo.fma1,0),2) as fma1
-    from hcntnuminfo as hinfo
+    select " . $trno . " as trno,ifnull(hinfo.interestrate,2) as interestrate,format(ifnull(hinfo.downpayment,0),2) as downpayment,format(ifnull(hinfo.fmiscfee,0),2) as fmiscfee,ifnull(hinfo.fma2,0) as fma2,
+    ifnull(hinfo.penalty,0) as penalty,format(ifnull(hinfo.rebate,0),2) as rebate,format(ifnull(hinfo.fma1,0),2) as fma1,h.terms
+    from hcntnuminfo as hinfo left join glhead as h on h.trno = hinfo.trno
     where hinfo.trno=?";
     $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
 
@@ -191,7 +192,7 @@ class viewsjfinancing
                 select format(interest,2) as interest,format(principal,2) as principal,format(payment,2) as payment from hdetailinfo where trno =  " . $trno;
         $data = $this->coreFunctions->opentable($qry);
 
-        return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry];
+        return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data,'txtdata' => $txtdata, 'qry' => $qry];
         break;
     }
   }
@@ -218,7 +219,7 @@ class viewsjfinancing
         " . $info['penalty'] . " as penalty, " . $info['fma2'] . " as factor,terms.days,
         ifnull(hinfo.termsmonth,0) as termsmonth,
         (select ifnull(sum(stock.ext),0) as ext from lastock as stock where stock.trno = $trno) as amt from lahead as head 
-        left join cntnuminfo as hinfo on hinfo.trno = head.trno left join terms on terms.terms = head.terms  where head.trno = ?", [$trno]);
+        left join cntnuminfo as hinfo on hinfo.trno = head.trno left join terms on terms.terms = head.terms where head.trno = ?", [$trno]);
 
         if (!empty($data)) {
           if(floatval($data[0]->amt) <> 0){
@@ -248,6 +249,8 @@ class viewsjfinancing
 
       if ($exist == 0) {
         $info['trno'] = $trno;
+        $this->coreFunctions->sbcupdate('lahead', ["terms" => $info['terms']], ['trno' => $trno]);
+        unset($info['terms']);
         $this->coreFunctions->sbcinsert('cntnuminfo', $info);
         $this->logger->sbcwritelog(
           $trno,
@@ -255,7 +258,11 @@ class viewsjfinancing
           'CREATE',
           'CNTNUMINFO TRNO: ' . $info['trno']
         );
+        
       } else {
+        $this->coreFunctions->sbcupdate('lahead', ["terms" => $info['terms']], ['trno' => $trno]);
+        unset($info['terms']);
+
         $this->coreFunctions->sbcupdate('cntnuminfo', $info, ['trno' => $head['trno']]);
 
         $this->logger->sbcwritelog(
@@ -276,7 +283,7 @@ class viewsjfinancing
       return $this->compute($config);
     } else {
       $data = $this->getheaddata($config);
-      return ['status' => false, 'msg' => 'Update Not Allowed, Please Contact Admin.', 'txtdata' => $data, 'data' => []];
+      return ['status' => false, 'msg' => 'Update Not Allowed, Please Contact Admin.', 'txtdata' => $data, 'data' => [],'reloadhead' =>true];
     }
   }
 
@@ -303,7 +310,7 @@ class viewsjfinancing
     $total = 0;
 
     $data = $this->coreFunctions->opentable("select head.dateid,head.terms,ifnull(hinfo.downpayment,0) as downpayment, ifnull(hinfo.fmiscfee,0) as fmiscfee, 
-    ifnull(hinfo.rebate,0) as rebate, ifnull(hinfo.interestrate,0) as interestrate,
+    ifnull(hinfo.rebate,0) as rebate, ifnull(hinfo.interestrate,2) as interestrate,
     ifnull(hinfo.penalty,0) as penalty, ifnull(hinfo.fma2,0) as factor,terms.days,
     ifnull(hinfo.termsmonth,0) as termsmonth, ifnull(hinfo.fma1,0) as fma1,
     (select sum(stock.ext) as ext from lastock as stock where stock.trno = head.trno) as amt from lahead as head 
@@ -367,6 +374,8 @@ class viewsjfinancing
     $qry = "select format(interest,2) as interest,format(principal,2) as principal,format(payment,2) as payment from detailinfo where trno =  " . $trno;
     $data = $this->coreFunctions->opentable($qry);
 
-    return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry];
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry,'reloadhead' =>true];
   }
+
+
 }

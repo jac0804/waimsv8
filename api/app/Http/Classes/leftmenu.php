@@ -1820,7 +1820,8 @@ class leftmenu
         (874,0,'Allow Click Delete Button EMP','',0,'\\10706','\\107',0,'0',0," . $params['levelid'] . "),
         (875,0,'Allow Click Print Button EMP','',0,'\\10707','\\107',0,'0',0," . $params['levelid'] . ")";
         $this->insertattribute($params, $qry);
-        return "($sort,$p,'employee','/ledger/masterfile/employee','Employee','fa fa-user sub_menu_ico',868," . $params['levelid'] . ")";
+        $path = $params['companyid'] == 72 ? 'ledgergrid' : 'ledger'; // hahsy 
+        return "($sort,$p,'employee','/$path/masterfile/employee','Employee','fa fa-user sub_menu_ico',868," . $params['levelid'] . ")";
     } //end function
 
     public function departmentmaster($params, $parent, $sort)
@@ -1895,6 +1896,9 @@ class leftmenu
                 break;
             case 70: //sportrunner
                 $folder = 'productportal';
+                break;
+            case 40: // cdo 
+                $qry  .= ", (6035,0,'Allow View Finance Rates','',0,'\\10236','\\102',0,'0',0," . $params['levelid'] . ")";
                 break;
         }
 
@@ -10880,4 +10884,5 @@ class leftmenu
         $this->insertattribute($params, $qry);
         return "($sort,$p,'TD','/module/e4dea67c8f0a09c517731ee700878f6cb/td','Delivery Trucking','fa fa-truck sub_menu_ico',6015," . $params['levelid'] . ")";
     } //end function
+
 }//end  

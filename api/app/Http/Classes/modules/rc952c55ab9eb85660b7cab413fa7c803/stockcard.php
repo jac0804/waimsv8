@@ -633,10 +633,12 @@ class stockcard
         }
       }
 
-      $exist  = $this->coreFunctions->datareader("select barcodeid as value from item where barcodeid = '" . $data['barcodeid'] . "' limit 1");
-      if ($exist != "") {
-        $this->logger->sbcwritelog($head['itemid'], $config, 'Update',  $data['barcodeid'] . " Item ID already exist.");
-        unset($data['barcodeid']);
+      if( $data['barcodeid'] !=""){
+        $exist  = $this->coreFunctions->datareader("select barcodeid as value from item where barcodeid = '" . $data['barcodeid'] . "' limit 1");
+        if ($exist != "") {
+          $this->logger->sbcwritelog($head['itemid'], $config, 'Update',  $data['barcodeid'] . " Item ID already exist.");
+          unset($data['barcodeid']);
+        }
       }
 
       // uom_update:

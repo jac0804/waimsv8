@@ -33,6 +33,7 @@ class entrybillingaddr
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
   private $fields = ['clientid', 'contact', 'contactno',  'addr',  'isbilling', 'isshipping', 'isinactive', 'addrtype',  'addrline1', 'addrline2',  'city',  'province', 'country', 'zipcode',   'fax',  'deptid',  'address1',  'cperson',  'contactno2'];
+  private $truckingf = ['clientid','addr'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
@@ -62,141 +63,145 @@ class entrybillingaddr
   {
     $companyid = $config['params']['companyid'];
     $clientid = $config['params']['tableid'];
+    $docx = $config['params']['doc'];
     $customername = $this->coreFunctions->datareader("select clientname as value from client where clientid = ? ", [$clientid]);
 
-    if ($companyid == 19) { //housegem
-      $this->modulename = 'Shipping Address Setup' . ' - ' . $customername;
-    } else {
-      $this->modulename = $this->modulename . ' - ' . $customername;
+    switch($companyid){
+      case 19: //housegem
+        $this->modulename = 'Shipping Address Setup' . ' - ' . $customername;
+        break;
+      case 72: //hashy
+        $this->modulename = 'Trucking Address' . ' - ' . $customername;
+        break;  
+      default:
+        $this->modulename = $this->modulename . ' - ' . $customername;
+        break;  
     }
 
 
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $cols= ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2'];
 
-    $action = 0;
-    $isshipping = 1;
-    $isbilling = 2;
-    $isinactive = 3;
-    $client = 4;
-    $clientname = 5;
-    $addr = 6;
-    $addrtype = 7;
-    $addrline1 = 8;
-    $addrline2 = 9;
-    $city = 10;
-    $province = 11;
-    $country = 12;
-    $zipcode = 13;
-    $contactno = 14;
-    $fax = 15;
-    $deptname = 16;
-    $address1 = 17;
-    $cperson = 18;
-    $contactno2 = 19;
+    if($companyid==72 && $docx== 'CUSTOMER'){ //hashy
+      $cols = ['action', 'addr'];
+    }
+    
+    foreach ($cols as $key => $value) {
+      $$value = $key;
+    }
 
-    $tab = [$this->gridname => ['gridcolumns' => ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2']]];
-
+    $tab = [$this->gridname => ['gridcolumns' => $cols]];
     $stockbuttons = ['save', 'delete'];
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
-    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
-    $obj[0][$this->gridname]['columns'][$isbilling]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
-    $obj[0][$this->gridname]['columns'][$isshipping]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
-    $obj[0][$this->gridname]['columns'][$isinactive]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
-
-    $obj[0][$this->gridname]['columns'][$client]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
-    $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
     $obj[0][$this->gridname]['columns'][$addr]['type'] = "textarea";
     $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$addrtype]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$addrline1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$addrline2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$city]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$province]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$country]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$zipcode]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$contactno]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$fax]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "cinput";
-    $obj[0][$this->gridname]['columns'][$zipcode]['maxlength'] = "10";
     $obj[0][$this->gridname]['columns'][$action]['btns']['save']['checkfield'] = "isallowed";
     $obj[0][$this->gridname]['columns'][$action]['btns']['delete']['checkfield'] = "isallowed";
+    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
 
-    $obj[0][$this->gridname]['columns'][$address1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$cperson]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
-    $obj[0][$this->gridname]['columns'][$contactno2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
 
-    switch (strtoupper($config['params']['doc'])) {
-      case 'CUSTOMER':
-      case 'SUPPLIER':
+    if ($companyid != 72 && $docx != 'CUSTOMER') { // not hashy
+    
+      $obj[0][$this->gridname]['columns'][$isbilling]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+      $obj[0][$this->gridname]['columns'][$isshipping]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+      $obj[0][$this->gridname]['columns'][$isinactive]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
+
+      $obj[0][$this->gridname]['columns'][$client]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
+      $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+    
+      $obj[0][$this->gridname]['columns'][$addrtype]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$addrline1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$addrline2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$city]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$province]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$country]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$zipcode]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$contactno]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$fax]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "cinput";
+      $obj[0][$this->gridname]['columns'][$zipcode]['maxlength'] = "10";
+   
+      $obj[0][$this->gridname]['columns'][$address1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      $obj[0][$this->gridname]['columns'][$cperson]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+      $obj[0][$this->gridname]['columns'][$contactno2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+
+      switch (strtoupper($config['params']['doc'])) {
+        case 'CUSTOMER':
+        case 'SUPPLIER':
+          $obj[0][$this->gridname]['columns'][$client]['type'] = "coldel";
+          $obj[0][$this->gridname]['columns'][$clientname]['type'] = "coldel";
+          $obj[0][$this->gridname]['columns'][$contactno]['label'] = "Phone #";
+          $obj[0][$this->gridname]['columns'][$addr]['label'] = "Address Title";
+          break;
+
+        default:
+          $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
+          $obj[0][$this->gridname]['columns'][$client]['lookupclass'] = "client";
+          $obj[0][$this->gridname]['columns'][$client]['label'] = "Client Code";
+          $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
+          $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Client Name";
+          break;
+      }
+
+      if (strtoupper($systemtype) == 'VSCHED' || strtoupper($systemtype) == 'ATI') {
+        $obj[0][$this->gridname]['columns'][$isbilling]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isshipping]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$client]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$contactno]['label'] = "Phone #";
-        $obj[0][$this->gridname]['columns'][$addr]['label'] = "Address Title";
-        break;
+        $obj[0][$this->gridname]['columns'][$addrtype]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$addrline1]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$addrline2]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$city]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$province]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$country]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$contactno]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$fax]['type'] = "coldel";
 
-      default:
-        $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
-        $obj[0][$this->gridname]['columns'][$client]['lookupclass'] = "client";
-        $obj[0][$this->gridname]['columns'][$client]['label'] = "Client Code";
-        $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
-        $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Client Name";
-        break;
+        $obj[0][$this->gridname]['columns'][$deptname]['label'] = "Assigned Department";
+        $obj[0][$this->gridname]['columns'][$deptname]['type'] = "label";
+        $obj[0][$this->gridname]['columns'][$deptname]['readonly'] = true;
+        $obj[0][$this->gridname]['columns'][$deptname]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+      } else {
+        $obj[0][$this->gridname]['columns'][$deptname]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$zipcode]['required'] = true;
+      }
+
+
+      if (strtoupper($config['params']['doc'] == 'CUSTOMER') && $companyid == 19) { //housegem
+        $obj[0][$this->gridname]['columns'][$addr]['label'] = "Address";
+        $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:1000px;whiteSpace: normal;min-width:1000px;";
+
+        $obj[0][$this->gridname]['columns'][$isbilling]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isshipping]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$client]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$clientname]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$addrtype]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$addrline1]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$addrline2]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$city]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$province]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$country]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$contactno]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$fax]['type'] = "coldel";
+      }
+
+      //rwen 3/20/2026
+
+      if ((strtoupper($config['params']['doc']) == 'CUSTOMER' || strtoupper($config['params']['doc']) == 'SUPPLIER')  && $companyid != 10   && $companyid != 12) {
+        $obj[0][$this->gridname]['columns'][$address1]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$cperson]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$contactno2]['type'] = "coldel";
+      }
+
+    }else{ //hashi
+      $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
     }
-
-    if (strtoupper($systemtype) == 'VSCHED' || strtoupper($systemtype) == 'ATI') {
-      $obj[0][$this->gridname]['columns'][$isbilling]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$isshipping]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$client]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$clientname]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrtype]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrline1]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrline2]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$city]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$province]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$country]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$contactno]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$fax]['type'] = "coldel";
-
-      $obj[0][$this->gridname]['columns'][$deptname]['label'] = "Assigned Department";
-      $obj[0][$this->gridname]['columns'][$deptname]['type'] = "label";
-      $obj[0][$this->gridname]['columns'][$deptname]['readonly'] = true;
-      $obj[0][$this->gridname]['columns'][$deptname]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    } else {
-      $obj[0][$this->gridname]['columns'][$deptname]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$zipcode]['required'] = true;
-    }
-
-
-    if (strtoupper($config['params']['doc'] == 'CUSTOMER') && $companyid == 19) { //housegem
-      $obj[0][$this->gridname]['columns'][$addr]['label'] = "Address";
-      $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:1000px;whiteSpace: normal;min-width:1000px;";
-
-      $obj[0][$this->gridname]['columns'][$isbilling]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$isshipping]['type'] = "coldel";
-
-      $obj[0][$this->gridname]['columns'][$client]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$clientname]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrtype]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrline1]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$addrline2]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$city]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$province]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$country]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$contactno]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$fax]['type'] = "coldel";
-    }
-
-    //rwen 3/20/2026
-
-    if ((strtoupper($config['params']['doc']) == 'CUSTOMER' || strtoupper($config['params']['doc']) == 'SUPPLIER')  && $companyid != 10   && $companyid != 12) {
-      $obj[0][$this->gridname]['columns'][$address1]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$cperson]['type'] = "coldel";
-      $obj[0][$this->gridname]['columns'][$contactno2]['type'] = "coldel";
-    }
+    
 
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -207,7 +212,9 @@ class entrybillingaddr
   public function createtabbutton($config)
   {
     $access = 1;
-    switch (strtoupper($config['params']['doc'])) {
+    $companyid = $config['params']['companyid'];
+    $docx = $config['params']['doc'];
+    switch (strtoupper($docx)) {
       case 'CUSTOMER':
         if ($config['params']['companyid'] == 16) { //ati
           $access = $this->othersClass->checkAccess($config['params']['user'], 3744);
@@ -224,6 +231,9 @@ class entrybillingaddr
       $tbuttons = ['print', 'whlog'];
     } else {
       $tbuttons = ['addrecord', 'saveallentry', 'print', 'whlog'];
+      if($companyid==72 && $docx =='CUSTOMER'){
+         $tbuttons = ['addrecord', 'saveallentry', 'whlog'];
+      }
     }
 
     $obj = $this->tabClass->createtabbutton($tbuttons);
@@ -263,39 +273,44 @@ class entrybillingaddr
         break;
     }
 
+    $data['addr'] = $addrtitle;
+    $data['bgcolor'] = 'bg-blue-2';
     $data['client'] = '';
     $data['clientname'] = '';
-    $data['addr'] = $addrtitle;
-    $data['contactno'] = '';
-    $data['contact'] = '';
-    $data['isbilling'] = 'false';
-    if ($systemtype == 'ATI' || $systemtype == 'VSCHED' || ($companyid == 19 && $doc == 'CUSTOMER')) {
-      $data['isshipping'] = 'true';
-    } else {
-      $data['isshipping'] = 'false';
-    }
-    $data['isinactive'] = 'false';
-    $data['addrtype'] = '';
-    $data['addrline1'] = '';
-    $data['addrline2'] = '';
-    $data['city'] = '';
-    $data['province'] = '';
-    $data['country'] = '';
-    $data['zipcode'] = '';
-    $data['fax'] = '';
-    if ($companyid == 16) { //ati
-      $deptid = $this->coreFunctions->getfieldvalue("client", "deptid", "clientid=?", [$config['params']['adminid']]);
-      $data['deptid'] = $deptid;
-    } else {
-      $data['deptid'] = '0';
-    }
-    $data['deptname'] = '';
-    $data['bgcolor'] = 'bg-blue-2';
 
-    $data['address1'] = '';
-    $data['cperson'] = '';
-    $data['contactno2'] = '';
+    if($companyid !=72 && $doc != 'CUSTOMER') { // not hashy
+    
+      $data['contactno'] = '';
+      $data['contact'] = '';
+      $data['isbilling'] = 'false';
+      if ($systemtype == 'ATI' || $systemtype == 'VSCHED' || ($companyid == 19 && $doc == 'CUSTOMER')) {
+        $data['isshipping'] = 'true';
+      } else {
+        $data['isshipping'] = 'false';
+      }
+      $data['isinactive'] = 'false';
+      $data['addrtype'] = '';
+      $data['addrline1'] = '';
+      $data['addrline2'] = '';
+      $data['city'] = '';
+      $data['province'] = '';
+      $data['country'] = '';
+      $data['zipcode'] = '';
+      $data['fax'] = '';
+      if ($companyid == 16) { //ati
+        $deptid = $this->coreFunctions->getfieldvalue("client", "deptid", "clientid=?", [$config['params']['adminid']]);
+        $data['deptid'] = $deptid;
+      } else {
+        $data['deptid'] = '0';
+      }
+      $data['deptname'] = '';
+     
 
+      $data['address1'] = '';
+      $data['cperson'] = '';
+      $data['contactno2'] = '';
+
+    }
 
     return $data;
   }
@@ -316,6 +331,7 @@ class entrybillingaddr
   public function saveallentry($config)
   {
     $companyid = $config['params']['companyid'];
+    $docx = $config['params']['doc'];
 
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $params = $config;
@@ -328,13 +344,22 @@ class entrybillingaddr
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
-        foreach ($this->fields as $key2 => $value2) {
+
+        $sfields = $this->fields;
+        if ($companyid == 72 && $docx == 'CUSTOMER') { //hashy
+          $sfields = $this->truckingf;
+        }
+
+        foreach ($sfields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
+
         if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
 
           switch ($companyid) {
             case 19: //housegem
+              break;
+            case 72: //hashy
               break;
             default:
               if ($data[$key]['zipcode'] == "") {
@@ -350,24 +375,36 @@ class entrybillingaddr
           $cdata = $this->getclient($data[$key]['clientid']);
 
           $params['params']['doc'] = strtoupper("billing_add_tab");
-          $this->logger->sbcmasterlog($config['params']['tableid'], $params, ' CREATE - '
-            . ", LINE: " . $line
-            . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
-            . ", SHIPPING: " . $data2['isshipping']
-            . ", BILLING: " . $data2['isbilling']
-            . ", INACTIVE: " . $data2['isinactive']
-            . ", ADDR: " . $data2['addr']
-            . ", ADDR TYPE: " . $data2['addrtype']
-            . ", ADDR LINE1: " . $data2['addrline1']
-            . ", ADDR LINE2: " . $data2['addrline2']
-            . ", CITY: " . $data2['city']
-            . ", PROVINCE: " . $data2['province']
-            . ", COUNTRY: " . $data2['country']
-            . ", ZIP: " . $data2['zipcode']
-            . ", FAX: " . $data2['fax']
-            . ", CONTACT PERSON: " . $data2['cperson']
-            . ", COLLECTION ADDR: " . $data2['address1']
-            . ", COLLECTION CONTACT#: " . $data2['contactno2']);
+
+          if ($companyid == 72 && $docx == 'CUSTOMER') { //hashy
+
+            $this->logger->sbcmasterlog($config['params']['tableid'], $params, ' CREATE - '
+              . ", LINE: " . $line
+              . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
+              . ", ADDR: " . $data2['addr']);
+          }else{
+
+            $this->logger->sbcmasterlog($config['params']['tableid'], $params, ' CREATE - '
+              . ", LINE: " . $line
+              . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
+              . ", SHIPPING: " . $data2['isshipping']
+              . ", BILLING: " . $data2['isbilling']
+              . ", INACTIVE: " . $data2['isinactive']
+              . ", ADDR: " . $data2['addr']
+              . ", ADDR TYPE: " . $data2['addrtype']
+              . ", ADDR LINE1: " . $data2['addrline1']
+              . ", ADDR LINE2: " . $data2['addrline2']
+              . ", CITY: " . $data2['city']
+              . ", PROVINCE: " . $data2['province']
+              . ", COUNTRY: " . $data2['country']
+              . ", ZIP: " . $data2['zipcode']
+              . ", FAX: " . $data2['fax']
+              . ", CONTACT PERSON: " . $data2['cperson']
+              . ", COLLECTION ADDR: " . $data2['address1']
+              . ", COLLECTION CONTACT#: " . $data2['contactno2']);
+
+          }
+         
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
@@ -382,6 +419,7 @@ class entrybillingaddr
   public function save($config)
   {
     $companyid = $config['params']['companyid'];
+    $docx = $config['params']['doc'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $data = [];
     $params = $config;
@@ -390,15 +428,26 @@ class entrybillingaddr
     $dateTables = ['billingaddr'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    foreach ($this->fields as $key => $value) {
+    $sfields = $this->fields;
+    if($companyid==72 && $docx== 'CUSTOMER'){
+      $sfields= $this->truckingf;
+    }
+    foreach ($sfields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
-    if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
-      if ($row['zipcode'] == "") {
-        return ['status' => false, 'msg' => 'Zipcode is required'];
-      }
-    }
 
+      if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
+       
+        if($companyid !=72 ){ // not hashy
+          if ($row['zipcode'] == "") {
+            return ['status' => false, 'msg' => 'Zipcode is required'];
+          }
+
+        }
+       
+      }
+    
+    
     if ($row['line'] == 0) {
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
@@ -406,28 +455,41 @@ class entrybillingaddr
         $cdata = $this->getclient($data['clientid']);
 
         $params['params']['doc'] = strtoupper("billing_add_tab");
-        $this->logger->sbcmasterlog(
-          $config['params']['tableid'],
-          $params,
-          ' CREATE - '
-            . ", LINE: " . $line
-            . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
-            . ", SHIPPING: " . $data['isshipping']
-            . ", BILLING: " . $data['isbilling']
-            . ", INACTIVE: " . $data['isinactive']
-            . ", ADDR: " . $data['addr']
-            . ", ADDR TYPE: " . $data['addrtype']
-            . ", ADDR LINE1: " . $data['addrline1']
-            . ", ADDR LINE2: " . $data['addrline2']
-            . ", CITY: " . $data['city']
-            . ", PROVINCE: " . $data['province']
-            . ", COUNTRY: " . $data['country']
-            . ", ZIP: " . $data['zipcode']
-            . ", FAX: " . $data['fax']
-            . ", CONTACT PERSON: " . $data['cperson']
-            . ", COLLECTION ADDR: " . $data['address1']
-            . ", COLLECTION CONTACT#: " . $data['contactno2']
-        );
+
+        if($companyid ==72 && $docx== 'CUSTOMER'){ //hashy
+          $this->logger->sbcmasterlog(
+            $config['params']['tableid'],
+            $params,
+            ' CREATE - '
+              . ", LINE: " . $line
+              . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
+              . ", ADDR: " . $data['addr']
+          );
+        }else{
+          $this->logger->sbcmasterlog(
+            $config['params']['tableid'],
+            $params,
+            ' CREATE - '
+              . ", LINE: " . $line
+              . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
+              . ", SHIPPING: " . $data['isshipping']
+              . ", BILLING: " . $data['isbilling']
+              . ", INACTIVE: " . $data['isinactive']
+              . ", ADDR: " . $data['addr']
+              . ", ADDR TYPE: " . $data['addrtype']
+              . ", ADDR LINE1: " . $data['addrline1']
+              . ", ADDR LINE2: " . $data['addrline2']
+              . ", CITY: " . $data['city']
+              . ", PROVINCE: " . $data['province']
+              . ", COUNTRY: " . $data['country']
+              . ", ZIP: " . $data['zipcode']
+              . ", FAX: " . $data['fax']
+              . ", CONTACT PERSON: " . $data['cperson']
+              . ", COLLECTION ADDR: " . $data['address1']
+              . ", COLLECTION CONTACT#: " . $data['contactno2']
+          );
+        }
+       
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -447,22 +509,32 @@ class entrybillingaddr
   public function delete($config)
   {
     $row = $config['params']['row'];
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
+    $trno = $config['params']['tableid'];
 
-    $exist = $this->coreFunctions->datareader("select trno as value from lahead where shipid=? or billid=?
+
+      $exist = $this->coreFunctions->datareader("select trno as value from lahead where shipid=? or billid=?
                 union all
                 select trno as value from glhead where shipid=? or billid=?
                 union all    
                 select trno from vrstock where shipid=?
                 union all
                 select trno from hvrstock where shipid=?", [$row['line'], $row['line'], $row['line'], $row['line'], $row['line'], $row['line']]);
-
     if ($exist) {
       return ['status' => false, 'msg' => 'Cannot delete, already used in transaction'];
     }
 
     $qry = "delete from " . $this->table . " where line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
-    $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['client'] . '~' . $row['clientname']);
+
+    $config['params']['doc'] = strtoupper("billing_add_tab");
+    if($companyid==72 && $doc=='CUSTOMER'){ //hashy
+      $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - Line : ' .$row['line']. ' ~ '. $row['addr'], 0, $trno);
+    }else{
+      $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['client'] . '~' . $row['clientname']);
+    }
+   
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
 
@@ -642,6 +714,14 @@ class entrybillingaddr
 
     $trno = $config['params']['tableid'];
     $doc = strtoupper("billing_add_tab");
+    $companyid = $config['params']['companyid'];
+    $original_doc = $config['params']['doc'];
+
+    $del_log = 'log.trno';
+    if($companyid==72 && $original_doc== 'CUSTOMER'){ //HASHY
+     $del_log='log.trno2';
+    }
+
 
     $qry = "
     select trno, doc, task, log.user, dateid, 
@@ -654,9 +734,10 @@ class entrybillingaddr
     if(pic='','blank_user.png',pic) as pic
     from  " . $this->tablelogs_del . " as log
     left join useraccess as u on u.username=log.user
-    where log.doc = '" . $doc . "' and log.trno = '" . $trno . "'";
+    where log.doc = '" . $doc . "' and $del_log = '" . $trno . "'";
 
     $qry = $qry . " order by dateid desc";
+
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
   }
@@ -713,6 +794,8 @@ class entrybillingaddr
 
   public function reportdata($config)
   {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $data = $this->report_default_query($config);
     $str = $this->rpt_forex_masterfile_layout($data, $config);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];

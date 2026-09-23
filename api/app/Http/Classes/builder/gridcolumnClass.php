@@ -12147,6 +12147,25 @@ class gridcolumnClass
                             'readonly' => false
                      ),
 
+                     'dp' => array(
+                            'name' => 'dp',
+                            'type' => 'input',
+                            'label' => 'Downpayment',
+                            'field' => 'dp',
+                            'align' => 'text-right',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+
+                     'miscfee' => array(
+                            'name' => 'miscfee',
+                            'type' => 'input',
+                            'label' => 'Misc. Fee',
+                            'field' => 'miscfee',
+                            'align' => 'text-right',
+                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
 
               );
 

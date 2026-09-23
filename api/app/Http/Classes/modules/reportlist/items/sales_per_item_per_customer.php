@@ -485,11 +485,18 @@ class sales_per_item_per_customer
       $field = "sum($option) as sales";
     }
 
+    $itemname = ", item.itemname";
+
+    if($companyid == 47){//kstar
+      $itemname = " ,concat(item.itemname,' ',item.color,' ',item.sizeid) as itemname ";
+    }
+
+
     switch ($posttype) {
       case 0: // posted
 
         $query = "select left(head.dateid,10) as dateid,'p' as tr, head.docno, $field,
-                         head.clientname,stock.itemid,item.itemname
+                         head.clientname,stock.itemid, $itemname
                   from glhead as head
                   left join glstock as stock on stock.trno=head.trno
                   left join item on item.itemid=stock.itemid
@@ -502,7 +509,7 @@ class sales_per_item_per_customer
       case 1: // unposted
 
         $query = "select left(head.dateid,10) as dateid,'u' as tr, head.docno,$field,
-                         head.clientname,stock.itemid,item.itemname
+                         head.clientname,stock.itemid,  $itemname
                   from lahead as head
                   left join lastock as stock on stock.trno=head.trno
                   left join client on client.client=head.client
@@ -516,7 +523,7 @@ class sales_per_item_per_customer
 
       default:
         $query = "select left(head.dateid,10) as dateid,'p' as tr, head.docno, $field,
-                         head.clientname,stock.itemid,item.itemname
+                         head.clientname,stock.itemid, $itemname
                   from glhead as head
                   left join glstock as stock on stock.trno=head.trno
                   left join item on item.itemid=stock.itemid
@@ -525,7 +532,7 @@ class sales_per_item_per_customer
                   group by head.dateid,head.docno,head.clientname,stock.itemid,item.itemname $grpfield
                   union all
                   select left(head.dateid,10) as dateid,'u' as tr, head.docno,$field,
-                         head.clientname,stock.itemid,item.itemname
+                         head.clientname,stock.itemid, $itemname
                   from lahead as head
                   left join lastock as stock on stock.trno=head.trno
                   left join client on client.client=head.client

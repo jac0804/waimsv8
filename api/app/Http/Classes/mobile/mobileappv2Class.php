@@ -698,6 +698,72 @@ class mobileappv2Class
         }
         return json_encode(['items' => $items]);
         break;
+      case 'downloadandroidhead':
+        try {
+        $dateid = $params['dateid'];
+        $user = $params['user'];
+        $devid = $params['devid'];
+        $wh = $params['wh'];
+        $branch = $params['branch'];
+        $batch = 10;
+
+        $whid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$wh]);
+        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$branch]);
+
+        $qry = "select head.trno,head.user,head.dateid,head.devid,wh.client as wh,branch.client as branch from androidhead as head
+        left join client as wh on wh.clientid = head.whid
+        left join client as branch on branch.clientid = head.branchid
+        where head.user =? and  head.devid =?  and date(head.dateid) = ? and head.whid =? and head.branchid =? and isdownloaded = 0";
+        $data = $this->coreFunctions->opentable($qry,[$user,$devid,$dateid,$whid,$branchid]);
+
+        return json_encode(['status' => true,'head' => $data,'batch' => $batch]);
+        } catch (\Exception $e) {
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        }
+        break;
+      case 'downloadandroidstock':
+        try {
+        $apitrno = $params['apitrno'];
+        $start = $params['start'];
+        $batch = $params['batch'];
+        $end = $params['end'];
+        
+        $qry = "select trno,line,itemid,qty,loc from androidstock where trno = ? and line > ? order by line limit ?";
+        $data = $this->coreFunctions->opentable($qry,[$apitrno,$end, $batch]);
+        $items = $this->coreFunctions->datareader("select count(line) as value from androidstock where trno = ?",[$apitrno]);
+        $totalitems = 0;
+
+        if(!empty($data)){
+         $totalitems = $items > $batch ? ceil($items / $batch) : 1;
+        }
+        
+        $returnparams = ['aptrno' => $apitrno,'start' => $start,'end' => $end,'items' => $data,'totalitems' => $totalitems];
+        
+        return json_encode(['status' => true,'params' => $returnparams]);
+        } catch (\Exception $e) {
+            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        }
+        break;
+      case 'updateandroidhead':
+        try {
+        $apitrno = $params['apitrno'];
+        $user = $params['user'];
+        $dateid = $params['dateid'];
+        $branch = $params['branch'];
+        $wh = $params['wh'];
+        $devid = $params['devid'];
+        
+        
+        $whid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$wh]);
+        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$branch]);
+        
+        $this->coreFunctions->execqry("update androidhead set isdownloaded=1 where trno= '".$apitrno."' and user = '".$user."' and date(dateid) = '".$dateid."' 
+        and whid = '".$whid."' and branchid = '".$branchid."' and devid = '".$devid."'", 'update');
+        return json_encode(['status' => true,'params' => ['aptrno' => $apitrno]]);
+         } catch (\Exception $e) {
+            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        }
+        break;
     }
   }
 
@@ -1804,6 +1870,73 @@ class mobileappv2Class
           } else {
             return json_encode(['status' => false, 'msg' => 'err2: Error uploading final count']);
           }
+        }
+        break;
+      case md5('uploadandroidhead'):
+        try {
+        $branch = $params['branch'];
+        $dateid = $params['dateid'];
+        $wh = $params['wh'];
+        $gtype = $params['gtype'];
+        $devid = $params['devid'];
+         
+        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $branch . "'");
+        $whid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $wh . "'");
+        if ($gtype == "initial") {
+          $trno = $this->coreFunctions->datareader("select trno as value from androidhead 
+          where whid='" . $whid . "' and date(dateid)='" . $dateid . "' and user = '".$params['user']."' and devid = '".$devid."'",[],'',true);
+          if ($trno == 0) {
+            $data = ['branchid' => $branchid,'whid' => $whid, 'dateid' => $dateid,'devid' => $devid , 'user' => $params['user']];
+            $trno = $this->coreFunctions->insertGetId('androidhead', $data);
+          }
+          $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from androidstock where trno='" . $trno . "'");
+          $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from androidstock where trno='" . $trno . "'");
+          $returnparams= [
+            'batch' => 500,  
+            'start' => $minline,
+            'end' => $maxline,
+            'apitrno' => $trno
+          ];
+          if ($trno != 0) {
+            return json_encode(['status' => true, 'msg' => 'Upload success','params' => $returnparams]);
+          } else {
+            return json_encode(['status' => false, 'msg' => 'err1: Error uploading items']);
+          }
+        }
+         } catch (\Exception $e) {
+            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        }
+        break;
+      case md5('uploadandroidstock'):
+         try {
+        $trno = $params['apitrno'];
+        $minline = 0;
+        $maxline = 0;
+        
+        if($params['gtype'] == 'initial'){
+          if($trno != 0){
+            if (!empty($params['items'])) {
+              foreach ($params['items'] as $key => $i) {
+                if($key == 0) $minline = $i['line'];
+               $insert = $this->coreFunctions->execqry("insert into androidstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'],$i['loc']]);
+                if ($insert == 0) {
+                  return json_encode(['status' => false, 'msg' => 'err2: Error uploading items']);
+                }
+                $maxline =$i['line'];
+              }
+            }
+          }
+        }
+          $returnparams= [
+            'batch' => 500,
+            'start' => $minline,
+            'end' => $maxline,
+            'apitrno' => $trno
+          ];
+        
+        return json_encode(['status' => true, 'msg' => 'Successfully Uploaded','params' => $returnparams]);
+          } catch (\Exception $e) {
+            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case md5('getUserLogs'):

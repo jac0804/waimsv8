@@ -3119,15 +3119,21 @@ class hrislookup
         break;
       case 'S':
       case 'M':
+        $b3rd = '';
+        if ($config['params']['companyid'] == 62) { // onesky
+          $b3rd = "  union all select '3rd Half' as paymodetype, '06' as val";
+        }
         $qry = "
           select '' as paymodetype, '' as val
           union all
           select '1st Half' as paymodetype, '02' as val
           union all
           select '2nd Half' as paymodetype, '04' as val
+          $b3rd
           union all
           select '13th' as paymodetype, '13' as val
         ";
+
         break;
     }
 

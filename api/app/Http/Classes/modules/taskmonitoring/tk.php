@@ -184,7 +184,7 @@ class tk
           $filtersearch .= " and (" . $sfield . " like '%" . $search . "%'";
         } else {
           $filtersearch .= " or " . $sfield . " like '%" . $search . "%'";
-        } //end if
+        }
       }
       $filtersearch .= ")";
     }
@@ -200,8 +200,10 @@ class tk
     $date2 = date('Y-m-d', strtotime($config['params']['date2']));
     $filterdate = " and date(h.dateid) between '" . $date1 . "' and '" . $date2 . "' ";
     $filter = '';
+
     // 0 -draft, 1-open , 2 -pending , 3 - ongoing , 4- for checking 5-complete
-    $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'On-going' when '4' then 'For Checking' else 'Completed' end) else 'Close' end) as statname";
+    // 'Ongoing' muna dito, papalitan sa fcheck() pagkatapos ng query
+    $stat = ",(case h.status when 1 then (case d.status when 0 then 'Draft' when '1' then 'Open' when '2' then 'Pending' when '3' then 'Ongoing' when '4' then 'For Checking (Requestor)' else 'Completed' end) else 'Close' end) as statname";
 
     $user = " and d.userid=" . $userid . " ";
 
@@ -210,34 +212,23 @@ class tk
     }
 
     switch ($option) {
-      case 'open': //open
-        // $filter = " and h.status = 1 and d.status = 1";
-        //$filter = " and d.startdate is null and  d.userid = 0 and d.status=0 ";
+      case 'open':
         $filter = " and h.status = 1 and d.status = 1 and d.userid = 0";
         break;
-      case 'posted': //for checking
-        $filter = " $user  and  h.status = 1 and d.status = 4";
-        //$filter = " $user  and d.startdate is not null and d.enddate is null and d.fcheckingdate is not null and d.status=4";
-        //$stat=",'For Checking' as statname ";
+      case 'posted':
+        $filter = " $user  and  h.status = 1 and d.status in (3,4)";
         break;
-      case 'complete': //OK N
+      case 'complete':
         $filter = " $user  and  h.status = 1 and d.status = 5";
-        //$filter = " $user  and d.startdate is not null and d.enddate is not null and d.status=5";
-        //$stat=",'Completed' as statname ";
         break;
-      case 'cancelled': //skip
+      case 'cancelled':
         $filter = " $user  and d.startdate is not null and d.enddate is not null ";
-        // $stat=",'Cancelled' as statname ";
         break;
-      case 'draft': //assigned-posted
-        $filter = " $user and h.status = 1 and  d.status in (1,2,3) ";
-        // $filter = " $user  and h.status = 1 and ( d.status in (2,3)  or (d.status = 1 and d.userid <> 0) )";
-
-        //$filter = " $user d.status in (2,3) and d.enddate is null  and d.acceptdate is not null and d.fcheckingdate is null";
-        // $stat=", if(d.startdate is null and d.status=2,'Pending','On-going') as statname "; 
+      case 'draft':
+        // $filter = " $user and h.status = 1 and  d.status in (1,2) ";
+        $filter = " $user and h.status = 1 and d.status in (1,2,3) ";
     }
 
-    //if(d.userid = $userid and d.status = 3 and d.fcheckingdate is null ,'false','true') as isforchecking,
     $qry = "select h.trno as clientid,h.trno,date(d.encodeddate) as dateid, c.clientname,c.clientid as clid,
        d.title,ifnull(cla.clientname,'') as assignto,
        ifnull(e.clientname,'') as requestby,date(d.startdate) as startdate, date(d.enddate) as enddate,
@@ -254,11 +245,25 @@ class tk
     left join tmdetail as d on d.trno=h.trno
     left join trxstatus as stat on stat.line=d.status
     left join client as cla on cla.clientid = d.userid
-    
+
     where isassigntype=0 $filter $filterdate $filtersearch order by d.isprio desc,d.encodeddate desc " . $l;
-    //h.status=1
-    // var_dump($qry);  if(d.status = 0 ,'true','false') as iscomment,
+
     $data = $this->coreFunctions->opentable($qry);
+
+    // dito na lang isang linya, papalitan ni fcheck() ang statname ng mga status=3 rows
+    $data = $this->fcheck($data);
+
+    foreach ($data as $key => $row) {
+      if ($row->status == 3) {
+        if ($option == 'draft' && $row->statname != 'On-going') {  //Kung Pending ang piniling filter, at ang statname ay HINDI On-going, tanggalin ang row.
+          unset($data[$key]);
+        } elseif ($option == 'posted' && $row->statname == 'On-going') { //Kung For Checking ang piniling filter, at statname ay On-going, tanggalin ang row.
+          unset($data[$key]);
+        }
+      }
+    }
+
+    $data = array_values($data);
 
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
   }
@@ -416,6 +421,84 @@ class tk
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
         break;
     }
+  }
+
+
+  public function fcheck($data)
+  {
+    //Tipunin ang mga trno na may status = 3 lang 
+    $trnoList = [];
+    foreach ($data as $row) {
+      if ($row->status == 3) {
+        $trnoList[] = $row->trno;
+      }
+    }
+
+    if (count($trnoList) == 0) {
+      return $data;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($trnoList), '?'));
+    //Isang query lang para malaman kung sino ang naka-start na ang checker
+    $checkerList = $this->coreFunctions->opentable(
+      "select tasktrno, taskline, ischecker from dailytask where tasktrno in ($placeholders)",
+      $trnoList
+    );
+
+    //Isang query lang din para sa mga naka-pending na "For Checking"
+    $pendingList = $this->coreFunctions->opentable(
+      "select hdy.tasktrno, hdy.taskline, hdy.statid
+         from hdailytask as hdy
+         left join pendingapp as pd on pd.trno = hdy.trno
+         where hdy.tasktrno in ($placeholders)
+           and pd.approver = 'FOR CHECKING'
+           and hdy.empid = pd.clientid",
+      $trnoList
+    );
+
+    if (!is_array($checkerList)) $checkerList = [];
+    if (!is_array($pendingList)) $pendingList = [];
+
+    //Gawing lookup map muna (isang beses lang, O(n))
+    $checkerMap = [];
+    foreach ($checkerList as $checker) {
+      $key = $checker->tasktrno . '-' . $checker->taskline;
+      $checkerMap[$key] = $checker->ischecker;
+    }
+
+    $pendingMap = [];
+    foreach ($pendingList as $pending) {
+      $key = $pending->tasktrno . '-' . $pending->taskline;
+      $pendingMap[$key] = $pending->statid;
+    }
+
+    // //Isang loop na lang, direktang array lookup (O(1) bawat hanap)
+    // foreach ($data as &$row) {
+    //   if ($row->status == 3) {
+    //     $key = $row->trno . '-' . $row->line;
+    //     if (isset($checkerMap[$key]) && $checkerMap[$key] == 1) {
+    //       $row->statname = 'For Checking '; // - Ongoing (Checker)
+    //     } elseif (isset($pendingMap[$key]) && $pendingMap[$key] == 1) {
+    //       $row->statname = 'For Checking '; //- Not Started (Checker)
+    //     } else {
+    //       $row->statname = 'On-going'; 
+    //     }
+    //   }
+    // }
+
+    foreach ($data as &$row) {
+      if ($row->status == 3) {
+        $key = $row->trno . '-' . $row->line;
+        
+        if ((isset($checkerMap[$key]) && $checkerMap[$key] == 1) || (isset($pendingMap[$key]) && $pendingMap[$key] == 1) ) {  
+            $row->statname = 'For Checking (Checker)';
+        } else {
+            $row->statname = 'On-going';
+        }
+      }
+    }
+    unset($row);
+    return $data;
   }
 
 

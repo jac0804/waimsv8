@@ -47,11 +47,11 @@ class waims3
     }
 
 
-    public function august2025($config)
+    public function m2026_09($config)
     {
 
         $this->coreFunctions->execqry("delete from profile where doc=? and psection=? and puser=?", 'delete', ['DB', 'DBVERSION', 'WAIMS']);
-        $data = ['doc' => 'DB', 'psection' => 'WAIMS', 'pvalue' => '2025-08', 'puser' => 'WAIMS'];
+        $data = ['doc' => 'DB', 'psection' => 'WAIMS', 'pvalue' => '2026-09', 'puser' => 'WAIMS'];
         $this->coreFunctions->sbcinsert("profile", $data);
     }
 }

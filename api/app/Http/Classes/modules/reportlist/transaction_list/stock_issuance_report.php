@@ -690,7 +690,7 @@ class stock_issuance_report
       case 0: // posted
         $query = "select * from ( select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
       client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,prinfo.ctrlno,pr.docno as prdocno,
-      stock.ref,client.client as wh,head.rem as hrem,cntnum.center
+      stock.ref,client.client as wh,head.rem as hrem,cntnum.center,stock.ext
       from glstock as stock
       left join glhead as head on head.trno=stock.trno
       left join item on item.itemid=stock.itemid
@@ -707,7 +707,7 @@ class stock_issuance_report
         $query = "select * from (
         select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
         client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,prinfo.ctrlno,pr.docno as prdocno,
-        stock.ref,client.client as wh,head.rem as hrem,cntnum.center
+        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,stock.ext
         from lastock as stock
         left join lahead as head on head.trno=stock.trno
         left join item on item.itemid=stock.itemid
@@ -723,7 +723,7 @@ class stock_issuance_report
       default: // sana all
         $query = "select * from ( select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
       client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,prinfo.ctrlno,pr.docno as prdocno,
-      stock.ref,client.client as wh,head.rem as hrem,cntnum.center
+      stock.ref,client.client as wh,head.rem as hrem,cntnum.center,stock.ext
       from glstock as stock
       left join glhead as head on head.trno=stock.trno
       left join item on item.itemid=stock.itemid
@@ -736,7 +736,7 @@ class stock_issuance_report
       union all
       select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
       client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,prinfo.ctrlno,pr.docno as prdocno,
-      stock.ref,client.client as wh,head.rem as hrem,cntnum.center
+      stock.ref,client.client as wh,head.rem as hrem,cntnum.center,stock.ext
       from lastock as stock
       left join lahead as head on head.trno=stock.trno
       left join item on item.itemid=stock.itemid
@@ -780,10 +780,10 @@ class stock_issuance_report
 
     switch ($posttype) {
       case 0: // posted
-        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno from ( 
+        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno,sum(ext) as ext from ( 
       select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
       client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,
-      stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno
+      stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno,stock.ext
       from glstock as stock
       left join glhead as head on head.trno=stock.trno
       left join item on item.itemid=stock.itemid
@@ -799,10 +799,10 @@ class stock_issuance_report
         break;
 
       case 1: // unposted
-        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno from ( 
+        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno,sum(ext) as ext from ( 
         select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
         client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,
-        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno
+        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno,stock.ext
         from lastock as stock
         left join lahead as head on head.trno=stock.trno
         left join item on item.itemid=stock.itemid
@@ -818,10 +818,10 @@ class stock_issuance_report
         break;
 
       default: // sana all
-        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno from ( 
+        $query = "select docno,dateid,deptname,wh,clientname as whname,sum(qty) as qty,hrem,center,ctrlno,prdocno,sum(ext) as ext from ( 
         select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
         client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,
-        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno
+        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno,stock.ext
         from glstock as stock
         left join glhead as head on head.trno=stock.trno
         left join item on item.itemid=stock.itemid
@@ -834,7 +834,7 @@ class stock_issuance_report
       union all
       select head.docno,head.clientname as deptname,item.barcode,item.itemname,stock.uom,stock.iss,stock.isqty as qty,
         client.clientname,head.createby,stock.expiry,stock.loc,stock.rem,left(head.dateid,10) as dateid,
-        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno
+        stock.ref,client.client as wh,head.rem as hrem,cntnum.center,prinfo.ctrlno,pr.docno as prdocno,stock.ext
         from lastock as stock
         left join lahead as head on head.trno=stock.trno
         left join item on item.itemid=stock.itemid
@@ -902,34 +902,34 @@ class stock_issuance_report
     $fontsize = "10";
     $border = "1px solid ";
 
-    if ($companyid == 3) { //conti
-      $qry = "select name,address,tel from center where code = '" . $center . "'";
-      $headerdata = $this->coreFunctions->opentable($qry);
-      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    // if ($companyid == 3) { //conti
+    //   $qry = "select name,address,tel from center where code = '" . $center . "'";
+    //   $headerdata = $this->coreFunctions->opentable($qry);
+    //   $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-      $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-      $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->begintable($layoutsize);
+    //   $str .= $this->reporter->startrow();
+    //   $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    //   $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    //   $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-    } else {
-      $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->letterhead($center, $username);
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-    }
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->startrow();
+    //   $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    //   $str .= $this->reporter->endrow();
+    //   $str .= $this->reporter->endtable();
+    // } else {
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    // }
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable($layoutsize);
 
@@ -978,24 +978,29 @@ class stock_issuance_report
     $str .= $this->header_DEFAULT($config);
     $docno = "";
     $total = 0;
+    $totalAmt = 0;
 
     foreach ($result as $key => $data) {
       if ($docno != "" && $docno != $data->docno) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+        if ($companyid == 36) { //rozlab
+          $str .= $this->reporter->col('Grand Total: ' . number_format($totalAmt, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+        } else {
+          $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+        }
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '900', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->endrow();
-
         $str .= $this->reporter->endtable();
       }
 
       if ($docno == "" || $docno != $data->docno) {
         $docno = $data->docno;
         $total = 0;
+        $totalAmt = 0;
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -1093,16 +1098,21 @@ class stock_issuance_report
       }
 
       $str .= $this->reporter->endrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       if ($docno == $data->docno) {
         $total += $data->qty;
+        $totalAmt += $data->ext;
       }
       $str .= $this->reporter->endtable();
     }
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+    if ($companyid == 36) { //rozlab
+      $str .= $this->reporter->col('Grand Total: ' . number_format($totalAmt, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
+    }
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
@@ -1164,7 +1174,12 @@ class stock_issuance_report
         }
 
         $str .= $this->reporter->col($data->whname, '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->qty, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        if ($companyid == 36) { //rozlab
+          $str .= $this->reporter->col(number_format($data->ext, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        } else {
+          $str .= $this->reporter->col(number_format($data->qty, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        }
+
         if ($companyid == 16) { //ati
           $str .= $this->reporter->col($data->hrem, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
           $str .= $this->reporter->col($data->ctrlno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
@@ -1173,8 +1188,8 @@ class stock_issuance_report
         }
 
         $str .= $this->reporter->endrow();
-        $str .= $this->reporter->addline();
-        $total = $total + $data->qty;
+        $this->reporter->addline();
+        $total = $total + $data->ext;
         $str .= $this->reporter->endtable();
 
         if ($this->reporter->linecounter == $page) {
@@ -1230,7 +1245,11 @@ class stock_issuance_report
     }
 
     $str .= $this->reporter->col('Warehouse', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    if ($companyid == 36) { //rozlab
+      $str .= $this->reporter->col('Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    } else {
+      $str .= $this->reporter->col('Quantity', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    }
     if ($companyid == 16) { //ati
       $str .= $this->reporter->col('Remarks', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
       $str .= $this->reporter->col('Ctrl No', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');

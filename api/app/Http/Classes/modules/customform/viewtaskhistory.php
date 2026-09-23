@@ -399,27 +399,27 @@ class viewtaskhistory
             }
 
             // Check muna lahat ng status ng stock (tmdetail) para sa task na ito
-            $closeqry = "select status from tmdetail where trno = ?";
-            $stockstatuses = $this->coreFunctions->opentable($closeqry, [$trno]);
+            // $closeqry = "select status from tmdetail where trno = ?";
+            // $stockstatuses = $this->coreFunctions->opentable($closeqry, [$trno]);
 
-            $allclosed = true;
-            foreach ($stockstatuses as $s) {
-                if ($s->status != 5) {
-                    $allclosed = false;
-                    break;
-                }
-            }
+            // $allclosed = true;
+            // foreach ($stockstatuses as $s) {
+            //     if ($s->status != 5) {
+            //         $allclosed = false;
+            //         break;
+            //     }
+            // }
 
-            if ($allclosed) {
-                $config['params']['trno'] = $trno; // kailangan para malaman ng closetask() kung anong task ic-close
+            // if ($allclosed) {
+            //     $config['params']['trno'] = $trno; // kailangan para malaman ng closetask() kung anong task ic-close
 
-                $path = 'App\Http\Classes\modules\taskmonitoring\tm';
-                $closeresult = app($path)->closetask($config);
+            //     $path = 'App\Http\Classes\modules\taskmonitoring\tm';
+            //     $closeresult = app($path)->closetask($config);
 
-                if ($closeresult['status']) {
-                    $label = 'Successfully completed and closed the task.';
-                }
-            }
+            //     if ($closeresult['status']) {
+            //         $label = 'Successfully completed and closed the task.';
+            //     }
+            // }
 
 
           } else {  //done ng checker para sa manual DY

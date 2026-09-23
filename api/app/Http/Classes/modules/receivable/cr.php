@@ -216,10 +216,6 @@ class cr
       case 8: //maxipro
         $cols[$rem]['style'] = 'width:350px;whiteSpace: normal;min-width:350px;';
         break;
-      case 10: //afti
-      case 12: //afti usd
-        $cols[$yourref]['label'] = 'OR #';
-        break;
     }
 
     if ($this->companysetup->getsystemtype($config['params']) == 'REALESTATE') {
@@ -261,9 +257,6 @@ class cr
       case 60: //transpower
         $cols[$rem]['type'] = 'coldel';
         $cols[$db]['label'] = 'Amount';
-        break;
-      case 10: //afti
-        $cols[$db]['type'] = 'coldel';
         break;
       default:
         $cols[$rem]['type'] = 'coldel';
@@ -365,13 +358,6 @@ class cr
     $hjoin = "";
     $field = "";
     switch ($companyid) {
-      case 10: //afti
-      case 12: //afti usd
-        $dateid = "date_format(head.dateid,'%m-%d-%Y') as dateid,head.dateid as date2 ";
-        $yourref = 'head.crref';
-        if ($searchfilter == "") $limit = 'limit 25';
-        $orderby =  "order by  date2 desc, docno desc";
-        break;
       case 19: //housegem
       case 60: //transpower
         $dateid = "left(head.dateid,10) as dateid";
@@ -424,10 +410,6 @@ class cr
       switch ($companyid) {
         case 28: //xcomp
           array_push($searchfield, 'head.rem');
-          break;
-        case 10: //afti
-        case 12: //afti usd
-          array_push($searchfield, 'head.crref', 'poref');
           break;
       }
       $search = $config['params']['search'];
@@ -550,12 +532,6 @@ class cr
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entrycntnumpicture', 'label' => 'Attachment', 'access' => 'view']];
     $obj = $this->tabClass->createtab($tab, []);
 
-    if ($companyid == 10) { //afti
-      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryparticulars', 'label' => 'Particulars', 'access' => 'view']];
-      $particulars = $this->tabClass->createtab($tab, []);
-      $return['Particulars'] = ['icon' => 'fa fa-envelope', 'tab' => $particulars];
-    }
-
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
 
     if ($this->companysetup->getistodo($config['params'])) {
@@ -661,11 +637,6 @@ class cr
       case 6: //mitsukoshi
         $obj[0][$this->gridname]['columns'][$lastdp]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$qtref]['type'] = 'coldel';
-        break;
-      case 10: //afti
-        $obj[0][$this->gridname]['columns'][$podate]['type'] = 'label';
-        $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
-        $obj[0][$this->gridname]['columns'][$rem]['label'] = 'Notes/SI Ref.';
         break;
       case 19: //housegem
         $obj[0][$this->gridname]['columns'][$rem]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
@@ -786,10 +757,6 @@ class cr
       case 34: //evergreen
         $fields = ['docno', 'planholder', 'client', 'clientname', 'idno'];
         break;
-      case 10: //afti
-      case 12: //afti usd
-        $fields = ['docno', 'client', 'clientname', 'crref'];
-        break;
       case 47: //kitchenstar
         $fields = ['docno', 'client', 'clientname', 'address', 'dacnoname'];
         break;
@@ -807,11 +774,6 @@ class cr
     data_set($col1, 'dacnoname.lookupclass', 'lookupdepositto');
 
     switch ($companyid) {
-      case 10: //afti
-      case 12: //afti usd
-        data_set($col1, 'clientname.type', 'textarea');
-        data_set($col1, 'businesstype.type', 'textarea');
-        break;
       case 26: //bee healthy
         data_set($col1, 'client.type', 'input');
         data_set($col1, 'client2.action', 'lookupclientmod');
@@ -840,10 +802,6 @@ class cr
         break;
       default:
         switch ($companyid) {
-          case 10: //afti
-          case 12: //afti usd
-            $fields = ['dateid', 'ourref'];
-            break;
           case 34: //evergreen
             $fields = ['dateid', 'yourref', 'ourref', 'amount', ['invoiceno', 'refdate']];
             break;
@@ -892,16 +850,6 @@ class cr
       data_set($col2, 'invoiceno.label', 'Invoice #');
     }
 
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      data_set($col2, 'dateid.label', 'Receipt Date');
-      data_set($col2, 'ourref.label', 'Payment Type');
-      data_set($col2, 'ourref.type', 'lookup');
-      data_set($col2, 'ourref.class', 'sbccsreadonly');
-      data_set($col2, 'ourref.lookupclass', 'paymenttype');
-      data_set($col2, 'ourref.action', 'lookuprandom');
-    }
-
-
     if ($this->companysetup->getsystemtype($config['params']) == 'MMS') {
       data_set($col2, 'ourref.label', 'Payment Type');
       data_set($col2, 'ourref.type', 'lookup');
@@ -918,10 +866,6 @@ class cr
       }
     }
     $fields = ['dagentname', 'rem'];
-
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $fields = ['rem'];
-    }
 
     if ($companyid == 34) { //evergreen
       $fields = ['dagentname', 'plantype', 'rem', ['checkno', 'checkdate']];
@@ -1347,25 +1291,25 @@ class cr
 
   private function getdetailselect($config)
   {
+    $addselect ='';
+    $systype = $this->companysetup->getsystemtype($config['params']);
+    if($systype == 'REALESTATE'){
+      $addselect =',d.phaseid, ph.code as phasename,
+      d.modelid, hm.model as housemodel, 
+      d.blklotid, bl.blk, bl.lot,      
+      am.line as amenity,
+      am.description as amenityname,
+      subam.line as subamenity,
+      subam.description as subamenityname ';
+    }
     $qry = " head.trno,left(head.dateid,10) as dateid,d.ref,d.line,d.sortline,coa.acno,coa.acnoname,
       client.client,client.clientname,d.rem,
       FORMAT(d.db,2) as db,FORMAT(d.cr,2) as cr,d.fdb,d.fcr,d.refx,d.linex,
       left(d.postdate,10) as postdate,d.checkno,coa.alias,d.pdcline,
       d.project,ifnull(proj.name,'') as projectname,d.cur,d.forex,proj.code as project,    
       case d.isewt when 0 then 'false' else 'true' end as isewt,case d.isvat when 0 then 'false' else 'true' end as isvat,case d.isvewt when 0 then 'false' else 'true' end as isvewt,
-      d.ewtcode,d.ewtrate,d.damt,case d.qttrno when 0 then d.poref else qthead.yourref end as poref,
-      case d.qttrno when 0 then left(d.podate,10) else left(qthead.due,10) end as podate,'' as bgcolor,case d.void when 1 then 'bg-red-2' else '' end as  errcolor, qthead.docno as qtref, d.qttrno,case d.lastdp when 0 then 'false' else 'true' end as lastdp,case d.void when 0 then 'false' else 'true' end as void,
-      d.phaseid, ph.code as phasename,
-
-      d.modelid, hm.model as housemodel, 
-
-      d.blklotid, bl.blk, bl.lot,
-      
-      am.line as amenity,
-      am.description as amenityname,
-      subam.line as subamenity,
-      subam.description as subamenityname 
-     ";
+      d.ewtcode,d.ewtrate,d.damt,'' as bgcolor,case d.void when 1 then 'bg-red-2' else '' end as  errcolor, case d.void when 0 then 'false' else 'true' end as void
+      " .$addselect;
     return $qry;
   }
 
@@ -1374,20 +1318,26 @@ class cr
   {
     $sqlselect = $this->getdetailselect($config);
 
+    $systype = $this->companysetup->getsystemtype($config['params']);
+    $addleftjoin ='';
+    
+    if($systype == 'REALESTATE'){
+      $addleftjoin = "left join phase as ph on ph.line = d.phaseid
+      left join housemodel as hm on hm.line = d.modelid
+      left join blklot as bl on bl.line = d.blklotid
+      left join amenities as am on am.line= d.amenityid
+      left join subamenities as subam on subam.line=d.subamenityid and subam.amenityid=d.amenityid";
+    }
+
     $qry = "select " . $sqlselect . " 
     from " . $this->detail . " as d
     left join " . $this->head . " as head on head.trno=d.trno
     left join client on client.client=d.client
     left join projectmasterfile as proj on proj.line = d.projectid
     
-    left join phase as ph on ph.line = d.phaseid
-    left join housemodel as hm on hm.line = d.modelid
-    left join blklot as bl on bl.line = d.blklotid
-    left join amenities as am on am.line= d.amenityid
-    left join subamenities as subam on subam.line=d.subamenityid and subam.amenityid=d.amenityid
+    ".$addleftjoin."
 
     left join coa on coa.acnoid=d.acnoid
-    left join (select h.docno,h.due,h.yourref,h.trno from qshead  as h left join terms on terms.terms = h.terms where terms.isdp =1  union all select h.docno,h.due,h.yourref,h.trno from hqshead as h left join terms on terms.terms = h.terms where terms.isdp =1 ) as qthead on qthead.trno = d.qttrno and d.qttrno <>0
     where d.trno=?
     union all
     select " . $sqlselect . "  
@@ -1396,14 +1346,9 @@ class cr
     left join client on client.clientid=d.clientid
     left join projectmasterfile as proj on proj.line = d.projectid
     
-    left join phase as ph on ph.line = d.phaseid
-    left join housemodel as hm on hm.line = d.modelid
-    left join blklot as bl on bl.line = d.blklotid
-    left join amenities as am on am.line= d.amenityid
-    left join subamenities as subam on subam.line=d.subamenityid and subam.amenityid=d.amenityid
+    
 
     left join coa on coa.acnoid=d.acnoid
-    left join (select h.docno,h.due,h.yourref,h.trno from qshead as h left join terms on terms.terms = h.terms where terms.isdp =1  union all select h.docno,h.due,h.yourref,h.trno from hqshead as h left join terms on terms.terms = h.terms where terms.isdp =1 ) as qthead on qthead.trno = d.qttrno  and d.qttrno <>0
     where d.trno=?
     union all
     select " . $sqlselect . "  
@@ -1412,14 +1357,9 @@ class cr
     left join client on client.client=d.client
     left join projectmasterfile as proj on proj.line = d.projectid
     
-    left join phase as ph on ph.line = d.phaseid
-    left join housemodel as hm on hm.line = d.modelid
-    left join blklot as bl on bl.line = d.blklotid
-    left join amenities as am on am.line= d.amenityid
-    left join subamenities as subam on subam.line=d.subamenityid and subam.amenityid=d.amenityid
+     ".$addleftjoin."
 
     left join coa on coa.acnoid=d.acnoid
-    left join (select h.docno,h.due,h.yourref,h.trno from qshead as h left join terms on terms.terms = h.terms where terms.isdp =1  union all select h.docno,h.due,h.yourref,h.trno from hqshead as h left join terms on terms.terms = h.terms where terms.isdp =1 ) as qthead on qthead.trno = d.qttrno  and d.qttrno <>0
     where d.trno=?
     union all
     select " . $sqlselect . "  
@@ -1428,14 +1368,9 @@ class cr
     left join client on client.clientid=d.clientid
     left join projectmasterfile as proj on proj.line = d.projectid
     
-    left join phase as ph on ph.line = d.phaseid
-    left join housemodel as hm on hm.line = d.modelid
-    left join blklot as bl on bl.line = d.blklotid
-    left join amenities as am on am.line= d.amenityid
-    left join subamenities as subam on subam.line=d.subamenityid and subam.amenityid=d.amenityid
+     ".$addleftjoin."
 
     left join coa on coa.acnoid=d.acnoid
-    left join (select h.docno,h.due,h.yourref,h.trno from qshead as h left join terms on terms.terms = h.terms where terms.isdp =1  union all select h.docno,h.due,h.yourref,h.trno from hqshead as h left join terms on terms.terms = h.terms where terms.isdp =1 ) as qthead on qthead.trno = d.qttrno  and d.qttrno <>0
     where d.trno=? order by sortline,line
   ";
     $detail = $this->coreFunctions->opentable($qry, [$trno, $trno, $trno, $trno]);
@@ -2088,17 +2023,6 @@ class cr
         }
 
 
-        if ($companyid == 10) { //afti
-          $this->coreFunctions->LogConsole($lastdp);
-          if ($qttrno <> 0 && $data['lastdp']  == 1) {
-            $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => $trno], ['trno' => $qttrno]);
-            $this->coreFunctions->sbcupdate('qshead', ['crtrno' => $trno], ['trno' => $qttrno]);
-          } elseif ($qttrno <> 0 &&  $data['lastdp']  == 0) {
-            $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $qttrno]);
-            $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $qttrno]);
-          }
-        }
-
         if ($companyid == 19) { //housegem
           $bal = $this->coreFunctions->datareader("select sum(db-cr) as value from ladetail where trno=?", [$trno]);
           if ($bal == '') {
@@ -2151,16 +2075,6 @@ class cr
           //   }
           //   $this->coreFunctions->execqry("update hdetailinfo set  ortrno = " . $trno . ",checkno = '" . $checkno . "', paymentdate = '" . $dateid . "' where trno =? and line =? ", "update", [$refx, $linex]);
           // }
-        }
-
-        if ($companyid == 10) { //afti
-          if ($qttrno <> 0 &&  $data['lastdp']  == 1) {
-            $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => $trno], ['trno' => $qttrno]);
-            $this->coreFunctions->sbcupdate('qshead', ['crtrno' => $trno], ['trno' => $qttrno]);
-          } elseif ($qttrno <> 0 &&  $data['lastdp']  == 0) {
-            $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $qttrno]);
-            $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $qttrno]);
-          }
         }
 
         if ($companyid == 19) { //housegem
@@ -2286,15 +2200,6 @@ class cr
         }
       }
 
-      if ($companyid == 10) { //afti
-        if ($data[$key]->qttrno <> 0 && $data[$key]->lastdp <> 0) {
-          $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $data[$key]->qttrno]);
-          $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $data[$key]->qttrno]);
-        } elseif ($data[$key]->qttrno <> 0 && $data[$key]->lastdp == 0) {
-          $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $data[$key]->qttrno]);
-          $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $data[$key]->qttrno]);
-        }
-      }
     }
 
     if ($companyid == 40) { //cdo
@@ -2324,14 +2229,7 @@ class cr
         $this->coreFunctions->sbcupdate('hrhdetail', ['ortrno' => 0, 'orline' => 0], ['trno' => $data[0]->refx, 'line' => $data[0]->linex]);
       }
     }
-    if ($data[0]->qttrno <> 0 && $data[0]->lastdp <> 0) {
-      $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $data[0]->qttrno]);
-      $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $data[0]->qttrno]);
-    } elseif ($data[0]->qttrno <> 0 && $data[0]->lastdp == 0) {
-      $this->coreFunctions->sbcupdate('hqshead', ['crtrno' => 0], ['trno' => $data[0]->qttrno]);
-      $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $data[0]->qttrno]);
-    }
-
+    
     if ($config['params']['companyid'] == 19) { //housegem
       $bal = $this->coreFunctions->datareader("select sum(db-cr) as value from ladetail where trno=?", [$trno]);
       if ($bal == '') {

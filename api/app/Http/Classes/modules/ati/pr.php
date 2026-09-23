@@ -752,12 +752,11 @@ class pr
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
 
-    $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
-    if ($infotransexist == '') {
-      $this->coreFunctions->sbcinsert("headinfotrans", ['trno' => $head['trno'], 'reqtypeid' => $head['reqtypeid'], 'trnxtype' => $head['trnxtype']]);
-    } else {
-      $this->coreFunctions->sbcupdate("headinfotrans", $dataother, ['trno' => $head['trno']]);
+    $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']], '', true);
+    if ($infotransexist == 0) {
+      $this->coreFunctions->sbcinsert("headinfotrans", ['trno' => $head['trno']]);
     }
+    $this->coreFunctions->sbcupdate("headinfotrans", $dataother, ['trno' => $head['trno']]);
   } // end function
 
 

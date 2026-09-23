@@ -875,7 +875,15 @@ class ss
     $barcode = $config['params']['barcode'];
     $client = $config['params']['client'];
     $center = $config['params']['center'];
-    $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,disc,uom from(
+    $companyid = $config['params']['companyid'];
+
+    switch ($companyid) {
+      case 36: //rozlab
+        $qry = "select 'STOCKCARD' as docno, null as dateid, round(amt,2) as amt, disc, uom from item where barcode=?";
+        $data = $this->coreFunctions->opentable($qry, [$barcode]);
+        break;
+      default:
+        $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,disc,uom from(
   		  select head.docno,head.dateid,
           stock." . $this->damt . " as amt,stock.uom,stock.disc
           from lahead as head
@@ -896,7 +904,10 @@ class ss
           and item.barcode = ? and client.client = ?
           and stock." . $this->damt . " <> 0
           order by dateid desc limit 5) as tbl order by dateid desc limit 1";
-    $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
+        $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $center, $barcode, $client]);
+        break;
+    }
+
     if (!empty($data)) {
       return ['status' => true, 'msg' => 'Found the latest purchase price...', 'data' => $data];
     } else {

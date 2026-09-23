@@ -445,7 +445,7 @@ class tm
 
                 $arr_title = $this->reporter->fixcolumn([$row['title']], '60', 0);
                 $arr_comment = $this->reporter->fixcolumn([$row['comment1']], '35', 0);
-                $arr_percentage = $this->reporter->fixcolumn([$row['percentage']], '13', 0);
+                $arr_percentage = $this->reporter->fixcolumn([$row['percentage'] > 0 ? $row['percentage'] : '-'], '13', 0);
                 $arr_startdate = $this->reporter->fixcolumn([$row['startdate']], '20', 0);
                 $arr_enddate = $this->reporter->fixcolumn([$row['enddate']], '20', 0);
 
@@ -498,5 +498,4 @@ class tm
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
 }

@@ -506,7 +506,7 @@ class pr // class declaration
         'grey' as statuscolor  
         from " . $this->hhead . " as head 
         left join " . $this->tablenum . " as num on num.trno=head.trno
-        left join headinfotrans as hi on hi.trno = head.trno 
+        left join hheadinfotrans as hi on hi.trno = head.trno 
         left join trxstatus as status on status.line = num.statid
         " . $hjoin . "
         where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "

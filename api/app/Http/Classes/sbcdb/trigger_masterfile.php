@@ -270,6 +270,8 @@ class trigger_masterfile
 		$this->clviolation_triggers($config);
 		$this->detachment_triggers($config);
 
+		// 09-18-26
+		$this->entryfinancerates_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -1396,6 +1398,11 @@ class trigger_masterfile
 		$key = "line";
 		$key2 = "itemid";
 		$trno2 = "clientid";
+		
+		if ($companyid == 72) { //hashy
+			$key2 = "clientid";
+			$trno2 = "itemid";
+		}
 
 		$fields = [
 			'line' => ['line' => []],
@@ -3015,8 +3022,22 @@ class trigger_masterfile
 			'agencyfee' => ['agencyfee' => []],
 			'agencyvat' => ['agencyvat' => []]
 		];
-		
+
 		$this->settriggermasterfilelogs($config, 'detachment', 'divinfo', 'masterfile_log', $fields, 'divid');
 	}
 
+	private function entryfinancerates_triggers($config)
+	{
+		$doc = 'ENTRYFINANCERATES';
+		$fields = [
+			'Terms'      => ['terms' => []],
+			'Downpayment'  => ['dp' => []],
+			'Interest'    => ['interest' => []],
+			'Factor'      => ['factor' => []],
+			'Penalty'      => ['penalty' => []],
+			'Misc. Fee'      => ['miscfee' => []],
+			'Rebate'      => ['rebate' => []]
+		];
+		$this->settriggermasterfilelogs($config, $doc, 'mcfinancerate', 'masterfile_log', $fields, 'line');
+	}
 }// end class

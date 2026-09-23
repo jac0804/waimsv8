@@ -2824,7 +2824,7 @@ class txtfieldClass
                 'readonly' => true,
                 'style' => $this->style,
                 'required' => false,
-                'access' => 'save'            
+                'access' => 'save'
             ),
             'downloadexcel' => array(
                 'name' => 'downloadexcel',
@@ -21288,9 +21288,40 @@ class txtfieldClass
                 'required' => false
             ),
 
+            'carton' => array(
+                'name' => 'carton',
+                'type' => 'input',
+                'label' => 'Qty per Carton',
+                'class' => 'cscarton',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 20
+            ),
 
+            'agencyname' => array(
+                'name' => 'agencyname',
+                'type' => 'lookup',
+                'label' => 'Agency',
+                'class' => 'csagencyname',
+                'lookupclass' => 'agency',
+                'action' => 'lookupagency',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 100
+            ),
 
-
+            'agencyfee' => array(
+                'name' => 'agencyfee',
+                'type' => 'input',
+                'label' => 'Agency Fee',
+                'class' => 'csagencyfee',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false,
+                'maxlength' => 20
+            ),
 
 
         );

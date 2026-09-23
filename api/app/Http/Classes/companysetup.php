@@ -248,6 +248,26 @@ class companysetup
 
 
     switch ($params['companyid']) {
+      case 72:  //hahsy
+        $this->clientlength = 15;
+        $this->documentlength = 15;
+        $this->barcodelength = 10;
+        $this->tax = 12;
+        $this->serial = false;
+        $this->companyname = 'HAHSY';
+        $this->systemtype = 'AIMS';
+        $this->checkbelowcost = true;
+        $this->isproject = false;
+        $this->iscreateversion = false;
+        $this->isfa = false;
+        $this->masterlimit = 500;
+        $this->isglc = true;
+        $this->branchaccess = 1;
+        $this->multibranch = true;
+        $this->reportpath = "\Http\Classes\modules\modulereport\\hahsy\\";
+        $this->logopath = "public/images/hahsy/";
+        $this->ismysql8 = true;
+        break;
       case 71: //buenatech
         $this->ismysql8 = true;
         $this->clientlength = 15;
@@ -379,6 +399,8 @@ class companysetup
         $this->companyname = 'YULICK';
         $this->systemtype = 'AIMS';
         $this->checkbelowcost = true;
+        $this->isexpiry = true;
+        $this->islocation = true;
         $this->isproject = false;
         $this->ispr = true;
         $this->payroll_bonusmax = 0;
@@ -518,7 +540,8 @@ class companysetup
         $this->companyname = 'Bytesized IT Solutions';
         $this->systemtype = 'AIMSHRISPAYROLL';
         $this->branchaccess = 1;
-        $this->isexpiry = false;
+        $this->isexpiry = true;
+        $this->islocation = true;
         $this->checkbelowcost = false;
         $this->payroll_bonusmax = 0;
         $this->payroll_daysInMonth = 0;

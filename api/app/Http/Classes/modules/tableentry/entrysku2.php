@@ -58,10 +58,19 @@ class entrysku2
   public function createTab($config)
   {
     $tableid = $config['params']['tableid'];
-    $item = $this->othersClass->getitemname($tableid);
-    $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
-    $column = ['action', 'client', 'wh', 'sku','uom2', 'amt', 'disc','netamt'];
-    $tab = [$this->gridname => ['gridcolumns' => $column]]; 
+    $companyid= $config['params']['companyid'];
+    $doc = $config['params']['doc'];
+    
+    if($companyid == 72 && $doc == 'CUSTOMER' ){ //hashy
+      $this->modulename = 'SPECIAL ITEM PRICE';
+      $column = ['action', 'barcode', 'itemname','amt', 'disc'];
+    }else{
+      $item = $this->othersClass->getitemname($tableid);
+      $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
+      $column = ['action', 'client', 'wh', 'sku', 'uom2', 'amt', 'disc', 'netamt'];
+    }
+
+    $tab = [$this->gridname => ['gridcolumns' => $column]];
     $stockbuttons = ['save', 'delete'];
 
     foreach ($column as $key => $value) {
@@ -71,30 +80,49 @@ class entrysku2
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:120px;";
-    $obj[0][$this->gridname]['columns'][$client]['style'] = "width:100px;whiteSpace: normal;min-width:200px;";
-    $obj[0][$this->gridname]['columns'][$wh]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$sku]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$amt]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$disc]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
-    $obj[0][$this->gridname]['columns'][$netamt]['style'] = "width:100px;whiteSpace: normal;min-width:100px; text-align:right;";
+
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+      $obj[0][$this->gridname]['columns'][$barcode]['style'] = "width:100px;whiteSpace: normal;min-width:200px;text-align:center";
+      $obj[0][$this->gridname]['columns'][$barcode]['type'] = 'lookup';
+      $obj[0][$this->gridname]['columns'][$barcode]['lookupclass'] = 'lookupitem';
+      $obj[0][$this->gridname]['columns'][$barcode]['action'] = 'lookupsetup';
+      $obj[0][$this->gridname]['columns'][$barcode]['label'] = "Product ID";
+      $obj[0][$this->gridname]['columns'][$itemname]['label'] = "Description";
+      $obj[0][$this->gridname]['columns'][$itemname]['type'] = "label";
+      $obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+      $obj[0][$this->gridname]['columns'][$amt]['style'] = "width:150px;whiteSpace: normal;min-width:200px;";
+      $obj[0][$this->gridname]['columns'][$disc]['style'] = "width:150px;whiteSpace: normal;min-width:200px;";
+
+
+    }else{
+
+      $obj[0][$this->gridname]['columns'][$client]['style'] = "width:100px;whiteSpace: normal;min-width:200px;";
+      $obj[0][$this->gridname]['columns'][$wh]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
+      $obj[0][$this->gridname]['columns'][$sku]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
+      $obj[0][$this->gridname]['columns'][$amt]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
+      $obj[0][$this->gridname]['columns'][$disc]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
+      $obj[0][$this->gridname]['columns'][$netamt]['style'] = "width:100px;whiteSpace: normal;min-width:100px; text-align:right;";
+
+
+      $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
+
+      $obj[0][$this->gridname]['columns'][$client]['lookupclass'] = "lookupclient";
+      $obj[0][$this->gridname]['columns'][$client]['label'] = "Code";
+
+      $obj[0][$this->gridname]['columns'][$wh]['label'] = "Supplier";
+      $obj[0][$this->gridname]['columns'][$wh]['type'] = "label";
+      $obj[0][$this->gridname]['columns'][$netamt]['label'] = "Net Price";
+      $obj[0][$this->gridname]['columns'][$netamt]['type'] = "label";
+      $obj[0][$this->gridname]['columns'][$sku]['label'] = "Sku";
+      $obj[0][$this->gridname]['columns'][$disc]['label'] = "Discount";
+      $obj[0][$this->gridname]['columns'][$amt]['label'] = "Price";
+      $obj[0][$this->gridname]['columns'][$uom2]['type'] = 'lookup';
+      $obj[0][$this->gridname]['columns'][$uom2]['lookupclass'] = 'lookupuom';
+      $obj[0][$this->gridname]['columns'][$uom2]['action'] = 'lookupsetup';
+      $obj[0][$this->gridname]['columns'][$uom2]['label'] = "Uom";
+
+    }
     
-
-    $obj[0][$this->gridname]['columns'][$client]['action'] = "lookupsetup";
-   
-    $obj[0][$this->gridname]['columns'][$client]['lookupclass'] = "lookupclient";
-    $obj[0][$this->gridname]['columns'][$client]['label'] = "Code";
-
-    $obj[0][$this->gridname]['columns'][$wh]['label'] = "Supplier";
-    $obj[0][$this->gridname]['columns'][$wh]['type'] = "label";
-    $obj[0][$this->gridname]['columns'][$netamt]['label'] = "Net Price";
-    $obj[0][$this->gridname]['columns'][$netamt]['type'] = "label";
-    $obj[0][$this->gridname]['columns'][$sku]['label'] = "Sku";
-    $obj[0][$this->gridname]['columns'][$disc]['label'] = "Discount";
-    $obj[0][$this->gridname]['columns'][$amt]['label'] = "Price";
-    $obj[0][$this->gridname]['columns'][$uom2]['type'] = 'lookup';
-    $obj[0][$this->gridname]['columns'][$uom2]['lookupclass'] = 'lookupuom';
-    $obj[0][$this->gridname]['columns'][$uom2]['action'] = 'lookupsetup';
-    $obj[0][$this->gridname]['columns'][$uom2]['label'] = "Uom";
        
     return $obj;
   }
@@ -111,11 +139,25 @@ class entrysku2
 
   public function add($config)
   {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $data = [];
     $data['line'] = 0;
-    $data['itemid'] = $config['params']['tableid'];
-    $data['clientid'] = 0;
-    $data['issupplier'] = 1;
+   
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+      $data['itemid'] = 0;
+      $data['barcode'] = '';
+      $data['itemname'] = '';
+      $data['issupplier'] = 0;
+      $data['clientid'] = $config['params']['tableid'];
+    
+    }else{
+      $data['itemid'] = $config['params']['tableid'];
+      $data['issupplier'] = 1;
+      $data['clientid'] = 0;
+    }
+
+   
     $data['client'] = '';
     $data['wh'] = '';
     $data['sku'] = '';
@@ -132,6 +174,7 @@ class entrysku2
     $tableid = $config['params']['tableid'];
 
     $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data as $key => $value) {
@@ -140,7 +183,8 @@ class entrysku2
         foreach ($this->fields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
-        
+
+        if ($companyid != 72 && $doc != 'CUSTOMER') { //not hashy
          if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
               $qry = "select cl.clientname from sku
                       left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $data[$key]['clientid'] . "' and sku.itemid=  '" . $data[$key]['itemid'] . "'  and sku.issupplier=1 limit 1";
@@ -153,6 +197,7 @@ class entrysku2
                     }
                 
         }
+      }
 
          
         if ($data[$key]['line'] == 0) {
@@ -160,17 +205,39 @@ class entrysku2
 
           $params = $config;
           $params['params']['doc'] = strtoupper("skuentry_tab");
-          $this->logger->sbcmasterlog(
-            $tableid,
-            $params,
-            ' CREATE - LINE: ' . $status . ''
-              . ', SUPPLIER: ' . $data[$key]['wh']
-              . ', SKU: ' . $data[$key]['sku']
-              . ', AMOUNT: ' . $data[$key]['amt']
-              . ', UOM: ' . $data[$key]['uom2']
-              . ', DISCOUNT: ' . $data[$key]['disc']
-          );
+        
+          if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+            $this->logger->sbcmasterlog(
+              $tableid,
+              $params,
+              ' CREATE - LINE: ' . $status . ''
+                . ', DESCRIPTION: ' . $data[$key]['itemname']
+                . ', AMOUNT: ' . $data[$key]['amt']
+                . ', DISCOUNT: ' . $data[$key]['disc']
+            );
+          }else{
+            $this->logger->sbcmasterlog($tableid,$params,
+              ' CREATE - LINE: ' . $status . ''
+                . ', SUPPLIER: ' . $data[$key]['wh']
+                . ', SKU: ' . $data[$key]['sku']
+                . ', AMOUNT: ' . $data[$key]['amt']
+                . ', UOM: ' . $data[$key]['uom2']
+                . ', DISCOUNT: ' . $data[$key]['disc']
+            );
+
+          }
+          
+          
         } else {
+
+          if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+
+            $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data2['editby'] = $config['params']['user'];
+            $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
+            $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['itemname']);
+       
+          }else{
 
             if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
               $qry = "select cl.clientname,sku.line from sku
@@ -178,23 +245,25 @@ class entrysku2
               $opendata = $this->coreFunctions->opentable($qry);
               $resultdata =  json_decode(json_encode($opendata), true);
               if (!empty($resultdata[0]['clientname'])) {
-                            if (trim($resultdata[0]['clientname']) == trim($data[$key]['wh'])) {
-                                if ($data[$key]['line'] == $resultdata[0]['line']) {
-                                    goto update;
-                                }
-                                return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
-                            } else {
-                                update:
-                                $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                                $data2['editby'] = $config['params']['user'];
-                                $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
-                                $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['wh']);
-                            }
-                        } else {
-                            goto update;
-                        }
-                
-        }
+                if (trim($resultdata[0]['clientname']) == trim($data[$key]['wh'])) {
+                  if ($data[$key]['line'] == $resultdata[0]['line']) {
+                    goto update;
+                  }
+                  return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
+                } else {
+                  update:
+                  $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+                  $data2['editby'] = $config['params']['user'];
+                  $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
+                  $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['wh']);
+                }
+              } else {
+                goto update;
+              }
+            }
+
+          }
+           
         }
       } // end if
     } // foreach
@@ -207,79 +276,105 @@ class entrysku2
     $data = [];
     $row = $config['params']['row'];
     $tableid = $config['params']['tableid'];
-
     $companyid = $config['params']['companyid'];
-    $dateTables = [$this->table];
+    $doc = $config['params']['doc'];
+    $dateTables = ['sku'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
     }
 
-     if ($row['line'] == 0 && $row['wh'] != '') {
-            $qry = "select cl.clientname from sku
+    if ($companyid != 72 && $doc != 'CUSTOMER') {
+      if ($row['line'] == 0 && $row['wh'] != '') {
+        $qry = "select cl.clientname from sku
                       left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $row['clientid'] . "' and sku.itemid=  '" . $row['itemid'] . "' and sku.issupplier=1  limit 1";
-            $opendata = $this->coreFunctions->opentable($qry);
-            $resultdata =  json_decode(json_encode($opendata), true);
-            if (!empty($resultdata[0]['clientname'])) {
-                if (trim($resultdata[0]['clientname']) == trim($row['wh'])) {
-                    return ['status' => false, 'msg' => 'Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                }
-            }
+        $opendata = $this->coreFunctions->opentable($qry);
+        $resultdata =  json_decode(json_encode($opendata), true);
+        if (!empty($resultdata[0]['clientname'])) {
+          if (trim($resultdata[0]['clientname']) == trim($row['wh'])) {
+            return ['status' => false, 'msg' => 'Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+          }
         }
+      }
+    }
+   
   
 
-    if ($row['line'] == 0) {
+    if ($row['line'] == 0) { //insert
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
         $returnrow = $this->loaddataperrecord($config, $line);
-
         $params = $config;
         $params['params']['doc'] = strtoupper("skuentry_tab");
-        $this->logger->sbcmasterlog(
-          $tableid,
-          $params,
-          ' CREATE - LINE: ' . $line . ''
-            . ', SUPPLIER: ' . $row['wh']
-            . ', SKU: ' . $row['sku']
-            . ', AMOUNT: ' . $row['amt']
-            . ', UOM: ' . $row['uom2']
-            . ', DISCOUNT: ' . $row['disc']
-        );
+
+        if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+          $this->logger->sbcmasterlog(
+            $tableid,
+            $params,
+            ' CREATE - LINE: ' . $line . ''
+              . ', DESCRIPTION: ' . $row['itemname']
+              . ', AMOUNT: ' . $row['amt']
+              . ', DISCOUNT: ' . $row['disc']
+          );
+       }else{
+           $this->logger->sbcmasterlog(
+            $tableid,
+            $params,
+            ' CREATE - LINE: ' . $line . ''
+              . ', SUPPLIER: ' . $row['wh']
+              . ', SKU: ' . $row['sku']
+              . ', AMOUNT: ' . $row['amt']
+              . ', UOM: ' . $row['uom2']
+              . ', DISCOUNT: ' . $row['disc']
+          );
+
+       }
+
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
       }
-    } else {
-       
-       if ($row['line'] != 0 && $row['wh'] != '') {
-                $qry = "select cl.clientname,sku.line from sku
-                      left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $row['clientid'] . "'  and sku.itemid=  '" . $row['itemid'] . "' and sku.issupplier=1  limit 1";
-                $opendata = $this->coreFunctions->opentable($qry);
-                $resultdata =  json_decode(json_encode($opendata), true);
-                if (!empty($resultdata[0]['clientname'])) {
-                    if (trim($resultdata[0]['clientname']) == trim($row['wh'])) {
-                        if ($row['line'] == $resultdata[0]['line']) {
-                            goto update;
-                        }
-                        return ['status' => false, 'msg' => 'Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
-                    } else {
-                        update:
-                        $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                        $data2['editby'] = $config['params']['user'];
-
-                        $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $row['line']]);
-                        $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $row['wh']);
-                    }
-                } else  {
-                    goto update;
-                }
-            }
-
+    } else { //update
 
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
+
+      if ($companyid != 72 && $doc != 'CUSTOMER') { // not hashy
+        if ($row['line'] != 0 && $row['wh'] != '') {
+          $qry = "select cl.clientname,sku.line from sku
+                      left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $row['clientid'] . "'  and sku.itemid=  '" . $row['itemid'] . "' and sku.issupplier=1  limit 1";
+          $opendata = $this->coreFunctions->opentable($qry);
+          $resultdata =  json_decode(json_encode($opendata), true);
+          if (!empty($resultdata[0]['clientname'])) {
+            if (trim($resultdata[0]['clientname']) == trim($row['wh'])) {
+              if ($row['line'] == $resultdata[0]['line']) {
+                goto update;
+              }
+              return ['status' => false, 'msg' => 'Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
+            } else {
+              update:
+              $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+              $data2['editby'] = $config['params']['user'];
+
+              $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $row['line']]);
+              $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $row['wh']);
+            }
+          } else {
+            goto update;
+          }
+        }
+
+      }
+       
+
+
+    
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
-        $returnrow = $this->loaddataperrecord($config, $row['line']);
+        if ($companyid == 72 && $doc == 'CUSTOMER') { // hashy
+          $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $row['itemname']);
+        }
+          $returnrow = $this->loaddataperrecord($config, $row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -289,6 +384,9 @@ class entrysku2
 
   public function delete($config)
   {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
+
     $tableid = $config['params']['tableid'];
     $row = $config['params']['row'];
     $data = $this->loaddataperrecord($config, $row['line']);
@@ -298,35 +396,61 @@ class entrysku2
 
     $params = $config;
     $params['params']['doc'] = strtoupper("skuentry_tab");
-    $this->logger->sbcmasterlog(
-      $tableid,
-      $params,
-      ' DELETE - LINE: ' . $row['line'] . ''
-        . ', SUPPLIER: ' . $row['wh']
-        . ', SKU: ' . $row['sku']
-        . ', AMOUNT: ' . $row['amt']
-        . ', DISCOUNT: ' . $row['disc']
-    );
+
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+
+      $this->logger->sbcmasterlog(
+        $tableid,
+        $params,
+        ' DELETE - LINE: ' . $row['line'] . ''
+          . ', DESCRIPTION: ' . $row['itemname']
+          . ', AMOUNT: ' . $row['amt']
+          . ', DISCOUNT: ' . $row['disc']
+      );
+    }else{
+      $this->logger->sbcmasterlog(
+        $tableid,
+        $params,
+        ' DELETE - LINE: ' . $row['line'] . ''
+          . ', SUPPLIER: ' . $row['wh']
+          . ', SKU: ' . $row['sku']
+          . ', AMOUNT: ' . $row['amt']
+          . ', DISCOUNT: ' . $row['disc']
+      );
+
+    }
+ 
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
 
 
   private function loaddataperrecord($config, $line)
   {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
 
     $tableid = $config['params']['tableid'];
     $colfield = 'itemid';
           
-    $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc,  
-         client.clientname as wh, '' as bgcolor,client.client,sku.uom2,
-         format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
-         when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.issupplier
-    from " . $this->table . " 
-    left join client on client.clientid = sku.clientid
-    left join item on item.itemid = sku.itemid
-    where sku." . $colfield . " = " . $tableid . "  and sku.issupplier=1  and sku.line=?
-    group by sku.line,  sku.itemid,     sku.clientid, sku.sku, client.clientname,sku.disc,client.client,sku.issupplier,sku.uom2
-    order by sku.line";
+   
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+      $qry= " select sku.line,sku.clientid,sku.itemid,item.itemname,format(sku.amt,2) as amt,sku.disc,item.barcode,
+              sku.sku,sku.uom2,sku.issupplier,'' as bgcolor  from " . $this->table . "
+              left join item on item.itemid = sku.itemid where  sku.clientid= " . $tableid . "  and sku.line=? ";
+    }else{
+
+      $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc,  
+          client.clientname as wh, '' as bgcolor,client.client,sku.uom2,
+          format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
+          when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.issupplier
+          from " . $this->table . " 
+          left join client on client.clientid = sku.clientid
+          left join item on item.itemid = sku.itemid
+          where sku." . $colfield . " = " . $tableid . "  and sku.issupplier=1  and sku.line=?
+          group by sku.line,  sku.itemid,     sku.clientid, sku.sku, client.clientname,sku.disc,client.client,sku.issupplier,sku.uom2
+          order by sku.line";
+
+    }
     $data = $this->coreFunctions->opentable($qry, [$line]);
     return $data;
   }
@@ -334,18 +458,28 @@ class entrysku2
   public function loaddata($config)
   {
     $tableid = $config['params']['tableid'];
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $colfield = 'itemid';
 
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+      $qry = " select sku.line,sku.clientid,sku.itemid,item.itemname,format(sku.amt,2) as amt,sku.disc,item.barcode,
+              sku.sku,sku.uom2,sku.issupplier,'' as bgcolor  from " . $this->table . "
+              left join item on item.itemid = sku.itemid where sku.clientid= " . $tableid . "";
+    } else {
     $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc, 
-         client.clientname as wh, '' as bgcolor ,client.client,sku.uom2,
-         format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
-         when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.issupplier
-    from " . $this->table . " 
-    left join client on client.clientid = sku.clientid
-    left join item on item.itemid = sku.itemid
-    where sku." . $colfield . " = " . $tableid . "  and sku.issupplier=1  
-    group by sku.line,  sku.itemid,     sku.clientid, sku.sku, client.clientname,sku.disc,client.client,sku.issupplier,sku.uom2
-    order by sku.line";
+            client.clientname as wh, '' as bgcolor ,client.client,sku.uom2,
+            format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
+            when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.issupplier
+            from " . $this->table . " 
+            left join client on client.clientid = sku.clientid
+            left join item on item.itemid = sku.itemid
+            where sku." . $colfield . " = " . $tableid . "  and sku.issupplier=1  
+            group by sku.line,  sku.itemid,     sku.clientid, sku.sku, client.clientname,sku.disc,client.client,sku.issupplier,sku.uom2
+            order by sku.line";
+    }
+
+    // var_dump($qry);
     $data = $this->coreFunctions->opentable($qry);
     return $data;
   }
@@ -363,10 +497,36 @@ class entrysku2
       break;
       case 'lookupuom':
         return $this->lookupuom($config);
+      break;
+      case 'lookupitem':
+        return $this->lookupitem($config);
+        break;
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup'];
         break;
     }
+  }
+
+
+
+  public function lookupitem($config)
+  {
+    // $itemid = $config['params']['row']['itemid'];
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Items',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plotgrid',
+      'plotting' => ['itemid' =>'itemid', 'barcode' => 'barcode', 'itemname'=>'itemname']
+    );
+    $cols = [['name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'],
+             ['name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;']];
+    $qry = "select itemid, barcode, itemname from item where  isinactive = 0";
+    $data = $this->coreFunctions->opentable($qry);
+    $index = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $index];
   }
 
   public function lookupuom($config)

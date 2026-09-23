@@ -491,32 +491,38 @@ class cm
     $islocation = $this->companysetup->getislocation($config['params']);
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    $action = 0;
-    $itemdesc = 1;
-    $rrqty = 2;
-    $uom = 3;
-    $kgs = 4;
-    $isamt = 5;
-    $disc = 6;
-    $ext = 7;
-    $cost = 8;
-    $wh = 9;
-    $whname = 10;
-    $ref = 11;
-    $loc = 12;
-    $expiry = 13;
-    $rem = 14;
-    $pallet = 15;
-    $location = 16;
-    $itemname  = 17;
-    $barcode = 18;
-    $stock_projectname = 19;
-    $subcode = 20;
-    $partno = 21;
-    $boxcount = 22;
+    // $action = 0;
+    // $itemdesc = 1;
+    // $rrqty = 2;
+    // $uom = 3;
+    // $kgs = 4;
+    // $isamt = 5;
+    // $disc = 6;
+    // $ext = 7;
+    // $cost = 8;
+    // $wh = 9;
+    // $whname = 10;
+    // $ref = 11;
+    // $loc = 12;
+    // $expiry = 13;
+    // $rem = 14;
+    // $pallet = 15;
+    // $location = 16;
+    // $itemname  = 17;
+    // $barcode = 18;
+    // $stock_projectname = 19;
+    // $subcode = 20;
+    // $partno = 21;
+    // $boxcount = 22;
 
     $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
     $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
+    
+   if ($companyid == 60) { //transpower
+    $position = array_search('isamt', $column) + 1; // position right after isamt
+    array_splice($column, $position, 0, 'agentamt'); // insert agentamt sa $column 0 means walang tatanggalin, insert lang 
+    array_splice($sortcolumn, $position, 0, 'agentamt'); // insert agentamt sa $sortcolumn
+   }
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -531,6 +537,12 @@ class cm
         array_push($sortcolumn, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
         break;
     }
+
+
+    foreach ($column as $key => $value) {
+            $$value = $key;
+        }
+   
 
 
     if ($invonly) {
@@ -641,11 +653,11 @@ class cm
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $obj[0]['inventory']['descriptionrow'] = [];
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-      $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-      $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+      $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+      $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
     } else {
-      $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
     }
 
@@ -710,6 +722,7 @@ class cm
     if($companyid == 60) { //transpower
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$agentamt]['style'] = 'text-align: center; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
     }
 
      $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
@@ -1214,6 +1227,13 @@ class cm
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $qty_dec = 0;
     }
+    $addfield='';    
+     switch ($companyid) {
+        case 60: //transpower
+        $addfield = ",format(stock.agentamt,2) as agentamt";
+        break;
+     }
+
 
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -1258,7 +1278,7 @@ class cm
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
 
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,
-    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,stock.ckrefx,stock.cklinex
+    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,stock.ckrefx,stock.cklinex $addfield
     ";
     return $sqlselect;
   }
@@ -2377,10 +2397,6 @@ class cm
       }
     } elseif ($action == 'update') {
       $return = true;
-
-      if($companyid==60){//transpower
-         unset($data['agentamt']);
-      }
 
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
       if ($ckrefx != 0) {

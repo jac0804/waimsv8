@@ -739,29 +739,7 @@ class sqlquery
         where num.doc='" . $config['params']['doc'] . "' and
         num.center='" . $config['params']['center'] . "'";
         break;
-      case 'HQ':
-        $qryselect = "select
-        num.trno,
-        num.docno,
-        head.empid,
-        em.client,
-        em.clientname,
-        num.postdate,
-        num.postedby,
-        head.dateid";
-
-        $qry = $qryselect . " from " . $head . " as head
-        left join client as em on em.clientid=head.empid
-        left join $tablenum as num on num.trno = head.trno
-        where num.doc='" . $config['params']['doc'] . "' and
-        num.center='" . $config['params']['center'] . "'
-        union all
-        " . $qryselect . " from " . $hhead . " as head
-        left join client as em on em.clientid=head.empid
-        left join $tablenum as num on num.trno = head.trno
-        where num.doc='" . $config['params']['doc'] . "' and
-        num.center='" . $config['params']['center'] . "'";
-        break;
+     
       case 'HN':
         $qryselect = "select
           head.trno, head.docno, head.empid, head.dateid,
@@ -1468,6 +1446,30 @@ class sqlquery
           left join client as cl on cl.clientid=head.clientid where tablenum.doc ='PX'  " . $filter2 . "
         ) as tbl " . $filter . " order by dateid desc, docno limit 50";
         $this->coreFunctions->LogConsole($qry);
+        break;
+      case 'MC':
+        $qry = "select * from
+        (select head.trno,tablenum.docno," . $strname . " as  clientname," . $strcode . " as client,left(head.dateid,10) as dateid,tablenum.postedby,left(tablenum.postdate,10) as postdate,
+        head.yourref,head.ourref,head.rem 
+        from " . $tablenum . " as tablenum 
+        left join " . $head . " as head on head.trno = tablenum.trno 
+        left join client as cl on cl.clientid = head.clientid
+        where tablenum.doc = '" . $config['params']['doc'] . "' and tablenum.postdate is null
+        and tablenum.center = '" . $config['params']['center'] . "' ";
+
+        // $orderby = "order by docno,dateid desc";
+        // if ($config['params']['companyid'] == 60) { //transpower
+        $orderby = " order by dateid desc,docno";
+        // }
+        $qry = $qry . " UNION ALL
+                select tablenum.trno,tablenum.docno," . $strname . " as clientname," . $strcode . " as client,left(head.dateid,10) as dateid,tablenum.postedby,left(tablenum.postdate,10) as postdate,
+                head.yourref,head.ourref,head.rem
+                from " . $tablenum . " as tablenum
+                left join " . $hhead . " as head on head.trno = tablenum.trno
+                left join client as cl on cl.clientid = head.clientid 
+                where tablenum.doc = '" . $config['params']['doc'] . "' and tablenum.postdate is not null
+                and tablenum.center = '" . $config['params']['center'] . "'
+                ) as tbl " . $filter . "  $orderby LIMIT 50";
         break;
       default:
         $moduletype = $config['params']['moduletype'];

@@ -812,8 +812,8 @@ class othersClass
     array_push($number, 'lengthstay', 'mealamt', 'mealnum', 'texpense', 'gas', 'lodgeexp', 'misc', 'crate', 'amortization', 'contricompid');
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
-    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr');
-
+    array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr', 'carton');
+    array_push($number, 'interest', 'factor',  'miscfee', 'rebate');
     return $number;
   }
 
@@ -1639,7 +1639,7 @@ class othersClass
                     salestype, sano,pono, deldate, crref, returndate, refunddate, sdate1,sdate2,empid,driver,
                     plateno,excess,excessrate,aftrno,checkno,checkdate,amount,refdate,istrip,voiddate,voidby,
                     orderno,strdate1,strdate2,trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,
-                    ista,layref,isfa,isnoentry,rrfactor,voyage, ismarkup" . $add . $addedfield  . ")
+                    ista,layref,isfa,isnoentry,rrfactor,voyage,ismarkup,tdtrno " . $add . $addedfield  . ")
             SELECT head.trno,head.doc, head.docno,ifnull(client.clientid,0), ifnull(head.clientname,''), head.address,head.shipto,
                     head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
                     head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,
@@ -1653,7 +1653,7 @@ class othersClass
                     sdate1,sdate2,head.empid,head.driver,head.plateno,head.excess,head.excessrate,head.aftrno,
                     head.checkno,head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                     head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,head.fpid,head.crno,head.rfno,head.chsino,head.swsno,head.cotrno,
-                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage, head.ismarkup " . $select . $selectaddedfield  . "    
+                    head.petrno,head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.voyage,head.ismarkup,head.tdtrno " . $select . $selectaddedfield  . "    
             FROM " . $config['docmodule']->head . " as head 
             left join cntnum on cntnum.trno=head.trno 
             left join client on client.client=head.client
@@ -2551,7 +2551,7 @@ class othersClass
                   deldate, crref, returndate,refunddate,sdate1,sdate2,empid,excess,excessrate,aftrno,
                   checkno,checkdate,amount,refdate,istrip,voiddate,voidby,orderno,strdate1,strdate2,
                   trnxtype,cur2, forex2,fpid,crno, rfno,chsino,swsno,cotrno,petrno,ista,layref,
-                  isfa,isnoentry,rrfactor, ismarkup" . $add . $addedfield  . ")
+                  isfa,isnoentry,rrfactor,ismarkup,tdtrno " . $add . $addedfield  . ")
             select head.trno,head.doc, head.docno, ifnull(client.client,'') as client, head.clientname,
                   head.address, head.shipto, head.dateid, head.terms, ifnull(warehouse.client,'') as wh, head.rem, head.forex,
                   head.yourref, head.ourref, head.contra, ifNull(agent.client,'') as agent, head.tax , head.createdate,head.createby,
@@ -2570,7 +2570,7 @@ class othersClass
                   head.checkdate,head.amount,head.refdate,head.istrip,head.voiddate,head.voidby,
                   head.orderno,head.strdate1,head.strdate2,head.trnxtype,head.cur2,head.forex2,
                   head.fpid,head.crno, head.rfno,head.chsino,head.swsno,head.cotrno,head.petrno,
-                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor, head.ismarkup" . $select . $selectaddedfield  . "
+                  head.ista,head.layref,head.isfa,head.isnoentry,head.rrfactor,head.ismarkup,head.tdtrno " . $select . $selectaddedfield  . "
             from glhead as head left join cntnum on cntnum.trno=head.trno
             left join client  on head.clientid=client.clientid
             left join client  as warehouse on head.whid=warehouse.clientid
@@ -3139,7 +3139,7 @@ class othersClass
 
 
 
-  public function posttransacctg($config)
+  public function posttransacctg($config, $tbl = '')
   {
     $trno = $config['params']['trno'];
     $user = $config['params']['user'];
@@ -3159,7 +3159,12 @@ class othersClass
         }
         break;
       default:
-        $qry = "select trno from " . $config['docmodule']->detail . " where trno=? and db=0 and cr=0 limit 1";
+        if ($tbl != '') {
+          $qry = "select trno from " . $tbl . " where trno=? and db=0 and cr=0 limit 1";
+        } else {
+          $qry = "select trno from " . $config['docmodule']->detail . " where trno=? and db=0 and cr=0 limit 1";
+        }
+
         $this->coreFunctions->logConsole($qry);
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
         if (!empty($isitemzeroqty)) {
@@ -7748,16 +7753,16 @@ class othersClass
   public function unpostingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from hheadinfotrans where trno=?";
+    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from hheadinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 
   public function postingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from headinfotrans where trno=?";
+    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from headinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 
@@ -9415,6 +9420,7 @@ class othersClass
       case 'SQ':
       case 'SO':
       case 'RO':
+      case 'TD':
       case 'AO':
       case 'TE':
       case 'VT':
@@ -10831,6 +10837,12 @@ class othersClass
       ]);
     }
   } //end function
+
+  public function getAllowMenus()
+  {
+    return $this->coreFunctions->opentable('select distinct doc from left_menu');
+  }
+
 
 
 

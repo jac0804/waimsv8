@@ -74,10 +74,15 @@ class employee
     'tin',
     'dropoffwh',
     'deptcode',
-    'customerid'
+    'customerid',
+    'email',
+    'fax',
+    'tel'
   ];
 
   private $otherfields = ['isapprover', 'idbarcode', 'maxsjamt'];
+
+  private $profilefields = ['sss', 'phic', 'hdmf', 'sssdef', 'philhdef', 'pibigdef', 'bday', 'hired', 'resigned', 'agencyname', 'agencyfee'];
 
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isemployee', 'isdepartment', 'isadmin', 'uv_ischecker', 'uv_ispicker', 'isapprover', 'isdriver', 'ispassenger'];
@@ -219,7 +224,71 @@ class employee
 
   public function createTab($access, $config)
   {
+    $companyid = $config['params']['companyid'];
     $tab = [];
+
+    if ($companyid == 72) { // hahsy
+      $fields = ['picture'];
+      $col1 = $this->fieldClass->create($fields);
+      data_set($col1, 'picture.lookupclass', 'client');
+      data_set($col1, 'picture.folder', 'employee');
+      data_set($col1, 'picture.table', 'client');
+      data_set($col1, 'picture.fieldid', 'clientid');
+
+      $fields = [
+        ['category', 'dateid',],
+        'rem',
+        ['sss', 'sssdef'],
+        ['phic', 'philhdef'],
+        ['hdmf', 'pibigdef'],
+        'bday',
+        ['hired', 'updatenotes'],
+        ['resigned', 'rem'],
+        'agencyname',
+        'agencyfee'
+      ];
+
+      $col2 = $this->fieldClass->create($fields);
+
+      data_set($col2, 'dateid.label', 'Encoded');
+      data_set($col2, 'dateid.readonly', true);
+
+      data_set($col2, 'rem.label', 'Notes');
+      data_set($col2, 'rem.type', 'ctextarea');
+      data_set($col2, 'rem.required', false);
+
+      data_set($col2, 'sss.label', 'SSS #');
+      data_set($col2, 'sss.type', 'cinput');
+      data_set($col2, 'sssdef.label', 'Amount');
+      data_set($col2, 'sssdef.type', 'cinput');
+
+      data_set($col2, 'phic.label', 'PhilHealth #');
+      data_set($col2, 'phic.type', 'cinput');
+      data_set($col2, 'philhdef.label', 'Amount');
+      data_set($col2, 'philhdef.type', 'cinput');
+
+      data_set($col2, 'hdmf.label', 'Pag-ibig #');
+      data_set($col2, 'hdmf.type', 'cinput');
+      data_set($col2, 'pibigdef.label', 'Amount');
+      data_set($col2, 'pibigdef.type', 'cinput');
+
+      data_set($col2, 'bday.label', 'Birthday');
+      data_set($col2, 'hired.label', 'Start Date');
+      data_set($col2, 'resigned.label', 'End Date');
+
+      data_set($col2, 'duplicatedoc.label', 'NEW CONTRACT');
+
+      data_set($col2, 'agencyname.lookupclass', 'lookupagency');
+      data_set($col2, 'category.lookupclass', 'lookupcategoryitemcategory');
+      data_set($col2, 'category.labeldata', 'category');
+
+      data_set($col2, 'updatenotes.label', 'New Contract');
+      data_set($col2, 'updatenotes.lookupclass', 'contract');
+
+
+      $tab['multiinput1'] = ['inputcolumn' => ['col1' => $col1, 'col2' => $col2], 'label' => 'PROFILE'];
+    }
+
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
@@ -273,7 +342,7 @@ class employee
 
 
 
- 
+
 
     return $return;
   }
@@ -313,6 +382,10 @@ class employee
       array_push($fields, 'maxsjamt');
     }
 
+    if ($companyid == 72) { // hahsy 
+      $fields = ['client', 'clientname', 'addr', 'tin'];
+    }
+
 
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.label', 'Employee Code');
@@ -347,6 +420,10 @@ class employee
       data_set($col1, 'idbarcode.label', 'Employee No');
     }
 
+    if ($companyid == 72) { //hahsy
+      data_set($col1, 'tin.label', 'Tax ID No.');
+    }
+
     $fields = ['contact', 'tel2', 'rem', 'type'];
     switch ($companyid) {
       case 10: //afti
@@ -355,6 +432,9 @@ class employee
         break;
       case 16: //ati
         array_push($fields, 'deptcode');
+        break;
+      case 72: // hahsy
+        $fields = ['tel', 'tel2', 'email', 'contact', 'fax'];
         break;
     }
 
@@ -385,6 +465,13 @@ class employee
         data_set($col2, 'deptcode.action', 'lookuppotype');
         data_set($col2, 'deptcode.lookupclass', 'lookuppotype');
         break;
+      case 72: //hahsy
+        data_set($col2, 'tel.label', 'Telephone Nos.');
+        data_set($col2, 'tel2.label', 'Mobile Nos.');
+        data_set($col2, 'email.label', 'E-mail Address');
+        data_set($col2, 'contact.label', 'Contact Person');
+        data_set($col2, 'fax.label', 'Fax Nos.');
+        break;
     }
 
     $fields = ['picture', 'isemployee', 'iswarehouse', 'issupplier', 'iscustomer', 'isagent', 'isinactive', 'isdepartment', 'isadmin'];
@@ -399,6 +486,10 @@ class employee
 
     if ($companyid == 19) { //housegem
       array_push($fields, 'uv_ischecker', 'isdriver', 'ispassenger');
+    }
+
+    if ($companyid == 72) { //hahsy
+      $fields = ['isemployee', 'isinactive'];
     }
 
     $col3 = $this->fieldClass->create($fields);
@@ -466,6 +557,18 @@ class employee
     $data[0]['customername'] = '';
 
     $data[0]['maxsjamt'] = 0;
+    $data[0]['email'] = '';
+    $data[0]['fax'] = '';
+    $data[0]['tel'] = '';
+
+    // profile tab (employee table)
+    $data[0]['sss'] = '';
+    $data[0]['phic'] = '';
+    $data[0]['hdmf'] = '';
+    $data[0]['sssdef'] = 0;
+    $data[0]['philhdef'] = 0;
+    $data[0]['pibigdef'] = 0;
+    $data[0]['bday'] = null;
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
@@ -488,6 +591,7 @@ class employee
     $doc = $config['params']['doc'];
     $clientid = $config['params']['clientid'];
     $center = $config['params']['center'];
+    $companyid  = $config['params']['companyid'];
     if ($clientid == 0) {
       $clientid = $this->othersClass->readprofile($doc, $config);
       if ($clientid == 0) {
@@ -506,6 +610,18 @@ class employee
     foreach ($this->otherfields as $key => $value) {
       $fields = $fields . ',info.' . $value;
     }
+
+
+    $profiledates = ['bday', 'hired', 'resigned'];
+    foreach ($this->profilefields as $key => $value) {
+      if (in_array($value, $profiledates)) {
+        $fields = $fields . ",case when year(info." . $value . ") > 1900 then date(info." . $value . ") else '' end as " . $value;
+      } else {
+        $fields = $fields . ',info.' . $value;
+      }
+    }
+    $fields = $fields . ",client.createdate as dateid";
+
     $qryselect = "select " . $fields;
 
     $qry = $qryselect . ", dept.client as dept, dept.clientname as deptname, emp.client as empcode, 
@@ -583,6 +699,15 @@ class employee
       }
     }
 
+    foreach ($this->profilefields as $key) {
+      if (array_key_exists($key, $head)) {
+        $otherdata[$key] = $head[$key];
+        if (!in_array($key, $this->except)) {
+          $otherdata[$key] = $this->othersClass->sanitizekeyfieldFast($key, $otherdata[$key], $lookups);
+        } //end if
+      }
+    }
+
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -597,7 +722,7 @@ class employee
       $clientid = $this->coreFunctions->insertGetId('client', $data);
       $this->logger->sbcwritelog($clientid, $config, 'CREATE', $clientid . ' - ' . $head['client'] . ' - ' . $head['clientname']);
     }
-    if ($companyid == 16 || $companyid == 67) { //ati && yulick
+    if ($companyid == 16 || $companyid == 67 || $companyid == 72) { //ati && yulick && hahsy
       $empid = $this->coreFunctions->getfieldvalue("employee", "empid", "empid=?", [$clientid]);
       if ($empid == "") {
         $otherdata['empid'] = $clientid;

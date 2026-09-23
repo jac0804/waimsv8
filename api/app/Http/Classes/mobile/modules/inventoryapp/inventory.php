@@ -1959,7 +1959,6 @@ class inventory
               dd.push(sbc.modulefunc.cLookupForm.wh)
               dd.push(sbc.modulefunc.cLookupForm.wh)
             }
-
             tx.executeSql(qry, dd, function (tx, ires) {
                 if (ires.rows.length) {
                   let variance = 0;
@@ -2289,6 +2288,7 @@ class inventory
         return htmldata;
       },
       contSavePDF: function () {
+        cfunc.showLoading("Generating PDF File...");
         // if (sbc.globalFunc.company === "mbs") {
         //   console.log("------------", sbc.modulefunc.lookupTableData);
         //   return;
@@ -2307,6 +2307,7 @@ class inventory
           if (waw.qty > 0 || waw.syscount > 0) pdfData.push(waw);
         });
         const htmldata = sbc.modulefunc.generateHtml(pdfData);
+        cfunc.showLoading("Generating PDF File...preparing html data...");
         cordova.plugins.pdf.htmlToPDF({
           data: htmldata,
           documentSize: "A4",
@@ -2324,6 +2325,8 @@ class inventory
               filename = "FINAL PC-" + sbc.modulefunc.cLookupForm.wh + "-" + sbc.modulefunc.inputLookupForm.pcdate;
             }
             // filePath = cordova.file.externalDataDirectory + "Download/pdfs/" + filename + ".pdf";
+            filename = filename.replace(/\//g, "-"); 
+            cfunc.showLoading("Generating PDF File...saving file..." + filename);
             window.resolveLocalFileSystemURL(
               cordova.file.externalDataDirectory,
               function (dirEntry) {
@@ -2334,6 +2337,7 @@ class inventory
                     fileEntry.createWriter(function (fileWriter) {
                       fileWriter.onwriteend = function () {
                         console.log("Document successfully saved, full path:", fileEntry.nativeURL);
+                        cfunc.showLoading("Document successfully saved for " + sbc.modulefunc.cLookupForm.wh + ", full path:" + fileEntry.nativeURL);
                         sbc.db.transaction(function (tx) {
                           tx.executeSql(
                             "update wh set generated=1, filename=? where client=?",

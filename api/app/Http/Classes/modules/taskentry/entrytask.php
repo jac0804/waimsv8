@@ -306,7 +306,7 @@ class entrytask
                 }
                 $this->coreFunctions->sbcupdate('pendingapp', ['clientid' => $data2['userid']], ['trno' => $trno, 'line' => $data[$key]['line']]);
               } else { //wala pa sa pending app
-                if ($data2['userid'] != 0) {
+                if ($data2['userid'] != 0 && $data2['isassigntype'] == 0) {
                   $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
                   if ($data2['isassigntype'] == 0) $this->othersClass->insertUpdatePendingapp($trno, $data[$key]['line'], 'TM', [], $url, $config, $data2['userid'], false, true); //insert sa pendingapp
                 }
@@ -317,7 +317,7 @@ class entrytask
           if ($update) {
             if ($data2['isassigntype'] != 0) {
               $this->computeassignedtype($config, $data[$key]['line']);
-              $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno . " and line=" . $data[$key]['line'], 'delete');
+              $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $data[$key]['line'], 'delete');
             }
           }
         }
@@ -479,7 +479,7 @@ class entrytask
               }
               $this->coreFunctions->sbcupdate('pendingapp', ['clientid' => $data['userid']], ['trno' => $trno, 'line' => $row['line']]);
             } else { //wala pa sa pending app
-              if ($data['userid'] != 0) {
+              if ($data['userid'] != 0 && $data['isassigntype'] == 0) {
                 $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
                 if ($data['isassigntype'] == 0) $this->othersClass->insertUpdatePendingapp($trno, $row['line'], 'TM', [], $url, $config, $data['userid'], false, true); //insert sa pendingapp
               }
@@ -489,7 +489,7 @@ class entrytask
         if ($this->coreFunctions->sbcupdate($tbl, $data, ['trno' => $trno, 'line' => $row['line']]) == 1) {
           if ($data['isassigntype'] != 0) {
             $this->computeassignedtype($config, $row['line']);
-            $this->coreFunctions->execqry("delete from pendingapp where  trno=" . $trno . " and line=" . $row['line'], 'delete');
+            $this->coreFunctions->execqry("delete from pendingapp where doc='TM' and trno=" . $trno . " and line=" . $row['line'], 'delete');
           }
           $returnrow = $this->loaddataperrecord($trno, $row['line']);
           // $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['title']);

@@ -275,14 +275,15 @@ class td
         data_set($col1, 'client.label', 'Driver Code');
         data_set($col1, 'clientname.label', 'Driver Name');
         data_set($col1, 'helpername.label', 'Helper 1');
+        // data_set($col2, 'helpername.required', true);
         data_set($col1, 'helpername2.label', 'Helper 2');
+        // data_set($col2, 'helpername2.required', true);
 
         // col 2
         $fields = ['dateid', 'truck', 'area', 'contact', 'checked'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'contact.label', 'Contact No.');
-        data_set($col2, 'truck.required', false);
-        // data_set($col2, 'truck.type', 'input');
+        // data_set($col2, 'truck.required', true);
         data_set($col2, 'truck.readonly', false);
         data_set($col2, 'area.type', 'input');
         data_set($col2, 'area.readonly', false);
@@ -351,20 +352,20 @@ class td
         $addfield = "";
 
         $qryselect = "select 
-         num.center,
-         head.trno, 
-         head.docno,
-         client.client,
-         left(head.dateid,10) as dateid, 
-         head.clientname,
-         info.helperid,
-         ifnull(hp.clientname, '') as helpername,
-         info.helperid2,
-         ifnull(hpp.clientname, '') as helpername2,  
-         date_format(head.createdate,'%Y-%m-%d') as createdate,
-         head.rem,truck.clientname as truck,info.truckid,info.plateno,
-         head.address as area,head.tel as contact,head.checkedby as checked,
-         head.odoin,head.odoout,head.amt";
+        num.center,
+        head.trno, 
+        head.docno,
+        client.client,
+        left(head.dateid,10) as dateid, 
+        head.clientname,
+        info.helperid,
+        ifnull(hp.clientname, '') as helpername,
+        info.helperid2,
+        ifnull(hpp.clientname, '') as helpername2,  
+        date_format(head.createdate,'%Y-%m-%d') as createdate,
+        head.rem,truck.clientname as truck,info.truckid,info.plateno,
+        head.address as area,head.tel as contact,head.checkedby as checked,
+        head.odoin,head.odoout,head.amt";
 
         $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -501,24 +502,26 @@ class td
         foreach ($column as $key => $value) {
             $$value = $key;
         }
-        $headgridbtns = ['viewref'];
+        // $headgridbtns = ['viewref'];
 
 
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $column,
-                'headgridbtns' => $headgridbtns
+                // 'headgridbtns' => $headgridbtns
             ],
         ];
+
+        $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'trucking', 'label' => 'DELIVERY TRUCKING DETAILS'];
 
         $stockbuttons = ['save', 'delete'];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
         //styling 
         $obj[0]['inventory']['columns'][$docno]['label'] = 'DR#';
-        $obj[0]['inventory']['columns'][$clientname]['label'] = 'CUSTOMER';
-        $obj[0]['inventory']['columns'][$modeofpayment]['label'] = 'PAYMENT';
-        $obj[0]['inventory']['columns'][$rem]['label'] = 'REMARKS';
+        $obj[0]['inventory']['columns'][$clientname]['label'] = 'Customer';
+        $obj[0]['inventory']['columns'][$modeofpayment]['label'] = 'Payment';
+        $obj[0]['inventory']['columns'][$rem]['label'] = 'Remarks';
         $obj[0]['inventory']['columns'][$docno]['readonly'] = true;
         $obj[0]['inventory']['columns'][$clientname]['readonly'] = true;
         $obj[0]['inventory']['columns'][$amt]['readonly'] = true;
@@ -568,15 +571,14 @@ class td
         switch ($config['params']['action']) {
             case 'unpostedsj':
                 return $this->unpostedsj($config);
-                // case 'saveitem':
-                //     return $this->saveitem($config);
-                // case 'saveperitem':
-                //     return $this->saveperitem($config);
-                //     break;
-                // case 'deleteitem':
-                //     return $this->deleteitem($config);
-                // case 'deleteallitem':
-                //     return $this->deleteallitem($config);
+            case 'saveitem':
+                return $this->saveitem($config);
+            case 'saveperitem':
+                return $this->saveperitem($config);
+            case 'deleteitem':
+                return $this->deleteitem($config);
+            case 'deleteallitem':
+                return $this->deleteallitem($config);
             default:
                 return ['status' => false, 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
         }
@@ -584,9 +586,14 @@ class td
 
     private function getdetailselect($config)
     {
-        $qry = "head.trno,d.line,la.docno,la.clientname,
-        ifnull((select sum(ext) from lastock where trno = d.refx),0) as amt,
-        la.terms,la.agent,'' as modeofpayment,'' as rem, '' as bgcolor";
+        $qry = "head.trno,d.line,
+        ifnull(la.docno, gl.docno) as docno,
+        ifnull(la.clientname, gl.clientname) as clientname,
+        format( ifnull((select sum(ext) from lastock where trno = d.refx),
+        ifnull((select sum(ext) from glstock where trno = d.refx), 0)), 2) as amt,
+        ifnull(la.terms, gl.terms) as terms,
+        ifnull(agent.clientname, glagent.clientname) as agent,
+        d.fstatus as modeofpayment, d.rem as rem, '' as bgcolor";
 
         return $qry;
     }
@@ -599,12 +606,18 @@ class td
         from " . $this->stock . " as d
         left join " . $this->head . " as head on head.trno=d.trno
         left join lahead as la on la.trno=d.refx
+        left join glhead as gl on gl.trno=d.refx
+        left join client as agent on agent.client=la.agent
+        left join client as glagent on glagent.clientid=gl.agentid
         where d.trno=?
         union all
         select " . $sqlselect . "  
         from " . $this->hstock . " as d
         left join " . $this->hhead . " as head on head.trno=d.trno
         left join lahead as la on la.trno=d.refx
+        left join glhead as gl on gl.trno=d.refx
+        left join client as agent on agent.client=la.agent
+        left join client as glagent on glagent.clientid=gl.agentid
         where d.trno=?
         order by line";
 
@@ -622,6 +635,9 @@ class td
         from " . $this->stock . " as d
         left join " . $this->head . " as head on head.trno=d.trno
         left join lahead as la on la.trno=d.refx
+        left join glhead as gl on gl.trno=d.refx
+        left join client as agent on agent.client=la.agent
+        left join client as glagent on glagent.clientid=gl.agentid
         where d.trno=? and d.line=?";
 
         $detail = $this->coreFunctions->opentable($qry, [$trno, $line]);
@@ -680,6 +696,92 @@ class td
     }
 
 
+    public function saveitem($config)
+    {
+        $trno = $config['params']['trno'];
+        $rows = isset($config['params']['row']) ? $config['params']['row'] : [];
+
+        if (empty($rows)) {
+            return ['status' => false, 'msg' => 'No items to save.'];
+        }
+
+        $saved = 0;
+
+        foreach ($rows as $key => $value) {
+            if (!isset($value['bgcolor']) || $value['bgcolor'] == '') {
+                continue;
+            }
+
+            $line = $value['line'];
+            $ext = str_replace(',', '', $value['amt']);
+            $fstatus = $value['modeofpayment'];
+            $rem = $value['rem'];
+
+            $data = [
+                'ext' => $ext,
+                'fstatus' => $fstatus,
+                'rem' => $rem,
+                'editdate' => $this->othersClass->getCurrentTimeStamp(),
+                'editby' => $config['params']['user']
+            ];
+
+            $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' Docno:' . $value['docno'] . ' Amt:' . $ext);
+            $saved++;
+        }
+
+        if ($saved == 0) {
+            return ['status' => false, 'msg' => 'No edited items to save.'];
+        }
+
+        $row = $this->openstock($trno, $config);
+
+        return ['inventory' => $row, 'status' => true, 'msg' => 'Successfully saved.', 'reloadhead' => true, 'reloaddata' => true, 'trno' => $config['params']['trno']];
+    }
+
+    public function saveperitem($config)
+    {
+        $trno = $config['params']['trno'];
+        $row = $config['params']['row'];
+        $line = $row['line'];
+        $ext = str_replace(',', '', $row['amt']);
+        $fstatus = $row['modeofpayment'];
+        $rem = $row['rem'];
+
+        $data = [
+            'ext' => $ext,
+            'fstatus' => $fstatus,
+            'rem' => $rem,
+            'editdate' => $this->othersClass->getCurrentTimeStamp(),
+            'editby' => $config['params']['user']
+        ];
+
+        $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' Docno:' . $row['docno'] . ' Amt:' . $ext);
+        $config['params']['line'] = $line;
+        $returnrow = $this->openstockline($config);
+        return ['row' => $returnrow, 'status' => true, 'msg' => 'Successfully saved.', 'reloaddata' => true];
+    }
+
+    public function deleteitem($config)
+    {
+        $trno = $config['params']['row']['trno'];
+        $line = $config['params']['row']['line'];
+
+        $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=? and line=?", 'delete', [$trno, $line]);
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Docno:' . $config['params']['row']['docno']);
+
+        return ['status' => true, 'msg' => 'Item was successfully deleted.'];
+    }
+
+    public function deleteallitem($config)
+    {
+        $trno = $config['params']['trno'];
+        $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
+        return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
+    }
+
+
     public function deletetrans($config)
     {
         $trno = $config['params']['trno'];
@@ -689,6 +791,7 @@ class td
         $qry = "select trno as value from " . $this->tablenum . " where doc=? and trno<? order by trno desc limit 1 ";
         $trno2 = $this->coreFunctions->datareader($qry, [$doc, $trno]);
 
+        $this->deleteallitem($config);
         $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
         $this->coreFunctions->execqry('delete from headinfotrans where trno=?', 'delete', [$trno]);
         $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
@@ -727,6 +830,20 @@ class td
             $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
             $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
             $this->coreFunctions->execqry('delete from headinfotrans where trno=?', 'delete', [$trno]);
+
+            // sync the tdtrno tag over to any picked SJ that has already been posted
+            $sjrows = $this->coreFunctions->opentable("select distinct refx as value from " . $this->stock . " where trno=?", [$trno]);
+            if (!empty($sjrows)) {
+                foreach ($sjrows as $s) {
+                    $sjtrno = $s->value;
+                    $isposted = $this->coreFunctions->datareader("select trno as value from glhead where trno=? limit 1", [$sjtrno]);
+                    if ($isposted != '') {
+                        $this->coreFunctions->execqry("update glhead set tdtrno=? where trno=?", 'update', [$trno, $sjtrno]);
+                        $this->coreFunctions->execqry("update lahead set tdtrno=0 where trno=?", 'update', [$sjtrno]);
+                    }
+                }
+            }
+
             $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
             $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
             return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
@@ -765,6 +882,27 @@ class td
             return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED.'];
         }
     } //end function
+
+    public function reportsetup($config)
+    {
+        $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
+        $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
+
+        $modulename = $this->modulename;
+        $data = [];
+        $style = 'width:500px;max-width:500px;';
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    }
+
+    public function reportdata($config)
+    {
+        $this->logger->sbcviewreportlog($config);
+
+        $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+        $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+
+        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+    }
 
 
 } //end class

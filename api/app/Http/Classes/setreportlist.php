@@ -31,6 +31,8 @@ class setreportlist
   public function reportlist($params)
   {
 
+    $allowmenus = $this->othersClass->getAllowMenus();
+
     // AMS AND AIMS
     // MASTERFILE
     $general_item_list = "";
@@ -737,7 +739,7 @@ class setreportlist
               $rep_sales_report_monthly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Monthly By Sales Date','\\90567',5884,'0'," . $params['levelid'] . ")";
               $rep_sales_report_yearly_by_salesdate = "('','\\905','','','',0,1,0,'Sales Report Yearly By Sales Date','\\90568',5896,'0'," . $params['levelid'] . ")";
               break;
-            case 64://excelin
+            case 64: //excelin
               $rep_profit_sales_report = "('','\\905','','','',0,1,0,'Profit Sales Report','\\90565',5857,'0'," . $params['levelid'] . ")";
               $rep_receivables_by_terms_report = "('','\\905','','','',0,1,0,'Receivables By Terms Report','\\90570',6012,'0'," . $params['levelid'] . ")";
               $rep_receivable_overdue_report = "('','\\905','','','',0,1,0,'Receivable Overdue Report','\\90572',6014,'0'," . $params['levelid'] . ")";
@@ -853,6 +855,7 @@ class setreportlist
     $rep_analyzedagentsalesmonthly = "";
     $rep_top_performing_sales_agent = "";
     $rep_sales_per_agent_per_item = "";
+    $rep_agent_commission = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -872,6 +875,9 @@ class setreportlist
           switch ($params['companyid']) {
             case 32: //3m
               $rep_target_vs_actual_sales_report = "('','\\907','','','',0,1,0,'Target vs Actual Sales Report','\\90708',3961,'0'," . $params['levelid'] . ")";
+              break;
+            case 71: //buenatech
+              $rep_agent_commission = "('','\\907','','','',0,1,0,'Agent Commission Report','\\90709',6036,'0'," . $params['levelid'] . ")";
               break;
             default:
               $rep_sales_per_agent = "('','\\907','','','',0,1,0,'Sales Per Agent','\\90704',3806,'0'," . $params['levelid'] . ")";
@@ -1457,6 +1463,9 @@ class setreportlist
           $rep_stockissuancereport = "('','\\90910','','\\\\909','',0,1,0,'Stock Issuance Report','\\9091003',3511,'0'," . $params['levelid'] . ")";
           $rep_stockreturnreport = "('','\\90910','','\\\\909','',0,1,0,'Stock Return Report','\\9091004',4706,'0'," . $params['levelid'] . ")";
 
+          if ($params['companyid'] == 68) { //jda move stockrequest to inventory parent
+            $rep_stockrequestreport = "('','\\90903','','\\\\909','',0,1,0,'Stock Request Report','\\9091001',3509,'0'," . $params['levelid'] . ")";
+          }
 
           if ($params['companyid'] == 8) { //maxipro
             $rep_monthlysummary_outputtax = "";
@@ -1701,6 +1710,7 @@ class setreportlist
           case 28: //xcomp
           case 36: //ROZLAB
           case 39: //CBBSI
+          case 61: //bytesize
           case 68: //jda company
             $rep_sched_fifo = "('','\\904','','','',0,1,0,'Schedule of Inventory FIFO','\\90414',3457,'0'," . $params['levelid'] . ")";
             break;
@@ -2689,6 +2699,17 @@ class setreportlist
         ];
         break;
       case 'AIMS':
+        switch ($params['companyid']) {
+          case 27: //nte
+          case 36: //rozlab
+            break;
+          default:
+            $subparent_issuance = "";
+            $rep_stockrequestreport = "";
+            $rep_stocktransferreport = "";
+            $rep_stockissuancereport = "";
+            break;
+        }
         $report_sysmenu = [
           $masterfile,
           $rep_chartofaccounts,
@@ -2866,6 +2887,7 @@ class setreportlist
           $rep_sales_per_agent_per_item,
           $rep_sales_per_agent,
           $rep_target_vs_actual_sales_report,
+          $rep_agent_commission,
 
           // OTHER REPORTS
           $parent_otherreports,
@@ -2919,6 +2941,11 @@ class setreportlist
           $rep_salesjournalreport,
           $rep_salesreturnreport,
           $rep_consign_and_outright_invoice,
+
+          $subparent_issuance,
+          $rep_stockrequestreport,
+          $rep_stocktransferreport,
+          $rep_stockissuancereport,
 
           $rep_sparepartsissuance,
           $rep_mccollection,
@@ -4064,6 +4091,11 @@ class setreportlist
         break;
 
       case 'AIMSHRISPAYROLL':
+
+        if (!in_array('TR', array_column($allowmenus, 'doc'), true)) {
+          $rep_stockrequestreport = '';
+        }
+
         $report_sysmenu = [
           //AIMS
           $masterfile,
@@ -4247,6 +4279,7 @@ class setreportlist
           $rep_physicalcountreport,
           $rep_transferslipreport,
           $rep_inventoryadjustmentreport,
+          $rep_stockrequestreport,
           $subparent_payables,
           $rep_petty_cash,
           $rep_petty_cash_request,

@@ -893,7 +893,7 @@ class mc
                 $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
 
                 //cr creation
-                //$this->createcr($config);
+                $this->createcr($config);
                 return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
             } else {
                 $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
@@ -1014,7 +1014,7 @@ class mc
       $dateTables = ['lahead', 'ladetail'];
       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $exist = $this->coreFunctions->getfieldvalue($this->tablenum,"crtrno","trno=?",[$trno],'',true);
+      $exist = $this->coreFunctions->getfieldvalue($this->hhead,"crtrno","trno=?",[$trno],'',true);
       if($exist !=0){
         return ['status' => false, 'msg' => 'Already have CR.'];
       }
@@ -1022,12 +1022,13 @@ class mc
       $path = 'App\Http\Classes\modules\receivable\cr';
       $qry = "";
 
-      $head = $this->coreFunctions->opentable("select trnxtype from ".$this->hhead." where trno = ? ",[$trno]);
+      $headd = $this->coreFunctions->opentable("select trnxtype,checkdate,checkinfo as checkno,amount from ".$this->hhead." where trno = ? ",[$trno]);
 
-      if ($head[0]['trnxtype'] == 'Downpayment-MC' || $head[0]['trnxtype'] == 'Downpayment-Spareparts') {
+      if ($headd[0]->trnxtype == 'Downpayment-MC' || $headd[0]->trnxtype == 'Downpayment-Spareparts') {
         $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
-        ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter
+        ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,
+        head.dateid as mcdate,sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkinfo as checkno,head.checkdate
         from  hmchead as head 
         left join hmcdetail as mcd on mcd.trno = head.trno
         left join gldetail as d on d.mctrno = head.trno 
@@ -1039,13 +1040,13 @@ class mc
         where ar.bal<>0 and head.isok = 0 and num.trno =? and coa.alias ='ARDP' group by
         ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
-        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center      
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center  ,head.checkinfo,head.checkdate    
         order by dateid";
       } else {
         $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,
-        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkno,head.checkdate
+        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkinfo as checkno,head.checkdate
         from  hmchead as head 
         left join hmcdetail as mcd on mcd.trno = head.trno
         left join gldetail as d on d.trno = mcd.refx and d.postdate = mcd.dateid
@@ -1057,12 +1058,12 @@ class mc
         where ar.bal<>0 and head.isok = 0 and num.trno =? group by
         ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
-        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkno,head.checkdate
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkinfo,head.checkdate
         union all
         select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,
-        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkno,head.checkdate
+        sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkinfo as checkno,head.checkdate
         from  hmchead as head 
         left join hmcdetail as mcd on mcd.trno = head.trno
         left join gldetail as d on d.trno = mcd.refx and d.postdate = mcd.dateid
@@ -1074,7 +1075,7 @@ class mc
         where ar.bal<>0 and head.isok = 0 and num.trno =? and coa.alias = 'AP3' group by
         ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
-        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkno,head.checkdate
+        ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkinfo,head.checkdate
         order by dateid";
       }
     
@@ -1115,26 +1116,127 @@ class mc
                         $this->logger->sbcwritelog($crtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname,app($path)->tablelogs);
                         //entries:
                         $cash = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'CA1'");
-                        foreach ($data as $key2 => $value2) {
-                            if($data[0]->db != 0){
+                        foreach ($data as $key2 => $value2) {                            
                                 $d['trno'] = $crtrno;
                                 $d['line'] = $line;
-                                $d['refx'] = 0;
-                                $d['linex'] = 0;
+                                $d['refx'] =  $data[$key2]->trno;
+                                $d['linex'] =  $data[$key2]->line;
                                 $d['client'] = $data[$key2]->client;
                                 $d['acnoid'] = $data[$key2]->acnoid;
                                 $d['postdate'] = $data[$key2]->dateid;//date('Y-m-d');
+                                $d['mcrefx'] = $data[$key2]->mcrefx;
                                 $d['checkno'] ='';
-                                $d['ref'] = '';
-                                $d['db'] = $data[0]->total;
-                                $d['cr'] = 0;
-                                $d['rem'] = 'Take out fee';
+                                $d['ref'] = $data[0]->docno;
+                                if($data[$key2]->db != 0){
+                                    $d['cr'] = $data[$key2]->bal;
+                                    $d['db'] = 0;
+                                }else{
+                                    $d['db'] = $data[$key2]->bal;
+                                    $d['cr'] = 0;
+                                }
+                                $d['rem'] = '';
                                 array_push($detail, $d);
                                 $line +=1;
-                            }
+
+                                //other income
+                                if ($data[$key2]->alias == 'AP3' && $data[$key2]->dateid < $data[$key2]->mcdate) {
+                                    $d['trno'] = $crtrno;
+                                    $d['line'] = $line;
+                                    $d['refx'] =  0;
+                                    $d['linex'] = 0;
+                                    $d['client'] = $data[$key2]->client;
+                                    $d['acnoid'] =$this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA6'");
+                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
+                                    $d['mcrefx'] =0;
+                                    $d['checkno'] ='';
+                                    $d['ref'] ='';
+                                    $d['type'] = 'R';
+                                    $d['podate'] =$data[$key2]->dateid;
+                                    $d['cr'] = $data[$key2]->bal;
+                                    $d['db'] = 0;
+                                    $d['rem'] = 'Unclaimed Rebate';
+                                    array_push($detail, $d);
+                                    $line +=1;
+                                }
+
+                                //unearned interest
+                                if ($data[$key2]->alias == 'AR2') {
+                                    $d['trno'] = $crtrno;
+                                    $d['line'] = $line;
+                                    $d['refx'] =  0;
+                                    $d['linex'] =  0;
+                                    $d['client'] = $data[$key2]->client;
+                                    $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA3'");
+                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
+                                    $d['mcrefx'] = 0;
+                                    $d['checkno'] ='';
+                                    $d['ref'] = '';
+                                    $d['db'] = $data[$key2]->bal;
+                                    $d['cr'] = 0;
+                                    $d['rem'] = '';
+                                    array_push($detail, $d);
+                                    $line +=1;
+
+                                    //int income
+                                    $d['trno'] = $crtrno;
+                                    $d['line'] = $line;
+                                    $d['refx'] =  0;
+                                    $d['linex'] =  0;
+                                    $d['client'] = $data[$key2]->client;
+                                    $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA8'");
+                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
+                                    $d['mcrefx'] = 0;
+                                    $d['checkno'] ='';
+                                    $d['ref'] = '';
+                                    $d['cr'] = $data[$key2]->bal;
+                                    $d['db'] = 0;
+                                    $d['rem'] = '';
+                                    array_push($detail, $d);
+                                    $line +=1;
+                                }                            
                         }
                         
+                        $pt = "select mcd.penalty,mc.dateid as mcdate,mcd.dateid from hmcdetail as mcd left join hmchead as mc on mc.trno = mcd.trno where mcd.trno = ? and mcd.penalty<>0";
+                        $pdata = $this->coreFunctions->opentable($pt, [$trno]);
+                        if (!empty($pdata)) {
+                            foreach ($pdata as $p => $v) {
+                                $d['trno'] = $crtrno;
+                                $d['line'] = $line;
+                                $d['refx'] =  0;
+                                $d['linex'] =  0;
+                                $d['client'] = $data[0]->client;
+                                $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA6'");
+                                $d['postdate'] = $data[0]->mcdate;//date('Y-m-d');
+                                $d['mcrefx'] = $data[0]->mcrefx;
+                                $d['checkno'] ='';
+                                $d['ref'] = $data[0]->mcdocno;
+                                $d['cr'] =$pdata[$p]->penalty;
+                                $d['db'] = 0;
+                                $d['rem'] = 'Penalty for AR Due ' . date("m/d/Y", strtotime($pdata[0]->dateid));
+                                $d['type'] = 'P';
+                                $d['podate'] =$data[$key2]->dateid;
+                                array_push($detail, $d);
+                                $line +=1;
 
+                            }
+                        }
+
+                        //cash entry
+                        $d['trno'] = $crtrno;
+                        $d['line'] = $line;
+                        $d['refx'] =  0;
+                        $d['linex'] = 0;
+                        $d['client'] = $data[$key2]->client;
+                        $d['acnoid'] =$this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='CA1'");
+                        $d['postdate'] = $headd[0]->checkdate ;//date('Y-m-d');
+                        $d['mcrefx'] =0;
+                        $d['checkno'] =$headd[0]->checkno; 
+                        $d['ref'] ='';
+                        $d['db'] = $headd[0]->amount ;
+                        $d['cr'] = 0;
+                        $d['rem'] = '';
+                        array_push($detail, $d);
+                        $line +=1;
                         //var_dump($detail);
 
                         if (!empty($detail)) {
@@ -1155,23 +1257,25 @@ class mc
                                 $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',app($path)->tablelogs);
                                 return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
                               }
-                            } //for $detail
-                  
+                            } //for $detail                  
                           }
 
-                          $config['params']['trno'] = $crtrno;
-                          $this->tablenum = 'cntnum';
-                          $this->head = 'lahead';
-                          $this->hhead = 'glhead';
-                          $this->tablelogs = 'table_log';
-                          $this->htablelogs = 'htable_log';
-                          $return = $this->othersClass->posttransacctg($config);
-                          if ($return['status']) {                         
-                            $msg = "Auto entry Successful";
-                            $this->coreFunctions->execqry("update transnum set pstrno = ".$crtrno.". where trno =".$trno,"update");
-                            return ['status' => true, 'msg' => $msg];
-                          }
-                         
+                        $msg = "Auto entry Successful";
+                        $this->coreFunctions->execqry("update ".$this->hhead." set crtrno = ".$crtrno.". where trno =".$trno,"update");
+                        return ['status' => true, 'msg' => $msg];
+
+                        //   $config['params']['trno'] = $crtrno;
+                        //   $this->tablenum = 'cntnum';
+                        //   $this->head = 'lahead';
+                        //   $this->hhead = 'glhead';
+                        //   $this->tablelogs = 'table_log';
+                        //   $this->htablelogs = 'htable_log';
+                        //   $return = $this->othersClass->posttransacctg($config,'ladetail');
+                        //   if ($return['status']) {                         
+                        //     $msg = "Auto entry Successful";
+                        //     $this->coreFunctions->execqry("update ".$this->hhead." set crtrno = ".$crtrno.". where trno =".$trno,"update");
+                        //     return ['status' => true, 'msg' => $msg];
+                        //   }                       
                     
                     }
             
@@ -1186,6 +1290,8 @@ class mc
        
   
        
+      }else{
+        return ['status' => false, 'msg' => "Tagged SI Already Paid"];
       }
     }
 } //end class

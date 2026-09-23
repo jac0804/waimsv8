@@ -3626,13 +3626,21 @@ class inventory_balance
             } else {
               $part = strtoupper($data->part);
               $str .= $this->reporter->startrow();
-              $this->reporter->addline();
+              // $this->reporter->addline();
+              // Calculate the actual number of lines needed by the PART
+              $partLines = $this->reporter->estimateRowLines([
+                [$part, 100, '6px'],
+              ], $font_size);
+              $this->reporter->linecounter -= 1;
+
               $str .= $this->reporter->col($part, '100', null, false, '1px solid ', '', 'L', $font, $font_size, 'B', '', '');
               $str .= $this->reporter->col('', '450', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->endrow();
+              // Add the actual number of PART lines to linecounter
+              $this->reporter->linecounter += max(1, $partLines);
             }
           } else {
             $part = "";
@@ -3644,13 +3652,20 @@ class inventory_balance
             } else {
               $scatgrp = strtoupper($data->category);
               $str .= $this->reporter->startrow();
-              $this->reporter->addline();
+              // $this->reporter->addline();
+              $partLines = $this->reporter->estimateRowLines([
+                [$scatgrp, 300, '6px'],
+              ], $font_size);
+              $this->reporter->linecounter -= 1;
+
               $str .= $this->reporter->col($scatgrp, '300', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '250', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->endrow();
+
+              $this->reporter->linecounter += max(1, $partLines);
             }
           } else {
             $scatgrp = "";
@@ -3665,7 +3680,12 @@ class inventory_balance
             } else {
               $igrp = strtoupper($data->stockgrp_name);
               $str .= $this->reporter->startrow();
-              $this->reporter->addline();
+              // $this->reporter->addline();
+              $partLines = $this->reporter->estimateRowLines([
+                [$igrp, 100, '6px'],
+              ], $font_size);
+              $this->reporter->linecounter -= 1;
+
               $str .= $this->reporter->col($igrp, '75', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '150', null, false, '1px solid ', '', 'L', $font, $font_size, 'Bi', '', '');
               $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'R', $font, $font_size, '', '', '');
@@ -3675,6 +3695,7 @@ class inventory_balance
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->col('', '75', null, false, '1px solid ', '', 'C', $font, $font_size, '', '', '');
               $str .= $this->reporter->endrow();
+              $this->reporter->linecounter += max(1, $partLines);
             }
           } else {
             $igrp = "";
@@ -3855,8 +3876,8 @@ class inventory_balance
               $str .= $this->default_displayHeader_SELLING_PRICE($config);
             }
             $str .= $this->default_selling_price_table_cols($this->reportParams['layoutSize'], $border, $font, $font_size, $config);
-            $this->reporter->linecounter = 0;
-            // $page = $page + $count;
+            // $this->reporter->linecounter = 0;
+            $page = $page + $count;
           }
         }
 
@@ -5283,7 +5304,7 @@ class inventory_balance
         //     $str .= $this->reporter->page_break();
         //     $str .= $this->reporter->begintable($layoutsize);
         //     $allowfirstpage = $this->companysetup->getisfirstpageheader($config['params']);
-        
+
         //     if (!$allowfirstpage) {
         //       $str .= $this->default_displayHeader_NONE($config);
         //     }

@@ -1955,6 +1955,11 @@ class lookupClass
         return $this->lookupunpostedsj($config);
         break;
 
+        //hahsy
+    case 'lookupagency':
+        return $this->lookupagency($config);
+        break;
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
         break;
@@ -2319,13 +2324,20 @@ class lookupClass
             'plotting' => array('terms' => 'terms', 'termsdetails' => 'terms')
           );
         }
+        
         break;
-        case 'financeterms':
-          $plotsetup = array(
-            'plottype' => 'plotledger',
-            'plotting' => array('terms' => 'terms')
-          );
-          break;
+      case 'financeterms':
+        $plotsetup = array(
+          'plottype' => 'plotledger',
+          'plotting' => array('terms' => 'terms')
+        );
+        break;
+      case 'sjfinanceterms':
+        $plotsetup = array(
+          'plottype' => 'plotledger',
+          'plotting' => array('terms' => 'terms','downpayment'=>'dp','interestrate'=>'interest','fma2'=>'factor','penalty'=>'penalty','fmiscfee'=>'miscfee','rebate'=>'rebate','fma1'=>'ma')
+        );
+        break;
       default:
         if ($config['params']['companyid'] == 19 && $config['params']['doc'] == 'SJ') { //housegem
           $callbackfieldhead = array('deldate');
@@ -2356,9 +2368,17 @@ class lookupClass
             union all
             select terms,days,line from terms " . $filter . " order by line";
     } else {
-      $qry = "select '' as terms, 0 as days,0 as line, 0 as interest, 0 as pfnf,0 as nf
-            union all
-            select terms,days,line,interest,pfnf,nf from terms order by line";
+      if ($config['params']['lookupclass'] == 'sjfinanceterms') {
+        $itemid = $this->coreFunctions->getfieldvalue("lastock","itemid","trno=?",[$config['params']['trno']]);
+        $qry = "select '' as terms,0 as dp,0 as interest,0 as factor,0 as penalty,0 as miscfee,0 as rebate,0 as ma
+        union all
+        select terms,dp,interest,factor,penalty,miscfee,rebate,0 as ma from mcfinancerate where itemid = ".$itemid;
+      }else{
+        $qry = "select '' as terms, 0 as days,0 as line, 0 as interest, 0 as pfnf,0 as nf
+        union all
+        select terms,days,line,interest,pfnf,nf from terms order by line";
+      }
+      
     }
 
     $data = $this->coreFunctions->opentable($qry);
@@ -6258,7 +6278,7 @@ class lookupClass
 
     ini_set('memory_limit', '-1');
     ini_set('max_execution_time', 0);
-
+    
     if ($config['params']['companyid'] == 56) {
 
       // $msg = 'UOM cannot be blank -' . $item[0]->barcode;
@@ -6281,6 +6301,7 @@ class lookupClass
 
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $ismultiloc = $this->companysetup->getissuemultipleexpiry($config['params']);
+    $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
     $lookupsetup = array(
       'type' => 'singlesearch',
       'actionsearch' => 'searchitem',
@@ -6475,7 +6496,9 @@ class lookupClass
         array_push($cols, array('name' => 'namt7', 'label' => 'Net DR', 'align' => 'right', 'field' => 'namt7', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'amt2', 'label' => 'Wholesale Base', 'align' => 'right', 'field' => 'amt2', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         array_push($cols, array('name' => 'disc2', 'label' => 'Wholesale Disc', 'align' => 'left', 'field' => 'disc2', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
+        if($viewcost){
         array_push($cols, array('name' => 'namt4', 'label' => 'Net Cost', 'align' => 'right', 'field' => 'namt4', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
+        }
         array_push($cols, array('name' => 'activestat', 'label' => 'Status', 'align' => 'right', 'field' => 'activestat', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         break;
       default:
@@ -14896,7 +14919,7 @@ class lookupClass
       // union all
       // select 'RR2' as doc, 'Temporary Barcode' as modulename
     } else {
-      $alloweddoc = $this->coreFunctions->opentable('select doc from left_menu');
+      $alloweddoc = $this->coreFunctions->opentable('select distinct doc from left_menu');
       $filter = '';
       foreach ($alloweddoc as $key => $value) {
         switch ($value->doc) {
@@ -26051,8 +26074,8 @@ class lookupClass
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
 
- public function lookupunpostedsj($config)
-{
+  public function lookupunpostedsj($config)
+  {
     $lookupsetup = array(
         'type' => 'multi',
         'rowkey' => 'keyid',
@@ -26072,13 +26095,40 @@ class lookupClass
     $qry = "select head.trno as keyid, head.trno, head.docno, head.clientname, sum(stock.ext) as amount from lahead as head
     left join lastock as stock on stock.trno = head.trno
     where head.doc in ('DR','SI', 'SJ')
+    and (head.tdtrno is null or head.tdtrno = 0)
     group by head.trno, head.docno,head.clientname
     order by head.trno";
 
     $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
-}
+  }
 
+
+  public function lookupagency($config)
+{
+    $plotting = array('agencyname' => 'agencyname');
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Agency',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'agencyname', 'label' => 'Agency Name', 'align' => 'left', 'field' => 'agencyname', 'sortable' => true, 'style' => 'font-size:16px;'],
+    ];
+
+    $qry = "select distinct agencyname from employee where agencyname is not null and agencyname != '' order by agencyname";
+    $data = $this->coreFunctions->opentable($qry);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+}
 
 } // end class

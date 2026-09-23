@@ -10552,10 +10552,10 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $operator = $operator + $data->db - $data->cr;
         $totalearn = $totalearn + $data->db - $data->cr;
       } else {
-        if ($data->cr > 0) {
+        if ($data->cr != 0) {
           $otherdeduction = $otherdeduction + $data->cr;
           $totalded = $totalded + $data->cr;
-        } elseif ($data->db > 0) {
+        } elseif ($data->db != 0) {
           $otherearnings = $otherearnings + $data->db;
           $totalearn = $totalearn + $data->db;
         }
@@ -10594,7 +10594,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
             continue;
           }
 
-          if ($earn->db > 0) {
+          if ($earn->db != 0) {
             $qty = $earn->qty;
             $uom = $earn->uom;
 
@@ -10617,7 +10617,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
             }
 
             // Only add if display_qty is not 0 or it's a monetary item
-            if ($display_qty != 0 || $earn->alias == 'ALLOWANCE' || $earn->alias == '13PAY') {
+            if ($display_qty != 0 || $earn->alias == 'ALLOWANCE' || $earn->alias == '13PAY'|| $earn->db != 0) {
               $earn_rows[] = array(
                 'codename' => $earn->codename,
                 'code' => $earn->code,
@@ -10661,7 +10661,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $ded_rows  = array();
         foreach ($deduction as $ded) {
           // Show ALL deductions with cr > 0
-          if ($ded->cr > 0) {
+          if ($ded->cr != 0) {
             $ded_rows[] = array(
               'codename' => $ded->codename,
               'amount'   => $ded->cr,

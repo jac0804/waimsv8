@@ -368,7 +368,7 @@ class customer_performance_report
           left join item on item.itemid=stock.itemid
           left join itemcategory as cat on cat.line = item.category
           left join itemsubcategory as subcat on subcat.line = item.subcat
-          where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+          where head.doc in ('sj','mj','sd','se','sf','ai') and date(head.dateid) between '$start' and '$end' 
           $filter $filter1 and item.isofficesupplies=0
           group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name " . $addfield . "";
           break;
@@ -568,7 +568,7 @@ class customer_performance_report
         left join itemcategory as cat on cat.line = item.category
         left join itemsubcategory as subcat on subcat.line = item.subcat
     
-        where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$start' and '$end' 
+        where head.doc in ('sj','mj','sd','se','sf','ai') and date(head.dateid) between '$start' and '$end' 
         $filter $filter1
         group by head.dateid, head.docno, client.client, client.clientname, agent.client, agent.clientname, cat.name, subcat.name) as s";
         break;

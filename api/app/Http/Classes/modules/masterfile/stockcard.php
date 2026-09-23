@@ -37,7 +37,7 @@ class stockcard
   public $tablelogs_del = 'del_item_log';
   private $stockselect;
 
-  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate'];
+  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate', 'carton'];
   private $iteminfo = ['volume', 'weight', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
 
   private $except = ['itemid', 'itemrem'];
@@ -392,7 +392,7 @@ class stockcard
         return $cols;
         break;
       case 59: //roosevelt 
-        $getcols = ['action', 'barcode', 'itemname',  'supplier', 'uom', 'cat_name',  'subclass',  'activestat', 'amt', 'amt2', 'famt', 'amt4'];
+        $getcols = ['action', 'barcode', 'itemname',  'supplier', 'uom', 'cat_name',  'subclass', 'sizeid',   'activestat', 'amt', 'amt2', 'famt', 'amt4'];
         $stockbuttons = ['view'];
 
         foreach ($getcols as $key => $value) {
@@ -409,6 +409,9 @@ class stockcard
         $cols[$amt2]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
         $cols[$amt4]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
         $cols[$famt]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:right;';
+        $cols[$subclass]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:left;';
+        $cols[$sizeid]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;text-align:left;';
+
 
         $cols[$amt]['label'] = 'Dealer Price';
         $cols[$amt2]['label'] = 'Dealer 2';
@@ -812,6 +815,9 @@ class stockcard
     $pospricescheme_list = $this->othersClass->checkAccess($config['params']['user'], 5390);
     $pospromoperitem_list = $this->othersClass->checkAccess($config['params']['user'], 5391);
 
+    $financerates = $this->othersClass->checkAccess($config['params']['user'], 6035);
+
+
     $companyid = $config['params']['companyid'];
     $price = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewitemprice']];
     $baseprice = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewitembaseprice']];
@@ -872,7 +878,10 @@ class stockcard
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewpromoperitem', 'label' => 'PROMO PER ITEM']];
     $pospromoperitem = $this->tabClass->createtab($tab, []);
 
-    $financerates = ['customform' => ['action' => 'customform', 'lookupclass' => 'financerates']];
+
+    $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryfinancerates', 'label' => 'FINANCE RATES']];
+    $financeratesetup = $this->tabClass->createtab($tab, []);
+
 
     $commissionrate = [];
     if ($companyid == 64) { //yulick
@@ -1015,9 +1024,12 @@ class stockcard
       }
     }
 
-    if ($config['params']['companyid'] == 40) { //cdo
-      $return['FINANCE RATES'] = ['icon' => 'fas fa-wallet', 'customform' => $financerates];
+    if ($companyid == 40) { //cdo
+      if ($financerates) {
+        $return['Finance Rates'] = ['icon' => 'fa fa-percent', 'tab' => $financeratesetup];
+      }
     }
+
     return $return;
   }
 
@@ -1198,6 +1210,9 @@ class stockcard
         break;
       case 56; //homeworks
         array_push($fields, 'channel', 'avecost');
+        break;
+      case 59: //roosevelt 
+        array_push($fields, 'carton');
         break;
       case 60: //transpower
         array_push($fields, 'startwire', 'endwire');
@@ -1522,6 +1537,7 @@ class stockcard
     $data[0]['lastpr'] = 0;
     $data[0]['defcost'] = 0;
     $data[0]['commrate'] = 0;
+    $data[0]['carton'] = 0;
 
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
@@ -1672,6 +1688,7 @@ class stockcard
       } //end if    
     }
 
+
     if ($companyid == 16 ||  $systemtype == 'FAMS') { //ati
       if ($data['isgeneric']) {
         $data['isnoninv'] = "1";
@@ -1770,10 +1787,12 @@ class stockcard
         }
       }
 
-      $exist  = $this->coreFunctions->datareader("select barcodeid as value from item where barcodeid = '" . $data['barcodeid'] . "' limit 1");
-      if ($exist != "") {
-        $this->logger->sbcwritelog($head['itemid'], $config, 'Update',  $data['barcodeid'] . " Item ID already exist.");
-        unset($data['barcodeid']);
+      if( $data['barcodeid'] !=""){
+        $exist  = $this->coreFunctions->datareader("select barcodeid as value from item where barcodeid = '" . $data['barcodeid'] . "' limit 1");
+        if ($exist != "") {
+          $this->logger->sbcwritelog($head['itemid'], $config, 'Update',  $data['barcodeid'] . " Item ID already exist.");
+          unset($data['barcodeid']);
+        }
       }
 
       // uom_update:

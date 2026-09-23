@@ -440,7 +440,8 @@ class trigger
       'Item Remarks' => ['itemrem' => []],
       'Channel' => ['channel' => []],
       $othcode => ['othcode' => []],
-      $shortname => ['shortname' => []]
+      $shortname => ['shortname' => []],
+      'Qty per Carton' => ['carton' => []],
     ];
 
     $customtrigger = "if OLD.dlock<>NEW.dlock and New.ispositem = 1 then  delete from itemdlock where itemid = Old.itemid; insert into itemdlock(itemid,dlock)values(Old.itemid,New.dlock); end if;                       

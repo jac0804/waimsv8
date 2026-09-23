@@ -393,7 +393,7 @@ class customer
         break;
       case 64:
         $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname, client.tel, client.tel2 as mobile,
-        client.building as buildingname";
+        client.bstyle as buildingname";
         $leftjoin = "left join client as ag on ag.client = client.agent";
         $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
         if ($search != "") {
@@ -684,6 +684,13 @@ class customer
     }
 
 
+    if($companyid==72){ // hashy
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku2', 'label' => 'SPECIAL ITEM PRICE']];
+      $sku2 = $this->tabClass->createtab($tab, []);
+      $return['SPECIAL ITEM PRICE'] = ['icon' => 'fa fa-equals', 'tab' => $sku2];
+    }
+
+
     switch ($systemtype) {
       case 'AMS':
       case 'EAPPLICATION':
@@ -787,6 +794,9 @@ class customer
               $return['SHIPPING ADDRESS SETUP'] = ['icon' => 'fa fa-address-book', 'tab' => $billship];
             }
             break;
+          case 72: //hashy
+            $return['TRUCKING ADDRESS'] = ['icon' => 'fa fa-address-book', 'tab' => $billship];
+            break;  
           default:
             if ($defaultaddresstab_access != 0) {
               $return['DEFAULT SHIPPING/BILLING ADDRESS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $billshipdefault];
@@ -846,6 +856,7 @@ class customer
         $return['BILLING SETUP'] = ['icon' => 'fa fa-file-invoice-dollar', 'tab' => $billing];
       }
     }
+
     return $return;
   }
 

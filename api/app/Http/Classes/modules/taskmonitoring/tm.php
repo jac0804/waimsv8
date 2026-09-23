@@ -546,7 +546,7 @@ class tm
     $doc = $config['params']['doc'];
     $url = 'App\Http\Classes\modules\taskmonitoring\\' . 'tm';
 
-    $qry = "select line,userid from tmdetail as d  where d.trno =$trno and userid<>0 and acceptdate is null";
+    $qry = "select line,userid from tmdetail as d  where d.trno =$trno and userid<>0 and isassigntype=0 and acceptdate is null";
     $assigned = $this->coreFunctions->opentable($qry);
 
     if (!empty($assigned)) {

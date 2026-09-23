@@ -67,7 +67,6 @@ class sales_markup_customer_difference_report
         '' as client,
         '' as clientname,
         '' as dclientname,
-        '' as ditemname,
         0 as itemid,
         '' as itemname,
         '' as agent,
@@ -100,59 +99,49 @@ class sales_markup_customer_difference_report
         $start       = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end         = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $agentname   = $config['params']['dataparams']['agentname'];
-        $client   = $config['params']['dataparams']['client'];
         $clientname   = $config['params']['dataparams']['clientname'];
-        $ditemname   = $config['params']['dataparams']['ditemname'];
+        $itemname   = $config['params']['dataparams']['itemname'];
         $itemid   = $config['params']['dataparams']['itemid'];
-        $agent     = $config['params']['dataparams']['agent'];
-
+        $agentid     = $config['params']['dataparams']['agentid'];
 
         $filter = '';
 
-        // if ($clientname != "") {
-        //     $filter .= " and client.clientname = '$clientname'";
-        // }
-        if ($client != "") {
-            $filter = $filter . " and client.client='$client'";
+        if ($clientname != "") {
+            $filter .= " and client.clientname = '$clientname'";
         }
 
         if ($agentname != "") {
-            $filter .= " and agent.clientname = '$agentname'";
+            $filter .= " and agent.clientid = '$agentid'";
         }
 
-        if ($ditemname != "") {
+        if ($itemname != "") {
             $filter .= "and stock.itemid = '$itemid'";
         }
-
-        if ($agent != "") {
-            $filter .= " and agent.client = '$agent'";
-        }
-
 
         $query = "select concat(left(head.docno,3),'-',right(head.docno,3)) as inv,concat(cntnum.bref,'-',cntnum.seq) as invoiceno,
             concat(left(client.client,3),'-',right(client.client,3)) as customer_id,head.clientname,agent.clientname as agent,
             concat(left(item.barcode,3),'-',right(item.barcode,3)) as item_code,item.itemname,stock.isqty,stock.ext as netsales,
-            (stock.iss*stock.cost) as totalcost,ifnull((stock.ext - (stock.cost * stock.isqty)) / nullif(stock.ext,0) * 100, 0) as actual_markup,
-            0 as standard_markup, 0 as difference, 0 as exeption_flag
+            (stock.iss*stock.cost) as totalcost,ifnull(stock.consignpr - stock.custdisc, 0) as actual_markup,
+            item.markup as standard_markup,ifnull(stock.ext - (stock.consignpr - stock.custdisc),0) as difference, 0 as exeption_flag
             from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join client on client.clientid=head.clientid
             left join client as agent on agent.clientid = head.agentid
             left join item on item.itemid = stock.itemid
-           left join cntnum as cntnum on cntnum.trno=head.trno
+            left join cntnum as cntnum on cntnum.trno=head.trno
             where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end' $filter
             union all
             select concat(left(head.docno,3),'-',right(head.docno,3)) as inv,concat(cntnum.bref,'-',cntnum.seq) as invoiceno,
             concat(left(client.client,3),'-',right(client.client,3)) as customer_id,head.clientname,agent.clientname as agent,
             concat(left(item.barcode,3),'-',right(item.barcode,3)) as item_code,item.itemname,stock.isqty as qty ,stock.ext as netsales,
-            (stock.iss*stock.cost) as totalcost,ifnull((stock.ext - (stock.cost * stock.isqty)) / nullif(stock.ext,0) * 100, 0) as actual_markup,
-            0 as standard_markup, 0 as difference, 0 as exeption_flag
+            (stock.iss*stock.cost) as totalcost,ifnull(stock.consignpr - stock.custdisc, 0) as actual_markup,
+            item.markup as standard_markup,ifnull(stock.ext - (stock.consignpr - stock.custdisc),0) as difference, 0 as exeption_flag
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
             left join client on client.client=head.client
             left join client as agent on agent.client = head.agent
             left join item on item.itemid = stock.itemid
-           left join cntnum as cntnum on cntnum.trno=head.trno
+            left join cntnum as cntnum on cntnum.trno=head.trno
             where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end' $filter 
             order by clientname";
 
@@ -197,11 +186,11 @@ class sales_markup_customer_difference_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Customer :', '100', null, false, '', '', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($clientname == '' ? 'ALL CUSTOMERS' : strtoupper($clientname), '300', null, false, '', '', 'L', $font, $fontsize);
-        $str .= $this->reporter->col('Sales Agent :', '100', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('Customer :', '80', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($clientname == '' ? 'ALL CUSTOMERS' : strtoupper($clientname), '370', null, false, '', '', 'L', $font, $fontsize);
+        $str .= $this->reporter->col('Sales Agent :', '80', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($agentname == '' ? 'ALL AGENTS' : strtoupper($agentname), '300', null, false, '', '', 'L', $font, $fontsize);
-        $str .= $this->reporter->col('Item :', '100', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('Item :', '70', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($itemname == '' ? 'ALL ITEMS' : strtoupper($itemname), '300', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -275,19 +264,19 @@ class sales_markup_customer_difference_report
             $exception = ($data->exeption_flag == 1) ? 'EXCEPTION' : '-';
 
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col((empty($data->invoiceno) ? '-' : $data->invoiceno), '70',  null, false, $border, '', 'L', $font, $fontsize);
-            $str .= $this->reporter->col($data->customer_id, '70',  null, false, $border, '', 'L', $font, $fontsize);
-            $str .= $this->reporter->col($data->clientname, '150', null, false, $border, '', 'L', $font, $fontsize);
-            $str .= $this->reporter->col($data->agent, '140', null, false, $border, '', 'L', $font, $fontsize);
-            $str .= $this->reporter->col($data->item_code, '70',  null, false, $border, '', 'C', $font, $fontsize);
-            $str .= $this->reporter->col($data->itemname, '140', null, false, $border, '', 'L', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->isqty) ? '-' : number_format($data->isqty, 0)), '50', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->netsales) ? '-' : number_format($data->netsales, 2)), '80', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->totalcost) ? '-' : number_format($data->totalcost, 2)), '80', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->actual_markup) ? '-' : number_format($data->actual_markup, 2) . '%'), '100', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->standard_markup) ? '-' : number_format($data->standard_markup, 2) . '%'), '90', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col((empty($data->difference) ? '-' : number_format($data->difference, 2)), '70', null, false, $border, '', 'R', $font, $fontsize);
-            $str .= $this->reporter->col($exception, '90', null, false, $border, '', 'C', $font, $fontsize, ($exception == 'EXCEPTION' ? 'B' : ''));
+            $str .= $this->reporter->col((empty($data->invoiceno) ? '-' : $data->invoiceno), '70',  null, false, $border, '', 'CT', $font, $fontsize);
+            $str .= $this->reporter->col($data->customer_id, '70',  null, false, $border, '', 'CT', $font, $fontsize);
+            $str .= $this->reporter->col($data->clientname, '150', null, false, $border, '', 'LT', $font, $fontsize);
+            $str .= $this->reporter->col($data->agent, '140', null, false, $border, '', 'LT', $font, $fontsize);
+            $str .= $this->reporter->col($data->item_code, '70',  null, false, $border, '', 'CT', $font, $fontsize);
+            $str .= $this->reporter->col($data->itemname, '140', null, false, $border, '', 'LT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->isqty) ? '-' : number_format($data->isqty, 0)), '50', null, false, $border, '', 'CT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->netsales) ? '-' : number_format($data->netsales, 2)), '80', null, false, $border, '', 'RT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->totalcost) ? '-' : number_format($data->totalcost, 2)), '80', null, false, $border, '', 'RT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->actual_markup) ? '-' : number_format($data->actual_markup, 2)), '100', null, false, $border, '', 'RT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->standard_markup) ? '-' : number_format($data->standard_markup, 2)), '90', null, false, $border, '', 'RT', $font, $fontsize);
+            $str .= $this->reporter->col((empty($data->difference) ? '-' : number_format($data->difference, 2)), '70', null, false, $border, '', 'RT', $font, $fontsize);
+            $str .= $this->reporter->col($exception, '90', null, false, $border, '', 'C', $font, $fontsize, ($exception == 'EXCEPTION' ? 'LT' : ''));
             $str .= $this->reporter->endrow();
 
             $rowCount++;

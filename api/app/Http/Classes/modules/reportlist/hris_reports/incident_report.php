@@ -111,34 +111,76 @@ class incident_report
     $filter   = "";
 
     if ($client != "") {
-      $filter .= " and (demp.client = '$client' or hemp.client = '$client')";
+      $filter .= " and hemp.client = '$client'";
     }
     if ($center != '') {
       $filter .= " and h.center='$center'";
     }
 
-    $query = "select head.trno,head.docno,date(head.dateid) as dateid,demp.clientname as dempname,  
-    djt.jobtitle as djobtitle,head.idescription,date(head.idate) as idate,time(head.idate) as itime,
-    head.iplace,head.idetails,head.icomments
-    from incidenthead as head
-    left join incidentdtail as detail on detail.trno = head.trno        
-    left join jobthead as djt on djt.line = detail.jobid
-    left join client as demp on demp.clientid = detail.empid
-    left join client as hemp on hemp.clientid = head.tempid
-    left join hrisnum as h on h.trno = head.trno
-    where head.dateid between '" . $start . "' and '" . $end . "' $filter  
-    union all
-    select head.trno,head.docno,date(head.dateid) as dateid,demp.clientname as dempname,
-    djt.jobtitle as djobtitle,head.idescription,date(head.idate) as idate,time(head.idate) as itime,
-    head.iplace,head.idetails,head.icomments
-    from hincidenthead as head
-    left join hincidentdtail as detail on detail.trno = head.trno       
-    left join jobthead as djt on djt.line = detail.jobid
-    left join client as demp on demp.clientid = detail.empid
-    left join client as hemp on hemp.clientid = head.tempid
-    left join hrisnum as h on h.trno = head.trno
+    // $query = "select head.trno,head.docno,date(head.dateid) as dateid,demp.clientname as dempname,  
+    // djt.jobtitle as djobtitle,head.idescription,date(head.idate) as idate,time(head.idate) as itime,
+    // head.iplace,head.idetails,head.icomments
+    // from incidenthead as head
+    // left join incidentdtail as detail on detail.trno = head.trno        
+    // left join jobthead as djt on djt.line = detail.jobid
+    // left join client as demp on demp.clientid = detail.empid
+    // left join client as hemp on hemp.clientid = head.tempid
+    // left join hrisnum as h on h.trno = head.trno
+    // where head.dateid between '" . $start . "' and '" . $end . "' $filter  
+    // union all
+    // select head.trno,head.docno,date(head.dateid) as dateid,demp.clientname as dempname,
+    // djt.jobtitle as djobtitle,head.idescription,date(head.idate) as idate,time(head.idate) as itime,
+    // head.iplace,head.idetails,head.icomments
+    // from hincidenthead as head
+    // left join hincidentdtail as detail on detail.trno = head.trno       
+    // left join jobthead as djt on djt.line = detail.jobid
+    // left join client as demp on demp.clientid = detail.empid
+    // left join client as hemp on hemp.clientid = head.tempid
+    // left join hrisnum as h on h.trno = head.trno
+    // where head.dateid between '" . $start . "' and '" . $end . "' $filter
+    // order by docno";
+
+    $query = "select head.trno,head.docno,date(head.dateid) as dateid,hemp.clientname as dempname,
+    djt.jobtitle as djobtitle,cd.description as idescription,date(head.idate) as idate,time(head.idate) as itime,
+    head.iplace,head.idetails,head.icomments, 0 as empsort
+    from incidenthead as head      
+    join client as hemp on hemp.clientid = head.tempid
+    join jobthead as djt on djt.line = head.tempjobid
+    join hrisnum as h on h.trno = head.trno
+    left join codedetail as cd on cd.artid=head.artid and cd.line=head.sectid
     where head.dateid between '" . $start . "' and '" . $end . "' $filter
-    order by docno";
+    union all
+    select head.trno,head.docno,date(head.dateid) as dateid,hemp.clientname as dempname,
+    djt.jobtitle as djobtitle,cd.description as idescription,date(head.idate) as idate,time(head.idate) as itime,
+    head.iplace,head.idetails,head.icomments, 1 as empsort
+    from incidenthead as head   
+    join incidentdtail as detail on detail.trno = head.trno
+    join client as hemp on hemp.clientid = detail.empid
+    join jobthead as djt on djt.line = detail.jobid
+    join hrisnum as h on h.trno = head.trno
+    left join codedetail as cd on cd.artid=head.artid and cd.line=head.sectid
+    where head.dateid between '" . $start . "' and '" . $end . "' $filter
+    union all
+    select head.trno,head.docno,date(head.dateid) as dateid,hemp.clientname as dempname,
+    djt.jobtitle as djobtitle,cd.description as idescription,date(head.idate) as idate,time(head.idate) as itime,
+    head.iplace,head.idetails,head.icomments, 0 as empsort
+    from hincidenthead as head      
+    join client as hemp on hemp.clientid = head.tempid
+    join jobthead as djt on djt.line = head.tempjobid
+    join hrisnum as h on h.trno = head.trno
+    left join codedetail as cd on cd.artid=head.artid and cd.line=head.sectid
+    where head.dateid between '" . $start . "' and '" . $end . "' $filter
+    union all
+    select head.trno,head.docno,date(head.dateid) as dateid,hemp.clientname as dempname,
+    djt.jobtitle as djobtitle,cd.description as idescription,date(head.idate) as idate,time(head.idate) as itime,
+    head.iplace,head.idetails,head.icomments, 1 as empsort
+    from hincidenthead as head   
+    join hincidentdtail as detail on detail.trno = head.trno
+    join client as hemp on hemp.clientid = detail.empid
+    join jobthead as djt on djt.line = detail.jobid
+    join hrisnum as h on h.trno = head.trno
+    left join codedetail as cd on cd.artid=head.artid and cd.line=head.sectid
+    where head.dateid between '" . $start . "' and '" . $end . "' $filter order by docno, empsort";
 
     return $this->coreFunctions->opentable($query);
   }
@@ -217,35 +259,56 @@ class incident_report
     $chkemp = "";
     $olddocno = "";
 
-    foreach ($result as $key => $data) {
-      $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
 
-      $str .= $this->reporter->col($data->docno, '80', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->dateid, '80', null, false, $border, 'LB', 'CT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->dempname, '120', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->djobtitle, '130', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->idescription, '180', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->idate, '80', null, false, $border, 'LB', 'CT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->itime, '100', null, false, $border, 'LB', 'CT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->iplace, '100', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->idetails, '165', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '', '', 0, 'max-width:150px;overflow-wrap: break-word;');
-      $str .= $this->reporter->col($data->icomments, '165', null, false, $border, 'LBR', 'LT', $font, $font_size, '', '', '', '', 0, 'max-width:150px;overflow-wrap: break-word;');
+    $count = count($result);
+
+    foreach ($result as $key => $data) {
+
+      $str .= $this->reporter->startrow();
+      $this->reporter->addline();
+      $border_ = 'L';
+      if ($count >= $key) $border_ = 'LB';
+      if ($olddocno != "" && $olddocno == $data->docno) {
+        $str .= $this->reporter->col('', '80', null, false, $border, $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, $border, $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->dempname, '120', null, false, $border, $border_ . 'T', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->djobtitle, '130', null, false, $border, $border_ . 'T', 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '180', null, false, $border, $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, $border, $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '165', null, false, $border, $border_, 'LT', $font, $font_size, '', '', '', '', 0, '');
+        $str .= $this->reporter->col('', '165', null, false, $border, $border_ . 'R', 'LT', $font, $font_size, '', '', '', '', 0, '');
+      } else {
+        $str .= $this->reporter->col($data->docno, '80', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->dateid, '80', null, false, $border,  $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->dempname, '120', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->djobtitle, '130', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->idescription, '180', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->idate, '80', null, false, $border,  $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->itime, '100', null, false, $border,  $border_, 'CT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->iplace, '100', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col($data->idetails, '165', null, false, $border,  $border_, 'LT', $font, $font_size, '', '', '', '', 0, 'max-width:150px;overflow-wrap: break-word;');
+        $str .= $this->reporter->col($data->icomments, '165', null, false, $border,  $border_ . 'R', 'LT', $font, $font_size, '', '', '', '', 0, 'max-width:150px;overflow-wrap: break-word;');
+      }
+
       $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->endtable();
+      $olddocno = $data->docno;
 
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $str .= $this->displayHeader($config);
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $page = $page + $count;
-      }
+      //   if ($this->reporter->linecounter == $page) {
+      //     $str .= $this->reporter->endtable();
+      //     $str .= $this->reporter->page_break();
+      //     $str .= $this->displayHeader($config);
+      //     $str .= $this->reporter->endrow();
+      //     $str .= $this->reporter->endtable();
+      //     $page = $page + $count;
+      //   }
     }
+
     $str .= $this->reporter->endtable();
+    // $str .= $this->reporter->endtable();
     // $str .= $this->reporter->printline();
     // $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();

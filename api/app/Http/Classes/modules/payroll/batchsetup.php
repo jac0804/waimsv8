@@ -393,6 +393,7 @@ class batchsetup
             when (b.paymode = 's') and right(b.batch, 2) = '02' then '1st Half'
             when (b.paymode = 's') and right(b.batch, 2) = '04' then '2nd Half'
             when (b.paymode = 'm') and right(b.batch, 2) = '04' then '2nd Half'
+            when (b.paymode = 's') and right(b.batch, 2) = '06' then '3rd Half'
           end as paymodetype,
           b.annualtax, b.tax, b.adjustm, b.custcode, b.allow, b.pgroup, is13, b.13start, b.13end, pay.paygroup as tpaygroupname, pay.code as paycode, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname
         ";
