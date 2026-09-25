@@ -12167,6 +12167,16 @@ class gridcolumnClass
                             'readonly' => false
                      ),
 
+                     'cbm' => array(
+                            'name' => 'cbm',
+                            'type' => 'input',
+                            'label' => 'CBM',
+                            'field' => 'cbm',
+                            'align' => 'text-right',
+                            'style' => 'text-align:right;width:130px;whiteSpace: normal;min-width:130px;',
+                            'readonly' => false
+                     )
+
               );
 
               return $this->columns;

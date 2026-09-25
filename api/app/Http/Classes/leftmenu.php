@@ -297,10 +297,9 @@ class leftmenu
                 $qry = $qry . ",(5347,1,'Allow View All Sales Order Transactions','',0,'\\50123','\\501',0,'0',0," . $params['levelid'] . ")";
                 break;
             case 21: //kinggeorge
-                $qry = $qry . ",(4037,1,'Allow Change Discount SO','',0,'\\50121','\\501',0,'0',0," . $params['levelid'] . ")";
-                break;
             case 28: //xcomp
             case 36: //rozlab
+            case 64: //rozlab
                 $qry = $qry . ",(4037,1,'Allow Change Discount SO','',0,'\\50121','\\501',0,'0',0," . $params['levelid'] . ")";
                 break;
             case 24: //goodfound
@@ -7865,7 +7864,7 @@ class leftmenu
         }
 
         $qry = "(3672,0,'" . $label . "','',0,'\\3002','$parent',0,'0',0," . $params['levelid'] . "),
-            (3673,0,'Allow View Transaction '".$label."','PD',0,'\\300201','\\3002',0,'0',0," . $params['levelid'] . "),
+            (3673,0,'Allow View Transaction '" . $label . "','PD',0,'\\300201','\\3002',0,'0',0," . $params['levelid'] . "),
             (3674,0,'Allow Click Edit Button '.$label,'',0,'\\300202','\\3002',0,'0',0," . $params['levelid'] . "),
             (3675,0,'Allow Click New Button '.$label,'',0,'\\300203','\\3002',0,'0',0," . $params['levelid'] . "),
             (3676,0,'Allow Click Save Button '.$label,'',0,'\\300204','\\3002',0,'0',0," . $params['levelid'] . "),
