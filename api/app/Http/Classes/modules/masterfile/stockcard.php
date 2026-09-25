@@ -37,7 +37,7 @@ class stockcard
   public $tablelogs_del = 'del_item_log';
   private $stockselect;
 
-  private $fields = ['barcode', 'picture', 'itemname', 'uom',  'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate', 'carton'];
+  private $fields = ['barcode', 'picture', 'itemname', 'uom', 'wh', 'payrate', 'payqty', 'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate', 'carton', 'cbm'];
   private $iteminfo = ['volume', 'weight', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
 
   private $except = ['itemid', 'itemrem'];
@@ -1113,6 +1113,9 @@ class stockcard
       case 64: //excilin
         array_push($fields, 'partname', 'modelname');
         break;
+      case 72: //hahsys
+        array_push($fields, 'dwhname', 'rate', 'dprcost', 'qty');
+        break;
     }
 
     $col1 = $this->fieldClass->create($fields);
@@ -1147,6 +1150,11 @@ class stockcard
         break;
       case 40: //cdo
         data_set($col1, 'partno.required', true);
+        break;
+      case 72: //hahsy
+        data_set($col1, 'qty.label', 'Employee Box/Pcs');
+        data_set($col1, 'rate.label', 'Employee Rate');
+        data_set($col1, 'dwhname.label', 'Default SO Warehouse');
         break;
     }
 
@@ -1217,6 +1225,8 @@ class stockcard
       case 60: //transpower
         array_push($fields, 'startwire', 'endwire');
         break;
+      case 72: // hahsy
+        array_push($fields, 'shortname', 'item_length', 'item_width', 'item_height');
     }
 
     $col2 = $this->fieldClass->create($fields);
@@ -1265,6 +1275,11 @@ class stockcard
         break;
       case 64: //excelin
         data_set($col2, 'markup.label', 'Customer Markup');
+        break;
+      case 72: // hahsys
+        data_set($col2, 'item_length.label', 'Length');
+        data_set($col2, 'shortname.label', 'Short Code');
+        break;
     }
 
     switch ($systemtype) {
@@ -1283,6 +1298,9 @@ class stockcard
     switch ($companyid) {
       case 43: //mighty
         array_push($fields, 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate');
+        break;
+      case 72: //hahsy
+        array_push($fields,  ['cbm', 'cbm2'], 'container');
         break;
     }
 
@@ -1397,6 +1415,18 @@ class stockcard
     } else {
       $data[0]['uom'] = 'PCS';
     }
+
+    $data[0]['wh'] = '';
+    $data[0]['whname'] = '';
+    $data[0]['dwhname'] = '';
+    $data[0]['cbm'] = 0;
+    $data[0]['rate'] = 0;
+    $data[0]['payrate'] = 0;
+    $data[0]['qty'] = 0;
+    $data[0]['payqty'] = 0;
+    $data[0]['dprcost'] = 0;
+    $data[0]['defcost'] = 0;
+    $data[0]['shortname'] = '';
 
     $data[0]['itemrem'] = '';
     $data[0]['partname'] = '';
@@ -1568,7 +1598,7 @@ class stockcard
     $head = [];
 
     $fields = 'item.itemid, item.barcode as docno';
-
+    
     foreach ($this->fields as $key => $value) {
       if ($value == 'markup') {
         $fields = $fields . ', format(item.markup, 2) as markup';
@@ -1599,12 +1629,14 @@ class stockcard
         ifnull(cl.clientid, 0) as supplier, item.partno, item.packaging,
         ifnull(prj.code, '') as projectcode,
         ifnull(prj.name, '') as projectname,
+        item.item_width, item.item_length, item.item_height, 
+        payrate as rate, round(defcost, 2) as dprcost, round(payqty, 2) as qty, 
         '' as dasset,
         '' as dliability,
         '' as dexpense,
         '' as drevenue,
-        '' as dsalesreturn,
-        ifnull(dept.clientname,'') as deptname,
+        '' as dsalesreturn, coalesce(round(amt/ nullif(cbm, 0), 2), 0) as cbm2, shortname, coalesce(round(amt / nullif(cbm, 0) * 28, 2), 0) AS container,
+        ifnull(dept.clientname,'') as deptname, '' as dwhname, item.wh, ifnull(wh.clientname, '') as whname, 
         item.linkdept,item.avecost,item.maximum,item.aveleadtime,item.maxleadtime,item.dlock";
 
     $qry = $qryselect . " from item
@@ -1624,6 +1656,7 @@ class stockcard
         left join projectmasterfile as prj on prj.line = item.projectid
         left join client as dept on dept.clientid=item.linkdept
         left join iteminfo as info on info.itemid=item.itemid
+        left join client as wh on wh.client = item.wh
         where item.itemid = ? ";
 
     $head = $this->coreFunctions->opentable($qry, [$itemid]);
@@ -1634,6 +1667,7 @@ class stockcard
         } else
           $head[0]->$value = "0";
       }
+
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
       $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['itemid' => $itemid]);
@@ -1688,7 +1722,6 @@ class stockcard
       } //end if    
     }
 
-
     if ($companyid == 16 ||  $systemtype == 'FAMS') { //ati
       if ($data['isgeneric']) {
         $data['isnoninv'] = "1";
@@ -1709,6 +1742,32 @@ class stockcard
         $data['isnoninv'] = "1";
       }
     }
+
+    if ($companyid == 72) { // hahsy
+        $cbm = 0;
+        if (isset($data['item_length'], $data['item_width'], $data['item_height'])) {
+            $l = floatval($data['item_length']);
+            $w = floatval($data['item_width']);
+            $h = floatval($data['item_height']);
+            if ($l > 0 && $w > 0 && $h > 0) {
+                $cbm = ($l * $w * $h) / 1000000;
+            }
+        }
+        $data['cbm'] = round($cbm, 6);
+    }
+
+    if (isset($head['rate'])){
+      $data['payrate'] = $head['rate'];
+    } 
+    if (isset($head['dprcost'])){
+      $data['defcost'] = $head['dprcost'];
+    } 
+    if (isset($head['qty'])){
+      $data['payqty']  = $head['qty'];
+    } 
+    unset($data['rate']);
+    unset($data['dprcost']);
+    unset($data['qty']);
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['dlock'] = $this->othersClass->getCurrentTimeStamp();

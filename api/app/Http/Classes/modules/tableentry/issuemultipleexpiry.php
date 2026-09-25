@@ -158,14 +158,13 @@ class issuemultipleexpiry
           $config['params']['data']['issp'] = $data[$key2]['issp'];
         }
 
-        if ($config['params']['doc'] == 'UE') {
+        if ($config['params']['doc'] == 'UE' || $config['params']['doc'] == 'ST') {
         $return = app($path)->additem('insert', $config, true);
         }else{
         $return = app($path)->additem('insert', $config);
         }
         
-        if($config['params']['companyid'] != 71 && $config['params']['doc'] != 'ST'){ // kapag kahit anong company kahit 71 pa basta hindi st ang doc
-          if ($return['status']) {
+            if ($return['status']) {
             if ($data[$key2]['refx'] != 0) {
               if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
                 $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
@@ -182,7 +181,6 @@ class issuemultipleexpiry
             //array_push($rows, $return['row'][0]);
           }
 
-        }
       
       } // end foreach
     } //end if

@@ -195,7 +195,8 @@ class pd
       'backlisting',
       'toggleup',
       'toggledown',
-      'help'
+      'help',
+      'others'
     );
 
     $buttons = $this->btnClass->create($btns);
@@ -216,6 +217,13 @@ class pd
       'deletehead' => ['label' => 'How to delete whole transaction', 'action' => $step6]
     ];
 
+    $buttons['others']['items'] = [
+      'first' => ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']],
+      'prev' => ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']],
+      'next' => ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']],
+      'last' => ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']],
+    ];
+
     return $buttons;
   } // createHeadbutton
 
@@ -227,37 +235,30 @@ class pd
 
   public function createHeadField($config)
   {
-    $fields = ['docno', 'client','clientname']; //'pidocno',
+    $fields = ['docno', 'sodocno','clientname']; //'pidocno',
     $col1 = $this->fieldClass->create($fields);
-
-    data_set($col1, 'client.label', 'Customer');
-    data_set($col1, 'client.lookupclass', 'allclienthead');
-    data_set($col1, 'client.lookupclass', 'customer');
-    data_set($col1, 'client.readonly', true);
     data_set($col1, 'clientname.class', 'sbccsreadonly');
-
     data_set($col1, 'docno.label', 'Transaction#');
+    data_set($col1, 'sodocno.type', 'lookup');
+    data_set($col1, 'sodocno.label', 'Sales Order #');
+    data_set($col1, 'sodocno.class', 'cssodocno sbccsreadonly');
+    data_set($col1, 'sodocno.action', 'pendingsodetail');
+    data_set($col1, 'sodocno.lookupclass', 'pendingsopddetail');
+    data_set($col1, 'sodocno.readonly', true);
+    data_set($col1, 'sodocno.required', true);
    
 
-    $fields = ['dateid','sodocno', 'barcode'];
+    $fields = ['dateid','barcode', 'itemname'];
     $col2 = $this->fieldClass->create($fields);
-   
- 
     data_set($col2, 'barcode.class', 'sbccsreadonly');
     data_set($col2, 'barcode.type', 'input');
-    data_set($col2, 'sodocno.type', 'lookup');
-    data_set($col2, 'sodocno.label', 'Sales Order #');
-    data_set($col2, 'sodocno.class', 'cssodocno sbccsreadonly');
-    data_set($col2, 'sodocno.action', 'pendingsodetail');
-    data_set($col2, 'sodocno.lookupclass', 'pendingsopddetail');
-    data_set($col2, 'sodocno.readonly', true);
-    data_set($col2, 'sodocno.required', true);
+    data_set($col2, 'itemname.class', 'sbccsreadonly');
+    data_set($col2, 'itemname.label', 'Itemname');
+  
 
-
-    $fields = ['itemname', ['qty', 'uom'], 'dwhname'];
+    $fields = [['qty', 'uom'], 'dwhname'];
     $col3 = $this->fieldClass->create($fields);
-    data_set($col3, 'itemname.class', 'sbccsreadonly');
-    data_set($col3, 'itemname.label', 'Itemname');
+   
     data_set($col3, 'uom.class', 'sbccsreadonly');
     data_set($col3, 'qty.class', 'sbccsreadonly');
     data_set($col3, 'dwhname.required', true);
@@ -478,6 +479,13 @@ class pd
   {
     $trno = $config['params']['trno'];
     $user = $config['params']['user'];
+
+    $qry = "select trno from " . $this->hstock . " where trno=? and (qa>0 or void<>0 or tsqa>0)";
+    $data = $this->coreFunctions->opentable($qry, [$trno]);
+    if (!empty($data)) {
+      return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, either already served or have item voided...'];
+    }
+    
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
     $qry = "insert into " . $this->head . "(trno, doc, docno, client, clientname, dateid, wh, rem, 
@@ -659,6 +667,9 @@ class pd
         break;
       case 'diagram':
         return $this->diagram($config);
+        break;
+      case 'navigation':
+        return $this->othersClass->navigatedocno($config);
         break;
       default:
         return ['status' => false, 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];

@@ -5019,7 +5019,7 @@ class sqlquery
               FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,
               FORMAT((" . $fieldqa . " / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
               FORMAT(((stock.iss-" . $fieldqa . ")/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,stock.loc,head.yourref, 
-              stock.itemid, ifnull(sa.sano,'') as sadesc, ifnull(po.sano,'') as podesc " . $addfield . "
+              stock.itemid,head.client,head.clientname, ifnull(sa.sano,'') as sadesc, ifnull(po.sano,'') as podesc " . $addfield . "
               from hsohead as head
               right join hsostock as stock on stock.trno = head.trno
               left join item on item.itemid=stock.itemid
@@ -7559,8 +7559,12 @@ class sqlquery
     if($doc=='UE' || $doc='ST'){ //buenatech
     
       $condition = " and jo.isproduce<>1 "; //picked in produce item
+      $condition2 = "";
+      $qfield = "jos.qa";
       if($doc=='ST'){
-        $condition= " and jo.istransfer<>1 "; // picked in transfer material
+        $condition= " and jo.istransfer<>1  "; // picked in transfer material
+        $condition2= " and jos.tsqa<>jos.qty";
+        $qfield= "jos.tsqa";
       }
 
       $lookupclass = $config['params']['lookupclass'];
@@ -7580,15 +7584,15 @@ class sqlquery
                   FORMAT(jos.qty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
                   FORMAT(jos.rrcost," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,jos.disc,
                   FORMAT(jos.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,jos.uom,it.itemid,
-                  FORMAT((jos.qa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
-                  FORMAT(((jos.qty-jos.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,jos.loc,joh.yourref,
+                  FORMAT(($qfield / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
+                  FORMAT(((jos.qty-$qfield)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,jos.loc,joh.yourref,
                   jos.rem,joh.client,jos.line
             from hpdhead as joh
             left join hpdstock as jos on jos.trno=joh.trno
             left join item as it on it.itemid=jos.itemid
             left join client as wh on wh.client=jos.wh
             left join uom on uom.itemid=it.itemid and uom.uom=jos.uom
-            left join transnum as num on num.trno=joh.trno where  num.center=? and  joh.trno=$jotrno and  jos.void = 0";
+            left join transnum as num on num.trno=joh.trno where  num.center=? and  joh.trno=$jotrno and  jos.void = 0 $condition2";
           $params = [$center];
           break;
       }

@@ -602,7 +602,7 @@ class pc
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    }
 
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -681,6 +681,10 @@ class pc
       array_push($fields, 'loadinventorywithbal');
     }
 
+    if ($companyid == 72) { //hahsy
+      array_push($fields, 'copypreviousstock');
+    }
+
     $col4 = $this->fieldClass->create($fields);
     if ($companyid == 37) { //mega crystal
       data_set($col4, 'create.type', 'actionbtn');
@@ -690,6 +694,11 @@ class pc
       data_set($col4, 'create.access', 'save');
       data_set($col4, 'create.lookupclass', 'stockstatusposted');
       data_set($col4, 'create.action', 'loadinv');
+    }
+
+    if ($companyid == 72) { //hahsy
+      data_set($col4, 'copypreviousstock.label', 'Copy Previous PC');
+      data_set($col4, 'copypreviousstock.confirmlabel', 'Do you want to copy the previous PC?');
     }
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
   }
@@ -844,6 +853,10 @@ class pc
       if ($this->companysetup->getistodo($config['params'])) {
         $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
         $hideobj = ['donetodo' => !$btndonetodo];
+      }
+
+      if ($config['params']['companyid'] == 72) { //hahsy
+        $hideobj['copypreviousstock'] = $isposted ? true : false;
       }
 
       return  [
@@ -1491,6 +1504,9 @@ class pc
       case 'downloadexcel':
         return $this->othersClass->downloadexcel($config);
         break;
+      case 'copypreviousstock':
+        return $this->othersClass->copypreviousstock($config);
+        break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
         break;
@@ -1943,6 +1959,122 @@ class pc
       return ['status' => false, 'msg' => 'No Latest price found...'];
     }
   } // end function
+
+  // public function copyprevpc($config)
+  // {
+  //   ini_set('max_execution_time', -1);
+  //   ini_set('memory_limit', '-1');
+
+  //   $trno = $config['params']['trno'];
+  //   $doc = $config['params']['doc'];
+  //   $center = $config['params']['center'];
+
+  //   // current document's docno
+  //   $docno = $this->coreFunctions->datareader(
+  //     "select docno as value from " . $this->tablenum . " where trno=?",
+  //     [$trno]
+  //   );
+
+
+  //   // immediately preceding docno of the same doc type and center (draft or posted)
+  //   $prevtrno = $this->coreFunctions->datareader(
+  //     "select trno as value from " . $this->tablenum . "
+  //      where doc=? and center=? and docno<? order by docno desc limit 1",
+  //     [$doc, $center, $docno],
+  //     '',
+  //     true
+  //   );
+  //   if ($prevtrno == 0) {
+  //     return ['status' => false, 'msg' => 'No previous Physical Count found.'];
+  //   }
+
+  //   $prevdocno = $this->coreFunctions->datareader(
+  //     "select docno as value from " . $this->tablenum . " where trno=?",
+  //     [$prevtrno]
+  //   );
+
+  //   // previous items (draft and posted tables; only one will have rows)
+  //   $prevItems = $this->coreFunctions->opentable(
+  //     "select line, itemid, uom, rrcost, rrqty, disc, loc, expiry, whid, rem, palletid, locid
+  //      from " . $this->stock . " where trno=? and void=0
+  //      union all
+  //      select line, itemid, uom, rrcost, rrqty, disc, loc, expiry, whid, rem, palletid, locid
+  //      from " . $this->hstock . " where trno=? and void=0
+  //      order by line asc",
+  //     [$prevtrno, $prevtrno]
+  //   );
+  //   if (empty($prevItems)) {
+  //     return ['status' => false, 'msg' => 'Previous PC ' . $prevdocno . ' has no items to copy.'];
+  //   }
+
+  //   // items already in the current PC (skipped)
+  //   $existing = [];
+  //   $current = $this->coreFunctions->opentable("select itemid from " . $this->stock . " where trno=?", [$trno]);
+  //   foreach ($current as $cur) {
+  //     $existing[$cur->itemid] = true;
+  //   }
+
+  //   $copied = 0;
+  //   $skipped = 0;
+  //   $failed = 0;
+  //   $errmsg = '';
+
+  //   foreach ($prevItems as $row) {
+  //     if (isset($existing[$row->itemid])) {
+  //       $skipped++;
+  //       continue;
+  //     }
+
+  //     $wh = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$row->whid]);
+
+  //     $config['params']['data'] = [
+  //       'itemid' => $row->itemid,
+  //       'uom' => $row->uom,
+  //       'amt' => $row->rrcost,
+  //       'qty' => $row->rrqty,
+  //       'disc' => $row->disc,
+  //       'loc' => $row->loc,
+  //       'expiry' => $row->expiry,
+  //       'wh' => $wh,
+  //       'rem' => $row->rem,
+  //       'palletid' => $row->palletid,
+  //       'locid' => $row->locid,
+  //     ];
+
+  //     $return = $this->additem('insert', $config);
+  //     if ($return['status']) {
+  //       $copied++;
+  //     } else {
+  //       $failed++;
+  //       $errmsg .= ' ' . $return['msg'];
+  //     }
+  //   }
+
+  //   $this->logger->sbcwritelog(
+  //     $trno,
+  //     $config,
+  //     'STOCK',
+  //     'COPY PREVIOUS PC - ' . $prevdocno . ' Copied:' . $copied . ' Skipped:' . $skipped . ' Failed:' . $failed
+  //   );
+
+  //   $stock = $this->openstock($trno, $config);
+
+  //   $msg = 'Copied ' . $copied . ' item(s) from ' . $prevdocno . '.';
+  //   if ($skipped > 0) {
+  //     $msg .= ' ' . $skipped . ' skipped (already in this PC).';
+  //   }
+  //   if ($failed > 0) {
+  //     $msg .= ' ' . $failed . ' failed.' . $errmsg;
+  //   }
+
+  //   return [
+  //     'status' => $copied > 0 || $skipped > 0,
+  //     'msg' => $msg,
+  //     'inventory' => $stock,
+  //     'reloadhead' => true
+  //   ];
+  // }
+
 
   public function reportsetup($config)
   {

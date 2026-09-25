@@ -122,6 +122,25 @@ class viewitemprice
                             }
                         }
                     }
+                }elseif ($config['params']['companyid'] == 72) { // hahsy
+                    $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
+                    $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
+                
+                    if ($viewcost) {
+                
+                        $qry = "select rrstatus.cost as latest,rrstatus.dateid,cntnum.doc from rrstatus
+                        left join cntnum on cntnum.trno=rrstatus.trno
+                        where rrstatus.itemid=" . $itemid . " and rrstatus.uom='" . $uom . "'
+                        and cntnum.doc='RR'
+                        order by rrstatus.dateid desc
+                        limit 1";
+                
+                        $result = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
+                        if (!empty($result)) {
+                            $cost = $result[0]['latest'];
+                            $prevAndLatestCost .= " - - - Latest Cost: " . number_format($cost, 6);
+                        }
+                    }
                 }
                 $this->modulename = 'ITEM PRICE - ' . $item[0]->barcode . ' - - - ' . $item[0]->itemname . $prevAndLatestCost;
             } else {

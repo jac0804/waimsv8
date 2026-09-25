@@ -962,6 +962,27 @@ class sj
           $$value = $key;
         }
         break;
+      case 72: //hahsy
+        $action = 0;
+        $itemdesc = 1;
+        $isqty = 2;
+        $uom = 3;
+        $itemname = 4;
+        $isamt = 5;
+        $disc = 6;
+        $ext = 7;
+        $cost = 8;
+        $markup = 9;
+        $wh = 10;
+        $whname = 11;
+        $ref = 12;
+        $rem2 = 13;  //26
+        $rem = 14;
+        $column = ['action', 'itemdescription', 'isqty', 'uom', 'itemname', 'isamt', 'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref', 'rem2', 'rem'];
+        $sortcolumn = ['action', 'itemdescription', 'isqty', 'uom', 'itemname', 'isamt', 'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref', 'rem2', 'rem'];
+        // $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry' ,'rem', 'dqty','itemname', 'stock_projectname',  'noprint', 'barcode','rem2'];
+        // $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry' ,'rem','dqty', 'itemname', 'stock_projectname', 'noprint', 'barcode','rem2'];
+        break;
     }
 
     switch ($companyid) {
@@ -1318,6 +1339,12 @@ class sj
         }
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         break;
+      case 72: //hahsy
+        $obj[0]['inventory']['columns'][$rem2]['label'] = 'SO Notes';
+        $obj[0]['inventory']['columns'][$rem2]['type'] = 'label';
+        $obj[0]['inventory']['columns'][$rem2]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$rem2]['style'] = 'text-align: left; width:200px;whiteSpace: normal;min-width:200px;';
+        break;
       default:
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
@@ -1523,6 +1550,17 @@ class sj
         data_set($col1, 'client.lookupclass', 'customer');
         break;
 
+      case 72: //hashy
+        array_push($fields, 'shipto');
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'client.lookupclass', 'customer');
+        data_set($col1, 'client.required', false);
+        data_set($col1, 'shipto.type', 'lookup');
+        data_set($col1, 'shipto.action', 'lookupwshipping');
+        data_set($col1, 'shipto.label', 'Trucking');
+        data_set($col1, 'shipto.addedparams', ['client']);
+        break;
+        
       default:
         if ($systemtype == 'REALESTATE') {
           array_push($fields, 'dprojectname', 'phase');
@@ -1623,6 +1661,13 @@ class sj
         break;
       case 65: //metrodragon
         data_set($col2, 'plateno.label', 'Plate #');
+        break;
+      case 72: //hashy
+        array_push($fields, 'received');
+        $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'dacnoname.label', 'AR Account');
+        data_set($col2, 'dacnoname.lookupclass', 'AR');
+        data_set($col2, 'received.label', 'Receiving Time');
         break;
     }
 
@@ -1918,6 +1963,7 @@ class sj
     $data[0]['agent'] = '';
     $data[0]['creditinfo'] = '';
     $data[0]['agentname'] = '';
+    $data[0]['received'] = '';
 
     switch ($params['companyid']) {
       case 36:
@@ -2126,7 +2172,7 @@ class sj
          hinfo.interestrate,hinfo.downpayment,  head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, 
            bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
            subamen.line as subamenityid, subamen.description as subamenityname, head.isreported,
-           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno, head.ismarkup";
+           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno, head.ismarkup, hinfo.strdate1 as received";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2451,6 +2497,11 @@ class sj
           }
 
           break;
+        case 72: //hashy
+          $info['trno'] = $head['trno'];
+          $info['strdate1'] = isset($head['received']) ? $head['received'] : '';
+          $this->coreFunctions->sbcupdate('cntnuminfo', $info, ['trno' => $head['trno']]);
+          break;
       }
     } else {
       $data['doc'] = $config['params']['doc'];
@@ -2501,6 +2552,12 @@ class sj
           break;
         case 59: //roosevelt
           $this->coreFunctions->sbcupdate("client", ['lasttrans' => $data['dateid']], ['clientid' => $head['clientid']]);
+          break;
+        case 72: //hashy
+          $info = [];
+          $info['trno'] = $head['trno'];
+          $info['strdate1'] = $head['received'];
+          $this->coreFunctions->sbcinsert('cntnuminfo', $info);
           break;
       }
 
@@ -2750,6 +2807,9 @@ class sj
       case 71:  //buenatech
         $serialfield = ",case when stock.issp=0 then 'false' else 'true' end as issp";
         break;
+        case 72:  //hahsy
+        $serialfield = ",hstock.rem as rem2";
+        break;
     }
 
 
@@ -2801,7 +2861,7 @@ class sj
     '' as errcolor,
     prj.name as stock_projectname,
     stock.projectid as projectid,stock.sgdrate,stock.itemstatus,
-
+    
      stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,stock.blklotid, bl.blk, bl.lot,
      prj.code as project,
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
@@ -2852,6 +2912,11 @@ class sj
         break;
       case 71: //buenatech
         $stockinfogroup = 'stock.issp,';
+        break;
+      case 72://hahsy
+          $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
+          $hleftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
+          $stockinfogroup = 'hstock.rem,';
         break;
     }
 
@@ -2971,6 +3036,10 @@ class sj
         break;
       case 67: //yulick
         $stockinfogroup = 'stock.isqty2,';
+        break;
+      case 72://hahsy
+        $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
+        $stockinfogroup = 'hstock.rem,';
         break;
     }
 
@@ -4982,6 +5051,15 @@ class sj
             break;
         }
 
+        if ($companyid == 72) { //hahsy
+          $itemid = $this->coreFunctions->getfieldvalue("item", "itemid", "barcode=?", [$barcode]);
+          $clientid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$client]);
+          $qry = "select 'Retail Pric' as docno, left(now(),10) as dateid, round(sku.amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt, round(sku.amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as defamt, sku.disc, item.uom, item.itemid from sku 
+                  left join item on item.itemid=sku.itemid
+                  where sku.itemid=" . $itemid . " and sku.clientid=" . $clientid . " and sku.issupplier=0";
+          $data = $this->coreFunctions->opentable($qry);
+          if (!empty($data)) goto setpricehere;
+        }
         break;
     }
 
@@ -5131,6 +5209,9 @@ class sj
       case 64: //excilin
         $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
         break;
+       case 72: //hahsy
+        $addfield .= ", stock.rem as rem2,info.strdate1 as received";
+        break;
     }
     return "
       select head.docno,head.client, head.clientname, head.address, ifnull(head.rem,'') as rem, 
@@ -5194,8 +5275,8 @@ class sj
               'vattype' => $data[0]->vattype
 
             ];
-          } else {
-            $headupdate = [
+          } else if ($companyid == 72){
+            $headupdate = [ 
               'ourref' => $data[0]->ourref,
               'yourref' => $data[0]->yourref,
               'terms' => $data[0]->terms,
@@ -5206,6 +5287,25 @@ class sj
               'projectid' => $data[0]->hprojectid,
               'sano' => $data[0]->sano,
               'pono' => $data[0]->pono
+            ];
+            $headinfo = [
+              'strdate1' => $data[0]->received
+            ];
+            $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ['trno' => $trno]);
+
+          }else {
+            $headupdate = [
+              'ourref' => $data[0]->ourref,
+              'yourref' => $data[0]->yourref,
+              'terms' => $data[0]->terms,
+              'agent' => $data[0]->agent,
+              'rem' => $data[0]->rem,
+              'wh' => $data[0]->wh,
+              'shipto' => $data[0]->shipto,
+              'projectid' => $data[0]->hprojectid,
+              'sano' => $data[0]->sano,
+              'pono' => $data[0]->pono,
+              'received' => $data[0]->received
             ];
           }
 
@@ -5292,7 +5392,9 @@ class sj
               $config['params']['data']['consignpr'] = $data[$key2]->markup;
               $config['params']['data']['disc2'] = $data[$key2]->custdisc;
             }
-
+            if ($companyid == 72) { //hahsy
+              $config['params']['data']['rem2'] = $data[$key2]->rem2;
+            }
             $return = $this->additem('insert', $config);
 
             if ($msg = '') {
@@ -5309,7 +5411,7 @@ class sj
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
                 $this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']);
-                $row = $this->openstockline($config);
+                $row = $this->openstockline($config); 
                 $return = ['row' => $row, 'status' => true, 'msg' => $msg];
               }
               array_push($rows, $return['row'][0]);
@@ -5557,6 +5659,9 @@ class sj
       case 64: //excilin
         $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
         break;
+      case 72: //hahsy
+        $addfield .= ", stock.rem as rem2,info.strdate1 as received";
+        break;
     }
 
 
@@ -5606,6 +5711,23 @@ class sj
                 'tax' => $data[0]->tax,
                 'vattype' => $data[0]->vattype
               ];
+            }else if ($companyid == 72){
+            $headupdate = [ 
+              'ourref' => $data[0]->ourref,
+              'yourref' => $data[0]->yourref,
+              'terms' => $data[0]->terms,
+              'agent' => $data[0]->agent,
+              'rem' => $data[0]->rem,
+              'wh' => $data[0]->wh,
+              'shipto' => $data[0]->shipto,
+              'projectid' => $data[0]->hprojectid,
+              'sano' => $data[0]->sano,
+              'pono' => $data[0]->pono
+            ];
+            $headinfo = [
+              'strdate1' => $data[0]->received
+            ];
+            $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ['trno' => $trno]);
             } else {
               $headupdate = [
                 'ourref' => $data[0]->ourref,
@@ -5695,7 +5817,9 @@ class sj
               $config['params']['data']['consignpr'] = $data[$key2]->markup;
               $config['params']['data']['disc2'] = $data[$key2]->custdisc;
             }
-
+            if ($companyid == 72) { //hahsy
+              $config['params']['data']['rem2'] = $data[$key2]->rem2;
+            }
             $return = $this->additem('insert', $config);
             if ($msg = '') {
               $msg = $return['msg'];

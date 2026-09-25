@@ -10,7 +10,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use Exception;
 
-class contract
+class newcontract
 {
     private $fieldClass;
     private $tabClass;
@@ -18,7 +18,7 @@ class contract
     private $companysetup;
     private $othersClass;
 
-    public $modulename = 'CONTRACT';
+    public $modulename = 'NEW CONTRACT';
     public $gridname = 'accounting';
     private $logger;
 
@@ -51,16 +51,15 @@ class contract
 
         data_set($col1, 'startdate.label', 'Start Date');
         data_set($col1, 'startdate.type', 'date');
-        data_set($col1, 'startdate.readonly', false);
 
         data_set($col1, 'enddate.label', 'End Date');
         data_set($col1, 'enddate.type', 'date');
+        data_set($col1, 'enddate.readonly', true);
 
         data_set($col1, 'rem.label', 'Notes');
         data_set($col1, 'rem.type', 'ctextarea');
-        data_set($col1, 'rem.readonly', false);
 
-        data_set($col1, 'refresh.label', 'Save');
+        data_set($col1, 'refresh.label', 'NEW CONTRACT');
 
         return array('col1' => $col1);
     }
@@ -79,9 +78,10 @@ class contract
         return $result;
     }
 
+
     public function getheaddata($config)
     {
-        $empid = isset($config['params']['clientid']) ? $config['params']['clientid'] : 0;
+        $empid = isset($config['params']['addedparams']['clientid']) ? $config['params']['addedparams']['clientid'] : 0;
 
         $qry = "select line, empid, contractn, descr as rem, datefrom as startdate, dateto as enddate
         from contracts
@@ -102,16 +102,13 @@ class contract
     public function loaddata($config)
     {
         $empid = isset($config['params']['clientid']) ? $config['params']['clientid'] : 0;
-        $startdate = $config['params']['dataparams']['startdate'];
-        $enddate   = $config['params']['dataparams']['enddate'];
-        $rem     = $config['params']['dataparams']['rem'];
-        $user      = $config['params']['user'];
+        $user = $config['params']['user'];
 
         $data = array(
             'empid'    => $empid,
-            'descr'    => $rem,
-            'datefrom' => $startdate,
-            'dateto'   => $enddate,
+            'descr'    => '',
+            'datefrom' => null,
+            'dateto'   => null,
             'editby'   => $user,
             'editdate' => $this->othersClass->getCurrentTimeStamp()
         );
@@ -119,9 +116,9 @@ class contract
         $line = $this->coreFunctions->insertGetId('contracts', $data);
 
         $config['params']['doc'] = 'CONTRACT';
-        $this->logger->sbcwritelog($line, $config, 'CREATE', 'New Contract - ' . $startdate . ' to ' . $enddate);
+        $this->logger->sbcwritelog($line, $config, 'CREATE', 'New Contract - blank record started');
 
-        return array('status' => true, 'msg' => 'Contract successfully saved.', 'closecustomform' => true, 'reloadhead' => true);
+        return array('status' => true, 'msg' => 'New contract started successfully.', 'closecustomform' => true, 'reloadhead' => true);
     }
 
     public function data($config)

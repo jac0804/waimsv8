@@ -813,7 +813,8 @@ class othersClass
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
     array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr', 'carton');
-    array_push($number, 'interest', 'factor',  'miscfee', 'rebate');
+    array_push($number, 'interest', 'factor',  'miscfee', 'rebate', 'cbm');
+    array_push($number, 'sssdef', 'philhdef', 'pibigdef');
     return $number;
   }
 
@@ -10843,6 +10844,174 @@ class othersClass
     return $this->coreFunctions->opentable('select distinct doc from left_menu');
   }
 
+
+  // 09-24-2026
+  public function copypreviousstock($config)
+  {
+
+    $trno = $config['params']['trno'];
+    $doc = $config['params']['doc'];
+    $center = $config['params']['center'];
+    $companyid = $config['params']['companyid'];
+
+    switch ($doc) {
+      case 'SO':
+        $path = 'App\Http\Classes\modules\sales\so';
+        break;
+      case 'PC':
+        $path = 'App\Http\Classes\modules\inventory\pc';
+        break;
+      default:
+        return ['status' => false, 'msg' => 'Copy previous is not available for ' . $doc . '.'];
+    }
+
+    $module = app($path);
+    $label  = ucwords(strtolower($module->modulename));
+
+
+    $dateTables = array($module->stock);
+    $lookups    = $this->buildSanitizeLookups($doc, $companyid, array(), false, $dateTables);
+
+
+    $docno = $this->coreFunctions->datareader(
+      "select docno as value from " . $module->tablenum . " where trno=?",
+      array($trno)
+    );
+
+    $prevtrno = $this->coreFunctions->datareader(
+      "select trno as value from " . $module->tablenum . "
+         where doc=? and center=? and docno<? order by docno desc limit 1",
+      array($doc, $center, $docno),
+      '',
+      true
+    );
+    if ($prevtrno == 0) {
+      return ['status' => false, 'msg' => 'No previous ' . $label . ' found.'];
+    }
+
+    $prevdocno = $this->coreFunctions->datareader(
+      "select docno as value from " . $module->tablenum . " where trno=?",
+      array($prevtrno)
+    );
+
+    $config['params']['prevtrno'] = $prevtrno;
+    $datadetail = $module->openstock($config['params']['prevtrno'], $config);
+    if (empty($datadetail)) {
+      return ['status' => false, 'msg' => 'Previous ' . $label . ' ' . $prevdocno . ' has no items to copy.'];
+    }
+
+    $existing = array();
+    foreach (
+      $this->coreFunctions->opentable(
+        "select itemid from " . $module->stock . " where trno=?
+             union
+             select itemid from " . $module->hstock . " where trno=?",
+        array($trno, $trno)
+      ) as $cur
+    ) {
+      $existing[$cur->itemid] = true;
+    }
+
+    $copied  = 0;
+    $skipped = 0;
+    $failed  = array();
+
+    foreach ($datadetail as $row) {
+      if (
+        isset($row->void)
+        && ($row->void === 'true' || $row->void === true || $row->void == 1)
+      ) {
+        continue;
+      }
+
+      // skip items already in the current document
+      if (isset($existing[$row->itemid])) {
+        $skipped++;
+        continue;
+      }
+
+      // resolve wh code (openstock() usually returns it, but be defensive)
+      $wh = isset($row->wh) ? $row->wh : '';
+      if ($wh === '' && isset($row->whid) && $row->whid) {
+        $wh = $this->coreFunctions->getfieldvalue(
+          'client',
+          'client',
+          'clientid=?',
+          array($row->whid)
+        );
+      }
+
+      switch ($doc) {
+        case 'SO':
+          $config['params']['data'] = array(
+            'itemid' => $row->itemid,
+            'uom'    => $row->uom,
+            'amt'    => $this->sanitizekeyfieldFast('amt', $row->isamt, $lookups),
+            'qty'    => $this->sanitizekeyfieldFast('qty', $row->isqty, $lookups),
+            'disc'   => $row->disc,
+            'loc'    => $row->loc,
+            'wh'     => $wh,
+            'rem'    => $row->rem,
+          );
+          break;
+
+        case 'PC':
+          $config['params']['data'] = array(
+            'itemid'   => $row->itemid,
+            'uom'      => $row->uom,
+            'amt'      => $this->sanitizekeyfieldFast('amt', $row->rrcost, $lookups),
+            'qty'      => $this->sanitizekeyfieldFast('qty', $row->rrqty, $lookups),
+            'disc'     => $row->disc,
+            'loc'      => $row->loc,
+            'expiry'   => $row->expiry,
+            'wh'       => $wh,
+            'rem'      => $row->rem,
+            'palletid' => $row->palletid,
+            'locid'    => $row->locid,
+          );
+          break;
+      }
+
+      $return = $module->additem('insert', $config);
+      if (!empty($return['status'])) {
+        $copied++;
+        $existing[$row->itemid] = true;
+      } else {
+        $failed[] = isset($return['msg'])
+          ? $return['msg']
+          : ('itemid ' . $row->itemid);
+      }
+    }
+
+    $this->logger->sbcwritelog(
+      $trno,
+      $config,
+      'STOCK',
+      'COPY PREVIOUS ' . $doc . ' - ' . $prevdocno
+        . ' Copied:'  . $copied
+        . ' Skipped:' . $skipped
+        . ' Failed:'  . count($failed)
+    );
+
+    if ($copied === 0 && $skipped > 0 && empty($failed)) {
+      $msg = 'All ' . $skipped . ' item(s) from ' . $prevdocno . ' are already in this document.';
+    } else {
+      $msg = 'Copied ' . $copied . ' item(s) from ' . $prevdocno . '.';
+      if ($skipped > 0) {
+        $msg .= ' ' . $skipped . ' skipped (already present).';
+      }
+      if (!empty($failed)) {
+        $msg .= ' ' . count($failed) . ' failed: ' . implode(' | ', $failed);
+      }
+    }
+
+    return array(
+      'status'     => true,
+      'msg'        => $msg,
+      'inventory'  => $module->openstock($config['params']['trno'], $config),
+      'reloadhead' => true,
+    );
+  }
 
 
 

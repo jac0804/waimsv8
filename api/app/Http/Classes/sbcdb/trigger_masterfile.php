@@ -1398,7 +1398,7 @@ class trigger_masterfile
 		$key = "line";
 		$key2 = "itemid";
 		$trno2 = "clientid";
-		
+
 		if ($companyid == 72) { //hashy
 			$key2 = "clientid";
 			$trno2 = "itemid";
@@ -1442,6 +1442,9 @@ class trigger_masterfile
 			'allow in SO/SJ' => ['issales' => []],
 			'default in SO/SJ' => ['issalesdef' => []],
 			'Printed UOM' => ['printuom' => []],
+			'retail' => ['amt' => []],
+			'wholesales' => ['amt2' => []],
+			'others' => ['famt' => []],
 		];
 
 		$this->settriggermasterfilelogs($config, $trigger_name, $table, $table_log, $fields, $key, $key2);

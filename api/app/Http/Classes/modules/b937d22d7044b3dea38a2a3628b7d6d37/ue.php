@@ -333,8 +333,8 @@ class ue
       $stockbuttons = ['save', 'delete'];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     if ($viewcost == '0') {
-        $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$rrcost]['type'] = 'coldel';
+        // $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
 
     }

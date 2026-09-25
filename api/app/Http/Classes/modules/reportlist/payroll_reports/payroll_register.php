@@ -3333,7 +3333,7 @@ class payroll_register
         $adj = $adj + $data->cr;
         $totalded = $totalded + $data->cr;
       } elseif ($data->code == 'PT4' || $data->code == 'PT67') { //  skill allowance //PT67, //old $data->code == 'PT4'
-        $skillallowance = $skillallowance + $data->cr;
+        $skillallowance = $skillallowance  + $data->db - $data->cr;
         $totalded = $totalded + $data->cr;
       }else {
         if ($data->cr > 0) {
@@ -3463,7 +3463,7 @@ class payroll_register
         $str .= $this->reporter->col($adj1 == 0 ? '-' : number_format($adj1), 60, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $tototherearnings = $otherearnings + $bonus + $vl_sl + $sil;
         $legal = $legal + $legalot;
-        $totalamount = $basicpay + $allowance + $rot + $tototherearnings + $rest_spamt + $legal + $ndiffot + $adj1 + $special + $specialot +
+        $totalamount = $basicpay + $allowance + $skillallowance + $rot + $tototherearnings + $rest_spamt + $legal + $ndiffot + $adj1 + $special + $specialot +
         $restday + $restdayot;
         // $totalamount = $basicpay + $allowance + $rot + $tototherearnings + $rest_spamt + $legal + $ndiffot + $adj1 +
         // $restday + $restdayot - ($totlateundertime + $absent);

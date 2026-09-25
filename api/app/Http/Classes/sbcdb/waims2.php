@@ -4227,7 +4227,7 @@ class waims2
 
     $this->coreFunctions->sbcdroptable("infra");
 
-    $this->coreFunctions->sbcaddcolumngrp(["client"], ["isinfra"], "TINYINT(1) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["client"], ["isinfra", "isdefinvoice"], "TINYINT(1) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(['client'], ['infratype'], "VARCHAR(25) NOT NULL DEFAULT ''");
     $this->coreFunctions->sbcaddcolumngrp(['client'], ["regdate"], "datetime DEFAULT NULL");
 
@@ -4512,5 +4512,9 @@ class waims2
     $this->coreFunctions->sbcaddcolumn("mcfinancerate", "penalty", "decimal(18,2) NOT NULL DEFAULT '0.00'", 1);
     $this->coreFunctions->sbcaddcolumn("employee", "agencyfee", "decimal(19,2) NOT NULL DEFAULT '0.00'", 0);
     $this->coreFunctions->sbcaddcolumn("employee", "agencyname", "varchar(100) not null default ''", 0);
+
+    $this->coreFunctions->sbcaddcolumngrp(["headinfotrans", "hheadinfotrans"], ["disc"], "varchar(100) not null default ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["pdstock", "hpdstock"], ["tsqa"], "decimal(18,6) NOT NULL DEFAULT '0.000000'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["item", "sostock", "hsostock", "lastock", "glstock"], ['cbm'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
   }
 }

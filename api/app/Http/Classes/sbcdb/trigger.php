@@ -442,6 +442,13 @@ class trigger
       $othcode => ['othcode' => []],
       $shortname => ['shortname' => []],
       'Qty per Carton' => ['carton' => []],
+      'Item Height' => ['item_height' => []],
+      'Item Width' => ['item_width' => []],
+      'Item Length' => ['item_length' => []],
+      'Employee Rate' => ['payrate' => []],
+      'DPR Cost' => ['defcost' => []],
+      'Employee Box/Pcs' => ['payqty' => []],
+      'Default SO Warehouse' => ['wh' => []],
     ];
 
     $customtrigger = "if OLD.dlock<>NEW.dlock and New.ispositem = 1 then  delete from itemdlock where itemid = Old.itemid; insert into itemdlock(itemid,dlock)values(Old.itemid,New.dlock); end if;                       
@@ -2706,9 +2713,11 @@ class trigger
     //HPDSTOCK TRIGGER =================================================================================================================
     $qry = "create TRIGGER hpdstock_update BEFORE UPDATE on hpdstock FOR EACH ROW
         BEGIN
-
           if New.qa>New.qty then
             CALL QTY_IS_GREATER_THAN_PD;
+          end if;
+          if New.tsqa>New.qty then
+           CALL QTY_IS_GREATER_THAN_PD;
           end if;
         END";
     $this->coreFunctions->execqry($qry, 'trigger');
@@ -2748,6 +2757,9 @@ class trigger
          if New.QA>New.QTY then
             CALL QTY_IS_GREATER_THAN_PD;
           end if;
+          if New.tsqa>New.qty then
+            CALL QTY_IS_GREATER_THAN_PD;
+          end if;
         END";
     $this->coreFunctions->execqry($qry, 'trigger');
 
@@ -2770,6 +2782,9 @@ class trigger
 
           if OLD.QA<>0 then
             CALL QTY_SERVED_CANNOT_DELETE_PDSTOCK;
+          end if;
+          if OLD.tsqa<>0 then
+           CALL QTY_SERVED_CANNOT_DELETE_PDSTOCK;
           end if;
         END";
     $this->coreFunctions->execqry($qry, 'trigger');

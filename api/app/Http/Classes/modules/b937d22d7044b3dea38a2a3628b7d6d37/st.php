@@ -227,7 +227,7 @@ class st
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
 
-    $columns = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'ref', 'rem', 'loc', 'expiry', 'itemname', 'barcode'];
+    $columns = ['action', 'isqty', 'uom', 'isamt',  'ext', 'wh', 'ref', 'rem', 'loc', 'expiry', 'itemname', 'barcode'];
 
     foreach ($columns as $key => $value) {
       $$value = $key;
@@ -645,7 +645,7 @@ class st
         if ($data[$key]->refx == 0) {
           $msg1 = ' Out of stock ';
         } else {
-          $msg2 = ' Qty Received is Greater than RR Qty ';
+          $msg2 = ' Qty transferred is Greater than JO Qty ';
         }
       }
     }
@@ -675,7 +675,7 @@ class st
         if ($data[$key]->refx == 0) {
           $msg1 = ' Out of stock ';
         } else {
-          $msg2 = ' Qty Received is Greater than RR Qty ';
+          $msg2 = ' Qty Transferred is Greater than JO Qty ';
         }
       }
     }
@@ -739,11 +739,12 @@ class st
   }
 
   // insert and update item
-  public function additem($action, $config)
+  public function additem($action, $config, $setlog = false)
   {
     $companyid = $config['params']['companyid'];
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
+    $ispallet = $this->companysetup->getispallet($config['params']);
     $trno = $config['params']['trno'];
     $disc = isset($config['params']['data']['disc']) ? $config['params']['data']['disc'] : "";
     $wh = isset($config['params']['data']['wh']) ? $config['params']['data']['wh'] : "";
@@ -793,10 +794,12 @@ class st
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
+    $isnoninv = 0;
     if (!empty($item)) {
+      $isnoninv = $item[0]->isnoninv;
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
     }
@@ -826,8 +829,6 @@ class st
       'rem' => $rem
     ];
 
-    // var_dump($data);
-    // break;
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
@@ -840,25 +841,54 @@ class st
       $data['encodeddate'] = $current_timestamp;
       $data['encodedby'] = $config['params']['user'];
       if ($this->coreFunctions->sbcinsert($this->stock, $data) == 1) {
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:' . $computedata['ext'] . ' Uom:' . $uom);
         $havestock = true;
-        $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
-        if ($cost != -1) {
-          $cost2 = $cost / $factor;
-          $computedata = $this->othersClass->computestock($cost2, $disc, $qty, $factor, $vat);
-          $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'isamt' => $cost2, 'amt' => $computedata['amt'], 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
-        } else {
-          $havestock = false;
-          $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $current_timestamp], ['trno' => $trno, 'line' => $line]);
-          $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
-        }
-        $row = $this->openstockline($config);
         $msg = 'Item was successfully added.';
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+        if ($isnoninv == 0) {
+          if ($ispallet) {
+            $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
+          } else {
+            $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $expiry, $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
+          }
+          if ($cost != -1) {
+            $cost2 = $cost / $factor;
+            $computedata = $this->othersClass->computestock($cost2, $disc, $qty, $factor, $vat);
+            $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'isamt' => $cost2, 'amt' => $computedata['amt'], 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
+            //CHECK BELOW COST
+            if ($this->companysetup->checkbelowcost($config['params'])) {
+              $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
+              if ($belowcost == 1) {
+                $msg = '(' . $item[0]->barcode . ') Is this free of charge? Please check.';
+              } elseif ($belowcost == 2) {
+                $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'BELOW COST', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
+                $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+                $this->logger->sbcwritelog($trno, $config, 'STOCK', 'BELOW COST - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0', $setlog ? $this->tablelogs : '');
+                $msg = "(" . $item[0]->barcode . ") You can't issue this item/s because it's BELOW COST!!!";
+              }
+            }
+          } else {
+            $havestock = false;
+            $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
+            $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0', $setlog ? $this->tablelogs : '');
+          }
+        }
+
+        if ($this->setserveditems($refx, $linex) == 0) {
+          $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+          $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+          $this->setserveditems($refx, $linex);
+          $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+          $return = false;
+          $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PD Qty.";
+        }
+        $this->othersClass->getcreditinfo($config, $this->head);
+        $row = $this->openstockline($config);
         if (!$havestock) {
           $row[0]->errcolor = 'bg-red-2';
-          $msg = 'Out of Stock.';
+          $msg = '(' . $item[0]->barcode . ') Out of Stock.';
         }
+
         return ['row' => $row, 'status' => true, 'msg' => $msg];
       } else {
         return ['status' => false, 'msg' => 'Add item Failed'];
@@ -872,16 +902,16 @@ class st
         $cost2 = $cost / $factor;
         $computedata = $this->othersClass->computestock($cost2, $disc, $qty, $factor, $vat);
         $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'isamt' => $cost2, 'amt' => $computedata['amt'], 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
-        // if ($this->setserveditems($refx, $linex) === 0) {
-        //   $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-        //   $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-        //   $this->setserveditems($refx, $linex);
-        //   $return = false;
-        // }
+        if ($this->setserveditems($refx, $linex) === 0) {
+          $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+          $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+          $this->setserveditems($refx, $linex);
+          $return = false;
+        }
       } else {
         $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $current_timestamp], ['trno' => $trno, 'line' => $line]);
         $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-        // $this->setserveditems($refx, $linex);
+        $this->setserveditems($refx, $linex);
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
         $return = false;
       }
@@ -892,27 +922,41 @@ class st
   public function deleteallitem($config)
   {
     $trno = $config['params']['trno'];
+    $data = $this->coreFunctions->opentable('select refx,linex from ' . $this->stock . ' where trno=? and refx<>0', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
+
+    foreach ($data as $key => $value) {
+      if ($data[$key]->refx != 0) {
+        $this->setserveditems($data[$key]->refx, $data[$key]->linex);
+      }
+    }
+   
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
   }
 
-  // public function setserveditems($refx, $linex)
-  // {
-  //   $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as 
-  //   stock on stock.trno=head.trno where (head.doc='ST' or head.doc='SS') and stock.refx=" . $refx . " and stock.linex=" . $linex;
 
-  //   $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
-  //   glhead.trno where (glhead.doc='ST' or glhead.doc='SS') and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
+  public function setserveditems($refx, $linex)
+  {
+    // if ($refx == 0) {
+    //   return 1;
+    // }
 
-  //   $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
-  //   $qty = $this->coreFunctions->datareader($qry2);
-  //   if ($qty === '') {
-  //     $qty = 0;
-  //   }
-  //   return $this->coreFunctions->execqry("update htrstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
-  // }
+    $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as 
+    stock on stock.trno=head.trno where head.doc='ST'  and stock.refx=" . $refx . " and stock.linex=" . $linex;
+
+    $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
+    glhead.trno where glhead.doc='ST'  and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
+
+    $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
+    $qty = $this->coreFunctions->datareader($qry2);
+    if ($qty === '') {
+      $qty = 0;
+    }
+    return $this->coreFunctions->execqry("update hpdstock set tsqa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
+  }
+
 
   public function deleteitem($config)
   {
@@ -925,9 +969,9 @@ class st
     $qry = "delete from " . $this->stock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
     $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-    // if ($data[0]->refx != 0) { //walang ina update na qa kc transfer
-    //   $this->setserveditems($data[0]->refx, $data[0]->linex);
-    // }
+    if ($data[0]->refx != 0) { 
+      $this->setserveditems($data[0]->refx, $data[0]->linex);
+    }
     $data = json_decode(json_encode($data), true);
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' barcode:' . $data[0]['barcode'] . ' Qty:' . $data[0][$this->dqty] . ' Amt:' . $data[0][$this->damt] . ' Disc:' . $data[0]['disc'] . ' wh:' . $data[0]['wh'] . ' ext:' . $data[0]['ext']);
     return ['status' => true, 'msg' => 'Item was successfully deleted.'];
@@ -979,16 +1023,16 @@ class st
           $config['params']['data']['amt'] = $data[$key2]->rrcost;
           $return = $this->additem('insert', $config);
           if ($return['status']) {
-            // if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
-            //   $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-            //   $line = $return['row'][0]->line;
-            //   $config['params']['trno'] = $trno;
-            //   $config['params']['line'] = $line;
-            //   $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-            //   $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
-            //   $row = $this->openstockline($config);
-            //   $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
-            // }
+            if ($this->setserveditems($data[$key2]->trno, $data[$key2]->line) == 0) {
+              $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+              $line = $return['row'][0]->line;
+              $config['params']['trno'] = $trno;
+              $config['params']['line'] = $line;
+              $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
+              $row = $this->openstockline($config);
+              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
+            }
             array_push($rows, $return['row'][0]);
           }
         } // end foreach

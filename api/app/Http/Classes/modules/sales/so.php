@@ -670,14 +670,18 @@ class so
         $column = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         $sortcolumn = ['action', 'barcode', 'isqty', 'uom', 'itemname', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'void', 'ref'];
         break;
-      case 64:
-        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt','disc', 'ext', 'markup','disc2', 'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'ext','markup','disc2',  'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+      case 64: // excelin
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'markup', 'disc2', 'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'ext', 'markup', 'disc2',  'agentamt', 'fstatus', 'rem', 'wh', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         break;
-      case 71:
-        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc','expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc','expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
-        break;  
+      case 71: // buenatech
+        $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
+        break;
+      case 72: // hahsy
+        $column = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
+        break;
       default:
         $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
@@ -849,6 +853,18 @@ class so
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'ORDER FORM';
         break;
+      case 72: //hahsy
+        $obj[0]['inventory']['columns'][$ext]['label'] = 'Extension';
+        $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$fstatus]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+        $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
+        break;
       default:
         $obj[0]['inventory']['columns'][$weight]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$roqa]['type'] = 'coldel';
@@ -876,7 +892,6 @@ class so
           $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
           $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
           $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
-         
         }
         // var_dump($issp);
         break;
@@ -973,6 +988,9 @@ class so
       case 15: //nathina
         array_push($fields, 'shipto');
         break;
+      case 72: //hahsy
+        array_push($fields, 'shipto');
+        break;
     }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.lookupclass', 'customer');
@@ -990,6 +1008,12 @@ class so
     if ($companyid == 39) { //cbbsi
       data_set($col1, 'address.type', 'ctextarea');
       data_set($col1, 'address.maxlength', 150);
+    }
+    if ($companyid == 72) { //hahsy
+      data_set($col1, 'shipto.type', 'lookup');
+      data_set($col1, 'shipto.action', 'lookupwshipping');
+      data_set($col1, 'shipto.label', 'Trucking');
+      data_set($col1, 'shipto.addedparams', ['client']);
     }
 
     // col 2
@@ -1018,7 +1042,15 @@ class so
         if ($noeditdate) {
           data_set($col2, 'dateid.class', 'sbccsreadonly');
         }
+      case 72: // hahsy
+        $fields = [['dateid', 'terms'], 'due', 'dwhname', 'dagentname', 'disc'];
+        $col2 = $this->fieldClass->create($fields);
         break;
+        break;
+    }
+
+    if ($companyid == 72) { //hahsy
+      data_set($col2, 'disc.label', 'Discount');
     }
 
     // col 3
@@ -1073,12 +1105,16 @@ class so
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname', 'dvattype'];
         $col3 = $this->fieldClass->create($fields);
         break;
+      case 72: // hahsy
+        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname', 'received'];
+        $col3 = $this->fieldClass->create($fields);
+        break;
       default:
         $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname'];
         if ($systemtype == 'REALESTATE') {
           $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'rem'];
         }
-        if ($companyid == 64){
+        if ($companyid == 64) {
           array_push($fields, 'ismarkup');
         }
         $col3 = $this->fieldClass->create($fields);
@@ -1095,6 +1131,10 @@ class so
 
     if ($companyid == 47) { //kitchenstar
       data_set($col3, 'yourref.label', 'PO #');
+    }
+
+    if ($companyid == 72) { //hahsy
+      data_set($col3, 'received.label', 'Receiving Time');
     }
 
 
@@ -1121,6 +1161,9 @@ class so
         break;
       case 39: //cbbsi
         array_push($fields, 'approvalreason', 'rem2');
+        break;
+      case 72: //hahsy
+        array_push($fields, 'copypreviousstock');
         break;
       default:
         if ($this->companysetup->linearapproval($config['params'])) {
@@ -1158,6 +1201,12 @@ class so
       data_set($col4, 'createby.class', 'sbccsreadonly');
     }
 
+    if ($companyid == 72) { //hahsy
+      data_set($col4, 'copypreviousstock.label', 'Copy Previous SO Items');
+      data_set($col4, 'copypreviousstock.confirmlabel', 'Do you want to copy previous SO Items?');
+      data_set($col4, 'copypreviousstock.style', 'width: 100%;');
+    }
+
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
   }
 
@@ -1184,10 +1233,10 @@ class so
     $data[0]['creditinfo'] = '';
     $data[0]['rem2'] = '';
 
-    if ($params['companyid'] == 64 ) {//excelin
-       $data[0]['ismarkup'] = '0';
+    if ($params['companyid'] == 64) { //excelin
+      $data[0]['ismarkup'] = '0';
     }
-   
+
     if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
@@ -1251,6 +1300,9 @@ class so
 
     $data[0]['createby'] = '';
 
+    $data[0]['received'] = '';
+    $data[0]['disc'] = '';
+
     return $data;
   }
 
@@ -1304,7 +1356,7 @@ class so
          head.statid, ifnull(stat.status,'') as statname,ifnull(info.trnxtype,'') as trnxtype,ifnull(info.approvalreason,'') as approvalreason,ifnull(info.rem2,'') as rem2,
              head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, info.driverid, info.checkerid, info.truckid, info.helperid, info.plateno,
             bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
-            subamen.line as subamenityid, subamen.description as subamenityname, info.tmpref,
+            subamen.line as subamenityid, subamen.description as subamenityname, info.tmpref,info.strdate1 as received,info.disc,
              head.tax,
              head.vattype,
              '' as dvattype $addfield";
@@ -1385,17 +1437,17 @@ class so
           }
         }
       }
-      
-      
-    if ($config['params']['companyid'] == 64) { //excilin
-      foreach ($this->blnfields as $key => $value) {
-        if ($head[0]->$value) {
-          $head[0]->$value = "1";
-        } else
-          $head[0]->$value = "0";
+
+
+      if ($config['params']['companyid'] == 64) { //excilin
+        foreach ($this->blnfields as $key => $value) {
+          if ($head[0]->$value) {
+            $head[0]->$value = "1";
+          } else
+            $head[0]->$value = "0";
+        }
       }
-    }
-      
+
       $stock = $this->openstock($trno, $config);
       $viewdate = $this->othersClass->getCurrentTimeStamp();
       $viewby = $config['params']['user'];
@@ -1422,6 +1474,10 @@ class so
       if ($this->companysetup->getistodo($config['params'])) {
         $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
         $hideobj = ['donetodo' => !$btndonetodo];
+      }
+
+      if ($config['params']['companyid'] == 72) { //hahsy
+        $hideobj['copypreviousstock'] = $isposted ? true : false;
       }
 
       if ($config['params']['companyid'] == 19) { //housegem
@@ -1547,11 +1603,18 @@ class so
       $info['editby'] = $config['params']['user'];
     }
 
+    if ($companyid == 72) { //hahsy
+      $info['strdate1'] = isset($head['received']) ? $head['received'] : '';
+      $info['disc'] = isset($head['disc']) ? $head['disc'] : '';
+      $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $info['editby'] = $config['params']['user'];
+    }
+
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->othersClass->getcreditinfo($config, $this->head);
 
-      if ($companyid == 39) { //cbbsi
+      if ($companyid == 39 || $companyid == 72) { //cbbsi, hahsy
         $exist = $this->coreFunctions->getfieldvalue('headinfotrans', 'trno', 'trno=?', [$head['trno']]);
         if ($exist != 0) {
           $this->coreFunctions->sbcupdate('headinfotrans', $info, ['trno' => $head['trno']]);
@@ -1600,6 +1663,7 @@ class so
       switch ($companyid) {
         case 19: //housegem
         case 39: //cbbsi
+        case 72: //hahsy
           $this->coreFunctions->sbcinsert('headinfotrans', $info);
           break;
       }
@@ -1885,7 +1949,7 @@ class so
         $addsfield = ",fstatus";
         break;
     } // NOTE: DO NOT ADD NEW CASE CONDITIONS
-      // New fields must be added directly to $qry
+    // New fields must be added directly to $qry
 
 
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
@@ -1978,7 +2042,7 @@ class so
         $addsfield = ",fstatus";
         break;
     } // NOTE: DO NOT ADD NEW CASE CONDITIONS
-      // New fields must be added directly to $qry
+    // New fields must be added directly to $qry
 
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
@@ -2079,6 +2143,10 @@ class so
 
     if ($companyid == 71) { //buenatech
       $specialprice = ",case when stock.issp=0 then 'false' else 'true' end as issp";
+    }
+
+    if ($companyid == 72) { //hahsy
+      $itemdesc = ",FORMAT(stock.qa," . $this->companysetup->getdecimal('currency', $config['params']) . ") as served";
     }
 
 
@@ -2291,6 +2359,9 @@ class so
         break;
       case 'downloadexcel':
         return $this->othersClass->downloadexcel($config);
+        break;
+      case 'copypreviousstock':
+        return $this->othersClass->copypreviousstock($config);
         break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
@@ -2614,6 +2685,66 @@ class so
     return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];
   }
 
+  public function duplicatepreviousso($config)
+  {
+    $trno = $config['params']['trno'];
+    $doc = $config['params']['doc'];
+    $center = $config['params']['center'];
+    $user = $config['params']['user'];
+
+    // Find the immediately preceding transaction of this document type, regardless of customer
+    $prevtrno = $this->coreFunctions->datareader(
+      "select trno as value from " . $this->tablenum . " where doc=? and center=? and docno<? order by docno desc limit 1",
+      [$doc, $center, $trno],
+      '',
+      true
+    );
+
+    if ($prevtrno == 0) {
+      return ['status' => false, 'msg' => 'No previous Sales Order found.'];
+    }
+
+    $prevItems = $this->coreFunctions->opentable(
+      "select line, itemid, uom, isamt, isqty, disc, loc, whid, rem from " . $this->stock . " where trno=? and void=0
+     union all
+     select line, itemid, uom, isamt, isqty, disc, loc, whid, rem from " . $this->hstock . " where trno=? and void=0
+     order by line asc",
+      [$prevtrno, $prevtrno]
+    );
+
+    $copied = 0;
+    foreach ($prevItems as $row) {
+      $wh = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$row->whid]);
+
+      $config['params']['data'] = [
+        'itemid' => $row->itemid,
+        'uom' => $row->uom,
+        'amt' => $row->isamt,
+        'qty' => $row->isqty,
+        'disc' => $row->disc,
+        'loc' => $row->loc,
+        'wh' => $wh,
+        'rem' => $row->rem,
+      ];
+
+      $return = $this->additem('insert', $config);
+      if ($return['status']) {
+        $copied++;
+      }
+    }
+
+    $this->logger->sbcwritelog($trno, $config, 'STOCK', 'COPY PREVIOUS SO - from trno:' . $prevtrno . ' Items copied:' . $copied);
+
+    $stock = $this->openstock($trno, $config);
+
+    return [
+      'status' => true,
+      'msg' => 'Copied ' . $copied . ' item(s) from the previous Sales Order.',
+      'inventory' => $stock,
+      'reloadhead' => true
+    ];
+  }
+
   public function updateperitem($config)
   {
     $config['params']['data'] = $config['params']['row'];
@@ -2706,6 +2837,13 @@ class so
     $linex = 0;
     $noprint = 'false';
 
+    if ($companyid == 72 && $action == 'insert') { //hahsy - kinukuha nito ang header discount
+      $headdisc = $this->coreFunctions->getfieldvalue('headinfotrans', 'disc', 'trno=?', [$trno]);
+      if ($headdisc !== '' && $headdisc !== null) {
+        $disc = $headdisc;
+      }
+    }
+
     if ($companyid == 64) { //Excelin
       $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : 0;
       $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
@@ -2725,7 +2863,7 @@ class so
       $void = $config['params']['data']['void'];
     }
 
-    if (isset($config['params']['data']['issp'])) {   // NEW
+    if (isset($config['params']['data']['issp'])) {
       $issp = $config['params']['data']['issp'];
     }
 
@@ -3359,7 +3497,7 @@ class so
             ];
             $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
           }
-          
+
           if ($msg = '') {
             $msg = $return['msg'];
           } else {
@@ -3386,7 +3524,7 @@ class so
   } //end function
 
   public function getqtdetails($config)
-  { 
+  {
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $wh = $config['params']['wh'];
@@ -3397,7 +3535,7 @@ class so
     if ($companyid == 64) { //excilin
       $addfield = ",head.ismarkup,stock.markup,stock.custdisc";
     }
-    
+
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
         select head.docno, item.itemid,stock.trno, 

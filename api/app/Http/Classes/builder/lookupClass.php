@@ -4655,6 +4655,11 @@ class lookupClass
           $plottype = 'plothead';
         }
 
+        if ($config['params']['companyid'] == 72 && ($config['params']['doc'] == 'SJ'||$config['params']['doc'] == 'SO' )) { //hahsy
+          $addonfield .= ", '' as shipto";
+          $plotting['shipto'] = 'shipto';
+          $plottype = 'plothead';
+        }
 
         if ($config['params']['companyid'] == 43 && ($config['params']['doc'] == 'MI' || $config['params']['doc'] == 'MR')) { //MIGHTY
           $condition = " where (client.iscustomer=1 or client.isemployee=1 or client.issupplier=1) and client.isinactive =0 " . $addoncondition . " order by client";
@@ -10501,7 +10506,10 @@ class lookupClass
       
       if ($config['params']['lookupclass']=='pendingsopddetail') {
         $plotsetup['plotting']['barcode'] = 'barcode';
+        $plotsetup['plotting']['client'] = 'client';
+        $plotsetup['plotting']['clientname'] = 'clientname';
       }
+      array_splice($cols, 2, 0, [['name' => 'clientname', 'label' => 'Customer', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;']]);
 
     }
 
@@ -10510,9 +10518,6 @@ class lookupClass
     } else {
       $data = $this->sqlquery->getpendingsodetails($config);
     }
-
-   
-
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }
@@ -17018,7 +17023,7 @@ class lookupClass
         ];
       break;
     case 'pendingjobtndetail': //tabbutton
-            if($config['params']['companyid'] == 71){
+            if($config['params']['companyid'] == 71){//buenatech
             switch($config['params']['doc']){
               case 'UE':
               case 'ST': 
@@ -17760,7 +17765,7 @@ class lookupClass
 
 
 
-    if ($companyid == 19 && $doc == 'SO') { //housegem
+    if (($companyid == 19 && $doc == 'SO') || ($companyid == 72 &&($doc == 'SO' || $doc == 'SJ')) ) { //housegem and hahsy
       $plotsetup = array(
         'plottype' => 'plothead',
         'plotting' => array(
@@ -17797,6 +17802,15 @@ class lookupClass
         array('name' => 'shipping', 'label' => 'Address', 'align' => 'left', 'field' => 'shipping', 'sortable' => true, 'style' => 'font-size:16px;')
       );
     }
+    if($companyid == 72){
+      $client = !empty($config['params']['addedparams'][0]) ? $config['params']['addedparams'][0]: '';
+      $qry = "select s.line, s.addr, s.addr as addr2, s.contact, s.contactno,
+        s.addrtype, s.addrline1, s.addrline2, s.city, s.province, s.country, s.fax,
+        ifnull(concat(s.addrline1,' ',s.addrline2,' ',s.city,' ',s.province,' ',s.country,' ',s.zipcode),'') as shipping
+        from billingaddr as s
+        left join client as c on c.clientid = s.clientid
+        where s.isinactive <> 1  and c.client= '" . $client . "'";
+    }else {
 
     // ito iconcat// sir ung sige
     $qry = "select line, addr, addr as addr2, contact,contactno,
@@ -17804,7 +17818,7 @@ class lookupClass
       ifnull(concat(s.addrline1,' ',s.addrline2,' ',s.city,' ',s.province,' ',s.country,' ',s.zipcode),'') as shipping
       from billingaddr as s 
       where s.isinactive <> 1  and s.clientid=?";
-
+    }
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     switch (strtoupper($systemtype)) {
       case 'VSCHED':
@@ -26092,14 +26106,29 @@ class lookupClass
       array('name' => 'docno', 'label' => 'Docno #', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
       array('name' => 'clientname', 'label' => 'Clientname Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'),
     );
+    $condition = '';
+    $params = [];
+
+    if ($config['params']['companyid'] == 64) { // excelin
+      $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 6029);
+      
+      if ($viewaccess == '0') {
+        if (empty($config['params']['user'])) {
+          return ['status' => false, 'msg' => 'Sorry, you`re not allowed to view transaction. Please setup first your Employee Code.', 'data' => [], 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+        }
+        $condition .= " and head.createby = ? ";
+        $params[] = $config['params']['user'];
+      }
+    }
+
     $qry = "select head.trno as keyid, head.trno, head.docno, head.clientname, sum(stock.ext) as amount from lahead as head
     left join lastock as stock on stock.trno = head.trno
-    where head.doc in ('DR','SI', 'SJ')
-    and (head.tdtrno is null or head.tdtrno = 0)
+    where head.doc in ('DR','SI')
+    and (head.tdtrno is null or head.tdtrno = 0) " . $condition . "
     group by head.trno, head.docno,head.clientname
     order by head.trno";
 
-    $data = $this->coreFunctions->opentable($qry);
+    $data = $this->coreFunctions->opentable($qry, $params);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
   }

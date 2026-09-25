@@ -113,10 +113,11 @@ class customer
     'charge1',
     'center',
     'ar',
-    'building'
+    'building',
+    'isdefinvoice'
   ];
   private $except = ['clientid'];
-  private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment', 'isnocrlimit', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'issenior'];
+  private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment', 'isnocrlimit', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'issenior', 'isdefinvoice'];
 
   private $clinfo = ['bplace', 'citizenship', 'civilstatus', 'father', 'mother', 'height', 'weight', 'fname', 'mname', 'lname', 'contactno'];
   private $acctg = [];
@@ -684,11 +685,6 @@ class customer
     }
 
 
-    if($companyid==72){ // hashy
-      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku2', 'label' => 'SPECIAL ITEM PRICE']];
-      $sku2 = $this->tabClass->createtab($tab, []);
-      $return['SPECIAL ITEM PRICE'] = ['icon' => 'fa fa-equals', 'tab' => $sku2];
-    }
 
 
     switch ($systemtype) {
@@ -855,6 +851,25 @@ class customer
       if ($billing_access != 0) {
         $return['BILLING SETUP'] = ['icon' => 'fa fa-file-invoice-dollar', 'tab' => $billing];
       }
+    }
+
+
+    if ($companyid == 72) { // hashy
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku2', 'label' => 'SPECIAL ITEM PRICE']];
+      $sku2 = $this->tabClass->createtab($tab, []);
+      $return['SPECIAL ITEM PRICE'] = ['icon' => 'fa fa-equals', 'tab' => $sku2];
+
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewmonthlysales', 'label' => 'MONTHLY SALES STATISTICS']];
+      $monthlysales = $this->tabClass->createtab($tab, []);
+      $return['MONTHLY SALES STATISTICS'] = ['icon' => 'fa fa-calendar', 'tab' => $monthlysales];
+
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewannualsales', 'label' => 'ANNUAL SALES STATISTICS']];
+      $annualsales = $this->tabClass->createtab($tab, []);
+      $return['ANNUAL SALES STATISTICS'] = ['icon' => 'fa fa-calendar', 'tab' => $annualsales];
+
+      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'viewarmonthly', 'label' => 'AR MONTHLY']];
+      $ARmonthly = $this->tabClass->createtab($tab, []);
+      $return['AR MONTHLY'] = ['icon' => 'fa fa-coins', 'tab' => $ARmonthly];
     }
 
     return $return;
@@ -1088,6 +1103,9 @@ class customer
               case 63: //ericco
                 array_push($fields, 'fax', 'contact', 'tin');
                 break;
+              case 72: //hashy
+                array_push($fields, 'industry');
+                break;  
               default:
                 array_push($fields, 'tin');
                 if ($companyid == 37) { //mega crystal
@@ -1181,6 +1199,10 @@ class customer
             break;
           case 63: //ericco 
             data_set($col2, 'fax.type', 'cinput');
+            break;
+          case 72: //hashy 
+            data_set($col2, 'industry.label', 'Reminders');
+            data_set($col2, 'industry.type', 'ctextarea');
             break;
         }
 
@@ -1286,6 +1308,9 @@ class customer
       case 59: //roosevelt
         array_push($fields, 'type', 'dparentcode', 'ar');
         break;
+      case 72: //hashy
+        array_push($fields, 'rem');
+        break;  
     }
 
     $col3 = $this->fieldClass->create($fields);
@@ -1356,6 +1381,9 @@ class customer
       case 59: //roosevelt
         array_push($fields, 'ishold');
         break;
+      case 72: //hashy
+        array_push($fields, 'isdefinvoice');
+        break; 
     }
 
     $col4 = $this->fieldClass->create($fields);
@@ -1490,6 +1518,7 @@ class customer
     $data[0]['center'] = '';
     $data[0]['ar'] = '0.00';
     $data[0]['contactno'] = '';
+    $data[0]['isdefinvoice'] = '0';
 
     switch ($config['params']['companyid']) {
       case 60: //transpower

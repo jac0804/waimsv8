@@ -77,12 +77,16 @@ class employee
     'customerid',
     'email',
     'fax',
-    'tel'
+    'tel',
+    'category'
   ];
 
   private $otherfields = ['isapprover', 'idbarcode', 'maxsjamt'];
 
-  private $profilefields = ['sss', 'phic', 'hdmf', 'sssdef', 'philhdef', 'pibigdef', 'bday', 'hired', 'resigned', 'agencyname', 'agencyfee'];
+  private $profilefields = ['sss', 'phic', 'hdmf', 'sssdef', 'philhdef', 'pibigdef', 'bday', 'agencyname', 'agencyfee', 'createdate'];
+
+  //pag magkaiba yung gamit na fields na gamit 
+  private  $newcontract = ['hired' => 'datefrom', 'resigned' => 'dateto', 'notes' => 'descr'];
 
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isemployee', 'isdepartment', 'isadmin', 'uv_ischecker', 'uv_ispicker', 'isapprover', 'isdriver', 'ispassenger'];
@@ -236,22 +240,23 @@ class employee
       data_set($col1, 'picture.fieldid', 'clientid');
 
       $fields = [
-        ['category', 'dateid',],
+        ['category', 'createdate'],
         'rem',
         ['sss', 'sssdef'],
         ['phic', 'philhdef'],
         ['hdmf', 'pibigdef'],
         'bday',
         ['hired', 'updatenotes'],
-        ['resigned', 'rem'],
+        ['resigned', 'notes'],
         'agencyname',
         'agencyfee'
       ];
 
       $col2 = $this->fieldClass->create($fields);
 
-      data_set($col2, 'dateid.label', 'Encoded');
-      data_set($col2, 'dateid.readonly', true);
+      data_set($col2, 'createdate.label', 'Encoded');
+      data_set($col2, 'createdate.class', 'cscreatedate');
+      data_set($col2, 'createdate.readonly', false);
 
       data_set($col2, 'rem.label', 'Notes');
       data_set($col2, 'rem.type', 'ctextarea');
@@ -276,17 +281,18 @@ class employee
       data_set($col2, 'hired.label', 'Start Date');
       data_set($col2, 'resigned.label', 'End Date');
 
-      data_set($col2, 'duplicatedoc.label', 'NEW CONTRACT');
 
       data_set($col2, 'agencyname.lookupclass', 'lookupagency');
       data_set($col2, 'category.lookupclass', 'lookupcategoryitemcategory');
       data_set($col2, 'category.labeldata', 'category');
 
       data_set($col2, 'updatenotes.label', 'New Contract');
-      data_set($col2, 'updatenotes.lookupclass', 'contract');
+      data_set($col2, 'updatenotes.icon', 'archive');
+      data_set($col2, 'updatenotes.lookupclass', 'newcontract');
 
 
       $tab['multiinput1'] = ['inputcolumn' => ['col1' => $col1, 'col2' => $col2], 'label' => 'PROFILE'];
+      $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'contracthistory', 'label' => 'CONTRACT HISTORY', 'checkchanges' => 'tableentry'];
     }
 
     $stockbuttons = [];
@@ -310,7 +316,6 @@ class employee
 
     $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryitemgroup', 'label' => 'itemgroup']];
     $itemgroup = $this->tabClass->createtab($tab, []);
-
 
 
 
@@ -569,6 +574,9 @@ class employee
     $data[0]['philhdef'] = 0;
     $data[0]['pibigdef'] = 0;
     $data[0]['bday'] = null;
+    $data[0]['hired'] = null;
+    $data[0]['resigned'] = null;
+    $data[0]['notes'] = '';
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
@@ -611,8 +619,7 @@ class employee
       $fields = $fields . ',info.' . $value;
     }
 
-
-    $profiledates = ['bday', 'hired', 'resigned'];
+    $profiledates = ['bday'];
     foreach ($this->profilefields as $key => $value) {
       if (in_array($value, $profiledates)) {
         $fields = $fields . ",case when year(info." . $value . ") > 1900 then date(info." . $value . ") else '' end as " . $value;
@@ -620,8 +627,22 @@ class employee
         $fields = $fields . ',info.' . $value;
       }
     }
-    $fields = $fields . ",client.createdate as dateid";
 
+    $contractfields = ",null  as hired, null as resigned, '' as notes";
+
+    $contractjoin = "";
+    if ($companyid == 72) {
+      $contractfields = ",case when year(contract.datefrom) > 1900 then date(contract.datefrom) else null end as hired, case when year(contract.dateto) > 1900 then date(contract.dateto) else null end as resigned, ifnull(contract.descr, '') as notes";
+      $contractjoin = "
+      left join (
+        select c1.empid, c1.datefrom, c1.dateto, c1.descr
+        from contracts as c1
+         join (
+          select empid, max(line) as maxline from contracts group by empid
+        ) c2 on c2.empid = c1.empid and c2.maxline = c1.line
+      ) as contract on contract.empid = client.clientid";
+    }
+    $fields .= $contractfields;
     $qryselect = "select " . $fields;
 
     $qry = $qryselect . ", dept.client as dept, dept.clientname as deptname, emp.client as empcode, 
@@ -636,7 +657,7 @@ class employee
       left join client as wh on wh.client = client.wh
       left join client as wh2 on wh2.clientid = client.dropoffwh
       left join employee as info on info.empid=client.clientid
-      left join client as custid on custid.clientid = client.customerid
+      left join client as custid on custid.clientid = client.customerid" . $contractjoin . "
       where client.clientid = ? and client.isemployee = 1";
 
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
@@ -670,9 +691,10 @@ class employee
     $center = $config['params']['center'];
     $data = [];
     $otherdata = [];
+    $contractdata = [];
     $companyid = $config['params']['companyid'];
 
-    $dateTables = ['client', 'employee'];
+    $dateTables = ['client', 'employee', 'contracts'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($isupdate) {
@@ -708,6 +730,16 @@ class employee
       }
     }
 
+
+    foreach ($this->newcontract as $key => $column) {
+      if (array_key_exists($key, $head)) {
+        $value = $head[$key];
+        if (!in_array($key, $this->except)) {
+          $contractdata[$column] = $this->othersClass->sanitizekeyfieldFast($column, $value, $lookups);
+        } //end if
+      }
+    }
+
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -729,6 +761,18 @@ class employee
         $this->coreFunctions->sbcinsert('employee', $otherdata);
       } else {
         $this->coreFunctions->sbcupdate('employee', $otherdata, ['empid' => $clientid]);
+      }
+    }
+
+    if ($companyid == 72 && !empty($contractdata)) {
+      $contractdata['editby'] = $config['params']['user'];
+      $contractdata['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $maxline = $this->coreFunctions->datareader("select max(line) as value from contracts where empid=?", [$clientid], '', true);
+      if ($maxline == 0) {
+        $contractdata['empid'] = $clientid;
+        $this->coreFunctions->sbcinsert('contracts', $contractdata);
+      } else {
+        $this->coreFunctions->sbcupdate('contracts', $contractdata, ['line' => $maxline, 'empid' => $clientid]);
       }
     }
 

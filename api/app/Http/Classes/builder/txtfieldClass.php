@@ -21323,6 +21323,68 @@ class txtfieldClass
                 'maxlength' => 20
             ),
 
+            'cbm' => array(
+                'name' => 'cbm',
+                'type' => 'input',
+                'label' => 'CBM per UOM',
+                'class' => 'cscbm sbccsreadonly',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'cbm2' => array(
+                'name' => 'cbm2',
+                'type' => 'input',
+                'label' => 'SRP/CBM',
+                'class' => 'cscbm2 sbccsreadonly',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'container' => array(
+                'name' => 'container',
+                'type' => 'input',
+                'label' => '1 Container',
+                'class' => 'cscontainer sbccsreadonly',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'dprcost' => array(
+                'name' => 'dprcost',
+                'type' => 'input',
+                'label' => 'DPR cost',
+                'class' => 'csdprcost',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'isdefinvoice' => array(
+                'name' => 'isdefinvoice',
+                'type' => 'checkbox',
+                'label' => 'Default Invoice',
+                'class' => 'csisdefinvoice',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
+            'copypreviousstock' => array(
+                'name' => 'copypreviousstock',
+                'type' => 'actionbtn',
+                'label' => 'Copy Previous Stock',
+                'class' => 'btncopypreviousstock',
+                'lookupclass' => 'stockstatusposted',
+                'icon' => 'file_copy',
+                'access' => 'save',
+                'action' => 'copypreviousstock',
+                'readonly' => true,
+                'style' => 'width:100%',
+                'required' => false,
+                'confirm' => true,
+                'confirmlabel' => 'Copy Previous Stock?'
+            ),
+
 
         );
     }
