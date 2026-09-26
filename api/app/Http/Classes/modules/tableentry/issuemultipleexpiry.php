@@ -185,12 +185,6 @@ class issuemultipleexpiry
       } // end foreach
     } //end if
 
-    if ($config['params']['doc'] == 'UE' && $config['params']['companyid'] == 71) {
-      $checkexist = $this->coreFunctions->getfieldvalue('rrstatus', 'trno', 'trno=?', [$trno]);
-      if($checkexist ==0){
-        $this->transfertowh($config);
-      }
-    }
 
     $stock = app($path)->openstock($trno,$config);
 
@@ -224,21 +218,6 @@ class issuemultipleexpiry
 
     // ibang company/doc, walang binago ang behavior
     return array_filter($d, function ($r) { return $r['qty'] != 0;});
-  }
-
-  public function transfertowh($config)
-  {
-    $trno = $config['params']['trno'];
-    $qry = "  insert into rrstatus(trno,line,clientid,itemid,cost,qty,bal,dateid,whid,uom,disc,docno,cur,forex,receiveddate,loc,expiry,locid,palletid)
-              select head.trno,1 as line,0 as clientid,jo.itemid,0 as cost,jo.qty,jo.qty,head.dateid,
-              client.clientid as whid,jo.uom,'' as disc,head.docno,head.cur,head.forex,head.dateid,
-              '' as loc, '' as expiry,0 as locid, 0 as palletid
-              from lahead as head
-              left join lastock as stock on stock.trno=head.trno
-              left join client on client.client=head.client
-              left join hpdhead as jo on jo.trno=head.pdtrno
-              where head.trno=?";
-    return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);  
   }
 
   public function delete($config)

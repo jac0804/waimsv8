@@ -536,6 +536,9 @@ class trigger
         $strdate1 = 'Arrived/Dispatch Arrive Date';
         $strdate2 = 'Arrived/Dispatch Depart Date';
         break;
+      case 72: //hahsy
+        $strdate1 = 'Receiving Date';
+        break;
     }
 
     // GLEN 11.23.2021
@@ -654,7 +657,8 @@ class trigger
       'stage name' => ['stageid' => [true, 'stage', 'stagesmasterfile', 'line']],
       'Agent Amount' => ['agentamt' => []],
       'Start Wire' => ['startwire' => []],
-      'End Wire' => ['endwire' => []]
+      'End Wire' => ['endwire' => []],
+      'CBM' =>['cbm' => []]
     ];
 
     $this->settriggerlogs('lastock_update', 'AFTER UPDATE', 'lastock', 'table_log', $fields, 'trno', 'STOCK');
@@ -1699,6 +1703,8 @@ class trigger
       'uom' => ['uom' => []],
       'notes' => ['rem' => []],
       'Actual Weight' => ['weight2' => []],
+      'CBM' => ['cbm' => []],
+      'Def. Cost' => ['cost' => []],
     ];
     $this->settriggerlogs('sostock_update_after', 'AFTER UPDATE', 'sostock', 'transnum_log', $fields, 'trno', 'STOCK');
 

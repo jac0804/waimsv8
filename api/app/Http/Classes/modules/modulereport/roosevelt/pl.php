@@ -87,7 +87,7 @@ class pl
             left join glstock as stock on stock.trno = head.trno
             left join item as it on it.itemid=stock.itemid
             left join $table as hpl on hpl.trno=head.pltrno
-            left join transnum as num on num.trno = head.trno
+            left join cntnum as num on num.trno = head.trno
             left join client on client.client = hpl.client
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
@@ -102,11 +102,11 @@ class pl
             left join lastock as stock on stock.trno = head.trno
             left join item as it on it.itemid=stock.itemid
             left join $table as hpl on hpl.trno=head.pltrno
-            left join transnum as num on num.trno = head.trno
+            left join cntnum as num on num.trno = head.trno
             left join client on client.client = hpl.client
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
-            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";
+            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";      
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn

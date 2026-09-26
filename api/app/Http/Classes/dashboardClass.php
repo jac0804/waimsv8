@@ -808,7 +808,7 @@ class dashboardClass
               if ($this->checksecurity(6033)) {
                 $this->clientpendingtask();
               }
-              
+
               if ($this->checksecurity(5564)) {
                 $this->dailytask();
               }
@@ -4156,6 +4156,19 @@ class dashboardClass
             year(dateid)='" . $year . "' and left(coa.alias,2)='SA' group by month(head.dateid)";
       }
 
+      if ($this->config['params']['companyid'] == 68) { //jda
+        $addunion = " union all
+            select month(head.dateid) as m,sum(stock.db) as amt from
+            glhead as head join gldetail as stock on stock.trno=head.trno left join coa on coa.acnoid = stock.acnoid 
+            join cntnum on cntnum.trno=head.trno where head.doc='AR' and
+            year(dateid)='" . $year . "' and left(coa.alias,2)='AR'  group by month(head.dateid)
+            UNION ALL
+            select month(head.dateid),sum(stock.db) from lahead as head
+            join ladetail as stock on stock.trno=head.trno left join coa on coa.acnoid = stock.acnoid 
+            join cntnum on cntnum.trno=head.trno where head.doc='AR' and
+            year(dateid)='" . $year . "' and left(coa.alias,2)='AR' group by month(head.dateid)";
+      }
+
       if ($this->config['params']['companyid'] == 36) {  //rozlab
         $addunion = " union all
             select month(head.dateid) as m,sum(stock.ext)*-1 as amt from 
@@ -4176,7 +4189,6 @@ class dashboardClass
           }
         }
       }
-
 
       $qry = "select m,sum(amt) as amt from (select month(head.dateid) as m,sum(stock.ext) as amt from 
         glhead as head join glstock as stock 

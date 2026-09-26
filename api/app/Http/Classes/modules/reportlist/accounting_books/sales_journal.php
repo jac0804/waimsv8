@@ -188,6 +188,9 @@ class sales_journal
       case 39: //CBBSI
         $condition = " head.doc in ('SJ','CM','AR')";
         break;
+      case 68: //jda
+        $condition = " head.doc in ('SJ','AR')";
+        break;
       case 35: //aquamax
         $leftjoinclient = 'left join client on client.clientid = detail.clientid';
         $condition = " head.doc in ('WM','AR') ";

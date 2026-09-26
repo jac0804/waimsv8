@@ -1719,7 +1719,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa, custdisc, consignpr)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa, custdisc, consignpr, cbm)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1730,7 +1730,7 @@ class othersClass
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa, stock.custdisc, stock.consignpr
+                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa, stock.custdisc, stock.consignpr,stock.cbm
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2634,7 +2634,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex, custdisc, consignpr)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex, custdisc, consignpr, cbm)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2644,7 +2644,7 @@ class othersClass
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex, stock.custdisc, stock.consignpr
+                stock.rrrefx,stock.rrlinex, stock.custdisc, stock.consignpr,stock.cbm
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -3554,6 +3554,10 @@ class othersClass
       case 'CH': //ericco
         $isitemzeroqty = 0;
         break;
+      case 'UE': //buenatech
+        $qry = "select trno from " . $config['docmodule']->stock . " where trno=? and qty=0 and iss=0 limit 1";
+        $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
+        break; 
       default:
         $qry = "select s.trno from " . $config['docmodule']->stock . " as s left join item on item.itemid=s.itemid where s.trno=? and s.qty=0 and s.iss=0 and item.isnoninv=0 limit 1";
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
@@ -3631,7 +3635,6 @@ class othersClass
         case 'MT':
         case 'REPLENISHPALLET';
         case 'REPLENISHITEM';
-        case 'UE':
           $ts = $this->tsreverse($config);
           if (!$ts['status']) {
             $msg = $ts['msg'];
@@ -7754,16 +7757,16 @@ class othersClass
   public function unpostingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from hheadinfotrans where trno=?";
+    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from hheadinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 
   public function postingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from headinfotrans where trno=?";
+    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from headinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 

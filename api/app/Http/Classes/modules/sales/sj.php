@@ -963,25 +963,11 @@ class sj
         }
         break;
       case 72: //hahsy
-        $action = 0;
-        $itemdesc = 1;
-        $isqty = 2;
-        $uom = 3;
-        $itemname = 4;
-        $isamt = 5;
-        $disc = 6;
-        $ext = 7;
-        $cost = 8;
-        $markup = 9;
-        $wh = 10;
-        $whname = 11;
-        $ref = 12;
-        $rem2 = 13;  //26
-        $rem = 14;
-        $column = ['action', 'itemdescription', 'isqty', 'uom', 'itemname', 'isamt', 'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref', 'rem2', 'rem'];
-        $sortcolumn = ['action', 'itemdescription', 'isqty', 'uom', 'itemname', 'isamt', 'disc', 'ext', 'cost', 'markup', 'wh', 'whname', 'ref', 'rem2', 'rem'];
-        // $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry' ,'rem', 'dqty','itemname', 'stock_projectname',  'noprint', 'barcode','rem2'];
-        // $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry' ,'rem','dqty', 'itemname', 'stock_projectname', 'noprint', 'barcode','rem2'];
+        $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp','rem2','cbm'];
+        $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp','rem2','cbm'];
+        foreach ($column as $key => $value) {
+          $$value = $key;
+        }
         break;
     }
 
@@ -1344,6 +1330,21 @@ class sj
         $obj[0]['inventory']['columns'][$rem2]['type'] = 'label';
         $obj[0]['inventory']['columns'][$rem2]['readonly'] = true;
         $obj[0]['inventory']['columns'][$rem2]['style'] = 'text-align: left; width:200px;whiteSpace: normal;min-width:200px;';
+        $obj[0]['inventory']['columns'][$cbm]['readonly'] = true;
+
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
+
         break;
       default:
         $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
@@ -1357,7 +1358,6 @@ class sj
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
-
         if (!$isexpiry) {
           // switch ($companyid) {
           //   case 28: //xcomp
@@ -2500,6 +2500,8 @@ class sj
         case 72: //hashy
           $info['trno'] = $head['trno'];
           $info['strdate1'] = isset($head['received']) ? $head['received'] : '';
+          $info['editby'] = $config['params']['user'];
+          $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $this->coreFunctions->sbcupdate('cntnuminfo', $info, ['trno' => $head['trno']]);
           break;
       }
@@ -2793,7 +2795,7 @@ class sj
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
       case 64: //execilin
-        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, stock.custdisc as disc2";
+        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, stock.custdisc as disc2,stock.cbm";
         $color = ",case when stock.limitcheck = 2  then 'bg-red-2'
                           when stock.limitcheck = 1 then 'bg-yellow-2'
                           else '' end as qacolor";
@@ -2808,7 +2810,7 @@ class sj
         $serialfield = ",case when stock.issp=0 then 'false' else 'true' end as issp";
         break;
         case 72:  //hahsy
-        $serialfield = ",hstock.rem as rem2";
+        $serialfield = ",hstock.rem as rem2,stock.cbm";
         break;
     }
 
@@ -2916,7 +2918,7 @@ class sj
       case 72://hahsy
           $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
           $hleftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
-          $stockinfogroup = 'hstock.rem,';
+          $stockinfogroup = 'hstock.rem,stock.cbm,';
         break;
     }
 
@@ -3039,7 +3041,7 @@ class sj
         break;
       case 72://hahsy
         $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
-        $stockinfogroup = 'hstock.rem,';
+        $stockinfogroup = 'hstock.rem,stock.cbm,';
         break;
     }
 
@@ -4052,6 +4054,7 @@ class sj
 
     $drrefx = isset($config['params']['data']['drrefx']) ? $config['params']['data']['drrefx'] : 0;
     $drlinex = isset($config['params']['data']['drlinex']) ? $config['params']['data']['drlinex'] : 0;
+    $cbm = isset($config['params']['data']['cbm']) ? $config['params']['data']['cbm'] : 0;
 
     if ($companyid == 10) { //afti
       $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
@@ -4111,7 +4114,6 @@ class sj
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
-
       if ($companyid == 10) { //afti
         if ($projectid == 0) {
           $projectid = $this->coreFunctions->getfieldvalue("item", 'projectid', 'itemid=?', [$itemid]);
@@ -4142,7 +4144,7 @@ class sj
       $amenityid = $this->coreFunctions->getfieldvalue($this->head, "amenityid", "trno=?", [$trno]);
       $subamenityid = $this->coreFunctions->getfieldvalue($this->head, "subamenityid", "trno=?", [$trno]);
     }
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,lastpr,defcost from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,namt4,lastpr,defcost,item.cbm from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
     $isnoninv = 0;
@@ -4160,6 +4162,9 @@ class sj
       if ($companyid == 64) { //excilin
         $lastpr = $item[0]->lastpr;
         $defcost = $item[0]->defcost;
+      }
+      if ($companyid == 72) {
+        $cbm = $item[0]->cbm;
       }
     }
     $vat = $this->coreFunctions->getfieldvalue($this->head, 'tax', 'trno=?', [$trno]);
@@ -4236,6 +4241,7 @@ class sj
       'noprint' => $noprint,
       'drrefx' => $drrefx,
       'drlinex' => $drlinex,
+      'cbm' => $cbm,
       // 'issp' => $issp,
     ];
 
@@ -4302,6 +4308,9 @@ class sj
         break;
       case 71: //buenatech
         $data['issp'] = $issp;
+        break;
+      case 72: //hahsy
+        $data['cbm'] = $cbm;
         break;
     }
 
@@ -4409,6 +4418,8 @@ class sj
 
         if ($companyid == 60) {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' Cost' . $cost . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+        } else if($companyid == 72) {
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'] . ' cbm:'.$cbm, $setlog ? $this->tablelogs : '');
         } else {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         }
@@ -5210,7 +5221,7 @@ class sj
         $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
         break;
        case 72: //hahsy
-        $addfield .= ", stock.rem as rem2,info.strdate1 as received";
+        $addfield .= ", stock.rem as rem2,info.strdate1 as received,stock.cbm";
         break;
     }
     return "
@@ -5394,6 +5405,7 @@ class sj
             }
             if ($companyid == 72) { //hahsy
               $config['params']['data']['rem2'] = $data[$key2]->rem2;
+              $config['params']['data']['cbm'] = $data[$key2]->cbm;
             }
             $return = $this->additem('insert', $config);
 
@@ -5660,7 +5672,7 @@ class sj
         $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
         break;
       case 72: //hahsy
-        $addfield .= ", stock.rem as rem2,info.strdate1 as received";
+        $addfield .= ", stock.rem as rem2,info.strdate1 as received,stock.cbm";
         break;
     }
 
@@ -5819,6 +5831,7 @@ class sj
             }
             if ($companyid == 72) { //hahsy
               $config['params']['data']['rem2'] = $data[$key2]->rem2;
+              $config['params']['data']['cbm'] = $data[$key2]->cbm;
             }
             $return = $this->additem('insert', $config);
             if ($msg = '') {

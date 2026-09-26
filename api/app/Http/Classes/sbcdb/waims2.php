@@ -4516,5 +4516,6 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["headinfotrans", "hheadinfotrans"], ["disc"], "varchar(100) not null default ''", 0);
     $this->coreFunctions->sbcaddcolumngrp(["pdstock", "hpdstock"], ["tsqa"], "decimal(18,6) NOT NULL DEFAULT '0.000000'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["item", "sostock", "hsostock", "lastock", "glstock"], ['cbm'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["sostock", "hsostock"], ['cost'], "decimal(19,2) NOT NULL DEFAULT '0.000000'", 0);
   }
 }

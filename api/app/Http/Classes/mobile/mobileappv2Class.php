@@ -701,25 +701,19 @@ class mobileappv2Class
       case 'downloadandroidhead':
         try {
         $dateid = $params['dateid'];
-        $user = $params['user'];
-        $devid = $params['devid'];
-        $wh = $params['wh'];
-        $branch = $params['branch'];
         $batch = 10;
-
-        $whid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$wh]);
-        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$branch]);
-
+        
         $qry = "select head.trno,head.user,head.dateid,head.devid,wh.client as wh,branch.client as branch from androidhead as head
         left join client as wh on wh.clientid = head.whid
         left join client as branch on branch.clientid = head.branchid
-        where head.user =? and  head.devid =?  and date(head.dateid) = ? and head.whid =? and head.branchid =? and isdownloaded = 0";
-        $data = $this->coreFunctions->opentable($qry,[$user,$devid,$dateid,$whid,$branchid]);
+        where date(head.dateid) = ? and head.isdownloaded = 0";
+        $data = $this->coreFunctions->opentable($qry,[$dateid]);
 
         return json_encode(['status' => true,'head' => $data,'batch' => $batch]);
         } catch (\Exception $e) {
           return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
+        
         break;
       case 'downloadandroidstock':
         try {
@@ -747,18 +741,8 @@ class mobileappv2Class
       case 'updateandroidhead':
         try {
         $apitrno = $params['apitrno'];
-        $user = $params['user'];
-        $dateid = $params['dateid'];
-        $branch = $params['branch'];
-        $wh = $params['wh'];
-        $devid = $params['devid'];
-        
-        
-        $whid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$wh]);
-        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client = ?",[$branch]);
-        
-        $this->coreFunctions->execqry("update androidhead set isdownloaded=1 where trno= '".$apitrno."' and user = '".$user."' and date(dateid) = '".$dateid."' 
-        and whid = '".$whid."' and branchid = '".$branchid."' and devid = '".$devid."'", 'update');
+
+        $this->coreFunctions->execqry("update androidhead set isdownloaded=1 where trno= '".$apitrno."'", 'update');
         return json_encode(['status' => true,'params' => ['aptrno' => $apitrno]]);
          } catch (\Exception $e) {
             return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);

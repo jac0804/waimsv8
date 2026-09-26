@@ -463,7 +463,7 @@ class tr
       unset($this->fields['docno']);
     }
     $companyid = $config['params']['companyid'];
-    $dateTables = ['trhead','headinfotrans'];
+    $dateTables = ['trhead', 'headinfotrans'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
@@ -932,7 +932,7 @@ class tr
 
     $dateTables = ['trstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-  
+
 
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -969,7 +969,7 @@ class tr
     ];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -1074,6 +1074,23 @@ class tr
   public function reportdata($config)
   {
     $this->logger->sbcviewreportlog($config);
+    $dataparams = $config['params']['dataparams'];
+    if (isset($dataparams['approved'])) {
+      $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
+    }
+    if (isset($dataparams['received'])) {
+      $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
+    }
+    if (isset($dataparams['noted'])) {
+      $this->othersClass->writeSignatories($config, 'noted', $dataparams['noted']);
+    }
+    if (isset($dataparams['prepared'])) {
+      $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
+    }
+    if (isset($dataparams['requested'])) {
+      $this->othersClass->writeSignatories($config, 'requested', $dataparams['requested']);
+    }
+
     $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
@@ -1088,7 +1105,7 @@ class tr
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt],$lookups);
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
       $computedata = $this->othersClass->computestock($damt, $data[$key]->disc, $dqty, $data[$key]->uomfactor);
       $exec = $this->coreFunctions->execqry("update lastock set cost = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
@@ -1096,12 +1113,12 @@ class tr
     return $exec;
   }
 
-  
+
   public function sbcscript($config)
   {
-     if ($config['params']['companyid'] == 68) { //JDA
+    if ($config['params']['companyid'] == 68) { //JDA
       return [
-              'report' => '
+        'report' => '
                let trreport = state.reportdata.params.reporttype;
                switch (trreport) {
                   case "1":
@@ -1121,13 +1138,9 @@ class tr
                       break;
               }
               '
-            ];
-     
+      ];
     } else {
       return true;
     }
-
-    
   }
-
 } //end class

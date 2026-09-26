@@ -4659,6 +4659,9 @@ class lookupClass
           $addonfield .= ", '' as shipto";
           $plotting['shipto'] = 'shipto';
           $plottype = 'plothead';
+          if($config['params']['doc'] == 'SJ'){
+            $addoncondition = ' and client.isdefinvoice = 0';
+          }
         }
 
         if ($config['params']['companyid'] == 43 && ($config['params']['doc'] == 'MI' || $config['params']['doc'] == 'MR')) { //MIGHTY

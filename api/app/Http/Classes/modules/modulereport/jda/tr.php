@@ -69,22 +69,47 @@ class tr
 
   public function reportparamsdata($config)
   {
+    $signatories = $this->othersClass->getSignatories($config);
+    $prepared = '';
+    $approved = '';
+    $received =  '';
+    $noted = '';
+    $requested = '';
+    foreach ($signatories as $key => $value) {
+      switch ($value->fieldname) {
+        case 'prepared':
+          $prepared = $value->fieldvalue;
+          break;
+        case 'approved':
+          $approved = $value->fieldvalue;
+          break;
+        case 'received':
+          $received = $value->fieldvalue;
+          break;
+        case 'noted':
+          $noted = $value->fieldvalue;
+          break;
+        case 'requested':
+          $requested = $value->fieldvalue;
+          break;
+      }
+    }
     $paramstr = "select
           'PDFM' as print,
           '1' as reporttype,
-          '' as prepared,
-          '' as approved,
-          '' as received,
-          '' as requested,
-          '' as noted";
+          '" . $prepared . "' as prepared,
+          '" . $approved . "' as approved,
+          '" . $received . "' as received,
+          '" . $requested . "' as requested,
+          '" . $noted . "' as noted";
     return $this->coreFunctions->opentable($paramstr);
   }
 
   public function report_default_query($trno)
   {
     $query = "
-    select head.docno, head.client, head.clientname, head.terms,
-    head.address, date(head.dateid) as dateid, head.wh, head.rem,
+    select head.docno, head.client, head.clientname, head.terms, head.yourref, head.ourref,
+    head.address, date(head.dateid) as dateid, head.wh, whh.clientname as whname, head.rem,
     item.barcode, item.itemname, stock.uom, wh.client as stockwh,
     stock.rrqty, stock.qty, stock.qa, stock.reqqty, (stock.reqqty - stock.rrqty) as pending,
     stock.rem as remarks, item.itemid,( select date(rr.dateid) as rrdate from rrstatus as rr where rr.itemid=item.itemid and rr.bal<>0 order by rr.trno,line asc limit 1) as rrdate
@@ -92,10 +117,11 @@ class tr
     left join htrstock as stock on head.trno = stock.trno
     left join item on item.itemid=stock.itemid 
     left join client as wh on wh.clientid=stock.whid
+    left join client as whh on whh.client=head.wh
     where head.trno = '$trno'
     union all
-    select head.docno, head.client, head.clientname, head.terms,
-    head.address, date(head.dateid) as dateid, head.wh, head.rem,
+    select head.docno, head.client, head.clientname, head.terms, head.yourref, head.ourref,
+    head.address, date(head.dateid) as dateid, head.wh, whh.clientname as whname, head.rem,
     item.barcode, item.itemname, stock.uom, wh.client as stockwh,
     stock.rrqty, stock.qty, stock.qa, stock.reqqty, (stock.reqqty - stock.rrqty) as pending,
     stock.rem as remarks, item.itemid,( select date(rr.dateid) as rrdate from rrstatus as rr where rr.itemid=item.itemid and rr.bal<>0 order by rr.trno,line asc limit 1) as rrdate
@@ -103,6 +129,7 @@ class tr
     left join trstock as stock on head.trno = stock.trno
     left join item on item.itemid=stock.itemid 
     left join client as wh on wh.clientid=stock.whid
+    left join client as whh on whh.client=head.wh
     where head.trno = '$trno'";
     // var_dump($query);
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
@@ -213,7 +240,7 @@ class tr
 
     for ($i = 0; $i < count($data); $i++) {
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
+      $this->reporter->addline();
       $str .= $this->reporter->col($data[$i]['barcode'], '100px', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['itemname'], '400px', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['uom'], '50px', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
@@ -374,7 +401,7 @@ class tr
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(80, 0, "Warehouse: ", '', 'L', false, 0, '',  '');
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(470, 0, (isset($data[0]['wh']) ? $data[0]['wh'] : ''), 'B', 'L', false, 0, '',  '');
+        PDF::MultiCell(470, 0, (isset($data[0]['wh']) ? $data[0]['wh'] : '') . ' - ' . (isset($data[0]['whname']) ? $data[0]['whname'] : ''), 'B', 'L', false, 0, '',  '');
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
         PDF::SetFont($font, '', $fontsize);
@@ -382,6 +409,14 @@ class tr
         break;
     }
 
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(80, 0, "PR Reference: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(280, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(80, 0, "Your Ref.: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(280, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 1, '',  '');
 
     PDF::MultiCell(0, 0, "\n\n\n");
 

@@ -771,6 +771,7 @@ class setreportlist
     $rep_purchasescomparison_graph = "";
     $rep_withholdingtax = "";
     $rep_cert_of_creditable_tax = "";
+    $rep_employee_list_by_agency = "";
 
 
     switch ($this->companysetup->getsystemtype($params)) {
@@ -822,6 +823,9 @@ class setreportlist
               break;
             case 56: //homeworks
               $rep_cert_of_creditable_tax = "('','\\906','','','',0,1,0,'Certificate of Creditable Tax','\\90619',5373,'0'," . $params['levelid'] . ")";
+              break;
+            case 72: //hahsy 
+              $rep_employee_list_by_agency = "('','\\906','','','',0,1,0,'Employee List by Agency','\\90620',6037,'0'," . $params['levelid'] . ")";
               break;
           }
         }
@@ -1261,6 +1265,7 @@ class setreportlist
     $subparent_customer_support = "";
     $rep_ticket = "";
 
+    $rep_item_by_category_comparison = "";
 
     //AFLI
     $subparent_lending = "";
@@ -1761,6 +1766,9 @@ class setreportlist
           case 40: // CDO
             $rep_non_moving_items = "('','\\904','','','',0,1,0,'Non Moving Items','\\90419',3465,'0'," . $params['levelid'] . ")";
             break;
+          case 72: //Hahsy
+            $rep_item_by_category_comparison = "('','\\904','','','',0,1,0,'Item by Category Comparison','\\90458', 6038,'0'," . $params['levelid'] . ")";
+            break;            
         }
 
         break;
@@ -2796,6 +2804,7 @@ class setreportlist
           $rep_item_sales_report,
           $rep_inventory_vs_receiving_report,
           $rep_inventory_valuation,
+          $rep_item_by_category_comparison,
 
           // CUSTOMER
           $parent_customers,
@@ -2879,6 +2888,7 @@ class setreportlist
           $rep_item_received_per_supplier,
           $rep_po_vs_rr_serving_ratio,
           $rep_supplier_price,
+          $rep_employee_list_by_agency,
 
           // SALES AGENT
           $parent_salesagent,

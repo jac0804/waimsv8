@@ -679,8 +679,8 @@ class so
         $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'expiry', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
         break;
       case 72: // hahsy
-        $column = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
-        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
+        $column = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'cost', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
+        $sortcolumn = ['action', 'isqty', 'uom', 'kgs', 'itemname', 'disc', 'isamt', 'ext', 'served', 'wh', 'void', 'cbm', 'cost', 'rem', 'loc', 'ref', 'fstatus', 'noprint', 'barcode', 'issp'];
         break;
       default:
         $column = ['action', 'isqty', 'uom', 'kgs', 'weight', 'isamt', 'disc', 'agentamt', 'ext', 'fstatus', 'wh', 'rem', 'loc', 'qa', 'roqa', 'void', 'ref', 'itemname', 'noprint', 'barcode', 'issp'];
@@ -855,6 +855,7 @@ class so
         break;
       case 72: //hahsy
         $obj[0]['inventory']['columns'][$ext]['label'] = 'Extension';
+        $obj[0]['inventory']['columns'][$cost]['label'] = 'Def. Cost';
         $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['type'] = 'coldel';
@@ -1237,6 +1238,11 @@ class so
       $data[0]['ismarkup'] = '0';
     }
 
+    if ($params['companyid'] == 72) { //hahsy
+      $data[0]['received'] = '';
+      $data[0]['disc'] = '';
+    }
+
     if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
     } else {
@@ -1299,9 +1305,6 @@ class so
     $data[0]['vattype'] = 'NON-VATABLE';
 
     $data[0]['createby'] = '';
-
-    $data[0]['received'] = '';
-    $data[0]['disc'] = '';
 
     return $data;
   }
@@ -1561,6 +1564,7 @@ class so
     $data = [];
     $info = [];
     $datahere = [];
+    $infohead = $config['params']['infohead'];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -1978,9 +1982,9 @@ class so
 
       $qry = "insert into " . $this->hstock . "(trno,line,itemid,uom,
         whid,loc,expiry,disc,iss,void,isamt,amt,isqty,ext,kgs,
-        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp" . $addsfield . ")
+        encodeddate,encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp,cbm,cost" . $addsfield . ")
         SELECT trno, line, itemid, uom,whid,loc,expiry,disc, iss,void,isamt,amt, isqty, ext,kgs,
-        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp " . $addsfield . " FROM " . $this->stock . " where trno =?";
+        encodeddate, encodedby,editdate,editby,refx,linex,rem,ref,weight,weight2,projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp,cbm,cost " . $addsfield . " FROM " . $this->stock . " where trno =?";
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
         //update transnum
         $date = $this->othersClass->getCurrentTimeStamp();
@@ -2069,13 +2073,13 @@ class so
 
       $qry = "insert into " . $this->stock . "(
       trno,line,itemid,uom,whid,loc,expiry,disc,
-      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp " . $addsfield . ")
+      amt,iss,void,isamt,isqty,ext,kgs,rem,encodeddate,encodedby,editdate,editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp,cbm,cost " . $addsfield . ")
       select trno, line, itemid, uom,whid,loc,expiry,disc,amt, iss,void, isamt, isqty,
-      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp" . $addsfield . "
+      ext,kgs,ifnull(rem,''), encodeddate,encodedby, editdate, editby,refx,linex,ref,weight,weight2, projectid,phaseid,modelid,blklotid,amenityid,subamenityid,noprint,markup,custdisc,limitcheck,issp,cbm,cost" . $addsfield . "
       from " . $this->hstock . " where trno=?";
       //stock
       if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-        $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null where trno=?", 'update', [$trno]);
+        $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null, statid=0 where trno=?", 'update', [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
         $this->coreFunctions->execqry("delete from hheadinfotrans where trno=?", "delete", [$trno]);
@@ -2146,7 +2150,7 @@ class so
     }
 
     if ($companyid == 72) { //hahsy
-      $itemdesc = ",FORMAT(stock.qa," . $this->companysetup->getdecimal('currency', $config['params']) . ") as served";
+      $itemdesc = ",FORMAT(stock.qa," . $this->companysetup->getdecimal('currency', $config['params']) . ") as served, stock.cbm, stock.cost";
     }
 
 
@@ -2685,66 +2689,6 @@ class so
     return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];
   }
 
-  public function duplicatepreviousso($config)
-  {
-    $trno = $config['params']['trno'];
-    $doc = $config['params']['doc'];
-    $center = $config['params']['center'];
-    $user = $config['params']['user'];
-
-    // Find the immediately preceding transaction of this document type, regardless of customer
-    $prevtrno = $this->coreFunctions->datareader(
-      "select trno as value from " . $this->tablenum . " where doc=? and center=? and docno<? order by docno desc limit 1",
-      [$doc, $center, $trno],
-      '',
-      true
-    );
-
-    if ($prevtrno == 0) {
-      return ['status' => false, 'msg' => 'No previous Sales Order found.'];
-    }
-
-    $prevItems = $this->coreFunctions->opentable(
-      "select line, itemid, uom, isamt, isqty, disc, loc, whid, rem from " . $this->stock . " where trno=? and void=0
-     union all
-     select line, itemid, uom, isamt, isqty, disc, loc, whid, rem from " . $this->hstock . " where trno=? and void=0
-     order by line asc",
-      [$prevtrno, $prevtrno]
-    );
-
-    $copied = 0;
-    foreach ($prevItems as $row) {
-      $wh = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$row->whid]);
-
-      $config['params']['data'] = [
-        'itemid' => $row->itemid,
-        'uom' => $row->uom,
-        'amt' => $row->isamt,
-        'qty' => $row->isqty,
-        'disc' => $row->disc,
-        'loc' => $row->loc,
-        'wh' => $wh,
-        'rem' => $row->rem,
-      ];
-
-      $return = $this->additem('insert', $config);
-      if ($return['status']) {
-        $copied++;
-      }
-    }
-
-    $this->logger->sbcwritelog($trno, $config, 'STOCK', 'COPY PREVIOUS SO - from trno:' . $prevtrno . ' Items copied:' . $copied);
-
-    $stock = $this->openstock($trno, $config);
-
-    return [
-      'status' => true,
-      'msg' => 'Copied ' . $copied . ' item(s) from the previous Sales Order.',
-      'inventory' => $stock,
-      'reloadhead' => true
-    ];
-  }
-
   public function updateperitem($config)
   {
     $config['params']['data'] = $config['params']['row'];
@@ -2940,10 +2884,12 @@ class so
       $sku = $this->coreFunctions->getfieldvalue('sku', "sku", "itemid=? and clientid=?", [$itemid, $clientid]);
     }
 
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty,lastpr from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,tqty,lastpr,ifnull(item.cbm,0) as cbm,ifnull(item.cost,0) as cost from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
     $lastpr = 0;
+    $cbm = 0;
+    $cost = 0;
     if (!empty($item)) {
       $item[0]->factor = $this->othersClass->val($item[0]->factor);
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
@@ -2953,6 +2899,11 @@ class so
 
       if ($companyid == 64) { //excilin
         $lastpr = $item[0]->lastpr;
+      }
+
+      if ($companyid == 72) { //hahsy
+        $cbm = $item[0]->cbm;
+        $cost = $item[0]->cost;
       }
     }
 
@@ -3018,6 +2969,11 @@ class so
       $data['custdisc'] = $disc2;
     }
 
+    if ($companyid == 72) { //hahsy
+      $data['cbm'] = $cbm;
+      $data['cost'] = $cost;
+    }
+
     if ($systemtype == 'REALESTATE') {
       $data['projectid'] = $projectid;
       $data['phaseid'] = $phaseid;
@@ -3075,7 +3031,12 @@ class so
             break;
         }
 
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:' . $computedata['ext'] . ' uom:' . $uom, $setlog ? $this->tablelogs : '');
+        if ($companyid == 72) { // hahsy
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:' . $computedata['ext'] . ' uom:' . $uom . 'cbm:' . $cbm . 'cost:' . $cost, $setlog ? $this->tablelogs : '');
+        } else {
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:' . $computedata['ext'] . ' uom:' . $uom, $setlog ? $this->tablelogs : '');
+        }
+
         $row = $this->openstockline($config);
         $this->othersClass->getcreditinfo($config, $this->head);
         if ($this->setserveditems($refx, $linex) == 0) {
