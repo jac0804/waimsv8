@@ -3563,7 +3563,7 @@ class othersClass
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
         break;
     }
-    if ($doc != 'AJ' && $doc != 'CH' && $doc != 'AD' && $doc != 'AB' && $doc != 'AN') {
+    if ($doc != 'UE' && $doc != 'AJ' && $doc != 'CH' && $doc != 'AD' && $doc != 'AB' && $doc != 'AN') {
       // $qry = "select s.ext as value from " . $config['docmodule']->stock . " as s where s.trno=? and s.ext < 0 ";
       // $isnegativetotal = $this->coreFunctions->datareader($qry, [$trno], '', true);
       $qry = "select group_concat(concat(i.barcode,'-',i.itemname) separator ' , ') as value  from " . $config['docmodule']->stock . " as s left join item as i on i.itemid = s.itemid where s.trno=? and s.ext < 0 ";

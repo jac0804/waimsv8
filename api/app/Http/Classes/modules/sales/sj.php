@@ -1465,7 +1465,7 @@ class sj
       $obj[0]['lookupclass'] = 'sopallet';
       $obj[0]['action'] = 'sopallet';
     }elseif ($issuemultiloc) {
-      $obj[0]['label'] = 'SO Serial';
+      $obj[0]['label'] = 'SO';
       $obj[0]['lookupclass'] = 'soserial';
       $obj[0]['action'] = 'soserial';
       $obj[1]['lookupclass'] = 'additemmultiloc';
@@ -4460,7 +4460,9 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
           }
-        } else if ($companyid == 60) { //transpower
+        }  
+        
+        if ($companyid == 60) { //transpower
           if ($this->setservedpoitems($porefx, $polinex) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
             $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'linex' => $line]);
@@ -4469,14 +4471,15 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PO Qty.";
           }
-        } else {
+        } 
+        
           if ($this->setserveditems($refx, $linex, $companyid) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
             $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
             $this->setserveditems($refx, $linex, $companyid);
             $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
             $return = false;
-            $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than RR Qty.";
+            $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
           }
 
           if ($companyid == 67) { //yulick
@@ -4496,7 +4499,7 @@ class sj
               }
             }
           }
-        }
+        
 
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
@@ -4605,7 +4608,9 @@ class sj
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
-      } else if ($companyid == 60) { //transpower
+      }
+      
+      if ($companyid == 60) { //transpower
         if ($porefx != 0) {
           if ($this->setservedpoitems($porefx, $polinex) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
@@ -4615,11 +4620,10 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty is Greater than PO Qty.";
           }
-        } else {
-          goto setServed;
         }
-      } else {
-        setServed:
+        
+      } 
+      
         if ($this->setserveditems($refx, $linex, $companyid) == 0) {
           $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
           $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
@@ -4628,6 +4632,7 @@ class sj
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
+        
         if ($companyid == 67) { //yulick
           $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
           $userid   = $config['params']['adminid'];
@@ -4645,7 +4650,8 @@ class sj
             }
           }
         }
-      } //end
+     
+        
 
       if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));

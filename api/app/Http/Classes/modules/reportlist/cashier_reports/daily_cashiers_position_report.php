@@ -396,7 +396,7 @@ class daily_cashiers_position_report
         $str = '';
         $layoutsize = '800';
         $font = $this->companysetup->getrptfont($config['params']);
-        $fontsize = "10";
+        $fontsize = "12";
         $border = "1px solid ";
 
         $str .= $this->reporter->begintable($layoutsize);
@@ -454,7 +454,7 @@ class daily_cashiers_position_report
         $str = '';
         $layoutsize = 800;
         $font = $this->companysetup->getrptfont($config['params']);
-        $fontsize = "10";
+        $fontsize = "12";
         $border = "1px solid ";
 
         // if (empty($result)) {
@@ -548,8 +548,8 @@ class daily_cashiers_position_report
             foreach ($datar as $key => $datascr) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('Total Daily Cash and Checks :', '200', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '300', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('Total Daily Cash and Checks :', '210', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '290', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col(number_format($datascr->amount, 2), '200', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
@@ -706,8 +706,8 @@ class daily_cashiers_position_report
         $str .= '<br/><br/>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('TOTAL POST DATED CHECKS RECEIVED :', '300', null, false, $border, '', 'L', $font, $fontsize, 'B', 'red', '');
-        $str .= $this->reporter->col('', '250', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('TOTAL POST DATED CHECKS RECEIVED :', '350', null, false, $border, '', 'L', $font, $fontsize, 'B', 'red', '');
+        $str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col('', '250', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
 
@@ -1047,7 +1047,7 @@ class daily_cashiers_position_report
     {
         $str = '';
         $font = $this->companysetup->getrptfont($config['params']);
-        $fontsize = "10";
+        $fontsize = "12";
         $border = "1px solid ";
 
         $str .= $this->reporter->begintable($layoutsize);
@@ -1203,7 +1203,7 @@ class daily_cashiers_position_report
         $str = '';
         $layoutsize = 800;
         $font = $this->companysetup->getrptfont($config['params']);
-        $fontsize = "10";
+        $fontsize = "12";
         $border = "1px solid ";
 
         $this->nogroup = 1;
@@ -1346,11 +1346,13 @@ class daily_cashiers_position_report
                 $str .= '<br/><br/>';
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('TOTAL POST DATED CHECKS RECEIVED :', '300', null, false, $border, '', 'L', $font, $fontsize, 'B', 'red', '');
-                $str .= $this->reporter->col('', '250', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('TOTAL POST DATED CHECKS RECEIVED :', '550', null, false, $border, '', 'L', $font, $fontsize, 'B', 'red', '');
+                //$str .= $this->reporter->col('', '200', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col('', '250', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
 
+		$str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('DATE OF CHECK', '200', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col('AMOUNT', '300', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -1370,18 +1372,18 @@ class daily_cashiers_position_report
 
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('PETTY CASH FUND: AMOUNT P', '190', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('PETTY CASH FUND: AMOUNT P', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col(number_format($petty, 2), '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '510', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '450', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
 
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '190', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col('', '510', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '450', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
@@ -1394,10 +1396,10 @@ class daily_cashiers_position_report
 
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '174', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '126', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '310', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '140', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
@@ -1453,8 +1455,8 @@ class daily_cashiers_position_report
                 $str .= '<br/><br/>';
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('PREPARED BY: ', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-                $str .= $this->reporter->col($user->name, '700', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('PREPARED BY: ', '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($user->name, '600', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
                 $str .= '<br/><br/>';
@@ -1474,7 +1476,7 @@ class daily_cashiers_position_report
         $center     = $config['params']['center'];
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
 
         $str = '';
@@ -1594,7 +1596,7 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         $totaldaily_cash = 0;
@@ -1603,8 +1605,8 @@ class daily_cashiers_position_report
                 $amount = $row->amount ? $row->amount : 0;
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('Total Daily Cash and Checks :', '200', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('', '300', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col('Total Daily Cash and Checks :', '210', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('', '290', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
                 $str .= $this->reporter->col(number_format($amount, 2), '200', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
@@ -1665,7 +1667,7 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         $totaltransac = 0;
@@ -1706,7 +1708,7 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         $totalhere = 0;
@@ -1755,16 +1757,16 @@ class daily_cashiers_position_report
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
         $inputamt = $config['params']['dataparams']['amount'];
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         if (!empty($data5)) {
             foreach ($data5 as $row) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('UNREPLENISHED:', '120', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col(number_format($row->unrep, 2), '280', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col('CHANGE FUND: AMOUNT P', '174', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('UNREPLENISHED:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col(number_format($row->unrep, 2), '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('CHANGE FUND: AMOUNT P', '200', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col(number_format($inputamt, 2), '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col('', '126', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
@@ -1774,11 +1776,11 @@ class daily_cashiers_position_report
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $unrep = 0;
-            $str .= $this->reporter->col('UNREPLENISHED:', '120', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col(number_format($unrep, 2), '280', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col('CHANGE FUND: AMOUNT P', '174', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col(number_format($inputamt, 2), '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col('', '126', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('UNREPLENISHED:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col(number_format($unrep, 2), '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('CHANGE FUND: AMOUNT P', '210', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col(number_format($inputamt, 2), '140', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
         }
@@ -1790,15 +1792,15 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         if (!empty($data6)) {
             foreach ($data6 as $row) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('TOTAL EXPENSES:', '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col(number_format($row->expenses, 2), '675', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('TOTAL EXPENSES:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col(number_format($row->expenses, 2), '550', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
             }
@@ -1806,8 +1808,8 @@ class daily_cashiers_position_report
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $espenses = 0;
-            $str .= $this->reporter->col('TOTAL EXPENSES:', '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col(number_format($espenses, 2), '675', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('TOTAL EXPENSES:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col(number_format($espenses, 2), '550', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
         }
@@ -1818,15 +1820,15 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         if (!empty($data7)) {
             foreach ($data7 as $row) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('REMAINING CASH:', '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->col(number_format($row->endingbal, 2), '675', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col('REMAINING CASH:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+                $str .= $this->reporter->col(number_format($row->endingbal, 2), '550', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
             }
@@ -1834,8 +1836,8 @@ class daily_cashiers_position_report
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $endingbal = 0;
-            $str .= $this->reporter->col('REMAINING CASH:', '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->col(number_format($endingbal, 2), '675', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col('REMAINING CASH:', '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+            $str .= $this->reporter->col(number_format($endingbal, 2), '550', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
         }
@@ -1854,7 +1856,7 @@ class daily_cashiers_position_report
         $fifty = $config['params']['dataparams']['twofiftyfivehundred'];
         $twenty = $config['params']['dataparams']['fivehundredup'];
         $unit = $config['params']['dataparams']['unit'];
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
 
@@ -1960,7 +1962,7 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         $partial = 0;
@@ -1991,7 +1993,7 @@ class daily_cashiers_position_report
     {
         $layoutsize = 800;
         $font       = $this->companysetup->getrptfont($config['params']);
-        $fontsize   = "10";
+        $fontsize   = "12";
         $border     = "1px solid ";
         $str = '';
         $tlbanks = 0;

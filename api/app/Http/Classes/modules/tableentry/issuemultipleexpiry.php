@@ -129,13 +129,15 @@ class issuemultipleexpiry
   {
     $d = $config['params']['data'];
     $trno = $config['params']['tableid'];
+    $doc = $config['params']['doc'];
     // $data = array_filter($d, function($r) { return  $r['qty'] != 0; }); //gets only qty <>0
 
     $data = $this->saveMultiWarehouseSplit($config, $d);
-    $path = $this->getapppath($config['params']['doc']);
+    $path = $this->getapppath($doc);
     $rows = [];
     $refx =0;
     $client ='';
+    
     if (!empty($data)) {
      
       $refx = $data[0]['refx'];
@@ -145,7 +147,12 @@ class issuemultipleexpiry
         $config['params']['data']['itemid'] = $data[$key2]['itemid'];
         $config['params']['trno'] = $trno;
         $config['params']['data']['disc'] = $data[$key2]['disc'];
-        $config['params']['data']['qty'] = $data[$key2]['qty'];
+        if ($doc == 'UE') {
+          $config['params']['data']['qty'] = $data[$key2]['qty']*-1;
+        }else{
+          $config['params']['data']['qty'] = $data[$key2]['qty'];
+        }
+       
         $config['params']['data']['wh'] =$data[$key2]['wh'];
         $config['params']['data']['loc'] = $data[$key2]['loc'];
         $config['params']['data']['expiry'] = $data[$key2]['expiry'];
@@ -158,19 +165,18 @@ class issuemultipleexpiry
           $config['params']['data']['issp'] = $data[$key2]['issp'];
         }
 
-        if ($config['params']['doc'] == 'UE' || $config['params']['doc'] == 'ST') {
-        $return = app($path)->additem('insert', $config, true);
+        if ($doc == 'UE' || $doc == 'ST') {
+          $return = app($path)->additem('insert', $config, true);
         }else{
-        $return = app($path)->additem('insert', $config);
+          $return = app($path)->additem('insert', $config);
         }
         
-            if ($return['status']) {
-            if ($data[$key2]['refx'] != 0) {
+            if ($return['status']) { 
+            if ($data[$key2]['refx'] != 0) {//serve SO
               if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
                 $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
                 $line = $return['row'][0]->line;
                 $config['params']['trno'] = $trno;
-
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
                 app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);

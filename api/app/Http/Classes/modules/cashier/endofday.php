@@ -28,6 +28,7 @@ class endofday
   private $companysetup;
   private $coreFunctions;
   private $othersClass;
+  private $logger;
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = true;
   public $showclosebtn = false;
@@ -266,6 +267,7 @@ class endofday
         }
 
         if ($this->coreFunctions->sbcinsert('eod', $ins) == 1) {
+          $this->logger->sbcmasterlog2(0, $config, 'EOD- '.$d['dateid'] . ' :  Branch - ' . $config['params']['center'],'masterfile_log');
           $dateid = date('Y-m-d', strtotime($d['dateid']));
           $status = $this->coreFunctions->sbcupdate("profile", ["pvalue" => $dateid], ['doc' => 'SYSL']);
           if ($status) {
@@ -405,6 +407,7 @@ class endofday
       if ($rowdate == $latestdate) {
         $qry = "delete from eod where line=?";
         $this->coreFunctions->execqry($qry, 'delete', [$line]);
+        $this->logger->sbcmasterlog2(0, $config, 'DELETE EOD -'. $rowdate . ' :  Branch - ' . $config['params']['center'],'masterfile_log');
         return ['status' => true, 'msg' => 'Item was successfully deleted.'];
       } else {
         return ['status' => false, 'msg' => 'You can only delete the latest record.'];
