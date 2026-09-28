@@ -1913,7 +1913,7 @@ class item_list
   {
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($config['params']);
-    $font_size = '10';
+    $font_size = '9';
 
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
@@ -1983,7 +1983,7 @@ class item_list
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col($reporttitle, null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
+    $str .= $this->reporter->col($reporttitle, null, null, false, $border, '', '', $font, '13', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2017,24 +2017,26 @@ class item_list
     $reporttype = $config['params']['dataparams']['reporttype'];
     $str = '';
     $layoutsize = '1400';
+    $fontsize = '9';
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('ITEM CODE', '120', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('ITEM DESCRIPTION', '180', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('SRP 1', '70', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('SRP 2', '70', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('COST', '70', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('BRAND', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('CATEGORY', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('SUPPLIER CODE', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('SUPPLIER NAME', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('CLASS', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('SUB-CATEGORY', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('STATUS', '60', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('PROMO PRICE', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
-    $str .= $this->reporter->col('PROMO PERIOD DATE', '130', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('ITEM CODE', '120', null, false, $border, 'B', 'LT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '180', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('SRP 1', '70', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('SRP 2', '70', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('COST', '70', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('BRAND', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('SUPPLIER CODE', '80', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('SUPPLIER NAME', '80', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('CATEGORY', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('SUB-CATEGORY', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('CLASS', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('GROUP', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('STATUS', '60', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('PROMO PRICE', '70', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('PROMO PERIOD DATE', '100', null, false, $border, 'B', 'CT', $font, $fontsize, 'B', '', '', '');
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -3124,16 +3126,16 @@ class item_list
         $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $font_size, '', '', '');
 
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
 
+        $str .= $this->reporter->col('', '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '70', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '130', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
       }
@@ -3147,16 +3149,16 @@ class item_list
         $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $font_size, '', '', '');
 
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
 
+        $str .= $this->reporter->col('', '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '70', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '130', null, false, $border, '', 'R', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
       }
@@ -3176,24 +3178,24 @@ class item_list
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->barcode, '120', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->itemname, '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($price, '70', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($price2, '70', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($cost, '70', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->barcode, '120', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->itemname, '180', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($price, '70', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($price2, '70', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($cost, '70', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
 
-      $str .= $this->reporter->col($data->brand, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->catname, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->sup_code, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->brand, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->sup_code, '80', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
 
-      $str .= $this->reporter->col($data->sup_name, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->cl_name, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->subcatname, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->sup_name, '80', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->catname, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->subcatname, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->cl_name, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->stockgrp, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($isinactive, '60', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
 
-      $str .= $this->reporter->col($isinactive, '60', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-
-      $str .= $this->reporter->col($promoprice, '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($promo, '130', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($promoprice, '70', null, false, $border, '', 'RT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($promo, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
       $brand = strtoupper($data->brand);
@@ -3734,9 +3736,10 @@ class item_list
     // from pricelist
     // where '" . $current . "' between date(startdate) and date(enddate)
     // and clientid = 0 and itemid = item.itemid limit 1) as `PROMO PRICE`";
-    if ($companyid == 60) { //transpower
-      $order = " order by cat.name,itclass.cl_name,frontend_ebrands.brand_desc,itemname";
-      $query = "select item.barcode as `ITEM_CODE`, item.itemname as `FULL_ITEM_NAME`, cat.name as `MAIN_CATEGORY`, subcat.name as `SUB_CATEGORY`, frontend_ebrands.brand_desc as `BRAND`,
+    switch ($companyid) {
+      case 60: // transpower
+        $order = " order by cat.name,itclass.cl_name,frontend_ebrands.brand_desc,itemname";
+        $query = "select item.barcode as `ITEM_CODE`, item.itemname as `FULL_ITEM_NAME`, cat.name as `MAIN_CATEGORY`, subcat.name as `SUB_CATEGORY`, frontend_ebrands.brand_desc as `BRAND`,
         itclass.cl_name as `DESCRIPTION_1`, mm.model_name as `DESCRIPTION_2`, item.uom as `UNIT`, format(item.amt5,2) as `INVOICE_PRICE`, format(item.disc5,2) as `INVOICE_DISC`,
         format(item.namt5,2) as `NET_INVOICE`, format(item.amt,2) as `BASE_PRICE`, format(item.disc,2) as `BASE_DISC`, format(item.amt2,2) as `WHOLESALE_PRICE`,
         format(item.disc2,2) as `WHOLESALE_DISC`, format(item.namt2,2) as `NET_WHOLESALE`, format(item.amt4,2) as `COST`, format(item.disc4,2) as `COST_DISC`,
@@ -3753,9 +3756,45 @@ class item_list
           left join model_masterfile as mm on mm.model_id=item.model
         where item.barcode<>'' and item.isinactive in $itemstatus
           and item.isimport in $itemtype $filter and item.isofficesupplies=0 $order";
-    } else {
-      $order = " order by cat.name,itclass.cl_name,stockgrp.stockgrp_name,ifnull(parts.part_name,''),frontend_ebrands.brand_desc,itemname";
-      $add_fields = ",(select concat(date_format(head.dateid,'%m-%d-%y'), ' / ', date_format(head.due,'%m-%d-%y')) as promo from 
+        break;
+      case 56: //homeworks
+        $order = " order by cat.name,itclass.cl_name,stockgrp.stockgrp_name,frontend_ebrands.brand_desc,itemname";
+
+        $add_fields = ",(select concat(date_format(head.dateid,'%m-%d-%y'), ' / ', date_format(head.due,'%m-%d-%y')) as promo from 
+        hpahead as head
+        left join hpastock as stock on stock.trno = head.trno
+        where stock.itemid = item.itemid and '" . $current . "' between date(head.dateid) and date(head.due) limit 1) as `PROMO PERIOD DATE`
+        ,(select format(stock.ext,2) from 
+        hpahead as head
+        left join hpastock as stock on stock.trno = head.trno
+        where stock.itemid = item.itemid and '" . $current . "' between date(head.dateid) and date(head.due) limit 1) as `PROMO PRICE`";
+
+        if ($isassettag == '1') {
+          $itemsettagname = 'Fix/Asset Items';
+        } else {
+          $itemsettagname = 'Items';
+        }
+
+        $query = "
+        select item.barcode as `ITEM CODE`, item.itemname as `ITEM DESCRIPTION`, format(item.amt,2) as `SRP 1`, format(item.amt2,2) as `SRP 2`, format(item.avecost,2) as `COST`,
+        frontend_ebrands.brand_desc as `BRAND`, cl.client as `SUPPLIER CODE`, cl.clientname as `SUPPLIER NAME`,
+        cat.name as `CATEGORY`, ifnull(sub.name,'') as `SUB-CATEGORY`,ifnull(itclass.cl_name,'') as `CLASS`, ifnull(stockgrp.stockgrp_name,'') as `GROUP`,
+        if(item.isinactive = 1,'INACTIVE','ACTIVE') as `STATUS`
+        $add_fields
+        from item 
+        left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = item.groupid 
+        left join item_class as itclass on item.class = itclass.cl_id
+        left join frontend_ebrands on frontend_ebrands.brandid = item.brand
+        left join itemcategory as cat on cat.line = item.category
+        left join itemsubcategory as sub on sub.line = item.subcat
+        left join client as cl on cl.clientid = item.supplier
+        where item.barcode <> '' and item.isinactive in $itemstatus 
+        and item.isimport in $itemtype $filter and item.isofficesupplies=0 $order";
+        break;
+
+      default:
+        $order = " order by cat.name,itclass.cl_name,stockgrp.stockgrp_name,ifnull(parts.part_name,''),frontend_ebrands.brand_desc,itemname";
+        $add_fields = ",(select concat(date_format(head.dateid,'%m-%d-%y'), ' / ', date_format(head.due,'%m-%d-%y')) as promo from 
       hpahead as head
       left join hpastock as stock on stock.trno = head.trno
       where stock.itemid = item.itemid and '" . $current . "'  between date(head.dateid) and date(head.due) limit 1) as`PROMO PERIOD DATE`
@@ -3765,7 +3804,7 @@ class item_list
       where stock.itemid = item.itemid and '" . $current . "'  between date(head.dateid) and date(head.due) limit 1) as `PROMO PRICE`";
 
 
-      $query = "
+        $query = "
       select item.barcode as `ITEM CODE`, item.itemname as `ITEM DESCRIPTION`,format(item.amt,2) as `SRP 1`,format(item.amt2,2) as `SRP 2`,format(item.avecost,2) as `COST`,
       frontend_ebrands.brand_desc as `BRAND`,cat.name as `CATEGORY`,cl.client as `SUPPLIER CODE`,cl.clientname as `SUPPLIER NAME`,
       ifnull(itclass.cl_name,'') as `CLASS`,ifnull(stockgrp.stockgrp_name,'') as `SUBCLASS`, if(item.isinactive = 1,'INACTIVE','ACTIVE') as `STATUS`
@@ -3779,6 +3818,7 @@ class item_list
       left join client as cl on cl.clientid = item.supplier
   	  where item.barcode <> '' and item.isinactive in $itemstatus 
   	  and item.isimport in $itemtype $filter  and item.isofficesupplies=0 $order";
+        break;
     }
 
     $data = $this->coreFunctions->opentable($query);

@@ -410,6 +410,10 @@ class setprefixdoc
         $menu['serviceticketing']['TA'] = ['prefix' => 'TA', 'title' => 'Ticket Application'];
         $menu['serviceticketing']['WO'] = ['prefix' => 'TA', 'title' => 'Work Order'];
         break;
+
+      case 72: //hashy
+        $menu['inventory']['DA'] = ['prefix' => 'DA', 'title' => 'Daily Piece Rate'];
+        break;  
     }
 
     //lending

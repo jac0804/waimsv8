@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
+use App\Http\Classes\sbcscript\sbcscript;
 
 class ts
 {
@@ -55,6 +56,9 @@ class ts
   public $showcreatebtn = true;
   private $reporter;
   private $helpClass;
+
+  private $sbcscript;
+
   public $showfilterlabel = [
     ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
     ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary'],
@@ -72,6 +76,7 @@ class ts
     $this->logger = new Logger;
     $this->reporter = new SBCPDF;
     $this->helpClass = new helpClass;
+    $this->sbcscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -2754,5 +2759,26 @@ class ts
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+  }
+
+  public function sbcscript($config)
+  {
+    if ($config['params']['companyid'] == 68) { //JDA
+      return [
+        'report' => '
+               let trreport = state.reportdata.params.reporttype;
+               switch (trreport) {
+                  case 4:
+                      state.reportobject.txtfield.col1.noted.style="display:block"
+                      break;
+                  default:
+                      state.reportobject.txtfield.col1.noted.style="display:none"
+                      break;
+              }
+              '
+      ];
+    } else {
+      return true;
+    }
   }
 } //end class

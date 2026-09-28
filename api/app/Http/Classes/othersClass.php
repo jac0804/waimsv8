@@ -1189,8 +1189,10 @@ class othersClass
     return $data[0]->acnoname;
   } //end if
 
-
-  public function computestock($amt, $disc, $qty, $uomfactor, $vat = 0, $cur = 'P', $kgs = 0, $isround = 0, $perqty = 0)
+  /*
+  $charges - ginamit para kay HAHSY, pwedeng percentage or flat value
+  */
+  public function computestock($amt, $disc, $qty, $uomfactor, $vat = 0, $cur = 'P', $kgs = 0, $isround = 0, $perqty = 0, $charges = '')
   {
     if (empty($disc)) {
       $disc = 0;
@@ -1226,6 +1228,11 @@ class othersClass
 
       $hiddenamt = ($hiddenamt / $uomfactor) / $qty;
     } //END IF
+
+    if ($charges != 0) {
+      $hiddenamt = $this->Discount($hiddenamt, $charges, true); // + Add Charges, before VAT
+    }
+
     if ($vat != 0) {
       $hiddenamt = floatval($hiddenamt) / 1.12;
     }
@@ -1255,9 +1262,9 @@ class othersClass
     return array('amt' => $hiddenamt, 'qty' => $hiddenqty, 'ext' => $ext);
   }
 
-  public function Discount($Amt, $Discount)
+  public function Discount($Amt, $Discount, $add = false)
   {
-    return $this->commonsbc->Discount($Amt, $Discount);
+    return $this->commonsbc->Discount($Amt, $Discount, $add);
   } //end function discount
 
 

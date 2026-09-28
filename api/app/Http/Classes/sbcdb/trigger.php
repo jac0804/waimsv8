@@ -658,7 +658,7 @@ class trigger
       'Agent Amount' => ['agentamt' => []],
       'Start Wire' => ['startwire' => []],
       'End Wire' => ['endwire' => []],
-      'CBM' =>['cbm' => []]
+      'Add Charges' => ['charges' => []]
     ];
 
     $this->settriggerlogs('lastock_update', 'AFTER UPDATE', 'lastock', 'table_log', $fields, 'trno', 'STOCK');

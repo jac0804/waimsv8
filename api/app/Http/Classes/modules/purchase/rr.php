@@ -742,6 +742,11 @@ class rr
       $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'original_qty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
     }
 
+    if ($companyid == 72) { // HAHSY
+      $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'charges', 'freight', 'ext', 'wh', 'whname', 'cbm', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+      $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'charges', 'freight', 'ext', 'wh', 'whname', 'cbm', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
+    }
+
     foreach ($column as $key => $value) {
       $$value = $key;
     }
@@ -1051,15 +1056,12 @@ class rr
         $obj[0]['inventory']['columns'][$original_qty]['style'] = 'text-align: center; width: 80px;whiteSpace: normal;min-width:80px;max-width:80px;';
         break;
       case 60: //transpower
-
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
-
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
         break;
-
       default:
         $obj[0]['inventory']['columns'][$isbo]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
@@ -1097,6 +1099,12 @@ class rr
         }
       }
       $obj[0]['inventory']['columns'][$freight]['type'] = 'coldel';
+    }
+
+    if ($companyid == 72) { // hahsy
+        $obj[0]['inventory']['columns'][$charges]['label'] = 'Add Charges';
+        $obj[0]['inventory']['columns'][$freight]['type'] = 'input';
+        $obj[0]['inventory']['columns'][$freight]['readonly'] = true;
     }
 
 
@@ -2230,6 +2238,7 @@ class rr
     $qafield = 'stock.qa';
     $costfield = 'stock.cost';
     $poqty = '';
+    $hahsyfields = '';
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $qty_dec = 0;
       $serialfield = ",ifnull(group_concat(rr.serial separator '\\n\\r'),'') as serialno";
@@ -2253,6 +2262,10 @@ class rr
       if ($isserial) {
         $serialfield = ",ifnull((select ifnull(group_concat(concat('',rr.serial) separator '\\r'),'') from serialin as rr where rr.trno=stock.trno and rr.line=stock.line),'') as serialno";
       }
+    }
+
+    if ($companyid == 72) { //hahsy
+      $hahsyfields = ', stock.charges, stock.cbm';
     }
 
     $sqlselect = "select item.brand as brand,
@@ -2311,7 +2324,7 @@ class rr
     item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,stock.poref,stock.sgdrate,
     concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription
     " . $serialfield . " ,case when sit.isbo=1 then 'true' else 'false' end as isbo,ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr,'\\n','Remarks: ',rr.remarks) separator '\\n\\r'),'') as pnp,stock.rtrefx,
-    stock.rtlinex, stock.sjrefx, stock.sjlinex " . $poqty . " ";
+    stock.rtlinex, stock.sjrefx, stock.sjlinex " . $poqty . $hahsyfields . " ";
 
     return $sqlselect;
   }
@@ -2334,6 +2347,9 @@ class rr
     $grpby = "";
     if ($companyid == 63) { //ericco
       $grpby = ', po.qty';
+    }
+    if ($companyid == 72) { //hahsy
+      $grpby = ', stock.charges, stock.cbm';
     }
 
     $sqlselect = $this->getstockselect($config);
@@ -2463,6 +2479,9 @@ class rr
     $grpby = "";
     if ($companyid == 63) { //ericco
       $grpby = ', po.qty';
+    }
+    if ($companyid == 72) { //HAHSY
+      $grpby .= ', stock.charges, stock.cbm';
     }
     $addgroupby = ",stock.sjrefx, stock.sjlinex";
 
@@ -3331,6 +3350,14 @@ class rr
       }
     }
 
+    if (isset($config['params']['data']['poref'])) {
+      $poref = $config['params']['data']['poref'];
+    }
+
+    if ($companyid == 72) { //hahsy
+      $charges = isset($config['params']['data']['charges']) ? $config['params']['data']['charges'] : "";
+    }
+
 
     if ($systype == 'REALESTATE') {
       if (isset($config['params']['data']['projectid'])) {
@@ -3402,7 +3429,7 @@ class rr
       }
     }
 
-    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
+    $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor, item.cbm from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
@@ -3443,7 +3470,6 @@ class rr
     }
 
 
-
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
     if ($this->companysetup->getvatexpurch($config['params'])) {
       $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, 'P', $kgs);
@@ -3455,6 +3481,11 @@ class rr
         case 39: //cbbsi
           $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, $vat, 'P', 0, 1, 1);
           break;
+        case 72: //hahsy
+          $cbm = !empty($item) ? $this->othersClass->val($item[0]->cbm) : 0;
+          $freight = round($cbm * 5500, 6);
+          $computedata = $this->othersClass->computestock($amt * $forex, $disc, $qty, $factor, $vat, 'P', $kgs, 0, 0, $charges);
+          break;
         default:
           $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, $vat, 'P', $kgs);
           break;
@@ -3464,6 +3495,9 @@ class rr
     switch ($companyid) {
       case 65: //metro dragon -aims
         $hamt = number_format((($computedata['amt'] * $forex) + ($freight / $qty)), 6, '.', '');
+        break;
+      case 72: // hahsy
+          $hamt = number_format(($computedata['amt'] + $freight), 6, '.', '');
         break;
       default:
         $hamt = number_format((($computedata['amt'] * $forex) + $freight), 6, '.', '');
@@ -3534,6 +3568,11 @@ class rr
       $data['void'] = $void;
     }
 
+    if ($companyid == 72) { //hahsy
+      $data['cbm'] = $cbm;
+      $data['charges'] = $charges;
+    }
+
     if ($systype == 'REALESTATE') {
       $data['projectid'] = $projectid;
       $data['phaseid'] = $phaseid;
@@ -3547,9 +3586,6 @@ class rr
       $data['sjrefx'] = $sjrefx;
       $data['sjlinex'] = $sjlinex;
     }
-
-
-
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
@@ -3622,8 +3658,11 @@ class rr
           $this->updateprojmngmt($config, $stageid);
         }
 
-
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+        if ($companyid == 72) { //hahsy
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'] . ' Add Charges:' . $charges . ' Freight:' . $freight . ' CBM:' . $cbm , $setlog ? $this->tablelogs : '');
+        }else {
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
+        }
         $row = $this->openstockline($config);
 
         return ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];

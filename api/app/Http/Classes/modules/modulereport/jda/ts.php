@@ -50,7 +50,7 @@ class ts
 
     public function createreportfilter($config)
     {
-        $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'print'];
+        $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'noted', 'print'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
@@ -60,26 +60,29 @@ class ts
         data_set($col1, 'radioreporttype.options', [
             ['label' => 'Transfer Slip', 'value' => 0, 'color' => 'red'],
             ['label' => 'Memorandum Receipt', 'value' => 1, 'color' => 'red'],
+            ['label' => 'Deployed Equipment Pullout', 'value' => 4, 'color' => 'red'],
             ['label' => 'Liability Form', 'value' => 2, 'color' => 'red'],
             ['label' => 'Receiving Receipt', 'value' => 3, 'color' => 'red'],
         ]);
+        data_set($col1, 'noted.label', 'Reviewed and Noted by');
         return array('col1' => $col1);
     }
 
     public function reportparamsdata($config)
     {
-        $companyid = $config['params']['companyid'];
+        // $companyid = $config['params']['companyid'];
 
-        $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
-        $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
-        $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
+        // $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
+        // $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
+        // $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
 
         $paramstr = "select
           'PDFM' as print,
           0 as reporttype,
           '' as prepared,
           '' as approved,
-          '' as received";
+          '' as received,
+          '' as noted";
 
         return $this->coreFunctions->opentable($paramstr);
     }
@@ -133,16 +136,14 @@ class ts
             switch ($reporttype) {
                 case 1:
                     return $this->memorandum_TS_PDF($params, $data);
-                    break;
                 case 2:
                     return $this->liability_TS_PDF($params, $data);
-                    break;
                 case 3:
                     return $this->rreceipt_TS_PDF($params, $data);
-                    break;
+                case 4:
+                    return $this->deployed_TS_PDF($params, $data);
                 default:
                     return $this->default_TS_PDF($params, $data);
-                    break;
             }
         }
     }
@@ -318,16 +319,16 @@ class ts
         }
 
         $rptlbl = "";
-        if ($reporttype == 2){
+        if ($reporttype == 2) {
             $rptlbl = "Liability Form";
-        }else {
+        } else {
             $rptlbl = "Memorandum Receipt";
         }
 
         $destinationlbl = "";
-        if ($reporttype == 2){
+        if ($reporttype == 2) {
             $destinationlbl = "Warehouse:";
-        }else {
+        } else {
             $destinationlbl = "Destination:";
         }
 
@@ -364,7 +365,7 @@ class ts
         $destination = "";
         if ($reporttype == 2) {
             $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] . ' (destination)' : '');
-        }else {
+        } else {
             $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
         }
 
@@ -410,7 +411,7 @@ class ts
             PDF::MultiCell(245, 0, "DESCRIPTION", '', 'L', false, 0);
             PDF::MultiCell(245, 0, "LOCATION", '', 'L', false, 0);
             PDF::MultiCell(170, 0, "NOTES", '', 'L', false);
-        }else {
+        } else {
             PDF::SetFont($font, 'B', 12);
             PDF::MultiCell(120, 0, "BARCODE", '', 'C', false, 0);
             PDF::MultiCell(60, 0, "QTY", '', 'C', false, 0);
@@ -512,7 +513,6 @@ class ts
                 PDF::MultiCell(900, 0, '', 'B');
                 $this->memorandum_TS_footer_PDF($params, $data);
                 $this->memorandum_TS_header_PDF($params, $data);
-
             }
         }
 
@@ -619,7 +619,6 @@ class ts
                 PDF::MultiCell(900, 0, '', 'B');
                 $this->memorandum_TS_footer_PDF($params, $data);
                 $this->memorandum_TS_header_PDF($params, $data);
-
             }
         }
 
@@ -641,6 +640,8 @@ class ts
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
+
+
 
     public function rreceipt_TS_header_PDF($params, $data)
     {
@@ -820,7 +821,6 @@ class ts
                 PDF::MultiCell(900, 0, '', 'B');
                 $this->rreceipt_TS_footer_PDF($params, $data);
                 $this->rreceipt_TS_header_PDF($params, $data);
-
             }
         }
 
@@ -841,6 +841,233 @@ class ts
         //}
 
         return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    public function deployed_TS_header_PDF($params, $data)
+    {
+        $center = $params['params']['center'];
+        $username = $params['params']['user'];
+        $reporttype = $params['params']['dataparams']['reporttype'];
+        //$width = 800; $height = 1000;
+
+        $qry = "select name,address,tel,code from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        $viewcost = $this->othersClass->checkAccess($params['params']['user'], 368);
+
+        $font = "";
+        $fontbold = "";
+        $fontsize = 11;
+        if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+        }
+
+        //$width = PDF::pixelsToUnits($width);
+        //$height = PDF::pixelsToUnits($height);
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [1000, 1000]);
+        PDF::SetMargins(40, 40);
+
+        // SetFont(family, style, size)
+        // MultiCell(width, height, txt, border, align, x, y)
+        // write2DBarcode(code, type, x, y, width, height, style, align)
+
+        PDF::SetFont($font, '', 9);
+        if ($params['params']['companyid'] != 10 && $params['params']['companyid'] != 12) {
+            $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
+            PDF::SetFont($font, '', 9);
+            PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
+        }
+        $this->reportheader->getheader($params);
+
+        // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
+        PDF::SetFont($fontbold, '', 18);
+        PDF::MultiCell(720, 0, 'Deployed Equipment Pull Out', '', 'L', false, 0, '', '100');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(80, 0, "Docno #: ", '', 'L', false, 0, '', '');
+        PDF::SetFont($font, '', 10);
+        PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'C', false, 0, '', '');
+
+        $destination = "";
+        $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
+
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(0, 30, "", '', 'L');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(80, 0, "Source:", '', 'L', false, 0, '', '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(670, 0, $destination, 'B', 'L', false, 0, '', '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '', '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'C', false, 0, '', '');
+
+        PDF::MultiCell(0, 0, "\n\n");
+
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(80, 0, "Ourref:", '', 'L', false, 0, '', '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(100, 0, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), 'B', 'L', false, 0, '', '');
+        PDF::MultiCell(270, 0, '', 'B', 'L', false, 0, '', '');
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(60, 0, "Your ref:", '', 'L', false, 0, '', '');
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(100, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 0, '', '');
+        PDF::MultiCell(290, 0, '', 'B', 'L', false, 1, '', '');
+
+        PDF::MultiCell(0, 0, "\n\n\n");
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(900, 0, '', 'T');
+
+        PDF::SetFont($font, 'B', 12);
+        PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
+        PDF::MultiCell(60, 0, "QTY", '', 'C', false, 0);
+        PDF::MultiCell(60, 0, "UNIT", '', 'C', false, 0);
+        PDF::MultiCell(250, 0, "DESCRIPTION", '', 'L', false, 0);
+        PDF::MultiCell(150, 0, "LOCATION/SERIAL", '', 'L', false, 0);
+        PDF::MultiCell(100, 0, "DATE ACQUIRED", '', 'L', false, 0);
+        PDF::MultiCell(180, 0, "NOTES", '', 'L', false);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(900, 0, '', 'B');
+    }
+
+    public function deployed_TS_PDF($params, $data)
+    {
+        $companyid = $params['params']['companyid'];
+        $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
+        $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
+        $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
+        $viewcost = $this->othersClass->checkAccess($params['params']['user'], 368);
+        $center = $params['params']['center'];
+        $username = $params['params']['user'];
+        $count = $page = 35;
+        $totalext = 0;
+
+        $font = "";
+        $fontbold = "";
+        $border = "1px solid ";
+        $fontsize = "11";
+        if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+        }
+        $this->deployed_TS_header_PDF($params, $data);
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(900, 0, '', '');
+
+        $countarr = 0;
+
+        for ($i = 0; $i < count($data); $i++) {
+
+            $maxrow = 1;
+
+            $barcode = $data[$i]['barcode'];
+            $itemname = $data[$i]['itemname'];
+            $loc = $data[$i]['loc'];
+            $remarks = $data[$i]['remarks'];
+
+            $qty = number_format($data[$i]['qty'], 2);
+            $uom = $data[$i]['uom'];
+            $amt = number_format($data[$i]['cost'], 2);
+            $disc = $data[$i]['disc'];
+            $ext = number_format($data[$i]['ext'], 2);
+
+            $arr_barcode = $this->reporter->fixcolumn([$barcode], 15, 0);
+            $arr_itemname = $this->reporter->fixcolumn([$itemname], 40, 0);
+            $arr_loc = $this->reporter->fixcolumn([$loc], '40', 0);
+            $arr_remarks = $this->reporter->fixcolumn([$remarks], '35', 0);
+            $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+            $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+            $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+            $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+            $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
+
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_loc, $arr_remarks, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
+
+            for ($r = 0; $r < $maxrow; $r++) {
+                PDF::SetFont($font, '', $fontsize);
+                PDF::MultiCell(100, 15, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(60, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(60, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(250, 15, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(150, 15, (isset($arr_loc[$r]) ? $arr_loc[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(100, 15, (isset($arr_loc[$r]) ? $arr_loc[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(180, 15, (isset($arr_remarks[$r]) ? $arr_remarks[$r] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+            }
+
+            $totalext += $data[$i]['ext'];
+
+            if (PDF::getY() > 800) {
+                PDF::SetFont($font, '', 5);
+                PDF::MultiCell(900, 0, '', 'B');
+                $this->deployed_TS_footer_PDF($params, $data);
+                $this->deployed_TS_header_PDF($params, $data);
+            }
+        }
+
+        PDF::SetFont($font, '', 5);
+        PDF::MultiCell(900, 0, '', 'B');
+
+        $this->deployed_TS_footer_PDF($params, $data);
+
+        return PDF::Output($this->modulename . '.pdf', 'S');
+    }
+
+    private function deployed_TS_footer_PDF($params, $data)
+    {
+        $reporttype = $params['params']['dataparams']['reporttype'];
+        $font = "";
+        if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+        }
+        $fontsize = "11";
+
+        PDF::MultiCell(0, 0, "\n\n");
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(50, 0, 'NOTE: ', '', 'L', false, 0);
+        PDF::MultiCell(850, 0, isset($data[0]['rem']) ? $data[0]['rem'] : '', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n\n");
+
+        PDF::MultiCell(210, 0, 'Responsible Person: ', '', 'L', false, 0);
+        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(180, 0, 'Signature: ', '', 'L', false, 0);
+        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(210, 0, 'Date: ', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n");
+
+        PDF::MultiCell(210, 0, '', 'B', 'L', false, 0);
+        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(180, 0, '', 'B', 'L', false, 0);
+        PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(210, 0, '', 'B', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n\n\n");
+
+        PDF::MultiCell(306, 0, 'Requested By: ', '', 'L', false, 0);
+        PDF::MultiCell(306, 0, 'Reviewed and Noted By: ', '', 'L', false, 0);
+        PDF::MultiCell(306, 0, 'Approved By: ', '', 'L');
+
+        PDF::MultiCell(0, 0, "\n");
+
+        PDF::MultiCell(306, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
+        PDF::MultiCell(306, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
+        PDF::MultiCell(306, 0, $params['params']['dataparams']['noted'], '', 'L');
+
+        PDF::MultiCell(0, 0, "\n\n\n");
+
+        PDF::MultiCell(900, 0, 'Received By: ', '', 'L', false);
+        PDF::MultiCell(0, 0, "\n");
+        PDF::MultiCell(900, 0, $params['params']['dataparams']['received'], '', 'L');
     }
 
     public function default_TS_header_PDF($params, $data)

@@ -467,6 +467,9 @@ class setleftmenu
       case 65: //metro dragon - aims
         $inventory = ['parentinventory', 'pc', 'aj', 'ts', 'is', 'ad', 'ab', 'an'];
         break;
+      case 72: //hashy
+        array_push($inventory, 'da');
+        break;  
       default:
 
         break;

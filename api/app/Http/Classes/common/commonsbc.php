@@ -426,7 +426,10 @@ class commonsbc
     return $this->coreFunctions->datareader($qry, [$doc, $docno, $center]);
   } //end fn
 
-  public function Discount($Amt, $Discount)
+  /*
+  $add - to determine if is is add charges or not
+  */
+  public function Discount($Amt, $Discount, $add = false)
   {
     if ($Discount != '') {
       $Disc = explode('/', $Discount);
@@ -435,7 +438,8 @@ class commonsbc
     } //end if
     $DiscV = '';
     for ($a = 0; (count($Disc) - 1) >= $a; $a++) {
-      $m = -1;
+      // $m = -1;
+      $m = $add ? 1 : -1;
       $DiscV = $Disc[$a];
       if ($this->left($Disc[$a], 1) == '+') {
         $DiscV = substr($Disc[$a], 1);

@@ -1863,6 +1863,8 @@ class mobileappv2Class
         $wh = $params['wh'];
         $gtype = $params['gtype'];
         $devid = $params['devid'];
+        $apitrno = $params['apitrno'];
+        
          
         $branchid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $branch . "'");
         $whid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $wh . "'");
@@ -1875,24 +1877,40 @@ class mobileappv2Class
           }
           $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from androidstock where trno='" . $trno . "'");
           $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from androidstock where trno='" . $trno . "'");
+
+
+        }else{ //uploading final
+          $trno = $this->coreFunctions->datareader("select trno as value from chead 
+          where trno = $apitrno and wh='" . $wh . "' and date(dateid)='" . $dateid . "' and username = '".$params['user']."' and devid = '".$devid."'",[],'',true);
+          if ($trno == 0) {
+            $qry = "insert into chead(trno,branch,wh,dateid,devid,username) values(".$apitrno.",'".$branch."','".$wh."','".$dateid."','".$devid."','".$params['user']."')";
+            $this->coreFunctions->execqry($qry, 'insert', []);
+            $trno = $apitrno;
+          }
+          $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from cstock where trno='" . $trno . "'");
+          $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from cstock where trno='" . $trno . "'");
+         
+        }
           $returnparams= [
             'batch' => 500,  
             'start' => $minline,
             'end' => $maxline,
             'apitrno' => $trno
           ];
+
           if ($trno != 0) {
             return json_encode(['status' => true, 'msg' => 'Upload success','params' => $returnparams]);
           } else {
+            
             return json_encode(['status' => false, 'msg' => 'err1: Error uploading items']);
           }
-        }
+        
          } catch (\Exception $e) {
             return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case md5('uploadandroidstock'):
-         try {
+        try {
         $trno = $params['apitrno'];
         $minline = 0;
         $maxline = 0;
@@ -1904,12 +1922,23 @@ class mobileappv2Class
                 if($key == 0) $minline = $i['line'];
                $insert = $this->coreFunctions->execqry("insert into androidstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'],$i['loc']]);
                 if ($insert == 0) {
-                  return json_encode(['status' => false, 'msg' => 'err2: Error uploading items']);
+                  return json_encode(['status' => false, 'msg' => 'err2: Error uploading initial items']);
                 }
                 $maxline =$i['line'];
               }
             }
           }
+        }else{ //uploading final
+            if (!empty($params['items'])) {
+              foreach ($params['items'] as $key => $i) {
+                if($key == 0) $minline = $i['line'];
+               $insert = $this->coreFunctions->execqry("insert into cstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'],$i['loc']]);
+                if ($insert == 0) {
+                  return json_encode(['status' => false, 'msg' => 'err2: Error uploading final items']);
+                }
+                $maxline =$i['line'];
+              }
+            }
         }
           $returnparams= [
             'batch' => 500,

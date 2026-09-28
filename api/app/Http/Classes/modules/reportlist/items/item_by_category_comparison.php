@@ -41,8 +41,10 @@ class item_by_category_comparison
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end','category'];
+        $fields = ['radioprint', 'start', 'end','categoryname'];
         $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');
+        data_set($col1, 'categoryname.lookupclass', 'lookupcategoryitemstockcard');
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
         return array('col1' => $col1, 'col2' => $col2);
@@ -80,25 +82,37 @@ class item_by_category_comparison
         $start  = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end  = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $category = $config['params']['dataparams']['category'];
+        $categoryname = $config['params']['dataparams']['categoryname'];
         $filter = '';
 
+        if ($categoryname != '' ){
+            $filter .= "and cat.name =" .$categoryname; 
+        }
+
         $query ="
-        select item.itemname, item.category, item.class,
+        select  cat.name as category, class.cl_name as class,year(head.dateid) as syear,
         (stock.ext-ifnull(info.lessvat,0)-ifnull(info.sramt,0)-ifnull(info.pwdamt,0)) as ext
         from lahead as head
         left join lastock as stock on stock.trno = head.trno
         left join item on item.itemid = stock.itemid
         left join stockinfo as info on info.trno=stock.trno and info.line=stock.line
-        where 1=1 and item.category <> '' and item.category <> 0
+        left join itemcategory as cat on cat.line = item.category
+        left join item_class as class on class.cl_id = item.class
+        where item.category <> '' and item.category <> 0 and head.dateid between  '$start' and '$end' $filter
         union all
-        select item.itemname, item.category, item.class,
+        select  cat.name as category, class.cl_name as class,year(head.dateid) as syear,
         (stock.ext-ifnull(info.lessvat,0)-ifnull(info.sramt,0)-ifnull(info.pwdamt,0)) as ext
         from glhead as head
         left join glstock as stock on stock.trno = head.trno
         left join item on item.itemid = stock.itemid
         left join stockinfo as info on info.trno=stock.trno and info.line=stock.line
-        where 1=1 and item.category <> '' and item.category <> 0
+        left join itemcategory as cat on cat.line = item.category
+        left join item_class as class on class.cl_id = item.class
+        where item.category <> '' and item.category <> 0 and head.dateid between  '$start' and '$end' $filter
+        group by syear, cl_name,cat.name,stock.ext,info.lessvat,info.sramt,info.pwdamt
+        order by syear
         ";
+        // var_dump($query);
         return $this->coreFunctions->opentable($query);        
     }
 
@@ -106,6 +120,9 @@ class item_by_category_comparison
     {
         $center     = $config['params']['center'];
         $username   = $config['params']['user'];
+        $start = date("Y", strtotime($config['params']['dataparams']['start']));
+        $end  = date("Y", strtotime($config['params']['dataparams']['end']));
+        $numYear = ($end - $start) + 1;
 
         $str = '';
         $layoutsize = '1000';
@@ -135,8 +152,9 @@ class item_by_category_comparison
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('CLASS / CATEGORY', '400', 30, false, $border, '', 'C', $font, '10', 'B', '', '');
-        $str .= $this->reporter->col('2024', '150', 30, false, $border, 'TLR', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('2025', '150', 30, false, $border, 'TLR', 'C', $font, '12', 'B', '', '');
+        for ($i = 0; $i < $numYear; $i++) { //year loop
+            $str .= $this->reporter->col($start + $i, '150', 30, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
+        }
         $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -170,6 +188,10 @@ class item_by_category_comparison
 
     public function reportDefaultLayout($config)
     {
+        $start = date("Y", strtotime($config['params']['dataparams']['start']));
+        $end  = date("Y", strtotime($config['params']['dataparams']['end']));
+        $numYear = ($end - $start) + 1;
+
         $str = '';
         $layoutsize = '1000';
         $font = $this->companysetup->getrptfont($config['params']);
@@ -178,22 +200,43 @@ class item_by_category_comparison
         $str .= $this->reporter->beginreport();
         $str .= $this->header_layout($config);
         $query = $this->reportQuery($config);
+        $catname = '';
+        $catborder = '';
 
-
-        // foreach
-        //category border TLR---> B- gets addded on the subtotal
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('CLASS / CATEGORY', '150', 30, false, $border, 'TL', 'C', $font, '10', 'B', '', '');
-        $str .= $this->reporter->col('CLASS / CATEGORY', '250', 30, false, $border, 'TBL', 'C', $font, '10', 'B', '', '');
-        $str .= $this->reporter->col('-', '150', 30, false, $border, 'TBL', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('-', '150', 30, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', 'B', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-        //subtotal
-        $str .= $this->subTotal($config);
+        $grouped = [];
+        foreach ($query as $row) {
+            $grouped[$row->category][$row->class][$row->syear] = $row->ext;
+        }
+        foreach($grouped as $category => $classes){ //categoryy
+            // $classKeys = array_keys($classes);
+            // $lastClass = end($classKeys); //last one
+            foreach ($classes as $class => $years) { //classes
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                if($catname != $category){
+                    $catname = $category;
+                    $catborder = 'TL';
+                }else if ($catname == $category)
+                {
+                    $catborder = 'L';
+                }
+                // if ($class == $lastClass) { //if last one row on the printout
+                //     $catborder .= 'B';
+                // }
+                $str .= $this->reporter->col($catname, '150', 30, false, $border, $catborder, 'C', $font, '10', 'B', '', '');
+                $str .= $this->reporter->col($class, '250', 30, false, $border, 'TBL', 'C', $font, '10', 'B', '', '');
+                for ($i = 0; $i < $numYear; $i++) {//basically the summed ext of the year
+                    $str .= $this->reporter->col(isset($years[$start + $i])? number_format($years[$start + $i],2): '-', '150', 30, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
+                }
+                $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+            }
+             //subtotal
+            // $str .= $this->subTotal($config);
+        }
+       
+        //grantotal
 
         $str .= $this->reporter->endreport();
         return $str;

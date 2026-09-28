@@ -177,7 +177,7 @@ class customer
       $this->prefix = "C";
     }
     if ($companyid == 64) {
-      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'buildingname', 'listarea', 'listprovince', 'agentname', 'listcategory', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
+      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'buildingname', 'listarea', 'listprovince', 'agentname', 'listcategory', 'terms', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
     } else {
       $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
     };
@@ -277,6 +277,7 @@ class customer
         $cols[$buildingname]['label'] =  'Business Type';
         $cols[$listarea]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
         $cols[$listprovince]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
+        $cols[$terms]['style'] =  'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;text-align:left;';
         break;
       default:
         $cols[$listgroup]['type'] = 'coldel';
@@ -392,15 +393,15 @@ class customer
           $limit = "";
         }
         break;
-      case 64:
+      case 64: //excilin
         $address = "client.addr,client.area,client.province,client.region,ag.clientname as agentname, client.tel, client.tel2 as mobile,
-        client.bstyle as buildingname";
+        client.bstyle as buildingname, client.terms";
         $leftjoin = "left join client as ag on ag.client = client.agent";
         $searchfield = ['client.client', 'client.clientname', 'client.addr', 'client.rem', 'category.cat_name', 'client.tin'];
         if ($search != "") {
           $limit = "";
         }
-        break;
+        break;  
       default:
         $address = "client.addr";
         $leftjoin = "";
@@ -1303,6 +1304,9 @@ class customer
         array_push($fields, 'disc');
         break;
       case 60: //TRANSPOWER
+        array_push($fields, 'rem');
+        break;
+      case 64: //excilin
         array_push($fields, 'rem');
         break;
       case 59: //roosevelt

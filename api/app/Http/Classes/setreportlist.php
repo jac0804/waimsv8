@@ -1266,6 +1266,8 @@ class setreportlist
     $rep_ticket = "";
 
     $rep_item_by_category_comparison = "";
+    $rep_item_summary_report = "";
+
 
     //AFLI
     $subparent_lending = "";
@@ -1768,7 +1770,8 @@ class setreportlist
             break;
           case 72: //Hahsy
             $rep_item_by_category_comparison = "('','\\904','','','',0,1,0,'Item by Category Comparison','\\90458', 6038,'0'," . $params['levelid'] . ")";
-            break;            
+            $rep_item_summary_report = "('','\\904','','','',0,1,0,'Item Summary Report','\\90459',6039,'0'," . $params['levelid'] . ")";
+            break;
         }
 
         break;
@@ -2805,6 +2808,7 @@ class setreportlist
           $rep_inventory_vs_receiving_report,
           $rep_inventory_valuation,
           $rep_item_by_category_comparison,
+          $rep_item_summary_report,
 
           // CUSTOMER
           $parent_customers,

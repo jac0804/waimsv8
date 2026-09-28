@@ -27,7 +27,7 @@ class item_summary_report
     private $reporter;
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
-    public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
     public function __construct()
     {
@@ -43,8 +43,10 @@ class item_summary_report
         $companyid = $config['params']['companyid'];
         $fields = ['radioprint', 'start', 'end', 'categoryname'];
         $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'categoryname.lookupclass', 'lookupcategory_stock');
         data_set($col1, 'categoryname.label', 'Item Category');
+        data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');
+        data_set($col1, 'categoryname.lookupclass', 'lookupcategoryitemstockcard');
+        data_set($col1, 'categoryname.class', 'cscscategocsryname sbccsreadonly');
 
         $fields = ['print'];
         $col2 = $this->fieldClass->create($fields);
@@ -88,11 +90,17 @@ class item_summary_report
         $companyid = $config['params']['companyid'];
         $start = $this->othersClass->sbcdateformat($config['params']['dataparams']['start']);
         $end = $this->othersClass->sbcdateformat($config['params']['dataparams']['end']);
+        $category = $config['params']['dataparams']['categoryname'];
 
         $filter = '';
 
+        if ($category != '') {
+            $filter .= " and cat.name  = '$category'";
+        }
+
+
         $query = "select category, class, itemname, uom,sum(isqty) as qty,
-        min(amount) as low_price, max(amount) as high_price,
+        coalesce(nullif(min(amount), 0), max(amount)) as low_price, max(amount) as high_price,
         sum(sales) as total_sales, sum(sales) / nullif(sum(isqty), 0) as avg_price from (
         select cat.name as category, cls.cl_name as class, item.itemname, stock.uom as uom,
         stock.ext as sales, stock.amt as amount, stock.isqty as isqty
@@ -101,7 +109,7 @@ class item_summary_report
         left join item on item.itemid = stock.itemid
         left join item_class as cls on cls.cl_id = item.class
         left join itemcategory as cat on cat.line = item.category
-        where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
+        where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end' $filter
         union all
         select cat.name as category, cls.cl_name as class, item.itemname, stock.uom as uom,
         stock.ext as sales, stock.isamt as amount, stock.qty as isqty
@@ -110,9 +118,10 @@ class item_summary_report
         left join item on item.itemid = stock.itemid
         left join item_class as cls on cls.cl_id = item.class
         left join itemcategory as cat on cat.line = item.category
-        where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end'
+        where head.doc = 'SJ' and date(head.dateid) between '$start' and '$end' $filter
         ) as a
         GROUP BY category, class, itemname, uom
+        HAVING NOT (sum(sales) = 0 AND max(amount) = 0)
         ORDER BY category, class, itemname";
 
         return $this->coreFunctions->opentable($query);
@@ -123,6 +132,7 @@ class item_summary_report
         $center = $config['params']['center'];
         $username = $config['params']['user'];
         $companyid = $config['params']['companyid'];
+        $category = $config['params']['dataparams']['categoryname'];
         $start = date('d-M-Y', strtotime($config['params']['dataparams']['start']));
         $end = date('d-M-Y', strtotime($config['params']['dataparams']['end']));
         $printDate = date("m/d/Y  g:i:s A");
@@ -147,11 +157,21 @@ class item_summary_report
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
+        $str .= '<br/><br/>';
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Print Date : ' . $printDate, '400', null, false, '', '', 'L', $font, $fontsize);
+        $str .= $this->reporter->col('Category :', '80', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($category == '' ? 'ALL CATEGORY' : strtoupper($category), '320', null, false, '', '', 'L', $font, $fontsize);
+        $str .= $this->reporter->col('', '600');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Print Date : ' . $printDate, '400', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col('', '400');
-        $str .= $this->reporter->pagenumber('Page', '200', null, false, '', '', 'R', $font, $fontsize);
+        $str .= $this->reporter->pagenumber('Page', '200', null, false, '', '', 'R', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -182,7 +202,7 @@ class item_summary_report
             return $this->othersClass->emptydata($config);
         }
 
-        $limitPerPage = 40;
+        $limitPerPage = 30;
         $rowCount = 0;
         $lastcategory = null;
         $lastclass = null;
@@ -255,7 +275,6 @@ class item_summary_report
             $rowCount++;
         }
 
-        // flush trailing groups
         $str .= $this->printSubtotalRow($layoutsize, $font, $dashedBorder, '    ' . strtoupper($lastclass) . ' - Sub Total :', $classSubtotal);
         $str .= $this->printSubtotalRow($layoutsize, $font, $border, strtoupper($lastcategory), $categorySubtotal, true);
 
@@ -280,5 +299,4 @@ class item_summary_report
 
         return $str;
     }
-
 }// end class
