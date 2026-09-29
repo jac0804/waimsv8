@@ -193,6 +193,19 @@ class issuemultipleexpiry
 
 
     $stock = app($path)->openstock($trno,$config);
+    $msg = 'Successfully added';
+    if ($doc == 'ST') {
+      $haserror = false;
+      foreach ($stock as $k => $s) {
+        if ((float)$s->qty == 0) {
+          $stock[$k]->errcolor = 'bg-red-2';
+          $haserror = true;
+        }
+      }
+      if ($haserror) {
+        $msg = 'Please check, some items have zero qty (Out of stock / Qty Transferred is Greater than JO Qty)';
+      }
+    }
 
     if($refx != 0){
       //condition per lookup
@@ -207,9 +220,9 @@ class issuemultipleexpiry
         break; 
       }
       
-      return ['status' => true, 'msg'=> 'Successfully added','closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => true, 'msg'=> $msg,'closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
-      return ['status' => true, 'msg'=> 'Successfully added','closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => true, 'msg'=> $msg,'closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
 

@@ -1597,8 +1597,9 @@ class is
     $barcode = $config['params']['barcode'];
     $client = $config['params']['client'];
     $center = $config['params']['center'];
-    $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,round(amt,2) as defamt,'' as disc,uom from(select head.docno,head.dateid,
-          stock." . $this->damt . " as amt,stock.uom,stock.disc
+    $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt ,round(amt,2) as defamt,'' as disc,uom from(select head.docno,head.dateid,
+          FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,
+          stock.uom,stock.disc
           from lahead as head
           left join lastock as stock on stock.trno = head.trno
           left join cntnum on cntnum.trno=head.trno
@@ -1607,7 +1608,8 @@ class is
           and item.barcode = ?
           and stock.rrcost <> 0
           UNION ALL
-          select head.docno,head.dateid,stock." . $this->damt . " as amt,
+          select head.docno,head.dateid,
+          FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,
           stock.uom,stock.disc from glhead as head
           left join glstock as stock on stock.trno = head.trno
           left join item on item.itemid = stock.itemid

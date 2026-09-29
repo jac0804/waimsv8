@@ -10,6 +10,8 @@ use App\Http\Classes\companysetup;
 use PDF;
 use Illuminate\Support\Facades\URL;
 
+use Exception;
+
 class SBCPDF
 {
     public $linecounter = 0;
@@ -1369,12 +1371,17 @@ class SBCPDF
     public function estimateRowLines(array $fields, $fontSizePt = 10)
     {
         $max = 1;
-        foreach ($fields as $field) {
-            $text   = $field[0];
-            $width  = $field[1];
-            $pad    = isset($field[2]) ? $field[2] : '6px'; // same default as your existing col() calls
-            $isBold = isset($field[3]) ? $field[3] : false;
-            $max = max($max, $this->estimateLines($text, $width, $fontSizePt, $pad, $isBold));
+        try {
+            foreach ($fields as $field) {
+                $text   = $field[0];
+                $width  = $field[1];
+                $pad    = isset($field[2]) ? $field[2] : '6px'; // same default as your existing col() calls
+                $isBold = isset($field[3]) ? $field[3] : false;
+                $max = max($max, $this->estimateLines($text, $width, $fontSizePt, $pad, $isBold));
+            }
+        } catch (\Throwable $th) {
+            Logger('estimateRowLines' . $th->getMessage());
+            throw $th;
         }
         return $max;
     }

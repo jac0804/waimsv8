@@ -861,6 +861,8 @@ class setreportlist
     $rep_sales_per_agent_per_item = "";
     $rep_agent_commission = "";
 
+    $rep_analyze_agent_sales_date_range = "";
+
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
       case 'HRISPAYROLL':
@@ -882,6 +884,9 @@ class setreportlist
               break;
             case 71: //buenatech
               $rep_agent_commission = "('','\\907','','','',0,1,0,'Agent Commission Report','\\90709',6036,'0'," . $params['levelid'] . ")";
+              break;
+            case 72: //hahsy
+              $rep_analyze_agent_sales_date_range = "('','\\907','','','',0,1,0,'Analyze Agent Sales Date Range','\\90710',6054,'0'," . $params['levelid'] . ")";
               break;
             default:
               $rep_sales_per_agent = "('','\\907','','','',0,1,0,'Sales Per Agent','\\90704',3806,'0'," . $params['levelid'] . ")";
@@ -1267,6 +1272,7 @@ class setreportlist
 
     $rep_item_by_category_comparison = "";
     $rep_item_summary_report = "";
+    $rep_item_summary_comparison = "";
 
 
     //AFLI
@@ -1771,6 +1777,7 @@ class setreportlist
           case 72: //Hahsy
             $rep_item_by_category_comparison = "('','\\904','','','',0,1,0,'Item by Category Comparison','\\90458', 6038,'0'," . $params['levelid'] . ")";
             $rep_item_summary_report = "('','\\904','','','',0,1,0,'Item Summary Report','\\90459',6039,'0'," . $params['levelid'] . ")";
+            $rep_item_summary_comparison = "('','\\904','','','',0,1,0,'Item Summary Report','\\90460',6055,'0'," . $params['levelid'] . ")";
             break;
         }
 
@@ -2809,6 +2816,7 @@ class setreportlist
           $rep_inventory_valuation,
           $rep_item_by_category_comparison,
           $rep_item_summary_report,
+          $rep_item_summary_comparison,
 
           // CUSTOMER
           $parent_customers,
@@ -2902,6 +2910,7 @@ class setreportlist
           $rep_sales_per_agent,
           $rep_target_vs_actual_sales_report,
           $rep_agent_commission,
+          $rep_analyze_agent_sales_date_range,
 
           // OTHER REPORTS
           $parent_otherreports,

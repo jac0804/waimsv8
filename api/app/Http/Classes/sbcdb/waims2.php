@@ -4521,5 +4521,7 @@ class waims2
 
     $this->coreFunctions->execqrynolog("ALTER TABLE lastock CHANGE freight freight decimal(19,6) NOT NULL DEFAULT '0.000000'");
     $this->coreFunctions->execqrynolog("ALTER TABLE glstock CHANGE freight freight decimal(19,6) NOT NULL DEFAULT '0.000000'");
+
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ['charges'], "decimal(19,6) NOT NULL DEFAULT '0'", 1);
   }
 }

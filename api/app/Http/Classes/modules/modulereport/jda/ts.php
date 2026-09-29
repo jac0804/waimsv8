@@ -989,8 +989,9 @@ class ts
             $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
             $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
             $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
+            $arr_dateid = $this->reporter->fixcolumn([$data[$i]['dateid']], '15', 0);
 
-            $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_loc, $arr_remarks, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_loc, $arr_remarks, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext, $arr_dateid]);
 
             for ($r = 0; $r < $maxrow; $r++) {
                 PDF::SetFont($font, '', $fontsize);
@@ -999,7 +1000,7 @@ class ts
                 PDF::MultiCell(60, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
                 PDF::MultiCell(250, 15, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
                 PDF::MultiCell(150, 15, (isset($arr_loc[$r]) ? $arr_loc[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-                PDF::MultiCell(100, 15, (isset($arr_loc[$r]) ? $arr_loc[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+                PDF::MultiCell(100, 15, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
                 PDF::MultiCell(180, 15, (isset($arr_remarks[$r]) ? $arr_remarks[$r] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
             }
 
@@ -1060,8 +1061,8 @@ class ts
         PDF::MultiCell(0, 0, "\n");
 
         PDF::MultiCell(306, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
-        PDF::MultiCell(306, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
-        PDF::MultiCell(306, 0, $params['params']['dataparams']['noted'], '', 'L');
+        PDF::MultiCell(306, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0);
+        PDF::MultiCell(306, 0, $params['params']['dataparams']['approved'], '', 'L');
 
         PDF::MultiCell(0, 0, "\n\n\n");
 

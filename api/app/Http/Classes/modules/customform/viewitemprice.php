@@ -565,6 +565,10 @@ class viewitemprice
         $config['params']['clientid'] = $config['params']['itemid'];
         $txtdata = $this->paramsdata($config);
 
-        return ['status' => true, 'msg' => 'Save Item Price Success', 'data' => [], 'txtdata' => $txtdata];
+        if ($companyid == 72) { // hahsy
+            return ['status' => true, 'msg' => 'Save Item Price Success', 'data' => [], 'txtdata' => $txtdata, 'closecustomform' => true, 'reloadhead' => true];
+        }else {
+            return ['status' => true, 'msg' => 'Save Item Price Success', 'data' => [], 'txtdata' => $txtdata];
+        }
     }
 }

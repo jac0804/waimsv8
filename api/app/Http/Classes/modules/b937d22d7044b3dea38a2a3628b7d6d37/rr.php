@@ -1338,7 +1338,7 @@ class rr
     $isserial = $this->companysetup->getserial($config['params']);
     $serialfield = '';
     $qafield = 'stock.qa';
-    $costfield = 'stock.cost';
+    $costfield = "FORMAT(stock.cost," . $this->companysetup->getdecimal('price', $config['params']) . ")";
     $poqty = '';
 
     $sqlselect = "select item.brand as brand,
@@ -1372,7 +1372,7 @@ class rr
     stock.rem,
     stock.palletid,
     stock.locid,
-    stock.freight,
+    format(stock.freight," . $this->companysetup->getdecimal('price', $config['params']) . ") as freight,
     ifnull(pallet.name,'') as pallet,
     ifnull(location.loc,'') as location,
     ifnull(uom.factor,1) as uomfactor,stock.fcost,ifnull(stock.stageid,0) as stageid ,ifnull(st.stage,'') as stage,
@@ -3611,12 +3611,11 @@ class rr
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
-      $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $data2[$key]['kgs'], $lookups);
-
-      $computedata = $this->othersClass->computestock($damt * $head['forex'], $data[$key]->disc, $dqty, $data[$key]->uomfactor, $head['tax'], 'P', $kgs);
+      
+      $computedata = $this->othersClass->computestock($damt * $head['forex'], $data2[$key]['disc'], $dqty, $data2[$key]['uomfactor'], $head['tax'], 'P');
       $freight = $computedata['amt']*$perc;
       $cost =  $computedata['amt'] + $freight;
-      $exec = $this->coreFunctions->execqry("update lastock set cost = " . $cost . ",freight =".$freight." where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
+      $exec = $this->coreFunctions->execqry("update lastock set cost = " . $cost . ",freight =".$freight." where trno = " . $head['trno'] . " and line=" . $data2[$key]['line'], "update");
     }
     return $exec;
   }

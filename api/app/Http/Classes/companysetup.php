@@ -2379,6 +2379,22 @@ class companysetup
   public function getdecimal($action, $params)
   {
     switch ($params['companyid']) {
+      case 71: //buenatech
+        switch ($action) {
+          case 'price':
+            return 4;
+            break;
+          case 'qty':
+            return 4;
+            break;
+          case 'currency':
+            return 4;
+            break;
+          default:
+            return 4;
+            break;
+        }
+        break;
       case 50: //unitech
         switch ($action) {
           case 'price':

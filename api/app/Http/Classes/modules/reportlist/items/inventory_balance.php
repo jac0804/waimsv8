@@ -463,7 +463,7 @@ class inventory_balance
         if ($current == 'dhistory') {
           $query = $this->DEFAULT_QUERY($config);
         } else {
-          $query = $this->dcurrent_qry($config);
+          $query = $this->dcurrent_qry($config, false, false);
         }
         break;
     }
@@ -839,6 +839,7 @@ class inventory_balance
       case 15: //nathina
       case 14: //majesty
       case 36: //rozlab
+      case 61: //bytesized
         $exp = '';
         break;
 
@@ -3585,7 +3586,6 @@ class inventory_balance
         return $this->othersClass->emptydata($config);
       }
 
-
       $layoutsize = '1000';
       $str .= $this->reporter->beginreport($layoutsize);
       $str .= $this->default_displayHeader_SELLING_PRICE($config);
@@ -3607,7 +3607,7 @@ class inventory_balance
       }
 
       foreach ($result as $key => $data) {
-
+        Logger(json_encode($data));
         $balance = number_format($data->balance, 2);
         if ($balance == 0) {
           $balance = '-';
@@ -3620,7 +3620,7 @@ class inventory_balance
         $discounted = $this->othersClass->Discount($data->amt, $data->disc);
         //oks
         if ($companyid != 14 && $companyid != 17 && $companyid != 24 && $companyid != 69) { //not majesty,unihome,goodfound,cemphil
-          if ($data->part != 0 || $data->part != null) {
+          if ($data->part != "") {
             if (strtoupper($part) == strtoupper($data->part)) {
               $part = "";
             } else {
@@ -3646,7 +3646,7 @@ class inventory_balance
             $part = "";
           }
 
-          if ($data->category != 0 || $data->category != null) {
+          if ($data->category != "") {
             if (strtoupper($scatgrp) == strtoupper($data->category)) {
               $scatgrp = "";
             } else {
@@ -3674,7 +3674,7 @@ class inventory_balance
 
         if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
 
-          if ($data->stockgrp_name != 0 || $data->stockgrp_name != null) {
+          if ($data->stockgrp_name != "") {
             if (strtoupper($igrp) == strtoupper($data->stockgrp_name)) {
               $igrp = "";
             } else {
@@ -3713,19 +3713,17 @@ class inventory_balance
         //   $itemnameValue = $data->itemname;
         // }
 
-        $lines = $this->reporter->estimateRowLines([
-          // [$itemnameValue, $itemnameWidth, '0px'],
-          [$data->itemname, 400, '6px'],
-          [$data->loc, 100, '6px'],
-          [$data->expiry, 100, '6px'],
-        ], $font_size);
+        $checkCols = [[$data->itemname, 400, '6px']];
+        if (isset($data->loc)) array_push($checkCols, [$data->loc, 100, '6px']);
+        if (isset($data->expiry)) array_push($checkCols, [$data->expiry, 100, '6px']);
+
+        $lines = $this->reporter->estimateRowLines($checkCols, $font_size);
 
         for ($l = 0; $l < $lines; $l++) {
           $this->reporter->addline();
         }
 
         $str .= $this->reporter->startrow();
-        // $this->reporter->addline();
 
         if ($companyid == 40) { //cdo
           $str .= $this->reporter->col($data->partno, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
@@ -3733,7 +3731,7 @@ class inventory_balance
           $str .= $this->reporter->col($data->barcode, '140', null, false, '1px solid ', '', 'LT', $font, $font_size, '', '', '');
         }
 
-
+        Logger('2 - ' . $data->itemname);
 
         if ($companyid == 17) { //unihome
           $lastreceive = "select h.dateid from lahead as h
@@ -4357,12 +4355,11 @@ class inventory_balance
       //   $itemnameValue = $data->itemname;
       // }
 
-      $lines = $this->reporter->estimateRowLines(array(
-        // array($itemnameValue, $itemnameWidth, '0px'),
-        array($data->itemname, 440, '6px'),
-        array($data->loc, 100, '6px'),
-        array($data->expiry, 100, '6px'),
-      ), $font_size);
+      $checkCols = [array($data->itemname, 440, '6px')];
+      if (isset($data->loc)) array_push($checkCols, array($data->loc, 100, '6px'));
+      if (isset($data->expiry)) array_push($checkCols, array($data->expiry, 100, '6px'));
+
+      $lines = $this->reporter->estimateRowLines($checkCols, $font_size);
 
       for ($l = 0; $l < $lines; $l++) {
         $this->reporter->addline();
@@ -5087,11 +5084,11 @@ class inventory_balance
           }
         }
 
-        $lines = $this->reporter->estimateRowLines([
-          [$data->itemname, 420, '0px'],
-          [$data->loc, 100, '0px'],
-          [$data->expiry, 100, '0px'],
-        ], $font_size);
+        $checkCols = [[$data->itemname, 420, '0px']];
+        if (isset($data->loc)) array_push($checkCols,  [$data->loc, 100, '0px']);
+        if (isset($data->expiry)) array_push($checkCols, [$data->expiry, 100, '0px']);
+
+        $lines = $this->reporter->estimateRowLines($checkCols, $font_size);
 
         for ($l = 0; $l < $lines; $l++) {
           $this->reporter->addline();
@@ -7781,7 +7778,7 @@ class inventory_balance
     return $str;
   }
 
-  public function dcurrent_qry($config)
+  public function dcurrent_qry($config, $isLocation, $isExpiry)
   {
 
     $itemname   = isset($config['params']['dataparams']['itemname']) ? $config['params']['dataparams']['itemname'] : '';
@@ -7807,6 +7804,18 @@ class inventory_balance
     $joins = '';
     $grpby = '';
 
+    // default groupby - no location/expiry
+    //,rr.loc,rr.expiry
+    $grpby = ' i.itemid, i.itemname,i.uom,i.amt,i.disc, partgrp.part_name,i.barcode,cat.name, i.itemrem '; //,rr.loc,rr.expiry
+    if ($isLocation) {
+      $grpby .= ',rr.loc';
+      $addfield .= ',rr.loc';
+    }
+    if ($isExpiry) {
+      $grpby .= ',rr.expiry';
+      $addfield .= ',rr.expiry';
+    }
+
     if ($itemname != "") {
       // $filter = $filter . "and i.itemname='$itemname' ";
       $filter = $filter . "and rr.itemid=" . $itemid;
@@ -7817,7 +7826,7 @@ class inventory_balance
     }
 
     if ($groupid != "") {
-      $addfield = $addfield . ',stockgrp.stockgrp_name ';
+      $addfield = $addfield . ",ifnull(stockgrp.stockgrp_name,'') as stockgrp_name ";
       $joins = $joins . "left join stockgrp_masterfile as stockgrp on stockgrp.stockgrp_id = i.groupid ";
       $grpby  = $grpby . ",stockgrp.stockgrp_name ";
       $filter =  $filter . "and i.groupid='$groupid' ";
@@ -7846,7 +7855,7 @@ class inventory_balance
     }
 
     if ($subcatname != "") {
-      $addfield = $addfield . ",subcat.name as subcatname ";
+      $addfield = $addfield . ",ifnull(subcat.name,'') as subcatname ";
       $joins = $joins . " left join itemsubcategory as subcat on subcat.line = i.subcat ";
       $grpby = $grpby . ",subcat.name ";
       $filter = $filter . " and i.subcat='$subcatname' ";
@@ -7878,8 +7887,8 @@ class inventory_balance
       $grpby .= ", brand.brand_desc ";
       $joins .= "left join frontend_ebrands as brand on brand.brandid = i.brand";
     }
-    $query = "select i.itemid,i.itemname,i.uom,i.amt,i.disc, sum(rr.bal) as balance, partgrp.part_name as part,i.barcode,
-        '' as category, 0 as stockgrp_name, cat.name as category,rr.loc,rr.expiry, i.itemrem as rem  $addfield 
+    $query = "select i.itemid,i.itemname,i.uom,i.amt,i.disc, sum(rr.bal) as balance, ifnull(partgrp.part_name,'') as part,i.barcode,
+        '' as category, 0 as stockgrp_name, ifnull(cat.name,'') as category,ifnull(i.itemrem,'') as rem  $addfield 
         from rrstatus as rr
         left join item as i on i.itemid=rr.itemid
         left join part_masterfile as partgrp on partgrp.part_id = i.part
@@ -7887,7 +7896,8 @@ class inventory_balance
 
         $joins
         where i.isofficesupplies = 0 " . $filter . "  and i.isimport in $itemtype
-        group by i.itemid, i.itemname,i.uom,i.amt,i.disc, partgrp.part_name,i.barcode,cat.name,rr.loc,rr.expiry, i.itemrem $grpby" . $filterbal . " order by i.itemname";
+        group by $grpby" . $filterbal . " order by i.itemname";
+
     return $query;
   }
   public function reportdatacsv($config)
@@ -10536,7 +10546,7 @@ class inventory_balance
         }
 
 
-        if ($data->part != 0 || $data->part != null) {
+        if ($data->part != "") {
           if (strtoupper($part) == strtoupper($data->part)) {
             $part = "";
           } else {
@@ -10555,7 +10565,7 @@ class inventory_balance
         }
 
         // ── Category grouping header ──────────────────────────────
-        if ($data->category != 0 || $data->category != null) {
+        if ($data->category != "") {
           if (strtoupper($scatgrp) == strtoupper($data->category)) {
             $scatgrp = "";
           } else {

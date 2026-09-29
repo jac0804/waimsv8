@@ -1052,6 +1052,10 @@ class po
         $tbuttons = ['multiitem', 'quickadd', 'saveitem', 'deleteallitem'];
         break;
 
+      case 64: //excelin
+        $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso'];
+        break;
+
       default:
 
         $tbuttons = [];
@@ -1307,6 +1311,9 @@ class po
     if ($config['params']['companyid'] == 60) { //transpower
       data_set($col3, 'yourref.required', true);
       data_set($col3, 'yourref.label', 'SJ Ref');
+    }
+    if ($config['params']['companyid'] == 71) { //buenatech
+      data_set($col3, 'ourref.label', 'PO#');
     }
 
 
@@ -3335,6 +3342,20 @@ class po
       }
     }
 
+    if ($companyid == 64) { //excelin
+      if ($disc != "") {
+        $discparts = explode("/", (string)$disc);
+        foreach ($discparts as $k => $x) {
+          $x = trim($x);
+          if ($x !== '' && !str_contains($x, '%')) {
+            $x .= '%';
+          }
+          $discparts[$k] = $x;
+        }
+        $disc = implode("/", $discparts);
+      }
+    }
+
     $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
 
     switch ($companyid) {
@@ -4158,7 +4179,7 @@ class po
 
       default:
         $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,disc,uom from(select head.docno,head.dateid,
-            stock.rrcost as amt,stock.uom,stock.disc
+            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) ." as amt,stock.uom,stock.disc
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
             left join cntnum on cntnum.trno=head.trno
@@ -4167,7 +4188,8 @@ class po
             and item.barcode = ? and head.client = ?
             and stock.rrcost <> 0
             UNION ALL
-            select head.docno,head.dateid,stock.rrcost as computeramt,
+            select head.docno,head.dateid,
+            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) ." as computeramt,
             stock.uom,stock.disc from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid
@@ -4256,6 +4278,10 @@ class po
           $config['params']['data']['sorefx'] = $data[$key2]->trno;
           $config['params']['data']['solinex'] = $data[$key2]->line;
           $config['params']['data']['ref'] = $data[$key2]->docno;
+          if ($companyid == 64) { //excelin
+            $config['params']['data']['amt'] = $data[$key2]->isamt;
+            $config['params']['data']['disc'] = $data[$key2]->disc;
+          }
           if ($companyid == 10 || $companyid == 12) { //afti, afti usd
             $config['params']['data']['poref'] = $data[$key2]->yourref;
           }

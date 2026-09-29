@@ -211,45 +211,51 @@ class item_summary_report
         $categorySubtotal = 0;
         $grandTotal = 0;
 
+        $forceHeader = false;
+
         $str = '';
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->displayHeader($config);
 
         foreach ($result as $data) {
 
+            $data->category = trim((string) $data->category);
+            $data->class = trim((string) $data->class);
+
             if ($rowCount > 0 && $rowCount % $limitPerPage == 0) {
                 $str .= $this->reporter->page_break();
                 $str .= $this->displayHeader($config);
-                $lastcategory = null;
-                $lastclass = null;
+                $forceHeader = true;
             }
 
             if ($lastclass !== null && $data->class !== $lastclass) {
-                $str .= $this->printSubtotalRow($layoutsize, $font, $dashedBorder, '    ' . strtoupper($lastclass) . ' - Sub Total :', $classSubtotal);
+                $str .= $this->printSubtotalRow($layoutsize, $font, $dashedBorder, '    ' . $this->groupLabel($lastclass, 'No Class') . ' - Sub Total :', $classSubtotal);
                 $classSubtotal = 0;
             }
 
             if ($lastcategory !== null && $data->category !== $lastcategory) {
-                $str .= $this->printSubtotalRow($layoutsize, $font, $border, strtoupper($lastcategory), $categorySubtotal, true);
+                $str .= $this->printSubtotalRow($layoutsize, $font, $border, $this->groupLabel($lastcategory, 'No Category'), $categorySubtotal, true);
                 $categorySubtotal = 0;
             }
 
-            if ($data->category !== $lastcategory) {
+            if ($data->category !== $lastcategory || $forceHeader) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col(strtoupper($data->category), '200', null, false, $border, '', 'L', $font, '11', 'B', '', '');
+                $str .= $this->reporter->col($this->groupLabel($data->category, 'No Category'), '200', null, false, $border, '', 'L', $font, '11', 'B', '', '');
                 $str .= $this->reporter->col('', '800');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
+                if ($data->category !== $lastcategory) {
+                    $lastclass = null;
+                }
                 $lastcategory = $data->category;
-                $lastclass = null;
             }
 
-            if ($data->class !== $lastclass) {
+            if ($data->class !== $lastclass || $forceHeader) {
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('', '40');
-                $str .= $this->reporter->col(strtoupper($data->class), '200', null, false, $border, '', 'L', $font, '10', 'B', '', '');
+                $str .= $this->reporter->col($this->groupLabel($data->class, 'No Class'), '200', null, false, $border, '', 'L', $font, '10', 'B', '', '');
                 $str .= $this->reporter->col('', '760');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
@@ -273,16 +279,22 @@ class item_summary_report
             $grandTotal += $data->total_sales;
 
             $rowCount++;
+            $forceHeader = false;
         }
 
-        $str .= $this->printSubtotalRow($layoutsize, $font, $dashedBorder, '    ' . strtoupper($lastclass) . ' - Sub Total :', $classSubtotal);
-        $str .= $this->printSubtotalRow($layoutsize, $font, $border, strtoupper($lastcategory), $categorySubtotal, true);
+        $str .= $this->printSubtotalRow($layoutsize, $font, $dashedBorder, '    ' . $this->groupLabel($lastclass, 'No Class') . ' - Sub Total :', $classSubtotal);
+        $str .= $this->printSubtotalRow($layoutsize, $font, $border, $this->groupLabel($lastcategory, 'No Category'), $categorySubtotal, true);
 
         $str .= '<br/>';
         $str .= $this->printSubtotalRow($layoutsize, $font, $border, 'GRAND TOTAL :', $grandTotal, false, true);
 
         $str .= $this->reporter->endreport();
         return $str;
+    }
+
+    private function groupLabel($value, $fallback)
+    {
+        return trim((string) $value) === '' ? strtoupper($fallback) : strtoupper($value);
     }
 
     private function printSubtotalRow($layoutsize, $font, $lineBorder, $label, $amount, $underlineLabel = false, $bold = true)

@@ -963,8 +963,8 @@ class sj
         }
         break;
       case 72: //hahsy
-        $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp','rem2','cbm'];
-        $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp','rem2','cbm'];
+        $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
+        $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
         foreach ($column as $key => $value) {
           $$value = $key;
         }
@@ -1302,7 +1302,7 @@ class sj
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
-      case 71://buenatech
+      case 71: //buenatech
         $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
         $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
@@ -1320,7 +1320,7 @@ class sj
         $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
 
-      if (!$isexpiry) {
+        if (!$isexpiry) {
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         }
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
@@ -1422,7 +1422,7 @@ class sj
       if ($companyid == 10 || $companyid == 12) { //afti, afti usd
         $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
       } else {
-        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];      
+        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
       }
     } elseif ($ispallet) {
       $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
@@ -1442,8 +1442,8 @@ class sj
         default:
           if ($issuemultiloc) {
             $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
-          }else{
-            $tbuttons = [ 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso'];
+          } else {
+            $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso'];
           }
           break;
       }
@@ -1459,12 +1459,11 @@ class sj
         $obj[0]['lookupclass'] = 'soserial';
         $obj[0]['action'] = 'soserial';
       }
-
     } elseif ($ispallet) {
       $obj[0]['label'] = 'SO';
       $obj[0]['lookupclass'] = 'sopallet';
       $obj[0]['action'] = 'sopallet';
-    }elseif ($issuemultiloc) {
+    } elseif ($issuemultiloc) {
       $obj[0]['label'] = 'SO';
       $obj[0]['lookupclass'] = 'soserial';
       $obj[0]['action'] = 'soserial';
@@ -1550,7 +1549,7 @@ class sj
         data_set($col1, 'client.lookupclass', 'customer');
         break;
 
-      case 72: //hashy
+      case 72: //hahsy
         array_push($fields, 'shipto');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'client.lookupclass', 'customer');
@@ -1560,7 +1559,7 @@ class sj
         data_set($col1, 'shipto.label', 'Trucking');
         data_set($col1, 'shipto.addedparams', ['client']);
         break;
-        
+
       default:
         if ($systemtype == 'REALESTATE') {
           array_push($fields, 'dprojectname', 'phase');
@@ -1662,7 +1661,7 @@ class sj
       case 65: //metrodragon
         data_set($col2, 'plateno.label', 'Plate #');
         break;
-      case 72: //hashy
+      case 72: //hahsy
         array_push($fields, 'received');
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'dacnoname.label', 'AR Account');
@@ -2795,7 +2794,7 @@ class sj
         $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex ";
         break;
       case 64: //execilin
-        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, stock.custdisc as disc2,stock.cbm";
+        $serialfield = ",format(ifnull(stock.consignpr,0), 2) as consignpr,stock.limitcheck, stock.custdisc as disc2";
         $color = ",case when stock.limitcheck = 2  then 'bg-red-2'
                           when stock.limitcheck = 1 then 'bg-yellow-2'
                           else '' end as qacolor";
@@ -2809,7 +2808,7 @@ class sj
       case 71:  //buenatech
         $serialfield = ",case when stock.issp=0 then 'false' else 'true' end as issp";
         break;
-        case 72:  //hahsy
+      case 72:  //hahsy
         $serialfield = ",hstock.rem as rem2,stock.cbm";
         break;
     }
@@ -2902,7 +2901,7 @@ class sj
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
         break;
       case 64: //excilin
-        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc, ';
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc,stock.cbm, ';
         break;
       case 65: //metrodragon
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -2915,10 +2914,10 @@ class sj
       case 71: //buenatech
         $stockinfogroup = 'stock.issp,';
         break;
-      case 72://hahsy
-          $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
-          $hleftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
-          $stockinfogroup = 'hstock.rem,stock.cbm,';
+      case 72: //hahsy
+        $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
+        $hleftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
+        $stockinfogroup = 'hstock.rem,stock.cbm,';
         break;
     }
 
@@ -3030,7 +3029,7 @@ class sj
         $stockinfogroup = 'stock.agentamt, stock.startwire, stock.endwire, stock.porefx, stock.polinex, ';
         break;
       case 64: //excilin
-        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc, ';
+        $stockinfogroup = 'stock.consignpr,stock.limitcheck, stock.custdisc,stock.cbm, ';
         break;
       case 65: //metrodragon  
         $leftjoin = 'left join stockinfo as stockinfo on stockinfo.trno = stock.trno and stockinfo.line = stock.line';
@@ -3039,7 +3038,7 @@ class sj
       case 67: //yulick
         $stockinfogroup = 'stock.isqty2,';
         break;
-      case 72://hahsy
+      case 72: //hahsy
         $leftjoin =  'left join hsostock as hstock on hstock.trno = stock.refx and hstock.line = stock.linex';
         $stockinfogroup = 'hstock.rem,stock.cbm,';
         break;
@@ -4190,6 +4189,33 @@ class sj
       }
     }
 
+    if ($companyid == 64) { //excelin 
+      if ($disc != "") {
+        $discparts = explode("/", (string)$disc);
+        foreach ($discparts as $k => $x) {
+          $x = trim($x);
+          if ($x !== '' && !str_contains($x, '%')) {
+            $x .= '%';
+          }
+          $discparts[$k] = $x;
+        }
+        $disc = implode("/", $discparts);
+      }
+
+      // customer markup discount 
+      if ($custdisc != "") {
+        $custparts = explode("/", (string)$custdisc);
+        foreach ($custparts as $k => $x) {
+          $x = trim($x);
+          if ($x !== '' && !str_contains($x, '%')) {
+            $x .= '%';
+          }
+          $custparts[$k] = $x;
+        }
+        $custdisc = implode("/", $custparts);
+      }
+    }
+
     if ($companyid == 10) { //afti
       if ($disc != "") {
         $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, 0, $cur, $kgs, 1, 1);
@@ -4418,8 +4444,8 @@ class sj
 
         if ($companyid == 60) {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' Cost' . $cost . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
-        } else if($companyid == 72) {
-          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'] . ' cbm:'.$cbm, $setlog ? $this->tablelogs : '');
+        } else if ($companyid == 72) {
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'] . ' cbm:' . $cbm, $setlog ? $this->tablelogs : '');
         } else {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         }
@@ -4460,8 +4486,8 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
           }
-        }  
-        
+        }
+
         if ($companyid == 60) { //transpower
           if ($this->setservedpoitems($porefx, $polinex) == 0) {
             $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
@@ -4471,35 +4497,35 @@ class sj
             $return = false;
             $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PO Qty.";
           }
-        } 
-        
-          if ($this->setserveditems($refx, $linex, $companyid) == 0) {
-            $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-            $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-            $this->setserveditems($refx, $linex, $companyid);
-            $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-            $return = false;
-            $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
-          }
+        }
 
-          if ($companyid == 67) { //yulick
-            $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
-            $userid   = $config['params']['adminid'];
-            if ($checkamtlimit) {
-              $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
-              $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
-              if ($maxsjamt != 0) {
-                if ($resext > $maxsjamt) {
-                  $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
-                  $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                  $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-                  $return = false;
-                  $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
-                }
+        if ($this->setserveditems($refx, $linex, $companyid) == 0) {
+          $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+          $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+          $this->setserveditems($refx, $linex, $companyid);
+          $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+          $return = false;
+          $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than SO Qty.";
+        }
+
+        if ($companyid == 67) { //yulick
+          $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
+          $userid   = $config['params']['adminid'];
+          if ($checkamtlimit) {
+            $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
+            $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
+            if ($maxsjamt != 0) {
+              if ($resext > $maxsjamt) {
+                $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
+                $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+                $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+                $return = false;
+                $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
               }
             }
           }
-        
+        }
+
 
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
@@ -4609,7 +4635,7 @@ class sj
           $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
         }
       }
-      
+
       if ($companyid == 60) { //transpower
         if ($porefx != 0) {
           if ($this->setservedpoitems($porefx, $polinex) == 0) {
@@ -4621,37 +4647,36 @@ class sj
             $msg = "(" . $item[0]->barcode . ") Qty is Greater than PO Qty.";
           }
         }
-        
-      } 
-      
-        if ($this->setserveditems($refx, $linex, $companyid) == 0) {
-          $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
-          $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-          $this->setserveditems($refx, $linex, $companyid);
-          $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-          $return = false;
-          $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
-        }
-        
-        if ($companyid == 67) { //yulick
-          $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
-          $userid   = $config['params']['adminid'];
-          if ($checkamtlimit) {
-            $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
-            $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
-            if ($maxsjamt != 0) {
-              if ($resext > $maxsjamt) {
-                $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
-                $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-                $return = false;
-                $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
-              }
+      }
+
+      if ($this->setserveditems($refx, $linex, $companyid) == 0) {
+        $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
+        $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+        $this->setserveditems($refx, $linex, $companyid);
+        $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+        $return = false;
+        $msg = "(" . $item[0]->barcode . ") Qty Issued is Greater than SO Qty.";
+      }
+
+      if ($companyid == 67) { //yulick
+        $checkamtlimit = $this->othersClass->checkAccess($config['params']['user'], 5812);
+        $userid   = $config['params']['adminid'];
+        if ($checkamtlimit) {
+          $resext = $this->coreFunctions->datareader("select sum(ext) as value from lastock where trno=?", [$trno], '', true);
+          $maxsjamt = $this->coreFunctions->datareader("select maxsjamt as value from employee where empid=?", [$userid], '', true);
+          if ($maxsjamt != 0) {
+            if ($resext > $maxsjamt) {
+              $data2 = ['isamt' => 0, 'amt' => 0, 'ext' => 0];
+              $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
+              $return = false;
+              $msg = "The amount of " . number_format($resext, 2) . " exceeds the maximum allowed limit of " . number_format($maxsjamt, 2) . ".";
             }
           }
         }
-     
-        
+      }
+
+
 
       if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
         $weightin = floatval($this->coreFunctions->getfieldvalue('cntnuminfo', 'weightin', 'trno=?', [$trno]));
@@ -4924,10 +4949,10 @@ class sj
     $pricedec = $this->companysetup->getdecimal('price', $config['params']);
 
     $pricegrp = '';
-    $cond ='';
+    $cond = '';
     $data = [];
 
-    if($companyid == 71){//buenatech
+    if ($companyid == 71) { //buenatech
       $cond = " and stock.issp = 0 ";
     }
 
@@ -5051,7 +5076,7 @@ class sj
               left join item on item.itemid = stock.itemid
               where head.doc = 'SJ' and cntnum.center = ?
               and item.barcode = ? and head.client = ?
-              and stock.isamt <> 0 and cntnum.trno <> ? ". $cond."
+              and stock.isamt <> 0 and cntnum.trno <> ? " . $cond . "
               UNION ALL
               select head.docno,head.dateid,stock.isamt as computeramt,
               stock.uom,stock.disc,'test' as rem from glhead as head
@@ -5061,7 +5086,7 @@ class sj
               left join cntnum on cntnum.trno=head.trno
               where head.doc = 'SJ' and cntnum.center = ?
               and item.barcode = ? and client.client = ?
-              and stock.isamt <> 0 and cntnum.trno <> ?  ". $cond."
+              and stock.isamt <> 0 and cntnum.trno <> ?  " . $cond . "
               order by dateid desc limit 5) as tbl order by dateid desc";
 
             $data = $this->coreFunctions->opentable($qry, [$center, $barcode, $client, $trno, $center, $barcode, $client, $trno]);
@@ -5226,7 +5251,7 @@ class sj
       case 64: //excilin
         $addfield .= ",head.ismarkup,stock.markup,stock.custdisc";
         break;
-       case 72: //hahsy
+      case 72: //hahsy
         $addfield .= ", stock.rem as rem2,info.strdate1 as received,stock.cbm";
         break;
     }
@@ -5292,8 +5317,8 @@ class sj
               'vattype' => $data[0]->vattype
 
             ];
-          } else if ($companyid == 72){
-            $headupdate = [ 
+          } else if ($companyid == 72) {
+            $headupdate = [
               'ourref' => $data[0]->ourref,
               'yourref' => $data[0]->yourref,
               'terms' => $data[0]->terms,
@@ -5309,8 +5334,20 @@ class sj
               'strdate1' => $data[0]->received
             ];
             $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ['trno' => $trno]);
-
-          }else {
+          } else if ($companyid == 64) { // excelin
+            $headupdate = [
+              'ourref' => $data[0]->ourref,
+              'yourref' => $data[0]->yourref,
+              'terms' => $data[0]->terms,
+              'agent' => $data[0]->agent,
+              'rem' => $data[0]->rem,
+              'wh' => $data[0]->wh,
+              'shipto' => $data[0]->shipto,
+              'projectid' => $data[0]->hprojectid,
+              'sano' => $data[0]->sano,
+              'pono' => $data[0]->pono
+            ];
+          } else {
             $headupdate = [
               'ourref' => $data[0]->ourref,
               'yourref' => $data[0]->yourref,
@@ -5429,7 +5466,7 @@ class sj
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
                 $this->setserveditems($data[$key2]->trno, $data[$key2]->line, $config['params']['companyid']);
-                $row = $this->openstockline($config); 
+                $row = $this->openstockline($config);
                 $return = ['row' => $row, 'status' => true, 'msg' => $msg];
               }
               array_push($rows, $return['row'][0]);
@@ -5729,23 +5766,23 @@ class sj
                 'tax' => $data[0]->tax,
                 'vattype' => $data[0]->vattype
               ];
-            }else if ($companyid == 72){
-            $headupdate = [ 
-              'ourref' => $data[0]->ourref,
-              'yourref' => $data[0]->yourref,
-              'terms' => $data[0]->terms,
-              'agent' => $data[0]->agent,
-              'rem' => $data[0]->rem,
-              'wh' => $data[0]->wh,
-              'shipto' => $data[0]->shipto,
-              'projectid' => $data[0]->hprojectid,
-              'sano' => $data[0]->sano,
-              'pono' => $data[0]->pono
-            ];
-            $headinfo = [
-              'strdate1' => $data[0]->received
-            ];
-            $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ['trno' => $trno]);
+            } else if ($companyid == 72) {
+              $headupdate = [
+                'ourref' => $data[0]->ourref,
+                'yourref' => $data[0]->yourref,
+                'terms' => $data[0]->terms,
+                'agent' => $data[0]->agent,
+                'rem' => $data[0]->rem,
+                'wh' => $data[0]->wh,
+                'shipto' => $data[0]->shipto,
+                'projectid' => $data[0]->hprojectid,
+                'sano' => $data[0]->sano,
+                'pono' => $data[0]->pono
+              ];
+              $headinfo = [
+                'strdate1' => $data[0]->received
+              ];
+              $this->coreFunctions->sbcupdate('cntnuminfo', $headinfo, ['trno' => $trno]);
             } else {
               $headupdate = [
                 'ourref' => $data[0]->ourref,

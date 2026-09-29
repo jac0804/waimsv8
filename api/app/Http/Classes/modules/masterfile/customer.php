@@ -791,7 +791,7 @@ class customer
               $return['SHIPPING ADDRESS SETUP'] = ['icon' => 'fa fa-address-book', 'tab' => $billship];
             }
             break;
-          case 72: //hashy
+          case 72: //hahsy
             $return['TRUCKING ADDRESS'] = ['icon' => 'fa fa-address-book', 'tab' => $billship];
             break;  
           default:
@@ -855,7 +855,7 @@ class customer
     }
 
 
-    if ($companyid == 72) { // hashy
+    if ($companyid == 72) { // hahsy
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrysku2', 'label' => 'SPECIAL ITEM PRICE']];
       $sku2 = $this->tabClass->createtab($tab, []);
       $return['SPECIAL ITEM PRICE'] = ['icon' => 'fa fa-equals', 'tab' => $sku2];
@@ -1104,7 +1104,7 @@ class customer
               case 63: //ericco
                 array_push($fields, 'fax', 'contact', 'tin');
                 break;
-              case 72: //hashy
+              case 72: //hahsy
                 array_push($fields, 'industry');
                 break;  
               default:
@@ -1201,7 +1201,7 @@ class customer
           case 63: //ericco 
             data_set($col2, 'fax.type', 'cinput');
             break;
-          case 72: //hashy 
+          case 72: //hahsy 
             data_set($col2, 'industry.label', 'Reminders');
             data_set($col2, 'industry.type', 'ctextarea');
             break;
@@ -1312,7 +1312,7 @@ class customer
       case 59: //roosevelt
         array_push($fields, 'type', 'dparentcode', 'ar');
         break;
-      case 72: //hashy
+      case 72: //hahsy
         array_push($fields, 'rem');
         break;  
     }
@@ -1385,7 +1385,7 @@ class customer
       case 59: //roosevelt
         array_push($fields, 'ishold');
         break;
-      case 72: //hashy
+      case 72: //hahsy
         array_push($fields, 'isdefinvoice');
         break; 
     }

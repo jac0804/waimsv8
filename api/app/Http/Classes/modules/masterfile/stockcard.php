@@ -1300,7 +1300,7 @@ class stockcard
         array_push($fields, 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate');
         break;
       case 72: //hahsy
-        array_push($fields,  ['cbm', 'cbm2'], 'container');
+        array_push($fields,  ['cbm', 'cbm2'], 'container', 'cost');
         break;
     }
 
@@ -1336,6 +1336,10 @@ class stockcard
       case 47: //kitchenstar
         data_set($col3, 'foramt.label', 'Floor Price');
         data_set($col3, 'foramt.required', true);
+        break;
+      case 72: // hahsy
+        data_set($col3, 'sizeid.label', 'Materials');
+        data_set($col3, 'cost.label', 'Latest Cost');
         break;
     }
 

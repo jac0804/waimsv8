@@ -113,7 +113,7 @@ class viewothercharges
         $qryselect = '';
         $extraFields = '';
         if ($companyid == 71) {
-            $qryselect = ', format(charges, 2) as percentsales, format(overdue, 2) as totalcharges, forex';
+            $qryselect = ', format(charges, 6) as percentsales, format(overdue, 2) as totalcharges, forex';
             $extraFields = ', charges, overdue, forex';
         }
 

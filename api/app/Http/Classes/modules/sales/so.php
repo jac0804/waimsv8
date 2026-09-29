@@ -1130,7 +1130,7 @@ class so
       data_set($col3, 'ourref.label', 'Charge SI #');
     }
 
-    if ($companyid == 47) { //kitchenstar
+    if ($companyid == 47 || $companyid == 64 ) { //kitchenstar
       data_set($col3, 'yourref.label', 'PO #');
     }
 
@@ -1138,7 +1138,7 @@ class so
       data_set($col3, 'received.label', 'Receiving Time');
     }
 
-
+   
     // col 4
     $fields = ['rem'];
 
@@ -1564,7 +1564,7 @@ class so
     $data = [];
     $info = [];
     $datahere = [];
-    $infohead = $config['params']['infohead'];
+    // $infohead = $config['params']['infohead'];
     if ($isupdate) {
       unset($this->fields[1]);
       unset($head['docno']);
@@ -2770,6 +2770,10 @@ class so
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = isset($config['params']['data']['disc']) ? $config['params']['data']['disc'] : "";
+
+    if ($companyid == 64) { //excelin
+      $disc = $this->normalizedisc($disc);
+    }
     $wh = isset($config['params']['data']['wh']) ? $config['params']['data']['wh'] : "";
     $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : "";
     $void = 'false';
@@ -2790,7 +2794,7 @@ class so
 
     if ($companyid == 64) { //Excelin
       $markup = isset($config['params']['data']['markup']) ? $config['params']['data']['markup'] : 0;
-      $disc2 = isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "";
+      $disc2 = $this->normalizedisc(isset($config['params']['data']['disc2']) ? $config['params']['data']['disc2'] : "");
     }
 
 
@@ -3097,6 +3101,17 @@ class so
     }
   } // end function
 
+  private function normalizedisc($disc)
+  {
+    $disc = trim($disc);   // 1. tanggalin ang space sa dulo at unahan
+    if ($disc == '') {  // 2. kung walang laman, walang gagawin
+      return '';
+    }
+    $disc = str_replace('%', '', $disc);    // 3. tanggalin muna lahat ng %
+    $disc = str_replace('/', '%/', $disc);  // 4. lagyan ng % bago ang bawat /
+    $disc = $disc . '%';                    // 5. lagyan ng % sa pinakadulo
+    return $disc;
+  }
 
 
   public function deleteallitem($config)
@@ -3416,7 +3431,7 @@ class so
     $msg = '';
     $addfield = "";
     if ($companyid == 64) { //excilin
-      $addfield = ",head.ismarkup,stock.markup,stock.custdisc";
+      $addfield = ",head.ismarkup,stock.markup,stock.custdisc,head.terms,head.yourref";
     }
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
@@ -3452,9 +3467,17 @@ class so
 
           $return = $this->additem('insert', $config);
 
-          if ($companyid == 64) { //sbc
+          if ($companyid == 64) { //excelin
+            $sodateid = $this->coreFunctions->getfieldvalue("sohead", 'dateid', 'trno=?', [$trno]);
+            $due = $sodateid;
+            if ($data[0]->terms != '') {
+              $due = $this->othersClass->computeterms($sodateid, $sodateid, $data[0]->terms);
+            }
             $headupdate = [
-              'ismarkup' => $data[0]->ismarkup
+              'ismarkup' => $data[0]->ismarkup,
+              'terms'    => $data[0]->terms,
+              'yourref'  => $data[0]->yourref,
+              'due'      => $due
             ];
             $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
           }
@@ -3494,7 +3517,7 @@ class so
 
     $addfield = "";
     if ($companyid == 64) { //excilin
-      $addfield = ",head.ismarkup,stock.markup,stock.custdisc";
+      $addfield = ",head.ismarkup,stock.markup,stock.custdisc,head.terms,head.yourref";
     }
 
     foreach ($config['params']['rows'] as $key => $value) {
@@ -3529,9 +3552,18 @@ class so
             $config['params']['data']['disc2'] = $data[$key2]->custdisc;
           }
           $return = $this->additem('insert', $config);
-          if ($companyid == 64) { //sbc
+
+          if ($companyid == 64) { //excelin
+            $sodateid = $this->coreFunctions->getfieldvalue("sohead", 'dateid', 'trno=?', [$trno]);
+            $due = $sodateid;
+            if ($data[0]->terms != '') {
+              $due = $this->othersClass->computeterms($sodateid, $sodateid, $data[0]->terms);
+            }
             $headupdate = [
-              'ismarkup' => $data[0]->ismarkup
+              'ismarkup' => $data[0]->ismarkup,
+              'terms'    => $data[0]->terms,
+              'yourref'  => $data[0]->yourref,
+              'due'      => $due
             ];
             $this->coreFunctions->sbcupdate($this->head, $headupdate, ["trno" => $trno]);
           }

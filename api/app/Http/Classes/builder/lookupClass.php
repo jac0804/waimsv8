@@ -6509,6 +6509,15 @@ class lookupClass
         }
         array_push($cols, array('name' => 'activestat', 'label' => 'Status', 'align' => 'right', 'field' => 'activestat', 'sortable' => true, 'style' => 'font-size:16px;width:3%;max-width:3%;'));
         break;
+        case 64: //excelin
+        array_push($cols, array('name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'brandname', 'label' => 'Brand', 'align' => 'left', 'field' => 'brandname', 'sortable' => true, 'style' => 'font-size:16px;'));
+        array_push($cols, array('name' => 'amt', 'label' => 'Amount', 'align' => 'right', 'field' => 'amt', 'sortable' => true, 'style' => 'font-size:16px;'));
+        if($config['params']['doc']=='QT'){
+        array_push($cols, array('name' => 'uom', 'label' => 'Uom', 'align' => 'left', 'field' => 'uom', 'sortable' => true, 'style' => 'font-size:16px;'));
+        }
+        break;
       default:
         switch ($config['params']['doc']) {
           case 'GP':
@@ -14162,6 +14171,12 @@ class lookupClass
     if ($companyid == 29) {
       $filter = " center = '$center' ";
       $filter_doc = "";
+    }
+
+    if ($companyid == 72) { //hahsy
+      $filter = " and center = '$center' ";
+      $filter_doc = " doc in ('SJ','CM') ";
+      $plotting = array('pref' => 'pref', 'prefix' => 'prefix');
     }
 
     $plotsetup = array(

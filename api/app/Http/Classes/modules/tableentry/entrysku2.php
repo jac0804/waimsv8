@@ -61,7 +61,7 @@ class entrysku2
     $companyid= $config['params']['companyid'];
     $doc = $config['params']['doc'];
     
-    if($companyid == 72 && $doc == 'CUSTOMER' ){ //hashy
+    if($companyid == 72 && $doc == 'CUSTOMER' ){ //hahsy
       $this->modulename = 'SPECIAL ITEM PRICE';
       $column = ['action', 'barcode', 'itemname','amt', 'disc'];
     }else{
@@ -81,7 +81,7 @@ class entrysku2
     // action
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:100px;whiteSpace: normal;min-width:120px;";
 
-    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
       $obj[0][$this->gridname]['columns'][$barcode]['style'] = "width:100px;whiteSpace: normal;min-width:200px;text-align:center";
       $obj[0][$this->gridname]['columns'][$barcode]['type'] = 'lookup';
       $obj[0][$this->gridname]['columns'][$barcode]['lookupclass'] = 'lookupitem';
@@ -144,7 +144,7 @@ class entrysku2
     $data = [];
     $data['line'] = 0;
    
-    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
       $data['itemid'] = 0;
       $data['barcode'] = '';
       $data['itemname'] = '';
@@ -184,8 +184,8 @@ class entrysku2
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
         }
 
-        if ($companyid != 72 && $doc != 'CUSTOMER') { //not hashy
-         if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
+        if ($companyid != 72 && $doc != 'CUSTOMER') { //not hahsy
+          if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
               $qry = "select cl.clientname from sku
                       left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $data[$key]['clientid'] . "' and sku.itemid=  '" . $data[$key]['itemid'] . "'  and sku.issupplier=1 limit 1";
               $opendata = $this->coreFunctions->opentable($qry);
@@ -206,7 +206,7 @@ class entrysku2
           $params = $config;
           $params['params']['doc'] = strtoupper("skuentry_tab");
         
-          if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+          if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
             $this->logger->sbcmasterlog(
               $tableid,
               $params,
@@ -230,7 +230,7 @@ class entrysku2
           
         } else {
 
-          if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+          if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
 
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -308,7 +308,7 @@ class entrysku2
         $params = $config;
         $params['params']['doc'] = strtoupper("skuentry_tab");
 
-        if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+        if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
           $this->logger->sbcmasterlog(
             $tableid,
             $params,
@@ -371,7 +371,7 @@ class entrysku2
 
     
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
-        if ($companyid == 72 && $doc == 'CUSTOMER') { // hashy
+        if ($companyid == 72 && $doc == 'CUSTOMER') { // hahsy
           $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $row['itemname']);
         }
           $returnrow = $this->loaddataperrecord($config, $row['line']);
@@ -397,7 +397,7 @@ class entrysku2
     $params = $config;
     $params['params']['doc'] = strtoupper("skuentry_tab");
 
-    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
 
       $this->logger->sbcmasterlog(
         $tableid,
@@ -433,7 +433,7 @@ class entrysku2
     $colfield = 'itemid';
           
    
-    if ($companyid == 72 && $doc == 'CUSTOMER') { //hashy
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
       $qry= " select sku.line,sku.clientid,sku.itemid,item.itemname,format(sku.amt,2) as amt,sku.disc,item.barcode,
               sku.sku,sku.uom2,sku.issupplier,'' as bgcolor  from " . $this->table . "
               left join item on item.itemid = sku.itemid where  sku.clientid= " . $tableid . "  and sku.line=? ";

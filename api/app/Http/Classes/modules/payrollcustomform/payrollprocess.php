@@ -1241,7 +1241,6 @@ class payrollprocess
 
     $this->logger->sbcmasterlog2(0, $config, 'Compute timecard for ' . $emplog . '. From ' . $start . '  to ' . $end, 'payroll_log', 1);
 
-
     $this->coreFunctions->LogConsole('->computetimecard-resetdays');
     //RESET DAYTYPE
     $qry = "update timecard as t left join employee as e on e.empid = t.empid 
@@ -1717,6 +1716,9 @@ class payrollprocess
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $msg = '';
 
+    $emplog = 'all employees';
+    $divname = 'all division';
+
     $checkall = $config['params']['dataparams']['checkall'] == "1" ? true : false;
     if ($checkall) {
       $empid = 0;
@@ -1724,10 +1726,16 @@ class payrollprocess
       if ($empdivid == 0) {
         return ['status' => false, 'msg' => 'Please select valid Company'];
       }
+    } else {
+      $emplog = $config['params']['dataparams']['empname'];
     }
+
+    $divname =  $config['params']['dataparams']['divname'];
 
     $start = date('Y-m-d', strtotime($start));
     $end = date('Y-m-d', strtotime($end));
+
+    $this->logger->sbcmasterlog2(0, $config, 'Compute timecard for ' . $emplog . ' (' . $divname . '). From ' . $start . '  to ' . $end, 'payroll_log', 1);
 
     $filteremplvl = '';
     if ($blnExtract) {
@@ -2285,17 +2293,24 @@ class payrollprocess
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $msg = '';
-
+    $emplog = 'all employees';
+    $divname = 'all division';
     if ($checkall) {
       $empid = 0;
 
       if ($empdivid == 0) {
         return ['status' => false, 'msg' => 'Please select valid Company'];
       }
+    } else {
+      $emplog = $config['params']['dataparams']['empname'];
     }
+
+    $divname =  $config['params']['dataparams']['divname'];
 
     $start = date('Y-m-d', strtotime($start));
     $end = date('Y-m-d', strtotime($end));
+
+    $this->logger->sbcmasterlog2(0, $config, 'Compute timecard for ' . $emplog . ' (' . $divname . '). From ' . $start . '  to ' . $end, 'payroll_log', 1);
 
     $filteremplvl = '';
     if ($blnExtract) {

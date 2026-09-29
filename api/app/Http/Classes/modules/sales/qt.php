@@ -382,10 +382,14 @@ class qt
       data_set($col3, 'ddeptname.label', 'Department');
     } else {
       $fields = [['yourref', 'ourref'], ['cur', 'forex']];
-      if ($companyid == 64){
+      if ($companyid == 64){ //excelin
         array_push($fields, 'ismarkup');
       }
       $col3 = $this->fieldClass->create($fields);
+    }
+
+    if ($companyid == 64) { //excelin
+      data_set($col3, 'yourref.label', 'PO#');
     }
 
     $fields = ['rem'];
@@ -567,6 +571,7 @@ class qt
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
+
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
     } else {
@@ -1092,6 +1097,9 @@ class qt
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
+    if($companyid==64){ //excelin
+      $disc = $this->normalizedisc($disc);
+    }
     $wh = $config['params']['data']['wh'];
     $loc = $config['params']['data']['loc'];
     $void = 'false';
@@ -1126,8 +1134,14 @@ class qt
       $linex = $config['params']['data']['linex'];
     }
 
+    // if (isset($config['params']['data']['disc2'])) {
+    //   $custdisc = $config['params']['data']['disc2'];
+    // }
     if (isset($config['params']['data']['disc2'])) {
       $custdisc = $config['params']['data']['disc2'];
+      if($companyid==64){ //excelin
+          $custdisc = $this->normalizedisc($config['params']['data']['disc2']);
+      } 
     }
 
     if (isset($config['params']['data']['markup'])) {
@@ -1233,6 +1247,17 @@ class qt
     }
   } // end function
 
+  private function normalizedisc($disc)
+  {
+    $disc = trim($disc);   // 1. tanggalin ang space sa dulo at unahan
+    if ($disc == '') {  // 2. kung walang laman, walang gagawin
+      return '';
+    }
+    $disc = str_replace('%', '', $disc);    // 3. tanggalin muna lahat ng %
+    $disc = str_replace('/', '%/', $disc);  // 4. lagyan ng % bago ang bawat /
+    $disc = $disc . '%';                    // 5. lagyan ng % sa pinakadulo
+    return $disc;
+  }
 
 
   public function deleteallitem($config)

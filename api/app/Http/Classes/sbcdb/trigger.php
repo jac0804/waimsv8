@@ -341,6 +341,9 @@ class trigger
         $shortname = 'Specifications';
         $othcode = 'Barcode Name';
         break;
+      case 72: // hahsy
+        $cost = 'Latest Cost';
+        break;
       case 60: //transpower
         $shortname = 'Shortname';
         $othcode = 'Other Code';
@@ -445,6 +448,7 @@ class trigger
       'Item Height' => ['item_height' => []],
       'Item Width' => ['item_width' => []],
       'Item Length' => ['item_length' => []],
+      $cost => ['cost' => []],
       'Employee Rate' => ['payrate' => []],
       'DPR Cost' => ['defcost' => []],
       'Employee Box/Pcs' => ['payqty' => []],

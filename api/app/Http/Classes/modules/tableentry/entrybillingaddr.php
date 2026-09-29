@@ -70,7 +70,7 @@ class entrybillingaddr
       case 19: //housegem
         $this->modulename = 'Shipping Address Setup' . ' - ' . $customername;
         break;
-      case 72: //hashy
+      case 72: //hahsy
         $this->modulename = 'Trucking Address' . ' - ' . $customername;
         break;  
       default:
@@ -82,7 +82,7 @@ class entrybillingaddr
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $cols= ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2'];
 
-    if($companyid==72 && $docx== 'CUSTOMER'){ //hashy
+    if($companyid==72 && $docx== 'CUSTOMER'){ //hahsy
       $cols = ['action', 'addr'];
     }
     
@@ -102,8 +102,8 @@ class entrybillingaddr
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
 
 
-    if ($companyid != 72 && $docx != 'CUSTOMER') { // not hashy
-    
+    if ($companyid != 72 && $docx != 'CUSTOMER') { // not hahsy
+
       $obj[0][$this->gridname]['columns'][$isbilling]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
       $obj[0][$this->gridname]['columns'][$isshipping]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
       $obj[0][$this->gridname]['columns'][$isinactive]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
@@ -278,8 +278,8 @@ class entrybillingaddr
     $data['client'] = '';
     $data['clientname'] = '';
 
-    if($companyid !=72 && $doc != 'CUSTOMER') { // not hashy
-    
+    if($companyid !=72 && $doc != 'CUSTOMER') { // not hahsy
+
       $data['contactno'] = '';
       $data['contact'] = '';
       $data['isbilling'] = 'false';
@@ -346,7 +346,7 @@ class entrybillingaddr
       if ($data[$key]['bgcolor'] != '') {
 
         $sfields = $this->fields;
-        if ($companyid == 72 && $docx == 'CUSTOMER') { //hashy
+        if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
           $sfields = $this->truckingf;
         }
 
@@ -359,7 +359,7 @@ class entrybillingaddr
           switch ($companyid) {
             case 19: //housegem
               break;
-            case 72: //hashy
+            case 72: //hahsy
               break;
             default:
               if ($data[$key]['zipcode'] == "") {
@@ -376,7 +376,7 @@ class entrybillingaddr
 
           $params['params']['doc'] = strtoupper("billing_add_tab");
 
-          if ($companyid == 72 && $docx == 'CUSTOMER') { //hashy
+          if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
 
             $this->logger->sbcmasterlog($config['params']['tableid'], $params, ' CREATE - '
               . ", LINE: " . $line
@@ -438,8 +438,8 @@ class entrybillingaddr
 
       if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
        
-        if($companyid !=72 ){ // not hashy
-          if ($row['zipcode'] == "") {
+        if($companyid !=72 ){ // not hahsy
+        if ($row['zipcode'] == "") {
             return ['status' => false, 'msg' => 'Zipcode is required'];
           }
 
@@ -456,7 +456,7 @@ class entrybillingaddr
 
         $params['params']['doc'] = strtoupper("billing_add_tab");
 
-        if($companyid ==72 && $docx== 'CUSTOMER'){ //hashy
+        if($companyid ==72 && $docx== 'CUSTOMER'){ //hahsy
           $this->logger->sbcmasterlog(
             $config['params']['tableid'],
             $params,
@@ -529,7 +529,7 @@ class entrybillingaddr
     $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
 
     $config['params']['doc'] = strtoupper("billing_add_tab");
-    if($companyid==72 && $doc=='CUSTOMER'){ //hashy
+    if($companyid==72 && $doc=='CUSTOMER'){ //hahsy
       $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - Line : ' .$row['line']. ' ~ '. $row['addr'], 0, $trno);
     }else{
       $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['client'] . '~' . $row['clientname']);
@@ -718,8 +718,8 @@ class entrybillingaddr
     $original_doc = $config['params']['doc'];
 
     $del_log = 'log.trno';
-    if($companyid==72 && $original_doc== 'CUSTOMER'){ //HASHY
-     $del_log='log.trno2';
+    if($companyid==72 && $original_doc== 'CUSTOMER'){ //hahsy
+      $del_log='log.trno2';
     }
 
 

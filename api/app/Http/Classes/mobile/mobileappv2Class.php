@@ -1880,10 +1880,14 @@ class mobileappv2Class
 
 
         }else{ //uploading final
+        
+          $fdevid = $params['fdevid'];
+          $datenow = $this->othersClass->getCurrentTimeStamp();
+
           $trno = $this->coreFunctions->datareader("select trno as value from chead 
-          where trno = $apitrno and wh='" . $wh . "' and date(dateid)='" . $dateid . "' and username = '".$params['user']."' and devid = '".$devid."'",[],'',true);
+          where trno = $apitrno and wh='" . $wh . "' and date(dateid)='" . $dateid . "' and username = '".$params['user']."' and devid = '".$devid."' and fdevid = '".$fdevid."'",[],'',true);
           if ($trno == 0) {
-            $qry = "insert into chead(trno,branch,wh,dateid,devid,username) values(".$apitrno.",'".$branch."','".$wh."','".$dateid."','".$devid."','".$params['user']."')";
+            $qry = "insert into chead(trno,branch,wh,dateid,uploadate,devid,username,fdevid) values(".$apitrno.",'".$branch."','".$wh."','".$dateid."','".$datenow."','".$devid."','".$params['user']."','".$fdevid."')";
             $this->coreFunctions->execqry($qry, 'insert', []);
             $trno = $apitrno;
           }
