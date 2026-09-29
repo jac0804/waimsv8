@@ -178,8 +178,8 @@ class issuemultipleexpiry
         
           if ($return['status']) {
             $line = $return['row'][0]->line;
-            if(isset($return['havestock'])){
-              if(!$return['havestock']){
+            if(isset($return['haserror'])){
+              if($return['haserror']){
                 $this->coreFunctions->execqry("delete from ".app($path)->stock." where trno = $trno and line = $line");
               }
             }
@@ -204,8 +204,8 @@ class issuemultipleexpiry
     $stock = app($path)->openstock($trno,$config);
     $status = true;
     $msg = 'Successfully added';
-    if(isset($return['havestock'])){
-      if(!$return['havestock']){
+    if(isset($return['haserror'])){
+      if($return['haserror']){
       $status = false;
       $msg = $return['msg'];
       }
@@ -239,7 +239,7 @@ class issuemultipleexpiry
       
       return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
-      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true,'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true, 'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
 

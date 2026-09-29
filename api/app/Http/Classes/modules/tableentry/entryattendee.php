@@ -482,6 +482,7 @@ class entryattendee
           $data2[$key]['officialemail'] = $value->officialemail;
 
           if ($value->optrno != 0) {
+            $data2[$key]['optrno'] = $value->optrno;
             $qry1 = "select docno,doc,trno from transnum where trno = " . $value->optrno;
 
             $xdata1 = $this->coreFunctions->opentable($qry1);
@@ -523,9 +524,10 @@ class entryattendee
             $data2[$key]['saleremarks'] = '';
             $data2[$key]['docno'] = '';
             $data2[$key]['inqstatus'] = '';
+            $data2[$key]['optrno'] = 0;
           }
 
-          $data2[$key]['optrno'] = $value->optrno;
+         
         }
 
         return $data2;
@@ -616,6 +618,7 @@ class entryattendee
           $data2[$key]['officialemail'] = $value->officialemail;
 
           if ($value->optrno != 0) {
+            $data2[$key]['optrno'] = $value->optrno;
             $qry1 = "select docno,doc,trno from transnum where trno = " . $value->optrno;
 
             $xdata1 = $this->coreFunctions->opentable($qry1);
@@ -657,9 +660,10 @@ class entryattendee
             $data2[$key]['saleremarks'] = '';
             $data2[$key]['docno'] = '';
             $data2[$key]['inqstatus'] = '';
+            $data2[$key]['optrno'] = 0;
           }
 
-          $data2[$key]['optrno'] = $value->optrno;
+         
         }
 
         return $data2;

@@ -68,7 +68,6 @@ class st
     $this->logger = new Logger;
     $this->reporter = new SBCPDF;
     $this->helpClass = new helpClass;
-    $this->sbcscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -834,6 +833,7 @@ class st
     $data['editdate'] = $current_timestamp;
     $data['editby'] = $config['params']['user'];
     $cost2 = 0;
+    $haserror = false;
 
     if ($action == 'insert') {
       $data['encodeddate'] = $current_timestamp;
@@ -862,10 +862,12 @@ class st
                 $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
                 $this->logger->sbcwritelog($trno, $config, 'STOCK', 'BELOW COST - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0', $setlog ? $this->tablelogs : '');
                 $msg = "(" . $item[0]->barcode . ") You can't issue this item/s because it's BELOW COST!!!";
+                $haserror = true;
               }
             }
           } else {
             $havestock = false;
+            $haserror = true;
             $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
             $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
             $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0', $setlog ? $this->tablelogs : '');
@@ -879,16 +881,18 @@ class st
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Qty Transferred is Greater than JO Qty.";
+          $haserror = true;
         }
 
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
         if (!$havestock) {
+          $haserror = true;
           $row[0]->errcolor = 'bg-red-2';
           $msg = '(' . $item[0]->barcode . ') Out of Stock.';
         }
 
-        return ['row' => $row, 'status' => true, 'msg' => $msg,'havestock' => $havestock];
+        return ['row' => $row, 'status' => true, 'msg' => $msg,'haserror' => $haserror];
       } else {
         return ['status' => false, 'msg' => 'Add item Failed'];
       }
