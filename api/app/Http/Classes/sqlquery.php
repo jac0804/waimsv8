@@ -7557,19 +7557,22 @@ class sqlquery
     $center = $config['params']['center'];
 
     if($doc=='UE' || $doc='ST'){ //buenatech
-    
       $condition = " and jo.isproduce<>1 "; //picked in produce item
       $condition2 = "";
       $qfield = "jos.qa";
       if($doc=='ST'){
-        $condition= " and jo.istransfer<>1  "; // picked in transfer material
-        $condition2= " and jos.tsqa<>jos.qty";
+        $condition2= " and joh.isproduce<>1 and jos.tsqa<>jos.qty";
         $qfield= "jos.tsqa";
+      }
+
+      if ($doc == 'UE') {
+        $condition2 = " and jos.qa<>jos.qty";
       }
 
       $lookupclass = $config['params']['lookupclass'];
       switch($lookupclass){
           case 'pendingjoheaddetail':
+          $pdtrno = isset($config['params']['addedparams'][0]) ? $config['params']['addedparams'][0] : 0;
           $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname,jo.qty,jo.uom,jo.isproduce,jo.rem,jo.wh from hpdhead as jo
             left join item as it on it.itemid=jo.itemid
             left join transnum as num on num.trno=jo.trno where num.center=? $condition";
@@ -7621,7 +7624,6 @@ class sqlquery
           and stock.void = 0 ";
       $params = [$project,  $subproject,  $client, $stageid, $center];
     }
-         
     $data = $this->coreFunctions->opentable($qry, $params);
     return $data;
   } // end function

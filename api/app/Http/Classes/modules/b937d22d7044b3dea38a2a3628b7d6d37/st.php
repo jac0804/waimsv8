@@ -68,6 +68,7 @@ class st
     $this->logger = new Logger;
     $this->reporter = new SBCPDF;
     $this->helpClass = new helpClass;
+    $this->sbcscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -268,6 +269,7 @@ class st
     $obj[0]['label'] = 'JO';
     $obj[0]['lookupclass'] = 'pendingjobtndetail';
     $obj[0]['action'] = 'pendingjodetail';
+    $obj[0]['addedparams'] = ['client'];
     return $obj;
   }
 
@@ -284,7 +286,7 @@ class st
     data_set($col1, 'sodocno.action', 'pendingjodetail');
     data_set($col1, 'sodocno.lookupclass', 'pendingjoheaddetail');
     data_set($col1, 'sodocno.readonly', true);
-
+    data_set($col1, 'sodocno.addedparams', ['pdtrno']);
     data_set($col1, 'itemname.class', 'sbccsreadonly');
     data_set($col1, 'itemname.label', 'Itemname');
     data_set($col1, 'barcode.class', 'sbccsreadonly');
@@ -451,19 +453,17 @@ class st
     if ($isupdate) {
       
       $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
+      // if (!empty($stock)) {
+      //   return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
+      // }
       if (!empty($stock)) {
-        return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
-      }else{
-        $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
-        $newjotrno = $head['pdtrno'];
-        if ($newjotrno != $prevjotrno) {
-          $updatejohead = $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 0], ['trno' => $prevjotrno]);
-          if ($updatejohead == 0) {
-            return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. Problems in updating previous Job Order head.'];
-          }
-          $newupdate = $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 1], ['trno' => $newjotrno]); //17258
+        $prevjotrno = $this->coreFunctions->getfieldvalue($this->head, 'pdtrno', 'trno=?', [$head['trno']]);
+        if ($head['pdtrno'] != $prevjotrno) {
+          return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t change source. This transaction already has items.'];
         }
       }
+      
+    
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->recomputecost($head, $config);
     } else {
@@ -471,7 +471,6 @@ class st
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['createby'] = $config['params']['user'];
       $this->coreFunctions->sbcinsert($this->head, $data);
-      $this->coreFunctions->sbcupdate('hpdhead', ['istransfer' => 1], ['trno' => $head['pdtrno']]);
       $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' SOURCE WH - ' . $head['wh'] . ', DESTINATION WH - ' . $head['client']);
     }
   } // end function
@@ -489,7 +488,6 @@ class st
     $this->deleteallitem($config);
     $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
-    $this->coreFunctions->execqry("update hpdhead set istransfer =0 where docno = ?", "update", [$jodocno]);
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
@@ -536,7 +534,7 @@ class st
     stock.rem,
     ifnull(uom.factor,1) as uomfactor,
     '' as bgcolor,
-    '' as errcolor ";
+    case when stock." . $this->dqty . "=0 then 'bg-red-2' else '' end as errcolor ";
     return $sqlselect;
   }
 
@@ -880,8 +878,9 @@ class st
           $this->setserveditems($refx, $linex);
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           $return = false;
-          $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PD Qty.";
+          $msg = "(" . $item[0]->barcode . ") Qty Transferred is Greater than JO Qty.";
         }
+
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
         if (!$havestock) {
@@ -889,7 +888,7 @@ class st
           $msg = '(' . $item[0]->barcode . ') Out of Stock.';
         }
 
-        return ['row' => $row, 'status' => true, 'msg' => $msg];
+        return ['row' => $row, 'status' => true, 'msg' => $msg,'havestock' => $havestock];
       } else {
         return ['status' => false, 'msg' => 'Add item Failed'];
       }

@@ -58,8 +58,13 @@ class issuemultipleexpiry
 
   public function createTab($config)
   {
+    $companyid = $config['params']['companyid'];
+    $doc = $config['params']['doc'];
     $columns = ['itemdesc', 'qty','bal', 'loc', 'expiry', 'wh'];
-    $companyid= $config['params']['companyid'];
+    if ($companyid == 71 && ($doc == 'ST' || $doc == 'UE')) { // buenatech lang
+      array_splice($columns, 2, 0, 'pending');
+    }
+   
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -171,11 +176,17 @@ class issuemultipleexpiry
           $return = app($path)->additem('insert', $config);
         }
         
-            if ($return['status']) { 
+          if ($return['status']) {
+            $line = $return['row'][0]->line;
+            if(isset($return['havestock'])){
+              if(!$return['havestock']){
+                $this->coreFunctions->execqry("delete from ".app($path)->stock." where trno = $trno and line = $line");
+              }
+            }
+            
             if ($data[$key2]['refx'] != 0) {//serve SO
               if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
                 $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-                $line = $return['row'][0]->line;
                 $config['params']['trno'] = $trno;
                 $config['params']['line'] = $line;
                 $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
@@ -185,27 +196,33 @@ class issuemultipleexpiry
               }
             }
             //array_push($rows, $return['row'][0]);
-          }
-
-      
+          }      
       } // end foreach
     } //end if
 
 
     $stock = app($path)->openstock($trno,$config);
+    $status = true;
     $msg = 'Successfully added';
-    if ($doc == 'ST') {
-      $haserror = false;
-      foreach ($stock as $k => $s) {
-        if ((float)$s->qty == 0) {
-          $stock[$k]->errcolor = 'bg-red-2';
-          $haserror = true;
-        }
-      }
-      if ($haserror) {
-        $msg = 'Please check, some items have zero qty (Out of stock / Qty Transferred is Greater than JO Qty)';
+    if(isset($return['havestock'])){
+      if(!$return['havestock']){
+      $status = false;
+      $msg = $return['msg'];
       }
     }
+    // if ($doc == 'ST') {
+    //   $haserror = false;
+    //   foreach ($stock as $k => $s) {
+    //     if ((float)$s->qty == 0) {
+    //       $stock[$k]->errcolor = 'bg-red-2';
+    //       $haserror = true;
+    //     }
+    //   }
+    //   if ($haserror) {
+    //     $msg = 'Please check, some items have zero qty (Out of stock / Qty Transferred is Greater than JO Qty)';
+    //     $status = false;
+    //   }
+    // }
 
     if($refx != 0){
       //condition per lookup
@@ -220,9 +237,9 @@ class issuemultipleexpiry
         break; 
       }
       
-      return ['status' => true, 'msg'=> $msg,'closemodal' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
     }else{
-      return ['status' => true, 'msg'=> $msg,'closemodal' =>true,'reloadgriddata' => ['inventory' => $stock]];
+      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true,'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
 
@@ -252,7 +269,6 @@ class issuemultipleexpiry
 
   public function loaddata($config)
   {
-    // var_dump($config);
     $company = $config['params']['companyid'];
     $doc = $config['params']['doc'];
     $itemid = $config['params']['row']['itemid'];
@@ -283,6 +299,7 @@ class issuemultipleexpiry
     $ref = '';
     $client ='';
     $issp = 0;
+    $pending=0;
 
     if (isset($row['docno'])){
       $ref= $row['docno'];
@@ -328,7 +345,15 @@ class issuemultipleexpiry
         $uom = $latesprice[0]->uom;
       }
     }
-    $qry = "select '" . $client . "' as client,$refx as refx, $linex as linex,'" . $uom . "' as uom,'" . $disc . "' as disc,'" . $amt . "' as amt,'" . $ref . "' as docno,item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh, '" . $issp . "' as issp,
+
+    if ($company == 71 && ($doc == 'ST' || $doc = 'UE')) { //buenatech
+      if (isset($row['pending'])) {
+        $pending = $row['pending'];
+      }
+    }
+
+    $qry = "select '" . $client . "' as client,$refx as refx, $linex as linex,'" . $uom . "' as uom,'" . $disc . "' as disc,'" . $amt . "' as amt,'" . $ref . "' as docno,
+    item.itemid,item.barcode,item.itemname as itemdesc,0 as qty,rr.loc,rr.expiry,wh.client as wh, '" . $issp . "' as issp,'" . $pending . "' as pending,
     format(sum(bal),2) as bal from rrstatus as rr left join item on item.itemid = rr.itemid
     left join client as wh on wh.clientid = rr.whid
     where rr.itemid =? and rr.bal<>0  " . $filtersearch . " group by  item.itemid,item.barcode,item.itemname,wh.client,rr.loc,rr.expiry order by rr.expiry";

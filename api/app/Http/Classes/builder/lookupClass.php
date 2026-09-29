@@ -16965,6 +16965,7 @@ class lookupClass
   public function pendingjodetail($config)
   {
     $lookupclass = $config['params']['lookupclass'];
+    $companyid = $config['params']['companyid'];
     $lookupsetup = array(
       'type' => 'multi',
       'rowkey' => 'keyid',
@@ -16982,19 +16983,30 @@ class lookupClass
     );
 
     // lookup columns
-    $cols = array(
-      array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'rem', 'label' => 'Notes', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'stage', 'label' => 'Stage', 'align' => 'left', 'field' => 'stage', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'rrcost', 'label' => 'Amount', 'align' => 'left', 'field' => 'rrcost', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'disc', 'label' => 'Disc', 'align' => 'left', 'field' => 'disc', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'rrqty', 'label' => 'OrderQty', 'align' => 'left', 'field' => 'rrqty', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'qa', 'label' => 'Served', 'align' => 'left', 'field' => 'qa', 'sortable' => true, 'style' => 'font-size:16px;'),
-      array('name' => 'pending', 'label' => 'Pending', 'align' => 'left', 'field' => 'pending', 'sortable' => true, 'style' => 'font-size:16px;')
-    );
+    if($companyid == 71){//buena
+      $cols = array(
+        array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'rem', 'label' => 'Notes', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'qa', 'label' => 'Served', 'align' => 'left', 'field' => 'qa', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'pending', 'label' => 'Pending', 'align' => 'left', 'field' => 'pending', 'sortable' => true, 'style' => 'font-size:16px;')
+      );
+    }else{
+      $cols = array(
+        array('name' => 'docno', 'label' => 'Document#', 'align' => 'left', 'field' => 'docno', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'dateid', 'label' => 'Date', 'align' => 'left', 'field' => 'dateid', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'rem', 'label' => 'Notes', 'align' => 'left', 'field' => 'rem', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'stage', 'label' => 'Stage', 'align' => 'left', 'field' => 'stage', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'rrcost', 'label' => 'Amount', 'align' => 'left', 'field' => 'rrcost', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'disc', 'label' => 'Disc', 'align' => 'left', 'field' => 'disc', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'rrqty', 'label' => 'Needed Qty', 'align' => 'left', 'field' => 'rrqty', 'sortable' => true, 'style' => 'font-size:16px;'),
+        array('name' => 'pending', 'label' => 'Pending', 'align' => 'left', 'field' => 'pending', 'sortable' => true, 'style' => 'font-size:16px;')
+      );
+    }
 
    switch($lookupclass){ //UE Buenatech
     case 'pendingjoheaddetail': //head

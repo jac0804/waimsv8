@@ -4493,7 +4493,7 @@ class waims2
 
     $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock", "sostock", "hsostock"], ["issp"], "tinyint(2) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["pdstock", "hpdstock"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["isproduce", "istransfer"], "tinyint(1) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["isproduce"], "tinyint(1) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock", "qtstock", "hqtstock", "sostock", "hsostock"], ["custdisc"], "varchar(40) NOT NULL DEFAULT ''", 1);
 
     $this->coreFunctions->sbcaddcolumngrp(["rohead", "hrohead"], ["odoin", "odoout"], "varchar(100) NOT NULL DEFAULT ''", 1);

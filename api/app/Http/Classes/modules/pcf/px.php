@@ -106,7 +106,7 @@ class px
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'rem'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname','qtref', 'rem'];
 
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -117,7 +117,7 @@ class px
     $cols[$liststatus]['name'] = 'statuscolor';
     $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-
+    $cols[$qtref]['type'] = 'label';
     $cols[$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -236,7 +236,7 @@ class px
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['head.docno', 'head.dtcno', 'head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
+      $searchfield = ['head.docno', 'head.dtcno','cl.clientname', 'head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -270,23 +270,23 @@ class px
 
     $qry = "select distinct head.trno,head.docno,$dateid, case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end as status,
     head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate,case ifnull(head.lockdate,'') when '' then 'red' else 'cyan' end as statuscolor,
-      head.dtcno, head.pcfno,head.rem,cl.clientname
+      head.dtcno, head.pcfno,head.rem,cl.clientname,ifnull(qt.docno,'') as qtref
      from " . $this->head . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno " . $join . " left join client as cl on cl.clientid = head.clientid 
       left join pxstock as stock on stock.trno = head.trno
       left join item on item.itemid = stock.itemid
       left join projectmasterfile as pm on pm.line = item.projectid
-     left join client as ag on ag.clientid = head.agentid where num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
+     left join client as ag on ag.clientid = head.agentid  left join transnum as qt on qt.trno = head.potrno where num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
      union all
      select distinct head.trno,head.docno,$dateid,'POSTED' as status,
      head.createby,head.editby,head.viewby, num.postedby, date(num.postdate) as postdate,'blue' as statuscolor,
-       head.dtcno, head.pcfno,head.rem  ,cl.clientname
+       head.dtcno, head.pcfno,head.rem  ,cl.clientname,ifnull(qt.docno,'') as qtref
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num
      on num.trno=head.trno  " . $hjoin . " left join client as cl on cl.clientid = head.clientid
      left join hpxstock as stock on stock.trno = head.trno
       left join item on item.itemid = stock.itemid
       left join projectmasterfile as pm on pm.line = item.projectid
-     left join client as ag on ag.clientid = head.agentid where  num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
+     left join client as ag on ag.clientid = head.agentid  left join transnum as qt on qt.trno = head.potrno where  num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . " " . $addparams . " " . $filtersearch . "
     $orderby $limit";
     $this->coreFunctions->LogConsole($qry . $date1 . ' ' . $date2);
     $data = $this->coreFunctions->opentable($qry, [$center, $date1, $date2, $center, $date1, $date2]);

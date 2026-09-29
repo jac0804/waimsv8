@@ -425,7 +425,8 @@ class ue
     data_set($col2, 'sodocno.class', 'cssodocno sbccsreadonly');
     data_set($col2, 'sodocno.action', 'pendingjodetail');
     data_set($col2, 'sodocno.lookupclass', 'pendingjoheaddetail');
-    data_set($col2, 'sodocno.readonly', true);
+    data_set($col2, 'sodocno.readonly', true); 
+    data_set($col2, 'sodocno.addedparams', ['pdtrno']);
     data_set($col2, 'barcode.class', 'sbccsreadonly');
     data_set($col2, 'barcode.type', 'input');
     $fields = [['qty', 'uom'], ['yourref', 'ourref'], 'dprojectname'];
@@ -914,7 +915,7 @@ class ue
     stock.encodeddate,stock.disc,stock.void,stock.ref,stock.whid,warehouse.client,
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.locid,
     location.loc,uom.factor,head.forex,stock.rebate,
-    stock.noprint,stock.isqty,stock.rrqty
+    stock.noprint,stock.isqty,stock.rrqty,stock.iss
     
 
     UNION ALL
@@ -936,7 +937,7 @@ class ue
     stock.encodeddate,stock.disc,stock.void,stock.ref,stock.whid,warehouse.client,
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.locid,
     location.loc,uom.factor,head.forex,stock.rebate,
-    stock.noprint, stock.isqty,stock.rrqty
+    stock.noprint, stock.isqty,stock.rrqty,stock.iss
     order by sortline, line";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
     return $stock;
@@ -965,7 +966,7 @@ class ue
     stock.encodeddate,stock.disc,stock.void,stock.ref,stock.whid,warehouse.client,
     warehouse.clientname,stock.loc,stock.expiry,stock.rem,stock.locid,
     location.loc,uom.factor,head.forex,stock.rebate,
-    stock.noprint, stock.isqty,stock.rrqty";
+    stock.noprint, stock.isqty,stock.rrqty,stock.iss";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
   } // end function
@@ -1438,25 +1439,46 @@ class ue
     }
   } // end function
 
+  // public function setserveditems($refx, $linex, $companyid = 0)
+  // {
+  //   if ($refx == 0) {
+  //     return 1;
+  //   }
+  //   $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as
+  //   stock on stock.trno=head.trno where head.doc='UE' and stock.refx=" . $refx . " and stock.linex=" . $linex;
+
+  //   $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
+  //   glhead.trno where glhead.doc='UE' and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
+
+  //   $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
+  //   $qty = $this->coreFunctions->datareader($qry2);
+  //   if ($qty == '') {
+  //     $qty = 0;
+  //   }
+  //   $result = $this->coreFunctions->execqry("update hpdstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
+  //   return $result;
+  // }
+
+
   public function setserveditems($refx, $linex, $companyid = 0)
   {
     if ($refx == 0) {
       return 1;
     }
 
-    $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as
-    stock on stock.trno=head.trno where head.doc='UE' and stock.refx=" . $refx . " and stock.linex=" . $linex;
+    $qry1 = "select if(stock." . $this->hqty . "=0, stock.iss, stock." . $this->hqty . ") as q
+    from lahead as head left join lastock as stock on stock.trno=head.trno
+    where head.doc='UE' and stock.refx=" . $refx . " and stock.linex=" . $linex;
 
-    $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
-    glhead.trno where glhead.doc='UE' and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
+    $qry1 .= " union all select if(glstock." . $this->hqty . "=0, glstock.iss, glstock." . $this->hqty . ") as q
+    from glhead left join glstock on glstock.trno=glhead.trno
+    where glhead.doc='UE' and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
 
-    $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
-    $qty = $this->coreFunctions->datareader($qry2);
+    $qty = $this->coreFunctions->datareader("select ifnull(sum(q),0) as value from (" . $qry1 . ") as t");
     if ($qty == '') {
       $qty = 0;
     }
-    $result = $this->coreFunctions->execqry("update hpdstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
-    return $result;
+    return $this->coreFunctions->execqry("update hpdstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
   }
 
 
