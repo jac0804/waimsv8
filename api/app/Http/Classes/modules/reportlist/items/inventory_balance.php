@@ -648,9 +648,12 @@ class inventory_balance
     }
 
 
+    $defgrpby = "item.disc, item.minimum,item.maximum,item.itemid,barcode, itemname, groupid, brandname, model, part, cat.name, item.brand, $color sizeid,body, class, item.uom, item.amt";
+    // 2026 Sept 29 <FMM> remove loc, expiry from the default group by, just in case will be needed in other companies add in $defgrpby and $addfield
+
     $query = "select item.disc, item.minimum,item.maximum, item.itemid, item.barcode, " . $repitemcol . " cat.name as category,
         item.brand as brandname, item.model, item.part, item.brand, $color item.sizeid, item.body, item.class, item.uom, 
-        ifnull(sum(ib.qty-ib.iss),0) as balance, ifnull(sum(round(ib.costin-ib.costout,2))/sum(ib.qty-ib.iss),0) as cost, item.amt, loc, expiry $addfield
+        ifnull(sum(ib.qty-ib.iss),0) as balance, ifnull(sum(round(ib.costin-ib.costout,2))/sum(ib.qty-ib.iss),0) as cost, item.amt $addfield
         from ( 
         select item.itemid, stock.whid, sum(stock.cost*stock.qty) as costin, sum(stock.cost*stock.iss) as costout, 
         sum(stock.qty/ifnull(uom.factor,1)) as qty, sum(stock.iss/ifnull(uom.factor,1)) as iss, stock.loc, stock.expiry 
@@ -666,8 +669,7 @@ class inventory_balance
         left join itemcategory as cat on cat.line = item.category
         $leftjoin
         where ''='' $filter
-        group by item.disc, item.minimum,item.maximum,item.itemid,barcode, itemname, groupid, brandname, model, part, cat.name,
-        item.brand, $color sizeid,body, class, item.uom, loc, expiry, item.amt $addfieldgrpby
+        group by $defgrpby $addfieldgrpby
         having (case when sum(ib.qty-ib.iss)>0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
 
 
@@ -3607,7 +3609,6 @@ class inventory_balance
       }
 
       foreach ($result as $key => $data) {
-        Logger(json_encode($data));
         $balance = number_format($data->balance, 2);
         if ($balance == 0) {
           $balance = '-';

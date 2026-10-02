@@ -1105,7 +1105,7 @@ class customer
                 array_push($fields, 'fax', 'contact', 'tin');
                 break;
               case 72: //hahsy
-                array_push($fields, 'industry');
+                array_push($fields,  'contact', 'tin', 'industry');
                 break;  
               default:
                 array_push($fields, 'tin');
@@ -1203,7 +1203,9 @@ class customer
             break;
           case 72: //hahsy 
             data_set($col2, 'industry.label', 'Reminders');
-            data_set($col2, 'industry.type', 'ctextarea');
+            data_set($col2, 'industry.type', 'textarea');
+            data_set($col2, 'industry.style', 'height:5em');
+            data_set($col2, 'contact.label', 'Contact Person');
             break;
         }
 

@@ -1468,7 +1468,7 @@ class rr
           $col4 = $this->fieldClass->create($fields);
           break;
         case 65: //metro dragon
-          $fields = [['modeofpayment', 'orderno'], 'rem'];
+          $fields = [['modeofpayment', 'orderno'], 'dewt', 'rem'];
           $col4 = $this->fieldClass->create($fields);
           data_set($col4, 'modeofpayment.label', 'Mode of Payment');
           data_set($col4, 'modeofpayment.lookupclass', 'lookuppaymenttype');

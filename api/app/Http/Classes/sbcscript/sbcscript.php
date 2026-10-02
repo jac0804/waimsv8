@@ -896,5 +896,4 @@ class sbcscript
         '
     ];
   }
-
 } // end class

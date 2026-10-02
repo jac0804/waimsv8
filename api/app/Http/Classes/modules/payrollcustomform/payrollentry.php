@@ -28,6 +28,7 @@ class payrollentry
   private $coreFunctions;
   private $othersClass;
   private $payrollcommon;
+  public $logger;
   public $style = 'width:100%;max-width:100%;';
   private $fields = ['qty'];
   public $issearchshow = true;
@@ -42,6 +43,7 @@ class payrollentry
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->payrollcommon = new payrollcommon;
+    $this->logger = new Logger;
   }
 
   public function getAttrib()
@@ -198,6 +200,7 @@ class payrollentry
 
   private function saveentry($config)
   {
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['timesheet'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -254,6 +257,8 @@ class payrollentry
     $batchcode = $config['params']['dataparams']['batch'];
     $start = $config['params']['dataparams']['startdate'];
     $end   = $config['params']['dataparams']['enddate'];
+
+    $this->logger->sbcmasterlog2(0, $config, 'Recompute timesheet for ' . $config['params']['dataparams']['empname'] . '. Batch ' . $batchcode, 'payroll_log', 1);
 
     $zerohrs = $this->coreFunctions->datareader("select ifnull(sum(t.qty),0) as value from timesheet as t where t.empid=? and t.batchid=?", [$empid, $batch], '', true);
     if ($zerohrs == 0) {

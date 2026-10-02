@@ -1013,7 +1013,7 @@ class lookupClass
         return $this->hrislookup->lookupleavetransdocno($config);
         break;
       case 'lookuppayrollsetupbatch':
-        return $this->hrislookup->lookuppayrollsetupbatch($config);
+      return $this->hrislookup->lookuppayrollsetupbatch($config);
         break;
       case 'lookupshiftcode':
         return $this->payrolllookup->lookupshiftcode($config);
@@ -1958,6 +1958,10 @@ class lookupClass
         //hahsy
     case 'lookupagency':
         return $this->lookupagency($config);
+        break;
+
+    case 'lookupempgrid':
+        return $this->lookupempgrid($config);
         break;
 
       default:
@@ -3526,11 +3530,23 @@ class lookupClass
         switch ($config['params']['lookupclass']) {
           case 'whstock':
             $plottype = 'plotgrid';
-            if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
-              $plotting = array('whname' => 'clientname', 'wh' => 'client');
-            } else {
-              $plotting = array('wh' => 'client');
+            switch($config['params']['companyid']){
+              case 10: //afti
+              case 12: //afti usd
+                $plotting = array('whname' => 'clientname', 'wh' => 'client');
+                break;
+              case 72: //hahsy
+                $plotting = array('wh' => 'client', 'whid' => 'clientid');
+                break;
+                default:
+                $plotting = array('wh' => 'client');
+                break;
             }
+            // if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { //afti, afti usd
+            //   $plotting = array('whname' => 'clientname', 'wh' => 'client');
+            // } else {
+            //   $plotting = array('wh' => 'client');
+            // }
             break;
           case 'stockinfowh':
             $plottype = 'plotgrid';
@@ -11112,7 +11128,7 @@ class lookupClass
     );
 
     if($companyid ==68){ //jda
-      array_push($callbackfieldlookup, 'descode', 'desname');
+      array_push($callbackfieldlookup, 'descode', 'desname', 'sjseq', 'sjprefix');
     }
   
     $plotsetup = array(
@@ -14175,7 +14191,11 @@ class lookupClass
 
     if ($companyid == 72) { //hahsy
       $filter = " and center = '$center' ";
-      $filter_doc = " doc in ('SJ','CM') ";
+      if ($config['params']['name'] == 'received_checks'){
+        $filter_doc = " doc in ('CR') "; 
+      }else if($config['params']['name'] == 'analyze_agent_sales_date_range_report'||$config['params']['name'] == 'analyze_agent_sales_per_area_report' ){
+         $filter_doc = " doc in ('SJ','CM') ";  
+      }
       $plotting = array('pref' => 'pref', 'prefix' => 'prefix');
     }
 
@@ -17007,6 +17027,8 @@ class lookupClass
         array('name' => 'pending', 'label' => 'Pending', 'align' => 'left', 'field' => 'pending', 'sortable' => true, 'style' => 'font-size:16px;')
       );
     }
+
+    
 
    switch($lookupclass){ //UE Buenatech
     case 'pendingjoheaddetail': //head
@@ -20504,6 +20526,15 @@ class lookupClass
         union all 
         select 'UMBRELLA' as field1 ";
         break;
+      case 'lookup_shifttype':
+        $plotting = array('type' => 'field1');
+        $plottype = 'plothead';
+        $title = 'TYPE';
+        $label = 'Type';
+        $qry = "select 'DS' as field1 
+        union all 
+        select 'NS' as field1 ";
+        break;  
 
       default:
         break;
@@ -26189,5 +26220,35 @@ class lookupClass
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
 }
+
+
+ public function lookupempgrid($config)
+  {
+    $lookupsetup = [
+      'type' => 'single',
+      'title' => 'List of Employee',
+      'style' => 'width:100%;max-width:100%;'
+    ];
+    $plotsetup = [
+      'plottype' => 'plotgrid',
+      'plotting' => ['empid' => 'empid', 'empcode' => 'client', 'empname' => 'clientname']
+    ];
+    
+    $cols = [
+      ['name' => 'clientname', 'label' => 'Employee Name', 'align' => 'left', 'field' => 'clientname', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'client', 'label' => 'Employee Code', 'align' => 'left', 'field' => 'client', 'sortable' => true, 'style' => 'font-size:16px;']
+    ];
+
+      $qry = "select '' as clientname, '' as client,0 as empid
+              union all 
+              select cl.clientname,cl.client,emp.empid 
+              from employee as emp 
+              left join client as cl on cl.clientid = emp.empid 
+              where cl.isemployee=1 and emp.isactive=1";
+    $data = $this->coreFunctions->opentable($qry);
+    $table = $config['params']['table'];
+    $rowindex = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table, 'rowindex' => $rowindex];
+  }
 
 } // end class

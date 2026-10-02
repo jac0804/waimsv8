@@ -547,3 +547,10 @@ class hc
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
 }
+
+
+
+// do not delete this comment. This is for process reference.
+// company 58:
+// 1. once the clearance is locked, it will prompt to the immediate head for approval.
+// 2. once the immediate head approved, the clearance will be assign on the signatories for approval. (module approval clearance)

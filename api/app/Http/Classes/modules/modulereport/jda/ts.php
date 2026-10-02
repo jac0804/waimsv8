@@ -396,9 +396,8 @@ class ts
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(80, 0, "Remarks:", '', 'L', false, 0, '', '');
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(820, 0, (isset($data[0]['rem']) ? $data[0]['rem'] : ''), 'B', 'L', false, 0, '', '');
+        PDF::MultiCell(820, 0, (isset($data[0]['rem']) ? $data[0]['rem'] : ''), 'B', 'L', false, 1, '', '');
 
-        PDF::MultiCell(0, 0, "\n\n\n");
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(900, 0, '', 'T');

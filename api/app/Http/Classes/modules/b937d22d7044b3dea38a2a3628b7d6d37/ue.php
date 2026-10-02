@@ -403,6 +403,7 @@ class ue
     $obj[0]['label'] = 'JO';
     $obj[0]['lookupclass'] = 'pendingjobtndetail';
     $obj[0]['action'] = 'pendingjodetail';
+    $obj[0]['addedparams'] = ['client'];
     return $obj;
   }
 

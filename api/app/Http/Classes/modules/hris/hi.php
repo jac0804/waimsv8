@@ -187,9 +187,18 @@ class hi
             'edit',
             'backlisting',
             'toggleup',
-            'toggledown'
+            'toggledown',
+            'others'
         );
         $buttons = $this->btnClass->create($btns);
+
+        $buttons['others']['items'] = [
+            'first' => ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']],
+            'prev' => ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']],
+            'next' => ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']],
+            'last' => ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']],
+        ];
+
         return $buttons;
     } // createHeadbutton 
 
@@ -480,7 +489,7 @@ class hi
         if ($isupdate) {
             unset($this->fields['docno']);
         }
-        
+
         $dateTables = ['incidenthead'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key) {
@@ -663,6 +672,15 @@ class hi
             case 'deleteitem':
                 return $this->deleteitem($config);
                 break;
+        }
+    }
+
+    public function stockstatusposted($config)
+    {
+        $lookupclass = $config['params']['action'];
+        switch ($lookupclass) {
+            case 'navigation':
+                return $this->othersClass->navigatedocno($config);
         }
     }
 

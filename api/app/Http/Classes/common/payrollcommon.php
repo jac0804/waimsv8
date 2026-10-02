@@ -5351,9 +5351,13 @@ class payrollcommon
                     if ($unpost) {
                         $this->coreFunctions->execqry("update batch set postdate=null, postby='' where line=" . $batchid);
                         $msg = 'Successfully unclosed.';
+
+                        $this->logger->sbcmasterlog2(0, $config, 'Payroll Unclosing; batch ' . $config['params']['dataparams']['batch'], 'payroll_log', 1);
                     } else {
                         $this->coreFunctions->execqry("update batch set postdate=now(), postby='" . $user . "' where line=" . $batchid);
                         $msg = 'Successfully closed.';
+
+                        $this->logger->sbcmasterlog2(0, $config, 'Payroll Closing; batch ' . $config['params']['dataparams']['batch'], 'payroll_log', 1);
                     }
                 } else {
                     $this->coreFunctions->execqry("delete from " . $timesheet2 . " where batchid=" . $batchid);

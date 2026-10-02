@@ -3564,7 +3564,7 @@ class othersClass
       case 'UE': //buenatech
         $qry = "select trno from " . $config['docmodule']->stock . " where trno=? and qty=0 and iss=0 limit 1";
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
-        break; 
+        break;
       default:
         $qry = "select s.trno from " . $config['docmodule']->stock . " as s left join item on item.itemid=s.itemid where s.trno=? and s.qty=0 and s.iss=0 and item.isnoninv=0 limit 1";
         $isitemzeroqty = $this->coreFunctions->opentable($qry, [$trno]);
@@ -5626,6 +5626,16 @@ class othersClass
       case 'TS':
         $path = 'App\Http\Classes\modules\inventory\\' . strtolower($doc);
         $referencemodule = 'TRANSFER REQUEST';
+        if (isset($config['params']['sjprefix'])) {
+          if ($config['params']['sjprefix'] != '') {
+            $pref = $config['params']['sjprefix'];
+          }
+        }
+        if (isset($config['params']['sjseq'])) {
+          if (floatval($config['params']['sjseq']) != 0) {
+            $fixseq = $config['params']['sjseq'];
+          }
+        }
         break;
       case 'STJV': //cdo JV entry
         $path = 'App\Http\Classes\modules\cdo\st';

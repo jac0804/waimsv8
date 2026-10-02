@@ -92,6 +92,7 @@ class deposit_advise
     '' as dclientname,
     '' as divid,
     '' as bank,
+    '' as val,
     '' as divname,
     '' as divrep,
     '' as division,
@@ -124,11 +125,27 @@ class deposit_advise
     $center = $config['params']['center'];
     $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
+    $bank     = $config['params']['dataparams']['bank'];
+    $val     = $config['params']['dataparams']['val'];
 
-    if ($companyid == 66) {
-      return $this->reportDefaultLayout_MD($config);
-    } else {
-      return $this->reportDefaultLayout($config);
+    switch ($companyid){
+      case 62:
+        switch ($val){
+          case '1':
+          case '3':
+            return $this->reportDefaultLayout_onesky_cash($config);
+          break;
+          default:
+            return $this->reportDefaultLayout_onesky($config);
+          break;
+        }
+        break;
+      case 66:
+          return $this->reportDefaultLayout_MD($config);
+        break;
+      default:
+          return $this->reportDefaultLayout($config);
+        break;
     }
   }
 
@@ -141,11 +158,13 @@ class deposit_advise
     $deptid     = $config['params']['dataparams']['deptid'];
     $deptname   = $config['params']['dataparams']['deptname'];
     $bank     = $config['params']['dataparams']['bank'];
+    $val     = $config['params']['dataparams']['val'];
     $batch =  $config['params']['dataparams']['line'];
 
     $filter   = "";
     $filter1   = "";
     $filter2   = "";
+    $filterdef  = " and emp.atm = 1 and emp.bankacct <>''";
 
     if ($client != "") {
       $filter .= " and e.client = '$client'";
@@ -164,8 +183,26 @@ class deposit_advise
         if ($divid != 0) {
             $filter2 .= " and emp.divid = $divid";
     }}
-    if ($bank != "") {
-      $filter2 .= " and emp.bank = '" . $bank  . "'";
+
+    if ($config['params']['companyid'] == 62) {
+      if($bank != ""){
+        switch ($val){
+          case '1':
+            $filter2 .= " and emp.atm = 0";
+          break;
+          case '2':
+            $filter2 .= " and emp.atm = 1 and emp.bankacct <> ''";
+          break;
+          case '3':
+            $filter2 .= " and emp.atm = 1 and emp.bankacct = ''";
+          break;
+        }
+      }
+      $filterdef = "";
+    } else {
+      if ($bank != "") {
+        $filter2 .= " and emp.bank = '" . $bank . "' and emp.atm = 1";
+      }
     }
 
     $filter3 = " and pa.alias ='PPBLE'";
@@ -173,19 +210,335 @@ class deposit_advise
     $emplvl = $this->othersClass->checksecuritylevel($config);
 
     $query = "SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,emp.bankacct,
-  p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
-  p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid
-  FROM paytrancurrent as p 
-  LEFT JOIN employee AS emp ON emp.empid=p.empid
-  left join client as e on e.clientid = emp.empid
-  left join division as d on d.divid = emp.divid
-  left join batch on batch.line=p.batchid
-  left join client as dept on dept.clientid = emp.deptid
-  left join paccount as pa on pa.line=p.acnoid
-  where  p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3 
-  and emp.atm = 1 and emp.bankacct <>''
-  order by e.clientname";
+    p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
+    p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid
+    FROM paytrancurrent as p 
+    LEFT JOIN employee AS emp ON emp.empid=p.empid
+    left join client as e on e.clientid = emp.empid
+    left join division as d on d.divid = emp.divid
+    left join batch on batch.line=p.batchid
+    left join client as dept on dept.clientid = emp.deptid
+    left join paccount as pa on pa.line=p.acnoid
+    where  p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3 
+    $filterdef
+    order by e.clientname";
+    // var_dump($query);
     return $this->coreFunctions->opentable($query);
+  }
+
+  private function displayHeader_onesky_cash($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $batchno  = $config['params']['dataparams']['batch'];
+    $batch  = $config['params']['dataparams']['line'];
+    $bank  = $config['params']['dataparams']['bank'];
+    $val  = $config['params']['dataparams']['val'];
+
+    $str = '';
+    $layoutsize = '1000';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DEPOSIT ADVISE', null, null, false, $border, '', '', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    if ($client == '') {
+      $str .= $this->reporter->col('EMPLOYEE : ALL EMPLOYEE', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('EMPLOYEE : ' . strtoupper($clientname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+    if ($divid == 0) {
+      $str .= $this->reporter->col('COMPANY : ALL COMPANY', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('COMPANY : ' . strtoupper($divname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+    $str .= $this->reporter->endrow();
+
+    $batchstart = $this->coreFunctions->datareader("select date(startdate) as value from batch where line=? ", [$batch]);
+    $batchend = $this->coreFunctions->datareader("select date(enddate) as value from batch where line=? ", [$batch]);
+    $str .= $this->reporter->col('PAYROLL BATCH : ' . strtoupper($batchno), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+
+    if ($deptid == 0) {
+      $str .= $this->reporter->col('DEPARTMENT : ALL DEPARTMENT', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('DEPARTMENT : ' . strtoupper($deptname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+
+    $bankheader = "";
+    if ($bank == '') {
+      $bankheader = "ALL";
+    } else {
+      $bankheader = $bank;
+    }
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DATE COVERED : ' . strtoupper($batchstart) . ' to ' . strtoupper($batchend), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    $str .= $this->reporter->col('BANK TYPE : ' . $bankheader, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    
+    switch ($bank){
+      case 'ATM':
+        break;
+      case 'CASH':
+        break;
+    }
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('C O D E', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('E M P L O Y E E &nbsp N A M E', '250', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('S A L A R Y', '80', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  public function reportDefaultLayout_onesky_cash($config)
+  {
+    $result = $this->reportDefault($config);
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $count = 55;
+    $page = 55;
+    $layoutsize = '1000';
+
+    $str = '';
+    $Tot = 0;
+    $Grandtot = 0;
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->displayHeader_onesky_cash($config);
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '250', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->db, 2), '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $Tot = $Tot + $data->db;
+      $Grandtot = $Grandtot + $Tot;
+      $Tot = 0;
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->page_break();
+        $str .= $this->displayHeader_onesky_cash($config);
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '300px', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($Grandtot, 2), '200px', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+
+    return $str;
+  }
+
+  private function displayHeader_onesky($config)
+  {
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $client     = $config['params']['dataparams']['client'];
+    $clientname = $config['params']['dataparams']['clientname'];
+    $divid     = $config['params']['dataparams']['divid'];
+    $divname     = $config['params']['dataparams']['divname'];
+    $deptid     = $config['params']['dataparams']['deptid'];
+    $deptname   = $config['params']['dataparams']['deptname'];
+    $center     = $config['params']['center'];
+    $username   = $config['params']['user'];
+    $batchno  = $config['params']['dataparams']['batch'];
+    $batch  = $config['params']['dataparams']['line'];
+    $bank  = $config['params']['dataparams']['bank'];
+
+    $str = '';
+    $layoutsize = '1000';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DEPOSIT ADVISE', null, null, false, $border, '', '', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+
+    if ($client == '') {
+      $str .= $this->reporter->col('EMPLOYEE : ALL EMPLOYEE', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('EMPLOYEE : ' . strtoupper($clientname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+    if ($divid == 0) {
+      $str .= $this->reporter->col('COMPANY : ALL COMPANY', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('COMPANY : ' . strtoupper($divname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+    $str .= $this->reporter->endrow();
+
+    $batchstart = $this->coreFunctions->datareader("select date(startdate) as value from batch where line=? ", [$batch]);
+    $batchend = $this->coreFunctions->datareader("select date(enddate) as value from batch where line=? ", [$batch]);
+    $str .= $this->reporter->col('PAYROLL BATCH : ' . strtoupper($batchno), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+
+    if ($deptid == 0) {
+      $str .= $this->reporter->col('DEPARTMENT : ALL DEPARTMENT', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    } else {
+      $str .= $this->reporter->col('DEPARTMENT : ' . strtoupper($deptname), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    }
+
+
+    $bankheader = "";
+    if ($bank == '') {
+      $bankheader = "ALL";
+    } else {
+      $bankheader = $bank;
+    }
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('DATE COVERED : ' . strtoupper($batchstart) . ' to ' . strtoupper($batchend), NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    $str .= $this->reporter->col('BANK TYPE : ' . $bankheader, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    
+    switch ($bank){
+      case 'ATM':
+        break;
+      case 'CASH':
+        break;
+    }
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('C O D E', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('E M P L O Y E E &nbsp N A M E', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('A C C O U N T #', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('S A L A R Y', '80', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  public function reportDefaultLayout_onesky($config)
+  {
+    $result = $this->reportDefault($config);
+
+    $border = '1px solid';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '10';
+    $padding = '';
+    $margin = '';
+
+    $count = 55;
+    $page = 55;
+    $layoutsize = '1000';
+
+    $str = '';
+    $Tot = 0;
+    $Grandtot = 0;
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->displayHeader_onesky($config);
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '150', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bankacct, '100', null, false, $border, '', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->db, 2), '80', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $Tot = $Tot + $data->db;
+
+
+      $str .= $this->reporter->endrow();
+      $Grandtot = $Grandtot + $Tot;
+      $Tot = 0;
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        $str .= $this->displayHeader($config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $page = $page + $count;
+      }
+    }
+
+
+
+    $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '100px', null, false, $border, 'TB', 'C', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', '300px', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($Grandtot, 2), '200px', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
+
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+
+    return $str;
   }
 
   private function displayHeader($config)

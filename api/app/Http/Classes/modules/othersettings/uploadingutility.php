@@ -1932,7 +1932,7 @@ class uploadingutility
 
           $qry = "select " . $fieldnames . $fieldinfonames . " from item " . $leftjoin . " order by barcode ";
         }
-        var_dump($qry);
+        //var_dump($qry);
         $data = $this->coreFunctions->opentable($qry);
         $data = json_decode(json_encode($data), true);
 

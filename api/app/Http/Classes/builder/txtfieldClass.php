@@ -20078,6 +20078,15 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+            'brokerage' => array(
+                'name' => 'brokerage',
+                'type' => 'input',
+                'label' => 'Brokerage',
+                'class' => 'csbrokerage',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
             'arrastre' => array(
                 'name' => 'arrastre',
                 'type' => 'input',

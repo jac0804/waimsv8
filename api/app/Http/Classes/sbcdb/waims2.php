@@ -4523,5 +4523,40 @@ class waims2
     $this->coreFunctions->execqrynolog("ALTER TABLE glstock CHANGE freight freight decimal(19,6) NOT NULL DEFAULT '0.000000'");
 
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ['charges'], "decimal(19,6) NOT NULL DEFAULT '0'", 1);
+
+    $qry = "CREATE TABLE  `dahead` (
+      `trno` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `doc` char(2) NOT NULL DEFAULT '',
+      `docno` char(20) NOT NULL,
+      `type` varchar(10) NOT NULL DEFAULT '',
+      `rem` varchar(500) not null default '',
+      `dateid` datetime DEFAULT NULL,
+      `whid` int(11) NOT NULL DEFAULT '0',
+      `createdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      `createby` varchar(100) NOT NULL,
+      `editby` varchar(100) NOT NULL,
+      `editdate` datetime DEFAULT NULL,
+      `viewby` varchar(100) not null default '',
+      `viewdate` datetime DEFAULT NULL,
+      `lockuser` varchar(50) NOT NULL DEFAULT '',
+      `lockdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`),
+      KEY `Index_dahead` (`docno`,`dateid`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+    $this->coreFunctions->sbccreatetable("dahead", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0); 
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["whid"], "int(11) NOT NULL DEFAULT '0'", 0); 
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["amount", "restday", "night", "holiday", "adjustmnt", "thirteenmos", "admin", "canteen", "cacanteen", "cahahsy", "charge"], "decimal(18,4) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["pcswork"], "decimal(18,2) NOT NULL DEFAULT '0'", 0);
+  
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["trno"], "bigint(20) unsigned NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["editdate", "encodeddate"], "datetime DEFAULT NULL", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["editby", "encodedby"], "varchar(20) NOT NULL DEFAULT ''", 1);
+    $this->coreFunctions->execqry("ALTER TABLE piecetrans DROP PRIMARY KEY, ADD PRIMARY KEY (`line`, `trno`)", 'drop');
+
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ['brokerage'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["dahead"], ["lockuser"], "varchar(50) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["dahead"], ["lockdate"], "datetime DEFAULT NULL", 0);
   }
 }

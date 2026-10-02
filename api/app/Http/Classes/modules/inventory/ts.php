@@ -174,14 +174,29 @@ class ts
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dwhto.label', 'Destination');
 
-
-
         $fields = ['picktr'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'picktr.lookupclass', 'pendingtrsummaryshortcut');
-        data_set($col2, 'picktr.addedparams', ['whto', 'whtoname']);
+        data_set($col2, 'picktr.addedparams', ['whto', 'whtoname', 'docno', 'selectprefix']);
 
-        return ['status' => true, 'data' => [], 'txtfield' => ['col1' => $col1, 'col2' => $col2]];
+        $fields = [['selectprefix', 'docno']];
+        $col3 = $this->fieldClass->create($fields);
+        data_set($col3, 'docno.type', 'input');
+        data_set($col3, 'docno.label', 'Seq. No.');
+
+
+        $prefix = $this->coreFunctions->getfieldvalue('profile', 'pvalue', 'doc=? and psection=?', ['SED', 'TS']);
+        if ($prefix != '') {
+          $prefixes = explode(",", $prefix);
+          $list = array();
+          foreach ($prefixes as $key) {
+            array_push($list, ['label' => $key, 'value' => $key]);
+          }
+          data_set($col3, 'selectprefix.options', $list);
+        }
+        $data = $this->coreFunctions->opentable("select '' as docno, '' as selectprefix");
+
+        return ['status' => true, 'data' =>  $data[0], 'txtfield' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3]];
         break;
 
       default:
@@ -226,45 +241,48 @@ class ts
         break;
     }
 
-    if (isset($config['params']['doclistingparam'])) {
-      $test = $config['params']['doclistingparam'];
-      if (isset($test['selectprefix']) != "") {
-        switch ($test['selectprefix']) {
-          case 'Item Code':
-            $addparams = " and (item.partno like '%" . $test['docno'] . "%')";
-            break;
-          case 'Item Name':
-            $addparams = " and (item.itemname like '%" . $test['docno'] . "%' )";
-            break;
-          case 'Model':
-            $addparams = " and (model.model_name like '%" . $test['docno'] . "%' )";
-            break;
-          case 'Brand':
-            $addparams = " and (brand.brand_desc like '%" . $test['docno'] . "%' )";
-            break;
-          case 'Item Group':
-            $addparams = " and (p.name like '%" . $test['docno'] . "%')";
-            break;
-        }
+    $companyid = $config['params']['companyid'];
 
-        if (isset($test)) {
-          $join = " left join " . $this->stock . " as stock on head.trno = stock.trno 
+    if ($companyid != 68) {
+      if (isset($config['params']['doclistingparam'])) {
+        $test = $config['params']['doclistingparam'];
+        if (isset($test['selectprefix']) != "") {
+          switch ($test['selectprefix']) {
+            case 'Item Code':
+              $addparams = " and (item.partno like '%" . $test['docno'] . "%')";
+              break;
+            case 'Item Name':
+              $addparams = " and (item.itemname like '%" . $test['docno'] . "%' )";
+              break;
+            case 'Model':
+              $addparams = " and (model.model_name like '%" . $test['docno'] . "%' )";
+              break;
+            case 'Brand':
+              $addparams = " and (brand.brand_desc like '%" . $test['docno'] . "%' )";
+              break;
+            case 'Item Group':
+              $addparams = " and (p.name like '%" . $test['docno'] . "%')";
+              break;
+          }
+
+          if (isset($test)) {
+            $join = " left join " . $this->stock . " as stock on head.trno = stock.trno 
           left join item on item.itemid = stock.itemid 
           left join model_masterfile as model on model.model_id = item.model 
           left join frontend_ebrands as brand on brand.brandid = item.brand 
           left join projectmasterfile as p on p.line = item.projectid ";
 
-          $hjoin = " left join " . $this->hstock . " as stock on head.trno = stock.trno 
+            $hjoin = " left join " . $this->hstock . " as stock on head.trno = stock.trno 
           left join item on item.itemid = stock.itemid 
           left join model_masterfile as model on model.model_id = item.model 
           left join frontend_ebrands as brand on brand.brandid = item.brand 
           left join projectmasterfile as p on p.line = item.projectid ";
-          $limit = '';
+            $limit = '';
+          }
         }
       }
     }
 
-    $companyid = $config['params']['companyid'];
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd

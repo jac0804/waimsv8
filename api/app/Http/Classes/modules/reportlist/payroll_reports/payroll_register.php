@@ -475,7 +475,6 @@ class payroll_register
           left join jobthead as jt on jt.line = emp.jobid
           where p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3
           order by sectname, emplast";
-          // var_dump($query);
 
     return $this->coreFunctions->opentable($query);
   }
@@ -3159,6 +3158,8 @@ class payroll_register
     $empbasicpay = $empdaily = 0;
     $countemp = 0;
 
+    $totalCash = $totalAtm = $totalCanteenMeals = $totalPayroll = 0;
+
     $qry = "select alias, qty from paccount where alias in 
             ('LEG', 'LEGALOT','SPECIALOT','SP','OTREG','NDIFFS','RESTDAY','OTRES','RESTDAYSAT','OTSAT')";
     $data = $this->coreFunctions->opentable($qry);
@@ -3403,15 +3404,14 @@ class payroll_register
         $restdayRate = ($perhrs * $restdayMultiplier);
         $otresRate = ($perhrs * $otresMultiplier);
 
-        $otLegHolidayPay = ($qtylegal * $otLegHolidayRate);
-        $spHolidayPay = ($qtylegal * $spHolidayRate);
-        $otSpHolidayPay = ($qtylegal * $otSpHolidayRate);
+        // PT36
+        
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col($data->client, 80, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('&nbsp&nbsp' . $data->sectname, 130, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('&nbsp&nbsp' . $clientname, 200, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('&nbsp&nbsp' . $data->jobtitle, 170, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col( $data->sectname, 130, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '0 0 0 10px');
+        $str .= $this->reporter->col( $clientname, 200, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '0 0 0 10px');
+        $str .= $this->reporter->col( $data->jobtitle, 170, '', false, $border, 'LB', 'L', $font, $font_size, '', '', '0 0 0 10px');
         $str .= $this->reporter->col($data->atm, 80, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col($data->bankacct, 100, '', false, $border, 'LB', 'C', $font, $font_size, '', '', '');
         $str .= $this->reporter->col(number_format($empbasicpay, 2) . '&nbsp&nbsp', 60, '', false, $border, 'LB', 'R', $font, $font_size, '', '', '');
@@ -3490,8 +3490,11 @@ class payroll_register
 
         $str .= $this->reporter->endrow();
 
-
-
+        if ($data->atm == 'CASH') {
+            $totalCash += $netpay;
+        } elseif ($data->atm == 'ATM') {
+            $totalAtm += $netpay;
+        }
 
         $gtotnetpay = $gtotnetpay + $netpay;
         $gtotearn = $gtotearn + $totalearn;
@@ -3515,6 +3518,7 @@ class payroll_register
         $gtotherdeduction += $otherdeduction;
 
         // grandtotals
+        $totalCanteenMeals += $mealdeduction;
         $gmealdeduction += $mealdeduction;
         $totalbasicpay += $basicpay;
         $ttlmealdeduction += $mealdeduction;
@@ -3645,6 +3649,8 @@ class payroll_register
         // $str .= $this->reporter->endtable();
       // }
     }
+    $totalPayroll = $totalCash + $totalAtm + $totalCanteenMeals;
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', 80, '12', false, $border, 'LB', 'R', $font, $font_size, 'B', '', '');
@@ -3781,13 +3787,13 @@ class payroll_register
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    $str .= $this->one_sky_footer_org($config, $layoutsize, $result, $countemp);
+    $str .= $this->one_sky_footer_org($config, $layoutsize, $result, $countemp,$totalCash,$totalAtm,$totalCanteenMeals,$totalPayroll);
 
     $str .= $this->reporter->endreport();
     return $str;
   }
 
-  public function one_sky_footer_org($config, $layoutsize, $data, $countemp = 0)
+  public function one_sky_footer_org($config, $layoutsize, $data, $countemp = 0, $totalCash = 0, $totalAtm = 0, $totalCanteenMeals = 0, $totalPayroll = 0)
   {
     $center = $config['params']['center'];
     $batch = $config['params']['dataparams']['line'];
@@ -3860,11 +3866,11 @@ class payroll_register
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('A. OFFICE', 60, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL PAYROLL', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -3922,6 +3928,53 @@ class payroll_register
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Cash', 60, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalCash, 2), 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Resigned Employees: ', 320, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add 0917
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
@@ -3929,12 +3982,208 @@ class payroll_register
     $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
 
     $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Cash(Canteen Meals)', 80, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 40, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalCanteenMeals, 2), 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Quitclaim: ', 320, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add 0917
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Cash(Quitclaim)', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('-', 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalPayroll, 2), 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Total: ' . $grandtotal, 320, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add 0917
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('Check', 60, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('-', 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 320, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 100, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', ''); // new add 0917
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
+
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('ATM', 60, null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalAtm, 2), 60, null, false, $border, '', 'R', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 60, null, false, $border, '', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 10, null, false, $border, '', '', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Total: ' . $grandtotal, 110, '20', false, $border, '', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('', 110, '20', false, $border, '', 'L', $font, $font_size, 'B', '', '');
 
     $str .= $this->reporter->col('', 100, '20', false, $border, '', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', 140, '20', false, $border, '', 'C', $font, $font_size, 'B', '', '');

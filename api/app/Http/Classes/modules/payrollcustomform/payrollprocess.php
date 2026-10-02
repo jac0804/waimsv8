@@ -282,6 +282,8 @@ class payrollprocess
     $start =  date('Y-m-d', strtotime($start));
     $end =  date('Y-m-d', strtotime($end));
 
+    $this->logger->sbcmasterlog2(0, $config, 'Upload txt file from date ' . $start . ' to ' . $end, 'payroll_log', 1);
+
     switch ($config['params']['action']) {
 
       case 'readfile':
@@ -972,7 +974,7 @@ class payrollprocess
       $addonfilter = '';
 
       switch ($companyid) {
-        case 58; //cdo
+        case 58: //cdo
           if ($empdivid == 0) {
             return ['status' => false, 'msg' => 'Please select valid Company'];
           }

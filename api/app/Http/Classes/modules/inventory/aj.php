@@ -1423,16 +1423,20 @@ class aj
     ini_set('max_execution_time', 0);
     $trno = $config['params']['trno'];
 
+    $bdecimal  = $this->companysetup->getdecimal('price', $config['params']);
+    $hdecimal = ($config['params']['companyid'] == 71) ? $bdecimal : 6;
+    $hdecimal2 = ($config['params']['companyid'] == 71) ? $bdecimal : 4;
+
     $data = $this->coreFunctions->opentable("select docno, doc, trno, line, iss, cost, actualcost,actualcost * iss
       from (
       select h.docno, h.doc, s.trno, s.line, s.iss, s.cost, 
-      (  select round(ifnull(sum(rs.cost * c.served) / stock.iss,0), 6) from glstock as stock left join costing as c on c.trno=stock.trno and c.line=stock.line
+      (  select round(ifnull(sum(rs.cost * c.served) / stock.iss,0), $hdecimal) from glstock as stock left join costing as c on c.trno=stock.trno and c.line=stock.line
           left join rrstatus as rs on rs.trno=c.refx and rs.line=c.linex 
           where stock.trno=s.trno and stock.line=s.line and stock.trno=" . $trno . " 
           group by stock.trno,stock.line,stock.iss) as actualcost
       from glstock as s left join glhead as h on h.trno=s.trno
       where s.iss<>0 and s.trno=" . $trno . "
-      ) as x where round(cost,4)<>round(actualcost,4)");
+      ) as x where round(cost,$hdecimal2)<>round(actualcost,$hdecimal2)");
 
     if (!empty($data)) {
       foreach ($data as $key => $value) {
@@ -1960,6 +1964,8 @@ class aj
     $defuominout = $this->companysetup->getisdefaultuominout($config['params']);
     $data = [];
     $companyid = $config['params']['companyid'];
+    $bdecimal  = $this->companysetup->getdecimal('price', $config['params']);
+    $hdecimal1 = ($companyid == 71) ? $bdecimal : 2;
 
     $filter = '';
     switch ($config['params']['companyid']) {
@@ -2031,7 +2037,7 @@ class aj
           order by dateid desc limit 5) as tbl ";
         $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $trno, $center, $barcode, $trno]);
       } else {
-        $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from(select head.docno,head.dateid,
+        $qry = "select docno,left(dateid,10) as dateid,round(amt,$hdecimal1) as amt,'' as disc,uom from(select head.docno,head.dateid,
         (stock.rrcost*if(head.forex=0,1,head.forex)) as amt,stock.uom,stock.disc
         from lahead as head
         left join lastock as stock on stock.trno = head.trno
@@ -2059,7 +2065,7 @@ class aj
 
 
     if (empty($data)) { // if walang data from filter ng rrcost latest transaction, requery sa cost na field 
-      $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,'' as disc,uom from(select head.docno,head.dateid,
+      $qry = "select docno,left(dateid,10) as dateid,round(amt,$hdecimal1) as amt,'' as disc,uom from(select head.docno,head.dateid,
           stock.cost as amt,item.uom,stock.disc
           from lahead as head
           left join lastock as stock on stock.trno = head.trno

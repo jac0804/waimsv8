@@ -748,6 +748,17 @@ class mobileappv2Class
             return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
+      case 'clearandroid': //clear all transaction isdownloaded
+        try {
+        
+          $dateid = $params['dateid'];
+          $this->coreFunctions->execqry("delete from androidstock where trno in (select trno from androidhead where isdownloaded = 1)");
+          $this->coreFunctions->execqry("delete from androidhead where isdownloaded = 1");
+           return json_encode(['status' => true, 'dateid' => $dateid ]);
+         } catch (\Exception $e) {
+            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        }
+        break;
     }
   }
 

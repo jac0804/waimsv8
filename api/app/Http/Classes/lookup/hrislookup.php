@@ -4125,11 +4125,16 @@ class hrislookup
   public function lookupbanktype($config)
   {
     $doc = $config['params']['doc'];
+    $companyid = $config['params']['companyid'];
     $plotting = array();
 
     $title = 'List of Bank';
 
-    $plotting = array('bank' => 'bank');
+    if ($companyid == 62){ // onesky
+      $plotting = array('bank' => 'bank', 'val' => 'val');
+    }else {
+      $plotting = array('bank' => 'bank');
+    }
 
     $plottype = 'plothead';
 
@@ -4148,9 +4153,15 @@ class hrislookup
       array('name' => 'bank', 'label' => 'Bank', 'align' => 'left', 'field' => 'bank', 'sortable' => true, 'style' => 'font-size:16px;')
     );
 
-    $qry = "select 'CASH' as  bank union all
+    if ($companyid == 62) { // onesky
+        $qry = "select 'CASH' as  bank, '1' as val union all
+              select 'ATM' as  bank, '2' as val union all
+              select 'ATM - no Bank Account' as  bank, '3' as val";
+    }else {
+      $qry = "select 'CASH' as  bank union all
               select 'METROBANK' as  bank union all 
               select 'BPI' as bank";
+    }
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

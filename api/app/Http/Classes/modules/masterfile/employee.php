@@ -256,7 +256,7 @@ class employee
 
       data_set($col2, 'createdate.label', 'Encoded');
       data_set($col2, 'createdate.class', 'cscreatedate');
-      data_set($col2, 'createdate.readonly', false);
+      data_set($col2, 'createdate.readonly', true);
 
       data_set($col2, 'rem.label', 'Notes');
       data_set($col2, 'rem.type', 'ctextarea');
@@ -577,6 +577,9 @@ class employee
     $data[0]['hired'] = null;
     $data[0]['resigned'] = null;
     $data[0]['notes'] = '';
+    $data[0]['createdate'] = null;
+    $data[0]['agencyname'] = '';
+    $data[0]['agencyfee'] = 0;
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }

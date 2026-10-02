@@ -718,6 +718,10 @@ class rr
 
     $col3 = $this->fieldClass->create($fields);
 
+    if ($companyid == 71){ // buenatech
+        data_set($col3, 'yourref.label', 'INVOICE / DR #');
+        data_set($col3, 'ourref.label', 'PO#');
+    }
     if ($this->companysetup->getisproject($config['params'])) {
       $viewall = $this->othersClass->checkAccess($config['params']['user'], 2232);
 
@@ -1065,47 +1069,92 @@ class rr
 
   public function updatehead($config, $isupdate)
   {
-    $head = $config['params']['head'];
-    $companyid = $config['params']['companyid'];
-    $dateTables = ['cntnuminfo', 'lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    $data = [];
-    $dataother = [];
-    if ($isupdate) {
-      unset($this->fields[1]);
-      unset($head['docno']);
-    }
-    foreach ($this->fields as $key) {
-      if (array_key_exists($key, $head)) {
-        $data[$key] = $head[$key];
-        if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-        } //end if
+      $head = $config['params']['head'];
+      $companyid = $config['params']['companyid'];
+      $dateTables = ['cntnuminfo', 'lahead'];
+      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+      $data = [];
+      $dataother = [];
+      if ($isupdate) {
+          unset($this->fields[1]);
+          unset($head['docno']);
       }
-    }
+      foreach ($this->fields as $key) {
+          if (array_key_exists($key, $head)) {
+              $data[$key] = $head[$key];
+              if (!in_array($key, $this->except)) {
+                  $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+              } //end if
+          }
+      }
 
-    if ($data['terms'] == '') {
-      $data['due'] =  $data['dateid'];
-    } else {
-      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
-    }
+      if ($data['terms'] == '') {
+          $data['due'] =  $data['dateid'];
+      } else {
+          $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
+      }
 
-    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-    $data['editby'] = $config['params']['user'];
-    if ($data['invoicedate'] == null) {
-      $data['invoicedate'] = '';
-    }
-    if ($isupdate) {
-      $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-      $this->recomputecost($head, $config);
-    } else {
-      $data['doc'] = $config['params']['doc'];
-      $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-      $data['createby'] = $config['params']['user'];
-      $this->coreFunctions->sbcinsert($this->head, $data);
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
+      if ($data['invoicedate'] == null) {
+          $data['invoicedate'] = '';
+      }
+      if ($isupdate) {
+          $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
 
-      $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
-    }
+              $row = $this->coreFunctions->opentable(
+                  "select forex, ied, bankcharges, brokerfee, brokerage, interest, arrastre
+                  from " . $this->head . " where trno = " . $head['trno'] . " limit 1"
+              );
+
+              if ($row) {
+                  $r           = $row[0];
+                  $forex       = floatval($r->forex);
+                  $boc         = floatval($r->ied);
+                  $bankcharges = floatval($r->bankcharges);
+                  $brokerfee   = floatval($r->brokerfee);
+                  $brokerage   = floatval($r->brokerage);
+                  $vat         = floatval($r->interest);
+                  $arrastre    = floatval($r->arrastre);
+
+                  $denominator  = $arrastre * $forex;
+                  $percentsales = $denominator != 0 ? ((($boc + $bankcharges + $brokerfee) - $vat) / $denominator) : 0;
+
+                  $charges = $this->othersClass->sanitizekeyfieldFast('charges', $percentsales, $lookups);
+
+                  $this->coreFunctions->execqry(
+                      "update " . $this->head . " set charges = '" . $charges . "' where trno = " . $head['trno'],
+                      'update'
+                  );
+              }
+
+              // Re-read $head so recomputecost uses the new forex + new charges
+              $fresh = $this->coreFunctions->opentable(
+                  "select * from " . $this->head . " where trno = " . $head['trno'] . " limit 1"
+              );
+              if ($fresh) {
+                  $head = (array) $fresh[0];
+              }
+
+          $this->recomputecost($head, $config);
+
+          return [
+              'status' => true,
+              'msg' => 'Successfully saved.',
+              'reloadhead' => true,
+              'reloaddata' => true,
+              'reloadcustomform' => true,
+              'customform' => 'viewothercharges',
+              'trno' => $head['trno']
+          ];
+      } else {
+          $data['doc'] = $config['params']['doc'];
+          $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+          $data['createby'] = $config['params']['user'];
+          $this->coreFunctions->sbcinsert($this->head, $data);
+
+          $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
+      }
   } // end function
 
   public function headqry($config){
@@ -2282,11 +2331,11 @@ class rr
 
     // basePrice is per-unit price (already after discount)
     $unitPrice = $basePrice * $forex;
-
     $importCost = $unitPrice * $percentage;
 
-    // landed cost per unit = unit price + import cost
-    $landedCost = $unitPrice + $importCost;
+    // landed cost per item = (unit price + import cost) / qty per pcs
+    $totalUnitCost = $unitPrice + $importCost;
+    $landedCost = $totalUnitCost / $qty;
     $ext = $landedCost * $qty;
 
     return [
@@ -2498,13 +2547,15 @@ class rr
       $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor, $vat, 'P', $kgs);
     }
 
-    $hamt = number_format((($computedata['amt'] * $forex) + $freight), 6, '.', '');
+    $bdecimal = $this->companysetup->getdecimal('price', $config['params']);
 
+    $hamt = number_format((($computedata['amt'] * $forex) + $freight), $bdecimal, '.', '');
     $headerforex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$trno]);
     $headerpercentage = $this->coreFunctions->getfieldvalue($this->head, 'charges', 'trno=?', [$trno]);
-    $landed = $this->computeBuenatechLandedCost($computedata['amt'], $headerforex, $headerpercentage, $qty);
-    $hamt = number_format($landed['landed_cost'], 6, '.', '');
-    $ext = number_format($landed['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
+    $landed = $this->computeBuenatechLandedCost($amt, $headerforex, $headerpercentage, $qty);
+    $hamt = number_format($landed['landed_cost'], $bdecimal, '.', '');
+    // $ext = number_format($landed['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
+    $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
 
     $data = [
       'trno' => $trno,
@@ -2684,8 +2735,9 @@ class rr
     $client = $config['params']['client'];
     $center = $config['params']['center'];
     $trno = $config['params']['trno'];
+    $bdecimal = $this->companysetup->getdecimal('price', $config['params']);
 
-    $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,disc,uom from(select head.docno,head.dateid,
+    $qry = "select docno,left(dateid,10) as dateid,round(amt,$bdecimal) as amt,disc,uom from(select head.docno,head.dateid,
         case " . $forex . " when 1 then stock." . $this->damt . "*head.forex else stock." . $this->damt . " end as amt,stock.uom,stock.disc
         from lahead as head
         left join lastock as stock on stock.trno = head.trno
@@ -2757,6 +2809,7 @@ class rr
           $config['params']['trno'] = $trno;
           $config['params']['data']['disc'] = $data[$key2]->disc;
           $config['params']['data']['qty'] = $data[$key2]->rrqty;
+          // $config['params']['data']['ourref'] = $data[$key2]->docno;
 
           $config['params']['data']['wh'] = $wh;
 
@@ -3173,16 +3226,17 @@ class rr
     $cur = $params['cur'];
     $invamt = $params['cost'];
 
-    $headertrno = $config['params']['trno'];
-    $headerforex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$headertrno]);
-    $headerpercentage = $this->coreFunctions->getfieldvalue($this->head, 'charges', 'trno=?', [$headertrno]);
-    $rrcost = isset($params['rrcost']) ? $params['rrcost'] : $params['cost'];
-    $qty = isset($params['qty']) ? $params['qty'] : 1;
-    $landed = $this->computeBuenatechLandedCost($rrcost, $headerforex, $headerpercentage, $qty);
-    $invamt = $landed['ext'];
-    $params['cost'] = $landed['ext'];
-    $params['ext'] = $landed['ext'];
-    $ext = $landed['ext'];
+    // $headertrno = $config['params']['trno'];
+    // $headerforex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$headertrno]);
+    // $headerpercentage = $this->coreFunctions->getfieldvalue($this->head, 'charges', 'trno=?', [$headertrno]);
+    // $rrcost = isset($params['rrcost']) ? $params['rrcost'] : $params['cost'];
+    // $qty = isset($params['qty']) ? $params['qty'] : 1;
+    // $landed = $this->computeBuenatechLandedCost($rrcost, $headerforex, $headerpercentage, $qty);
+    // $invamt = $landed['ext'];
+    // $params['cost'] = $landed['ext'];
+    // $params['ext'] = $landed['ext'];
+    // $ext = number_format($params['ext'],$this->companysetup->getdecimal('currency', $config['params']),'.','');
+    // $ext = $landed['ext'];
 
     $ewt = isset($params['ewt']) ? $params['ewt'] : 0;
     $ext = $params['ext'];

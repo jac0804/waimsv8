@@ -862,6 +862,7 @@ class setreportlist
     $rep_agent_commission = "";
 
     $rep_analyze_agent_sales_date_range = "";
+    $rep_analyze_agent_sales_per_area = "";
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -886,7 +887,8 @@ class setreportlist
               $rep_agent_commission = "('','\\907','','','',0,1,0,'Agent Commission Report','\\90709',6036,'0'," . $params['levelid'] . ")";
               break;
             case 72: //hahsy
-              $rep_analyze_agent_sales_date_range = "('','\\907','','','',0,1,0,'Analyze Agent Sales Date Range','\\90710',6054,'0'," . $params['levelid'] . ")";
+              $rep_analyze_agent_sales_date_range = "('','\\907','','','',0,1,0,'Analyze Agent Sales Date Range Report','\\90710',6054,'0'," . $params['levelid'] . ")";
+              $rep_analyze_agent_sales_per_area = "('','\\907','','','',0,1,0,'Analyze Agent Sales Per Area Report','\\90711',6056,'0'," . $params['levelid'] . ")";
               break;
             default:
               $rep_sales_per_agent = "('','\\907','','','',0,1,0,'Sales Per Agent','\\90704',3806,'0'," . $params['levelid'] . ")";
@@ -1242,6 +1244,7 @@ class setreportlist
     $rep_apsetupreport = "";
     $rep_apvoucherreport = "";
     $rep_cashcheckvoucherreport = "";
+    $rep_payable_summary = "";
 
 
     $subparent_receivables = "";
@@ -1449,6 +1452,10 @@ class setreportlist
           if ($params['companyid'] == 10 || $params['companyid'] == 12) { //afti, afti usd
             $rep_encashmentreport = "('','\\90904','','\\\\909','',0,1,0,'Encashment Report','\\9090407',3560,'0'," . $params['levelid'] . ")";
             $rep_onlineencashmentreport = "('','\\90904','','\\\\909','',0,1,0,'Online Encashment Report','\\9090408',3582,'0'," . $params['levelid'] . ")";
+          }
+
+          if($params['companyid']  == 72) { //hahsy
+            $rep_payable_summary = "('','\\90904','','\\\\909','',0,1,0,'Payable Summary Report','\\9090409',3582,'0'," . $params['levelid'] . ")";
           }
 
           $subparent_receivables = "('','\\909','','','',0,0,0,'Receivables','\\90905',3075,'0'," . $params['levelid'] . ")";
@@ -1777,7 +1784,7 @@ class setreportlist
           case 72: //Hahsy
             $rep_item_by_category_comparison = "('','\\904','','','',0,1,0,'Item by Category Comparison','\\90458', 6038,'0'," . $params['levelid'] . ")";
             $rep_item_summary_report = "('','\\904','','','',0,1,0,'Item Summary Report','\\90459',6039,'0'," . $params['levelid'] . ")";
-            $rep_item_summary_comparison = "('','\\904','','','',0,1,0,'Item Summary Report','\\90460',6055,'0'," . $params['levelid'] . ")";
+            $rep_item_summary_comparison = "('','\\904','','','',0,1,0,'Item Summary Comparison','\\90460',6055,'0'," . $params['levelid'] . ")";
             break;
         }
 
@@ -2127,7 +2134,9 @@ class setreportlist
         $rep_earning_deduction_list_report = "('','\\B01','','','',0,1,0,'Earning and Deduction List Report','\\B0112',4035,'0'," . $params['levelid'] . ")";
         $rep_employee_balances_report = "('','\\B01','','','',0,1,0,'Employee Balances Report','\\B0113',4036,'0'," . $params['levelid'] . ")";
 
-        $rep_signature_sheet = "('','\\B01','','','',0,1,0,'Signature Sheet','\\B0110',4006,'0'," . $params['levelid'] . ")";
+        if ($params['companyid'] != 62) { // onesky
+          $rep_signature_sheet = "('','\\B01','','','',0,1,0,'Signature Sheet','\\B0110',4006,'0'," . $params['levelid'] . ")";
+        }
         $rep_earning_and_deduction_transaction_history = "('','\\B01','','','',0,1,0,'Earning and Deduction Transaction History','\\B0111',4007,'0'," . $params['levelid'] . ")";
 
         $subparent_bir_tax_report = "('','\\9','','','',0,0,0,'Bir Tax Reports','\\B02',3418,'0'," . $params['levelid'] . ")";
@@ -2162,6 +2171,9 @@ class setreportlist
         $rep_remittance_report = "('','\\B06','','','',0,1,0,'SSS PHIP HDMF Remittance Report','\\B06013',5595,'0'," . $params['levelid'] . ")";
         $rep_loan_reports = "('','\\B06','','','',0,1,0,'Loan Reports','\\B06014',5596,'0'," . $params['levelid'] . ")";
         $rep_loan_summary_report = "('','\\B06','','','',0,1,0,'Loan Summary Report','\\B06015',5598,'0'," . $params['levelid'] . ")";
+        if ($params['companyid'] == 62){ // onesky
+          $rep_signature_sheet = "('','\\B06','','','',0,1,0,'Signature Sheet','\\B06016',4006,'0'," . $params['levelid'] . ")";
+        }
 
         // TIME AND ATTENDANCE REPORT
         $subparent_time_attendance_report = "('','\\9','','','',0,0,0,'Time and Attendance Report','\\B07',3431,'0'," . $params['levelid'] . ")";
@@ -2911,6 +2923,7 @@ class setreportlist
           $rep_target_vs_actual_sales_report,
           $rep_agent_commission,
           $rep_analyze_agent_sales_date_range,
+          $rep_analyze_agent_sales_per_area,
 
           // OTHER REPORTS
           $parent_otherreports,
@@ -2981,11 +2994,13 @@ class setreportlist
           $rep_servicesalesorderreport,
           $rep_taskerrandreport,
           $rep_request_order_report,
+
           $subparent_inventory,
           $rep_inventorysetupreport,
           $rep_physicalcountreport,
           $rep_transferslipreport,
           $rep_inventoryadjustmentreport,
+
           $subparent_production,
           $rep_prod_joborderreport,
           $rep_prodinput_report,
@@ -2994,6 +3009,7 @@ class setreportlist
           $rep_material_issuance_report_list,
           $rep_supplies_issuance_report_list,
           $rep_finish_good_report_list,
+
           $subparent_payables,
           $rep_petty_cash,
           $rep_petty_cash_request,
@@ -3002,6 +3018,8 @@ class setreportlist
           $rep_cashcheckvoucherreport,
           $rep_encashmentreport,
           $rep_onlineencashmentreport,
+          $rep_payable_summary,
+
           $subparent_receivables,
           $rep_arsetupreport,
           $rep_receivedpaymentreport,
@@ -3019,6 +3037,7 @@ class setreportlist
           $rep_treceivedchecks,
           $rep_dx_depositslip,
           $rep_call_monitoring,
+
 
           //CDO financing
           $subparent_cashier,

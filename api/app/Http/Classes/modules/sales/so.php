@@ -3293,7 +3293,8 @@ class so
             $data = $this->coreFunctions->opentable($qry, [$barcode, $center, $barcode, $client, $center, $barcode, $client]);
             break;
           case 71: //buenatech - exclude items tagged Special Price from the "latest given price" 
-            $qry = "select docno,left(dateid,10) as dateid,round(amt,2) as amt,round(amt,2) as defamt,disc,uom from(select head.docno,head.dateid,
+            $bdecimal = $this->companysetup->getdecimal('price', $config['params']);
+            $qry = "select docno,left(dateid,10) as dateid,round(amt,$bdecimal) as amt,round(amt,$bdecimal) as defamt,disc,uom from(select head.docno,head.dateid,
               stock.isamt as amt,stock.uom,stock.disc
               from lahead as head
               left join lastock as stock on stock.trno = head.trno
@@ -3410,7 +3411,9 @@ class so
         if ($cur == '$') {
           $data[0]->amt = $usdprice;
         } else {
-          $data[0]->amt = round($usdprice * $dollarrate, 2);
+          $bdecimal = $this->companysetup->getdecimal('price', $config['params']);
+          $hdecimal = ($config['params']['companyid'] == 71) ? $bdecimal : 2; // buenatech
+          $data[0]->amt = round($usdprice * $dollarrate, $hdecimal);
         }
       }
 

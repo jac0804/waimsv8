@@ -62,7 +62,7 @@ class viewothercharges
         $isposted = $this->othersClass->isposted2($trno, "cntnum");
         $fields = ['ied', 'bankcharges', 'interest', 'brokerfee', 'arrastre'];
         if ($companyid == 71) {
-            $fields = ['ied', 'bankcharges', 'brokerfee', 'interest', 'arrastre', 'percentsales'];
+            $fields = ['ied', 'bankcharges', 'brokerfee', 'brokerage', 'interest', 'arrastre', 'percentsales'];
         }
         $col1 = $this->fieldClass->create($fields);
         if ($isposted) {
@@ -113,8 +113,8 @@ class viewothercharges
         $qryselect = '';
         $extraFields = '';
         if ($companyid == 71) {
-            $qryselect = ', format(charges, 6) as percentsales, format(overdue, 2) as totalcharges, forex';
-            $extraFields = ', charges, overdue, forex';
+            $qryselect = ', format(charges, 6) as percentsales, format(overdue, 2) as totalcharges, forex, format(brokerage, 2) as brokerage';
+            $extraFields = ', charges, overdue, forex, brokerage';
         }
 
         return $this->coreFunctions->opentable("select trno, format(ied, 2) as ied, format(bankcharges, 2) as bankcharges, format(interest, 2) as interest, format(brokerfee, 2) as brokerfee, format(arrastre, 2) as arrastre".$qryselect." from (
@@ -158,11 +158,11 @@ class viewothercharges
         $isposted = $this->othersClass->isposted2($dataparams['trno'], "cntnum");
         if ($isposted) return ['status' => false, 'msg' => 'Transaction already posted.'];
 
-        $doc = $config['params']['doc'] ?? 'OTHERCHARGES'; // confirm actual doc value used for this form
+        $doc = isset($config['params']['doc']) ? $config['params']['doc'] : 'OTHERCHARGES'; // confirm actual doc value used for this form
         $dateTables = [];
         $lookups = $this->othersClass->buildSanitizeLookups($doc, $companyid, [], false, $dateTables);
 
-        foreach (['ied', 'bankcharges', 'brokerfee', 'arrastre', 'overdue', 'charges'] as $key) {
+        foreach (['ied', 'bankcharges', 'brokerfee', 'arrastre', 'brokerage', 'overdue', 'charges'] as $key) {
             $lookups['number'][$key] = true;
         }
 
@@ -171,9 +171,11 @@ class viewothercharges
         $interest = $this->othersClass->sanitizekeyfieldFast('interest', $dataparams['interest'], $lookups);
         $brokerfee = $this->othersClass->sanitizekeyfieldFast('brokerfee', $dataparams['brokerfee'], $lookups);
         $arrastre = $this->othersClass->sanitizekeyfieldFast('arrastre', $dataparams['arrastre'], $lookups);
+        $brokerage = $this->othersClass->sanitizekeyfieldFast('brokerage', $dataparams['brokerage'], $lookups);
         $overdue = $this->othersClass->sanitizekeyfieldFast('overdue', $dataparams['totalcharges'], $lookups);
 
-        $qry = "update ".$this->head." set ied='".$ied."', bankcharges='".$bankcharges."', interest='".$interest."', brokerfee='".$brokerfee."', arrastre='".$arrastre."', overdue='".$overdue."'";
+        $qry = "update ".$this->head." set ied='".$ied."', bankcharges='".$bankcharges."', interest='".$interest."', brokerfee='".$brokerfee."', 
+        arrastre='".$arrastre."', brokerage='".$brokerage."', overdue='".$overdue."'";
         
         if ($companyid == 71) {
             $forexRow = $this->coreFunctions->opentable("select forex from ".$this->head." where trno=".$dataparams['trno']." limit 1");
@@ -182,6 +184,7 @@ class viewothercharges
             $boc = floatval($ied);
             $bankchargesVal = floatval($bankcharges);
             $brokerfeeVal = floatval($brokerfee);
+            // $brokerageVal = floatval($brokerage);
             $vat = floatval($interest);
             $arrastreVal = floatval($arrastre);
 

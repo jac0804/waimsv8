@@ -739,7 +739,7 @@ class sqlquery
         where num.doc='" . $config['params']['doc'] . "' and
         num.center='" . $config['params']['center'] . "'";
         break;
-     
+
       case 'HN':
         $qryselect = "select
           head.trno, head.docno, head.empid, head.dateid,
@@ -4102,12 +4102,27 @@ class sqlquery
             $condition = " and head.approvedate is not null";
             $addfield = " , '$whcode' as descode , '$whname' as desname";
           }
+          if (isset($config['params']['addedparams'][2])) {
+            if (floatval($config['params']['addedparams'][2]) != 0) {
+              $addfield .= ", " . $config['params']['addedparams'][2] . " as sjseq";
+            } else {
+              $addfield .= ", 0 as sjseq";
+            }
+          }
+          if (isset($config['params']['addedparams'][3])) {
+            if ($config['params']['addedparams'][3] == '') {
+              $addfield .= ", '' as sjprefix";
+            } else {
+              $addfield .= ", '" . $config['params']['addedparams'][3]['value'] . "' as sjprefix";
+            }
+          }
         }
         break;
       default:
         $condition = " and head.client='" . $client . "' and head.wh='" . $wh . "'";
         break;
     }
+
 
     if ($companyid == 40) { //cdo
       $qry = "select head.doc,head.docno, date(head.dateid) as dateid,head.trno, head.wh,
@@ -4978,20 +4993,20 @@ class sqlquery
     $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
-    $lookupclass= $config['params']['lookupclass'];
+    $lookupclass = $config['params']['lookupclass'];
     $addfield = "";
     $addfilter = "";
     $filterdata = [$center];
     $filter = 'stock.iss>stock.qa';
     $fieldqa = 'stock.qa';
-    if ($systemtype == 'MANUFACTURING' || ($lookupclass== 'pendingsopddetail')) { //buenatech
+    if ($systemtype == 'MANUFACTURING' || ($lookupclass == 'pendingsopddetail')) { //buenatech
       $addfield = ",FORMAT((stock.pdqa / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pdqa,
         FORMAT(((stock.iss-stock.pdqa) / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pdpending,
         stock.uom";
-        $addfilter = "and stock.iss>stock.pdqa and head.sotype=1";
-         if($lookupclass=='pendingsopddetail'){
+      $addfilter = "and stock.iss>stock.pdqa and head.sotype=1";
+      if ($lookupclass == 'pendingsopddetail') {
         $addfilter = "and stock.iss>stock.pdqa";
-        }
+      }
     } else {
       switch ($lookupclass) {
         case 'pendingsorodetail':
@@ -7556,13 +7571,13 @@ class sqlquery
     $trno = $config['params']['trno'];
     $center = $config['params']['center'];
 
-    if($doc=='UE' || $doc='ST'){ //buenatech
+    if ($doc == 'UE' || $doc = 'ST') { //buenatech
       $condition = " and jo.isproduce<>1 "; //picked in produce item
       $condition2 = "";
       $qfield = "jos.qa";
-      if($doc=='ST'){
-        $condition2= " and joh.isproduce<>1 and jos.tsqa<>jos.qty";
-        $qfield= "jos.tsqa";
+      if ($doc == 'ST') {
+        $condition2 = " and joh.isproduce<>1 and jos.tsqa<>jos.qty";
+        $qfield = "jos.tsqa";
       }
 
       if ($doc == 'UE') {
@@ -7570,16 +7585,16 @@ class sqlquery
       }
 
       $lookupclass = $config['params']['lookupclass'];
-      switch($lookupclass){
-          case 'pendingjoheaddetail':
+      switch ($lookupclass) {
+        case 'pendingjoheaddetail':
           $pdtrno = isset($config['params']['addedparams'][0]) ? $config['params']['addedparams'][0] : 0;
           $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname,jo.qty,jo.uom,jo.isproduce,jo.rem,jo.wh from hpdhead as jo
             left join item as it on it.itemid=jo.itemid
             left join transnum as num on num.trno=jo.trno where num.center=? $condition";
           $params = [$center];
           break;
-          case 'pendingjobtndetail': 
-          case 'issuemultipleexpiry':
+        case 'pendingjobtndetail':
+        case 'issuemultipleexpiry':
           $jotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$config['params']['trno']]);
           $qry = "select joh.trno,date(joh.dateid) as dateid,joh.docno,it.barcode,it.itemname, jos.qty,jos.uom,
                   concat(jos.trno,jos.line) as keyid,jos.trno as refx,jos.line as linex,wh.clientid as whid,
@@ -7599,7 +7614,7 @@ class sqlquery
           $params = [$center];
           break;
       }
-      }else{
+    } else {
 
       $client = $config['params']['client'];
       $project = $this->coreFunctions->getfieldvalue("jchead", "projectid", "trno=?", [$trno]);
@@ -9363,7 +9378,7 @@ class sqlquery
     return  $this->coreFunctions->opentable($query);
   }
 
-   // detachment
+  // detachment
   public function getledgerfirearms($config)
   {
     $fields = array('expiry', 'code', 'make');
@@ -9375,7 +9390,7 @@ class sqlquery
     return $data;
   }
 
-  
+
   public function getledgerdtcdiv($config)
   {
     $fields = array('divcode', 'divname', 'address');
@@ -9387,5 +9402,4 @@ class sqlquery
     $data = $this->coreFunctions->opentable($qry);
     return $data;
   }
-
 }//end class

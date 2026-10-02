@@ -44,7 +44,7 @@ class pv
   private $stockselect;
   public $defaultContra = 'AP2';
 
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'ewt', 'ewtrate', 'projectid', 'branch', 'deptid', 'invoiceno', 'invoicedate', 'empid', 'excess', 'excessrate', 'phaseid', 'modelid', 'blklotid', 'amenityid', 'subamenityid', 'terms', 'checkno', 'checkdate'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'forex', 'cur', 'address', 'ewt', 'ewtrate', 'projectid', 'branch', 'deptid', 'invoiceno', 'invoicedate', 'empid', 'excess', 'excessrate', 'phaseid', 'modelid', 'blklotid', 'amenityid', 'subamenityid', 'terms', 'checkno', 'checkdate', 'orderno'];
   private $except = ['trno', 'dateid', 'due'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -462,6 +462,7 @@ class pv
     $obj[0]['accounting']['columns'][$itemgroup]['label'] = 'Item Group';
     $obj[0]['accounting']['columns'][$postdate]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
 
+
     switch ($config['params']['companyid']) {
       case 10:
         $obj[0]['accounting']['columns'][$client]['name'] = 'clientname';
@@ -496,7 +497,13 @@ class pv
         }
 
         if ($config['params']['companyid'] != 24) {
-          $obj[0]['accounting']['columns'][$dept]['type'] = 'coldel';
+          if ($companyid == 65) { // metro dragon -AIMS
+            $obj[0]['accounting']['columns'][$dept]['label'] = 'Department';
+            $obj[0]['accounting']['columns'][$dept]['action'] = 'lookupclient';
+            $obj[0]['accounting']['columns'][$dept]['lookupclass'] = 'lookupdept';
+          } else {
+            $obj[0]['accounting']['columns'][$dept]['type'] = 'coldel';
+          }
           // $obj[0]['accounting']['columns'][$rem]['type'] = 'coldel';
           $obj[0]['accounting']['columns'][$type]['type'] = 'coldel';
         } else {
@@ -650,6 +657,9 @@ class pv
       case 10:
         array_push($fields, 'ddeptname', 'invoicedate');
         break;
+      case 65: // metrodragon - AIMS
+        array_push($fields, ['orderno', '']);
+        break;
     }
     if ($systype == 'REALESTATE') {
       array_push($fields, 'rem');
@@ -674,7 +684,10 @@ class pv
       data_set($col3, 'ref.label', 'RR No.');
       data_set($col3, 'ref.readonly', true);
     }
-
+    if($companyid == 65){// metro dragon -AIMS
+    data_set($col3, 'orderno.label', 'LC No.');
+    data_set($col3, 'orderno.class', 'csorderno');
+    }
 
 
     //col4
@@ -776,6 +789,7 @@ class pv
 
     $data[0]['checkdate'] = $this->othersClass->getCurrentDate();
     $data[0]['checkno'] = '';
+    $data[0]['orderno'] = '';
 
 
     return $data;
@@ -870,7 +884,7 @@ class pv
         amh.line as amenityid,
         amh.description as amenityname,
         subamh.line as subamenityid, left(head.checkdate,10) as checkdate,head.checkno,
-        subamh.description as subamenityname " . $addedfields . "
+        subamh.description as subamenityname, ifnull(head.orderno,'') as orderno " . $addedfields . "
          
         ";
 

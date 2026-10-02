@@ -60,7 +60,15 @@ class received_checks
     data_set($col2, 'dateid.label', 'StartDate');
     data_set($col2, 'dateid.readonly', false);
 
-
+    if ($companyid == 72) { //hahsy
+      $fields = ['radioposttype', 'radioreporttype','pref'];
+      $col3 = $this->fieldClass->create($fields);
+      data_set($col3, 'radioreporttype.label', 'Date Based On');
+      data_set($col3, 'radioreporttype.options', [
+        ['label' => 'Collection Date', 'value' => '0', 'color' => 'pink'],
+        ['label' => 'Check Date', 'value' => '1', 'color' => 'pink']
+      ]);
+    }else {
     $fields = ['radioposttype', 'radioreporttype'];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'radioreporttype.label', 'Date based on:');
@@ -72,6 +80,7 @@ class received_checks
         ['label' => 'Check Date', 'value' => '1', 'color' => 'pink']
       ]
     );
+    }
 
     data_set(
       $col3,
@@ -108,6 +117,11 @@ class received_checks
                             left(now(),10) as due,'' as center,'' as centername,'' as dcentername,
                             '0' as posttype,'0' as reporttype, '' as client, '' as clientname, 
                             '' as dclientname, left(now(),10) as end";
+        break;
+      case 72: //hahsy
+        $paramstr = "select 'default' as print,adddate(left(now(),10),-360) as dateid,
+                            left(now(),10) as due,'' as center,'' as centername,'' as dcentername,
+                            '0' as posttype,'0' as reporttype, '' as pref, '' as prefix";
         break;
       default:
         $paramstr = "select 'default' as print,adddate(left(now(),10),-360) as dateid,
@@ -148,6 +162,12 @@ class received_checks
 
     if ($center != "") {
       $filter .= " and cntnum.center='" . $center . "'  ";
+    }
+    if ($companyid == 72) {
+      $pref    = $filters['params']['dataparams']['pref'];
+      if ($pref != '') {
+        $filter .= " and cntnum.bref='" . $pref . "' ";
+      }
     }
 
     if ($companyid == 19) { //housegem
@@ -385,6 +405,7 @@ class received_checks
         break;
       case 1:
         $ispostedstr = 'unposted';
+        break;
       case 2:
         $ispostedstr = 'all';
         break;
@@ -392,6 +413,9 @@ class received_checks
 
     if ($checks == 0) {
       $checksstr = 'transaction date';
+      if ($companyid == 72) {
+        $checksstr = 'collection date';
+      }
     } else {
       $checksstr = 'checkdate';
     }

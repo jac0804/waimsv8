@@ -2814,7 +2814,9 @@ class sj
     }
 
 
-
+    $bdecimal = $this->companysetup->getdecimal('price', $config['params']);
+    $hdecimal = ($config['params']['companyid'] == 71) ? $bdecimal : 6; // buenatech
+    $hdecimal2 = ($config['params']['companyid'] == 71) ? $bdecimal : 2; // buenatech
 
 
     $sqlselect = "select item.brand as brand,
@@ -2830,7 +2832,7 @@ class sj
     item.barcode,
     $itemname
     stock.uom,
-    FORMAT(uom.factor*stock.cost,6) as cost,
+    FORMAT(uom.factor*stock.cost,$hdecimal) as cost,
     stock.kgs,
     stock." . $this->hamt . ",
     stock." . $this->hqty . " as iss,
@@ -2854,10 +2856,10 @@ class sj
     ifnull(pallet.name,'') as pallet,
     ifnull(location.loc,'') as location,
     ifnull(uom.factor,1) as uomfactor,
-    round(case when (stock.Amt>0 and stock.iss>0) then (((((stock.Amt * stock.ISS) - (stock.Cost * stock.Iss)) / ($markup_field * stock.Iss))/head.forex)*100) else 0 end,2) as markup,
+    round(case when (stock.Amt>0 and stock.iss>0) then (((((stock.Amt * stock.ISS) - (stock.Cost * stock.Iss)) / ($markup_field * stock.Iss))/head.forex)*100) else 0 end,$hdecimal2) as markup,
     
     stock.rebate,
-    round(case when stock.Amt>0 then ((stock.amt-stock.cost)/head.forex) else 0 end,2) as gprofit,
+    round(case when stock.Amt>0 then ((stock.amt-stock.cost)/head.forex) else 0 end,$hdecimal2) as gprofit,
     '' as bgcolor,
     '' as errcolor,
     prj.name as stock_projectname,

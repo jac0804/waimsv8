@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
 class moduleapproval
 {
     private $fieldClass;
-    private $tabClass;
+private $tabClass;
     public $modulename = 'MODULE APPROVAL';
     public $gridname = 'inventory';
     private $companysetup;

@@ -58,8 +58,9 @@ class item_summary_comparison
     {
         return $this->coreFunctions->opentable("select 
         'default' as print,
-        left(now(),4) as year, '0' as bmonth,
-        '' as month
+        left(now(),4) as year, 
+        '0' as bmonth,
+        '' as month,
         '' as category, 
         '' as categoryname
         ");
@@ -81,5 +82,162 @@ class item_summary_comparison
         return $this->reportDefaultLayout($config);
     }
 
+    public function reportQuery($config)
+    {
+        $year = $config['params']['dataparams']['year'];
+        $month = $config['params']['dataparams']['bmonth'];
+        $category = $config['params']['dataparams']['category'];
+        $categoryname = $config['params']['dataparams']['categoryname'];
+        $filter = '';
+
+        if ($categoryname != '' ){
+            $filter .= "where cat.name = '" .$categoryname . "'";
+        }
+
+        $query ="
+        select cat.name, cl.cl_name,l.qty, l.uom, item.itemname, l.last3, l.lastyear
+        from (
+        select itemid, uom, 
+        sum(case when year(dateid) = $year and month(dateid) = $month then qty else 0 end) as qty,
+        sum(case when dateid >= date_sub('$year-$month-01', interval 2 month) and dateid < date_add('$year-$month-01', interval 1 month) then ext else 0 end) as last3,
+        sum(case when dateid >= date_sub('$year-$month-01', interval 14 month) and dateid < date_sub('$year-$month-01', interval 11 month) then ext else 0 end) as lastyear
+        from (
+            select s.itemid,s.isqty as qty, s.uom, s.ext, h.dateid from lahead as h
+            join lastock as s on s.trno = h.trno
+            where h.doc = 'SJ'
+            and h.dateid >= date_sub('$year-$month-01', interval 14 month)
+            and h.dateid < date_add('$year-$month-01', interval 1 month)
+            union all
+            select s.itemid,s.qty as qty, s.uom, s.ext, h.dateid from glhead as h
+            join glstock as s on s.trno = h.trno
+            where h.doc = 'SJ'
+            and h.dateid >= date_sub('$year-$month-01', interval 14 month)
+            and h.dateid < date_add('$year-$month-01', interval 1 month)
+        ) as t
+        group by itemid, uom
+        ) as l
+        left join item on item.itemid = l.itemid
+        left join item_class as cl on cl.cl_id = item.class
+        left join itemcategory as cat on cat.line = item.category $filter
+        order by cat.name, cl.cl_name, item.itemname
+        ";
+        // var_dump($query);
+        return $this->coreFunctions->opentable($query);        
+    }
+
+    public function header_layout($config)
+    {
+        $center = $config['params']['center'];
+        $username = $config['params']['user'];
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        $year = $config['params']['dataparams']['year'];
+        $month = $config['params']['dataparams']['month'];
+
+        $str = '';
+        $layoutsize = '1000';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $fontsize = "10";
+        $border = "2px solid"; 
+        $str .= '<br><br>';
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username, $config);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('ITEM SUMMARY COMPARISON REPORT', null, null, false, $border, '', 'C', $font, '13', 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('Print Date : '.date_format(date_create($current_timestamp), 'm/d/Y h:i:s A'), null, null, false, '', '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->pagenumber('Page ', null, null, false, $border, '', 'R', $font, $fontsize, '', 'false', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= '<br>';
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('QTY', '100', '60', false, $border, 'TB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('', '5', '60', false, $border, 'T', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('UOM', '100', '60', false, $border, 'TB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('', '5', '60', false, $border, 'T', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('ITEM <br> DESCRIPTION', '400', '60', false, $border, 'TB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('', '5', '60', false, $border, 'T', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('LAST 3 MONTHS<br/>AVERAGE<br/>' . $year, '120', '60', false, $border, 'TB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('', '5', '60', false, $border, 'T', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('LAST YEAR<br>'.$month.'<br>'.($year - 1), '120', '60', false, $border, 'TB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        return $str;
+    }
+
+    public function reportDefaultLayout($config)
+    {
+        $str = '';
+        $layoutsize = '1000';
+        $font = $this->companysetup->getrptfont($config['params']);
+        $fontsize = "10";
+        $border = "1px solid"; 
+        $page = 0;
+
+        $str .= $this->reporter->beginreport();
+        $str .= $this->header_layout($config);
+        $query = $this->reportQuery($config);
+
+        $storedCat = '';
+        $storedCls = '';
+
+        // if (empty($query)) {
+        // return $this->othersClass->emptydata($config);
+        // }
+
+        foreach($query as $data){
+            //Category
+
+            if ($data->name != $storedCat){ //new cat
+                $storedCat = $data->name;
+                $storedCls = '';
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('<u>'.strtoupper($data->name).'</u>', '100', '10', false, $border, '', 'L', $font, '10', 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+            }
+
+            if ($data->cl_name != $storedCls){//new class
+                $storedCls = $data->cl_name;
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.strtoupper($data->cl_name), '100', '10', false, $border, '', 'L', $font, '10', 'B', '', '');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+            }
+            
+
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data->qty == 0 ? '-' : number_format($data->qty, 2), '100', '10', false, $border, '', 'R', $font, '10', '', '', '');
+            $str .= $this->reporter->col('', '5', '10', false, $border, '', 'C', $font, '10', '', '', '');
+            $str .= $this->reporter->col($data->uom, '100', '10', false, $border, '', 'C', $font, '10', '', '', '');
+            $str .= $this->reporter->col('', '5', '10', false, $border, '', 'C', $font, '10', '', '', '');
+            $str .= $this->reporter->col($data->itemname, '400', '10', false, $border, '', 'L', $font, '10', '', '', '');
+            $str .= $this->reporter->col('', '5', '10', false, $border, '', 'C', $font, '10', '', '', '');
+            $str .= $this->reporter->col($data->last3 == 0? '-' :number_format($data->last3,2), '120', '10', false, $border, '', 'R', $font, '10', '', '', '');
+            $str .= $this->reporter->col('', '5', '10', false, $border, '', 'C', $font, '10', '', '', '');
+            $str .= $this->reporter->col($data->lastyear == 0? '-' :number_format($data->lastyear,2), '120', '10', false, $border, '', 'R', $font, '10', '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+        }
+
+
+        $str .= $this->reporter->endreport();
+        return $str;
+    }
 
 }

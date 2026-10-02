@@ -336,6 +336,23 @@ class trigger
 
   private function item_triggers($config)
   {
+    $cost = 'Cost';
+    $shortname = 'Shortname';
+    $othcode = 'Other Code';
+    $retail = 'retail price';
+    $pricea = 'price A';
+    $priceb = 'price B';
+    $pricec = 'price C';
+    $priced = 'price D';
+    $pricee = 'price E';
+    $discountr = 'discount R';
+    $discountw = 'discount W';
+    $discounta = 'discount A';
+    $discountb = 'discount B';
+    $discountc = 'discount C';
+    $discountd = 'discount D';
+    $discounte = 'discount E';
+
     switch ($config['params']['companyid']) {
       case 16:
         $shortname = 'Specifications';
@@ -361,26 +378,7 @@ class trigger
         $discountd = 'lowest disc';
         $discounte = 'dr discount';
         break;
-      default:
-        $shortname = 'Shortname';
-        $othcode = 'Other Code';
-        $retail = 'retail price';
-        $pricea = 'price A';
-        $priceb = 'price B';
-        $pricec = 'price C';
-        $priced = 'price D';
-        $pricee = 'price E';
-        $discountr = 'discount R';
-        $discountw = 'discount W';
-        $discounta = 'discount A';
-        $discountb = 'discount B';
-        $discountc = 'discount C';
-        $discountd = 'discount D';
-        $discounte = 'discount E';
-        break;
     }
-
-
 
     //ITEM TRIGGER =====================================================================================================================
     $fields = [
@@ -2802,6 +2800,44 @@ class trigger
   }
 
 
+  private function da_triggers($config)
+  {
+   
+    //DAHEAD TRIGGER ===================================================================================================================
+    $fields = [
+      'document #' => ['docno' => []],
+      'type' => ['type' => []],
+      'date' => ['dateid' => []],
+      'rem' => ['rem' => []],
+      'Warehouse' => ['whid' => [true, "clientname", "client", "clientid"]]
+    ];
+
+    $this->settriggerlogs('dahead_update', 'AFTER UPDATE', 'dahead', 'hrisnum_log', $fields, 'trno', 'HEAD');
+    //END OF DAHEAD TRIGGER ====================================================================================================================================    
+
+    //STOCK TRIGGER ==================================================================================================================
+    $fields = [
+      'Employee' => ['empid' => [true, 'concat(empfirst,"~",emplast)', 'employee', 'empid']],
+      'Itemname' => ['itemid' => [true, "itemname", "item", "itemid"]],
+      'Warehouse' => ['whid' => [true, "clientname", "client", "clientid"]],
+      'amount' => ['amount' => []],
+      'Pcs Work' => ['pcswork' => []],
+      'Total Boxes' => ['tlbox' => []],
+      'Gross Rate' => ['grossrate' => []],
+      'Add Restday' => ['restday' => []],
+      'Add Holiday' => ['holiday' => []],
+      'Add Night' => ['night' => []],
+      'Add Adjustment' => ['adjustmnt' => []],
+      'Add 13th Mons' => ['13mos' => []],
+      'Add Admin' => ['admin' => []],
+      'Less Canteen' => ['canteen' => []],
+      'Less CA Canteen' => ['cacanteen' => []],
+      'Less CA Hahsy' => ['cahahsy' => []],
+      'Less Charge' => ['charge' => []]
+    ];
+    $this->settriggerlogs('piecetrans_update_after', 'AFTER UPDATE', 'piecetrans', 'hrisnum_log', $fields, 'trno', 'STOCK');
+    //END OF stock TRIGGER ====================================================================================================================================    
+  }
 
 
   public function createtriggers($config)
@@ -2951,8 +2987,8 @@ class trigger
     $this->pd_triggers($config);
     $this->hpd_triggers($config);
 
-
-
+    //hahsy
+    $this->da_triggers($config); 
   }
 
   // FOR TESTING -- JIKS [11.24.2020]
@@ -4989,48 +5025,48 @@ class trigger
   }
 
 
-  
-	private function emp_license_triggers()
-	{
-		$fields = [
-			'clientid' => ['clientid' => []],
-			'sagsd' => ['sagsd' => []],
-			'sagsdexp' => ['sagsdexp' => []],
-			'solicense' => ['solicense' => []],
-			'soexp' => ['soexp' => []],
-			'palicense' => ['palicense' => []],
-			'paexp' => ['paexp' => []],
-			'ntclicense' => ['ntclicense' => []],
-			'ntcexp' => ['ntcexp' => []],
-			'brgystart' => ['brgystart' => []],
-			'brgyend' => ['brgyend' => []],
-			'pnpstart' => ['pnpstart' => []],
-			'pnpend' => ['pnpend' => []],
-			'nbistart' => ['nbistart' => []],
-			'nbiend' => ['nbiend' => []],
-			'nuerostart' => ['nuerostart' => []],
-			'nueroend' => ['nueroend' => []],
-			'drugstart' => ['drugstart' => []],
-			'drugend' => ['drugend' => []],
-			'medicalstart' => ['medicalstart' => []],
-			'medicalend' => ['medicalend' => []],
-			'dilgstart' => ['dilgstart' => []],
-			'dilgend' => ['dilgend' => []],
-			'occustart' => ['occustart' => []],
-			'occuend' => ['occuend' => []],
-			'courtstart' => ['courtstart' => []],
-			'courtend' => ['courtend' => []],
-			'ctcno' => ['ctcno' => []],
-			'ctcdate' => ['ctcdate' => []],
-			'ctcissue' => ['ctcissue' => []],
-			'insurance' => ['insurance' => []],
-			'policy' => ['policy' => []],
-			'premium' => ['premium' => []],
-			'amt' => ['amt' => []],
-			'policyend' => ['policyend' => []]
-		];
+
+  private function emp_license_triggers()
+  {
+    $fields = [
+      'clientid' => ['clientid' => []],
+      'sagsd' => ['sagsd' => []],
+      'sagsdexp' => ['sagsdexp' => []],
+      'solicense' => ['solicense' => []],
+      'soexp' => ['soexp' => []],
+      'palicense' => ['palicense' => []],
+      'paexp' => ['paexp' => []],
+      'ntclicense' => ['ntclicense' => []],
+      'ntcexp' => ['ntcexp' => []],
+      'brgystart' => ['brgystart' => []],
+      'brgyend' => ['brgyend' => []],
+      'pnpstart' => ['pnpstart' => []],
+      'pnpend' => ['pnpend' => []],
+      'nbistart' => ['nbistart' => []],
+      'nbiend' => ['nbiend' => []],
+      'nuerostart' => ['nuerostart' => []],
+      'nueroend' => ['nueroend' => []],
+      'drugstart' => ['drugstart' => []],
+      'drugend' => ['drugend' => []],
+      'medicalstart' => ['medicalstart' => []],
+      'medicalend' => ['medicalend' => []],
+      'dilgstart' => ['dilgstart' => []],
+      'dilgend' => ['dilgend' => []],
+      'occustart' => ['occustart' => []],
+      'occuend' => ['occuend' => []],
+      'courtstart' => ['courtstart' => []],
+      'courtend' => ['courtend' => []],
+      'ctcno' => ['ctcno' => []],
+      'ctcdate' => ['ctcdate' => []],
+      'ctcissue' => ['ctcissue' => []],
+      'insurance' => ['insurance' => []],
+      'policy' => ['policy' => []],
+      'premium' => ['premium' => []],
+      'amt' => ['amt' => []],
+      'policyend' => ['policyend' => []]
+    ];
     $this->settriggerlogs('license_update', 'AFTER UPDATE', 'cllicence', 'client_log', $fields, 'clientid', 'UPDATE');
-	}
+  }
 
 
 
@@ -5827,6 +5863,8 @@ class trigger
         delete from firearms;
         delete from sgviolation;
         delete from clviolation;
+
+        delete from dahead;
 
       END";
 

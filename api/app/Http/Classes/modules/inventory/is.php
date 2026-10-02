@@ -1597,7 +1597,9 @@ class is
     $barcode = $config['params']['barcode'];
     $client = $config['params']['client'];
     $center = $config['params']['center'];
-    $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt ,round(amt,2) as defamt,'' as disc,uom from(select head.docno,head.dateid,
+    $bdecimal  = $this->companysetup->getdecimal('price', $config['params']);
+    $hdecimal2 = ($config['params']['companyid'] == 71) ? $bdecimal : 2;
+    $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt ,round(amt,$hdecimal2) as defamt,'' as disc,uom from(select head.docno,head.dateid,
           FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,
           stock.uom,stock.disc
           from lahead as head
